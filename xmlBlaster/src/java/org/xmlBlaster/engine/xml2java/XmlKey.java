@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.18 2002/05/09 11:49:04 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.19 2002/05/09 14:04:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -694,7 +694,9 @@ public final class XmlKey
             for (int i = 0; i < len; i++) {
                Node childNode = children.item(i);
                if (childNode.getNodeType() == Node.TEXT_NODE) {
-                  queryString = childNode.getNodeValue().trim();
+                  String txt = childNode.getNodeValue().trim();
+                  if (txt.length() > 0)
+                     queryString = txt;
                }
             }
          }
