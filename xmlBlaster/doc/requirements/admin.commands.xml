@@ -358,7 +358,7 @@ Old style:
         <li><i>topic</i> Examine or manipulate the messages in xmlBlaster</li>
       </ol>
       <p>
-         The <i>cb</i> in for example <i>cbQueueMaxMsg</i> is the abbreviation for <i>callback</i>.
+         The <i>cb</i> in for example <i>cbSessionId</i> is the abbreviation for <i>callback</i>.
       </p>
 
       <h3>
@@ -748,7 +748,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.46 $</revision>
+   <revision>$Revision: 1.47 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
