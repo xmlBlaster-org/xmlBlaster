@@ -107,8 +107,10 @@ public:
     */
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
-            const T_VALUE& value) {
-      data.addClientProperty(name, value);
+            const T_VALUE& value,
+            const std::string& type="",
+            const std::string& encoding="") {
+      data.addClientProperty(name, value, type, encoding);
    }
 
 };

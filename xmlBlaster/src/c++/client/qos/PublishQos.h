@@ -204,8 +204,10 @@ public:
     */
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
-            const T_VALUE& value) {
-      msgQosData_.addClientProperty(name, value);
+            const T_VALUE& value,
+            const std::string& type="",
+            const std::string& encoding="") {
+      msgQosData_.addClientProperty(name, value, type, encoding);
    }
 
    /**

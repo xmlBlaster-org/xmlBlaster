@@ -53,6 +53,8 @@ public:
 
    GetReturnQos& operator=(const GetReturnQos&);
 
+	org::xmlBlaster::util::qos::MsgQosData& getData() { return data_; }
+
    /**
     * @return true/false
     */
