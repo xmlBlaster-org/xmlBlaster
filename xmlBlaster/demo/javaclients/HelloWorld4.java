@@ -35,8 +35,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * queue messages until the server is available.
  * We show all available control of a client in failsafe mode.
  * <p />
- * Invoke: java HelloWorld4
- * <p />
  * Invoke: java HelloWorld4 -session.name joe/2 -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
@@ -109,8 +107,8 @@ public class HelloWorld4
                         for (int i=0; i<list.size(); i++) {
                            log.info(ME, ((MsgQueueEntry)list.get(i)).toXml());
                         }
-                        MsgQueueEntry entry = (MsgQueueEntry)connection.getQueue().peek();
                         /*
+                        MsgQueueEntry entry = (MsgQueueEntry)connection.getQueue().peek();
                         log.info(ME, "I_ConnectionStateListener.reachedAlive(): Discarding messages from queue");
                         connection.getQueue().clear(); // e.g. discard all msgs (it is our choice)
                         if (MethodName.CONNECT == entry.getMethodName()) {
@@ -123,7 +121,8 @@ public class HelloWorld4
                   }
                   if (!connection.getConnectReturnQos().isReconnected()) {
                      log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found");
-                     initClient();    // initialize subscription etc. again
+                     if (connection.isConnected())
+                        initClient();    // initialize subscription etc. again
                   }
                   else {
                      log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
@@ -132,8 +131,8 @@ public class HelloWorld4
 
                public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
-                  initClient();    // initialize subscription etc., the requests are queued
-                                   // this is only needed if you start publishing offline (see doOurWork())
+                  if (!connection.isConnected())
+                     initClient();
                }
 
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
@@ -206,7 +205,7 @@ public class HelloWorld4
    }
 
    /**
-    * We subsribe to some messages on startup or on reconnect
+    * We subscribe to some messages on startup or on reconnect
     * to a new server instance. 
     */
    private void initClient() {
