@@ -659,7 +659,7 @@ TODO
         prefix="META-INF"/>
       <fileset dir="${lib.dir}"
         includes="activation.jar,jacorb/idl.jar,jacorb/avalon-framework-4.1.5.jar,jacrob/logkit-1.2.jar,jacorb/jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
-        />					       
+        />                                             
       <fileset dir="${build.dir}/sar"
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
         />
@@ -1005,12 +1005,14 @@ TODO
          </sequential>
       </parallel>
    </target>
+   <target name="tests-delete">
+      <delete dir="${report.dir}"/>
+   </target>
 
    <!-- =================================================================== -->
    <!-- Creates a test report with junit                                    -->
    <!-- =================================================================== -->
    <target name="report" description="Creates a HTML test report with junit">
-      <property name="report.dir" value="./doc/test/report"/>
       <echo message="Creating report to ${report.dir} ..."/>
       <echo message="NOTE: If the report generation halts here you've probably not added xalan.jar to your classpath"/>
       <junitreport todir="${report.dir}">
@@ -2695,6 +2697,6 @@ TODO
     <target name="clean" depends="cpp-clean,c-clean,java-clean" description="Remove generated Java, C and C++ files">
     </target>
 
-    <target name="delete" depends="clean,cpp-delete,c-delete,java-delete,docs-delete" description="Remove all generated ditribution Java, C, C++ and documentation files">
+    <target name="delete" depends="clean,cpp-delete,c-delete,java-delete,docs-delete,tests-delete" description="Remove all generated ditribution Java, C, C++ and documentation files">
    </target>
 </project>
