@@ -97,6 +97,7 @@ public class HelloWorldPublish
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");
+         String domain = glob.getProperty().get("domain", (String)null);
          String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
          String contentStr = glob.getProperty().get("content", "Hi-%counter");
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
@@ -221,6 +222,7 @@ public class HelloWorldPublish
             }
 
             PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
+            if (domain != null) pk.setDomain(domain);
             pk.setClientTags(org.jutils.text.StringHelper.replaceAll(clientTags, "%counter", ""+(i+1)));
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
