@@ -63,7 +63,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 9560;
    private boolean startEmbedded = true;
-   private MsgInterceptor update;
+   private MsgInterceptor update; // collects updated messages
 
    private final String msgOid = "dispatchTestMessage";
 

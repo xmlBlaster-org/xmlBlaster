@@ -368,6 +368,7 @@ public class QueueServerEntryTest extends TestCase {
 
          assertEquals("The priority of the entry is different ", entry.getPriority(), historyEntry.getPriority());
          assertEquals("The durable of the entry is different ", entry.isDurable(), historyEntry.isDurable());
+         // The history queue is s LIFO, we have inverted the unique key
          assertEquals("The uniqueId of the entry is different ", entry.getUniqueId(), historyEntry.getUniqueId());
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), historyEntry.getMsgUnitWrapperUniqueId());
          assertEquals("The topic oid of the entry is different ", entry.getKeyOid(), historyEntry.getKeyOid());
