@@ -37,7 +37,7 @@ public class PluginLoader {
    private  String pluginMechanism = null;
    private  String pluginVersion = null;
    private  I_ClientHelper plugin = null;
-   private  static PluginLoader instance = null;
+   private  static final PluginLoader instance = new PluginLoader();
 
    private PluginLoader()
    {
@@ -50,8 +50,6 @@ public class PluginLoader {
     */
    public static PluginLoader getInstance()
    {
-      if(instance==null) instance = new PluginLoader();
-
       return instance;
    }
 
