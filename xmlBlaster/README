@@ -11,7 +11,7 @@ Middleware) which comes with LGPL. XmlBlaster is a pure Java
 publish/subscribe MOM server which exchanges XML-encoded
 messages between publishers and subscribers.
 
-Communication with the server is based on CORBA, and
+Communication with the server is based on CORBA, RMI or XML-RPC and
 subscribers can use XPath expressions to filter the messages
 they wish to receive.
 
