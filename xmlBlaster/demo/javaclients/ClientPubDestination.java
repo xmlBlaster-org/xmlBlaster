@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.3 1999/12/14 23:19:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -172,7 +172,8 @@ public class ClientPubDestination
          UpdateQoS updateQoS = null;
          byte[] content = messageUnit.content;
          try {
-            updateKey = new UpdateKey(messageUnit.xmlKey);
+            updateKey = new UpdateKey();
+            updateKey.init(messageUnit.xmlKey);
             updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
@@ -189,8 +190,7 @@ public class ClientPubDestination
          else
             Log.error(ME, "Wrong receiver " + loginName + " expected " + receiverName);
 
-         String keyOid = "";
-         try { keyOid = updateKey.getUniqueKey(); } catch(XmlBlasterException e) { e.printStackTrace(); }
+         String keyOid = updateKey.getUniqueKey();
 
          if (!keyOid.equals(publishOid))
             Log.error(ME, "Wrong oid of message returned, publish oid = " + publishOid + " and received oid = " + keyOid);

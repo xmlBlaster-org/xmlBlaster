@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.5 1999/12/14 12:19:54 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.6 1999/12/14 23:19:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -158,7 +158,8 @@ public class ClientSub
          UpdateQoS updateQoS = null;
          byte[] content = messageUnit.content;
          try {
-            updateKey = new UpdateKey(messageUnit.xmlKey);
+            updateKey = new UpdateKey();
+            updateKey.init(messageUnit.xmlKey);
             updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
