@@ -3,13 +3,12 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.91 2002/06/13 13:22:12 ruff Exp $
+Version:   $Id: Main.java,v 1.92 2002/06/15 16:15:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
-import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
 import org.jutils.runtime.ThreadLister;
@@ -18,17 +17,11 @@ import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
 
-import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.Vector;
-import java.util.StringTokenizer;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.lang.reflect.Method;
 
 
@@ -58,20 +51,22 @@ import java.lang.reflect.Method;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
-public class Main
+public class Main implements I_RunlevelListener
 {
    final private String ME = "Main";
-   /** The singleton handle for this xmlBlaster server */
-   private Authenticate authenticate = null;
-   /** The singleton handle for this xmlBlaster server */
-   private I_XmlBlaster xmlBlasterImpl = null;
-   /** Version string, please change for new releases (4 digits) */
+   
    private Global glob = null;
+   
    private LogChannel log;
-   /** A unique name for this xmlBlaster server instance, if running in a cluster */
-   private String uniqueNodeIdName = null;
+
+   /** Starts/stops xmlBlaster */
+   private RunlevelManager runlevelManager = null;
+
    /** Version string, please change for new releases (4 digits) */
    private String version = "0.79e";
+
+   private boolean showUsage = false;
+
 
    /**
     * true: If instance created by control panel<br />
@@ -111,7 +106,7 @@ public class Main
    {
       this.glob = glob;
       this.log = glob.getLog("core");
-      boolean showUsage = glob.wantsHelp();
+      showUsage = glob.wantsHelp();
       Thread.currentThread().setName("XmlBlaster MainThread");
 
       if (glob.wantsHelp())
@@ -122,43 +117,12 @@ public class Main
          System.exit(0);
       }
 
+      int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
-         authenticate = new Authenticate(glob);
-         xmlBlasterImpl = new XmlBlasterImpl(authenticate);
-
-         catchSignals();
-
-         glob.fireRunlevelEvent(Constants.RUNLEVEL_STANDBY, false);
-
-         loadCbProtocolDrivers();
-         loadProtocolDrivers();
-
-         glob.getRequestBroker().postInit();
-
-         if (glob.getNodeId() == null) {
-            if (uniqueNodeIdName != null)
-               glob.setUniqueNodeIdName(uniqueNodeIdName);
-            else
-               glob.setUniqueNodeIdName(createNodeId());
-         }
-
-         if (showUsage) {
-            usage();  // Now we can display the complete usage of all loaded drivers
-            System.exit(0);
-         }
-         
-         glob.fireRunlevelEvent(Constants.RUNLEVEL_RUNNING, false);
-
-         log.info(ME, Memory.getStatistic());
-
-         if (controlPanel == null) {
-            log.info(ME, "###########################################");
-            log.info(ME, "# xmlBlaster " + version + " is ready for requests  #");
-            log.info(ME, "# press <?> and <enter> for options       #");
-            log.info(ME, "###########################################");
-         }
-         else
-            log.info(ME, "xmlBlaster is ready for requests");
+         runlevelManager = glob.getRunlevelManager();
+         runlevelManager.addRunlevelListener(this);
+         runlevelManager.initPluginManagers();
+         runlevelManager.changeRunlevel(runlevel, false);
       } catch (Throwable e) {
          e.printStackTrace();
          log.error(ME, e.toString());
@@ -189,153 +153,6 @@ public class Main
       }
    }
 
-
-   /**
-    * Load the drivers from xmlBlaster.properties.
-    * <p />
-    * Default is "Protocol.Drivers=<br />
-    *   IOR:org.xmlBlaster.protocol.corba.CorbaDriver,<br />
-    *   RMI:org.xmlBlaster.protocol.rmi.RmiDriver,<br />
-    *   XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,<br />
-    *   JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
-    */
-   private void loadProtocolDrivers()
-   {
-      String defaultDrivers = // See CbInfo.java for "Protocol.CallbackDrivers" default settings
-                 "IOR:org.xmlBlaster.protocol.corba.CorbaDriver," +
-                 "SOCKET:org.xmlBlaster.protocol.socket.SocketDriver," +
-                 "RMI:org.xmlBlaster.protocol.rmi.RmiDriver," +
-                 "XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver," +
-                 "JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver";
-      String drivers = glob.getProperty().get("Protocol.Drivers", defaultDrivers);
-      StringTokenizer st = new StringTokenizer(drivers, ",");
-      int numDrivers = st.countTokens();
-      for (int ii=0; ii<numDrivers; ii++) {
-         String token = st.nextToken().trim();
-         int index = token.indexOf(":");
-         if (index < 0) {
-            log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.Drivers, driver ignored: " + token);
-            continue;
-         }
-         String protocol = token.substring(0, index).trim();
-         String driverId = token.substring(index+1).trim();
-         try {
-            I_Driver driver = loadDriver(protocol, driverId);
-            //log.info(ME, "Loaded address " + driver.getRawAddress());
-            if (driver.getRawAddress() != null) {
-               // choose the shortest (human readable) unique name for this cluster node (xmlBlaster instance)
-               if (uniqueNodeIdName == null)
-                  uniqueNodeIdName = driver.getRawAddress();
-               else if (uniqueNodeIdName.length() > driver.getRawAddress().length())
-                  uniqueNodeIdName = driver.getRawAddress();
-            }
-         }
-         catch (XmlBlasterException e) {
-            log.error(ME, e.toString());
-         }
-         catch (Throwable e) {
-            log.error(ME, e.toString());
-            e.printStackTrace();
-         }
-      }
-   }
-
-
-   /**
-    * Load a protocol driver.
-    * <p />
-    * Usually invoked by entries in xmlBlaster.properties, but for example MainGUI.java
-    * uses this directly.
-    * @param protocol For example "IOR", "RMI", "XML-RPC"
-    * @param driverId The class name of the driver, for example "org.xmlBlaster.protocol.corba.CorbaDriver"
-    */
-   public I_Driver loadDriver(String protocol, String driverId) throws XmlBlasterException
-   {
-      // Load the protocol driver ...
-      I_Driver driver = null;
-      try {
-         if (log.TRACE) log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-         Class cl = java.lang.Class.forName(driverId);
-         driver = (I_Driver)cl.newInstance();
-         glob.addProtocolDriver(driver);
-         log.info(ME, "Found '" + protocol + "' driver '" + driverId + "'");
-      }
-      catch (IllegalAccessException e) {
-         log.error(ME, "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-         throw new XmlBlasterException("Driver.NoClass", "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-      }
-      catch (SecurityException e) {
-         log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
-         throw new XmlBlasterException("Driver.NoAccess", "No right to access the driver class or initializer '" + driverId + "'");
-      }
-      catch (Throwable e) {
-         log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-         throw new XmlBlasterException("Driver.Invalid", "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-      }
-
-      // Start the driver
-      if (driver != null) {
-         try {
-            driver.init(glob, authenticate, xmlBlasterImpl);
-         } catch (XmlBlasterException e) {
-            //log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
-            throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);
-         }
-      }
-      return driver;
-   }
-
-   /**
-    * Load the callback drivers from xmlBlaster.properties.
-    * <p />
-    * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP, RMI).
-    * <p />
-    * Default is support for IOR, XML-RPC, RMI and the JDBC service (ODBC bridge)
-    * <p />
-    * This is done once and than cached in the static protocols Hashtable.
-    */
-   private final void loadCbProtocolDrivers() {
-      String defaultDrivers = // See Main.java for "Protocol.Drivers" default settings
-               "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
-               "SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver," +
-               "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
-               "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
-               "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
-
-      String drivers = glob.getProperty().get("Protocol.CallbackDrivers", defaultDrivers);
-      StringTokenizer st = new StringTokenizer(drivers, ",");
-      int numDrivers = st.countTokens();
-      for (int ii=0; ii<numDrivers; ii++) {
-         String token = st.nextToken().trim();
-         int index = token.indexOf(":");
-         if (index < 0) {
-            log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.CallbackDrivers, driver ignored: " + token);
-            continue;
-         }
-         String protocol = token.substring(0, index).trim();
-         String driverId = token.substring(index+1).trim();
-
-         if (driverId.equalsIgnoreCase("NATIVE")) { // We can mark in xmlBlaster.properties e.g. SOCKET:native
-            continue;
-         }
-
-         // Load the protocol driver ...
-         try {
-            if (log.TRACE) log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-            Class cl = java.lang.Class.forName(driverId);
-            glob.addCbProtocolDriverClass(protocol, cl);
-            if (log.TRACE) log.trace(ME, "Found callback driver class '" + driverId + "' for protocol '" + protocol + "'");
-         }
-         catch (SecurityException e) {
-            log.error(ME, "No right to access the protocol driver class or initializer '" + driverId + "'");
-         }
-         catch (Throwable e) {
-            log.error(ME, "The protocol driver class or initializer '" + driverId + "' is invalid\n -> check the driver name in xmlBlaster.properties and/or the CLASSPATH to the driver file: " + e.toString());
-         }
-      }
-   }
-
    /**
     * Instructs the ORB to shut down, which causes all object adapters to shut down.
     * <p />
@@ -343,55 +160,31 @@ public class Main
     */
    public void shutdown()
    {
-      if (glob.isHalted())
-         return;
-
-      if (glob.getCurrentRunlevel() > Constants.RUNLEVEL_STANDBY) {
-         try {
-            glob.fireRunlevelEvent(Constants.RUNLEVEL_STANDBY, true);
-         }
-         catch (Throwable e) {
-            log.error(ME, "Problems during shutdown: " + e.toString());
-         }
-      }
-
-      // TODO: The protocol drivers should add I_RunlevelListener.java
-      if (glob.getProtocolDrivers().size() > 0) {
-         log.info(ME, "Shutting down xmlBlaster ...");
-         if (log.DUMP) ThreadLister.listAllThreads(System.out);
-      }
-      glob.shutdownProtocolDrivers();
-
+      int errors = 0;
       try {
-         glob.fireRunlevelEvent(Constants.RUNLEVEL_HALTED, true);
+         errors = runlevelManager.changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
       }
-      catch (Throwable e) {
-         log.error(ME, "Problems during shutdown: " + e.toString());
+      catch(XmlBlasterException e) {
+         log.error(ME, "Problem during shutdown: " + e.toString());
       }
+      if (errors > 0)
+         log.warn(ME, "There were " + errors + " errors during shutdown.");
    }
-
-
-   public boolean isHalted()
-   {
-      return glob.isHalted();
-   }
-
 
    /**
     * Access the authentication singleton.
     */
    public Authenticate getAuthenticate()
    {
-      return authenticate;
+      return glob.getAuthenticate();
    }
-
 
    /**
     * Access the xmlBlaster singleton.
     */
    public I_XmlBlaster getXmlBlaster()
    {
-      return xmlBlasterImpl;
+      return getAuthenticate().getXmlBlaster();
    }
 
    /**
@@ -425,19 +218,27 @@ public class Main
                else
                   controlPanel.showWindow();
             }
+            else if (line.toLowerCase().startsWith("r")) {
+               if (line.length() > 1) {
+                  String tmp = line.substring(1).trim();
+                  int runlevel = -10;
+                  try { runlevel = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid run level '" + tmp + "', it should be a number."); };
+                  try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.error(ME, e.toString()); }
+               }
+            }
             else if (line.toLowerCase().startsWith("d")) {
                try {
                   String fileName = null;
                   if (line.length() > 1) fileName = line.substring(1).trim();
 
                   if (fileName == null) {
-                     log.plain(ME, authenticate.toXml());
-                     log.plain(ME, xmlBlasterImpl.toXml());
+                     log.plain(ME, getAuthenticate().toXml());
+                     log.plain(ME, getXmlBlaster().toXml());
                      log.info(ME, "Dump done");
                   }
                   else {
-                     FileUtil.writeFile(fileName, authenticate.toXml());
-                     FileUtil.appendToFile(fileName, xmlBlasterImpl.toXml());
+                     FileUtil.writeFile(fileName, getAuthenticate().toXml());
+                     FileUtil.appendToFile(fileName, getXmlBlaster().toXml());
                      log.info(ME, "Dumped internal state to '" + fileName + "'");
                   }
                }
@@ -539,38 +340,98 @@ public class Main
       return true;
    }
 
+   public boolean isHalted() {
+      return runlevelManager.isHalted();
+   }
 
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (glob.useCluster() == false)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
+            catchSignals();
+         }
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) {
+            if (glob.getNodeId() == null)
+               glob.setUniqueNodeIdName(createNodeId());
+            if (showUsage) {
+               usage();  // Now we can display the complete usage of all loaded drivers
+               System.exit(0);
+            }
+         }
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_RUNNING) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
+            log.info(ME, Memory.getStatistic());
+            if (controlPanel == null) {
+               log.info(ME, "###########################################");
+               log.info(ME, "# xmlBlaster " + version + " is ready for requests  #");
+               log.info(ME, "# press <?> and <enter> for options       #");
+               log.info(ME, "###########################################");
+            }
+            else
+               log.info(ME, "xmlBlaster is ready for requests");
+         }
+      }
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_RUNNING_PRE) {
+            if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
+         }
+         if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
+            if (log.DUMP) ThreadLister.listAllThreads(System.out);
+            log.info(ME, "XmlBlaster halted.");
+         }
+      }
+   }
 
    /**
     * Keyboard input usage.
     */
-   private void keyboardUsage()
-   {
+   private void keyboardUsage() {
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Following interactive keyboard input is recognized:");
       log.plain(ME, "Key:");
       log.plain(ME, "   g             Popup the control panel GUI.");
+      log.plain(ME, "   r <run level> Change to run level (0,3,6,9).");
       log.plain(ME, "   d <file name> Dump internal state of xmlBlaster to file.");
       log.plain(ME, "   q             Quit xmlBlaster.");
       log.plain(ME, "----------------------------------------------------------");
    }
 
-
    /**
     * Command line usage.
     */
-   private void usage()
-   {
+   private void usage() {
       log.plain(ME, "-----------------------" + version + "-------------------------------");
       log.plain(ME, "java org.xmlBlaster.Main <options>");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "   -h                  Show the complete usage.");
       log.plain(ME, "");
-      Vector protocols = glob.getProtocolDrivers();
-      for (int ii=0; ii<protocols.size(); ii++) {
-         I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         log.plain(ME, driver.usage());
-      }
+      try { log.plain(ME, glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
+      log.plain(ME, "");
       log.plain(ME, org.xmlBlaster.engine.cluster.ClusterManager.usage());
       log.plain(ME, "");
       log.plain(ME, org.xmlBlaster.util.Global.usage());
