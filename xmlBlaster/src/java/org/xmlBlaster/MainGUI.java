@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.55 2002/12/20 15:28:56 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.56 2003/10/03 19:36:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -15,11 +15,11 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -359,7 +359,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             // logOutput.setText("");  // clear log window
             try {
                log.info(ME, "Dump start");
-               Authenticate auth = xmlBlasterMain.getAuthenticate();
+               I_Authenticate auth = xmlBlasterMain.getAuthenticate();
                StringBuffer buf = new StringBuffer(auth.toXml());
                buf.append(xmlBlasterMain.getXmlBlaster().toXml());
                log(org.jutils.log.LogConstants.LOG_DUMP, "MainGUI", buf.toString());
@@ -707,7 +707,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       private String queryType = Constants.XPATH;
       private StopWatch stop = new StopWatch();
       /** Handle to login */
-      Authenticate authenticate = null;
+      I_Authenticate authenticate = null;
       /** The handle to access xmlBlaster */
       private I_XmlBlaster xmlBlasterImpl = null;
       /** The session id on successful authentication */
@@ -716,7 +716,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       /**
        * Login to xmlBlaster and get a sessionId.
        */
-      public GuiQuery(Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+      public GuiQuery(I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
       {
          this.xmlBlasterImpl = xmlBlasterImpl;
          this.authenticate = authenticate;
@@ -728,7 +728,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
          */
          SessionName subjectName = new SessionName(glob, "__sys__GuiQuery");
-         unsecureSessionInfo = authenticate.unsecureCreateSession(subjectName);
+         unsecureSessionInfo = this.authenticate.unsecureCreateSession(subjectName);
          log.info(ME, "login for '" + subjectName.getAbsoluteName() + "' successful.");
       }
 
@@ -752,7 +752,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
 
       /** Logout. */
       void logout() {
-         try { authenticate.disconnect(sessionId, null); } catch (XmlBlasterException e) { }
+         try { this.authenticate.disconnect(sessionId, null); } catch (XmlBlasterException e) { }
       }
    }
 
