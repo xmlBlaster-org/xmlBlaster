@@ -117,7 +117,7 @@ public:
          log_.info(ME, "the embedded server is switched ON (you could switch it off with '-embeddedServer false' on the command line)");
       }
       else {
-         log_.warn(ME, "the embedded server is switched OFF (you will need an external xmlBlaster running)");
+         log_.warn(ME, "the embedded server is switched OFF (you will need an external xmlBlaster running), sleeping for 2 sec now ...");
          Thread::sleep(2000);
      }
      if (useEmbeddedServer_) {
