@@ -3,7 +3,8 @@ Name:      BlasterCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
-Version:   $Id: BlasterCallbackImpl.java,v 1.7 1999/11/23 09:02:21 ruff Exp $
+           YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
+Version:   $Id: BlasterCallbackImpl_example.java,v 1.1 1999/11/30 11:19:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 
@@ -14,26 +15,10 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 
 /**
-<p>
-<ul>
-<li> <b>Java Class</b> org.xmlBlaster.BlasterCallbackImpl
-<li> <b>Source File</b> org/xmlBlaster/BlasterCallbackImpl.java
-<li> <b>IDL Source File</b> xmlBlaster.idl
-<li> <b>IDL Absolute Name</b> ::org::xmlBlaster::BlasterCallback
-<li> <b>Repository Identifier</b> IDL:org/xmlBlaster/BlasterCallback:1.0
-</ul>
-<b>IDL definition:</b>
-<pre>
-    #pragma prefix "org/xmlBlaster"
-    interface BlasterCallback {
-      void update(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::ContentType content
-      );
-    };
-</pre>
-</p>
-*/
+ * Client implementation of the callback
+ *
+ * YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
+ */
 //public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach
 public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approach
    final String ME;
@@ -58,6 +43,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
 
 
    /**
+    * This is the callback method invoked from the server
+    * informing the client in an asynchronous mode about new messages
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
