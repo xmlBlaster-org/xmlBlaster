@@ -32,8 +32,10 @@
      </p>
 
      <h2>Compilation with ant</h2>
-     <p>
-     </p>
+     <pre>
+build -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c
+expects xmlBlaster/src/c/util/queue/sqlite.h and xmlBlaster/lib/libsqlite.so
+     </pre>
 
      <h2>Compilation manually</h2>
      <p>
@@ -43,15 +45,9 @@
 cd xmlBlaster/src/c/util/queue
 
 Linux C:
- build c -> creates libxmlBlasterClientC.so
- 
- export LD_LIBRARY_PATH=/opt/sqlite-bin/lib:/home/xmlblast/xmlBlaster/lib
-
- gcc -g -Wall -DQUEUE_MAIN=1 -o SQLiteQueue SQLiteQueue.c
-     -DQUEUE_MAIN=1 -I../../ -I/opt/sqlite-bin/include
-     -L/opt/sqlite-bin/lib -lsqlite
-     -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClientC
-     -lpthread
+ export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
+ gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c
+     ../helper.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite
 
 Linux C++:
 
@@ -148,6 +144,19 @@ build reportShow
       be used by a different thread. But running multi threads on one connection
       instance is currently not synchronized, this design decision is pending.
       If you have such a case just add your own mutex to the function calls.</li>
+      <li> Improve BLOB performance and max BLOB size<br />
+      The message itself is serialized (see SOCKET protocol) and stored as a BLOB in
+      the database.
+      SQLite has limited BLOB support, the default max size is 1 MB which
+      can be extended to 16 MB.
+      Further, BLOB access is very slow, here is a statement from greg@ag-software.com:
+      <i>"Suppose you have a 1MB row in SQLite and you want to read the whole
+  thing.  SQLite must first ask for the 1st 1K page and wait for it to
+  be retrieved.  Then it asks for the 2nd 1K page and waits for it.
+  And so forth for all 1000+ pages.  If each page retrieval requires
+  1 rotation of the disk, that's about 8.5 seconds on a 7200RPM disk
+  drive."</i>
+      </li>
       </ul>
       </p>
 
@@ -163,7 +172,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
