@@ -7,6 +7,7 @@ Comment:   Send/receive messages over outStream and inStream.
 package org.xmlBlaster.protocol.socket;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.*;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
