@@ -1357,6 +1357,15 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
    }
 
    /**
+    * deletes the first numOfEntries of the queue until the limitEntry is reached.
+    * @param numOfEntries the maximum number of elements to retrieve
+    */
+   public long removeEntriesWithLimit(String tableName, StorageId storageId, I_Entry limitEntry, boolean inclusive)
+      throws XmlBlasterException, SQLException {
+      throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME + ".removeEntriesWithLimit", "");
+   }
+
+   /**
     * gets all the entries which have the dataid specified in the argument list.
     * If the list is empty or null, an empty ArrayList object is returned.
     */

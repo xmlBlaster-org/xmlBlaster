@@ -504,6 +504,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
 
    /**
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
+    * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
@@ -516,7 +517,20 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       }
    }
 
-
+   /**
+    * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
+    * @deprecated
+    */
+   public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
+      if (limitEntry == null) return 0L;
+      try {
+         return this.manager.removeEntriesWithLimit(this.associatedTable, getStorageId(), limitEntry, inclusive);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
+      }
+   }
 
    /**
     * Removes the first element in the queue

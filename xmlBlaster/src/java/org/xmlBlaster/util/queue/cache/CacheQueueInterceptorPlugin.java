@@ -108,7 +108,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
             if (limitEntry == null || limitEntry.isStored()) {
                isInclusive = false;
-               limitEntry = this.transientQueue.peek();
+               limitEntry = this.transientQueue.peek(); // get the first entry in the RAM queue as ref
                if (this.log.TRACE) {
                   if (limitEntry == null) this.log.trace(ME, "storageAvailable: the new reference entry is null");
                   else this.log.trace(ME, "storageAvailable: the new reference entry is '" + limitEntry.getUniqueId() + "'");
@@ -116,15 +116,20 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
             if (limitEntry == null) { // then ram queue was empty when it lost connection and is empty now
                isInclusive = false;
-               list = this.persistentQueue.peek(-1, -1L);
+//               list = this.persistentQueue.peek(-1, -1L);
+               this.persistentQueue.clear(); 
             }
-            else list = this.persistentQueue.peekWithLimitEntry(limitEntry);
+//            else list = this.persistentQueue.peekWithLimitEntry(limitEntry);
+
+            else this.persistentQueue.removeWithLimitEntry(limitEntry, isInclusive);
+/*
             if (this.log.TRACE) this.log.trace(ME, "storageAvailable: '" + list.size() + "' entries removed from persistence");
             this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
             if (isInclusive) {
                this.persistentQueue.take();
                if (this.log.TRACE) this.log.trace(ME, "storageAvailable: the limit was inclusive: removing one further entry from the persitent storage");
             }
+*/
          }
 
          // add all new persistent entries to the persistent storage ...
@@ -597,13 +602,26 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
    }
 
-
    /**
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
+    * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       synchronized(this.swappingPutMonitor) {
          return this.transientQueue.peekWithLimitEntry(limitEntry);
+      }
+   }
+
+
+   /**
+    * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
+    */
+   public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
+      synchronized(this.swappingPutMonitor) {
+         long ret = this.transientQueue.removeWithLimitEntry(limitEntry, inclusive);
+         if (this.persistentQueue != null && this.isConnected) 
+            ret = this.persistentQueue.removeWithLimitEntry(limitEntry, inclusive);
+         return ret;
       }
    }
 

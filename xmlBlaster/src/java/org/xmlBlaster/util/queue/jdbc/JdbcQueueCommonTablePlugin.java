@@ -499,6 +499,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
    /**
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
+    * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
@@ -508,6 +509,20 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
+      }
+   }
+
+   /**
+    * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
+    */
+   public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
+      if (limitEntry == null) return 0L;
+      try {
+         return this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
       }
    }
 

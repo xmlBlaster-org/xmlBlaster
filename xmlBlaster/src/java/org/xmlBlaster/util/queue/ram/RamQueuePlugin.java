@@ -27,6 +27,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -364,6 +365,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
    /**
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
+    * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (limitEntry == null) return new ArrayList();
@@ -372,7 +374,22 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       }
    }
 
-
+   /**
+    * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
+    */
+   public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
+      long ret = 0L;
+      if (limitEntry == null) return ret;
+      synchronized (this) {
+         SortedSet set = this.storage.headSet(limitEntry);
+         ret = (long)set.size();
+         this.storage.removeAll(set);
+         if (inclusive) {
+            if (this.storage.remove(limitEntry)) ret++;
+         }
+         return ret;
+      }
+   }
 
    /**
     * @see I_Queue#getNumOfEntries()
@@ -674,7 +691,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             I_QueueEntry entry = msgArr[i];
             if (!this.storage.contains(entry)) {
                if (this.storage.add(entry)) {
-   	          entry.setStored(true);
+                  entry.setStored(true);
                   this.sizeInBytes += entry.getSizeInBytes();
                   if (entry.isPersistent()) {
                      this.numOfPersistentEntries++;

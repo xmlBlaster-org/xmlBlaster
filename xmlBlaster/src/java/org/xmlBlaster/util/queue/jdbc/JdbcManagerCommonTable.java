@@ -1568,6 +1568,32 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+   /**
+    * deletes the first numOfEntries of the queue until the limitEntry is reached.
+    * @param numOfEntries the maximum number of elements to retrieve
+    */
+   public long removeEntriesWithLimit(StorageId storageId, String nodeId, I_Entry limitEntry, boolean inclusive)
+      throws XmlBlasterException, SQLException {
+      String queueName = storageId.getStrippedId();
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Entering");
+
+      if (!this.isConnected) {
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Currently not possible. No connection to the DB");
+         return 0L;
+      }
+
+      int limitPrio = limitEntry.getPriority();
+      long limitId = limitEntry.getUniqueId();
+
+      String req = null;
+      if (inclusive) 
+         req = "DELETE * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
+      else
+         req = "DELETE * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
+      return (long)update(req);
+   }
+
 
    /**
     * gets all the entries which have the dataid specified in the argument list.

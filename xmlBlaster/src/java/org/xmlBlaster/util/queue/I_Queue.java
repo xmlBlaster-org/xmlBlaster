@@ -259,8 +259,21 @@ public interface I_Queue extends I_StorageProblemNotifier
     *        returned. If entryLimit is null or no entries are higher than entryLimit,
     *        an empty list is returned.
     * Note: The limitEntry does not need to be in the queue.
+    * @deprecated you should use directly removeWithLimitEntry
     */
    ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException;
+
+   /**
+    * It removes the entries which are higher than the entry specified in the argument list.
+    * @param limitEntry the entry which limits the remove. Only entries of higher order, i.e.
+    *        entries having a higher priority, or same priority and lower uniqueId are
+    *        deleted. If entryLimit is null or no entries are higher than entryLimit,
+    *        an empty list is returned.
+    * @param inclusive if 'true', then also the entry specified will be removed (if it exists). If false
+    *        the remove is exclusive, i.e. the specified entry is left in the queue.
+    * Note: The limitEntry does not need to be in the queue.
+    */
+   long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException;
 
    /**
     * Removes the first element in the queue
