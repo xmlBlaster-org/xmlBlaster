@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.16 2002/02/25 17:04:36 ruff Exp $
+Version:   $Id: Parser.java,v 1.17 2002/03/13 19:46:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -462,6 +462,10 @@ public class Parser
 
       index++;
       version = in.read() - 48;
+
+      // !!!! TODO Performance:
+      // byte[] buf = new byte[msgLen];
+      // while ((len=read(buf, msgLen) != -1) ...
       
       requestId = toString(in);
       methodName = toString(in);
