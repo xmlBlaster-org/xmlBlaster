@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/03/16 08:46:26 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.3 2002/03/17 07:31:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -87,7 +87,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 
       try {
          Log.info(ME, "Connecting ...");
-         con = new XmlBlasterConnection();
+         con = new XmlBlasterConnection(args);
          ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
