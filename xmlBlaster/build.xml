@@ -367,8 +367,7 @@ TODO
       <echo message=""/>
       <echo message="   activex     --> Creates a Windows ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
       <echo message=""/>
-      <echo message="   runTests    --> starts xmlBlaster and runs all JUNIT tests"/>
-      <echo message="                   you need to compile xmlBlaster before with target 'all'"/>
+      <echo message="   runTests    --> compiles and starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
       <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
       <echo message="   runTestsAndReport --> does both of above"/>
@@ -990,7 +989,9 @@ TODO
    <!-- =================================================================== -->
    <!-- starts xmlBlaster and the junit tests                               -->
    <!-- =================================================================== -->
-   <target name="runTests" description="Start xmlBlaster (in blocking mode) and run Junit">
+   <target name="runTests" depends="clean,all,c,runTestsOnly" description="Start xmlBlaster (in blocking mode) and run Junit" />
+   <target name="runTestsOnly" description="Start xmlBlaster (in blocking mode) and run Junit">
+      <copy file="${lib.dir}/junit.jar" tofile="${lib.dir}/ant/junit.jar"/>
       <parallel>
          <antcall target="startXmlBlasterServer"/>  <!-- blocks -->
          <sequential>
