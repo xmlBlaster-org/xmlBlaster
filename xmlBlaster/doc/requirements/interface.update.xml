@@ -38,6 +38,11 @@
       </ul>
 
       <p>
+      As default messages are sent acknowledged, if a client chooses to receive
+      oneway messages it has to be configured with the connect QoS during login.
+      </p>
+
+      <p>
       We discuss here update() only as updateOneway() is just a subtype without return value.
       </p>
          
@@ -194,7 +199,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
