@@ -24,7 +24,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * </p>
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 

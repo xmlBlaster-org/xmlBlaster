@@ -75,7 +75,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * </pre>
  *
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 class Dll_Export Timeout {
@@ -191,7 +191,7 @@ class Dll_Export Timeout {
     * in a thread save way. 
     */
     Timestamp addOrRefreshTimeoutListener(I_Timeout *listener, 
-						  long delay, void *userData, Timestamp key);
+                                                  long delay, void *userData, Timestamp key);
    // throws XmlBlasterException
 
    /**

@@ -27,7 +27,7 @@ using namespace org::xmlBlaster::util;
  * This class corresponds to the CORBA serverIdl::MessageUnit struct
  * but uses standard STL only.
  * @since 0.79e
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
    
 /**

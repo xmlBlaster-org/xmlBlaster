@@ -33,7 +33,7 @@ Comment:   Basic xmlBlaster exception.
  *  {8} = embeddedMessage
  *  {9} = transactionInfo
  * </pre>
- * @author "Marcel Ruff" <ruff@swand.lake.de>
+ * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @author "Michele Laghi" <laghi@swissinfo.org>
  * @since 0.8+ with extended attributes
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>

@@ -13,7 +13,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * Abstract class you need to implement to receive timeout notifications
  * see the omonimous I_Timeout.java.
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 class I_Timeout {

@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.6 2002/12/05 21:33:40 laghi Exp $
+Version:   $Id: Timestamp.h,v 1.7 2002/12/18 12:15:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -36,7 +36,7 @@ namespace org { namespace xmlBlaster { namespace util {
  *   <li>a CPU can create more than 999999999 Timestamp instances per second</li>
  *   <li>In ~ 288 years when Long.MAX_VALUE = 9223372036854775807 overflows (current value is 1013338358124000008)</li>
  * </ul>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 

@@ -4,15 +4,15 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.cpp,v 1.3 2002/12/04 09:10:15 laghi Exp $
+Version:   $Id: ServerRef.cpp,v 1.4 2002/12/18 12:15:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.3 $
- * @author ruff@swand.lake.de
+ * @version $Revision: 1.4 $
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 

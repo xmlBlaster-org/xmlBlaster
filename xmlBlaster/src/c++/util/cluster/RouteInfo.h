@@ -19,7 +19,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
 /**
  * This class holds the information about a route node which the message passed. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 class Dll_Export RouteInfo

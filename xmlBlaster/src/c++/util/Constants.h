@@ -46,7 +46,7 @@ namespace org { namespace xmlBlaster {
     * <pre>
     *  xmlblaster      3412/tcp   xmlBlaster
     *  xmlblaster      3412/udp   xmlBlaster
-    *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
+    *  #                          Marcel Ruff <xmlBlaster@marcelruff.info> February 2002
     * </pre>
     */
    enum {

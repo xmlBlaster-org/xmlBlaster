@@ -8,7 +8,7 @@ Comment:   Holds the unique name of a cluster node
 
 /**
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @author laghi@swissinfo.org 
  * @since 0.79e
  * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html

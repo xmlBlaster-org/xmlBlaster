@@ -27,7 +27,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Not that DeliveryConnection can't recover from DEAD state
  * you need to create a new instance if desired
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 

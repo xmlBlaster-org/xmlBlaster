@@ -18,7 +18,7 @@ Comment:   Interface for clients, used by xmlBlaster to send messages back
  * with your own lowlevel SOCKET or CORBA coding as well.
  *
  * @see org.xmlBlaster.client.protocol.I_XmlBlasterConnection
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 
