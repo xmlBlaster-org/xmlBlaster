@@ -279,8 +279,11 @@ public class DbWatcher implements I_ChangeListener {
                          if (log.isLoggable(Level.FINE)) log.fine("Processing " + groupColName + "=" +
                             groupColValue + " has changed to '" +
                             newGroupColValue + "'");
-                         if (dataConverter != null) dataConverter.done();
-                         String resultXml = bout.toString();
+                         String resultXml = "";
+                         if (dataConverter != null) {
+                            dataConverter.done();
+                            resultXml = bout.toString();
+                         }
                          hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
                          changeCount++;
                          bout = null;
