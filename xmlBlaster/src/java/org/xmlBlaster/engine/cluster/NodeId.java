@@ -26,12 +26,26 @@ public final class NodeId implements Comparable, java.io.Serializable
       return id;
    }
 
+   /**
+    * @param id The cluster node id, e.g. "heron".<br />
+    * If you pass "/node/heron/client/joe" everything ins stripped to get "heron"
+    */
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
          org.xmlBlaster.util.Global.instance().getLog("cluster").error(ME, "Cluster node has no name");
          id = "NoNameNode";
       }
       this.id = id;
+      if (this.id.startsWith("/node/"))
+         this.id = this.id.substring("/node/".length()); // strip leading "/node/"
+
+      int index = this.id.indexOf("/");   // strip tailing tokens, e.g. from "heron/client/joe" make a "heron"
+      if (index == 0) {
+         throw new IllegalArgumentException(ME+": The given cluster node ID '" + id + "' may not start with a '/'");
+      }
+      if (index > 0) {
+         this.id = this.id.substring(0, index);
+      }
    }
 
    public final String toString() {
