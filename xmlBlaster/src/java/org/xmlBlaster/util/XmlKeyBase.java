@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.10 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.11 1999/11/22 22:43:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -29,7 +29,40 @@ import org.w3c.dom.Attr;
  *    </key>
  * </pre>
  *
- * where oid is a unique key
+ * where oid is a unique key.
+ * <p>
+ * A typical <b>publish()</b> would look like:
+ * <pre>
+ *    <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    <key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'>
+ *    </key>
+ * </pre>
+ * <br>
+ * or
+ * <br>
+ * <pre>
+ *    <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    <key oid='' contentMime='text/xml'>
+ *       <AGENT id='192.168.124.10' subId='1' type='generic'>
+ *          <DRIVER id='FileProof' pollingFreq='10'>
+ *          </DRIVER>
+ *       </AGENT>
+ *    </key>
+ * </pre>
+ * A typical <b>subscribe()</b> would look like:
+ * <pre>
+ *    <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    <key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'>
+ *    </key>
+ * </pre>
+ * <br>
+ * or
+ * <pre>
+ *    <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    <key oid='' queryType='XPATH'>
+ *       //DRIVER[@id='FileProof']
+ *    </key>
+ * </pre>
  *
  */
 public class XmlKeyBase
