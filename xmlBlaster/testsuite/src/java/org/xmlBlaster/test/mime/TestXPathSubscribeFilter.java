@@ -3,7 +3,7 @@ Name:      TestXPathSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Test XPath filter.
-Version:   $Id: TestXPathSubscribeFilter.java,v 1.1 2002/09/27 07:35:37 antman Exp $
+Version:   $Id: TestXPathSubscribeFilter.java,v 1.2 2002/09/30 10:04:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -36,12 +36,12 @@ import java.util.HashMap;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.mime.TestSubscribeFilter
- *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.mime.TestSubscribeFilter
+ *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.mime.TestXPathSubscribeFilter
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.mime.TestXPathSubscribeFilter
  * </pre>
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 {
@@ -63,7 +63,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    String subscribeOid2;
    String subscribeOid3;
    /**
-    * Constructs the TestSubscribeFilter object.
+    * Constructs the TestXPathSubscribeFilter object.
     * <p />
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
@@ -200,7 +200,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
-      waitOnUpdate(subscribeOid,4000L, 1); // message should come back as it is only 10 bytes
+      waitOnUpdate(subscribeOid,4000L, 1);
 
 
       log.info(ME, "TEST 2: Testing culture message");
@@ -288,8 +288,8 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    /**
     * Invoke: 
     * <pre>
-    *   java org.xmlBlaster.test.mime.TestSubscribeFilter
-    *   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.mime.TestSubscribeFilter
+    *   java org.xmlBlaster.test.mime.TestXPathSubscribeFilter
+    *   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.mime.TestXPathSubscribeFilter
     * <pre>
     */
    public static void main(String args[])
@@ -299,9 +299,10 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          System.err.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestSubscribeFilter testSub = new TestSubscribeFilter(glob, "TestSubscribeFilter", "Tim");
+      TestXPathSubscribeFilter testSub = new TestXPathSubscribeFilter(glob, "TestXPathSubscribeFilter", "Tim");
       testSub.setUp();
       testSub.testFilter();
+      testSub.tearDown();
    }
 }
 
