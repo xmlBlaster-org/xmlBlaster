@@ -12,13 +12,13 @@ import org.jutils.runtime.Memory;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.applet.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -27,8 +27,13 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.Vector;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -124,7 +129,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          String str = "Please call servlet with some ActionType";
          log.error(ME, str);
          XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
-         writeResponse(res, "exception", x.getMessage());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, x.getMessage());
          return;
       }
 
@@ -145,12 +150,12 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       if (sessionId == null) {
          String str = "Sorry, your sessionId is invalid";
          XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
-         writeResponse(res, "exception", str);
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, str);
          return;
       }
 
       try {
-         if (actionType.equals(MethodName.CONNECT.toString())) {
+         if (actionType.equals(I_XmlBlasterAccessRaw.CONNECT_NAME)) {
             // Here we NEVER return to hold the persistent http connection for callbacks to the applet
             String qos = getParameter(req, "xmlBlaster.connectQos", (String)null);
             if (qos == null || qos.length() < 1)
@@ -207,7 +212,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
             while (!pushHandler.isClosed()) {
                try {
-                  Thread.currentThread().sleep(10000L);
+                  Thread.sleep(10000L);
                }
                catch (InterruptedException i) {
                   log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
@@ -224,7 +229,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             writeResponse(res, "dummyToCreateASessionId", "OK-"+System.currentTimeMillis());
             return;
          }
-         else if (actionType.equals("pong")) {
+         else if (actionType.equals(I_XmlBlasterAccessRaw.PONG_NAME)){
             //------------------ answer of a ping -----------------------------------------------
             // The PushHandler adds 'ping' which
             // pings the applet to hold the http connection.
@@ -234,7 +239,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                PushHandler pushHandler = getPushHandler(req);
                pushHandler.pong();
                if (log.TRACE) log.trace(ME, "Received pong");
-               writeResponse(res, "pong", "OK-"+System.currentTimeMillis());
+               writeResponse(res, I_XmlBlasterAccessRaw.PONG_NAME, "OK-"+System.currentTimeMillis());
                return;
             }
             catch (XmlBlasterException e) {
@@ -242,22 +247,22 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                return;
             }
          }
-         else if (MethodName.PUBLISH.toString().equalsIgnoreCase(actionType)) { // "publish"
+         else if (I_XmlBlasterAccessRaw.PUBLISH_NAME.equalsIgnoreCase(actionType)) { // "publish"
             doPost(req, res);
          }
-         else if (MethodName.SUBSCRIBE.toString().equalsIgnoreCase(actionType)) { // "subscribe"
+         else if (I_XmlBlasterAccessRaw.SUBSCRIBE_NAME.equalsIgnoreCase(actionType)) { // "subscribe"
             doPost(req, res);
          }
-         else if (MethodName.UNSUBSCRIBE.toString().equalsIgnoreCase(actionType)) { // "unSubscribe"
+         else if (I_XmlBlasterAccessRaw.UNSUBSCRIBE_NAME.equalsIgnoreCase(actionType)) { // "unSubscribe"
             doPost(req, res);
          }
-         else if (MethodName.GET.toString().equalsIgnoreCase(actionType)) { // "get"
+         else if (I_XmlBlasterAccessRaw.GET_NAME.equalsIgnoreCase(actionType)) { // "get"
             doPost(req, res);
          }
-         else if (MethodName.ERASE.toString().equalsIgnoreCase(actionType)) { // "erase"
+         else if (I_XmlBlasterAccessRaw.ERASE_NAME.equalsIgnoreCase(actionType)) { // "erase"
             doPost(req, res);
          }
-         else if (actionType.equals(MethodName.DISCONNECT.toString())) {
+         else if (actionType.equals(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) {
             log.info(ME, "Logout arrived ...");
             try {
                PushHandler pc = getPushHandler(req);
@@ -265,7 +270,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             } catch(XmlBlasterException e) {
                log.error(ME, e.toString());
             }
-            writeResponse(res, MethodName.DISCONNECT.toString(), "<qos/>");
+            writeResponse(res, I_XmlBlasterAccessRaw.DISCONNECT_NAME, "<qos/>");
          }
          else {
             String text = "Unknown ActionType '" + actionType + "', request for permanent http connection ignored";
@@ -273,11 +278,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          }
       } catch (XmlBlasterException e) {
          log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
-         writeResponse(res, "exception", e.getMessage());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
       } catch (Exception e) {
          log.error(ME, "Caught Exception: " + e.toString());
          e.printStackTrace();
-         writeResponse(res, "exception", e.toString());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.toString());
       }
    }
 
@@ -305,7 +310,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
       String actionType = getParameter(req, "ActionType", "NONE");
       System.err.println("Received actionType=" + actionType);
-      if (actionType.equalsIgnoreCase(MethodName.CONNECT.toString()) || actionType.equalsIgnoreCase(MethodName.DISCONNECT.toString())) { // "connect", "disconnect"
+      if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) { // "connect", "disconnect"
          doGet(req, res);
          return;
       }
@@ -329,19 +334,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
       catch (XmlBlasterException e) {
          log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
-         writeResponse(res, "exception", e.getMessage());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
          return;
       }
 
       try {
-         MethodName action;
-         try {
-            action = MethodName.toMethodName(actionType);
-         }
-         catch (IllegalArgumentException ie) {
-            throw new Exception("Unknown or missing 'ActionType=" + actionType + "' please choose 'subscribe' 'unSubscribe' 'erase' etc.");
-         }
-
          // Extract the message data
          String oid = getParameter(req, "key.oid", (String)null);
          if (oid != null) oid = Global.decode(oid, ENCODING);
@@ -369,7 +366,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             qos = ""; 
          if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
 
-         if (action.equals(MethodName.SUBSCRIBE)) { // "subscribe"
+         if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
             if (log.TRACE) log.trace(ME, "subscribe arrived ...");
             
             if (oid != null) {
@@ -390,7 +387,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             }
          }
 
-         else if (action.equals(MethodName.UNSUBSCRIBE)) { // "unSubscribe"
+         else if (actionType.equals(I_XmlBlasterAccessRaw.UNSUBSCRIBE_NAME)) { // "unSubscribe"
             if (log.TRACE) log.trace(ME, "unSubscribe arrived ...");
             UnSubscribeReturnQos[] ret;
 
@@ -406,18 +403,18 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                log.warn(ME, str);
                throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
             }
-            ArrayList arr = new ArrayList();
+            Vector arr = new Vector();
             for (int ii=0; ii<ret.length; ii++) {
                arr.add(ret[ii].getData().toJXPath());
                if (log.TRACE) log.trace(ME, "UnSubscribed " + ret[ii].getSubscriptionId());
             }
-            returnObject = (Map[])arr.toArray(new Map[arr.size()]);
+            returnObject = (Hashtable[])arr.toArray(new Hashtable[arr.size()]);
          }
 
-         else if (action.equals(MethodName.GET)) { // "get"
+         else if (actionType.equals(I_XmlBlasterAccessRaw.GET_NAME)) { // "get"
             if (log.TRACE) log.trace(ME, "get arrived ...");
             MsgUnit[] msgUnitArr = xmlBlaster.get(key, qos);
-            ArrayList list = new ArrayList(msgUnitArr.length*3);
+            Vector list = new Vector(msgUnitArr.length*3);
             for (int i=0; i<msgUnitArr.length; i++) {
                list.add(((MsgQosData)msgUnitArr[i].getQosData()).toJXPath());
                list.add(((MsgKeyData)msgUnitArr[i].getKeyData()).toJXPath());
@@ -426,13 +423,13 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             returnObject = list;
          }
 
-         else if (action.equals(MethodName.PUBLISH)) { // "publish"
+         else if (actionType.equals(I_XmlBlasterAccessRaw.PUBLISH_NAME)) { // "publish"
             if (log.TRACE) log.trace(ME, "publish arrived ...");
             if (key == null) {
                String str = "Please call servlet with some key when publishing";
                log.warn(ME, str);
                XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_ILLEGALARGUMENT, ME, str);
-               writeResponse(res, "exception", x.getMessage());
+               writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, x.getMessage());
                return;
             }
             if (log.TRACE) log.trace(ME, "Publishing '" + key + "'");
@@ -446,7 +443,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             }
          }
 
-         else if (action.equals(MethodName.ERASE)) { // "erase"
+         else if (actionType.equals(I_XmlBlasterAccessRaw.ERASE_NAME)) { // "erase"
             if (log.TRACE) log.trace(ME, "erase arrived ...");
             EraseReturnQos[] ret;
 
@@ -462,12 +459,12 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                log.warn(ME, str);
                throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
             }
-            ArrayList arr = new ArrayList();
+            Vector arr = new Vector();
             for (int ii=0; ii<ret.length; ii++) {
                arr.add(ret[ii].getData().toJXPath());
                if (log.TRACE) log.trace(ME, "Erased " + ret[ii].getKeyOid());
             }
-            returnObject = (Map[])arr.toArray(new Map[arr.size()]);
+            returnObject = (Hashtable[])arr.toArray(new Hashtable[arr.size()]);
          }
 
          else {
@@ -476,13 +473,13 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
          }
 
-         writeResponse(res, action.toString(), returnObject);
+         writeResponse(res, actionType, returnObject);
       } catch (XmlBlasterException e) {
          log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
-         writeResponse(res, "exception", e.getMessage());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
       } catch (Exception e) {
          log.error(ME, "Exception: " + e.toString());
-         writeResponse(res, "exception", XmlBlasterException.convert(this.initialGlobal, ME, "", e).getMessage());
+         writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, XmlBlasterException.convert(this.initialGlobal, ME, "", e).getMessage());
       }
    }
 
@@ -543,7 +540,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    private void writeResponse(HttpServletResponse res, String actionType, Object obj) throws IOException {
       //this.initialGlobal.getLog("servlet").trace("AppletServlet", "writeResponse actionType=" + actionType + " obj=" + obj.getClass().getName());
       ByteArrayOutputStream dump = new ByteArrayOutputStream(1024);
-      ObjectOutputStream objectOut = new ObjectOutputStream(dump);
+      ObjectOutputStreamMicro objectOut = new ObjectOutputStreamMicro(dump);
       objectOut.writeObject(actionType); // "subscribe" etc.
       if (obj != null) {
          objectOut.writeObject(obj);

@@ -7,31 +7,27 @@ Comment:   Handling callback over http
 package org.xmlBlaster.protocol.http.appletproxy;
 
 import org.jutils.log.LogChannel;
-import org.jutils.io.FileUtil;
-import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.applet.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.UpdateQos;
 
-import java.rmi.RemoteException;
-import java.io.*;
-import java.util.*;
-import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.io.ObjectInputStream;
-import java.io.FileInputStream;
-import java.io.ObjectOutputStream;
-import java.io.FileOutputStream;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+//import java.io.ObjectOutputStream;
+import java.util.Hashtable;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -193,7 +189,7 @@ public class PushHandler implements I_Callback, I_Timeout
       try {
          this.closed = true;
          stopPing();
-         this.outMulti.close();
+         if (this.outMulti != null) this.outMulti.close();
          log.info(ME, "Closed push connection to applet");
       }
       catch(Exception e) {
@@ -276,15 +272,15 @@ public class PushHandler implements I_Callback, I_Timeout
          }
 
          ByteArrayOutputStream dump = new ByteArrayOutputStream(1024);
-         ObjectOutputStream out = new ObjectOutputStream(dump);
+         ObjectOutputStreamMicro out = new ObjectOutputStreamMicro(dump);
 
-         out.writeObject(MethodName.UPDATE.toString()); // "update"
+         out.writeObject(I_XmlBlasterAccessRaw.UPDATE_NAME.toString()); // "update"
          out.writeObject(sessionId);
 
-         Map qosMap = updateQos.getData().toJXPath();
+         Hashtable qosMap = updateQos.getData().toJXPath();
          out.writeObject(qosMap);
 
-         Map keyMap = updateKey.getData().toJXPath();
+         Hashtable keyMap = updateKey.getData().toJXPath();
          out.writeObject(keyMap);
 
          out.writeObject(new String(Base64.encodeBase64(content, isChunked)));
@@ -309,9 +305,9 @@ public class PushHandler implements I_Callback, I_Timeout
    public void ping(String state) throws XmlBlasterException {
       try {
          ByteArrayOutputStream dump = new ByteArrayOutputStream(1024);
-         ObjectOutputStream out = new ObjectOutputStream(dump);
+         ObjectOutputStreamMicro out = new ObjectOutputStreamMicro(dump);
 
-         out.writeObject(MethodName.PING.toString()); // "ping"
+         out.writeObject(I_XmlBlasterAccessRaw.PING_NAME); // "ping"
          out.writeObject("<qos id='"+state+"'/>");
 
          pushToApplet(dump.toByteArray());
