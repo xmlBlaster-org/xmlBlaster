@@ -6,6 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.authentication.SubjectInfo;
 
@@ -25,6 +28,7 @@ public class SubjectEntryShuffler implements Runnable {
    private LogChannel log;
    
    private Channel channel;
+   private Set set;
    
    /**
     * The constructor starts the thread as a daemon and waits for
@@ -35,6 +39,7 @@ public class SubjectEntryShuffler implements Runnable {
       this.log = this.global.getLog("core");
       if (this.log.CALL) this.log.call(ME, "constructor");
       this.channel = new LinkedQueue();
+      this.set = new HashSet();
       Thread thread = new Thread(this, "XmlBlaster."+ME);
       thread.setDaemon(true);
       thread.start(); 
@@ -48,8 +53,11 @@ public class SubjectEntryShuffler implements Runnable {
    public void shuffle(SubjectInfo info) {
       if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "'");
       try {
-         
-         this.channel.put(info);
+         synchronized(this.set) {
+            if (this.set.contains(info)) return;
+            this.set.add(info);
+            this.channel.put(info);
+         }
          if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "' put has returned");
       }
       catch (InterruptedException ex) {
@@ -70,6 +78,10 @@ public class SubjectEntryShuffler implements Runnable {
       while (true) {
          try {
             SubjectInfo info = (SubjectInfo)this.channel.take();
+            synchronized(this.set) {
+               this.set.remove(info);
+            }
+
             if (this.log.TRACE) this.log.trace(ME, "run: shuffling for subject '" + info.getId() + "' starts");
             info.forwardToSessionQueue();
             if (this.log.TRACE) this.log.trace(ME, "run: shuffling for subject '" + info.getId() + "' completed");
