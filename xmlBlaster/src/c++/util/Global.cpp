@@ -38,8 +38,8 @@ Version:   $Id$
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
-// #if __GNUC__ == 2 || defined(__sun)
-#if __GNUC__ == 2
+#if __GNUC__ == 2 || defined(__sun)
+//#if __GNUC__ == 2
   // Problems with g++ 2.95.3 and template<>
 #else
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */

@@ -27,7 +27,6 @@ namespace org { namespace xmlBlaster { namespace util {
 # define DISABLE_WIDE_CHAR_SUPPORT
 #endif
 
-//#if __GNUC__ == 2 || __sun__
 #if __GNUC__ == 2
    // Marcel 2004-04-01:
    // Is buggy for lexical_cast<string>(string("")): empty strings throw a bad_lexical_cast
@@ -242,8 +241,8 @@ namespace org { namespace xmlBlaster { namespace util {
     }
 #endif
 
-//#if __GNUC__ == 2 || defined(__sun)
-#if __GNUC__ == 2
+#if __GNUC__ == 2 || defined(__sun)
+//#if __GNUC__ == 2
   // Problems with g++ 2.95.3 and template<>
 #else
    /**
