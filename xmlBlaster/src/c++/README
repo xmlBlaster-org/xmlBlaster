@@ -11,11 +11,11 @@ The C++ source code is compiled to a shared library
 (the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
 Tested with mico 2.3.6 and 2.3.7 (cvs from 2002-04-01)
-and xerces 1.6 and 1.7 on Linux.
-Thread support by boost 1.27.0.
+and xerces 1.6, 1.7 and 2.0 on Linux.
+Added some boost headers (http://www.boost.org) from cvs 2002-Aug-21
 
-NOTE (2002-04-25): 
- Compiling with the new g++ 3.0.4 on Linux is fine, but
+NOTE (2002-08-21): 
+ Compiling with the new g++ 3.0.4 and 3.1.1 on Linux is fine, but
  linking fails with unresolved mico externals.
  The problem is not tracked down.
  Better stay with g++ 2.9.x for the moment (if you
