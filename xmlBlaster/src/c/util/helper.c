@@ -642,7 +642,7 @@ Dll_Export const char* int64ToStr(char * const buf, int64_t val)
    if (buf == 0) return 0;
    *buf = 0;
    /* SNPRINTF(buf, INT64_STRLEN_MAX, "%lld", val);  The normal sprintf should be safe enough */
-   sprintf(buf, "%lld", val);  /* Returns number of written chars */
+   sprintf(buf, PRINTF_PREFIX_INT64_T, val);  /* Returns number of written chars */
    return buf;
 }
 
@@ -658,7 +658,8 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
 {
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
-   return (sscanf(str, "%lld", val) == 1) ? true : false;
+	/* %lld on UNIX, %I64d on Windows */
+   return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 }
 
 /**

@@ -45,13 +45,18 @@ Note:      The gcc and icc (>=8) both define __GNUC__
   typedef long long int64_t;
   typedef int int32_t;
   typedef short int16_t;
+# define PRINTF_PREFIX_INT64_T "%lld"
+
 #elif defined(_WINDOWS)
   typedef __int64 int64_t;
+# define PRINTF_PREFIX_INT64_T "%I64d"
   /*typedef long long int64_t;*/
   typedef __int32 int32_t;
   typedef __int16 int16_t;
 #else
+
 # include<stdint.h>  /*-> C99:  uint64_t etc. */
+# define PRINTF_PREFIX_INT64_T "%lld"
 #endif
 /*#define INT64_DIGITLEN_MAX 19  Size of a max int64_t dumped to a string: LLONG_MAX from limits.h 9223372036854775807 */
 #define INT64_STRLEN_MAX 22 /** Size of a max int64_t dumped to a string including an optional LL and termination '\0': LLONG_MAX from limits.h 9223372036854775807LL */

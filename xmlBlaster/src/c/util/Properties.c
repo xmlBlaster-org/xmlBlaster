@@ -152,7 +152,11 @@ int main(int argc, char** argv)
    printf("isDurable=%d\n", props->getBool(props, "isDurable", true));
    printf("numTests=%d\n", props->getInt(props, "numTests", -1));
    printf("timeout=%ld\n", props->getLong(props, "timeout", -1l));
+#  if defined(_WINDOWS)
+   printf("timeout=%I64d\n", props->getInt64(props, "lonLong", -1LL));
+#  else
    printf("timeout=%lld\n", props->getInt64(props, "lonLong", -1LL));
+#  endif
    freeProperties(props);
    return 0;
 }
