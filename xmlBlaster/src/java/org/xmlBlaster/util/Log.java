@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.45 2000/05/22 15:12:22 ruff Exp $
+Version:   $Id: Log.java,v 1.46 2000/06/03 12:25:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -17,6 +17,33 @@ import java.util.Locale;
  * Note that the layout of this class is for optimum performance and ease of use.<br />
  * To increase performance of xmlBlaster you may choose to add final qualifiers<br />
  * to CALLS/TIME/TRACE/DUMP variables to achieve dead code elimination (see code below).
+ * <p />
+ * To initialize the logging, include this call into your main(String[] args)
+ * method at startup:
+ * <pre>
+ *     Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+ * </pre>
+ * You can then invoke for example trace mode like:
+ * <pre>
+ * java MyApp -trace true
+ * </pre>
+ * <p />
+ * If you want to redirect the logging into your application to handle it by yourself:
+ * <pre>
+ *   public class MyApp implements org.xmlBlaster.util.LogListener {
+ *      ...
+ *      void MyApp() {
+ *         Log.addLogListener(this);
+ *         ...
+ *      }
+ *      ...
+ *      // Event fired by Log.java through interface LogListener.
+ *      public void log(String str) {
+ *         System.out.println(str + "\n");
+ *      }
+ *      ...
+ *   }
+ * </pre>
  */
 public class Log
 {
