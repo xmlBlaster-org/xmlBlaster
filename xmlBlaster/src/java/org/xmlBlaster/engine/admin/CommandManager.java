@@ -42,10 +42,6 @@ public final class CommandManager
    // external gateways:
    private TelnetGateway telnetGateway = null;
 
-   // internal gateways:
-   private org.xmlBlaster.engine.admin.intern.PropertyHandler propertyHandler = null;
-
-
    /**
     * You need to call postInit() after all drivers are loaded.
     *
@@ -64,10 +60,19 @@ public final class CommandManager
       log.info(ME, "Administration manager is ready");
    }
 
+   /**
+    * Create internal gateways. 
+    */
    private void initializeInternal() {
       // TODO: Change to use plugin framework:
-      propertyHandler = new org.xmlBlaster.engine.admin.intern.PropertyHandler();
+
+      org.xmlBlaster.engine.admin.intern.PropertyHandler propertyHandler = 
+                             new org.xmlBlaster.engine.admin.intern.PropertyHandler();
       propertyHandler.initialize(glob, this); // This will call register()
+
+      org.xmlBlaster.engine.admin.intern.CoreHandler coreHandler = 
+                             new org.xmlBlaster.engine.admin.intern.CoreHandler();
+      coreHandler.initialize(glob, this); // This will call register()
    }
 
    private void initializeExternal() {
@@ -97,6 +102,7 @@ public final class CommandManager
          throw new IllegalArgumentException(ME + ": Please pass a valid key and handler");
       }
       handlerMap.put(key, handler);
+      if (log.TRACE) log.trace(ME, "Registered '" + key + "' for handler=" + handler.getClass());
    } 
 
    /**
@@ -112,9 +118,9 @@ public final class CommandManager
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
          }
-         Object obj = handlerMap.get(w.getThirdLevel());
+         Object obj = handlerMap.get(key);
          if (obj == null) {
-            throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler");
+            throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
          String ret = handler.get(w);
@@ -147,9 +153,17 @@ public final class CommandManager
          telnetGateway = null; 
       }
 
-      if (propertyHandler != null) {
-         propertyHandler.shutdown();
-         propertyHandler = null;
+      if (handlerMap != null && handlerMap.size() > 0) {
+         while (true) {
+            Iterator it = handlerMap.keySet().iterator();
+            if (!it.hasNext())
+               break;
+            String key = (String)it.next();
+            I_CommandHandler cmd = (I_CommandHandler)handlerMap.get(key);
+            cmd.shutdown();         // The shutdown should deregister so this iterator is invalid
+            handlerMap.remove(key); // To be shure we kill again
+            // If a handler has registered multiple times, it should be able to handle multiple shutdowns
+         }
       }
    }
 
