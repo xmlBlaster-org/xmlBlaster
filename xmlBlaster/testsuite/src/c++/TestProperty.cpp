@@ -14,6 +14,22 @@ using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace test {
 
+static int dosetenv(const char *key, const char *value);
+
+/**
+ * @return 0 on success
+ */
+static int dosetenv(const char *key, const char *value)
+{
+#  ifdef _WINDOWS
+      string str = string(key) + "=" + value;
+      return _putenv(str.c_str());
+#  else
+      return setenv(key, value, 1); // for UNIX
+#  endif
+}
+
+
 /**
  * Tests the property class. 
  */
@@ -62,11 +78,11 @@ public:
          const char *HOMEPATH = getenv("HOMEPATH");
          const char *USER = getenv("USER");
 
-         assertEquals(log_, me, 0, setenv("HOME", "D:/BLA", 1), "setenv"); // for UNIX
-         assertEquals(log_, me, 0, setenv("HOMEDRIVE", "D:", 1), "setenv"); // for Windows
-         assertEquals(log_, me, 0, setenv("HOMEPATH", "/BLA", 1), "setenv"); // for Windows
+         assertEquals(log_, me, 0, dosetenv("HOME", "D:/BLA"), "setenv"); // for UNIX
+         assertEquals(log_, me, 0, dosetenv("HOMEDRIVE", "D:"), "setenv"); // for Windows
+         assertEquals(log_, me, 0, dosetenv("HOMEPATH", "/BLA"), "setenv"); // for Windows
 
-         assertEquals(log_, me, 0, setenv("USER", "OIOI", 1), "setenv");
+         assertEquals(log_, me, 0, dosetenv("USER", "OIOI"), "setenv");
          
          Property prop;
          std::cout << "Property.testDefault()" << prop.toXml() << std::endl;
@@ -74,10 +90,10 @@ public:
          assertEquals(log_, me, "OIOI", prop.get("user.name", ""), "user.name check");
 
          // restore env
-         if (HOME) setenv("HOME", HOME, 1);
-         if (HOMEDRIVE) setenv("HOMEDRIVE", HOMEDRIVE, 1);
-         if (HOMEPATH) setenv("HOMEPATH", HOMEPATH, 1);
-         if (USER) setenv("USER", USER, 1);
+         if (HOME) dosetenv("HOME", HOME);
+         if (HOMEDRIVE) dosetenv("HOMEDRIVE", HOMEDRIVE);
+         if (HOMEPATH) dosetenv("HOMEPATH", HOMEPATH);
+         if (USER) dosetenv("USER", USER);
       }
    }
 
