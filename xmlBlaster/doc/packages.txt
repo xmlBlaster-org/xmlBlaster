@@ -1,6 +1,6 @@
 The Java package structure for xmlBlaster
 =========================================
-Version:   $Id: packages.txt,v 1.7 2000/09/03 17:33:46 kron Exp $
+Version:   $Id: packages.txt,v 1.8 2000/09/03 18:12:26 kron Exp $
 
 - The 'engine' section is the implementation of xmlBlaster
 
@@ -12,7 +12,7 @@ Version:   $Id: packages.txt,v 1.7 2000/09/03 17:33:46 kron Exp $
   - The 'persistence' section is the persistence of the xmlBlaster.
     I_PersistenceDriver is the interface for any persistence implementations.
 
-    * The 'mudbi' section is a transparent Layer for the engine. Message
+    * The 'mudb' section is a transparent Layer for the engine. Message
       Units and QoS are stored in a file-database if the QoS-Tag "isDurable"
       is set. MessageUnits and QoS perform a PMessageUnit which is
       cached in the Memory and mapped on the disk with COPY-BACK-Caching.
