@@ -29,6 +29,7 @@ private:
    Global& global_;
    I_Log&  log_;
    int     count_;
+	int     max_;
 public:
    TestTimeout(Global& global, string name) 
       : ME(name), 
@@ -36,6 +37,7 @@ public:
         log_(global.getLog("test")) 
    {
       count_ = 0;
+		max_ = 10;
    }
 
    virtual ~TestTimeout()
@@ -44,10 +46,10 @@ public:
    }
 
    void timeout(void *userData) {
-      log_.info(ME, "this is the timeout for the test");
+      log_.info(ME, "this is the timeout for the test count_=" + lexical_cast<string>(count_));
       if (userData == NULL) return;
       Timeout *to = static_cast<Timeout*>(userData);
-      if (count_ < 10) {
+      if (count_ < max_) {
          to->addTimeoutListener(this, 1000, to);
          log_.info(ME, "next timeout will occur in about 1 s");
          count_++;
@@ -63,7 +65,7 @@ public:
       // waiting some time ... (you can't use join because the timeout thread
       // never stops ...
       log_.info(ME, "main thread is sleeping now");
-      Thread::sleepSecs(12);
+      Thread::sleepSecs(max_+6);
       log_.info(ME, "after waiting to complete");
    }
 
@@ -71,7 +73,7 @@ public:
    {
       log_.info(ME, "testLifecycle(): the timeout will now be triggered");
       Timeout* timeout = new Timeout(global_);
-      timeoutObject->addTimeoutListener(this, 10000, timeout);
+      timeout->addTimeoutListener(this, 10000, timeout);
       log_.info(ME, "testLifecycle: timeout triggered. Now destroying it again");
       timeout->shutdown();
       delete timeout;
