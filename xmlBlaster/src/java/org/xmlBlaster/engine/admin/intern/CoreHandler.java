@@ -259,24 +259,95 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       }
    }
 
+   private Object[] convertMethodArguments(Class[] classes, String[] args) 
+      throws XmlBlasterException {
+      if (classes.length != args.length) {
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong number of arguments: '" + args.length + "' but should be '" + classes.length + "'");
+      }
+      Object[] ret = new Object[classes.length];
+      for (int i=0; i < classes.length; i++) {
+
+         if (classes[i] == String.class) ret[i] = args[i];
+
+         else if (classes[i] == Boolean.TYPE || classes[i] == Boolean.class) {
+            try {
+               ret[i] = Boolean.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+         
+         else if (classes[i] == Short.TYPE || classes[i] == Short.class) {
+            try {
+               ret[i] = Short.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+         
+         else if (classes[i] == Integer.TYPE || classes[i] == Integer.class) {
+            try {
+               ret[i] = Integer.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+         
+         else if (classes[i] == Long.TYPE || classes[i] == Long.class) {
+            try {
+               ret[i] = Long.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+         
+         else if (classes[i] == Float.TYPE || classes[i] == Float.class) {
+            try {
+               ret[i] = Float.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+         
+         else if (classes[i] == Double.TYPE || classes[i] == Double.class) {
+            try {
+               ret[i] = Double.valueOf(args[i]);  
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong type of argument nr. '" + (i+1) + "' should be of type '" + classes[i].getName() + "' but its value is '" + args[i] + "'");
+            }
+         }
+      }
+      return ret;      
+   }
+
+
    /**
     * @param property e.g. "uptime", the method "setUptime()" will be called
     * @param aClass e.g. I_AdminSubject.class
     * @param argValues = new Object[1]; argValues[0] = "Hi"
     */
-   private Object setInvoke(String property, Object impl, Class aClass, Object[] argValues) throws XmlBlasterException {
+   private Object setInvoke(String property, Object impl, Class aClass, String[] argValuesAsStrings) throws XmlBlasterException {
       try {
          PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
          Method method = desc.getWriteMethod();
+         Object[] argValues =  convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
+
          Object obj = method.invoke (impl, argValues);
          log.info(ME, "Successful invoked set method '" + property + "'");
          if (obj != null) log.warn(ME, "Ignoring returned value of set method '" + property + "'");
          return obj;
       }
       catch (Exception e) {
-         if (argValues.length > 0) {
-            log.error(ME, "Invoke for property '" + property + "' with " + argValues.length + " arguments of type " +
-               argValues[0].getClass().toString() +
+         if (e instanceof XmlBlasterException) throw (XmlBlasterException)e;
+         if (argValuesAsStrings.length > 0) {
+            log.error(ME, "Invoke for property '" + property + "' with " + argValuesAsStrings.length + " arguments of type " +
+               argValuesAsStrings[0].getClass().toString() +
                " on interface " + aClass.toString() + " failed: " + e.toString());
          }
          else {
@@ -287,9 +358,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    }
 
    private Object setInvoke(String property, Object impl, Class aClass, String value) throws XmlBlasterException {
-      Object[] argValues = new Object[1];
-      argValues[0] = value;
-      return setInvoke(property, impl, aClass, argValues);
+      String[] argValuesAsStrings = new String[1];
+      argValuesAsStrings[0] = value;
+      return setInvoke(property, impl, aClass, argValuesAsStrings);
    }
 
    public String help() {
