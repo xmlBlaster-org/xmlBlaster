@@ -30,8 +30,8 @@ private:
    PublishKey       *pubKey_;
    Mutex            updateMutex_;
    int              numOfUpdates_;
-   Address          *address_;
    bool             isConnected_;
+   Address          *address_;
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -378,3 +378,4 @@ int main(int args, char ** argv)
 
    return 0;
 }
+

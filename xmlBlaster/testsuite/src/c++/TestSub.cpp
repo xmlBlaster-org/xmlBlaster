@@ -220,8 +220,8 @@ private:
       subscribeOid_ = "";
       try {
          subscribeOid_ = connection_.subscribe(subKey1, subQos, cb1_).getSubscriptionId();
-         string sub1 = connection_.subscribe(subKey2, subQos, cb2_).getSubscriptionId();
-         string sub2 = connection_.subscribe(subKey3, subQos, cb3_).getSubscriptionId();
+         /*string sub1 =*/ connection_.subscribe(subKey2, subQos, cb2_).getSubscriptionId();
+         /*string sub2 =*/ connection_.subscribe(subKey3, subQos, cb3_).getSubscriptionId();
 
          log_.info(ME, string("Success: Subscribe subscription-id=") + subscribeOid_ + " done");
 

@@ -108,7 +108,7 @@ private:
          assert(0);
       }
 
-		try {
+      try {
          StringMap map;
          connection_.leaveServer(map);
          log_.info(ME, string("Success: leaveServer()"));
@@ -122,7 +122,7 @@ private:
          StringMap map;
          connection_.leaveServer(map);
          log_.error(ME, string("leaveServer(): Leaving server twice should fail"));
-			assert(0);
+                        assert(0);
       }
       catch(XmlBlasterException &e) {
          log_.info(ME, string("SUCCESS: Expected XmlBlasterException: ")+e.toString());
@@ -134,8 +134,8 @@ private:
          getKey.setOid("__cmd:?freeMem");
          GetQos getQos(global_);
          vector<util::MessageUnit> msgVec = connection_.get(getKey, getQos);
-         log_.error(ME, string("leaveServer(): Calling get() after leaving server should fail"));
-			assert(0);
+         log_.error(ME, string("leaveServer(): Calling get() after leaving server should fail, msgs=") + lexical_cast<string>(msgVec.size()));
+         assert(0);
       }
       catch(XmlBlasterException &e) {
          log_.info(ME, string("SUCCESS: Expected XmlBlasterException: ")+e.toString());
@@ -147,7 +147,7 @@ private:
 
    string update(const string &sessionId,
                UpdateKey &updateKey,
-               const unsigned char *content, long contentSize,
+               const unsigned char * /*content*/, long /*contentSize*/,
                UpdateQos &updateQos) 
    {
       log_.error(ME, string("Receiving update of message oid=") +
