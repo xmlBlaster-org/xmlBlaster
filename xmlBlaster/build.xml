@@ -156,6 +156,7 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
+   <!-- On Windows "shared" failes (bug with malloc/free over lib boundaries), on UNIX shared runs fine -->
    <property name="CPP_LINK" value="static"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
