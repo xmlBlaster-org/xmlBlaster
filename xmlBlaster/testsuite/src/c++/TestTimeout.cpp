@@ -67,6 +67,16 @@ public:
       log_.info(ME, "after waiting to complete");
    }
 
+   void testLifecycle() 
+   {
+      log_.info(ME, "testLifecycle(): the timeout will now be triggered");
+      Timeout* timeout = new Timeout(global_);
+      timeoutObject->addTimeoutListener(this, 10000, timeout);
+      log_.info(ME, "testLifecycle: timeout triggered. Now destroying it again");
+      timeout->shutdown();
+      delete timeout;
+   }
+
    void setUp(int args=0, char *argc[]=0) {
       if (log_.trace()) {
          for (int i=0; i < args; i++) {
@@ -94,14 +104,16 @@ int main(int args, char *argc[])
 {
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
-
-   TestTimeout *testObj = new TestTimeout(glob, "TestTimeout");
-
-   testObj->setUp(args, argc);
-   testObj->testTimeout();
-   testObj->tearDown();
-   delete testObj;
-   testObj = NULL;
+   try {
+      TestTimeout testObj(glob, "TestTimeout");
+      testObj.setUp(args, argc);
+      testObj.testLifecycle();
+      testObj.testTimeout();
+      testObj.tearDown();
+   } catch(...) {
+      std::cout << "UNEXPECTED EXCEPTION" << std::endl;
+   }
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 
