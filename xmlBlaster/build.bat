@@ -8,8 +8,10 @@ if "%JAVA_HOME%" == "" goto error
 if "%XMLBLASTER_HOME%" == ""  set XMLBLASTER_HOME="."
 REM  a missing XMLBLASTER_HOME is not problem if the bat file is started in the root directory
 
-set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%XMLBLASTER_HOME%\lib\ant\ant.jar;%XMLBLASTER_HOME%\lib\ant\cpptasks.jar;%XMLBLASTER_HOME%\lib\ant\ant-contrib.jar;%XMLBLASTER_HOME%\lib\ant\xerces.jar;%XMLBLASTER_HOME%\lib\ant\optional.jar;%XMLBLASTER_HOME%\lib\junit.jar;%XMLBLASTER_HOME%\lib\ant\xalan.jar;%XMLBLASTER_HOME%\lib\ant\xml-apis.jar
+#set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%XMLBLASTER_HOME%\lib\ant\ant.jar;%XMLBLASTER_HOME%\lib\ant\cpptasks.jar;%XMLBLASTER_HOME%\lib\ant\ant-contrib.jar;%XMLBLASTER_HOME%\lib\ant\xerces.jar;%XMLBLASTER_HOME%\lib\ant\optional.jar;%XMLBLASTER_HOME%\lib\junit.jar;%XMLBLASTER_HOME%\lib\ant\xalan.jar;%XMLBLASTER_HOME%\lib\ant\xml-apis.jar
 
+set LOCALCLASSPATH=%CLASSPATH%
+for %%i in ("%lib\ant\*.jar") do call "bin\lcp.bat" %%i
 
 echo Building with classpath %LOCALCLASSPATH%
 
