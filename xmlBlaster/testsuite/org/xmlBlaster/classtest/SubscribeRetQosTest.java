@@ -45,8 +45,8 @@ public class SubscribeRetQosTest extends TestCase {
          assertEquals("stateInfo failed", null, qos.getStateInfo());
          assertEquals("subscribe id failed", null, qos.getSubscriptionId());
 
-         qos = new SubscribeRetQos(glob, "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>");
-         assertEquals("stateId failed", Constants.STATE_EXPIRED, qos.getStateId());
+         qos = new SubscribeRetQos(glob, "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>");
+         assertEquals("stateId failed", Constants.STATE_ERASED, qos.getStateId());
          assertEquals("stateInfo failed", null, qos.getStateInfo());
          assertEquals("subscribe id failed", null, qos.getSubscriptionId());
 
