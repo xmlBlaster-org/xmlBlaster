@@ -415,14 +415,18 @@ java HelloWorld2 -help
       <pre>
 java org.xmlBlaster.Main
 
-java javaclients.HelloWorldPublish -numPublish 10 -protocol SOCKET
+java HelloWorld4 -protocol SOCKET
                  -session.name Jack/1
                  -session.reconnectSameClientOnly true
                  -session.maxSessions 1
                  -dispatch/callback/pingInterval 1000
 
-java javaclients.HelloWorldPublish -numPublish 10 -protocol SOCKET
+java HelloWorld4 -protocol SOCKET
                  -session.name Jack/1
+                 -session.reconnectSameClientOnly true
+                 -session.maxSessions 1
+                 -dispatch/callback/pingInterval 1000
+                 -xmlBlaster_uniqueId Jacky
    </pre>
    <p>
    <code>-session.maxSessions 1</code> assures that max. one session of <code>Jack</code>
@@ -431,6 +435,12 @@ java javaclients.HelloWorldPublish -numPublish 10 -protocol SOCKET
    <code>1</code> gets no access.<br />If the first client crashes our frequent callback ping
    (every second) assures that the session of the crashed client is destroyed latest after
    one second and the second HelloWorld2 could now connect and take over the task.
+   </p>
+   <p>The setting <code>-xmlBlaster_uniqueId Jacky</code> we only need if we use
+   HSQLDB as persistent layer to force a different database name of the second client
+   (the database name is generated from the session.name and as this is the same
+   for both clients and both run on the same test machine we need to force another
+   setting).
    </p>
    <p>
    Hard coded in a Java client it looks something like:
@@ -469,7 +479,7 @@ this.con.connect(qos, this);
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
