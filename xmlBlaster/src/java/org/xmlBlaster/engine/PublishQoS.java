@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.3 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.4 1999/12/14 23:22:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -149,21 +149,33 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
                      Log.error(ME, "Sorry, XPath destinations are not yet supported");
                      usesXPathQuery = false; // !!!
                   }
-                  if (queryType.equalsIgnoreCase("IsDurable")) {
-                     Log.error(ME, "Sorry, IsDurable is not yet supported");
-                     isDurable = false; // !!!
-                  }
-                  if (queryType.equalsIgnoreCase("ForceUpdate")) {
-                     Log.error(ME, "Sorry, ForceUpdate is not yet supported");
-                     forceUpdate = false; // !!!
-                  }
-                  if (queryType.equalsIgnoreCase("Readonly")) {
-                     Log.error(ME, "Sorry, Readonly is not yet supported");
-                     readonly = false; // !!!
-                  }
                }
             }
          }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("IsDurable")) {
+         if (!inQos)
+            return;
+         Log.error(ME, "Sorry, IsDurable is not yet supported");
+         isDurable = false; // !!!
+         return;
+      }
+      
+      if (name.equalsIgnoreCase("ForceUpdate")) {
+         if (!inQos)
+            return;
+         Log.error(ME, "Sorry, ForceUpdate is not yet supported");
+         forceUpdate = false; // !!!
+         return;
+      }
+
+      if (name.equalsIgnoreCase("Readonly")) {
+         if (!inQos)
+            return;
+         Log.error(ME, "Sorry, Readonly is not yet supported");
+         readonly = false; // !!!
          return;
       }
    }
