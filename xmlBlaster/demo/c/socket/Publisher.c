@@ -148,9 +148,10 @@ int main(int argc, char** argv)
          *destinationQos = 0;
 
       for (iPublish=0; iPublish<numPublish; iPublish++) {
-         MsgUnit msgUnit;
          char msg[20];
          char *pp = strstr(key, "%counter");
+         MsgUnit msgUnit;
+         memset(&msgUnit, 0, sizeof(MsgUnit));
 
          if (interactive) {
             printf("[client] Hit a key to publish '%s' #%d/%d ('b' to break) >> ", oid, iPublish, numPublish);

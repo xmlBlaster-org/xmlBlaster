@@ -57,6 +57,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
       char *response = (char *)0;
       MsgUnit msgUnit;
       XmlBlasterException xmlBlasterException;
+      memset(&msgUnit, 0, sizeof(MsgUnit));
       printf("[client] Publishing message 'HelloWorldCb from update thread' ...\n");
       msgUnit.key = strcpyAlloc("<key oid='HelloWorldCb'/>");
       msgUnit.content = strcpyAlloc("Some message payload");
@@ -193,6 +194,7 @@ int main(int argc, char** argv)
 
    {  /* publish ... */
       MsgUnit msgUnit;
+      memset(&msgUnit, 0, sizeof(MsgUnit));
       printf("[client] Publishing message 'HelloWorld' ...\n");
       msgUnit.key = strcpyAlloc("<key oid='HelloWorld'/>");
       msgUnit.content = strcpyAlloc("Some message payload");
@@ -214,6 +216,7 @@ int main(int argc, char** argv)
    if (true) {  /* publishArr */
       QosArr* resp;
       MsgUnitArr holder;
+      memset(&holder, 0, sizeof(MsgUnitArr));
       printf("[client] Publishing messages 'HelloWorld0' and 'HelloWorld1' ...\n");
       holder.len = 2;
       holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
@@ -248,6 +251,7 @@ int main(int argc, char** argv)
  
    if (true) {  /* publishOneway */
       MsgUnitArr holder;
+      memset(&holder, 0, sizeof(MsgUnitArr));
       printf("[client] Publishing oneway messages 'HelloWorld0' and 'HelloWorld1' ...\n");
       holder.len = 2;
       holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
@@ -355,6 +359,8 @@ int main(int argc, char** argv)
          freeQosArr(resp);
       }
    }
+
+   sleepMillis(200); /* To allow the callback thread to publish */
 
    if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
       printf("[client] Caught exception in disconnect, errorCode=%s, message=%s\n",

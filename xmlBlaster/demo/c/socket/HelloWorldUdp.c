@@ -146,6 +146,7 @@ int main(int argc, char** argv)
    
    {  /* publishOneway */
       MsgUnitArr holder;
+      memset(&holder, 0, sizeof(MsgUnitArr));
       printf("[client] Publishing oneway messages 'HelloWorld' ...\n");
       holder.len = 2;
       holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
