@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.7 2002/05/30 09:50:15 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.8 2002/06/28 15:31:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -25,8 +25,19 @@ import org.xmlBlaster.util.ConnectReturnQos;
  */
 public interface I_Authenticate
 {
+   /**
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
+    */
    public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException;
+
+   /*
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
+    */
    public ConnectReturnQos connect(ConnectQos qos, String sessionId) throws XmlBlasterException;
+
+   /**
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
+    */
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException;
 }
 

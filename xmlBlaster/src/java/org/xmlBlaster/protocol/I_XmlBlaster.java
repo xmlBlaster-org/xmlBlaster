@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.11 2002/05/30 09:50:15 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.12 2002/06/28 15:31:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -28,6 +28,7 @@ public interface I_XmlBlaster
     * Subscribe to messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
    public String subscribe(String sessionId, String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException;
 
@@ -43,21 +44,9 @@ public interface I_XmlBlaster
    /**
     * Publish a message.
     * <p />
-    * The MessageUnit contains the literal ASCII strings of xmlKey and publishQos only,
-    * this method allows to pass the parsed objects of xmlKey/publishQos as well (if you have them),
-    * to avoid double parsing.
-    * Problem is that we can't import/export message
-    *
-    * @see org.xmlBlaster.engine.RequestBroker
-    * @deprecated unsecure
-    */
-//   public String publish(String sessionId, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException;
-
-   /**
-    * Publish a message.
-    * <p />
     * @param msgUnit The MessageUnit contains the literal ASCII strings of xmlKey and publishQos and the binary content.
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
 
@@ -68,6 +57,7 @@ public interface I_XmlBlaster
     * probably in future as an entity for transactions.
     *
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
 
@@ -79,6 +69,7 @@ public interface I_XmlBlaster
     * and there are no exceptions supported over the connection to the client.
     *
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public void publishOneway(String sessionId, MessageUnit[] msgUnitArr);
 
@@ -86,6 +77,7 @@ public interface I_XmlBlaster
     * Delete messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
    public String[] erase(String sessionId, String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException;
 
@@ -93,6 +85,7 @@ public interface I_XmlBlaster
     * Synchronous access a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
    public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
 

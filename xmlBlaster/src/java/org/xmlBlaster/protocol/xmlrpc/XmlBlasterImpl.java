@@ -52,6 +52,7 @@ public class XmlBlasterImpl
 
    /**
     * Subscribe to messages.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
    public String subscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
@@ -71,6 +72,7 @@ public class XmlBlasterImpl
    /**
     * void return is not allowed so we return an empty string instead
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">The interface.unSubscribe requirement</a>
     */
    public String unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
@@ -88,6 +90,7 @@ public class XmlBlasterImpl
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public String publish (String sessionId, String xmlKey_literal, byte[] content,
          String publishQos_literal)
@@ -103,6 +106,7 @@ public class XmlBlasterImpl
     * This variant allows to publish simple string based messages
     * (the content is a string).
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public String publish (String sessionId, String xmlKey_literal, String content,
                           String publishQos_literal)
@@ -123,6 +127,7 @@ public class XmlBlasterImpl
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public String publish (String sessionId, Vector msgUnitWrap)
       throws XmlBlasterException
@@ -145,6 +150,7 @@ public class XmlBlasterImpl
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public Vector publishArr(String sessionId, Vector msgUnitArrWrap)
       throws XmlBlasterException
@@ -172,6 +178,7 @@ public class XmlBlasterImpl
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public void publishOneway(String sessionId, Vector msgUnitArrWrap)
    {
@@ -194,6 +201,7 @@ public class XmlBlasterImpl
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
    public Vector erase(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
@@ -211,6 +219,7 @@ public class XmlBlasterImpl
     * Synchronous access
     * @return content
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
    public Vector get(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
