@@ -85,7 +85,7 @@ NEW FEATURES:
      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
 
 8. Exception and error code specification and implementation
-   (Marcel Ruff, Michele Laghi, Konrad Krafft, Heinrich Götzger and others)
+   (Marcel Ruff, Michele Laghi, Konrad Krafft, Cyrille Giquello, Heinrich Götzger and others)
      http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html
 
 9. Logging plugin framework (by Peter Antman)
