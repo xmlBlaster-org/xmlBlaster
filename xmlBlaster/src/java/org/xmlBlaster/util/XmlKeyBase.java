@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.40 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.41 2000/11/12 13:22:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -396,7 +396,7 @@ public class XmlKeyBase
          throw new XmlBlasterException(ME+"Internal", "root node = null");
       }
 
-      String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
+      String nodeName = node.getNodeName();    // ElementNode: getLocalName();
 
       if (!nodeName.equalsIgnoreCase("key")) {
          Log.error(ME+".WrongRootNode", "The root node must be named \"key\"\n" + xmlKey_literal);
