@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.8 2002/06/28 15:31:12 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.9 2002/09/08 15:33:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -25,6 +25,8 @@ import org.xmlBlaster.util.ConnectReturnQos;
  */
 public interface I_Authenticate
 {
+   public boolean sessionExists(String sessionId);
+
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */

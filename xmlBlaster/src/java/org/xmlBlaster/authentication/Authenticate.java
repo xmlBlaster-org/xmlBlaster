@@ -152,7 +152,6 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * and will be used here as is, the a2Blaster plugin verifies it.
     * The extra parameter sessionId is the CORBA internal POA session id.
     * <p />
-    * TODO: Totally rewrite this connect() method to allow multiple sessions
     *
     * @param connectQos  The login/connect QoS, see ConnectQos.java
     * @param sessionId   The caller (here CORBA-POA protocol driver) may insist to you its own sessionId
@@ -164,7 +163,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (log.DUMP) log.dump(ME, "ConnectQos=" + connectQos.toXml());
 
          // Get or create the sessionId (we respect a user supplied sessionId) ...
-         if (sessionId == null) sessionId = connectQos.getSessionId();
+         if (sessionId == null) {
+            sessionId = connectQos.getSessionId();
+            log.info(ME, "Using sessionId '" + sessionId + "' from ConnectQos");
+         }
          if (sessionId == null || sessionId.length() < 2) {
             sessionId = createSessionId("null" /*subjectCtx.getName()*/);
             connectQos.setSessionId(sessionId); // assure consistency
@@ -378,6 +380,11 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
    }
 
+   public boolean sessionExists(String sessionId) {
+      synchronized(sessionInfoMap) {
+         return sessionInfoMap.get(sessionId) != null;
+      }
+   }
 
    /**
     * Access a subjectInfo with the unique login name
@@ -444,7 +451,6 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       sessionInfo.shutdown();
       sessionInfo = null;
-      Runtime.getRuntime().gc(); // !!! 
       log.info(ME, "loginNameSubjectInfoMap has " + loginNameSubjectInfoMap.size() + " entries and sessionInfoMap has " + sessionInfoMap.size() + " entries");
    }
 
