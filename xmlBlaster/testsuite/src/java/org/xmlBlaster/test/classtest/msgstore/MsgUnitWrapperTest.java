@@ -16,7 +16,6 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.ram.MapPlugin;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.MsgUnitWrapper;

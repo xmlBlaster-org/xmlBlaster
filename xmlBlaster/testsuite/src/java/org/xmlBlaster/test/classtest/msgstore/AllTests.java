@@ -15,7 +15,7 @@ public class AllTests {
       junit.textui.TestRunner.run (suite());
    }
    public static Test suite ( ) {
-      TestSuite suite= new TestSuite("All xmlBlaster msgstore tests");
+      TestSuite suite= new TestSuite("All xmlBlaster msgUnitStore tests");
       suite.addTest(I_MapTest.suite());
       suite.addTest(MsgUnitWrapperTest.suite());
       return suite;

@@ -13,7 +13,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.ram.MapPlugin;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.MsgUnitWrapper;
@@ -43,15 +43,15 @@ public class I_MapTest extends TestCase {
    static I_Map[] IMPL = {
                    new org.xmlBlaster.engine.msgstore.ram.MapPlugin(),
                    new org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin(),
-                   new org.xmlBlaster.engine.msgstore.cache.MsgStoreCachePlugin()
+                   new org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin()
                  };
 
    public I_MapTest(String name, int currImpl) {
       super(name);
       this.currMap = IMPL[currImpl];
       String[] args = { // configure the cache
-         "-msgstore.cache.persistentQueue", "JDBC,1.0",
-         "-msgstore.cache.transientQueue", "RAM,1.0",
+         "-msgUnitStore.persistentQueue", "JDBC,1.0",
+         "-msgUnitStore.transientQueue", "RAM,1.0",
       };
       this.glob = new Global(args);
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
@@ -70,9 +70,9 @@ public class I_MapTest extends TestCase {
 /*
       QueuePropertyBase prop = null;
       try {
-         prop = new TopicCacheProperty(glob, "/node/test");
+         prop = new MsgUnitStoreProperty(glob, "/node/test");
 
-         StorageId queueId = new StorageId("topic", "SetupMap");
+         StorageId queueId = new StorageId("msgUnitStore", "SetupMap");
          JdbcMapPlugin jdbcMap = new JdbcMapPlugin();
          jdbcMap.initialize(queueId, prop);
          jdbcMap.destroy();
@@ -117,19 +117,19 @@ public class I_MapTest extends TestCase {
       QueuePropertyBase prop = null;
       try {
          // test initialize()
-         prop1 = new TopicCacheProperty(glob, "/node/test");
+         prop1 = new MsgUnitStoreProperty(glob, "/node/test");
          int max = 12;
          prop1.setMaxMsg(max);
          prop1.setMaxMsgCache(max);
          assertEquals(ME+": Wrong capacity", max, prop1.getMaxMsg());
          assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
-         StorageId queueId = new StorageId("topic", "SomeMapId");
+         StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
 
          i_map.initialize(queueId, prop1);
          assertEquals(ME+": Wrong queue ID", queueId, i_map.getStorageId());
 
          try {
-            prop = new TopicCacheProperty(glob, "/node/test");
+            prop = new MsgUnitStoreProperty(glob, "/node/test");
             prop.setMaxMsg(99);
             prop.setMaxMsgCache(99);
             i_map.setProperties(prop);
@@ -184,9 +184,9 @@ public class I_MapTest extends TestCase {
    public void testPutMsg() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new TopicCacheProperty(glob, "/node/test");
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("topic", "MapPlugin/putMsg");
+         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/putMsg");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0L, this.currMap.getNumOfEntries());
@@ -254,9 +254,9 @@ public class I_MapTest extends TestCase {
 
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new TopicCacheProperty(glob, "/node/test");
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("topic", "MapPlugin/getMsg");
+         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getMsg");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
@@ -353,9 +353,9 @@ public class I_MapTest extends TestCase {
    public void testPutEntriesTwice() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new TopicCacheProperty(glob, "/node/test");
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("topic", "MapPlugin/putEntriesTwice");
+         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/putEntriesTwice");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + " wrong size before starting ", 0, this.currMap.getNumOfEntries());
