@@ -224,6 +224,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       cp ${XMLBLASTER_HOME}/config/xmlBlasterPlugins.xml.template ${HOME}/xmlBlasterPlugins.xml
       ${ECHO} "$BLACK_LTGREEN   Copied ${HOME}/xmlBlasterPlugins.xml$ESC"
    fi
+
+   # Add to you MANPATH and try 'man XmlBlasterAccessUnparsed'
+   export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/c/man:$XMLBLASTER_HOME/doc/doxygen/c++/man
+
 else
    ${ECHO} "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
    return 1
