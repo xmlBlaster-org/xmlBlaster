@@ -90,7 +90,12 @@ public class CbQueueProperty extends QueuePropertyBase
    /**
     */
    public void setCallbackAddresses(CallbackAddress[] addresses) {
-      this.addressArr = addresses;
+      if (addresses == null) {
+         this.addressArr = EMPTY_ADDRESS_ARR;
+      }
+      else {
+         this.addressArr = addresses;
+      }
    }
 
    /**
@@ -98,21 +103,23 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public CallbackAddress[] getCallbackAddresses()
    {
-      CallbackAddress[] cba = new CallbackAddress[addressArr.length];
-      for (int ii=0; ii<addressArr.length; ii++)
-         cba[ii] = (CallbackAddress)addressArr[ii];
+      CallbackAddress[] cba = new CallbackAddress[this.addressArr.length];
+      for (int ii=0; ii<this.addressArr.length; ii++)
+         cba[ii] = (CallbackAddress)this.addressArr[ii];
       return cba;
    }
 
    /**
-    * @return null if none available
+    * @return Never null, a default is created if none is available. 
     */
    public CallbackAddress getCurrentCallbackAddress() {
       if (this.addressArr.length > 1)
          log.error(ME, "We have " + this.addressArr.length + " callback addresses, using the first only");
       if (this.addressArr.length > 0)
          return (CallbackAddress)this.addressArr[0];
-      return null;
+      CallbackAddress addr = new CallbackAddress(glob);
+      setCallbackAddress(addr);
+      return addr;
    }
 
    /** For testing: java org.xmlBlaster.engine.helper.CbQueueProperty */
