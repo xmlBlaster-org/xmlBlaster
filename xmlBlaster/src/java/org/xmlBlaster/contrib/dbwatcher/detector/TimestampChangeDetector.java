@@ -116,7 +116,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
       try {
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
             public void result(ResultSet rs) throws Exception {
-               log.fine("Processing result set");
+               if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
             
                // Check for missing/dropped table
                if (rs == null) {
@@ -147,6 +147,8 @@ public class TimestampChangeDetector implements I_ChangeDetector
 
                if (rowCount > 1)
                   throw new IllegalArgumentException("Please correct your change detection SQL statement, it may return max one result set: 'changeDetector.detectStatement="+changeDetectStatement);
+
+               if (log.isLoggable(Level.FINE)) log.fine("oldTimestamp=" + oldTimestamp + " newTimestamp=" + newTimestamp);
             }
          });
        
