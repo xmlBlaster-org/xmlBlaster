@@ -243,7 +243,7 @@ public final class TopicHandler implements I_Timeout
 
       if (isUnconfigured()) { // Startup of topic
          if (!hasCacheEntries() && !hasSubscribers()) {
-            toUnreferenced();
+            toUnreferenced(true);
          }
          else {
             toAlive();
@@ -759,7 +759,7 @@ public final class TopicHandler implements I_Timeout
                   toDead(this.creatorSessionName, false);
                }
                else {
-                  toUnreferenced();
+                  toUnreferenced(false);
                }
             }
             catch (XmlBlasterException e) {
@@ -872,7 +872,7 @@ public final class TopicHandler implements I_Timeout
                toDead(this.creatorSessionName, false);
             else {
                try {
-                  toUnreferenced();
+                  toUnreferenced(false);
                }
                catch (XmlBlasterException e) {
                   log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
@@ -1376,8 +1376,8 @@ public final class TopicHandler implements I_Timeout
       }
    }
 
-   private void toUnreferenced() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering toUnreferenced(oldState="+getStateStr()+")");
+   private void toUnreferenced(boolean onAdministrativeCreate) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering toUnreferenced(oldState="+getStateStr()+", onAdministrativeCreate="+onAdministrativeCreate+")");
       synchronized (this) {
          if (isUnreferenced() || isDead()) {
             return;
@@ -1395,21 +1395,23 @@ public final class TopicHandler implements I_Timeout
 
          this.state = UNREFERENCED;
 
-         if (this.topicProperty == null) {
-            toDead(this.creatorSessionName, true);
-            return; // ALIVE -> UNREFERENCED
-         }
-
-         if (topicProperty.getDestroyDelay() > 0L) {
-            if (this.timerKey == null) {
-               this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
+         if (!onAdministrativeCreate) {
+            if (this.topicProperty == null) {
+               toDead(this.creatorSessionName, true);
+               return; // ALIVE -> UNREFERENCED
             }
-         }
-         else if (topicProperty.getDestroyDelay() == 0L) {
-            timeout(null); // toDead()
-            return; // destroy immediately
-         }
+
+            if (topicProperty.getDestroyDelay() > 0L) {
+               if (this.timerKey == null) {
+                  this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
+               }
+            }
+            else if (topicProperty.getDestroyDelay() == 0L) {
+               timeout(null); // toDead()
+               return; // destroy immediately
+            }
          // for destroyDelay < 0 we live forever or until an erase arrives
+         }
 
          if (!isRegisteredInBigXmlDom) {
             addToBigDom(); // guarantee still XPATH visibility
@@ -1468,6 +1470,7 @@ public final class TopicHandler implements I_Timeout
                if (!isUnconfigured()) {
                   log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
                   Thread.currentThread().dumpStack();
+                  return;
                }
             }
 
