@@ -22,6 +22,7 @@ ConnectQosData::ConnectQosData(Global& global)
     : global_(global),
       log_(global.getLog("core")),
       securityQos_(global),
+      sessionQos_(global),
       addresses_(),
       cbAddresses_(),
       clientQueueProperties_(),
@@ -36,6 +37,7 @@ ConnectQosData::ConnectQosData(const ConnectQosData& data)
     : global_(data.global_),
       log_(data.log_),
       securityQos_(data.securityQos_),
+      sessionQos_(data.sessionQos_),
       addresses_(data.addresses_),
       cbAddresses_(data.cbAddresses_),
       clientQueueProperties_(data.clientQueueProperties_),
@@ -86,7 +88,7 @@ string ConnectQosData::getSessionId() const
 string ConnectQosData::getUserId() const
 {
 //   return securityQos_.getUserId();
-   return sessionQos_.getName();
+   return sessionQos_.getAbsoluteName();
 }
 
 string ConnectQosData::getCallbackType() const

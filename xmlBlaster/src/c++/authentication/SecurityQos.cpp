@@ -6,22 +6,42 @@ Comment:   The qos for the security (a subelement of connect qos)
 ------------------------------------------------------------------------------*/
 #include <authentication/SecurityQos.h>
 #include <string>
+#include <util/StringStripper.h>
+
+using org::xmlBlaster::util::StringStripper;
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
 SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
                          const string& password)
-   : ME("SecurityQos-simple"), global_(global)
+   : ME("SecurityQos"), global_(global)
 {
-   type_    = "simple";
-   version_ = "1.0";
-   user_   = loginName;
-   passwd_ = password;
+
+   string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", "htpasswd,1.0");
+
+   StringStripper stripper(",");
+   vector<string> help1 = stripper.strip(help);
+   if (help1.size() == 2) {
+      type_    = help1[0];
+      version_ = help1[1];
+   }
+   else {
+      type_    = "htpasswd";
+      version_ = "1.0";
+   }
+
+   user_ = global_.getProperty().getStringProperty("user", "");
+   if (user_ == "")
+      user_ = global_.getProperty().getStringProperty("USER", "unknown");
+
+   if (loginName != "") user_ = loginName;
+   passwd_ =  global_.getProperty().getStringProperty("passwd", "");
+   if (password != "") passwd_ = password;
 }
 
 SecurityQos::SecurityQos(const SecurityQos& securityQos)
-   : ME("SecurityQos-simple"), global_(securityQos.global_)
+   : ME("SecurityQos"), global_(securityQos.global_)
 {
    copy(securityQos);
 }
@@ -73,12 +93,6 @@ string SecurityQos::getCredential() const
    return "";
 }
 
-string SecurityQos::toXml()
-{
-   return toXml("");
-}
-
-
 /**
  * Dump state of this object into a XML ASCII string.
  * <br>
@@ -103,3 +117,33 @@ string SecurityQos::toXml(const string& extraOffset)
 
 }}} // namespaces
 
+
+#ifdef _XMLBLASTER_CLASSTEST
+
+using namespace std;
+using namespace org::xmlBlaster::authentication;
+
+int main(int args, char* argv[])
+{
+    try {
+       Global& glob = Global::getInstance();
+       glob.initialize(args, argv);
+
+       SecurityQos qos(glob);
+       cout << "the default: " << endl << qos.toXml() << endl;
+
+       SecurityQos qos1(glob, "this_is_user", "this_is_passwd");
+       cout << "the default: " << endl << qos1.toXml() << endl;
+
+    }
+
+    catch(...)
+    {
+       cout << "Error during execution" << endl;
+       return 1;
+    }
+
+   return 0;
+}
+
+#endif

@@ -76,15 +76,13 @@ namespace org { namespace xmlBlaster { namespace authentication {
        */
       string getCredential() const;
 
-      string toXml();
-
       /**
        * Dump state of this object into a XML ASCII string.
        * <br>
        * @param extraOffset indenting of tags for nice output
        * @return The xml representation
        */
-      string toXml(const string& extraOffset);
+      string toXml(const string& extraOffset="");
    };
 
 }}} // namespaces

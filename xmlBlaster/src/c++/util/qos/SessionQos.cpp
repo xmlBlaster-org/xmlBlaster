@@ -9,6 +9,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 // #include <util/XmlBlasterException>
 #include <stdlib.h>
 #include <boost/lexical_cast.hpp>
+#include <util/StringStripper.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -19,14 +20,112 @@ using boost::lexical_cast;
 
 /*---------------------------- SessionQosData --------------------------------*/
 
-SessionQosData::SessionQosData()
+SessionQosData::SessionQosData(Global& global) : global_(global)
 {
-   timeout_       = 86400000;
-   maxSessions_   = 10;
-   clearSessions_ = false;
-   name_          = "";
-   sessionId_     = "";
-   isDirty_       = true;
+   timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000ll);
+   maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
+   clearSessions_ = global_.getProperty().getBoolProperty("session.clearSessions", false);
+   sessionId_ = global_.getProperty().getStringProperty("session.sessionId", "");
+
+   clusterNodeId_ = global_.getProperty().getStringProperty("session.clusterNodeId", "");
+   if (clusterNodeId_ == "")
+      clusterNodeId_ = global_.getProperty().getStringProperty("hostname", "");
+   if (clusterNodeId_ == "")
+      clusterNodeId_ = global_.getProperty().getStringProperty("HOSTNAME", "unknown");
+
+   subjectId_ = global_.getProperty().getStringProperty("session.subjectId", "");
+   if (subjectId_ == "")
+      subjectId_ = global_.getProperty().getStringProperty("user", "");
+   if (subjectId_ == "")
+      subjectId_ = global_.getProperty().getStringProperty("USER", "unknown");
+
+   pubSessionId_ = global_.getProperty().getStringProperty("session.pubSessionId", "1");
+
+   string name = global_.getProperty().getStringProperty("session.name", "");
+   if (name != "") setAbsoluteName(name);
+}
+
+SessionQosData::SessionQosData(const SessionQosData& data) : global_(data.global_)
+{
+   copy(data);
+}
+
+SessionQosData& SessionQosData::operator =(const SessionQosData& data)
+{
+  copy(data);
+  return *this;
+}
+
+
+void SessionQosData::setAbsoluteName(const string& name)
+{
+   StringStripper stripper("/");
+   vector<string> help = stripper.strip(name);
+
+   string clusterNode = "";
+
+   unsigned int i = 2;
+   while (i<(help.size()-1)) {
+      if (help[i] != "client") {
+         if (i != 2) clusterNode += "/";
+         clusterNode += help[i];
+      }
+      else break;
+      i++;
+   }
+   i++;
+   unsigned int ref = i;
+   string subjectId = "";
+   while (i < (help.size()-1)) {
+      if (i != ref) subjectId += "/";
+      subjectId += help[i];
+      i++;
+   }
+   string pubSessionId = help[help.size()-1];
+
+   setClusterNodeId(clusterNode);
+   setSubjectId(subjectId);
+   setPubSessionId(pubSessionId);
+}
+
+string SessionQosData::getRelativeName() const
+{
+   return string("client/") + subjectId_ + string("/") + pubSessionId_;
+}
+
+string SessionQosData::getAbsoluteName() const
+{
+   return string("/node/") + clusterNodeId_ + string("/") + getRelativeName();
+}
+
+string SessionQosData::getClusterNodeId() const
+{
+   return clusterNodeId_;
+}
+
+void SessionQosData::setClusterNodeId(const string& clusterNodeId)
+{
+   clusterNodeId_ = clusterNodeId;
+}
+
+string SessionQosData::getSubjectId() const
+{
+   return subjectId_;
+}
+
+void SessionQosData::setSubjectId(const string& subjectId)
+{
+    subjectId_ = subjectId;
+}
+
+string SessionQosData::getPubSessionId() const
+{
+   return pubSessionId_;
+}
+
+void SessionQosData::setPubSessionId(const string& pubSessionId)
+{
+   pubSessionId_ = pubSessionId;
 }
 
 long SessionQosData::getTimeout() const
@@ -37,7 +136,6 @@ long SessionQosData::getTimeout() const
 void SessionQosData::setTimeout(long timeout)
 {
    timeout_ = timeout;
-   isDirty_ = true;
 }
 
 int SessionQosData::getMaxSessions() const
@@ -48,7 +146,6 @@ int SessionQosData::getMaxSessions() const
 void SessionQosData::setMaxSessions(int maxSessions)
 {
    maxSessions_ = maxSessions;
-   isDirty_ = true;
 }
 
 bool SessionQosData::getClearSessions() const
@@ -59,18 +156,6 @@ bool SessionQosData::getClearSessions() const
 void SessionQosData::setClearSessions(bool clearSessions)
 {
    clearSessions_ = clearSessions;
-   isDirty_       = true;
-}
-
-string SessionQosData::getName() const
-{
-   return name_;
-}
-
-void SessionQosData::setName(const string& name)
-{
-   name_ = name;
-   isDirty_ = true;
 }
 
 string SessionQosData::getSessionId() const
@@ -81,20 +166,12 @@ string SessionQosData::getSessionId() const
 void SessionQosData::setSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
-   isDirty_ = true;
-}
-
-void SessionQosData::setLiteral(const string& literal)
-{
-   literal_ = literal;
-   isDirty_ = false;
 }
 
 string SessionQosData::toXml(const string& extraOffset) const
 {
    string offset = extraOffset; // currently unused.
-   if (isDirty_) return SessionQosFactory::writeObject(*this);
-   return literal_;
+   return SessionQosFactory::writeObject(*this);
 }
 
 
@@ -155,7 +232,7 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
             else sessionQos_->clearSessions_ = false;
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "name")) {
-            sessionQos_->name_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
+            sessionQos_->setAbsoluteName(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
       }
       return;
@@ -181,7 +258,7 @@ void SessionQosFactory::reset()
 {
    if (sessionQos_ != NULL) delete sessionQos_;
    sessionQos_ = NULL;
-   sessionQos_ = new SessionQosData();
+   sessionQos_ = new SessionQosData(global_);
 }
 
 SessionQosData SessionQosFactory::getData() const
@@ -203,7 +280,7 @@ string SessionQosFactory::writeObject(const SessionQosData& qos)
    string ret = string("<session timeout='") + lexical_cast<string>(qos.getTimeout()) +
                 string("' maxSessions='") + lexical_cast<string>(qos.getMaxSessions()) +
                 string("' clearSessions='") + lexical_cast<string>(qos.getClearSessions()) +
-                string("' name='")  + qos.getName() + "'>\n";
+                string("' name='")  + qos.getAbsoluteName() + "'>\n";
    ret += string("  <sessionId>") + qos.getSessionId() + string("</sessionId>\n");
    ret += string("</session>\n");
    return ret;
@@ -236,11 +313,26 @@ int main(int args, char* argv[])
              string("</session>\n");
 
        Global& glob = Global::getInstance();
+       glob.initialize(args, argv);
        SessionQosFactory factory(glob);
        SessionQosData data = factory.readObject(qos);
 
        string ret = factory.writeObject(data);
        cout << ret << endl;
+
+       cout << data.getPubSessionId() << endl;
+       cout << data.getSubjectId() << endl;
+       cout << data.getClusterNodeId() << endl << endl;
+
+       SessionQosData data2(glob);
+       cout << "second session qos: " << endl;
+       cout << data2.toXml() << endl;
+       cout << data2.getPubSessionId() << endl;
+       cout << data2.getSubjectId() << endl;
+       cout << data2.getClusterNodeId() << endl << endl;
+
+
+
     }
     catch(const XMLException& toCatch)
     {

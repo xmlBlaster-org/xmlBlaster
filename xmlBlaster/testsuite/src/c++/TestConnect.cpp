@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.6 2002/12/10 18:45:43 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.7 2002/12/11 22:17:11 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -23,19 +23,20 @@ Version:   $Id: TestConnect.cpp,v 1.6 2002/12/10 18:45:43 laghi Exp $
 
 #include <string>
 #include <util/Log.h>
-#include <client/protocol/corba/CorbaDriver.h>
+#include <client/XmlBlasterAccess.h>
 #include <util/qos/ConnectQos.h>
+#include <util/qos/ConnectQosFactory.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
 #include <util/StopWatch.h>
 #include <util/XmlBlasterException.h>
-#include <util/Global.h>
 #include <client/I_Callback.h>
+#include <util/MessageUnit.h>
+#include <util/Global.h>
 
 
-using org::xmlBlaster::client::protocol::corba::CorbaDriver;
-using org::xmlBlaster::util::XmlBlasterException;
-using org::xmlBlaster::util::Global;
+using org::xmlBlaster::client::XmlBlasterAccess;
+using namespace org::xmlBlaster::util;
 using namespace std;
 using namespace org::xmlBlaster::util::qos;
 
@@ -52,15 +53,15 @@ private:
    string                 oid_;
    string                 qos1_, qos2_;
    string                 senderContent_;
-   CorbaDriver            *conn1_, *conn2_;
-   serverIdl::MessageUnit *msgUnit_;     // a message to play with
+   XmlBlasterAccess       *conn1_, *conn2_;
+   MessageUnit            *msgUnit_;
 
    int             numReceived_; // error checking
    string          contentMime_;
    string          contentMimeExtended_;
+   StopWatch       stopWatch_;
    Global&         global_;
-   util::StopWatch stopWatch_;
-   util::Log&      log_;
+   Log&            log_;
 
 public:
    /**
@@ -129,17 +130,16 @@ public:
       }
       try {
          if (conn1_) delete conn1_;
-         conn1_ = new CorbaDriver(global_); // Find orb
+         conn1_ = new XmlBlasterAccess(global_); // Find server
          ConnectQosFactory factory(global_);
          ConnectQos connectQos1 = factory.readObject(qos1_);
-         conn1_->connect(connectQos1);
+         conn1_->connect(connectQos1, NULL);
 
          // Login to xmlBlaster
          if (conn2_) delete conn2_;
          ConnectQos connectQos2 = factory.readObject(qos2_);
-         conn2_ = new CorbaDriver(global_); // Find orb
-         conn2_->connect(connectQos2);
-
+         conn2_ = new XmlBlasterAccess(global_);
+         conn2_->connect(connectQos2, NULL);
       }
       catch (XmlBlasterException &e) {
          log_.error(me(), e.toXml());
@@ -154,17 +154,17 @@ public:
     * cleaning up .... erase() the previous message OID and logout
     */
    void tearDown() {
-      conn1_->disconnect();
-      conn2_->disconnect();
+      conn1_->disconnect("<qos/>");
+      conn2_->disconnect("<qos/>");
    }
 
 private:
    void usage()
    {
-      log_.plain(me(), "----------------------------------------------------------");
-      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
-      log_.plain(me(), "Usage:");
-      CorbaDriver::usage();
+//      log_.plain(me(), "----------------------------------------------------------");
+//      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
+//      log_.plain(me(), "Usage:");
+//      CorbaDriver::usage();
       log_.usage();
       log_.plain(me(), "Example:");
       log_.plain(me(), "   TestLogin -ior.file /tmp/ior.dat -trace true");

@@ -103,8 +103,8 @@ string XmlBlasterAccess::getId()
 
 string XmlBlasterAccess::getSessionName()
 {
-   string ret = connectReturnQos_.getSessionQos().getName();
-   if (ret == "") ret = connectQos_.getSessionQos().getName();
+   string ret = connectReturnQos_.getSessionQos().getAbsoluteName();
+   if (ret == "") ret = connectQos_.getSessionQos().getAbsoluteName();
    return ret;
 }
 

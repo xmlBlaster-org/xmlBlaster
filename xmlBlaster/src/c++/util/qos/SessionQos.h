@@ -31,29 +31,50 @@ using namespace org::xmlBlaster::util;
 class Dll_Export SessionQosData
 {
 private:
-   long        timeout_; // ='86400000'
-   int         maxSessions_; // s='10'
-   bool        clearSessions_; // ='false'
-   string      name_; // ='/node/http:/client/ticheta/-3'>
-   string      sessionId_; // >IIOP:01110728321B0222011028&lt;/sessionId>
-
-   bool        isDirty_;
-   string      literal_;
-
-   void setLiteral(const string& literal);
+   long        timeout_;
+   int         maxSessions_;
+   bool        clearSessions_;
+   string      sessionId_;
+   string      clusterNodeId_;
+   string      subjectId_;
+   string      pubSessionId_;
+   Global&     global_;
 
    friend class SessionQosFactory;
 
+   void copy(const SessionQosData& data)
+   {
+      timeout_       = data.timeout_;
+      maxSessions_   = data.maxSessions_;
+      clearSessions_ = data.clearSessions_;
+      sessionId_     = data.sessionId_;
+      clusterNodeId_ = data.clusterNodeId_;
+      subjectId_     = data.subjectId_;
+      pubSessionId_  = data.pubSessionId_;
+   }
+
+
 public:
-   SessionQosData();
+   SessionQosData(Global& global);
+   SessionQosData(const SessionQosData& data);
+   SessionQosData& operator =(const SessionQosData& data);
    long getTimeout() const;
    void setTimeout(long timeout);
    int getMaxSessions() const;
    void setMaxSessions(int maxSessions);
    bool getClearSessions() const;
    void setClearSessions(bool clearSessions);
-   string getName() const;
-   void setName(const string& name);
+
+   void setAbsoluteName(const string& name);
+   string getRelativeName() const;
+   string getAbsoluteName() const;
+   string getClusterNodeId() const;
+   void setClusterNodeId(const string& clusterNodeId);
+   string getSubjectId() const;
+   void setSubjectId(const string& subjectId);
+   string getPubSessionId() const;
+   void setPubSessionId(const string& pubSessionId);
+
    string getSessionId() const;
    void setSessionId(const string& sessionId);
    string toXml(const string& extraOffset="") const;
