@@ -101,7 +101,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    /** Encapsulates the content of the current message (useful for encoding) */
    private EncodableData contentData;
-   private boolean inQos, inKey, inContent;
+   // private boolean inQos, inKey, inContent;
+   private int inQos, inKey, inContent;
    private String link;
    
    /** the attachments (some contents can be in the attachments) */
@@ -178,7 +179,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    /**
-    * converts the tag start to a string
+    * converts the tag sctart to a string
     * @param qName
     * @param attr
     * @return
@@ -209,28 +210,45 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * @throws XmlBlasterException
     */
    public synchronized void parse(InputStream in) throws XmlBlasterException {
+      this.inQos = 0;
+      this.inKey = 0;
+      this.inContent = 0;
       this.init(new InputSource(in));
    }
 
    public void characters(char[] ch, int start, int length) {
       // append on the corresponding buffer
-      if (this.inQos) this.qos.append(ch, start, length);
-      else if (this.inKey) this.key.append(ch, start, length);
-      else if (this.inContent) this.content.append(ch, start, length);
+      if (this.inQos > 0) this.qos.append(ch, start, length);
+      else if (this.inKey > 0) this.key.append(ch, start, length);
+      else if (this.inContent > 0) this.content.append(ch, start, length);
       else super.characters(ch, start, length);
    }
 
+   /**
+    * Increments the corresponding counter only if it is already in one such element
+    * @param qName
+    */
+   private void incrementInElementCounters(String qName) {
+      if ("qos".equals(qName) && this.inQos > 0) this.inQos++;
+      else if ("key".equals(qName) && this.inKey > 0) this.inKey++;
+      else if ("content".equals(qName) && this.inContent > 0) this.inContent++;
+   }
+
    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
-      if (this.inQos) {
+      checkNestedTags();
+      if (this.inQos > 0) {
          this.qos.append(writeElementStart(qName, atts));
+         incrementInElementCounters(qName);
          return;
       }
-      if (this.inKey) {
+      if (this.inKey > 0) {
          this.key.append(writeElementStart(qName, atts));
+         incrementInElementCounters(qName);
          return;
       }
-      if (this.inContent) {
+      if (this.inContent > 0) {
          this.content.append(writeElementStart(qName, atts));
+         incrementInElementCounters(qName);
          return;
       }
 
@@ -243,21 +261,21 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
 
       if ("key".equals(qName)) {
-         this.inKey = true;
+         this.inKey++;
          this.key = new StringBuffer();
          this.key.append(this.writeElementStart(qName, atts));
          return;
       }
 
       if ("qos".equals(qName)) {
-         this.inQos = true;
+         this.inQos++;
          this.qos = new StringBuffer();
          this.qos.append(this.writeElementStart(qName, atts));
          return;
       }
 
       if ("content".equals(qName)) {
-         this.inContent = true;
+         this.inContent++;
          this.content = new StringBuffer();
          String type = atts.getValue("type");
          String encoding = atts.getValue("encoding");
@@ -339,11 +357,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.key.length() < 1) this.key.append("<key />");
             MsgUnit msgUnit = buildMsgUnit();
             if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
-            String ret = this.access.publish(msgUnit).toXml("  ");
+            PublishReturnQos ret = this.access.publish(msgUnit);
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publish -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<publish>");
             // this.response.append("  <messageId>");
-            this.response.append(ret);
+            if (ret != null) this.response.append(ret.toXml("  "));
             // this.response.append("  </messageId>\n");
             this.response.append("\n</publish>\n");
             flushResponse();
@@ -361,10 +379,12 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             PublishReturnQos[] ret = this.access.publishArr(msgs);
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publishArr -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<publishArr>");
-            for (int i=0; i < ret.length; i++) {
-               this.response.append("\n  <message>");
-               this.response.append(ret[i].toXml("    "));
-               this.response.append("\n  </message>\n");
+            if (ret != null) {
+               for (int i=0; i < ret.length; i++) {
+                  this.response.append("\n  <message>");
+                  this.response.append(ret[i].toXml("    "));
+                  this.response.append("\n  </message>\n");
+               }
             }
             this.response.append("\n</publishArr>\n");
             flushResponse();
@@ -392,7 +412,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- unSubscribe -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<unSubscribe>");
-            for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
+            if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
             this.response.append("\n</unSubscribe>\n");
 
             flushResponse();
@@ -405,10 +425,12 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- erase -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<erase>");
-            for (int i=0; i < ret.length; i++) {
-               // this.response.append("  <messageId>");
-               this.response.append(ret[i].toXml("  "));
-               // this.response.append("  </messageId>\n");
+            if (ret != null) {
+               for (int i=0; i < ret.length; i++) {
+                  // this.response.append("  <messageId>");
+                  this.response.append(ret[i].toXml("  "));
+                  // this.response.append("  </messageId>\n");
+               }
             }
             this.response.append("\n</erase>\n");
             flushResponse();
@@ -422,8 +444,10 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- get -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<get>");
             this.response.append("\n  <message>");
-            for (int i=0; i < ret.length; i++) {
-               this.response.append(ret[i].toXml("    "));
+            if (ret != null) {
+               for (int i=0; i < ret.length; i++) {
+                  this.response.append(ret[i].toXml("    "));
+               }
             }
             this.response.append("\n  </message>");
             this.response.append("\n</get>\n");
@@ -432,13 +456,13 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          }
 
          if ("qos".equals(qName)) {
-            this.inQos = false;
+            this.inQos--;
          }
          if ("key".equals(qName)) {
-            this.inKey = false;
+            this.inKey--;
          }
          if ("content".equals(qName)) {
-            this.inContent = false;
+            this.inContent--;
          }
       }
       catch (Exception ex) {  // handle here the exception
@@ -479,19 +503,33 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       return msgUnit;
    }
 
+
+   private void checkNestedTags() {
+      int sum = 0;
+      if (this.inContent > 0 ) sum++;
+      if (this.inKey > 0) sum++;
+      if (this.inQos > 0) sum++;
+      if (sum > 1) {
+         Thread.dumpStack();
+         this.log.error(ME, "check: there is an internal error!! Mismatch with the nested tags ...");
+      }    
+   }
+
    public void endElement(String namespaceURI, String localName, String qName) {
-      if (this.inQos) {
+      checkNestedTags();
+      if (this.inQos > 0) {
          appendEndOfElement(this.qos, qName);
-         if ("qos".equals(qName)) this.inQos = false;
+         if ("qos".equals(qName) && this.inQos > 0) this.inQos--;
          return;
       }
-      if (this.inKey) {
+      if (this.inKey > 0) {
          appendEndOfElement(this.key, qName);
-         if ("key".equals(qName)) this.inKey = false;
+         if ("key".equals(qName) && this.inKey > 0) this.inKey--;
          return;
       }
       if ("content".equals(qName)) {
-         this.inContent = false;
+         if (this.inContent > 0) this.inContent--;
+         if (this.inContent > 0) appendEndOfElement(this.content, qName); // because nested content tags should be there (only the outher not)
          this.contentData.setValueRaw(this.content.toString());
          return;
       }
@@ -508,7 +546,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
       // comes here since the end tag is not part of the content
-      if (this.inContent) appendEndOfElement(this.content, qName);
+      if (this.inContent > 0) appendEndOfElement(this.content, qName);
 
       if (commandsToFire.contains(qName)) {
          appendEndOfElement(this.character, qName);

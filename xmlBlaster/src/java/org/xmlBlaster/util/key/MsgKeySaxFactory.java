@@ -11,12 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.enum.Constants;
 
-import java.io.*;
-import java.util.ArrayList;
-
 import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
 
 /**
  * Parsing xml Key (quality of service) of publish() and update(). 
