@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='admin.deploy' type='NEW' prio='LOW' status="CLOSED">
-   <topic>You can generate an xmlBlaster server distribution when you are ready to deploy your application</topic>
+   <topic>You can automatically generate an xmlBlaster server distribution for easy deployment</topic>
    <description>
     <p>
     When you have coded your application the time comes where you want to deploy an xmlBlaster
@@ -180,7 +180,7 @@ session.maxSessions=100
    
    <date>2002 06 04</date>
    
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
