@@ -1,20 +1,21 @@
 TODO for release 0.80
 ---------------------
 
-(1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)         [ok]
-(2) Integrate persistence support with mudb                           [--]
-(3) Perl support(src/perl) with xmlrpc and not with COPE.             [--]
-(4) Suport for searching in our Maillinglist                          [--]
-(5) Integrate XmlRpc                                                  [ok]
-(6) Integrate XmlRpc for Perl                                         [--]
-(7) Autoconf for C++                                                  [--]
-(8) XmlBlaster-Matrix                                                 [--]
-(9) Documentation (some samll HOWTO'S)                                [--]
-(10) Integrate JacOrb 1.2.1                                           [ok]
-(11) SOAP  ?                                                          [--]
-(12) Configure the xmlBlaster by xmlBlaster.xml                       [--]
-(13) CLASSPATH is to long                                             [ok]
-(14) xmlBlaster HP support for all browsers                           [ok]
+(1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)  [ok]
+(2) Integrate persistence support with mudb                    [--]
+(3) Perl support(src/perl) with xmlrpc and not with COPE.      [--]
+(4) Suport for searching in our Maillinglist                   [ok]
+(5) Integrate XmlRpc                                           [ok]
+(6) Integrate XmlRpc for Python                                [ok]
+(7) Autoconf for C++                                           [--]
+(8) XmlBlaster-Matrix                                          [--]
+(9) Documentation (some samll HOWTO'S)                         [--]
+(10) Integrate JacOrb 1.2.1                                    [ok]
+(11) SOAP  ?                                                   [--]
+(12) Configure the xmlBlaster by xmlBlaster.xml                [--]
+(13) CLASSPATH is to long                                      [ok]
+(14) xmlBlaster HP support for all browsers                    [ok]
+(15) New callback framework                                    [--]
 
 
 Some small TODO's for the next release
