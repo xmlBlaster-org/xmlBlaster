@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.44 2004/09/27 13:04:27 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.45 2004/09/27 21:55:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -98,7 +98,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
 
    private PluginInfo pluginInfo;
 
-   private boolean startUdpListener = true;
+   private boolean startUdpListener = false;
 
    /**
     * Setting by plugin configuration, see xmlBlasterPlugins.xml, for example
@@ -571,7 +571,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "                       Specify a hostname where the SOCKET server runs.\n";
       text += "                       Default is the localhost.\n";
       text += "   -"+getEnvPrefix()+"startUdpListener\n";
-      text += "                       Start a UDP datagram listener socket [true].\n";
+      text += "                       Start a UDP datagram listener socket [false].\n";
       text += "   -"+getEnvPrefix()+"useUdpForOneway\n";
       text += "                       Use UDP instead of TCP for updateOneway() calls [false].\n";
       text += "   -"+getEnvPrefix()+"SoTimeout\n";

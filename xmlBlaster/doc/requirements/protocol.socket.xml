@@ -536,7 +536,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
 
          <tr>
             <td>plugin/socket/startUdpListener</td>
-            <td>true</td>
+            <td>false</td>
             <td>Start a UDP datagram listener socket on server side
                 </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -781,7 +781,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
    <see type="INTERNET" label="SSL reference guide">http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.49 $</revision>
+   <revision>$Revision: 1.50 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
