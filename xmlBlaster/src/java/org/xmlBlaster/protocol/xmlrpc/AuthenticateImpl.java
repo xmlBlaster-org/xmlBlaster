@@ -87,6 +87,7 @@ public class AuthenticateImpl
     * void return is not allowed so we return an empty string instead
     * <p>
     * @exception XmlBlasterException If client is unknown
+    * @deprecated Use disconnect() instead
     */
    public String logout(String sessionId) throws XmlBlasterException
    {

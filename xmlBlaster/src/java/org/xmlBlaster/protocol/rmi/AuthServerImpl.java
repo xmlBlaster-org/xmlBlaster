@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.16 2002/04/26 21:31:57 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.17 2002/06/27 11:05:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -124,7 +124,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * <p />
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
-    * @deprecated
+    * @deprecated Use disconnect() instead
     */
    public void logout(final String sessionId)
                         throws RemoteException, XmlBlasterException
