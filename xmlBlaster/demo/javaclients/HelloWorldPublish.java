@@ -92,6 +92,7 @@ public class HelloWorldPublish
          String domain = glob.getProperty().get("domain", (String)null);
          String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
          String contentStr = glob.getProperty().get("content", "Hi-%counter");
+         String contentFile = glob.getProperty().get("contentFile", (String)null);
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
@@ -131,6 +132,9 @@ public class HelloWorldPublish
          if (contentSize >= 0) {
             log.info(ME, "   -content        [generated]");
             log.info(ME, "   -contentSize    " + contentSize);
+         }
+         else if (contentFile != null && contentFile.length() > 0) {
+            log.info(ME, "   -contentFile    " + contentFile);
          }
          else {
             log.info(ME, "   -content        " + contentStr);
@@ -257,6 +261,7 @@ public class HelloWorldPublish
             }
             
             if (destination != null) {
+               log.trace("", "Using destination: '" + destination + "'");
                Destination dest = new Destination(glob, new SessionName(glob, destination));
                dest.forceQueuing(forceQueuing);
                pq.addDestination(dest);
@@ -272,10 +277,14 @@ public class HelloWorldPublish
                   //content[j] = (byte)(j % 255);
                }
             }
+            else if (contentFile != null && contentFile.length() > 0) {
+               content = org.jutils.io.FileUtil.readFile(contentFile);
+            }
             else {
                content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
             }
 
+            if (log.DUMP) log.dump("", "Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             if (log.DUMP) log.dump("", "Going to publish message: " + msgUnit.toXml());
 
