@@ -144,14 +144,17 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    private boolean usePersistence = true;
 
    /** The messageUnit for a login event */
+   private boolean publishLoginEvent = true;
    private MsgKeyData xmlKeyLoginEvent = null;
    private PublishQosServer publishQosLoginEvent;
 
    /** Initialize a messageUnit for a zserList event */
+   private boolean publishUserList = true;
    private MsgKeyData xmlKeyUserListEvent = null;
    private PublishQosServer publishQosUserListEvent;
 
    /** Initialize a messageUnit for a logout event */
+   private boolean publishLogoutEvent = true;
    private MsgKeyData xmlKeyLogoutEvent = null;
    private PublishQosServer publishQosLogoutEvent;
 
@@ -229,21 +232,24 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
          // Should we configure historyQueue and topicCache to be RAM based only?
 
-         {
+         this.publishLoginEvent = glob.getProperty().get("loginEvent", true);
+         if (this.publishLoginEvent) {
             // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
             org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Login", "text/plain");
             this.xmlKeyLoginEvent = publishKey.getData();
             this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false); // take copy
          }
 
-         {
+         this.publishLogoutEvent = glob.getProperty().get("logoutEvent", true);
+         if (this.publishLogoutEvent) {
             // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
             org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Logout", "text/plain");
             this.xmlKeyLogoutEvent = publishKey.getData();
             this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
          }
 
-         {
+         this.publishUserList = glob.getProperty().get("userListEvent", true);
+         if (this.publishUserList) {
             // Key '__sys__UserList' for login/logout event
             org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__UserList", "text/plain");
             publishKey.setClientTags("<__sys__internal/>");
@@ -823,20 +829,15 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
    private void updateInternalUserList(SessionInfo sessionInfo) throws XmlBlasterException {
       // "__sys__UserList";
-      String content = "";
-      synchronized (loggedIn) {
-         Enumeration e=loggedIn.elements();
-         while(e.hasMoreElements()) {
-            content=content+((SubjectInfo)e.nextElement()).getLoginName()+"\n";
-         }
+      if (this.publishUserList) {
+         this.publishQosUserListEvent.clearRoutes();
+         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent, 
+                                 glob.getAuthenticate().getSubjectList().getBytes(), //content.getBytes(),
+                                 this.publishQosUserListEvent.getData());
+         publish(sessionInfo, msgUnit); // can we could reuse the PublishQos? -> better performing.
+         this.publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+         if (log.TRACE) log.trace(ME, "Refreshed internal state for '" + this.xmlKeyUserListEvent.getOid() + "'");
       }
-      this.publishQosUserListEvent.clearRoutes();
-      MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent, 
-                              content.getBytes(),
-                              this.publishQosUserListEvent.getData());
-      publish(sessionInfo, msgUnit); // can we could reuse the PublishQos? -> better performing.
-      this.publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
-      if (log.TRACE) log.trace(ME, "Refreshed internal state for '" + this.xmlKeyUserListEvent.getOid() + "'");
    }
 
    /**
@@ -1605,12 +1606,15 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    {
       SessionInfo sessionInfo = e.getSessionInfo();
       if (log.TRACE) log.trace(ME, "Login event for client " + sessionInfo.toString());
-      this.publishQosLoginEvent.clearRoutes();
-      MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLoginEvent, 
-                               sessionInfo.getLoginName().getBytes(),
-                               this.publishQosLoginEvent.getData());
-      publish(this.unsecureSessionInfo, msgUnit); // publish that this client has logged in
-      this.publishQosLoginEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+
+      if (this.publishLoginEvent) {
+         this.publishQosLoginEvent.clearRoutes();
+         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLoginEvent, 
+                                  sessionInfo.getLoginName().getBytes(),
+                                  this.publishQosLoginEvent.getData());
+         publish(this.unsecureSessionInfo, msgUnit); // publish that this client has logged in
+         this.publishQosLoginEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+      }
 
       if (log.TRACE) log.trace(ME, " client added:"+sessionInfo.getLoginName());
       synchronized (loggedIn){
@@ -1635,12 +1639,15 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
       SessionInfo sessionInfo = e.getSessionInfo();
-      if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
-      this.publishQosLogoutEvent.clearRoutes();
-      MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(),
-                                    this.publishQosLogoutEvent.getData());
-      publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
-      this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+
+      if (this.publishLogoutEvent) {
+         if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
+         this.publishQosLogoutEvent.clearRoutes();
+         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(),
+                                       this.publishQosLogoutEvent.getData());
+         publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
+         this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+      }
 
       if (log.TRACE) log.trace(ME, " client removed:"+sessionInfo.getLoginName());
       synchronized (loggedIn) {
