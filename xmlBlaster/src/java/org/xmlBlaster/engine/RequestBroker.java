@@ -206,6 +206,14 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       return this.glob;
    }
 
+   /**
+    * Access the "core" LogChannel. 
+    * @return The log channel for core xmlBlaster classes
+    */
+   public final LogChannel getLog() {
+      return this.log;
+   }
+
    public final AccessPluginManager getAccessPluginManager() {
       return this.accessPluginManager;
    }
@@ -444,7 +452,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    String subscribe(SessionInfo sessionInfo, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+         if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') from client '" + sessionInfo.getLoginName() + "' ...");
 
          if (xmlKey.isInternalStateQuery()) {
             updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
@@ -1000,7 +1008,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          }
 
-         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' ...");
+         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' from client '" + sessionInfo.getLoginName() + "' ...");
          if (log.DUMP) log.dump(ME, "Receiving " + (isClusterUpdate?"cluster update ":"") + " message in publish()\n" + xmlKey.literal() + "\n" + publishQos.toXml());
 
          String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
@@ -1212,7 +1220,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                // ... check if the new message matches ...
                if (xmlKey.match(xpath) == true) {
-                  SubscriptionInfo subs = new SubscriptionInfo(glob, sessionInfo, existingQuerySubscription, xmlKey);
+                  SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(), existingQuerySubscription, xmlKey);
                   subs.addMessageUnitHandler(msgUnitHandler);
                   existingQuerySubscription.addSubscription(subs);
                   matchingSubsVec.addElement(subs);
