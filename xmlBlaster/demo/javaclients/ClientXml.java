@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.3 1999/12/13 14:04:49 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.4 1999/12/14 12:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -149,6 +149,8 @@ public class ClientXml implements I_Callback
       catch (Exception e) {
           e.printStackTrace();
       }
+
+      // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
    }
 
 

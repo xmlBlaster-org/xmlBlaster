@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.3 1999/12/14 12:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -142,6 +142,8 @@ public class ClientRaw
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
+
+         // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }
       catch (Exception e) {
           e.printStackTrace();
