@@ -3,7 +3,7 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
+Version:   $Id: Destination.java,v 1.3 2001/03/11 10:56:59 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -133,7 +133,6 @@ public class Destination
    /**
     * Get the XML ASCII representation of this object.
     * <br>
-    * @param extraOffset indenting of tags for nice output
     * @return The destination as a XML ASCII string
     */
    public final String toXml()
