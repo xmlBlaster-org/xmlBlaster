@@ -29,7 +29,6 @@ jaco javaclients.jdbc.XmlDBClient
         -url "jdbc:postgresql://24.3.47.214/postgres"
         -user postgres
         -pass secret
-        -type query
         -query "select * from foo_table"
         -limit 50
         -confirm true

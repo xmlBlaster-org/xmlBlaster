@@ -13,8 +13,7 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients/jdbc
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = \
-			$(CLASS_DIR)/XmlDBClient.class 
+LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 
