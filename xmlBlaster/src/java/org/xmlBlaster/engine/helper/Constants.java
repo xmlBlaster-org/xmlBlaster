@@ -113,6 +113,9 @@ public class Constants
 
    public final static String INTERNAL_OID_PRAEFIX = "__sys__";
 
+   /** JDBC access messages */
+   public final static String JDBC_OID = INTERNAL_OID_PRAEFIX + "jdbc";
+
    /** message queue onOverflow handling */
    public final static String OID_DEAD_LETTER = INTERNAL_OID_PRAEFIX + "deadLetter";
 
