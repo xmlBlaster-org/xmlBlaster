@@ -38,6 +38,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestInvocationRecorder.class \
     $(CLASS_DIR)/TestMuDb.class \
     $(CLASS_DIR)/TestSubManyClients.class \
+    $(CLASS_DIR)/TestSubLostClient.class \
     $(CLASS_DIR)/TestAll.class
 #------------------------------------------------------------------------------
 
