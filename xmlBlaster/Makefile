@@ -106,7 +106,7 @@ jar:
 	(	\
 		cd ${CLASS_TOP_DIR}; \
 		$(CP) ${XMLBLASTER_HOME}/config/jacorb.properties.template ${CLASS_TOP_DIR}/jacorb.properties; \
-		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties; \
+		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties HelloWorld*; \
 	)
 
 

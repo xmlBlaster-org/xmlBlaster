@@ -277,7 +277,7 @@ Else add it manually.
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,HelloWorld*"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
  
@@ -289,7 +289,7 @@ Else add it manually.
       <delete file="${lib.dir}/demo.jar"/>
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
-      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
  
