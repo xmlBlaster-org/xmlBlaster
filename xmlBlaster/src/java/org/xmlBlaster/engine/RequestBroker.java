@@ -468,7 +468,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * @exception XmlBlasterException on internal errors
     * @see org.xmlBlaster.client.GetQosWrapper
     */
-   MessageUnit[] get(SessionInfo sessionInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
+   public MessageUnit[] get(SessionInfo sessionInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
