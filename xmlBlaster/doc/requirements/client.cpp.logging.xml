@@ -17,18 +17,18 @@
      If you have already an own logging facility in your project you can code xmlBlaster
      to redirect all logging output to your own logging implementation.
      </p>
-     <h2>
+     <h1>
      XmlBlaster simple logger
-     </h2>
+     </h1>
      <p>
      This is the default and automatically compiled if not configured otherwise.
      Logging output in different levels is sent to the console. On UNIX the
      logging is colored to easily recognize errors. This logger is coded
      in the file Log.cpp. Try <code>HelloWorld2 -help</code> to get usage informations.
      </p>
-     <h2>
+     <h1>
      Embed log4cplus
-     </h2>
+     </h1>
      <p>
      To simplify life we have added <a href="http://sourceforge.net/projects/log4cplus/" target="others">log4cplus</a>
      (Apache License) from <i>Tad E. Smith</i> to the xmlBlaster distribution.
@@ -53,23 +53,62 @@ XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
      <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/Log4cplus.cpp.html">Log4cplus.cpp</a> if you
      are curious about details.
      </p>
-     <p>Lookup of the configuration file:
-     </p>
+     <h3>Lookup of the configuration file</h3>
      <p>You can take a copy of the example configuration file <code>xmlBlaster/config/log4cplus.properties</code>
      and customize logging to your needs. The C++ library looks at following locations
      for the configuration file: 
      </p>
      <ol>
-       <li><code>-xmlBlaster/logging/configFileName [pathAndFile]</code>You can pass the
+       <li><code>-xmlBlaster/logging/configFileName [pathAndFile]</code>.
+         <br />You can pass the
          configuration file on command line or in the xmlBlaster.properties file.
          Command line has highest priority.</li>
        <li>If the file is not found we look into the <code>xmlBlaster/logging/configFileName</code>
        environment variable.</li>
+       <li>Now we check the user home directory for a file named <code>log4cplus.properties</code></li>
        <li>Finally the local directory is checked for a file named <code>log4cplus.properties</code></li>
      </ol>
-     <h2>
+     <h3>Configuration</h3>
+     <p>
+      We are forwarding all <tt>xmlBlaster.properties</tt> and command line settings to log4cplus,
+      so you could configure everything in <tt>xmlBlaster.properties</tt> instead of having
+      a separate <tt>log4cplus.properties</tt>.
+     </p>
+     <p>
+     Command line settings are strongest and overwrite the setting in <tt>log4cplus.properties</tt>,
+     here we switch on debugging:
+     </p>
+     <pre>
+PublishDemo -log4cplus.rootLogger "DEBUG, STDOUT, R"
+     </pre>
+
+     <h3>Configuration variable replacement</h3>
+     <p>
+      Log4cplus is extended to do ${xy} variable replacement not only from environment
+      but from itself as well (recursion depth is one):
+     </p>
+     <pre>
+The replacement of the own variables has the recursion
+depth of one.
+
+a=b
+c=${a}
+
+sets 'c' to 'b' but
+
+a=b
+e=${c}
+c=${a}
+
+will set 'e' to '${a}' in the worst case, or
+depending of the sequence of lookup it could evaluate
+'e' to 'b'.
+     </pre>
+
+
+     <h1>
      Redirect logging to your own logging library
-     </h2>
+     </h1>
      <p>
      You need to implement two simple C++ abstract classes (a factory and the
      logging calls) to redirect all logging output to your own code.
@@ -116,6 +155,6 @@ class I_Log
    <see type="REQ">client.cpp.compile</see>
    <author><a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 02 11</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
 </requirement>
 
