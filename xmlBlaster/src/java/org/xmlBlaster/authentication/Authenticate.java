@@ -163,10 +163,6 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (log.CALL) log.call(ME, "Entering connect(sessionId=" + sessionId + ")");
          if (log.DUMP) log.dump(ME, "ConnectQos=" + connectQos.toXml());
 
-         I_Session sessionCtx = null;
-         I_Manager securityMgr = null;
-         SessionInfo sessionInfo = null;
-
          // Get or create the sessionId (we respect a user supplied sessionId) ...
          if (sessionId == null) sessionId = connectQos.getSessionId();
          if (sessionId == null || sessionId.length() < 2) {
@@ -183,15 +179,37 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                return returnQos;
             }
          }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("Authenticate.connect.InternalError", e.toString());
+      }
 
+      I_Session sessionCtx = null;
+      I_Manager securityMgr = null;
+      SessionInfo sessionInfo = null;
+
+      try {
          // Get suitable SecurityManager and context ...
          securityMgr = plgnLdr.getManager(connectQos.getSecurityPluginType(), connectQos.getSecurityPluginVersion());
          sessionCtx = securityMgr.reserveSession(sessionId);  // allways creates a new I_Session instance
          String securityInfo = sessionCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions if authentication fails
          if (securityInfo != null && securityInfo.length() > 1) log.warn(ME, "Ignoring security info: " + securityInfo);
          // Now the client is authenticated
+      }
+      catch (XmlBlasterException e) {
+         // If access is denied: cleanup resources
+         securityMgr.releaseSession(sessionId, null);  // allways creates a new I_Session instance
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         // On error: cleanup resources
+         securityMgr.releaseSession(sessionId, null);  // allways creates a new I_Session instance
+         throw new XmlBlasterException("Authenticate.connect.InternalError", e.toString());
+      }
 
-
+      try {
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
          SubjectInfo subjectInfo = getSubjectInfoByName(subjectCtx.getName());
@@ -259,10 +277,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          return returnQos;
       }
       catch (XmlBlasterException e) {
+         disconnect(sessionId, null); // cleanup
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
+         disconnect(sessionId, null); // cleanup
          throw new XmlBlasterException("Authenticate.connect.InternalError", e.toString());
       }
    }
@@ -273,13 +293,21 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       try {
          if (log.CALL) log.call(ME, "Entering disconnect()");
          if (log.DUMP) log.dump(ME, toXml().toString());
+         if (sessionId == null) {
+            throw new IllegalArgumentException("disconnect() failed, the given sessionId is null");
+         }
 
          I_Manager securityMgr = plgnLdr.getManager(sessionId);
          I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
          if (sessionSecCtx == null) {
             throw new XmlBlasterException("Authenticate.disconnect", "You are not connected, your sessionId is invalid.");
          }
-         securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
+         try {
+            securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
+         }
+         catch(Throwable e) {
+            log.warn(ME, "Ignoring importMessage() problems, we continue to cleanup resources: " + e.toString());
+         }
 
          SessionInfo sessionInfo = getSessionInfo(sessionId);
          SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
@@ -305,10 +333,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (log.CALL) log.call(ME, "Leaving disconnect()");
       }
       catch (XmlBlasterException e) {
+         if (log.TRACE) log.trace(ME, "disconnect failed: " + e.toString());
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
+         if (log.TRACE) log.trace(ME, "disconnect failed: " + e.toString());
          throw new XmlBlasterException("Authenticate.disconnect.InternalError", e.toString());
       }
    }
