@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.45 2001/01/30 14:06:49 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.46 2001/02/14 00:41:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.45 $
+ * @version $Revision: 1.46 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -142,6 +142,8 @@ public class ClientInfo
    /**
     * Pub/Sub mode: This sends the update to the client, or stores it in the client queue or throws an exception.
     * @param subInfo Container for all infos about this subscription
+    * @exception e.id="CallbackFailed", should be caught and handled appropriate
+    *            This Exception is thrown if the callback server is not reachable
     */
    final void sendUpdate(SubscriptionInfo subInfo) throws XmlBlasterException
    {
