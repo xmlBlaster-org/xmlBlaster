@@ -39,6 +39,32 @@ namespace util {
       }
 
       /**
+       * Replace all occurrences of "from" with to "to".
+       */
+      static std::string replaceAll(const std::string &str, const std::string &from, const std::string &to) {
+         if (str.empty() || from.empty() || to.empty())
+            return str;
+         if (str.find(from) == std::string::npos)
+            return str;
+
+         std::string buf;
+         std::string tail = str;
+         while (true) {
+            std::string::size_type index = tail.find(from);
+            if (index != std::string::npos) {
+               if (index > 0)
+                  buf += tail.substr(0, index);
+               buf += to;
+               tail = tail.substr(index + from.size());
+            }
+            else
+               break;
+         }
+         buf += tail;
+         return buf;
+      }
+
+      /**
        * @param str The checked std::string (is not modified)
        * @return true if trimmed std::string is "TRUE" or "true" else false
        */
