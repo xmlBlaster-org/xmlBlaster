@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $
+Version:   $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -70,7 +70,7 @@ using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::protocol;
 
-Global::Global() : ME("Global"), pingerMutex_() 
+Global::Global() : ME("Global"), pingerMutex_(), sessionName_(0)
 {
    cbServerPluginManager_ = 0;
    pingTimer_             = 0;
@@ -81,6 +81,17 @@ Global::Global() : ME("Global"), pingerMutex_()
 
    if(global_ == NULL)
      global_ = this;
+}
+
+void Global::copy()
+{
+   args_        = 0 ;
+   argv_        = NULL;
+   property_    = NULL;
+   pingTimer_   = NULL;
+   dispatchManager_ = NULL;
+   cbServerPluginManager_;
+   id_          = "";
 }
 
 /*
@@ -382,32 +393,43 @@ const string& Global::getBoolAsString(bool val)
    else return _FALSE;
 }
 
+void Global::setSessionName(SessionNameRef sessionName)
+{
+	sessionName_ = sessionName;
+}
+
+SessionNameRef Global::getSessionName() const
+{
+	return sessionName_;
+}
+
 
 /**
- * Access the id (as a String) currently used on server side.
- * @return ""
+ * The absolute session name. 
+ * Before connection it is temporay the relative session name
+ * and changed to the absolute session name after connection (when we know the cluster id)
+ * @return For example "/node/heron/client/joe/2"
  */
 string Global::getId() const
 {
    return id_;
 }
 
-/**
- * Same as getId() but all 'special characters' are stripped
- * so you can use it for file names.
- * @return ""
- */
+string Global::getImmutableId() const
+{
+   return immutableId_;
+}
+
 string Global::getStrippedId() const
 {
    return getStrippedString(id_);
 }
 
-/**
- * Utility method to strip any string, all characters which prevent
- * to be used for e.g. file names are replaced. 
- * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
- * @return e.g. "http_www_xmlBlaster_org_homex"
- */
+string Global::getStrippedImmutableId() const
+{
+   return getStrippedString(immutableId_);
+}
+
 string Global::getStrippedString(const string& text) const
 {
    string ret = text;
@@ -420,13 +442,14 @@ string Global::getStrippedString(const string& text) const
    return ret;
 }       
 
-/**
- * Currently set by engine.Global, used server side only.
- * @param a unique id
- */
 void Global::setId(const string& id) 
 {
    id_ = id;
+}
+
+void Global::setImmutableId(const string& id) 
+{
+   immutableId_ = id;
 }
 
 }}} // namespace
