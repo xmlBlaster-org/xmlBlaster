@@ -359,6 +359,9 @@ public class Timeout extends Thread
     */
    public final long spanToTimeout(Timestamp key)
    {
+      if (key == null) {
+         return -1;
+      }
       synchronized (map) {
          Container container = (Container) map.get(key);
          if (container == null) {
