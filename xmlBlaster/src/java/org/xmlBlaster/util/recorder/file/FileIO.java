@@ -125,7 +125,7 @@ public class FileIO
       catch (java.lang.IllegalArgumentException e) {
          ra = new RandomAccessFile(f, "rw");
       }
-      if (f.length() <= 24L) {
+      if (ra.length() <= 24L) {
          ra.writeLong(0L); // currReadPos
          ra.writeLong(0L); // numUnread  (for information only)
          ra.writeLong(0L); // numLost    (for information only)
@@ -163,8 +163,8 @@ public class FileIO
             fileName + " has disappeared, " + numFileDeleteLost + " messages are lost.");
       }
 
-      long pos = getCurrReadPos();
-      if (pos > 0L) {
+      currReadPos = getCurrReadPos();
+      if (currReadPos > 0L) {
          ra.seek(currReadPos);
          Object data = userDataHandler.readData(ra);
 
@@ -236,7 +236,7 @@ public class FileIO
          }
       }
 
-      ra.seek(f.length());
+      ra.seek(ra.length());
       userDataHandler.writeData(ra, data);
       if (useSync) ra.getFD().sync();
       numUnread++;
@@ -261,7 +261,7 @@ public class FileIO
       if (currReadPos > 0L) {
          // cached
       }
-      else if (f.length() > 24L) {
+      else if (ra.length() > 24L) {
          ra.seek(0);
          currReadPos = ra.readLong(); // on restart
          if (currReadPos == 0) {
@@ -274,7 +274,7 @@ public class FileIO
          lastReadPos = currReadPos;
       }
 
-      if (currReadPos >= f.length()) {
+      if (currReadPos >= ra.length()) {
          f.delete(); // EOF
          //System.out.println("FileIO: EOF of '" + fileName + "' reached, all data read, initializing file");
          initialize();
