@@ -406,6 +406,54 @@ java HelloWorld2 -help
       We have chosen the SOCKET protocol to talk to xmlBaster.
 
       </p>
+      <h3>Assuring a client singleton</h3>
+      <p>
+      If you have to assure that an important client may only connect
+      exactly once you can use xmlBlaster to assure this with following options
+      (try the example on the command line):
+      </p>
+      <pre>
+java org.xmlBlaster.Main
+
+java javaclients.HelloWorldPublish -numPublish 10 -protocol SOCKET
+                 -session.name Jack/1
+                 -session.reconnectSameClientOnly true
+                 -session.maxSessions 1
+                 -dispatch/callback/pingInterval 1000
+
+java javaclients.HelloWorldPublish -numPublish 10 -protocol SOCKET
+                 -session.name Jack/1
+   </pre>
+   <p>
+   <code>-session.maxSessions 1</code> assures that max. one session of <code>Jack</code>
+   exists and <code>-session.reconnectSameClientOnly true</code> does only allow the
+   creator of the session to reconnect, the second client using the same public session ID
+   <code>1</code> gets no access.<br />If the first client crashes our frequent callback ping
+   (every second) assures that the session of the crashed client is destroyed latest after
+   one second and the second HelloWorld2 could now connect and take over the task.
+   </p>
+   <p>
+   Hard coded in a Java client it looks something like:
+   </p>
+   <pre>
+...
+
+this.con = glob.getXmlBlasterAccess();
+
+ConnectQos qos = new ConnectQos(glob, "JOE/1", "secret");
+
+CallbackAddress callback = new CallbackAddress(glob);
+callback.setPingInterval(1000);
+qos.addCallbackAddress(callback);
+
+SessionQos sessionQos = qos.getSessionQos();
+sessionQos.setMaxSessions(1);
+sessionQos.setReconnectSameClientOnly(true);
+this.con.connect(qos, this);
+
+...
+    </pre>
+
    </example>
 
    <configuration where="client">
@@ -421,6 +469,12 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestReconnectSameClientOnly</test>
+   </testcase>
 </requirement>
 
