@@ -24,8 +24,14 @@ EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const s
 
 EmbeddedServer::~EmbeddedServer()
 {
+   log_.call(ME, "destructor");
+   // don't try to stop it with the borrowed external connection here since it could be a 
+   // failsafe connection (which would queue this publish in case it is already disconnected)
    externalAccess_ = NULL;
    stop(false, false);
+   log_.trace(ME, "destructor: stopped the server");
+   this->join();
+   log_.trace(ME, "destructor: the server ist stopped");
 }
 
 void EmbeddedServer::run()

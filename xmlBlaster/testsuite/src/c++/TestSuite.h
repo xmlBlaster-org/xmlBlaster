@@ -112,13 +112,17 @@ public:
       XMLPlatformUtils::Initialize();
       embeddedServer_    = NULL;
       useEmbeddedServer_ = global_.getProperty().getBoolProperty("embeddedServer", false);
-      if (useEmbeddedServer_) log_.info(ME, "the embedded server is switched ON (you could switch it off with '-embeddedServer false' on the command line)");
+      if (useEmbeddedServer_) {
+         log_.info(ME, "the embedded server is switched ON (you could switch it off with '-embeddedServer false' on the command line)");
+      }
       else {
          log_.warn(ME, "the embedded server is switched OFF (you will need an external xmlBlaster running)");
          Thread::sleep(2000);
      }
      if (useEmbeddedServer_) {
-        embeddedServer_ = new EmbeddedServer(global_, "", "", &connection_);
+        string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
+        string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");
+        embeddedServer_ = new EmbeddedServer(global_, jvmArgs, cmdLine, &connection_);
         embeddedServer_->start();
         Thread::sleepSecs(5); // let the xmlBlaster server start ...
      }
@@ -167,7 +171,12 @@ public:
       log_.plain(applName_, string("usage: ") + applName_ + "\n with the following attributes:\n");
       log_.plain(applName_, "-embeddedServer false: [default] an external xmlBlaster will be needed");
       log_.plain(applName_, "-embeddedServer true :           an internal xmlBlaster will be used, stop all external xmlBlaster");
+      log_.plain(applName_, "-embeddedServer.cmdLine : defaults to \"/dev/null\"");
+      log_.plain(applName_, "-embeddedServer.jvmArgs : defaults to \"\"");
+      log_.plain(applName_, "");
+      log_.plain(applName_, string("for example: ") + applName_ + " -embeddedServer true -embeddedServer.cmdLine \"call -true\" -embbededServer.jvmArgs \"-Dwhatever \"");
    }
+
 };
 
 

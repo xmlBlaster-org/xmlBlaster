@@ -243,7 +243,7 @@ SessionQos MsgQosData::getSender() const
  * Access sender name.
  * @param loginName of sender
  */
-void MsgQosData::setSender(const SessionQos& senderSessionQos)
+void MsgQosData::setSender(const SessionQos& senderSessionQos) const
 {
    sender_ = senderSessionQos;
 }

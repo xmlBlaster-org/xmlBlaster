@@ -360,7 +360,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       string retQos = authServer_->connect(reqQos.c_str());
       if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);
       ConnectQosFactory factory(global_);
-      if (log_.DUMP) log_.dump(me(), "connect: the connect qos before parsing: " + retQos);
+      if (log_.DUMP) log_.dump(me(), "connect: the connect return qos before parsing: " + retQos);
       connectReturnQos_ = factory.readObject(retQos);
       sessionId_ = connectReturnQos_.getSecretSessionId();
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
@@ -441,6 +441,7 @@ bool
 CorbaConnection::disconnect(const string& qos)
 {
    if (log_.CALL) log_.call(me(), "disconnect() ...");
+   if (log_.DUMP) log_.dump(me(), string("disconnect: the qos: ") + qos);
 
    if (CORBA::is_nil(xmlBlaster_)) {
       shutdown();
@@ -472,20 +473,25 @@ CorbaConnection::disconnect(const string& qos)
 string 
 CorbaConnection::subscribe(const string &xmlKey, const string &qos) 
 {
-  if (log_.CALL) log_.call(me(), "subscribe() ...");
-  if (CORBA::is_nil(xmlBlaster_)) {
-     string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException("communication.noConnection", 
+   if (log_.CALL) log_.call(me(), "subscribe() ...");
+   if (log_.DUMP) {
+      log_.dump(me(), string("subscribe: the key: ") + xmlKey);
+      log_.dump(me(), string("subscribe: the qos: ") + qos);
+   }
+   if (CORBA::is_nil(xmlBlaster_)) {
+      string txt = "no auth.Server, you must login first";
+      throw serverIdl::XmlBlasterException("communication.noConnection", 
                                           "client", me().c_str(), "en",
                                           txt.c_str(), "", "", "", "", "", "");
-  }
-  try {
-     CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
-     return static_cast<char *>(ret);
-  } catch(serverIdl::XmlBlasterException &e) {
-     throw e;
-  }
-  //return "";
+   }
+   try {
+      CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
+      return static_cast<char *>(ret);
+   } 
+   catch(serverIdl::XmlBlasterException &e) {
+      throw e;
+   }
+   //return "";
 }
 
 
@@ -493,6 +499,10 @@ vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
                                   const string &qos) 
 {
   if (log_.CALL) log_.call(me(), "unSubscribe() ...");
+  if (log_.DUMP) {
+     log_.dump(me(), string("unSubscribe: the key: ") + xmlKey);
+     log_.dump(me(), string("unSubscribe: the qos: ") + qos);
+  }
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -526,6 +536,9 @@ vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
 */
 string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
   if (log_.TRACE) log_.trace(me(), "Publishing the STL way ...");
+  if (log_.DUMP) {
+     log_.dump(me(), string("publish: the msgUnit: ") + msgUnitUtil.toXml());
+  }
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -716,6 +729,10 @@ vector<string>
 CorbaConnection::erase(const string &xmlKey, const string &qos) 
 {
   if (log_.CALL) log_.call(me(), "erase() ...");
+  if (log_.DUMP) {
+     log_.dump(me(), string("erase: the key: ") + xmlKey);
+     log_.dump(me(), string("erase: the qos: ") + qos);
+  }
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -751,6 +768,10 @@ CorbaConnection::get(const string &xmlKey, const string &qos)
 
   serverIdl::MessageUnitArr_var units;
   if (log_.CALL) log_.call(me(), "get() ...");
+  if (log_.DUMP) {
+     log_.dump(me(), string("get: the key: ") + xmlKey);
+     log_.dump(me(), string("get: the qos: ") + qos);
+  }
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";

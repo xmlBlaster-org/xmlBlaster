@@ -32,6 +32,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
                               String subscriptionId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, storageId, receiver);
+      this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
       this.subscriptionId = subscriptionId;
       this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
       if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());

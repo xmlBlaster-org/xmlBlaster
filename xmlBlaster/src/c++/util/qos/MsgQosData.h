@@ -109,7 +109,7 @@ private:
    long remainingLifeStatic_; // = -1;
 
    /** the sender (publisher) of this message (unique loginName) */
-   SessionQos sender_;
+   mutable SessionQos sender_;
 
    /** The priority of the message */
    PriorityEnum priority_; // = PriorityEnum.NORM_PRIORITY;
@@ -235,7 +235,7 @@ public:
     * Access sender name.
     * @param loginName of sender
     */
-   void setSender(const SessionQos& senderSessionQos);
+   void setSender(const SessionQos& senderSessionQos) const;
 
    /**
     * Set > 0 if the message probably is redelivered (number of retries). 

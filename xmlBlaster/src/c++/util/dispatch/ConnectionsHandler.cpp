@@ -259,6 +259,10 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
    if (status_ == POLLING) return queuePublish(msgUnit);
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "publish");
    try {
+      // fill in the sender absolute name
+      if (connectReturnQos_) {
+         msgUnit.getQos().setSender(connectReturnQos_->getSessionQos());
+      }
       return connection_->publish(msgUnit);
       if (log_.TRACE) log_.trace(ME, "publish successful");
    }   
@@ -276,6 +280,13 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
    if (log_.CALL) log_.call(ME, "publishOneway");
    Lock lock(publishMutex_);
+
+   // fill in the sender absolute name
+   if (connectReturnQos_) {
+   		for (int i=0;i<msgUnitArr.size();i++) {
+         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
+      }
+   }
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishOneway");
    if (status_ == POLLING) {
@@ -300,6 +311,13 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 {
    if (log_.CALL) log_.call(ME, "publishArr");
    Lock lock(publishMutex_);
+
+   // fill in the sender absolute name
+   if (connectReturnQos_) {
+   		for (int i=0;i<msgUnitArr.size();i++) {
+         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
+      }
+   }
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishArr");
    if (status_ == POLLING) {
