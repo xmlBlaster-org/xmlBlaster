@@ -20,15 +20,23 @@ Comment:   Testing helper
 
 namespace org { namespace xmlBlaster { namespace test {
 
-template <class T> extern void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
-template <class T> extern void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
+template <class T1, class T2> extern void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T1& should, const T2& is, const std::string& txt);
+template <class T1, class T2> extern void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T1& should, const T2& is, const std::string& txt);
+#if __GNUC__ == 2
 extern void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
 extern void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
+#endif
 
-template <class T> 
-void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
+/**
+ * Supports comparing for example char[] with string. 
+ * @param should const char [13]
+ * @param is     std::string
+ */
+template <class T1, class T2> 
+void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T1& should, const T2& is, const std::string& txt)
 {
-   if (should != is) {
+   //if (should != is) {
+   if (org::xmlBlaster::util::lexical_cast<std::string>(should) != org::xmlBlaster::util::lexical_cast<std::string>(is)) {
       log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' but should be '" + org::xmlBlaster::util::lexical_cast<std::string>(should) + "'");
       assert(0);
    }
@@ -37,10 +45,11 @@ void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, con
    }
 }
 
-template <class T> 
-void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
+template <class T1, class T2> 
+void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T1& should, const T2& is, const std::string& txt)
 {
-   if (should == is) {
+   //if (should == is) {
+   if (org::xmlBlaster::util::lexical_cast<std::string>(should) == org::xmlBlaster::util::lexical_cast<std::string>(is)) {
       log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' in both cases but they should be different");
       assert(0);
    }
@@ -50,8 +59,9 @@ void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, c
 }
 
 
+#if __GNUC__ == 2
+// for example g++ 2.95.3
 // specific implementation for the string since the org::xmlBlaster::util::lexical_cast from string to string causes problems.
-
 void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should != is) {
@@ -62,7 +72,6 @@ void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, con
       log.info(who, txt + " OK");
    }
 }
-
 void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should == is) {
@@ -73,7 +82,7 @@ void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, c
       log.info(who, txt + " OK");
    }
 }
-
+#endif
 
 
 class TestSuite
