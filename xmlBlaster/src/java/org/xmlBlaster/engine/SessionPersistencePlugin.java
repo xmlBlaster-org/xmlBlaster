@@ -372,11 +372,18 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       KeyData keyData = subscriptionInfo.getKeyData();
-      if (!(keyData instanceof QueryKeyData)) return;
-      if (subscriptionInfo.getPersistenceId() < 1L) return;
+      if (!(keyData instanceof QueryKeyData)) {
+         if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove keyData wrong instance'");
+         return;
+      }
+      if (subscriptionInfo.getPersistenceId() < 1L) {
+         return;
+      }
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData qosData = subscriptionInfo.getQueryQosData();
-      if (qosData == null || qosData.getPersistentProp() == null || !qosData.getPersistentProp().getValue()) return;
+      if (qosData == null || qosData.getPersistentProp() == null || !qosData.getPersistentProp().getValue()) {
+         return;
+      }
 
       SubscribeEntry entry = new SubscribeEntry(keyData.toXml(), qosData.toXml(), subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName(), subscriptionInfo.getPersistenceId(), 0L);
       if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persistence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName());
@@ -392,5 +399,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * does nothing
     */
    public void subjectRemoved(ClientEvent e) throws XmlBlasterException {
+   }
+   
+   /**
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#getPriority()
+    */
+   public Integer getPriority() {
+      return PRIO_10;
    }
 }

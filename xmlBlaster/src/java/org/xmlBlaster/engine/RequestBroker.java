@@ -128,9 +128,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    private final ClientSubscriptions clientSubscriptions;
 
    /**
-    * For listeners who want to be informed about subscribe/unsubscribe events
+    * For listeners who want to be informed about subscribe/unsubscribe events.
+    * The key is an Integer number where the lowest is the first invoked on subscribe and the 
+    * last invoked on unsubscribe.
     */
-   private final Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
+   private final Map subscriptionListenerMap = Collections.synchronizedMap(new TreeMap());
 
    /**
     * For listeners who want to be informed about erase() of messages.
@@ -1983,11 +1985,22 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     * Adds the specified subscription listener to receive subscribe/unSubscribe events.
     */
    public void addSubscriptionListener(I_SubscriptionListener l) {
+
       if (l == null) {
-         return;
+         throw new IllegalArgumentException(ME + ".addSubscriptionListener: the listener is null");
       }
-      synchronized (subscriptionListenerSet) {
-         subscriptionListenerSet.add(l);
+      if ( l.getPriority() == null) {
+         throw new IllegalArgumentException(ME + ".addSubscriptionListener: the priority of the listener is null");
+      }
+      synchronized (subscriptionListenerMap) {
+         Integer prio = l.getPriority();
+         I_SubscriptionListener oldListener = (I_SubscriptionListener)subscriptionListenerMap.get(prio);
+         if (oldListener != null) {
+            if (oldListener.equals(l))
+               return;
+            throw new IllegalArgumentException(ME + "addSubscriptionListener: a different listener was already registered with priority '" + prio.intValue() + "'");
+         }
+         subscriptionListenerMap.put(prio, l);
       }
    }
 
@@ -1997,10 +2010,13 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     */
    public void removeSubscriptionListener(I_SubscriptionListener l) {
       if (l == null) {
-         return;
+         throw new IllegalArgumentException(ME + ".removeSubscriptionListener: the listener is null");
       }
-      synchronized (subscriptionListenerSet) {
-         subscriptionListenerSet.remove(l);
+      if ( l.getPriority() == null) {
+         throw new IllegalArgumentException(ME + ".removeSubscriptionListener: the priority of the listener is null");
+      }
+      synchronized (subscriptionListenerMap) {
+         subscriptionListenerMap.remove(l.getPriority());
       }
    }
 
@@ -2021,21 +2037,27 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    {
       if (log.TRACE) log.trace(ME, "Going to fire fireSubscriptionEvent(" + subscribe + ") ...");
 
-      synchronized (subscriptionListenerSet) {
-         if (subscriptionListenerSet.size() == 0)
+      synchronized (subscriptionListenerMap) {
+         if (subscriptionListenerMap.size() == 0)
             return;
 
          SubscriptionEvent event = new SubscriptionEvent(subscriptionInfo);
-         Iterator iterator = subscriptionListenerSet.iterator();
 
-         while (iterator.hasNext()) {
-            I_SubscriptionListener subli = (I_SubscriptionListener)iterator.next();
-            if (subscribe)
-               subli.subscriptionAdd(event);
-            else
-               subli.subscriptionRemove(event);
+         Integer[] keys = (Integer[])subscriptionListenerMap.keySet().toArray(new Integer[subscriptionListenerMap.size()]);
+         if (subscribe) {
+            for (int i=0; i < keys.length; i++) {
+               I_SubscriptionListener subli = (I_SubscriptionListener)subscriptionListenerMap.get(keys[i]);
+               if (subli != null)
+                  subli.subscriptionAdd(event);
+            }
          }
-
+         else {
+            for (int i=keys.length-1; i >= 0; i--) {
+               I_SubscriptionListener subli = (I_SubscriptionListener)subscriptionListenerMap.get(keys[i]);
+               if (subli != null)
+                  subli.subscriptionRemove(event);
+            }
+         }
          event = null;
       }
    }

@@ -40,7 +40,6 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /** reference to keyData */
    private KeyData keyData;
    /** reference to 'Quality of Service' of subscribe() / unSubscribe() */
-   //private QueryQosData subscribeQos = null;
    private SubscribeQosServer subscribeQos = null;
    /** The unique key of a subscription (subscriptionId), which is a function of f(keyData,xmlQos). <br />
        This is the returned id of a subscribe() invocation */
@@ -474,7 +473,10 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       //sb.append(offset + "   <keyData oid='" + (keyData==null ? "null" : keyData.getUniqueKey()) + "'/>");
       if (keyData != null)
          sb.append(keyData.toXml(extraOffset+Constants.INDENT));
-      sb.append(subscribeQos.toXml(extraOffset+Constants.INDENT));
+      if (subscribeQos != null) 
+         sb.append(subscribeQos.toXml(extraOffset+Constants.INDENT));
+      else 
+         sb.append(extraOffset+Constants.INDENT).append("<!-- subscribe qos is null ERROR -->");
       //sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
       //sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
       if (this.childrenVec != null) {

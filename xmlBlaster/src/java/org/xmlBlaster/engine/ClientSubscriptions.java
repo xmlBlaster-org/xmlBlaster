@@ -637,4 +637,11 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       sb.append(offset + "</ClientSubscriptions>");
       return sb.toString();
    }
+
+   /**
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#getPriority()
+    */
+   public Integer getPriority() {
+      return PRIO_01;
+   }
 }

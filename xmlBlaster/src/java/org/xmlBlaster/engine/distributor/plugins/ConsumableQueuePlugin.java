@@ -381,5 +381,12 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       worker.run(list);      
       return (UpdateReturnQosServer)entry.getReturnObj();
    }
+
+   /**
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#getPriority()
+    */
+   public Integer getPriority() {
+      return PRIO_05;
+   }
 }
    

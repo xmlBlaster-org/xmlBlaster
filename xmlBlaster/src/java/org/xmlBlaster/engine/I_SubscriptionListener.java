@@ -18,13 +18,25 @@ package org.xmlBlaster.engine;
  * @author Marcel Ruff
  */
 public interface I_SubscriptionListener extends java.util.EventListener {
-    /**
-     * Invoked on successful subscription login
-     */
-    public void subscriptionAdd(SubscriptionEvent e) throws org.xmlBlaster.util.XmlBlasterException;
 
-    /**
-     * Invoked when subscription does a logout
-     */
-    public void subscriptionRemove(SubscriptionEvent e) throws org.xmlBlaster.util.XmlBlasterException;
+   /* The priority by which it will be invoked. Lower numbers are invoked first on subscribe and last on unsubscribe */
+   public final static Integer PRIO_01 = new Integer(1);
+   public final static Integer PRIO_05 = new Integer(5);
+   public final static Integer PRIO_10 = new Integer(10);
+   
+   /**
+    * The priority by which it will be invoked. Lower numbers are invoked first on subscribe and last on unsubscribe.
+    * @return
+    */
+   public Integer getPriority();
+   
+   /**
+    * Invoked on successful subscription login
+    */
+   public void subscriptionAdd(SubscriptionEvent e) throws org.xmlBlaster.util.XmlBlasterException;
+
+   /**
+    * Invoked when subscription does a logout
+    */
+   public void subscriptionRemove(SubscriptionEvent e) throws org.xmlBlaster.util.XmlBlasterException;
 }
