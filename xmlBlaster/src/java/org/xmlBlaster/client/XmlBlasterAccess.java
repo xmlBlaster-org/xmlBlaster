@@ -217,11 +217,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
             }
             catch (XmlBlasterException e) {
-               disconnect(null);
+               if (isConnected()) disconnect(null);
                throw e;
             }
             catch (Throwable e) {
-               disconnect(null);
+               if (isConnected()) disconnect(null);
                throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
             }
          }
