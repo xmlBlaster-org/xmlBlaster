@@ -48,7 +48,7 @@ public abstract class QueuePropertyBase implements Cloneable
    public static final long DEFAULT_maxMsgCacheDefault = 1000L;
    protected long maxMsgCacheDefault = DEFAULT_maxMsgCacheDefault;
 
-   /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (4 MBytes is default) */
+   /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (10 MBytes is default) */
    public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB
    protected long maxBytesDefault = DEFAULT_bytesDefault;
 

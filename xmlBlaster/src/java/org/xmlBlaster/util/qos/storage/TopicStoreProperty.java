@@ -14,8 +14,8 @@ import org.xmlBlaster.util.enum.Constants;
  * Theses properties are server side only and must be set before startup of xmlBlaster, e.g.:
  * </p>
  * <pre>
- * topicStore.persistence.maxMsg=1000000
- * topicStore.persistence.maxMsgCache=10
+ * persistence/topicStore/maxMsg=1000000
+ * persistence/topicStore/maxMsgCache=10
  * </pre>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.persistence.html">The engine.persistence requirement</a>
  */
