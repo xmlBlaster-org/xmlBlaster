@@ -1,14 +1,9 @@
-This is xmlBlaster version 0.901 *stable* 2004-04-27
+This is xmlBlaster version 0.902 *stable* 2004-05-11
 
 
-The  server  core  got bug fixes and got persistent session and
-persistent subscription support.
+Fixed a run level bug in the server core.
 
-On client side you get many new goodies:
-
-* J2ME client support
-* Tiny applet support
-* ActiveX support
+The C++ client library now supports a persistent queue.
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
