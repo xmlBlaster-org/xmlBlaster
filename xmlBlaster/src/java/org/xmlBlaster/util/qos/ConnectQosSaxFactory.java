@@ -47,7 +47,9 @@ import java.io.Serializable;
  *     ]]>
  *   &lt;/securityService>
  *
- *   &lt;session name='/node/heron/client/joe' timeout='3600000' maxSessions='10' clearSessions='false'/>
+ *   &lt;session name='/node/heron/client/joe' timeout='3600000'
+                 maxSessions='10' clearSessions='false'
+                 reconnectSameClientOnly='false'/>
  *
  *   &lt;ptp>true&lt;/ptp>  <!-- Allow receiving PtP messages (no SPAM protection) -->
  *
@@ -301,6 +303,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
                   sessionQos.setMaxSessions((new Integer(attrs.getValue(ii).trim())).intValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
                   sessionQos.clearSessions((new Boolean(attrs.getValue(ii).trim())).booleanValue());
+               else if (attrs.getQName(ii).equalsIgnoreCase("reconnectSameClientOnly"))
+                  sessionQos.setReconnectSameClientOnly((new Boolean(attrs.getValue(ii).trim())).booleanValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("sessionId"))
                   sessionQos.setSecretSessionId(attrs.getValue(ii));
                else
