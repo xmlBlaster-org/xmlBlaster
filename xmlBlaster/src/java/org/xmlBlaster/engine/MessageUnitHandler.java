@@ -400,7 +400,7 @@ public class MessageUnitHandler
          SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
          for (int ii=0; ii<filterQos.length; ii++) {
             XmlKey key = sub.getMessageUnitHandler().getXmlKey(); // This key is DOM parsed
-            I_AccessFilter filter = requestBroker.getSubcribeFilter(filterQos[ii].getType(), filterQos[ii].getVersion(), 
+            I_AccessFilter filter = requestBroker.getAccessFilter(filterQos[ii].getType(), filterQos[ii].getVersion(), 
                                          xmlKey.getContentMime(), xmlKey.getContentMimeExtended());
             if (filter != null && filter.match(publisher, destination, msgUnitWrapper, filterQos[ii].getQuery()) == false)
                return true; // filtered message is not send to client

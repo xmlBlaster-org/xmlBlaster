@@ -19,6 +19,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
@@ -168,7 +169,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    /**
     * Get filter object from cache. 
     */
-   final I_AccessFilter getSubcribeFilter(String type, String version, String mime, String mimeExtended)
+   final I_AccessFilter getAccessFilter(String type, String version, String mime, String mimeExtended)
    {
       try {
          StringBuffer key = new StringBuffer(80);
@@ -180,7 +181,11 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          // Check if the plugin is for all mime types
          key.setLength(0);
          key.append(type).append(version).append("*");
-         return (I_AccessFilter)subscribeFilterMap.get(key.toString());
+         obj = subscribeFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_AccessFilter)obj;
+
+         return addSubcribeFilterPlugin(type, version); // try to load it
 
       } catch (Exception e) {
          Log.error(ME, "Problems accessing subcribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
@@ -190,16 +195,17 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    }
 
    /**
-    * Invoked on new subscription, loads plugin
+    * Invoked on new subscription or get() invocation, loads plugin. 
+    * @return null if not found
     */
-   final void addSubcribeFilterPlugin(String type, String version)
+   final I_AccessFilter addSubcribeFilterPlugin(String type, String version)
    {
       StringBuffer key = new StringBuffer(80);
       key.append(type).append(version);
       Object obj = subscribeFilterMap.get(key.toString());
       if (obj != null) {
          Log.info(ME, "Subscribe filter '" + key.toString() + "' is loaded already");
-         return;
+         return (I_AccessFilter)obj;
       }
 
       try {
@@ -207,7 +213,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          I_AccessFilter filter = accessPluginManager.getPlugin(type, version);
          if (filter == null) {
             Log.error(ME, "Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return;
+            return null;
          }
 
          subscribeFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
@@ -230,10 +236,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             Log.info(ME, "Loaded subscribe filter '" + key.toString() + "'");
             key.setLength(0);
          }
+
+         return filter;
       } catch (Throwable e) {
          Log.error(ME, "Problems accessing subcribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
          e.printStackTrace();
       }
+      return null;
    }
 
    /**
@@ -531,10 +540,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+
+         // Note: Internal messages are currently not checkable with the mime access filter
          if (xmlKey.isInternalStateQuery())
             updateInternalStateInfo(sessionInfo);
 
-         if (xmlKey.getKeyOid().equals("__sys__jdbc")) { // Query RDBMS !!! hack, we need a general service interface
+         if (xmlKey.getKeyOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
             String query = xmlKey.toXml();
             String content = query.substring(query.indexOf(">")+1, query.lastIndexOf("<"));
             org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(
@@ -545,7 +556,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, qos);
          Vector msgUnitVec = new Vector(xmlKeyVec.size());
 
-         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+         NEXT_MSG: for (int ii=0; ii<xmlKeyVec.size(); ii++) {
             XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
             if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
                xmlKeyExact = xmlKey;
@@ -558,8 +569,26 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
 
             if (msgUnitHandler.isPublishedWithData()) {
-               MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
+
                MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
+
+               AccessFilterQos[] filterQos = qos.getFilterQos();
+               if (filterQos != null) {
+                  for (int jj=0; jj<filterQos.length; jj++) {
+                     XmlKey key = msgUnitHandler.getXmlKey(); // This key is DOM parsed
+                     I_AccessFilter filter = getAccessFilter(filterQos[jj].getType(),
+                                                  filterQos[jj].getVersion(), 
+                                                  xmlKey.getContentMime(),
+                                                  xmlKey.getContentMimeExtended());
+                     Log.warn(ME, "get("+xmlKeyExact.getUniqueKey()+") filter=" + filter + " qos=" + qos.toXml());
+                     if (filter != null && filter.match(sessionInfo.getSubjectInfo(),
+                                                  sessionInfo.getSubjectInfo(),
+                                                  msgUnitWrapper, filterQos[jj].getQuery()) == false)
+                        continue NEXT_MSG; // filtered message is not send to client
+                  }
+               }
+
+               MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
 
                // Check with MsgQueueEntry.getUpdateQoS() !!!
                StringBuffer buf = new StringBuffer();
