@@ -47,6 +47,7 @@ public abstract class AddressBase
 
    protected final String className = "dispatch";
    protected final String context = null;
+   /** For example "plugin/socket/" */
    protected String envPrefix = "";
 
    /** The unique address, e.g. the CORBA IOR string */
@@ -92,11 +93,11 @@ public abstract class AddressBase
    
    /** Compress messages if set to "gzip" or "zip" */
    public static final String DEFAULT_compressType = "";
-   protected PropString compressType = new PropString(DEFAULT_compressType);
+   protected PropString compressType = new PropString("compressType", DEFAULT_compressType);
    
    /** Messages bigger this size in bytes are compressed */
    public static final long DEFAULT_minSize = 0L;
-   protected PropLong minSize = new PropLong(DEFAULT_minSize);
+   protected PropLong minSize = new PropLong("minSize", DEFAULT_minSize);
 
    public static final int DEFAULT_burstModeMaxEntries = -1;
    protected PropInt burstModeMaxEntries = new PropInt(DEFAULT_burstModeMaxEntries);
@@ -164,6 +165,15 @@ public abstract class AddressBase
       if (log.TRACE) log.trace(ME, "type=" + this.type.getValue() + " nodeId=" + this.nodeId + " context=" + context +
                          " className=" + className + " instanceName=" + this.instanceName + " envPrefix=" + this.envPrefix);
 
+      // On server side for SOCKET protocol we support compression types:
+      // Constants.COMPRESS_ZLIB_STREAM="zlib:stream" or "zlib" with minSize=1234 bytes
+      // This default setting comes from environment or protocol plugin property
+      // None stream compressions can be overwritten by CallbackAddress for each client individually
+      // Here follows the plugin initialization, further down we overwrite this with Address specific settings
+      // Example on server side: "-plugin/socket/compress/type stream"
+      this.compressType = getEnv("compress/type", this.compressType.getValue());
+      this.minSize = getEnv("compress/minSize", this.minSize.getValue());
+
       this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapHostname");
       this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapPort");
 
@@ -184,6 +194,8 @@ public abstract class AddressBase
       this.ptpAllowed.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "ptpAllowed");
       this.sessionId.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "sessionId");
       this.dispatchPlugin.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "DispatchPlugin/defaultPlugin");
+
+      //log.error(ME, getType() + " " + "DEBUG ONLY " + this.compressType + " " + this.minSize + toXml());
    }
 
    /**
