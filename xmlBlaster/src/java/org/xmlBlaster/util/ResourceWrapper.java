@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.6 2000/06/01 14:01:27 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.7 2000/06/01 16:02:51 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -37,10 +37,12 @@ public class ResourceWrapper implements I_Timeout
    private long busyToIdleTimeout;
    /** busyToIdleTimeout handle */
    private Long busyToIdleTimeoutHandle;
+   /** Max live span until 'idle' to 'erase' transition */
+   private long idleToEraseTimeout;
+   /** idleToEraseTimeout handle */
+   private Long idleToEraseTimeoutHandle;
    /** My manager */
    private PoolManager poolManager;
-
-   final static String INVALID_KEY = "RESOURCE_IS_IDLE";
 
 
    /**
@@ -50,12 +52,16 @@ public class ResourceWrapper implements I_Timeout
     * @param instanceId The unique ID<br />
     *                 If 'null': use ref.hashCode()
     * @param resource Your resource
-    * @param busyToIdleTimeout  The max. life span for this resource
+    * @param busyToIdleTimeout  The max. 'busy' life span for this resource<br />
+    *                            0: infinite
+    * @param idleToEraseTimeout  The max. 'idle' life span for this resource<br />
+    *                            0: infinite
     */
-   ResourceWrapper(PoolManager poolManager, String instanceId, Object resource, long busyToIdleTimeout)
+   ResourceWrapper(PoolManager poolManager, String instanceId, Object resource,
+                   long busyToIdleTimeout, long idleToEraseTimeout)
    {
       this.poolManager = poolManager;
-      init(instanceId, resource, busyToIdleTimeout);
+      init(instanceId, resource, busyToIdleTimeout, idleToEraseTimeout);
    }
 
 
@@ -68,7 +74,7 @@ public class ResourceWrapper implements I_Timeout
    ResourceWrapper(PoolManager poolManager)
    {
       this.poolManager = poolManager;
-      init(null, null, 0);
+      init(null, null, 0, 0);
    }
 
 
@@ -78,26 +84,115 @@ public class ResourceWrapper implements I_Timeout
     * @param instanceId The unique identifier<br />
     *                   Resource.hashCode() is used if you pass null
     * @param resource   Your resource
-    * @param busyToIdleTimeout    The max. life span.<br />
+    * @param busyToIdleTimeout    The max. busy life span.<br />
     *                   0: infinite life span
+    * @param idleToEraseTimeout  The max. 'idle' life span for this resource<br />
+    *                            0: infinite
     */
-   void init(String instanceId, Object resource, long busyToIdleTimeout)
+   void init(String instanceId, Object resource, long busyToIdleTimeout, long idleToEraseTimeout)
    {
       this.creationTime = System.currentTimeMillis();
       this.instanceId = instanceId;
       this.resource = resource;
-      if (busyToIdleTimeout > 0 && busyToIdleTimeout < 100) {
-         Log.warning(ME, "Setting minimum busyToIdleTimeout from " + busyToIdleTimeout + " to 100 milli seconds");
-         busyToIdleTimeout = 100;
-      }
-      this.busyToIdleTimeout = busyToIdleTimeout;
-      if (this.busyToIdleTimeout <= 0)
-         busyToIdleTimeoutHandle = null;
-      else
-         busyToIdleTimeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.busyToIdleTimeout, BUSY_TO_IDLE_TIMEOUT);
+      setBusyToIdle(busyToIdleTimeout);
+      setIdleToErase(idleToEraseTimeout);
       if (this.instanceId == null || this.instanceId.length() < 1)
          if (resource != null)
             this.instanceId = "" + resource.hashCode();
+   }
+
+
+   /**
+    * Entering 'busy' state. 
+    */
+   void toBusy()
+   {
+      stopIdleToEraseTimeout();
+      startBusyToIdleTimeout();
+   }
+
+
+   /**
+    * Entering 'idle' state. 
+    */
+   void toIdle()
+   {
+      stopBusyToIdleTimeout();
+      startIdleToEraseTimeout();
+   }
+
+
+   /**
+    * Set timeout and initialize timer. 
+    */
+   private void setBusyToIdle(long val)
+   {
+      stopBusyToIdleTimeout();
+      if (val > 0 && val < 100) {
+         Log.warning(ME, "Setting minimum busyToIdleTimeout from " + val + " to 100 milli seconds");
+         val = 100;
+      }
+      this.busyToIdleTimeout = val;
+   }
+
+
+   /**
+    * Start the timeout. 
+    */
+   private void startBusyToIdleTimeout()
+   {
+      stopBusyToIdleTimeout();
+      if (this.busyToIdleTimeout > 0)
+         busyToIdleTimeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.busyToIdleTimeout, BUSY_TO_IDLE_TIMEOUT);
+   }
+
+
+   /**
+    * Stop the timeout. 
+    */
+   private void stopBusyToIdleTimeout()
+   {
+      if (busyToIdleTimeoutHandle != null) {
+         Timeout.getInstance().removeTimeoutListener(busyToIdleTimeoutHandle);
+         busyToIdleTimeoutHandle = null;
+      }
+   }
+
+
+   /**
+    * Set timeout and initialize timer. 
+    */
+   private void setIdleToErase(long val)
+   {
+      stopIdleToEraseTimeout();
+      if (val > 0 && val < 100) {
+         Log.warning(ME, "Setting minimum idleToEraseTimeout from " + val + " to 100 milli seconds");
+         val = 100;
+      }
+      this.idleToEraseTimeout = val;
+   }
+
+
+   /**
+    * Start the idle to erase timeout. 
+    */
+   private void startIdleToEraseTimeout()
+   {
+      stopIdleToEraseTimeout();
+      if (this.idleToEraseTimeout > 0)
+         idleToEraseTimeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.idleToEraseTimeout, IDLE_TO_ERASE_TIMEOUT);
+   }
+
+
+   /**
+    * Stop the idle to erase timeout. 
+    */
+   private void stopIdleToEraseTimeout()
+   {
+      if (idleToEraseTimeoutHandle != null) {
+         Timeout.getInstance().removeTimeoutListener(idleToEraseTimeoutHandle);
+         idleToEraseTimeoutHandle = null;
+      }
    }
 
 
@@ -112,9 +207,11 @@ public class ResourceWrapper implements I_Timeout
       String type = (String)obj;
       if (Log.CALLS) Log.calls(ME, "Entering timeout(" + type + ") ...");
       if (type.equals(BUSY_TO_IDLE_TIMEOUT)) {
+         busyToIdleTimeoutHandle = null;
          poolManager.timeoutBusyToIdle(this);
       }
       else if (type.equals(IDLE_TO_ERASE_TIMEOUT)) {
+         idleToEraseTimeoutHandle = null;
          poolManager.timeoutIdleToErase(this);
       }
    }
@@ -124,7 +221,7 @@ public class ResourceWrapper implements I_Timeout
     * Is the resource life span expired?
     * @return true/false
     */
-   public boolean isExpired()
+   public boolean isBusyExpired()
    {
       if (busyToIdleTimeout <= 0) return false;
       if (busyToIdleTimeoutHandle == null) return false;
@@ -133,10 +230,10 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * How long am i running.
+    * How long am i running in busy mode. 
     * @return Milliseconds since creation or -1 if not known
     */
-   public long elapsed()
+   public long busyElapsed()
    {
       if (busyToIdleTimeout <= 0) return -1;
       return System.currentTimeMillis() - creationTime;
@@ -145,11 +242,24 @@ public class ResourceWrapper implements I_Timeout
 
    /**
     * How long to my death.
+    * @return Milliseconds to idleToEraseTimeout<br />
+    *         0 for infinite idle life<br />
+    */
+   public long spanOfTimeToErase()
+   {
+      if (idleToEraseTimeout <= 0) return 0;
+      if (idleToEraseTimeoutHandle == null) return 0;
+      return Timeout.getInstance().spanToTimeout(idleToEraseTimeoutHandle);
+   }
+
+
+   /**
+    * How long until i swap from busy to idle.
     * @return Milliseconds to busyToIdleTimeout<br />
     *         0 for infinite life<br />
     *         -1 if busyToIdleTimeout occurred already
     */
-   public long spanOfTimeToDeath()
+   public long spanOfTimeToIdle()
    {
       if (busyToIdleTimeout <= 0) return 0;
       if (busyToIdleTimeoutHandle == null) return 0;
@@ -158,10 +268,11 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Restart count down.
+    * Restart count down in busy mode. 
     */
-   public void touch()
+   public void touchBusy()
    {
+      if (busyToIdleTimeoutHandle == null) return;
       try {
          busyToIdleTimeoutHandle = Timeout.getInstance().refreshTimeoutListener(busyToIdleTimeoutHandle, busyToIdleTimeout);
       }
@@ -178,15 +289,6 @@ public class ResourceWrapper implements I_Timeout
    public String getInstanceId()
    {
       return instanceId;
-   }
-
-
-   /**
-    * Invalidate resource ID.
-    */
-   private void resetInstanceId()
-   {
-      instanceId = ResourceWrapper.INVALID_KEY;
    }
 
 
@@ -213,23 +315,42 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Access the max. life span of this resource.
-    * @return life span in milliseconds
+    * Access the overall busy timeout span of this resource.
+    * @return timeout span in milliseconds
     */
-   public long getTimeout()
+   public long getBusyToIdleTimeout()
    {
       return Timeout.getInstance().getTimeout(busyToIdleTimeoutHandle);
    }
 
 
    /**
+    * Access the overall idle timeout span of this resource.
+    * @return timeout span in milliseconds
+    */
+   public long getIdleToEraseTimeout()
+   {
+      return Timeout.getInstance().getTimeout(idleToEraseTimeoutHandle);
+   }
+
+
+   /**
     * Cleanup, reset timer and destroy id.
     */
-   public void cleanup()
+   public void destroy()
    {
-      if (busyToIdleTimeoutHandle != null)
+      if (Log.CALLS) Log.calls(ME, "Entering destroy() ...");
+      if (busyToIdleTimeoutHandle != null) {
          Timeout.getInstance().removeTimeoutListener(busyToIdleTimeoutHandle);
-      resetInstanceId();
+         busyToIdleTimeoutHandle = null;
+      }
+      if  (idleToEraseTimeoutHandle != null) {
+         Timeout.getInstance().removeTimeoutListener(idleToEraseTimeoutHandle);
+         idleToEraseTimeoutHandle = null;
+      }
+      instanceId = null;
+      resource = null;
+      poolManager = null;
    }
 
 
@@ -237,10 +358,10 @@ public class ResourceWrapper implements I_Timeout
     * Set new life span busyToIdleTimeout.
     * @param busyToIdleTimeout New busyToIdleTimeout in milliseconds
     */
-   public void setTimeout(long busyToIdleTimeout)
+   public void setBusyTimeout(long busyToIdleTimeout)
    {
       this.busyToIdleTimeout = busyToIdleTimeout;
-      touch();
+      touchBusy();
    }
 
 
@@ -277,7 +398,14 @@ public class ResourceWrapper implements I_Timeout
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
-      sb.append(offset).append("<").append(ME).append(" instanceId='").append(instanceId).append("'>");
+      sb.append(offset).append("<").append(ME).append(" instanceId='").append(instanceId);
+      sb.append(" name='").append(resource.toString());
+      sb.append("'>");
+
+      sb.append(offset).append("   <busyToIdle timeout='").append(busyToIdleTimeout).append("' handle='").append(busyToIdleTimeoutHandle).append("' />");
+      sb.append(offset).append("   <idleToErase timeout='").append(idleToEraseTimeout).append("' handle='").append(idleToEraseTimeoutHandle).append("' />");
+      
+      sb.append(offset).append("</").append(ME).append("'>");
       return sb.toString();
    }
 }

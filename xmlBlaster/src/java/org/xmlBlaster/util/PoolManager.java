@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.6 2000/06/01 14:01:27 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.7 2000/06/01 16:02:51 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ import java.util.Enumeration;
  *
  *      +<------- reserve() if(numIdle==0) ---------------------+
  *      |                                                       |
- *      |     +<- reserve() --+        +<-preReserve() --+      |
+ *      |     +<- reserve() --+        +<-preReserve() *-+      |
  *      |     | if(numIdle>0) |        |                 |      |
  *      |     |               |        |                 |      |
  *    #########               ##########                 ##########
@@ -45,11 +45,11 @@ import java.util.Enumeration;
  *      |  |  |   Explicit    | |  | | |   Explicit      | |  |  |
  *      |  |  +-- release() ->+ |  | | +-- erase() ----->+ |  |  |
  *      |  |                    |  | |                     |  |  |
- *      |  +-releaseTimeout() ->+  | +idleToEraseTimeout()>+  |  |
+ *      |  +busyToIdleTimeout()>+  | +idleToEraseTimeout()>+  |  |
  *      |                          |                          |  |
- *      |                          +-- erase on max cycles -->+  |
+ *      |                          +-- erase on max cycles *->+  |
  *      |                                                        |
- *      +--------- busyToEraseTimeout() since creation --------->+
+ *      +--------- busyToEraseTimeout() since creation *-------->+
  *
  * </pre>
  * There are three states:
@@ -62,12 +62,15 @@ import java.util.Enumeration;
  *    </li>
  * </ul>
  * <p>
+ * Note that state transitions marked with '*' are not yet implemented.
+ * If you need one of them, code it and contribute it please.
+ * <p>
  * You can choose which states you wish for your resource and how timeouts
  * are used to handle state transitions.<br />
  * </p>
  * <p>
  * For example if you want to pool user login sessions and want to do
- * an auto logout after 60 minutes, you would use the releaseTimeout and set it to 60*60*1000.<br />
+ * an auto logout after 60 minutes, you would use the busyToIdleTimeout and set it to 60*60*1000.<br />
  * If a user is active you can refresh the session with releaseRefresh().<br />
  * Often you want to use your own generated sessionId as the primary key
  * for this resource, you can pass it as the instanceId argument to reserve(sessionId).
@@ -100,7 +103,7 @@ public class PoolManager
    /** Default maximum pool size (number of resources) */
    private int maxInstances = 100;
    /** Default maximum busy time of a resource, on timeout it changes state from 'busy' to 'idle' */
-   private long releaseTimeout = 0;
+   private long busyToIdleTimeout = 0;
    /* Default maximum life span of a resource, on timeout it changes state from 'busy' to 'undef' (it is deleted) */
    //private long busyToEraseTimeout = 0;
    /** Default maximum idle span of a resource, on timeout it changes state from 'idle' to 'undef' (it is deleted) */
@@ -123,7 +126,7 @@ public class PoolManager
     * <p />
     * @param poolName       A nice name for this resource
     * @param maxInstances   Max. number of resources in this pool.
-    * @param releaseTimeout Max. busy time of this resource in milli seconds<br />
+    * @param busyToIdleTimeout Max. busy time of this resource in milli seconds<br />
     *                       On timeout it changes state from 'busy' to 'idle'.<br />
     *                       You can overwrite this value for each resource instance<br />
     *                       0 switches it off
@@ -132,18 +135,18 @@ public class PoolManager
     *                     You can overwrite this value for each resource instance<br />
     *                     0 switches it off
     */
-   public PoolManager(String poolName, I_PoolManager callback, int maxInstances, long releaseTimeout, long idleToEraseTimeout)
+   public PoolManager(String poolName, I_PoolManager callback, int maxInstances, long busyToIdleTimeout, long idleToEraseTimeout)
    {
       this.poolName = poolName;  // e.g. "SessionId"
       this.callback = callback;
       this.ME = poolName + "-PoolManager"; // e.g. "SessionId-PoolManager"
       this.setMaxInstances(maxInstances);
-      this.setReleaseTimeout(releaseTimeout);
+      this.setBusyToIdleTimeout(busyToIdleTimeout);
       this.setIdleToEraseTimeout(idleToEraseTimeout);
       this.busy = new java.util.Hashtable(maxInstances);
       this.idle = new java.util.Vector(maxInstances);
-      if (releaseTimeout > 0)
-         Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances and a default recycling-timeout of " + TimeHelper.millisToNice(this.releaseTimeout));
+      if (busyToIdleTimeout > 0)
+         Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances and a default recycling-timeout of " + TimeHelper.millisToNice(this.busyToIdleTimeout));
       else
          Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances without auto-recycling.");
    }
@@ -162,20 +165,20 @@ public class PoolManager
 
    /**
     * On timeout, the resource changes state from 'busy' to 'idle'.<br />
-    * @param releaseTimeout Max. busy time of this resource in milli seconds<br />
+    * @param busyToIdleTimeout Max. busy time of this resource in milli seconds<br />
     *                       On timeout it changes state from 'busy' to 'idle'.<br />
     *                       You can overwrite this value for each resource instance<br />
     *                       0 switches it off
     */
-   private void setReleaseTimeout(long releaseTimeout)
+   private void setBusyToIdleTimeout(long busyToIdleTimeout)
    {
-      if (releaseTimeout > 0 && releaseTimeout < 100) {
-         Log.warning(ME, "Setting minimum release timeout from " + releaseTimeout + " to 100 milli seconds.");
-         this.releaseTimeout = 100;
+      if (busyToIdleTimeout > 0 && busyToIdleTimeout < 100) {
+         Log.warning(ME, "Setting minimum release timeout from " + busyToIdleTimeout + " to 100 milli seconds.");
+         this.busyToIdleTimeout = 100;
       }
       else
-         this.releaseTimeout = releaseTimeout;
-      if (Log.TRACE) Log.trace(ME, "Set default life span to " + TimeHelper.millisToNice(this.releaseTimeout));
+         this.busyToIdleTimeout = busyToIdleTimeout;
+      if (Log.TRACE) Log.trace(ME, "Set default life span to " + TimeHelper.millisToNice(this.busyToIdleTimeout));
    }
 
 
@@ -202,12 +205,12 @@ public class PoolManager
     * <p />
     * The life span is set to the default value of the pool.
     * <p />
-    * The instance Id random and unique generated.
+    * The instance Id is random and unique generated.
     * @exception XmlBlasterException Error with random generator
     */
    public ResourceWrapper reserve() throws XmlBlasterException
    {
-      return reserve(releaseTimeout, "");
+      return reserve(busyToIdleTimeout, idleToEraseTimeout, "");
    }
 
 
@@ -221,18 +224,25 @@ public class PoolManager
     */
    public ResourceWrapper reserve(String instanceId) throws XmlBlasterException
    {
-      return reserve(releaseTimeout, instanceId);
+      return reserve(busyToIdleTimeout, idleToEraseTimeout, instanceId);
    }
 
 
    /**
     * Get a new resource.
     *
-    * @param releaseTimeout Max. busy time of this resource in milli seconds, only for this current resource<br />
+    * @param localBusyToIdleTimeout Max. busy time of this resource in milli seconds,
+    *                       only for this current resource<br />
     *                       Overwrite locally the default<br />
     *                       0 switches busy timeout off
     *
-    * @param instanceId if given, the delivered ID is used: If in busy found, this is returned else a new is created.<br />
+    * @param localIdleToEraseTimeout Max. idle time of this resource in milli seconds,
+    *                       only for this current resource<br />
+    *                       Overwrite locally the default<br />
+    *                       0 switches idle timeout off
+    *
+    * @param instanceId If given, the delivered ID is used:
+    *             If in busy list found, this is returned, else a new is created.<br />
     *             null - The PoolManager generates a simple one (hashCode())<br />
     *             ""   - The PollManager generates a random, unique in universe session ID
     *
@@ -240,7 +250,8 @@ public class PoolManager
     *
     * @exception XmlBlasterException Error with random generator
     */
-   synchronized public ResourceWrapper reserve(long localReleaseTimeout, String instanceId) throws XmlBlasterException
+   synchronized public ResourceWrapper reserve(long localBusyToIdleTimeout,
+                       long localIdleToEraseTimeout, String instanceId) throws XmlBlasterException
    {
       ResourceWrapper rw = null;
       if (instanceId != null && instanceId.length() > 0) {
@@ -251,9 +262,9 @@ public class PoolManager
          }
       }
       if (idle.size() > 0) {
-          if (Log.TRACE) Log.trace(ME, "Resource is receycled from idle pool ...");
+          if (Log.TRACE) Log.trace(ME, "Resource is recycled from idle pool ...");
           rw = (ResourceWrapper)idle.lastElement();
-          rw.init(createId(instanceId), rw.getResource(), localReleaseTimeout);
+          rw.init(createId(instanceId), rw.getResource(), localBusyToIdleTimeout, localIdleToEraseTimeout);
           swap(rw, true);
           if (Log.TRACE) Log.trace(ME, "Access on cached resource '" + rw.getInstanceId() + "' granted");
           dumpState(rw.getInstanceId());
@@ -266,25 +277,14 @@ public class PoolManager
          if (Log.TRACE) Log.trace(ME, "Creating new ResourceWrapper instance ...");
          instanceId = createId(instanceId);
          Object resource = callback.toCreate(instanceId);
-         rw = new ResourceWrapper(this, instanceId, resource, localReleaseTimeout);
+         rw = new ResourceWrapper(this, instanceId, resource, localBusyToIdleTimeout, idleToEraseTimeout);
+         rw.toBusy();
          busy.put(rw.getInstanceId(), rw);
          Log.info(ME, "Granted access to new resource '" + rw.getInstanceId() + "'");
          dumpState(rw.getInstanceId());
       }
       return rw;
    }
-
-
-    /**
-     * Set your resource object.
-     * @param rw       The resource handle
-     * @param resource Your object
-     */
-    public void setResource(ResourceWrapper rw, Object resource)
-    {
-       rw.setResource(resource);
-       busy.put(rw.getInstanceId(), rw);
-    }
 
 
    /**
@@ -352,12 +352,13 @@ public class PoolManager
       if (toBusy) {
           idle.removeElementAt(idle.size() - 1);
           callback.idleToBusy(rw.getResource());
+          rw.toBusy();
           busy.put(rw.getInstanceId(), rw);
       }
       else  { // recycling ...
          busy.remove(rw.getInstanceId());
          callback.busyToIdle(rw.getResource());
-         rw.cleanup();
+         rw.toIdle();
          idle.addElement(rw);
       }
    }
@@ -422,37 +423,23 @@ public class PoolManager
    public void releaseRefresh(String instanceId) throws XmlBlasterException
    {
       ResourceWrapper rw = findLow(instanceId);
-      rw.touch();
+      rw.touchBusy();
       if (Log.TRACE) Log.trace(ME, "Refreshing life of '" + instanceId + "'");
    }
 
 
    /**
-    * Find a 'busy' resource.
-    *
-    * @param instanceId The unique resource ID
-    * @exception XmlBlasterException ResourceNotFound
-    *//*
-   public ResourceWrapper find(String instanceId) throws XmlBlasterException
-   {
-     ResourceWrapper rw = findLow(instanceId);
-     if (Log.TRACE) Log.trace(ME, "Erfolgreich mit Resource '" + instanceId + "' wiederverbunden");
-     return rw;
-   }    */
-
-
-   /**
     * Find a 'busy' resource and change its timeout life cycle.
     * @param instanceId The unique resource ID
-    * @param timeout New timeout (for the receylce thread).
+    * @param timeout New timeout in milliseconds (for the recycle thread).
     *                0: No automatic recycling
     * @exception XmlBlasterException ResourceNotFound
     */
    public void setTimeout(String instanceId, long timeout) throws XmlBlasterException
    {
      ResourceWrapper rw = findLow(instanceId);
-     rw.setTimeout(timeout*1000);
-     if (Log.TRACE) Log.trace(ME, "setTimeout(" + timeout + "sec) for '" + instanceId + "'");
+     rw.setBusyTimeout(timeout);
+     if (Log.TRACE) Log.trace(ME, "setTimeout(" + timeout + " millisec) for '" + instanceId + "'");
    }
 
 
@@ -480,12 +467,18 @@ public class PoolManager
    public void cleanup()
    {
       Log.info(ME, "Freeing all resources, " + busy.size() + " are busy and " + idle.size() + " idle.");
-      for (int ii=0; ii<idle.size(); ii++)
-         callback.toErased(((ResourceWrapper)idle.elementAt(ii)).getResource());
+      for (int ii=0; ii<idle.size(); ii++) {
+         ResourceWrapper rw = (ResourceWrapper)idle.elementAt(ii);
+         callback.toErased(rw.getResource());
+         rw.destroy();
+      }
       idle.removeAllElements();
       java.util.Enumeration e = busy.elements();
-      for (; e.hasMoreElements() ;)
-         callback.toErased(((ResourceWrapper)e.nextElement()).getResource());
+      for (; e.hasMoreElements() ;) {
+         ResourceWrapper rw = (ResourceWrapper)e.nextElement();
+         callback.toErased(rw.getResource());
+         rw.destroy();
+      }
       busy.clear();
       if (Log.TRACE) Log.trace(ME, busy.size() + " busy resources and " + idle.size() + " are idle but allocated.");
    }
@@ -540,17 +533,17 @@ public class PoolManager
       offset += extraOffset;
 
       buf.append(offset).append("<").append(ME).append(" maxInstances='").append(maxInstances);
-      buf.append("' releaseTimeout='").append(releaseTimeout);
+      buf.append("' busyToIdleTimeout='").append(busyToIdleTimeout);
       buf.append("' idleToEraseTimeout='").append(idleToEraseTimeout).append("'>");
 
-      buf.append(offset).append("   <busy num='").append(busy.size()).append(">");
+      buf.append(offset).append("   <busy num='").append(busy.size()).append("'>");
       for (Enumeration e = busy.elements() ; e.hasMoreElements() ;) {
          ResourceWrapper rw = (ResourceWrapper)e.nextElement();
          buf.append(rw.toXml("   "));
       }
       buf.append(offset).append("   </busy>");
 
-      buf.append(offset).append("   <idle num='").append(idle.size()).append(">");
+      buf.append(offset).append("   <idle num='").append(idle.size()).append("'>");
       for (int ii=0; ii<idle.size(); ii++) {
          ResourceWrapper rw = (ResourceWrapper)idle.elementAt(ii);
          buf.append(rw.toXml("   "));
@@ -571,7 +564,7 @@ public class PoolManager
    void timeoutBusyToIdle(ResourceWrapper rw)
    {
       if (Log.CALLS) Log.calls(ME, "Entering 'busy' to 'idle' timeout() ...");
-      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is receycled from 'busy' state, was not in use since " + TimeHelper.millisToNice(rw.elapsed()));
+      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is recycled from 'busy' state, was not in use since " + TimeHelper.millisToNice(rw.busyElapsed()));
       swap(rw, false);
       dumpState(rw.getInstanceId());
    }
@@ -586,7 +579,29 @@ public class PoolManager
    void timeoutIdleToErase(ResourceWrapper rw)
    {
       if (Log.CALLS) Log.calls(ME, "Entering 'idle' to 'erase' timeout() ...");
-      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is erased from 'idle' state, was not in use since " + TimeHelper.millisToNice(rw.elapsed()));
+      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is erased from 'idle' state after timeout");
+      erase(rw);
+   }
+
+
+   /**
+    * Explicitly remove a resource. 
+    * @param instanceId The unique resource ID
+    */
+   public void erase(String instanceId)
+   {
+      ResourceWrapper rw = findSilent(instanceId);
+      erase(rw);
+   }
+
+
+   /**
+    * Remove a resource. 
+    * @param rw The resource wrapper object
+    */
+   private void erase(ResourceWrapper rw)
+   {
+      if (rw == null) return;
       idle.remove(rw);
       callback.toErased(rw.getResource());
       dumpState(rw.getInstanceId());
@@ -616,6 +631,7 @@ public class PoolManager
             this.instanceId = instanceId;
             this.isBusy = isBusy;
          }
+         public String toString() { return name; }
       }
 
       /**
@@ -625,8 +641,8 @@ public class PoolManager
       class TestPool implements I_PoolManager {
          private int counter=0;
          PoolManager poolManager;
-         TestPool() {
-            poolManager = new PoolManager(ME, this, 3, 2000, 0);
+         TestPool(long busyToIdle, long idleToErase) {
+            poolManager = new PoolManager(ME, this, 3, busyToIdle, idleToErase);
          }
 
          // These four methods are callbacks from PoolManager ...
@@ -652,7 +668,7 @@ public class PoolManager
          }
 
          // These methods are used by your application to get a recource ...
-         TestResource reserve() { return reserve(""); }
+         TestResource reserve() { return reserve(null); }
          TestResource reserve(String instanceId) {
             Log.info(ME, "Entering reserve(" + instanceId + ") ...");
             try {
@@ -682,28 +698,29 @@ public class PoolManager
       // [1] Test with generated instance ID
       if (true) {
          Log.info(ME, "\nStarting TEST 1 ...");
-         TestPool testPool = new TestPool();
+         TestPool testPool = new TestPool(2000, 0);
          TestResource r0 = testPool.reserve();
          TestResource r1 = testPool.reserve();
          TestResource r2 = testPool.reserve();
          testPool.reserve();
          if (testPool.poolManager.getNumBusy() != 3 || testPool.poolManager.getNumIdle() != 0)
-            Log.panic(ME, "TEST 1.1 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 1.1 FAILED: Wrong number of busy/idle resources");
          testPool.release(r0);
          if (testPool.poolManager.getNumBusy() != 2 || testPool.poolManager.getNumIdle() != 1)
-            Log.panic(ME, "TEST 1.2 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 1.2 FAILED: Wrong number of busy/idle resources");
          testPool.reserve();
          testPool.release(r2);
          Log.plain(ME, testPool.poolManager.toXml());
 
          // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
          try { Thread.currentThread().sleep(3000); } catch( InterruptedException i) {}
-         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 3)
-            Log.panic(ME, "TEST 1.3 FAILED: Wromg number of busy/idle resources");
          Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 3)
+            Log.panic(ME, "TEST 1.3 FAILED: Wrong number of busy/idle resources");
+
          testPool.reserve();
          if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 2)
-            Log.panic(ME, "TEST 1.4 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 1.4 FAILED: Wrong number of busy/idle resources");
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
          Log.plain(ME, testPool.poolManager.toXml());
@@ -713,7 +730,7 @@ public class PoolManager
       // [2] Test with supplied instance ID
       if (true) {
          Log.info(ME, "\nStarting TEST 2 ...");
-         TestPool testPool = new TestPool();
+         TestPool testPool = new TestPool(2000, 0);
          TestResource r0 = testPool.reserve("ID-0");
          TestResource r1 = testPool.reserve("ID-1");
          TestResource r2 = testPool.reserve("ID-2");
@@ -721,23 +738,50 @@ public class PoolManager
          r2 = testPool.reserve("ID-2");
          r2 = testPool.reserve("ID-2");
          if (testPool.poolManager.getNumBusy() != 3 || testPool.poolManager.getNumIdle() != 0)
-            Log.panic(ME, "TEST 2.1 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 2.1 FAILED: Wrong number of busy/idle resources");
          testPool.reserve("ID-3");
          testPool.release(r0);
          if (testPool.poolManager.getNumBusy() != 2 || testPool.poolManager.getNumIdle() != 1)
-            Log.panic(ME, "TEST 2.2 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 2.2 FAILED: Wrong number of busy/idle resources");
          testPool.reserve("ID-4");
          testPool.release(r2);
          Log.plain(ME, testPool.poolManager.toXml());
 
          // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
          try { Thread.currentThread().sleep(3000); } catch( InterruptedException i) {}
-         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 3)
-            Log.panic(ME, "TEST 2.3 FAILED: Wromg number of busy/idle resources");
          Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 3)
+            Log.panic(ME, "TEST 2.3 FAILED: Wrong number of busy/idle resources");
+
          testPool.reserve("ID-5");
          if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 2)
-            Log.panic(ME, "TEST 2.4 FAILED: Wromg number of busy/idle resources");
+            Log.panic(ME, "TEST 2.4 FAILED: Wrong number of busy/idle resources");
+
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         Log.plain(ME, testPool.poolManager.toXml());
+      }
+
+      // [3] Test with supplied instance ID
+      if (true) {
+         Log.info(ME, "\nStarting TEST 3 ...");
+         TestPool testPool = new TestPool(2000, 3000); // erase resource after 3 sec in idle state
+         TestResource r0 = testPool.reserve("ID-0");
+         TestResource r1 = testPool.reserve("ID-1");
+         Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 2 || testPool.poolManager.getNumIdle() != 0)
+            Log.panic(ME, "TEST 3.1 FAILED: Wrong number of busy/idle resources");
+
+         // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
+         try { Thread.currentThread().sleep(3000); } catch( InterruptedException i) {}
+         Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 2)
+            Log.panic(ME, "TEST 3.2 FAILED: Wrong number of busy/idle resources");
+
+         // The resources are erased after 3 seconds in idle state, lets wait 4 seconds ...
+         try { Thread.currentThread().sleep(4000); } catch( InterruptedException i) {}
+         Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 0)
+            Log.panic(ME, "TEST 3.3 FAILED: Wrong number of busy/idle resources");
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
          Log.plain(ME, testPool.poolManager.toXml());

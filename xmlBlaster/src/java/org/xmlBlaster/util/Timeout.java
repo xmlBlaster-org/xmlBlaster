@@ -3,7 +3,7 @@ Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Allows you be called back after a given delay.
-Version:   $Id: Timeout.java,v 1.6 2000/05/31 19:47:29 ruff Exp $
+Version:   $Id: Timeout.java,v 1.7 2000/06/01 16:02:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -235,7 +235,7 @@ public class Timeout extends Thread
 
 
    /**
-    * How long to my timeout. 
+    * How long to my timeout.
     *
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     * @return Milliseconds to timeout, or -1 if not known
@@ -254,7 +254,7 @@ public class Timeout extends Thread
 
 
    /**
-    * How long am i running. 
+    * How long am i running.
     *
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     * @return Milliseconds since creation, or -1 if not known
@@ -275,9 +275,11 @@ public class Timeout extends Thread
     * Access the end of life span.
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     * @return Time in milliseconds since midnight, January 1, 1970 UTC
+    *         or -1 if not known
     */
    public final long getTimeout(Long key)
    {
+      if (key == null) return -1;
       return key.longValue();
    }
 
