@@ -35,7 +35,7 @@ PACKGS = org.xmlBlaster \
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
-DEMO_PACKGS = javaclients
+DEMO_PACKGS = javaclients html.systemInfo
 
 DOC_PACKGS = doc.requirements
 
