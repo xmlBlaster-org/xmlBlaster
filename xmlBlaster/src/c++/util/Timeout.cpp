@@ -19,11 +19,12 @@ using boost::lexical_cast;
 namespace org { namespace xmlBlaster { namespace util {
 
 
-   Timeout::Timeout(int args, const char * const argc[]) : ME("Timeout"), threadName_("Timeout-Thread"), 
+   Timeout::Timeout(Global& global) : ME("Timeout"), threadName_("Timeout-Thread"),
       isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-      timestampFactory_(TimestampFactory::getInstance()), log_(args, argc), isActive_(true) {
+      timestampFactory_(TimestampFactory::getInstance()), isActive_(true),
+        global_(global), log_(global.getLog("util"))
+      {
       // the thread will only be instantiated when starting 
-      log_.initialize();
       log_.call(ME, " default constructor");
       runningThread_ = NULL;
 
@@ -33,11 +34,12 @@ namespace org { namespace xmlBlaster { namespace util {
       log_.trace(ME, " default constructor: after creating timeout condition");
    }
 
-   Timeout::Timeout(const string &name, int args, const char * const argc[]) : ME("Timeout"), threadName_(name), 
+   Timeout::Timeout(Global& global, const string &name) : ME("Timeout"), threadName_(name),
         isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-        timestampFactory_(TimestampFactory::getInstance()), log_(args, argc), isActive_(true) {
+        timestampFactory_(TimestampFactory::getInstance()), isActive_(true),
+        global_(global), log_(global.getLog("util"))
+   {
       // the thread remains uninitialized ...
-      log_.initialize();
       log_.call(ME, " alternative constructor");
       runningThread_ = NULL;
       invocationMutex_ = new boost::mutex();

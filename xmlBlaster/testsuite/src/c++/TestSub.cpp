@@ -3,13 +3,15 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.3 2002/12/02 10:13:20 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.4 2002/12/05 22:30:38 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
 #include <client/protocol/corba/CorbaConnection.h>
 #include <util/StopWatch.h>
 #include <util/PlatformUtils.hpp>
+#include <util/Global.h>
+#include <client/I_Callback.h>
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath
@@ -23,10 +25,11 @@ Version:   $Id: TestSub.cpp,v 1.3 2002/12/02 10:13:20 laghi Exp $
 using namespace std;
 using boost::lexical_cast;
 using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+using org::xmlBlaster::util::Global;
 
 namespace org { namespace xmlBlaster {
 
-class TestSub: public I_Callback {
+class TestSub: public client::I_Callback {
 private:
    string me() {
       return "Tim";
@@ -41,7 +44,6 @@ private:
    bool            messageArrived_; // = false;
    int             numReceived_;    //  = 0;         // error checking
    CorbaConnection *senderConnection_;
-   util::Log       log_;
 
    string subscribeOid_;
    string publishOid_; // = "dummy";
@@ -51,6 +53,8 @@ private:
 
    string contentMime_; // = "text/xml";
    string contentMimeExtended_; //  = "1.0";
+   Global&          global_;
+   util::Log&       log_;
 
    /** Publish tests */
    enum TestType {
@@ -64,7 +68,9 @@ private:
     * @param loginName The name to login to the xmlBlaster
     */
  public:
-   TestSub(const string &loginName) : log_() {
+   TestSub(Global& global, const string &loginName)
+      : global_(global), log_(global.getLog("test"))
+   {
       senderName_          = loginName;
       receiverName_        = loginName;
       numReceived_         = 0;
@@ -91,7 +97,7 @@ private:
          }
       }
       try {
-         senderConnection_ = new CorbaConnection(args, argc); // Find orb
+         senderConnection_ = new CorbaConnection(global_); // Find orb
          string passwd = "secret";
          senderConnection_->login(senderName_, passwd, 0, this);
          // Login to xmlBlaster
@@ -437,7 +443,8 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub("Tim");
+   Global& glob = Global::getInstance();
+   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testPublishAfterSubscribeXPath();
    testSub->tearDown();

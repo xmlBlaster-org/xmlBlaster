@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.4 2002/12/05 00:01:32 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.5 2002/12/05 22:30:38 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -29,15 +29,19 @@ Version:   $Id: TestConnect.cpp,v 1.4 2002/12/05 00:01:32 laghi Exp $
 #include <util/PlatformUtils.hpp>
 #include <util/StopWatch.h>
 #include <util/XmlBlasterException.h>
+#include <util/Global.h>
+#include <client/I_Callback.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util::qos;
+
 using org::xmlBlaster::client::protocol::corba::CorbaDriver;
 using org::xmlBlaster::util::XmlBlasterException;
+using org::xmlBlaster::util::Global;
+using namespace std;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster {
 
-class TestConnect : public virtual I_Callback {
+class TestConnect : public virtual client::I_Callback {
 
 private:
    string me() {
@@ -51,11 +55,12 @@ private:
    CorbaDriver            *conn1_, *conn2_;
    serverIdl::MessageUnit *msgUnit_;     // a message to play with
 
-   int       numReceived_; // error checking
-   string    contentMime_;
-   string    contentMimeExtended_;
-   util::Log *log_;
+   int             numReceived_; // error checking
+   string          contentMime_;
+   string          contentMimeExtended_;
+   Global&         global_;
    util::StopWatch stopWatch_;
+   util::Log&      log_;
 
 public:
    /**
@@ -65,8 +70,8 @@ public:
     * @param loginName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   TestConnect(const string &qos1,
-               const string &qos2) : stopWatch_() {
+   TestConnect(Global& global, const string &qos1, const string &qos2)
+      : stopWatch_(), global_(global), log_(global.getLog("test")) {
       qos1_                = qos1;
       qos2_                = qos2;
       publishReturnQos     = "";
@@ -74,7 +79,6 @@ public:
       oid_                 = "TestLogin";
       numReceived_         = 0;
       contentMime_         = "text/plain";
-      log_                 = NULL;
       contentMimeExtended_ = "1.0";
       msgUnit_             = NULL;
       conn1_               = conn2_ = NULL;
@@ -83,7 +87,6 @@ public:
    ~TestConnect() {
       delete conn1_;
       delete conn2_;
-      delete log_;
       delete msgUnit_;
    }
 
@@ -107,7 +110,7 @@ public:
                UpdateKey &/*updateKey*/,
                void * /*content*/, long /*contentSize*/,
                UpdateQos &/*updateQos*/) {
-      if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
+      if (log_.CALL) log_.call(me(), "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }
@@ -125,22 +128,21 @@ public:
          }
       }
       try {
-         if (!log_) log_   = new util::Log(args, argc);
          if (conn1_) delete conn1_;
-         conn1_ = new CorbaDriver(args, argc); // Find orb
-         ConnectQosFactory factory(args, argc);
+         conn1_ = new CorbaDriver(global_); // Find orb
+         ConnectQosFactory factory(global_);
          ConnectQos connectQos1 = factory.readObject(qos1_);
          conn1_->connect(connectQos1);
 
          // Login to xmlBlaster
          if (conn2_) delete conn2_;
          ConnectQos connectQos2 = factory.readObject(qos2_);
-         conn2_ = new CorbaDriver(args, argc); // Find orb
+         conn2_ = new CorbaDriver(global_); // Find orb
          conn2_->connect(connectQos2);
 
       }
       catch (XmlBlasterException &e) {
-         log_->error(me(), e.toXml());
+         log_.error(me(), e.toXml());
          usage();
       }
    }
@@ -159,7 +161,6 @@ public:
 private:
    void usage()
    {
-      util::Log log_;
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
       log_.plain(me(), "Usage:");
@@ -210,8 +211,9 @@ int main(int args, char *argc[]) {
       string("   <ptp>false</ptp>\n") +
       string("</qos>\n");
 
+   Global& glob = Global::getInstance();
    org::xmlBlaster::TestConnect
-    *testConnect = new org::xmlBlaster::TestConnect(qos1, qos2);
+    *testConnect = new org::xmlBlaster::TestConnect(glob, qos1, qos2);
    testConnect->setUp(args, argc);
    testConnect->tearDown();
    delete testConnect;

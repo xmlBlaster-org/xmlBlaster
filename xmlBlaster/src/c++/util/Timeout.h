@@ -12,6 +12,7 @@ Comment:   Allows you be called back after a given delay.
 #include <util/I_Timeout.h>
 #include <util/Timestamp.h>
 #include <util/Log.h>
+#include <util/Global.h>
 
 #include <string>
 #include <map>
@@ -104,7 +105,8 @@ class Dll_Export Timeout {
    boost::condition *waitForTimeoutCondition_;
    TimestampFactory& timestampFactory_;
 
-   Log log_;
+   Global& global_;
+   Log&    log_;
 
    friend class TimeoutRunner;
  public:
@@ -112,12 +114,12 @@ class Dll_Export Timeout {
    /**
     * Create a timer thread. 
     */
-   Timeout(int args=0, const char * const argc[]=0);
+   Timeout(Global& global);
 
    /**
     * Create a timer thread. 
     */
-   Timeout(const string &name, int args=0, const char * const argc[]=0);
+   Timeout(Global& global, const string &name);
 
     ~Timeout();
 

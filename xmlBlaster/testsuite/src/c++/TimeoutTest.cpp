@@ -8,13 +8,10 @@ Comment:   Testing the Timeout Features
 #include <util/Timeout.h>
 #include <iostream>
 #include <string>
-
-// #include <unistd.h>
+#include <util/Global.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-
-// using boost::lexical_cast;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -31,11 +28,12 @@ class TimeoutTest : public I_Timeout {
 private:
    string ME;
    Timeout *timeoutObject;
+   Global& global_;
 public:
-   TimeoutTest(string name) : ME(name) {
+   TimeoutTest(Global& global, string name) : ME(name), global_(global) {
    }
 
-   ~TimeoutTest()
+   virtual ~TimeoutTest()
    {
       delete timeoutObject;
    }
@@ -66,7 +64,7 @@ public:
 
    void setUp(int args=0, char *argc[]=0) {
       cout << ME << " setUp(): creating the timeout object" << endl;
-      timeoutObject = new Timeout(args, argc);
+      timeoutObject = new Timeout(global_);
       cout << ME << " setUp(): timeout object created" << endl;
    }
 
@@ -84,8 +82,9 @@ public:
 
 int main(int args, char *argc[]) {
 
-   org::xmlBlaster::TimeoutTest *test = new org::xmlBlaster::TimeoutTest("TimeoutTest");
+   Global& glob = Global::getInstance();
 
+   org::xmlBlaster::TimeoutTest *test = new org::xmlBlaster::TimeoutTest(glob, "TimeoutTest");
 
    test->setUp(args, argc);
    test->testTimeout();

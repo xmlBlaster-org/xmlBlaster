@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.4 2002/12/02 10:13:20 laghi Exp $
+Version:   $Id: TestLogin.cpp,v 1.5 2002/12/05 22:30:38 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -26,15 +26,17 @@ Version:   $Id: TestLogin.cpp,v 1.4 2002/12/02 10:13:20 laghi Exp $
 #include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
-//#include <unistd.h>
 #include <util/StopWatch.h>
+#include <util/Global.h>
+#include <client/I_Callback.h>
 
 using namespace std;
 using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+using org::xmlBlaster::util::Global;
 
 namespace org { namespace xmlBlaster {
 
-class TestLogin : public virtual I_Callback {
+class TestLogin : public virtual client::I_Callback {
 
 private:
    string me() {
@@ -51,8 +53,9 @@ private:
    int       numReceived_; // error checking
    string    contentMime_;
    string    contentMimeExtended_;
-   util::Log *log_;
    util::StopWatch stopWatch_;
+   Global&    global_;
+   util::Log& log_;
 
 public:
    /**
@@ -62,8 +65,10 @@ public:
     * @param loginName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   TestLogin(const string &senderName,
-             const string &secondName) : stopWatch_() {
+   TestLogin(Global& global, const string &senderName,
+             const string &secondName) : stopWatch_(), global_(global),
+             log_(global.getLog("test"))
+   {
       senderName_  = senderName;
       secondName_  = secondName;
       publishReturnQos  = "";
@@ -71,7 +76,6 @@ public:
       oid_         = "TestLogin";
       numReceived_ = 0;
       contentMime_ = "text/plain";
-      log_         = 0;
       contentMimeExtended_ = "1.0";
       msgUnit_     = 0;
       senderConnection_ = secondConnection_ = 0;
@@ -80,7 +84,6 @@ public:
    ~TestLogin() {
       delete senderConnection_;
       delete secondConnection_;
-      delete log_;
       delete msgUnit_;
    }
 
@@ -104,7 +107,7 @@ public:
                UpdateKey &/*updateKey*/,
                void * /*content*/, long /*contentSize*/,
                UpdateQos &/*updateQos*/) {
-      if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
+      if (log_.CALL) log_.call(me(), "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }
@@ -122,9 +125,8 @@ public:
          }
       }
       try {
-         if (!log_) log_   = new util::Log(args, argc);
          if (senderConnection_) delete senderConnection_;
-         senderConnection_ = new CorbaConnection(args, argc); // Find orb
+         senderConnection_ = new CorbaConnection(global_); // Find orb
          string passwd     = "secret";
 
          LoginQosWrapper qosWrapper;
@@ -132,7 +134,7 @@ public:
 
          // Login to xmlBlaster
          if (secondConnection_) delete secondConnection_;
-         secondConnection_ = new CorbaConnection(args, argc); // Find orb
+         secondConnection_ = new CorbaConnection(global_); // Find orb
          secondConnection_->login(secondName_, passwd, qosWrapper, this);
 
          // a sample message unit
@@ -150,7 +152,7 @@ public:
                                    (CORBA::Octet*)senderContent_.c_str());
       }
       catch (CORBA::Exception &e) {
-         log_->error(me(), to_string(e));
+         log_.error(me(), to_string(e));
          cerr << to_string(e);
          usage();
       }
@@ -172,12 +174,12 @@ public:
       catch(serverIdl::XmlBlasterException &e) {
          string msg = me() + "-tearDown()";
          string txt = string("XmlBlasterException in erase(): ") + string(e.errorCodeStr) + string(": ") + string(e.message);
-         log_->error(msg, txt);
+         log_.error(msg, txt);
       }
       if (strArr.size() != 1) {
          string txt = "Erased ";
          txt += strArr.size() + " messages:";
-         log_->error(me(), txt);
+         log_.error(me(), txt);
       }
 
       xmlKey = "<key oid='" + secondOid_ + "' queryType='EXACT'>\n</key>";
@@ -189,12 +191,12 @@ public:
 
          string msg = me() + "-tearDown()";
          string txt = string("XmlBlasterException in erase(): ") + string(e.errorCodeStr) + string(": ") + string(e.message);
-         log_->error(msg, txt);
+         log_.error(msg, txt);
       }
       if (strArr.size() != 1) {
          string txt = "Erased ";
          txt       += "many messages"; // change many with the number!!!!
-         log_->error(me(), txt);
+         log_.error(me(), txt);
       }
       senderConnection_->logout();
       secondConnection_->logout();
@@ -208,7 +210,7 @@ public:
     * The returned subscribeOid is checked
     */
    void testSubscribeXPath() {
-      if (log_->TRACE) log_->trace(me(),"Subscribing using XPath syntax ...");
+      if (log_.TRACE) log_.trace(me(),"Subscribing using XPath syntax ...");
 
       string xmlKey = "<key oid='' queryType='XPATH'>\n";
       xmlKey       += "   //TestLogin-AGENT </key>";
@@ -220,10 +222,10 @@ public:
             senderConnection_->subscribe(xmlKey.c_str(), qos.c_str());
          string txt   = "Success: Subscribe on ";
          txt         += subscribeOid + " done";
-         log_->info(me(), txt);
+         log_.info(me(), txt);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warn(me() + "-testSubscribeXPath", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         log_.warn(me() + "-testSubscribeXPath", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
          string txt = string("subscribe - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << txt << endl;
          assert(0);
@@ -246,7 +248,7 @@ public:
     * @param ptp Use the Point to Point style
     */
    void testPublish(bool ptp) {
-      if (log_->TRACE) log_->trace(me(), "Publishing a message ...");
+      if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
 
       numReceived_ = 0;
       string qos = "<qos></qos>";
@@ -263,7 +265,7 @@ public:
 
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warn(me()+"-testPublish",
+         log_.warn(me()+"-testPublish",
                string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
          string msg = string("publish - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << msg << endl;
@@ -326,7 +328,7 @@ public:
             /*second*/ senderConnection_->publish(secondMsg);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warn(me()+"-secondPublish", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         log_.warn(me()+"-secondPublish", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
          string msg = string("second - publish - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << msg << endl;
          assert(0);
@@ -351,7 +353,7 @@ public:
          assert(0);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->info(me(), string("Success: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         log_.info(me(), string("Success: ") + string(e.errorCodeStr) + ": " + string(e.message));
       }
 
       stopWatch_.wait(1000L); // wait a second
@@ -431,7 +433,8 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin("Tim", "Joe");
+   Global& glob = Global::getInstance();
+   org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin(glob, "Tim", "Joe");
    testSub->setUp(args, argc);
    testSub->testLoginLogout();
    testSub->tearDown();

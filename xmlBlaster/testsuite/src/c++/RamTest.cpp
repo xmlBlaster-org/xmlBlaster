@@ -3,13 +3,14 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.3 2002/12/02 10:13:20 laghi Exp $
+Version:   $Id: RamTest.cpp,v 1.4 2002/12/05 22:30:38 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <client/protocol/corba/CorbaConnection.h>
 #include <util/StopWatch.h>
+#include <util/Global.h>
 
 using namespace std;
 using org::xmlBlaster::client::protocol::corba::CorbaConnection;
@@ -51,11 +52,12 @@ private:
    string           senderContent_;
    string           contentMime_;
    string           contentMimeExtended_;
-   util::Log log_;
+   util::Global&    global_;
+   util::Log&       log_;
 
 public:
-   RamTest(const string &loginName) : 
-                 stopWatch_(), log_() {
+   RamTest(Global& global, const string &loginName) :
+                 stopWatch_(), global_(global), log_(global.getLog("test")) {
       senderName_   = loginName;
       publishOid_   = "";
       contentMime_  = "text/plain";
@@ -81,7 +83,7 @@ public:
          }
       }
       try {
-         senderConnection_ = new CorbaConnection(args, argc); // Find orb
+         senderConnection_ = new CorbaConnection(global_); // Find orb
          string passwd = "secret";
          senderConnection_->login(senderName_, passwd, 0);
           // Login to xmlBlaster without Callback
@@ -225,9 +227,11 @@ public:
 
 }} // namespace
 
+using org::xmlBlaster::util::Global;
 
 int main(int args, char *argc[]) {
-   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest("Tim");
+   Global& glob = Global::getInstance();
+   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testManyPublish();
    testSub->tearDown();

@@ -12,8 +12,10 @@ Comment:   Testing get()
 #include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <client/PublishQosWrapper.h>
+#include <util/Global.h>
 
 using namespace std;
+using org::xmlBlaster::util::Global;
 using boost::lexical_cast;
 using org::xmlBlaster::client::protocol::corba::CorbaConnection;
 
@@ -33,14 +35,15 @@ private:
       return "Tim";
    }
 
-   util::Log       log_;
-   CorbaConnection *corbaConnection_;
-   string publishOid_;
-   string loginName_;
-   string senderContent_;
-   string contentMime_;
-   string contentMimeExtended_;
-   int    numReceived_;  // error checking
+   CorbaConnection* corbaConnection_;
+   string           publishOid_;
+   string           loginName_;
+   string           senderContent_;
+   string           contentMime_;
+   string           contentMimeExtended_;
+   int              numReceived_;  // error checking
+   Global&          global_;
+   util::Log&       log_;
 
    /**
     * Constructs the TestGet object.
@@ -48,7 +51,9 @@ private:
     * @param loginName The name to login to the xmlBlaster
     */
 public:
-   TestGet(const string &loginName) {
+   TestGet(Global& global, const string &loginName)
+      : global_(global), log_(global.getLog("test"))
+   {
       loginName_           = loginName;
       publishOid_          = "TestGet";
       senderContent_       = "A test message";
@@ -78,7 +83,7 @@ public:
       }
 
       try {
-         corbaConnection_ = new CorbaConnection(args, argc); // Find orb
+         corbaConnection_ = new CorbaConnection(global_); // Find orb
          string passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          corbaConnection_->login(loginName_, passwd, qos);
@@ -240,7 +245,8 @@ public:
 
 int main(int args, char *argc[]) {
 
-   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet("Tim");
+   Global& glob = Global::getInstance();
+   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testGetMany();
    testSub->testGet();
