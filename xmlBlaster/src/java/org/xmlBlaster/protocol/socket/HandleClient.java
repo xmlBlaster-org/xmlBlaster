@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.26 2002/09/15 17:08:04 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.27 2002/09/15 18:54:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -100,6 +100,8 @@ public class HandleClient extends Executor implements Runnable
          log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
          responseListenerMap.clear();
       }
+
+      freePendingThreads();
    }
 
    private synchronized void closeSocket() {
