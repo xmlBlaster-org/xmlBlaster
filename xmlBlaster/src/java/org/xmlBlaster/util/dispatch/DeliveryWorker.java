@@ -23,14 +23,14 @@ import java.util.ArrayList;
  * Takes messages from the queue and tries to send them back to a client. 
  * @author xmlBlaster@marcelruff.info
  */
-public class DeliveryWorker implements Runnable
+public final class DeliveryWorker implements Runnable
 {
    public final String ME;
    private final Global glob;
    private final LogChannel log;
 
-   private final DeliveryManager deliveryManager;
-   private final I_Queue msgQueue;
+   private DeliveryManager deliveryManager;
+   private I_Queue msgQueue;
 
    public DeliveryWorker(Global glob, DeliveryManager mgr) {
       this.glob = glob;
@@ -159,9 +159,15 @@ public class DeliveryWorker implements Runnable
       finally {
          this.deliveryManager.setDeliveryWorkerIsActive(false);
          entryList = null;
+         shutdown();
       }
 
       if (log.TRACE) log.trace(ME, "Finished callback job. " + this.msgQueue.getNumOfEntries() + " messages in the queue. " + deliveryManager.getDeliveryStatistic().toXml(""));
+   }
+
+   void shutdown() {
+      this.deliveryManager = null;
+      this.msgQueue = null;
    }
 }
 
