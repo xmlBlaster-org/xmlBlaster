@@ -14,6 +14,7 @@ import org.xmlBlaster.util.enum.Constants;
  */
 public final class PropString extends PropEntry implements java.io.Serializable, Cloneable
 {
+   private String valueDefault; // Remember default setting for usage output etc.
    private String value;
 
    /**
@@ -21,6 +22,7 @@ public final class PropString extends PropEntry implements java.io.Serializable,
     */
    public PropString(String value) {
       super(null);
+      this.valueDefault = value;
       this.value = value;
    }
 
@@ -30,6 +32,20 @@ public final class PropString extends PropEntry implements java.io.Serializable,
    public PropString(String propName, String value) {
       super(propName);
       this.value = value;
+   }
+
+   /**
+    * @return "String"
+    */
+   public final String getTypeString() {
+      return "String";
+   }
+
+   /**
+    * @return The value in String form
+    */
+   public final String getValueString() {
+      return ""+this.value;
    }
 
    public void setValue(String value) {
@@ -49,38 +65,18 @@ public final class PropString extends PropEntry implements java.io.Serializable,
       return this.value;
    }
 
-   /** The literal XML string of the QoS */
-   public String toXml() {
-      return toXml("");
+   /**
+    * Overwrite the default value given to the constructor. 
+    */
+   public void setDefaultValue(String value) {
+      this.valueDefault = value;
+      if (CREATED_BY_DEFAULT == super.creationOrigin) {
+         this.value = value; // overwrite the default setting
+      }
    }
 
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
-    */
-   public String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(100);
-      if (extraOffset == null) extraOffset = "";
-      String offset = Constants.OFFSET + extraOffset;
-
-      sb.append(offset).append("<property");
-      if (this.propName != null) {
-         sb.append(" key='").append(this.propName).append("'");
-      }
-      sb.append(" type='string'>");
-      if (isModified()) {
-         sb.append(" modified='").append(true).append("'");
-      }
-      if (this.value != null && this.value.indexOf("<") > -1) {
-         sb.append("<![CDATA[").append(this.value).append("]]>");
-      }
-      else {
-         sb.append(this.value);
-      }
-      sb.append("</property>");
-      return sb.toString();
+   public String getDefaultValue() {
+      return this.valueDefault;
    }
 
    /**
