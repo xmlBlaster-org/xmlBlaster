@@ -24,6 +24,7 @@ import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
+import org.xmlBlaster.engine.msgstore.TopicsStorePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 
@@ -55,6 +56,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private ProtocolManager protocolManager;
 
    private MsgUnitStorePluginManager msgStorePluginManager;
+   private TopicsStorePluginManager topicsStorePluginManager;
 
    private CommandManager commandManager;
    private boolean useAdminManager = true;
@@ -150,6 +152,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    /**
     * Access the unique cluster node id (as a String). 
     * @return The name of this xmlBlaster instance, e.g. "heron.mycompany.com"
+    *         or "http://mycomp:3412"
     *         Can be null during startup
     */
    public final String getId() {
@@ -290,6 +293,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
       }
       return msgStorePluginManager;
+   }
+
+   public final TopicsStorePluginManager getTopicsStorePluginManager() {
+      if (topicsStorePluginManager == null) {
+         synchronized (TopicsStorePluginManager.class) {
+            if (topicsStorePluginManager == null)
+               topicsStorePluginManager = new TopicsStorePluginManager(this);
+         }
+      }
+      return topicsStorePluginManager;
    }
 
    /**
