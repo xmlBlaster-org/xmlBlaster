@@ -1,8 +1,8 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 
-Changes for 0.80 [???, ? 2000]
-==============================
+Changes for 0.79a [Nov, 16 2000]
+================================
  - JacORB as CORBA default:
    Setting default System properties to
      org.omg.CORBA.ORBClass=jacorb.orb.ORB
@@ -17,7 +17,7 @@ Changes for 0.80 [???, ? 2000]
    You need to replace your xmlBlaster.properties
    with the new xmlBlaster.properties.template or set
    Persistence.LazyRecovery=true
-   
+
 
 Changes for 0.79 [Nov, 3 2000]
 ==============================

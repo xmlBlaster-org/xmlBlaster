@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.63 2000/11/03 15:34:02 ruff Exp $
+Version:   $Id: Main.java,v 1.64 2000/11/16 08:47:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -74,7 +74,7 @@ public class Main
    /** command line arguments */
    private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
-   private String version = "0.79";
+   private String version = "0.79a";
 
    /**
     * true: If instance created by control panel<br />
@@ -129,10 +129,10 @@ public class Main
          Log.info(ME, Memory.getStatistic());
 
          if (controlPanel == null) {
-            Log.info(ME, "##########################################");
+            Log.info(ME, "###########################################");
             Log.info(ME, "# xmlBlaster " + version + " is ready for requests  #");
-            Log.info(ME, "# press <?> and <enter> for options      #");
-            Log.info(ME, "##########################################");
+            Log.info(ME, "# press <?> and <enter> for options       #");
+            Log.info(ME, "###########################################");
          }
          else
             Log.info(ME, "xmlBlaster is ready for requests");
