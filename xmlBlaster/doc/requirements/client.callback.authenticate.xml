@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.callback.authenticate' type='NEW' prio='HIGH' status="OPEN">
+<requirement id='client.callback.authenticate' type='NEW' prio='HIGH' status="CLOSED">
    <topic>
       The callback server, instantiated from clients, needs to authenticate xmlBlaster
    </topic>
@@ -9,23 +9,40 @@
       When xmlBlaster sends a message asynchronous back to the client callback
       server, we must attach some credentials to the message.
       The client callback server must protect itself against intruder messages.
+      This is achieved by a session ID, a unique and secret string. The session ID is
+      passed when you register your callback server with xmlBlaster. On callback this
+      session ID is bounced back with the update() method. You can now check the delivered
+      session ID.
    </description>
    <example lang="Java">
       <![CDATA[
-      Not specified yet.
-      Possibly we need to attach some xmlBlaster credentials or
-      some client credentials of the sender to the update QoS
+This xml is passed as the QoS of a connect() or subcribe()
+   <qos>
+      ...
+      <callback type='IOR' sessionId='0fxrc83plP'>
+         IOR:0000404944...
+      </callback>
+   </qos>
+
+You receive this sessionId with your message update (example for Java):
+
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   {
+      // cbSessionId should be '0fxrc83plP'
+   }
       ]]>
    </example>
+   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
+   <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
    <author>?</author>
    <hacker>?</hacker>
    <date>2002 01 22</date>
-   <revision>$Revision: 1.2 $</revision>
-   <testcase status="OPEN">
+   <revision>$Revision: 1.3 $</revision>
+   <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE"></test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestCallbackConfig</test>
    </testcase>
 </requirement>
 
