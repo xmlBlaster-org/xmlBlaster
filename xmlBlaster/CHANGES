@@ -24,6 +24,11 @@ BUGS:
 
 
 DONE:
+ - Added framework for xmlBlaster administration (SNMP/JMX/telnet/message based).
+   Added readonly access from telnet on properties and xmlBlaster core attributes
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html
+
  - Changed default security plugin from 'simple' to Cyrilles 'htpasswd'
    http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/README
 
@@ -42,7 +47,7 @@ DONE:
 
   - Incompatible changes:
     publish() returns now XML string instead of the plain oid
-	 Introduced PublishRetQos, see
+    Introduced PublishRetQos, see
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html
 
   - Added support to ping the callback client side server, see
