@@ -239,8 +239,12 @@
      </tr>
      <tr>
        <td>Comment</td>
-       <td>Not suitable for huge tables as the complete table is scanned</td>
-       <td>Suitable for tables which huge amount of rows, does not detect row deletes</td>
+       <td>Not suitable for huge tables as the complete table is scanned.
+           Works with any table.
+       </td>
+       <td>Suitable for tables which huge amount of rows, does not detect row deletes.
+           Needs a timestamp column (or an ascending counter) in the observed table.
+       </td>
      </tr>
    </table>
    </description>
