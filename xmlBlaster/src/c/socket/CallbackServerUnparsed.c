@@ -303,7 +303,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
 /**
  * The run method of the two threads
  */
-static void listenLoop(ListenLoopArgs* ls)
+static int listenLoop(ListenLoopArgs* ls)
 {
    int rc;
    CallbackServerUnparsed *cb = ls->cb;
@@ -311,6 +311,7 @@ static void listenLoop(ListenLoopArgs* ls)
    XmlBlasterException xmlBlasterException;
    SocketDataHolder socketDataHolder;
    bool success;
+   bool useUdpForOneway = cb->socketUdp != -1;
 
    for(;;) {
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
@@ -322,20 +323,25 @@ static void listenLoop(ListenLoopArgs* ls)
       if (cb->stopListenLoop) break;
       cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__, "%s arrived, success=%s", udp ? "UDP" : "TCP", success ? "true" : "false -> EOF");
 
-      rc = pthread_mutex_lock(&cb->listenMutex);
-      if (rc != 0) /* EINVAL */
-         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
+      if (useUdpForOneway) {
+         rc = pthread_mutex_lock(&cb->listenMutex);
+         if (rc != 0) /* EINVAL */
+            cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
+      }
 
       handleMessage(cb, &socketDataHolder, &xmlBlasterException, success);
 
-      rc = pthread_mutex_unlock(&cb->listenMutex);
-      if (rc != 0) /* EPERM */
-         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock() returned %d.", rc);
+      if (useUdpForOneway) {
+         rc = pthread_mutex_unlock(&cb->listenMutex);
+         if (rc != 0) /* EPERM */
+            cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock() returned %d.", rc);
+      }
 
       if (cb->stopListenLoop || !success)
          break;
    }
-   pthread_exit(NULL);
+   /*pthread_exit(NULL);*/
+   return 0;
 }
 
 
@@ -350,11 +356,9 @@ static void listenLoop(ListenLoopArgs* ls)
 static int runCallbackServer(CallbackServerUnparsed *cb)
 {
    int rc;
-   ListenLoopArgs* tcpLoop;
-   ListenLoopArgs* udpLoop;
-
-   /* two listening threads: TCP, UDP */
-   pthread_t tcpListenThread, udpListenThread;
+   int retVal = 0;
+   ListenLoopArgs* tcpLoop = 0;
+   ListenLoopArgs* udpLoop = 0;
 
    bool useUdpForOneway = cb->socketUdp != -1;
 
@@ -369,34 +373,45 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          "Reusing connection socket to tunnel callback messages");
    }
 
-   rc = pthread_mutex_init(&cb->listenMutex, NULL); /* rc is always 0 */
-
-   tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
-   rc = pthread_create(&tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
-
    if (useUdpForOneway) {
-      udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
-      rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
-   }
+      /* We need to create two threads: one for TCP and one for the UDP callback listener */
+      pthread_t tcpListenThread, udpListenThread;
 
-   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-         "Waiting to join tcpListenThread ...");
-   pthread_join(tcpListenThread, NULL);
-   free(tcpLoop);
-   if (useUdpForOneway) {
+      rc = pthread_mutex_init(&cb->listenMutex, NULL); /* rc is always 0 */
+
+      tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
+      rc = pthread_create(&tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
+
+      if (useUdpForOneway) {
+         udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
+         rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
+      }
+
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-         "Waiting to join udpListenThread ...");
-      pthread_join(udpListenThread, NULL);
-      free(udpLoop);
+            "Waiting to join tcpListenThread ...");
+      pthread_join(tcpListenThread, NULL);
+      free(tcpLoop);
+      if (useUdpForOneway) {
+         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+            "Waiting to join udpListenThread ...");
+         pthread_join(udpListenThread, NULL);
+         free(udpLoop);
+      }
+      rc = pthread_mutex_destroy(&cb->listenMutex);
+      if (rc != 0) /* EBUSY */
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
    }
-   rc = pthread_mutex_destroy(&cb->listenMutex);
-   if (rc != 0) /* EBUSY */
-      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
+   else {
+      /* TCP only: no separate thread is needed */
+      tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
+      retVal = listenLoop(tcpLoop);
+      free(tcpLoop);
+   }
 
    cb->isShutdown = true;
    if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Callbackserver thread is dying now ...");
-   return 0;
+   return retVal;
 }
 
 /**
@@ -665,6 +680,9 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
    if (cb == 0) return;
+
+   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+         "Shutdown callback server stopListenLoop=%d, reusingConnectionSocket=%d", (int)cb->stopListenLoop, (int)cb->reusingConnectionSocket);
 
    cb->stopListenLoop = true;
 
