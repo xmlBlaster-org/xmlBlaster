@@ -210,8 +210,10 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * Access the callback server which is currently used in I_XmlBlasterAccess. 
+    * The callback server is not null if you have passes a I_Callback handle on connect(). 
     * @return null if no callback server is established
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
+    * @see #connect(ConnectQos, I_Callback)
     */
    I_CallbackServer getCbServer();
 

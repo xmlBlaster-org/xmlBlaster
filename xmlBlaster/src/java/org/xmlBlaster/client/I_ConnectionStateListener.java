@@ -35,6 +35,11 @@ public interface I_ConnectionStateListener
     * </p>
     *
     * <p>
+    * If you send messages during this method invocation they are queued only and
+    * are sent as soon as this method returns.
+    * </p>
+    *
+    * <p>
     * This method is invoked by the login polling thread from I_XmlBlasterAccess.
     * </p>
     * @param oldState The previous state of the connection.
