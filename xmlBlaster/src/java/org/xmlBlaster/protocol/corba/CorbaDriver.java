@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.45 2002/08/26 11:04:23 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.46 2002/09/19 20:59:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -111,7 +111,8 @@ public class CorbaDriver implements I_Driver
    }
 
    /**
-    * Start xmlBlaster CORBA access.
+    * Start xmlBlaster CORBA access. 
+    * Is called after plugin is created
     * @param args The command line parameters
     */
    public synchronized void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
@@ -285,6 +286,9 @@ public class CorbaDriver implements I_Driver
       catch (Throwable e) {
          log.warn(ME, "Problems during ORB cleanup: " + e.toString());
       }
+
+      authRef._release();
+
    }
 
    /**

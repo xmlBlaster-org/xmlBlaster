@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.105 2002/09/09 13:38:22 ruff Exp $
+Version:   $Id: Main.java,v 1.106 2002/09/19 20:59:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -16,13 +16,13 @@ import org.jutils.runtime.ThreadLister;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 
 /**
@@ -65,6 +65,7 @@ public class Main implements I_RunlevelListener, I_Main
    private boolean showUsage = false;
 
    private boolean inShutdownProcess = false;
+   private SignalCatcher signalCatcher = null;
 
 
    /**
@@ -134,7 +135,10 @@ public class Main implements I_RunlevelListener, I_Main
       else if (glob.getErrorText() != null) {
          usage();
          log.error(ME, glob.getErrorText());
-         System.exit(0);
+         if (glob.isEmbedded())
+            throw new IllegalArgumentException(glob.getErrorText());
+         else
+            System.exit(0);
       }
 
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
@@ -146,7 +150,10 @@ public class Main implements I_RunlevelListener, I_Main
       } catch (Throwable e) {
          e.printStackTrace();
          log.error(ME, e.toString());
-         System.exit(1);
+         if (glob.isEmbedded())
+            throw new IllegalArgumentException(e.toString());
+         else
+            System.exit(1);
       }
 
       if (log.DUMP) { ThreadLister.listAllThreads(System.out); }
@@ -250,6 +257,8 @@ public class Main implements I_RunlevelListener, I_Main
                   try { runlevel = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid run level '" + tmp + "', it should be a number."); };
                   try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.error(ME, e.toString()); }
                }
+               else
+                  log.info(ME, "Current runlevel is " + runlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()));
             }
             else if (line.toLowerCase().startsWith("d")) {
                try {
@@ -274,7 +283,8 @@ public class Main implements I_RunlevelListener, I_Main
             }
             else if (line.toLowerCase().equals("q")) {
                shutdown();
-               System.exit(0);
+               if (!glob.isEmbedded())
+                  System.exit(0);
             }
             else // if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
                keyboardUsage();
@@ -313,56 +323,6 @@ public class Main implements I_RunlevelListener, I_Main
       return nodeName;
    }
 
-   class Shutdown extends Thread {
-      public void run() {
-         log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
-         shutdown();
-      }
-   }
-
-   /**
-    * Add shutdown hook.
-    * <p />
-    * Catch signals, e.g. Ctrl C to stop xmlBlaster.<br />
-    * Uses reflection since only JDK 1.3 supports it.
-    * <p />
-    * NOTE: On Linux build 1.3.0, J2RE 1.3.0 IBM build cx130-20000815 (JIT enabled: jitc) fails with Ctrl-C
-    *
-    * @return true: Shutdown hook is established
-    */
-   public boolean catchSignals()
-   {
-      Method method;
-      try  {
-         Class cls = Runtime.getRuntime().getClass();
-         Class[] paramCls = new Class[1];
-         paramCls[0] = Class.forName("java.lang.Thread");
-         method = cls.getDeclaredMethod("addShutdownHook", paramCls);
-      }
-      catch (java.lang.ClassNotFoundException e) {
-         return false;
-      }
-      catch (java.lang.NoSuchMethodException e) {
-         log.trace(ME, "No shutdown hook established");
-         return false;
-      }
-
-      try {
-         if (method != null) {
-            Object[] params = new Object[1];
-            params[0] = new Shutdown();
-            method.invoke(Runtime.getRuntime(), params);
-         }
-      }
-      catch (java.lang.reflect.InvocationTargetException e) {
-         return false;
-      }
-      catch (java.lang.IllegalAccessException e) {
-         return false;
-      }
-      return true;
-   }
-
    public boolean isHalted() {
       if( runlevelManager != null )
          return runlevelManager.isHalted();
@@ -390,7 +350,13 @@ public class Main implements I_RunlevelListener, I_Main
 
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
-            catchSignals();
+            signalCatcher = new SignalCatcher(glob, new Thread("XmlBlaster signal catcher thread for controlled shudown") {
+               public void run() {
+                  log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
+                  shutdown();
+               }
+            });
+            signalCatcher.catchSignals();
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
@@ -400,7 +366,8 @@ public class Main implements I_RunlevelListener, I_Main
             if (showUsage) {
                usage();  // Now we can display the complete usage of all loaded drivers
                shutdown();
-               System.exit(0);
+               if (!glob.isEmbedded())
+                  System.exit(0);
             }
          }
          if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
@@ -432,6 +399,11 @@ public class Main implements I_RunlevelListener, I_Main
          if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
             if (log.DUMP) ThreadLister.listAllThreads(System.out);
             log.info(ME, "XmlBlaster halted.");
+         }
+
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            if (signalCatcher != null)
+               signalCatcher.removeSignalCatcher();
          }
       }
    }
@@ -470,6 +442,7 @@ public class Main implements I_RunlevelListener, I_Main
       log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
       log.plain(ME, "   -admin.remoteconsole.port If port > 1000 a server is started which is available with telnet [2702].");
+      log.plain(ME, "   -xmlBlaster.isEmbedded    If set to true no System.exit() is possible [false].");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
       log.plain(ME, "   java org.xmlBlaster.Main -cluster false");
