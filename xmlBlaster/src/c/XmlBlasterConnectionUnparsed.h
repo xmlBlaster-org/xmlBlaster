@@ -31,9 +31,11 @@ typedef bool  ( * XmlBlasterConnectionUnparsedInitConnection)(XmlBlasterConnecti
 typedef char *( * XmlBlasterConnectionUnparsedConnect)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedDisconnect)(XmlBlasterConnectionUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedPublish)(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
+typedef QosArr *( * XmlBlasterConnectionUnparsedPublishArr)(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
+typedef void  ( * XmlBlasterConnectionUnparsedPublishOneway)(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedSubscribe)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterConnectionUnparsedUnSubscribe)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterConnectionUnparsedErase)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef QosArr *( * XmlBlasterConnectionUnparsedUnSubscribe)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef QosArr *( * XmlBlasterConnectionUnparsedErase)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef MsgUnitArr *( * XmlBlasterConnectionUnparsedGet)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedPing)(XmlBlasterConnectionUnparsed *xb, const char * const qos);
 typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionUnparsed *xb);
@@ -47,7 +49,7 @@ typedef void  ( * XmlBlasterConnectionUnparsedLogging)(XMLBLASTER_LOG_LEVEL curr
  */
 struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    int argc;
-   char **argv;
+   const char * const*argv;
    Properties *props;
    int socketToXmlBlaster;
    long requestId;
@@ -57,6 +59,8 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XmlBlasterConnectionUnparsedConnect connect;   
    XmlBlasterConnectionUnparsedDisconnect disconnect;   
    XmlBlasterConnectionUnparsedPublish publish;
+   XmlBlasterConnectionUnparsedPublishArr publishArr;
+   XmlBlasterConnectionUnparsedPublishOneway publishOneway;
    XmlBlasterConnectionUnparsedSubscribe subscribe;
    XmlBlasterConnectionUnparsedUnSubscribe unSubscribe;
    XmlBlasterConnectionUnparsedErase erase;
@@ -76,7 +80,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
  * Get an instance of this to get xmlBlaster access. 
  * NOTE: Every call creates a new and independent client access instance to xmlBlaster
  */
-Dll_Export extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv);
+Dll_Export extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const char* const* argv);
 
 /**
  * Free your instance after accessing xmlBlaster. 
