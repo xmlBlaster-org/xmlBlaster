@@ -213,8 +213,13 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          ArrayList list = new ArrayList(entries.length);
          for(int ii=0; ii<entries.length; ii++) {
             ReferenceEntry en = (ReferenceEntry)entries[ii];
-            if (en.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
-                en.getMsgUnitWrapper().getReferenceCounter() <= 2) {
+            MsgUnitWrapper msgUnitWrapper = en.getMsgUnitWrapper();
+            if (msgUnitWrapper == null) {
+               log.warn(ME, "Message '" + en.getLogId() + "' is not referenced anymore, we ignore it.");
+               continue;
+            }
+            if (msgUnitWrapper.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
+                msgUnitWrapper.getReferenceCounter() <= 2) {
                // The getReferenceCounter() check is buggy (Marcel 2003.03.20):
                // 1. It includes a history entry and this entry but the history is optional
                // 2. We may send the same message twice with another session if such a callback references the message
@@ -232,11 +237,6 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
             list.add(entries[ii]);
          }
          return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-      }
-      catch (XmlBlasterException e) {
-         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.getMessage() +
-                       ((sessionInfo.getDeliveryManager() != null) ? sessionInfo.getDeliveryManager().toXml("") : ""));
-         return entries;
       }
       catch (Throwable e) {
          log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString() +
