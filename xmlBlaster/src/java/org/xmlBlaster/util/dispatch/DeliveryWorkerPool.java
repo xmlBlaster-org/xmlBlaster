@@ -14,6 +14,8 @@ import org.xmlBlaster.util.dispatch.DeliveryManager;
 //import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 //import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.jutils.runtime.Sleeper;
+import org.xmlBlaster.util.property.PropInt;
+import org.xmlBlaster.util.enum.Constants;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
@@ -27,9 +29,9 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    private final Global glob;
    private final LogChannel log;
    private PooledExecutor pool;
-   private int maximumPoolSize;
-   private int minimumPoolSize;
-   private int createThreads;
+   private PropInt maximumPoolSize = new PropInt(200);
+   private PropInt minimumPoolSize = new PropInt(2);
+   private PropInt createThreads = new PropInt(minimumPoolSize.getValue());
    private boolean isShutdown = false;
 
    protected static class DeamonThreadFactory implements ThreadFactory {
@@ -62,14 +64,22 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
 
       this.pool = new PooledExecutor(new LinkedQueue());
       this.pool.setThreadFactory(new DeamonThreadFactory(glob));
+      
+      // Example server side:
+      // -dispatch/callback/minimumPoolSize 34
+      // Example client side:
+      // -dispatch/clientSide/minimumPoolSize 28
+      String context = null; // usually 'client/joe'
+      String instanceName = (glob.isServerSide()) ? Constants.RELATING_CALLBACK : Constants.RELATING_CLIENT;
+      this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "maximumPoolSize");
+      this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "minimumPoolSize");
+      this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "createThreads");
+      if (log.TRACE) log.trace(ME, "maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
+                    this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue());
 
-      maximumPoolSize = glob.getProperty().get("cb.maximumPoolSize", 200);
-      minimumPoolSize = glob.getProperty().get("cb.minimumPoolSize", 10);
-      createThreads = glob.getProperty().get("cb.createThreads", minimumPoolSize);
-
-      pool.setMaximumPoolSize(maximumPoolSize);
-      pool.setMinimumPoolSize(minimumPoolSize);
-      pool.createThreads(createThreads);
+      pool.setMaximumPoolSize(this.maximumPoolSize.getValue());
+      pool.setMinimumPoolSize(this.minimumPoolSize.getValue());
+      pool.createThreads(this.createThreads.getValue());
       pool.setKeepAliveTime(-1); // Threads live forever
       pool.waitWhenBlocked();
    }
