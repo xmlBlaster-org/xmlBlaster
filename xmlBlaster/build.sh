@@ -12,6 +12,7 @@ CLASSPATH=lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPAT
 CLASSPATH=lib/parser.jar:lib/jaxp.jar:$CLASSPATH
 CLASSPATH=lib/idl.jar:lib/jacorb.jar:$CLASSPATH
 CLASSPATH=lib/concurrent.jar:$CLASSPATH
+CLASSPATH=lib/remotecons.jar:$CLASSPATH
 CLASSPATH=lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/junit.jar:$CLASSPATH
 CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:$CLASSPATH
 CLASSPATH=lib/mail.jar:lib/activation.jar:lib/cpptasks.jar:$CLASSPATH
