@@ -47,3 +47,55 @@ Start applet in netscape:
 
     The JacORB mtclient.html example works well, so it must be possible.
 
+
+
+
+______________________________________________
+
+E:\>echo %PATH%
+c:\jdk1.2.2\bin;c:\JacORB1_1\bin;E:\WINNT\system32;E:\WINNT;D:\WINDOWS;D:\WI
+NDOWS\SYSTEM;F:\MSSQL7\BINN;c:\ant\bin
+
+
+E:\>echo %CLASSPATH%
+c:\JacORB1_1\classes;c:\ant\lib\ant.jar;c:\JacORB1_1\lib\idl.jar;c:\JacORB1_
+1\lib\jacorb.jar;c:\jdk1.2.2\lib\tools.jar;.
+
+
+E:\>appletviewer -J-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -J-Dorg.omg.CORBA
+.ORBSingletonClass=jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
+java.lang.NoClassDefFoundError: org/omg/CosNaming/NamingContextOperations
+        at java.lang.Class.newInstance0(Native Method)
+        at java.lang.Class.newInstance(Class.java:241)
+        at sun.applet.AppletPanel.createApplet(AppletPanel.java:508)
+        at sun.applet.AppletPanel.runLoader(AppletPanel.java:444)
+        at sun.applet.AppletPanel.run(AppletPanel.java:282)
+        at java.lang.Thread.run(Thread.java:479)
+
+
+E:\>appletviewer -J-cp -Jc:\JacORB1_1\lib\jacorb.jar -J-Dorg.omg.CORBA.ORBCl
+ass=jacorb.orb.ORB -J-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSinglet
+on http://localhost/Jacorb/test.html
+Initializing the ORB
+Could not read local jacorb properties.
+Reading properties from url:http://localhost/Jacorb/jacorb.properties
+Could not read properties from URL, reason:
+java.security.AccessControlException
+: access denied (java.net.SocketPermission 127.0.0.1:80 connect,resolve)
+Exception
+java.lang.RuntimeException: Appligator not reachable! Check configuration
+
+
+
+E:\>appletviewer -J-Xbootclasspath:c:\JacORB1_1\lib\jacorb.jar;c:\jdk1.2.2\j
+re\lib\rt.jar -J-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -J-Dorg.omg.CORBA.OR
+BSingletonClass=jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
+Initializing the ORB
+Could not read local jacorb properties.
+Reading properties from url:http://localhost/Jacorb/jacorb.properties
+Setting sum to 0
+Incrementing
+Avg Ping = 22.212 msecs
+Sum = 1000
+
+
