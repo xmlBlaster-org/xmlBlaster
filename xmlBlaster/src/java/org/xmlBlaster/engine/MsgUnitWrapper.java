@@ -379,7 +379,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
             return;
          }
       }
-      getTopicHandler().entryExpired(this);
+
+      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
+      if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
+         topicHandler.entryExpired(this);
    }
 
    /**
@@ -400,7 +403,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          }
          this.state = DESTROYED;
       }
-      getTopicHandler().entryDestroyed(this);
+
+      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
+      if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
+         topicHandler.entryDestroyed(this);
    }
 
    /**
