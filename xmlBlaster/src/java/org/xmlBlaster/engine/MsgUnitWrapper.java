@@ -173,8 +173,9 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 
    /**
     * Invoked by ReferenceEntry.java to support reference counting
+    * @param storageId
     */
-   public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
+   public void incrementReferenceCounter(int count, StorageId storageId) {
       
       //glob.getLog("core").error(ME, "DEBUG ONLY " + getSizeInBytes() + " \n" + toXml());
 
@@ -286,6 +287,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * The embedded object. 
     * Object[] = { this.msgUnit, new Integer(this.referenceCounter) }  or<br />
     * qos.toXml, key.toXml, contentBytes
+    * <p>
+    * IMPORTANT NOTE:
+    * If you change the data here you need to change MsgQueueUpdateEntry#getEmbeddedObject() as well!
+    * Check ServerEntryFactory as well.
+    * </p>
     */
    public Object getEmbeddedObject() {
       if (this.embeddedType.equals(ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL)) {
@@ -417,7 +423,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return this.state == DESTROYED;
    }
 
-   private void toDestroyed() throws XmlBlasterException {
+   private void toDestroyed() {
       //this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
@@ -446,12 +452,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
             this.timerKey = null;
          }
          if (getMsgQosData().isForceDestroy()) {
-            try {
-               toDestroyed();
-            }
-            catch (XmlBlasterException e) {
-               this.glob.getLog("core").error(ME, "Unexpected exception from toDestroyed() which we can't handle: " + e.getMessage());
-            }
+            toDestroyed();
          }
          else {
             try {
