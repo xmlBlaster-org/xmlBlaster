@@ -26,7 +26,8 @@ public class GlobalTest extends TestCase {
       String[] args = new String[2];
       args[0] = "-test.xy";
       args[1] = "true";
-      Global tmp = new Global(args);
+      Global tmp = Global.instance();
+      tmp.init(args);
       assertEquals("Argument not set", true, tmp.getProperty().get("test.xy", false));
    }
 
