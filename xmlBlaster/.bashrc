@@ -64,6 +64,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxt='cd $XMLBLASTER_HOME/testsuite'
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
+
+   if ! [ -f ${HOME}/xmlBlaster.properties ]; then
+      cp ${XMLBLASTER_HOME}/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
+      echo -e "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
+   fi
 else
    echo -e "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
    return 1
