@@ -273,11 +273,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       int numPersistentPut = 0;
       int numTransientPut = 0;
 
-      String errorText = spaceLeft(mapEntry, this);
-      if (errorText != null) {
-         if (log.TRACE) log.trace(ME, errorText);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES,
-                   ME+"-put("+mapEntry.getLogId()+")", errorText);
+      XmlBlasterException exceptionReturned = spaceLeftException(mapEntry, this);
+      if (exceptionReturned != null) {
+         if (log.TRACE) log.trace(ME, exceptionReturned.getMessage());
+         exceptionReturned.setLocation(ME+"-put("+mapEntry.getLogId()+")");
+         throw exceptionReturned;
       }
 
       synchronized(this) {
@@ -291,7 +291,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                                   " bytes are in queue, try increasing property '" + 
                                   this.property.getPropName("maxBytes") + "'.";
                   this.log.warn(ME+"-put("+mapEntry.getLogId()+")", reason + this.toXml(""));
-                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES,
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES,
                             ME+"-put("+mapEntry.getLogId()+")", reason);
                }
                try {
@@ -305,7 +305,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             }
          }
 
-         if (spaceLeft(mapEntry, this.transientStore) == null) {
+         if (spaceLeft(mapEntry, this.transientStore)) {
             numTransientPut = this.transientStore.put(mapEntry);
          }
          else if (numPersistentPut == 0) {  // if entry is marked as persistent it is already in persistentStore (see code above)
@@ -318,7 +318,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
                      "put: The DB is currently disconnected, entry " + mapEntry.getLogId() + " not handled");
 
-            if (spaceLeft(mapEntry, this.persistentStore) == null) {
+            if (spaceLeft(mapEntry, this.persistentStore)) {
                try {
                   numPersistentPut = this.persistentStore.put(mapEntry);
                }
@@ -349,23 +349,45 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @param mapEntry may not be null
     * @return null There is space (otherwise the error text is returned)
     */
-   private String spaceLeft(I_MapEntry mapEntry, I_Map map) {
+   private XmlBlasterException spaceLeftException(I_MapEntry mapEntry, I_Map map) {
       if (map == null || this.property == null) {
-         return "Storage framework is down, current settings are" + toXml("");
+         return new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME,
+                "Storage framework is down, current settings are" + toXml(""));
       }
 
       if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
-         return "Queue overflow (number of entries), " + getNumOfEntries() +
+         return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME,
+                "Queue overflow (number of entries), " + getNumOfEntries() +
                 " entries are in queue, try increasing property '" +
                 this.property.getPropName("maxMsg") + "' and '" +
-                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
+                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml(""));
 
       if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
-         return "Queue overflow, " + getMaxNumOfBytes() +
+         return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
+                "Queue overflow, " + getMaxNumOfBytes() +
                 " bytes are in queue, try increasing property '" + 
                 this.property.getPropName("maxBytes") + "' and '" +
-                this.property.getPropName("maxBytesCache") + "', current settings are" + toXml("");
+                this.property.getPropName("maxBytesCache") + "', current settings are" + toXml(""));
+
       return null;
+   }
+
+   /**
+    * Check is storage is big enough for entry
+    * @param mapEntry may not be null
+    * @return true Space enough
+    */
+   private boolean spaceLeft(I_MapEntry mapEntry, I_Map map) {
+      if (map == null || this.property == null)
+         return false;
+
+      if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
+         return false;
+
+      if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
+         return false;
+
+      return true;
    }
 
    /**
@@ -399,7 +421,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          if (!mapEntry.isPersistent()) {
             this.persistentStore.remove(mapEntry);
          }
-         if (spaceLeft(mapEntry, this.transientStore) == null) {
+         if (spaceLeft(mapEntry, this.transientStore)) {
             this.transientStore.put(mapEntry);
          }
          else {
