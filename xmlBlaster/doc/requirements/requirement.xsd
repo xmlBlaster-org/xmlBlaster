@@ -78,6 +78,7 @@
                   <xsd:enumeration value="Python"/>
                   <xsd:enumeration value="TCL"/>
                   <xsd:enumeration value="Javascript"/>
+                  <xsd:enumeration value="XmlRpc"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>

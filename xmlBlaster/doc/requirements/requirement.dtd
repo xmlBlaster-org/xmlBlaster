@@ -5,7 +5,7 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.19 2002/05/09 14:39:58 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.20 2002/06/02 15:36:36 ruff Exp $
 -->
 
 <!ELEMENT requirement (
@@ -72,7 +72,7 @@ Version:   $Id: requirement.dtd,v 1.19 2002/05/09 14:39:58 ruff Exp $
 <!--
    Examples are surrounded by a <pre></pre> in RAW mode
 -->
-<!ATTLIST example lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript) "Java"
+<!ATTLIST example lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript | XmlRpc) "Java"
           type (HTML | RAW) "RAW">
 
 <!ATTLIST todo type (HTML | RAW) "RAW">
