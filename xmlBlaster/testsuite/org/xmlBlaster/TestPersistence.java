@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.11 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.12 2000/06/26 07:12:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,6 @@ import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;

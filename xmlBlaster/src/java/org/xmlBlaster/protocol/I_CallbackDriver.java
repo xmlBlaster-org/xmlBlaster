@@ -3,7 +3,7 @@ Name:      I_CallbackDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_CallbackDriver.java,v 1.8 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: I_CallbackDriver.java,v 1.9 2000/06/26 07:12:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -11,7 +11,7 @@ package org.xmlBlaster.protocol;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * This interface hides the real protocol used to send a client a callback message
  * <p>
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public interface I_CallbackDriver

@@ -3,9 +3,9 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.1 2000/05/17 07:01:52 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.1 2000/06/26 07:12:36 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util;
+package org.xmlBlaster.engine.helper;
 
 
 /**

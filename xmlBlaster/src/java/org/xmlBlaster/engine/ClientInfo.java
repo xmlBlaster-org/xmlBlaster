@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.37 2000/06/25 18:32:41 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.38 2000/06/26 07:12:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,8 +15,8 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
-import org.xmlBlaster.util.Destination;
-import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  * @author $Author: ruff $
  */
 public class ClientInfo

@@ -3,13 +3,14 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.11 2000/06/19 17:00:11 kron Exp $
+Version:   $Id: PublishQoS.java,v 1.12 2000/06/26 07:12:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.jutils.log.Log;
-import org.xmlBlaster.util.Destination;
+
+import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xml.sax.*;

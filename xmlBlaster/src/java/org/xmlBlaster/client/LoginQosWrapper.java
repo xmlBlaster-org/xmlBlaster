@@ -3,12 +3,12 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.3 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.4 2000/06/26 07:12:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.jutils.log.Log;
-import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 

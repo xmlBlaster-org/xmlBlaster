@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.11 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.12 2000/06/26 07:12:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -14,7 +14,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlKeyBase;
-import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;

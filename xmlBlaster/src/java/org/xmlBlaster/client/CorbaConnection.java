@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.58 2000/06/25 18:32:40 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.59 2000/06/26 07:12:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
-import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.58 $
+ * @version $Revision: 1.59 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -1097,7 +1097,7 @@ class DefaultCallback implements I_CallbackRaw, org.xmlBlaster.protocol.corba.cl
 
    /**
     * This is the callback method invoked from the CORBA server
-    * informing the client in an asynchronous mode about new messages. 
+    * informing the client in an asynchronous mode about new messages.
     * <p />
     * It implements the interface BlasterCallbackOperations.
     * <p />
