@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.11 2002/02/16 16:48:48 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.12 2002/02/18 21:41:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -37,6 +37,22 @@ import org.xmlBlaster.protocol.socket.Parser;
  * This driver establishes exactly one connection to xmlBlaster-Server and
  * uses this socket for asynchronous callbacks as well. This way we don't need
  * to setup a callbackserver.
+ * <p />
+ * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
+ * and will be started on xmlBlaster startup, for example:
+ * <pre>
+ *Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+ *                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
+ *                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
+ *                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
+ *                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+ *Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+ *                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+ *                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
+ *                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
+ *                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
+ *                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * </pre>
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
@@ -170,8 +186,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
+         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname=<ip> -socket.port=<port>': " + e.toString();
          //Log.error(ME+".constructor", e.toString());
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(ME, str);
       }
    }
 
@@ -618,6 +635,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
    /**
     * Command line usage.
+    * <p />
+    *  <li>-socket.port        Specify a port number where xmlBlaster SOCKET server listens
+    *                      Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off</li>
+    *  <li>-socket.hostname    Specify a hostname where the xmlBlaster web server runs.
+    *                      Default is the localhost</li>
+    *  <li>-socket.localPort   You can specify our client side port as well (usually you shouldn't)
+    *                      Default is that the port is choosen by the operating system</li>
+    *  <li>-socket.localHostname  Specify the hostname who we are. Makes sense for multi homed computers
+    *                      Defaults to our hostname</li>
+    *  <li>-socket.responseTimeout  How long to wait for a method invocation to return
+    *                      Defaults to one minute</li>
+    *  <li>-socket.debug       true switches on detailed SOCKET debugging [false]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
