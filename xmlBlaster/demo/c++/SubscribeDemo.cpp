@@ -12,6 +12,7 @@ Comment:   Little demo to show how a subscribe is done
 using namespace std;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -43,7 +44,7 @@ public:
       log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
    }
 
-   void subscribe(const string& oid="c++-demo")
+   void subscribe(const string& oid="Hello")
    {
       SubscribeKey key(global_);
       key.setOid(oid);
@@ -57,8 +58,17 @@ public:
    {
       log_.info(ME, "update invoked");
       //subscribe("anotherDummy");  -> subscribe in update does not work with single threaded 'mico'
-      if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());
-      if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
+      log_.info(ME, "update: key    : " + updateKey.toXml());
+      log_.info(ME, "update: qos    : " + updateQos.toXml());
+      const QosData::ClientPropertyMap& propMap = updateQos.getClientProperties();
+      QosData::ClientPropertyMap::const_iterator mi;
+      for (mi=propMap.begin(); mi!=propMap.end(); ++mi) {
+         log_.info(ME, "clientProperty["+mi->first+"]   " + mi->second.getStringValue());
+      }
+      if (updateQos.hasClientProperty(string("BLA"))) {
+         log_.info(ME, "clientProperty[BLA]=" +updateQos.getClientProperty("BLA", string("MISSING VALUE?")));
+      }
+      log_.info(ME, "clientProperty["+mi->first+"]   " + mi->second.getStringValue());
       string help((char*)content, (char*)(content)+contentSize);
       if (log_.trace()) log_.trace(ME, "update: content: " + help);
       if (updateQos.getState() == "ERASED" ) {
@@ -99,7 +109,7 @@ int main(int args, char ** argv)
       demo.connect();
 
       demo.subscribe();
-      std::cout << "Please use PublishDemo to publish a message 'c++-demo', i'm waiting ..." << std::endl;
+      std::cout << "Please use PublishDemo to publish a message 'Hello', i'm waiting ..." << std::endl;
       while (demo.doContinue_) {
          org::xmlBlaster::util::thread::Thread::sleepSecs(1);
       }

@@ -10,45 +10,50 @@ Comment:   Little demo to show how a publish is done
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>
+#include <util/qos/ClientProperty.h>
 #include <iostream>
+#include <map>
 
 using namespace std;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::qos::storage;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
 class PublishDemo
 {
 private:
-   string           ME;
-   Global&          global_;
-   Log&             log_;
+   string ME;
+   Global& global_;
+   Log& log_;
+   char ptr[1];
    XmlBlasterAccess connection_;
-	bool interactive;
-	bool oneway;
-	long sleep;
-	int numPublish;
-	string oid;
-	string clientTags;
-	string contentStr;
-	PriorityEnum priority;
-	bool persistent;
-	long lifeTime;
-	bool forceDestroy;
-	bool readonly;
-	long destroyDelay;
-	bool createDomEntry;
-	long historyMaxMsg;
-	bool forceQueuing;
-	bool subscribable;
-	string destination;
-	bool doErase;
-	bool disconnect;
-	bool eraseTailback;
-	int contentSize;
-	bool eraseForceDestroy;
+   bool interactive;
+   bool oneway;
+   long sleep;
+   int numPublish;
+   string oid;
+   string clientTags;
+   string contentStr;
+   PriorityEnum priority;
+   bool persistent;
+   long lifeTime;
+   bool forceDestroy;
+   bool readonly;
+   long destroyDelay;
+   bool createDomEntry;
+   long historyMaxMsg;
+   bool forceQueuing;
+   bool subscribable;
+   string destination;
+   bool doErase;
+   bool disconnect;
+   bool eraseTailback;
+   int contentSize;
+   bool eraseForceDestroy;
+   QosData::ClientPropertyMap clientPropertyMap;
 
 public:
    PublishDemo(Global& glob) 
@@ -57,15 +62,15 @@ public:
         log_(glob.getLog("demo")),
         connection_(global_)
    {
-		initEnvironment();
-		run();
-	}
+      initEnvironment();
+      run();
+   }
 
-	void run() 
-	{
-		connect();
-		publish();
-		erase();
+   void run() 
+   {
+      connect();
+      publish();
+      erase();
       connection_.disconnect(DisconnectQos(global_));
    }
 
@@ -77,41 +82,54 @@ public:
 
    void erase()
    {
-      EraseKey key(global_);
-      key.setOid("c++-demo");
-      EraseQos qos(global_);
-      connection_.erase(key, qos);
-	}
+      if (doErase) {
+         if (interactive) {
+            log_.info(ME, "Hit a key to erase");
+            std::cin.read(ptr,1);
+         }
+         EraseKey key(global_);
+         key.setOid(oid);
+         EraseQos eq(global_);
+         //eq.setForceDestroy(eraseForceDestroy);
+         connection_.erase(key, eq);
+      }
+   }
 };
 
 void PublishDemo::initEnvironment()
 {
-	interactive = global_.getProperty().get("interactive", true);
-	oneway = global_.getProperty().get("oneway", false);
-	sleep = global_.getProperty().get("sleep", 1000L);
-	numPublish = global_.getProperty().get("numPublish", 1);
-	oid = global_.getProperty().get("oid", string("Hello"));
-	clientTags = global_.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
-	contentStr = global_.getProperty().get("content", "Hi-%counter");
-	priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
-	persistent = global_.getProperty().get("persistent", true);
-	lifeTime = global_.getProperty().get("lifeTime", -1L);
-	forceDestroy = global_.getProperty().get("forceDestroy", false);
-	readonly = global_.getProperty().get("readonly", false);
-	destroyDelay = global_.getProperty().get("destroyDelay", 60000L);
-	createDomEntry = global_.getProperty().get("createDomEntry", true);
-	historyMaxMsg = global_.getProperty().get("queue/history/maxEntries", -1L);
-	forceQueuing = global_.getProperty().get("forceQueuing", true);
-	subscribable = global_.getProperty().get("subscribable", true);
-	destination = global_.getProperty().get("destination", "");
-	doErase = global_.getProperty().get("doErase", true);
-	disconnect = global_.getProperty().get("disconnect", true);
-	eraseTailback = global_.getProperty().get("eraseTailback", false);
-	contentSize = global_.getProperty().get("contentSize", -1); // 2000000);
-	eraseForceDestroy = global_.getProperty().get("erase.forceDestroy", false);
+   interactive = global_.getProperty().get("interactive", true);
+   oneway = global_.getProperty().get("oneway", false);
+   sleep = global_.getProperty().get("sleep", 1000L);
+   numPublish = global_.getProperty().get("numPublish", 1);
+   oid = global_.getProperty().get("oid", string("Hello"));
+   clientTags = global_.getProperty().get("clientTags", ""); // "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
+   contentStr = global_.getProperty().get("content", "Hi-%counter");
+   priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
+   persistent = global_.getProperty().get("persistent", true);
+   lifeTime = global_.getProperty().get("lifeTime", -1L);
+   forceDestroy = global_.getProperty().get("forceDestroy", false);
+   readonly = global_.getProperty().get("readonly", false);
+   destroyDelay = global_.getProperty().get("destroyDelay", 60000L);
+   createDomEntry = global_.getProperty().get("createDomEntry", true);
+   historyMaxMsg = global_.getProperty().get("queue/history/maxEntries", -1L);
+   forceQueuing = global_.getProperty().get("forceQueuing", true);
+   subscribable = global_.getProperty().get("subscribable", true);
+   destination = global_.getProperty().get("destination", "");
+   doErase = global_.getProperty().get("doErase", true);
+   disconnect = global_.getProperty().get("disconnect", true);
+   eraseTailback = global_.getProperty().get("eraseTailback", false);
+   contentSize = global_.getProperty().get("contentSize", -1); // 2000000);
+   eraseForceDestroy = global_.getProperty().get("erase.forceDestroy", false);
 
-	//Needs to be ported similar to Java
-   //map clientPropertyMap = glob.getProperty().get("clientProperty", (map)null);
+   //TODO: Needs to be ported similar to Java
+   //map<std::string,std::string> clientPropertyMap = global_.getProperty().get("clientProperty", map<std::string,std::string>());
+   string clientPropertyKey = global_.getProperty().get("clientProperty.key", string(""));
+   string clientPropertyValue = global_.getProperty().get("clientProperty.value", string(""));
+   if (clientPropertyKey != "") {
+      ClientProperty cp(clientPropertyKey, clientPropertyValue);
+      clientPropertyMap.insert(QosData::ClientPropertyMap::value_type(clientPropertyKey, cp));
+   }
 
    if (historyMaxMsg < 1 && !global_.getProperty().propertyExists("destroyDelay"))
       destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
@@ -139,16 +157,15 @@ void PublishDemo::initEnvironment()
    log_.info(ME, "   -persistent     " + lexical_cast<string>(persistent));
    log_.info(ME, "   -lifeTime       " + lexical_cast<string>(lifeTime)); // org.jutils.time.TimeHelper.millisToNice(lifeTime));
    log_.info(ME, "   -forceDestroy   " + lexical_cast<string>(forceDestroy));
-   //if (clientPropertyMap != null) {
-   //   Iterator it = clientPropertyMap.keySet().iterator();
-   //   while (it.hasNext()) {
-   //      String key = (String)it.next();
-   //      log_.info(ME, "   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
-   //   }
-   //}
-   //else {
-   //   log_.info(ME, "   -clientProperty[]   ");
-   //}
+   if (clientPropertyMap.size() > 0) {
+      QosData::ClientPropertyMap::const_iterator mi;
+      for (mi=clientPropertyMap.begin(); mi!=clientPropertyMap.end(); ++mi) {
+         log_.info(ME, "   -clientProperty["+mi->first+"]   " + mi->second.getStringValue());
+      }
+   }
+   else {
+      log_.info(ME, "   -clientProperty[]   ");
+   }
    log_.info(ME, " Topic settings");
    log_.info(ME, "   -readonly       " + lexical_cast<string>(readonly));
    log_.info(ME, "   -destroyDelay   " + lexical_cast<string>(destroyDelay)); // org.jutils.time.TimeHelper.millisToNice(destroyDelay));
@@ -174,12 +191,11 @@ void PublishDemo::connect()
 
 void PublishDemo::publish()
 {
-	for(int i=0; i<numPublish; i++) {
+   for(int i=0; i<numPublish; i++) {
    
       if (interactive) {
          log_.info(ME, "Hit a key to publish '" + oid + "' #" + lexical_cast<string>(i+1) + "/" + lexical_cast<string>(numPublish));
-			char c;
-			cin >> c;
+         std::cin.read(ptr,1);
       }
       else {
          try {
@@ -190,71 +206,68 @@ void PublishDemo::publish()
          }
 
          if (sleep > 0) {
-	         try {
-	            org::xmlBlaster::util::thread::Thread::sleep(sleep);
-	         }
-	         catch(XmlBlasterException e) {
-	            log_.error(ME, e.toXml());
-	         }
+            try {
+               org::xmlBlaster::util::thread::Thread::sleep(sleep);
+            }
+            catch(XmlBlasterException e) {
+               log_.error(ME, e.toXml());
+            }
          }
          log_.info(ME, "Publish '" + oid + "' #" + lexical_cast<string>(i+1) + "/" + lexical_cast<string>(numPublish));
       }
 
-		PublishKey key(global_, oid, "text/xml", "1.0");
-	   key.setClientTags(clientTags);
-	   PublishQos pq(global_);
+      PublishKey key(global_, oid, "text/xml", "1.0");
+      key.setClientTags(clientTags);
+      PublishQos pq(global_);
       pq.setPriority(priority);
       pq.setPersistent(persistent);
       pq.setLifeTime(lifeTime);
       //pq.setForceDestroy(forceDestroy);
       //pq.setSubscribable(subscribable);
-		/*
-            if (clientPropertyMap != null) {
-               Iterator it = clientPropertyMap.keySet().iterator();
-               while (it.hasNext()) {
-                  String key = (String)it.next();
-                  pq.addClientProperty(key, clientPropertyMap.get(key).toString());
-               }
-               //Example for a typed property:
-               //pq.getData().addClientProperty("ALONG", (new Long(12)));
-            }
-            
-            if (i == 0) {
-               TopicProperty topicProperty = new TopicProperty(glob);
-               topicProperty.setDestroyDelay(destroyDelay);
-               topicProperty.setCreateDomEntry(createDomEntry);
-               topicProperty.setReadonly(readonly);
-               if (historyMaxMsg >= 0L) {
-                  HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
-                  prop.setMaxEntries(historyMaxMsg);
-                  topicProperty.setHistoryQueueProperty(prop);
-               }
-               pq.setTopicProperty(topicProperty);
-               log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
-            }
-            
-            if (destination != null) {
-               Destination dest = new Destination(glob, new SessionName(glob, destination));
-               dest.forceQueuing(forceQueuing);
-               pq.addDestination(dest);
-            }
-		*/
+      if (clientPropertyMap.size() > 0) {
+         pq.getData().setClientProperties(clientPropertyMap);
+         //This is the correct way for a typed property:
+         pq.getData().addClientProperty("ALONG", long(12L));
+      }
+      
+      if (i == 0) {
+         TopicProperty topicProperty(global_);
+         topicProperty.setDestroyDelay(destroyDelay);
+         //topicProperty.setCreateDomEntry(createDomEntry);
+         topicProperty.setReadonly(readonly);
+         if (historyMaxMsg >= 0L) {
+            HistoryQueueProperty prop(global_, "");
+            prop.setMaxEntries(historyMaxMsg);
+            topicProperty.setHistoryQueueProperty(prop);
+         }
+         pq.setTopicProperty(topicProperty);
+         log_.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
+      }
+      
+      if (destination != "") {
+         SessionQos sessionQos(global_, destination);
+         Destination dest(global_, sessionQos);
+         dest.forceQueuing(forceQueuing);
+         pq.addDestination(dest);
+      }
 
+      log_.info(ME, "mapSize=" + lexical_cast<string>(clientPropertyMap.size()) + " PublishQos: " + pq.toXml());
 
-	   MessageUnit msgUnit(key, contentStr, pq);
-	   log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
-	   PublishReturnQos tmp = connection_.publish(msgUnit);
-	   log_.trace(ME, string("publish return qos: ") + tmp.toXml());
-	}
+      MessageUnit msgUnit(key, contentStr, pq);
+      log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
+      PublishReturnQos tmp = connection_.publish(msgUnit);
+      log_.trace(ME, string("publish return qos: ") + tmp.toXml());
+   }
 }
 
 static void usage(Log& log) 
 {
-   log.info("PublishDemo usage:", Global::usage());
-   log.info("PublishDemo", "Plus the following additional command line arguments:");
-   log.info("PublishDemo", " -h (for help: this command)");
-   log.info("PublishDemo", " -numOfRuns (int): the number of publishes which have to be done");
-   log.info("PublishDemo", " -publishDelay (ms): the delay to wait between each publish. If negative (default) it does not wait");
+   log.plain("PublishDemo usage:", Global::usage());
+   string str = "\nPlus many more additional command line arguments:";
+   str += "\n -numPublish (int): the number of publishes which have to be done";
+   str += "\n -sleep (ms): the delay to wait between each publish. If negative (default) it does not wait";
+   str += "\n ...";
+   log.plain("PublishDemo", str);
    exit(0);
 }
 
@@ -278,19 +291,7 @@ int main(int args, char ** argv)
          usage(log);
       }
 
-      int numOfRuns     = glob.getProperty().getIntProperty("numOfRuns", 10);
-      long publishDelay = glob.getProperty().getIntProperty("publishDelay", -1L);
       PublishDemo demo(glob);
-		/*
-      demo->connect();
-      for (int i=0; i < numOfRuns; i++) {
-         demo->publish();
-         if (publishDelay > 0) org::xmlBlaster::util::thread::Thread::sleep(publishDelay);
-      }
-      demo->erase();
-      delete demo;
-      demo = NULL;
-		*/
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
