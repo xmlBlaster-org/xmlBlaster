@@ -266,40 +266,66 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
 }
 
 /**
+* @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
 * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
-void publish(char *key, char *content, int contentLen, char *qos)
-{
-   int keyLen, qosLen, totalLen;
-   char *data;
-
-   if (key == NULL || content == NULL || qos == NULL) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in publish(), message not sent.");
-      return;
-   }
-   keyLen = strlen(key);
-   qosLen = strlen(qos);
-   totalLen = keyLen + contentLen + qosLen + 3*MSG_LEN_FIELD_LEN;
-
-   data = (char *)malloc(totalLen);
-   sprintf(data, "%10.10d%s%10.10d%s%10.10d", keyLen, key, qosLen, qos, contentLen);
-   memcpy(data + 3*MSG_LEN_FIELD_LEN + keyLen + qosLen, content, contentLen);
-
-   sendData(data, totalLen);
-
-   free(data);
-}
 */
+//void xmlBlasterPublish(char *key, char *content, int contentLen, char *qos)
+char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception)
+{
+   int qosLen, keyLen, totalLen;
+   unsigned char *data;
+   char contentLenStr[126];
+
+   if (msgUnit == 0 || msgUnit->key == 0 || msgUnit->content == 0) {
+      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in publish(), message not sent\n");
+      return (char *)0;
+   }
+   if (msgUnit->qos == 0) msgUnit->qos = "";
+
+   qosLen = strlen(msgUnit->qos);
+   keyLen = strlen(msgUnit->key);
+   sprintf(contentLenStr, "%d", msgUnit->contentLen);
+
+   totalLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
+
+   data = (unsigned char *)malloc(totalLen);
+
+   int currpos = 0;
+   memcpy(data+currpos, msgUnit->qos, qosLen+1); // inclusive '\0'
+   currpos += qosLen+1;
+
+   memcpy(data+currpos, msgUnit->key, keyLen+1); // inclusive '\0'
+   currpos += keyLen+1;
+
+   memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); // inclusive '\0'
+   currpos += strlen(contentLenStr)+1;
+
+   memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
+   //currpos += msgUnit->contentLen;
+
+   ResponseHolder responseHolder;
+   if (sendData(XMLBLASTER_PUBLISH, secretSessionId, data, totalLen,
+                &responseHolder, exception) == false) {
+      free(data);
+      return 0;
+   }
+   free(data);
+   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
+   free(responseHolder.data);
+   return response;
+}
 
 /**
  * @param qos The QoS to connect
  * @param The exception struct, exception->errorCode is filled on exception
  * @return The ConnectReturnQos raw xml string, you need to free() it
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-char * xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
+char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
 {
    if (qos == 0 || exception == 0) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in connect(), message not sent.");
+      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in connect(), message not sent\n");
       return (char *)0;
    }
 
@@ -329,7 +355,7 @@ char * xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
       }
    }
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s): %s", secretSessionId, response);
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s)", secretSessionId);
 
    return response;
 }
@@ -347,7 +373,7 @@ void update(MsgUnit *msg)
    if (XMLBLASTER_DEBUG) printf("client.update(): Asynchronous message update arrived:\n%s\n", xml);
    free(xml);
    /*
-   char content[msg->contentLength+1];
+   char content[msg->contentLen+1];
    contentToString(content, msg);
    if (XMLBLASTER_DEBUG)
       printf("client.update(): Asynchronous message update arrived:\nkey=%s\ncontent=%s\nqos=%s\n",
@@ -397,7 +423,26 @@ int main(int argc, char** argv)
    response = xmlBlasterConnect(data, &xmlBlasterException);
    free(response);
    if (strlen(xmlBlasterException.errorCode) > 0) {
-      printf("Caught exception, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+      printf("Caught exception during connect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+      exit(1);
+   }
+
+   printf("Connected to xmlBlaster, publishing a message ...\n");
+
+   MsgUnit msgUnit;
+   msgUnit.key = "<key oid='HelloWorld'/>";
+   msgUnit.content = "Some message payload";
+   msgUnit.contentLen = strlen("Some message payload");
+   msgUnit.qos = "<qos><persistent/></qos>";
+   response = xmlBlasterPublish(&msgUnit, &xmlBlasterException);
+
+   if (response) {
+      printf("Publish success, returned status is '%s'\n", response);
+      free(response);
+   }
+   else {
+      printf("Caught exception in publish, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+      exit(1);
    }
 
    //publish("<key oid='cpuinfo'/>", data, strlen(data), "<qos/>");
