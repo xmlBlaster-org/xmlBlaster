@@ -45,7 +45,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
    /** reference to my managing container */
-   private TopicHandler myHandler;
+   private TopicHandler topicHandler;
    /** A reference to the query subscription (XPATH), which created this subscription
        If the subscription was EXACT, querySub is null */
    private SubscriptionInfo querySub = null;
@@ -202,27 +202,27 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * This must be called as soon as my TopicHandler handles me.
-    * @param myHandler I'm handled (lifetime) by this handler
+    * @param topicHandler I'm handled (lifetime) by this handler
     */
-   public final void addTopicHandler(TopicHandler myHandler) {
-      if (myHandler == null) {
+   public final void addTopicHandler(TopicHandler topicHandler) {
+      if (topicHandler == null) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "addTopicHandler with myHandler==null seems to be strange");
+         log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
       }
 
-      this.myHandler = myHandler;
+      this.topicHandler = topicHandler;
 
-      if (this.myHandler != null) {
-         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.myHandler.getUniqueKey() + "'");
+      if (this.topicHandler != null) {
+         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
       }
    }
 
    public final TopicHandler getTopicHandler() {
-      if (myHandler == null) {
+      if (topicHandler == null) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "addTopicHandler with myHandler==null seems to be strange");
+         log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
       }
-      return myHandler;
+      return topicHandler;
    }
 
    /**
@@ -230,7 +230,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return the creation time of this subscription (in millis)
     */
    public final long getCreationTime() {
-      return creationTime;
+      return this.creationTime;
    }
 
    /**
@@ -238,7 +238,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    final void removeSubscribe() {
       try {
-         if (myHandler == null) {
+         if (topicHandler == null) {
             if (!isQuery()) {
                log.warn(ME, "The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
                Thread.dumpStack();
@@ -246,7 +246,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
             return;
          }
       } catch(XmlBlasterException e) {}
-      myHandler.removeSubscriber(uniqueKey);
+      topicHandler.removeSubscriber(uniqueKey);
       erase();
    }
 
@@ -254,14 +254,14 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return The message wrapper object
     * @exception If no MsgUnitWrapper available
    public final MsgUnitWrapper getMsgUnitWrapper() throws XmlBlasterException {
-      if (myHandler == null) {
+      if (topicHandler == null) {
          if (!isQuery()) {
             log.warn(ME, "Key oid=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
             Thread.dumpStack();
          }
          throw new XmlBlasterException(ME + ".NoMsgUnitWrapper", "Key oid=" + uniqueKey + " has no TopicHandler which takes care of it");
       }
-      return myHandler.getMsgUnitWrapper();
+      return topicHandler.getMsgUnitWrapper();
    }
     */
 
@@ -406,25 +406,53 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return XML state of SubscriptionInfo
     */
    public final String toXml(String extraOffset) throws XmlBlasterException {
-      StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+      StringBuffer sb = new StringBuffer(2048);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<SubscriptionInfo id='" + getSubscriptionId() + "'>");
+      sb.append(offset).append("<SubscriptionInfo id='").append(getSubscriptionId()).append("'>");
       //sb.append(offset + "   <keyData oid='" + (keyData==null ? "null" : keyData.getUniqueKey()) + "'/>");
       if (keyData != null)
-         sb.append(keyData.toXml(extraOffset + "   ").toString());
-      sb.append(subscribeQos.toXml(extraOffset + "   ").toString());
-      sb.append(offset + "   <topicHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
-      sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
-      if (childrenVec != null) {
-         for (int ii=0; ii<childrenVec.size(); ii++) {
-            SubscriptionInfo child = (SubscriptionInfo)childrenVec.elementAt(ii);
-            sb.append(offset).append("   <child>").append(child.getSubscriptionId()).append("</child>");
+         sb.append(keyData.toXml(extraOffset+Constants.INDENT));
+      sb.append(subscribeQos.toXml(extraOffset+Constants.INDENT));
+      sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
+      sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
+      if (this.childrenVec != null) {
+         for (int ii=0; ii<this.childrenVec.size(); ii++) {
+            SubscriptionInfo child = (SubscriptionInfo)this.childrenVec.elementAt(ii);
+            sb.append(offset).append(" <child>").append(child.getSubscriptionId()).append("</child>");
          }
       }
-      sb.append(offset + "</SubscriptionInfo>\n");
+      sb.append(offset).append("</SubscriptionInfo>");
+      return sb.toString();
+   }
+
+  /**
+    * Dump state of this object into XML.
+    * <pre>
+    * &lt;subscribe id='_subId:1' sessionName='/node/heron/client/joe/-2' oid='HelloWorld' parent='_sub:XPATH-2'/>
+    * </pre>
+    * @param extraOffset indenting of tags
+    * @return XML state of SubscriptionInfo
+    */
+   public final String toXmlSmall(String extraOffset) throws XmlBlasterException {
+      StringBuffer sb = new StringBuffer(256);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      sb.append(offset).append("  <subscribe id='").append(getSubscriptionId()).append("'");
+      sb.append(" sessionName='").append(getSessionInfo().getSessionName()).append("'");
+      if (this.topicHandler != null) {
+         sb.append(" oid='").append(topicHandler.getUniqueKey()).append("'");
+      }
+      if (this.querySub != null) {
+         sb.append(" parent='").append(this.querySub.getSubscriptionId()).append("'");
+      }
+      if (this.childrenVec != null) {
+         sb.append(" numChilds='").append(this.childrenVec.size()).append("'");
+      }
+      sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
+      sb.append("/>");
       return sb.toString();
    }
 }
