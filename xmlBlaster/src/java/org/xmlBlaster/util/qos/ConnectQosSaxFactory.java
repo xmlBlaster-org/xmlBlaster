@@ -172,7 +172,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
          if (!inQueue) {
-            tmpCbProp = new CbQueueProperty(glob, null, null); // Use default queue properties for this callback address
+            tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_SESSION, null); // Use default queue properties for this callback address
             this.connectQosData.addCbQueueProperty(tmpCbProp);
          }
          tmpCbAddr = new CallbackAddress(glob);
