@@ -235,6 +235,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
+      if (this.isShutdown) return;
       ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
