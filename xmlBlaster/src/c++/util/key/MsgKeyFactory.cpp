@@ -24,10 +24,10 @@ MsgKeyFactory::MsgKeyFactory(Global& global)
 
 MsgKeyFactory::~MsgKeyFactory() 
 {
-   delete OID;
-   delete CONTENT_MIME;
-   delete CONTENT_MIME_EXTENDED;
-   delete D_O_M_A_I_N;
+   XMLString::release(&OID);
+   XMLString::release(&CONTENT_MIME);
+   XMLString::release(&CONTENT_MIME_EXTENDED);
+   XMLString::release(&D_O_M_A_I_N);
 }
 
 MsgKeyData MsgKeyFactory::readObject(const string& xmlKey)
