@@ -41,7 +41,7 @@ public final class NodeId implements Comparable, java.io.Serializable
     */
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
-         org.xmlBlaster.util.Global.instance().getLog("cluster").error(ME, "Cluster node has no name");
+         org.xmlBlaster.util.Global.instance().getLog("cluster").error(ME, "Cluster node has no name please specify one with -cluster.node.id XXX");
          id = "NoNameNode";
       }
       this.id = id;
