@@ -26,7 +26,7 @@ namespace util {
     */
    class Dll_Export Property {
       
-      typedef std::map<std::string, std::string, std::less<std::string> > MapType;
+      public: typedef std::map<std::string, std::string, std::less<std::string> > MapType;
   
    private:
       MapType properties_;
@@ -78,15 +78,25 @@ namespace util {
        * The default constructor allocate the storage
        * std::map for the properties and parses the command line properties.<p />
        * NOTE: You have to call loadPropertyFile() separatly
+		 * @param args Length of argv
+	 	 * @param argv The command line arguments, for example "-protocol SOCKET"
        */
-      Property(int args=0, const char * const argc[]=0) : properties_() {
+      Property(int args=0, const char * const argv[]=0) : properties_() {
 
-         if (args && argc) {
-            loadCommandLineProps(args, argc, std::string("-"), false); // xmlBlaster-style properties
+         if (args && argv) {
+            loadCommandLineProps(args, argv, std::string("-"), false); // xmlBlaster-style properties
          }
 
          //loadPropertyFile();
       }
+
+      /**
+       * Initialize with the given key/value std::map. 
+       * NOTE: You have to call loadPropertyFile() separately
+       * @param propertyMap A std::map which contains key and values pairs,
+	    *                    for example key="protocol" and value="SOCKET"
+       */
+      Property(MapType propMap);
 
       /*
        * xmlBlaster.properties is searched in this sequence:
@@ -192,13 +202,13 @@ namespace util {
       
 
       /**
-       * It searches in the argument list specified by argc the argument 
+       * It searches in the argument list specified by argv the argument 
        * specified by name. If nothing is found it returns -1, otherwise it
-       * returns the index of argc corresponding to what specified in name.
+       * returns the index of argv corresponding to what specified in name.
        */
-      int findArgument(int args, const char * const argc[], const std::string &name) {
+      int findArgument(int args, const char * const argv[], const std::string &name) {
          for (int i=1; i < args; i++) {
-            if (std::string(argc[i]) == name) return i;
+            if (std::string(argv[i]) == name) return i;
          }
          return -1;
       }

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.29 2004/02/09 10:07:59 ruff Exp $
+Version:   $Id: Global.h,v 1.30 2004/02/19 21:53:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -123,11 +123,17 @@ public:
    static std::string usage();
 
    /**
-    * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
-    * @param delay the time in milliseconds from now the return value has to point to.
-    * @exception RuntimeException on overflow (never happens :-=)
+    * Intitialize with the given environment settings. 
+    * @param argv The command line arguments, for example "-protocol SOCKET"
     */
    Global& initialize(int args=0, const char * const argv[]=0);
+
+   /**
+    * Intitialize with the given environment settings. 
+    * @param propertyMap A std::map which contains key and values pairs,
+    *                    for example key="protocol" and value="SOCKET"
+    */
+   Global& initialize(const org::xmlBlaster::util::Property::MapType &propertyMap);
 
    /**
     * Access the used LogManager. 

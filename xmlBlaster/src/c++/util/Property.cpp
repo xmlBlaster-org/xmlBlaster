@@ -12,6 +12,9 @@
 using namespace std;
 using namespace org::xmlBlaster::util;
 
+Property::Property(MapType propMap) : properties_(propMap) {
+}
+
 /**
  * @see Property.h#loadCommandLineProps
  */
