@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.persistent.session' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='engine.persistence.session' type='NEW' prio='HIGH' status="CLOSED">
    <topic>
       XmlBlaster supports sessions and subscriptions which persist a server crash.
    </topic>
@@ -30,17 +30,17 @@
       <ul>
         <li>it allows <b>persistent subscriptions</b></li>
         <li>PtP messages will still be delivered to the destination session even if the
-	    later has not been able to reconnect yet (for example because the client has
-	    crashed too, or because the retry delay is high).
+            later has not been able to reconnect yet (for example because the client has
+            crashed too, or because the retry delay is high).
         </li>
       </ul>
       Currently there are some requisites which must be fulfilled to allow a session to be
       made persistent. These are:
       <ul>
         <li>a) The session must be assigned by the client (i.e. he must provide a 
-	   <b>positive sessionId</b>)</li>
-	<li>b) The <b>callback connection</b> must be configured as <b>failsafe</b> (to avoid 
-	     disconnection in cases where the client is inaccessible)</li>
+           <b>positive sessionId</b>)</li>
+        <li>b) The <b>callback connection</b> must be configured as <b>failsafe</b> (to avoid 
+             disconnection in cases where the client is inaccessible)</li>
       </ul>
       Some of the protocols may be less restrictive than others but if you fulfill the 
       mentioned requisites, session persistency will work on all communication protocols.
@@ -52,14 +52,14 @@
       </p>
       <p><b>Exceptions:</b>
         <ul>
-	  <li>When connecting persistently and the storage is overflow, an exception is thrown 
-	      back to the client.
-	  </li>
-	  <li>Making a persistent subscription on a transient session implies that the session
-	      is made persistent. If the storage for the persistent sessions is overflown, an
-	      exception is thrown back to the client.
-	  </li>
-	</ul>
+          <li>When connecting persistently and the storage is overflow, an exception is thrown 
+              back to the client.
+          </li>
+          <li>Making a persistent subscription on a transient session implies that the session
+              is made persistent. If the storage for the persistent sessions is overflown, an
+              exception is thrown back to the client.
+          </li>
+        </ul>
       </p>
    </description>
 
@@ -148,12 +148,12 @@ persistence/session/maxEntries = 200
 
    </configuration>
    <see type="REQ">client.failsafe</see>
-   <see type="REQ">client.persistent.subscription</see>
+   <see type="REQ">engine.persistence.subscription</see>
    <see type="API">org.xmlBlaster.engine.I_SessionPersistencePlugin</see>
    <author><a ref='laghi@swissinfo.org'>Michele Laghi</a></author>
    <hacker><a ref='laghi@swissinfo.org'>Michele Laghi</a></hacker>
    <date>2004 02 19</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
