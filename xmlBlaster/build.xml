@@ -106,11 +106,17 @@ TODO
    <property name="req.dir" value="./doc/requirements"/>
    <property name="packages" value="org.xmlBlaster.*"/>
 
+   <!-- The document root of the servlet engine (deploy dir for war files): -->
+   <!-- "${user.home}/jakarta-tomcat" -->
+   <condition property="TOMCAT_HOME" value="${env.CATALINA_HOME}">
+      <isset property="env.CATALINA_HOME"/>
+   </condition>
+   <condition property="TOMCAT_HOME" value="${env.TOMCAT_HOME}">
+      <isset property="env.TOMCAT_HOME"/>
+   </condition>
+   <property name="WWW_ROOT"             value="${TOMCAT_HOME}/webapps"/>
    <property name="demo.http.dir"        value="${demo.dir}/http"/>
    <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
-   <!-- The document root of the servlet engine (deploy dir for war files): -->
-   <property name="TOMCAT_HOME"          value="${env.CATALINA_HOME}"/> <!-- "${user.home}/jakarta-tomcat" -->
-   <property name="WWW_ROOT"             value="${TOMCAT_HOME}/webapps"/>
 
    <property name="idl" value="org.xmlBlaster.protocol.corba"/>
    <property name="idl.class" value="org.jacorb.idl.parser"/>
@@ -730,8 +736,10 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
    <!-- =================================================================== -->
-   <target name="deploy_war" depends="prepare, all, appletLib_jar, appletDemo_jar" description="Creates a web archive (.war) to deploy to a modern servlet engine">
+   <target name="deploy_war" depends="prepare, all, appletLib_jar, appletDemo_jar, deploy_war-only" description="Creates a web archive (.war) to deploy to a modern servlet engine"/>
+   <target name="deploy_war-only" depends="prepare" description="Creates a web archive (.war) to deploy to a modern servlet engine, expecting everything is compiled already">
       <echo message="Please run 'build all' before if you have changed some code"/>
+      <echo message="TOMCAT_HOME = ${TOMCAT_HOME}"/>
       <mkdir dir="${build.war}"/>
       <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
       <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
