@@ -1,6 +1,6 @@
 The Java package structure for xmlBlaster
 =========================================
-Version:   $Id: packages.txt,v 1.5 2000/02/20 17:38:49 ruff Exp $
+Version:   $Id: packages.txt,v 1.6 2000/06/16 15:31:15 kron Exp $
 
 - The 'engine' section is the implementation of xmlBlaster
 
@@ -8,6 +8,11 @@ Version:   $Id: packages.txt,v 1.5 2000/02/20 17:38:49 ruff Exp $
     messages. The will be removed as soon as the Java-XML mapping
     is specified and performing open source tools are available
     to do this task automatically.
+
+  * The xmldb section is a transparent Layer for the engine. Message
+    Units and QoS are stored in a file-database if the QoS-Tag "isDurable"
+    is set. MessageUnits and QoS perform a PMessageUnit which is  
+    cached in the Memory and mapped on the disk with COPY-BACK-Caching. 
 
 - The 'protocol' section is how the client can access xmlBlaster
   and how the xmlBlaster can callback to the client.
@@ -46,11 +51,10 @@ Version:   $Id: packages.txt,v 1.5 2000/02/20 17:38:49 ruff Exp $
 
 org.xmlBlaster +- engine -+- xml2java
                |          |
-               |          +- persistence -+- filestore
-               |          |               |
-               |          |               +- xmldb
-               |          |               |
-               |          |               +- jdbc
+               |          +- xmldb -+- file
+               |          |         |
+               |          |         +- cache
+               |          |         
                |          |
                |          +- transaction -+- jts
                |          |
