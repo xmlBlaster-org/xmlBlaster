@@ -3,7 +3,7 @@ Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Store MessageUnits in a file-database or holds in a Cache.
-Version:   $Id: XmlDb.java,v 1.6 2000/08/29 11:17:38 kron Exp $
+Version:   $Id: XmlDb.java,v 1.7 2000/08/29 16:26:32 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;
@@ -36,14 +36,15 @@ import com.sun.xml.tree.ElementNode;
 import gnu.regexp.*;
 
 /**
- * This XmlDb is a persistence for the xmlBlaster. 
+ * This XmlDb is a persistence for the xmlBlaster.
  * <p />
  * You can store MessageUnits (Key,Content,QoS) durable controlled by
- * the isDurable-Flag in the Xml-QoS. @see org.xmlBlaster.client.PublishQosWrapper
+ * the isDurable-Flag in the Xml-QoS. 
+ * @see org.xmlBlaster.client.PublishQosWrapper
  * <br />
  * Example: <br />
  * <pre>
- *    XmlDb xmldb = new XmlDb();        // Get a xmldb-instance 
+ *    XmlDb xmldb = new XmlDb();        // Get a xmldb-instance
  *    xmldb.setMaxCacheSize(2000000L);  // The max. cachesize in Byte
  *
  *    PublishQosWrapper qos = new PublishQosWrapper(true); // <qos><isDurable /></qos>
@@ -55,17 +56,17 @@ import gnu.regexp.*;
  *    Enummeration muIter xmldb.query("//key[@oid="100"); // Query by XPATH
  *
  *    xmldb.delete(oid);     // Delete MessageUnit from db by oid.
- *   
+ *
  *    xmldb.showCacheState() // Shows you the current state of the cache.
  *
  * </pre>
  */
-public class XmlDb 
+public class XmlDb
 {
     private static final String ME = "XmlDb";
 
     private static Cache _cache;
-    private static PDOM _pdomInstance;
+    private static XmlKeyDom _domInstance;
 
     /**
     * This class store MessageUnits in a File-database or holds in a Cache
@@ -75,7 +76,7 @@ public class XmlDb
     */
     public XmlDb()
     {
-       _pdomInstance = PDOM.getInstance();
+       _domInstance = XmlKeyDom.getInstance();
        _cache = new Cache();
     }
 
@@ -110,12 +111,12 @@ public class XmlDb
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);
 
       // Check if Xmlkey exists in DOM
-      if(_pdomInstance.keyExists(pmu.oid)){
+      if(_domInstance.keyExists(pmu.oid)){
          return pmu.oid;
       }
 
       // Insert key to DOM
-      _pdomInstance.insert(pmu);
+      _domInstance.insert(pmu);
 
       // write MessageUnit to Cache
       _cache.write(pmu);
@@ -130,7 +131,7 @@ public class XmlDb
     */
     public final void delete(String oid)
     {
-       _pdomInstance.delete(oid);
+       _domInstance.delete(oid);
        _cache.delete(oid);
     }
 
@@ -160,7 +161,7 @@ public class XmlDb
     */
     public Enumeration query(String queryString)
     {
-       Enumeration oidIter = _pdomInstance.query(queryString);
+       Enumeration oidIter = _domInstance.query(queryString);
        Vector v = new Vector();
        while(oidIter.hasMoreElements())
        {
@@ -219,7 +220,7 @@ public class XmlDb
    * Shows all cache parameters.
    * <br />
    * Max. CacheSize, Max. MessageSize, Cacheoverflow, Number of Messages in Cache,
-   * Number of Messages isDurable, Number of Messages swapped, current cachesize 
+   * Number of Messages isDurable, Number of Messages swapped, current cachesize
    */
    public void showCacheState()
    {
