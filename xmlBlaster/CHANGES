@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx 2003]
 ================================
+ o Updated JacORB to 1.4.50, cvs from 2003-03-279
+   to get fixed orb.shutdown().
+
+ o Memory leak BUGFIX in corba protocol plugin.
+   This occurred on shutdown of the corba plugin
+   (e.g. if server is run embedded).
 
  o This release is not backward compatible.
 
