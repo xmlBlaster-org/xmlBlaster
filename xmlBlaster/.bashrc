@@ -191,6 +191,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       cp ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
       ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
    fi
+
+   if [ ! -f ${HOME}/xmlBlasterPlugins.xml ]; then
+      cp ${XMLBLASTER_HOME}/config/xmlBlasterPlugins.xml.template ${HOME}/xmlBlasterPlugins.xml
+      ${ECHO} "$BLACK_LTGREEN   Copied ${HOME}/xmlBlasterPlugins.xml$ESC"
+   fi
 else
    ${ECHO} "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
    return 1
