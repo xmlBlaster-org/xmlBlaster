@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.5 2000/05/06 20:15:05 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.6 2000/05/06 20:29:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -22,14 +22,11 @@ import javax.servlet.http.*;
 import java.io.*;
 
 /**
- * This servlets subnscribes to messages in xmlBlaster, which are requested
+ * This servlets subscribes to messages in xmlBlaster, which are requested
  * from the browser
  * <p />
- * With Apache/Jserv add this line to zone.properties:
+ * With Apache/Jserv add this line to zone.properties:<br />
  *   <code>servlet.SystemInfo.code=html.systemInfo.SystemInfo</code>
- *
- * jaco org.xmlBlaster.client.feeder.PublishFile -content 56 -xmlKey "<key oid=\"cpuinfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
- * java org.xmlBlaster.client.feeder.PublishFile -content 44 -xmlKey "<key oid=\"meminfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
  */
 public class SystemInfo extends HttpServlet
 {
