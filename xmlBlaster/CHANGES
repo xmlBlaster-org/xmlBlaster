@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+ o The client side synchronous access cache is ported and
+   does now automatically remove outdated entries, see:
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cache.html
 
  o Cleanup of client side protocol plugin interface
 
