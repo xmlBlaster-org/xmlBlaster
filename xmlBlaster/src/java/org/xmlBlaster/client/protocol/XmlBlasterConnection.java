@@ -19,6 +19,7 @@ import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -28,22 +29,28 @@ import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
 import org.xmlBlaster.authentication.plugins.I_InitQos;
 
 import java.applet.Applet;
 
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Iterator;
+
 
 /**
  * This is a helper class, helping a Java client to connect to xmlBlaster
  * using IIOP (CORBA), RMI, XML-RPC or any other supported protocol.
- * <p>
+ * <p />
  * Please note that you don't need to use this wrapper, you can use the raw I_XmlBlasterConnection
  * interface as well. You can also hack your own little wrapper, which does exactly
  * what you want.
- * <p>
+ * <p />
  * There is a constructor for applets, and standalone Java clients.
  * <p />
+ * <b>Fail Save Mode:</b><br />
  * If you need a fail save client, you can invoke the xmlBlaster methods
  * through this class as well (for example use xmlBlasterConnection.publish()
  * instead of the direct CORBA/RMI/XML-RPC server.publish()).
@@ -72,6 +79,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  * <p />
+ * <b>Security Plugin:</b><br />
  * If a client side security plugin is specified in xmlBlaster.properties
  * or on command line, this will be loaded and used here. All xmlBlaster invocations
  * will be intercepted with your supplied plugin.<br />
@@ -136,6 +144,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private String              secVersion = null;
    private PluginLoader       secPlgnMgr = null;
    private I_ClientHelper secPlgn = null;
+
+   /** This map contains the registered callback interfaces for given subscriptions.
+       The key is the subscription ID */
+   private final HashMap callbackMap = new HashMap();
 
    /**
     * Client access to xmlBlaster for client applications.
@@ -673,6 +685,24 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             Log.warn(ME, "No logout, you are not logged in");
          else
             Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
+         synchronized (callbackMap) {
+            Set keys = callbackMap.keySet();
+            Iterator it = keys.iterator();
+            while(it.hasNext()) {
+               String subscriptionId = (String)it.next();
+               KeyWrapper key = new KeyWrapper(subscriptionId);
+               try {
+                  driver.unSubscribe(key.toString(), "");
+               }
+               catch(XmlBlasterException e) {
+                  Log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
+               }
+               catch(ConnectionException e) {
+                  break;
+               }
+            }
+            callbackMap.clear();
+         } 
          boolean ret = driver.logout();
          Log.info(ME, "Successful logout");
          return ret;
@@ -734,8 +764,24 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if( cache != null ) {
          forCache = cache.update(updateQoS.getSubscriptionId(), updateKey, content, updateQoS);
       }
-      if (!forCache)
-         updateClient.update(loginName, updateKey, content, updateQoS); // deliver the update to our client
+      if (!forCache) {
+
+         Object obj = null;
+         synchronized (callbackMap) {
+            obj = callbackMap.get(updateQoS.getSubscriptionId());
+         }
+
+         if (obj != null) {
+            // If a special callback was specified for this subscription:
+            I_Callback cb = (I_Callback)obj;
+            cb.update(loginName, updateKey, content, updateQoS); // deliver the update to our client
+         }
+         else if (updateClient != null) {
+            // If a general callback was specified on login:
+            updateClient.update(loginName, updateKey, content, updateQoS); // deliver the update to our client
+         }
+
+      }
    }
 
 
@@ -751,11 +797,59 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
    }
 
+   /**
+    * This subscribe variant allows to specify a specialized callback
+    * for updated messages. 
+    * <p />
+    * Implementing for every subscription a callback, you don't need to
+    * dispatch updates when they are received in one central
+    * update method.
+    * <p />
+    * Example:<br />
+    * <pre>
+    *   XmlBlasterConnection con = ...   // login etc.
+    *   ...
+    *   SubscribeKeyWrapper key = new SubscribeKeyWrapper("//stock", "XPATH");
+    *   SubscribeQosWrapper qos = new SubscribeQosWrapper();
+    *   try {
+    *      con.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
+    *            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+    *               System.out.println("Receiving message for '//stock' subscription ...");
+    *            }
+    *         });
+    *   } catch(XmlBlasterException e) {
+    *      System.out.println(e.reason);
+    *   }
+    * </pre>
+    * @return oid    The oid of your subscribed Message<br>
+    *                If you subscribed using a query, the subscription ID of this<br>
+    *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
+    *                You should use this oid if you wish to unSubscribe()<br>
+    *                If no match is found, an empty string "" is returned.
+    * @see xmlBlaster.idl
+    * @see org.xmlBlaster.engine.RequestBroker#subscribe
+    */
+   public final String subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
+   {
+      if (Log.CALL) Log.call(ME, "subscribe(with callback) ...");
+      String subscriptionId = null;
+      synchronized (callbackMap) {
+         subscriptionId = subscribe(xmlKey, qos);
+         callbackMap.put(subscriptionId, cb);
+      }
+      return subscriptionId;
+   }
 
    /**
     * Enforced by I_InvocationRecorder interface (fail save mode).
     * see explanations of publish() method.
+    * @return oid    The oid of your subscribed Message<br>
+    *                If you subscribed using a query, the subscription ID of this<br>
+    *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
+    *                You should use this oid if you wish to unSubscribe()<br>
+    *                If no match is found, an empty string "" is returned.
     * @see xmlBlaster.idl
+    * @see org.xmlBlaster.engine.RequestBroker#subscribe
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
@@ -787,6 +881,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          else { // without security plugin
             driver.unSubscribe(xmlKey, qos);
          }
+         synchronized (callbackMap) {
+            XmlKey key = new XmlKey(xmlKey);
+            callbackMap.remove(key.getUniqueKey());
+         } 
       } catch(XmlBlasterException e) {
          throw e;
       } catch(ConnectionException e) {
