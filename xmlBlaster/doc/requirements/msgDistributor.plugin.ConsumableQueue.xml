@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='msgDistributor.plugin.consumableQueue' type='NEW' prio='LOW' status='CLOSE'>
+   <topic>XmlBlaster has a plugin which tells a topic to behave like a queue, i.e. that every message
+          update is delivered and consumed only once.
+   </topic>
+   <description>
+      <p>
+      The ConsumableQueuePlugin is an implementation of the msgDistributor plugin. Every message
+      published on a topic which has a ConsumablePlugin defined as its message distributor, 
+      is distributed only to one single subscriber and immediately consumed. This guarantees that 
+      every message is delivered and consumed only once.
+      </p>
+      <p>
+      <b>How does this work ?</b><br/>
+      The administrator makes sure the xmlBlaster.properties file contains the registration of the
+      consumable plugin. The publisher sets the msgDistributor attribute in the TopicProperty of the
+      PublishQos  to the ConsumableQueue key. <br/>
+      From that point on the distribution of published messages is delegated to the ConsumableQueue 
+      plugin. The distribution itself is done in another thread to release the publisher thread 
+      immediately and before messages are distributed.
+      </p>
+      <p>
+      Once a topic has a ConsumableQueuePlugin, and a new message is published on it, the plugin
+      sends the message to the first available subscriber. First available subscriber means in this
+      context a subscriber which has a callback server which is reachable (i.e. on the server side
+      the dispatcher is alive). A polling dispatcher as the result of a client which is currently
+      unavailable would not be considered. 
+      </p>
+      <p>
+      Simple load balancing can currently only happen if the update method (on the client side)
+      acknowledges the message but processes the message in another thread. This way the distribution
+      thread is made free and can process the next message by giving it to the next session on the
+      line. This is based on a round robin algorithm.
+      </p>
+   </description>
+   <configuration where="server">
+     <p>
+       The first step to do when configuring this plugin is to register it by assigning a name to it.
+       This is normally put into the xmlBlaster.properties file which is read by the server.
+       The name has the structure <code>PluginType[instanceName][instanceVersion]</code> as stated in the
+       first row in the table below. The xmlBlaster.properties.template coming along with the
+       distribution contains that already.<br/>
+       The second step is to define a default plugin to be used when the client does not specify
+       anything explicitly. The default configuration has this set to 'undefined', i.e. a topic has
+       per default no MsgDistributorPlugin configured. 
+      </p>
+      <center>
+      <table border="1" width="75%">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>MsgDistributorPlugin[ConsumableQueue][1.0]</td>
+            <td>org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin</td>
+            <td>Register your plugin</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>MsgDistributorPlugin/defaultPlugin</td>
+            <td>"undef"</td>
+            <td>Specify the plugin to use as a default.<br />
+                When the client does not define anything in its TopicProperty.setMsgDistributor then this
+                plugin instance is used. 'undef' means no MsgDistributorPlugin is used.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+      </center>
+      <p>
+      When publishing a topic for the first time (or when doing an administrative publish), you can
+      specify which plugin to use for the distribution of the message. In java you would do it like this:
+<pre>
+
+   ...
+
+   PublishQos pubQos = new PublishQos(global);
+   TopicProperty topicProp = new TopicProperty(global);
+   topicProp.setMsgDistributor("ConsumableQueue,1.0");
+   pubQos.setTopicProperty(topicProp);
+   MsgUnit msgUnit = new MsgUnit(new PublishKey(global, someOid), 
+                                 someContent, 
+                                 pubQos);
+   global.getXmlBlasterAccess().publish(msgUnit);
+
+   ...
+
+</pre>
+      </p>
+      <!-- p>
+      For coding and configuration of plugins please read the
+      requirement msgDistributor.plugin.ConsumableQueue (see link below)
+      </p -->
+   </configuration>
+
+   <example lang="Java" type="HTML">
+      there is a little demo script which shows how to use a ConsumableQueuePlugin. Go to the
+      demo/javaclients/script directory and invoke:
+      <pre>
+java javaclients.script.XmlScript -requestFile consumableQueue.xml
+      </pre>	 
+   </example>
+
+
+   <see type="API">org.xmlBlaster.engine.distributor.I_MsgDistributor</see>
+   <see type="API">org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
+   <see type="REQ">msgDistributor.plugin</see>
+   <see type="REQ">util.property.env</see>
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2004 06 01</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSE">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.distributor.TestConsumableQueue</test>
+   </testcase>
+</requirement>
+
