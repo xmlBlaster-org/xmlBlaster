@@ -157,8 +157,10 @@ public class PluginInfo {
       String rawString = prop.getValue();// "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
 
       if (rawString==null) {
-         if (this.type != null)
-            log.warn(ME, "Plugin '" + toString() + "' not found, choosing default plugin");
+         if (this.type != null) {
+            if (log.TRACE) log.trace(ME, "Plugin '" + toString() + "' not found, giving up.");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Plugin '" + toString() + "' not found, please check your configuration");
+         }
          rawString = manager.getDefaultPluginName(this.type, this.version);   // "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
       }
 
