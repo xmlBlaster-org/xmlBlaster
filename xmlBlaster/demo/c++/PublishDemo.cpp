@@ -131,8 +131,10 @@ void PublishDemo::initEnvironment()
    //map<std::string,std::string> clientPropertyMap = global_.getProperty().get("clientProperty", map<std::string,std::string>());
    string clientPropertyKey = global_.getProperty().get("clientProperty.key", string(""));
    string clientPropertyValue = global_.getProperty().get("clientProperty.value", string(""));
+   string clientPropertyEncoding = global_.getProperty().get("clientProperty.encoding", ""); // Force to Constants::ENCODING_BASE64="base64"
+   string clientPropertyType = global_.getProperty().get("clientProperty.type", ""); // Date type, see Constants::TYPE_DOUBLE, Constants::TYPE_STRING etc
    if (clientPropertyKey != "") {
-      ClientProperty cp(clientPropertyKey, clientPropertyValue);
+      ClientProperty cp(clientPropertyKey, clientPropertyValue, clientPropertyType, clientPropertyEncoding);
       clientPropertyMap.insert(QosData::ClientPropertyMap::value_type(clientPropertyKey, cp));
    }
 
