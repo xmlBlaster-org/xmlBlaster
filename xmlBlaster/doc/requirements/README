@@ -1,0 +1,24 @@
+XmlBlaster requirements
+=======================
+
+The requirement document layout is described in requirement.dtd
+
+Each requirement is described in an own xml file
+
+Requirements have no numbers but a unique describing name,
+the filename is the same as the <requirement id=""> ID.
+
+Every requirement needs a <fix> tag, which refers to the testsuite
+with one to many full automatic test cases.
+
+Every bug is noted here and checked with a testsuite case.
+
+
+ruff@swand.lake.de
+
+Validating with IBM parser:
+---------------------------
+export CLASSPATH=/www/xml4j/xml4j.jar:/www/xml4j/xml4jSamples.jar:$CLASSPATH
+java dom.DOMCount -p dom.wrappers.DOMParser engine.get.no.xml
+java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml 
+
