@@ -14,6 +14,10 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
 
 #------------------------------------------------------------------------------
 SUB_DIRS = util protocol engine authentication client
+
+# With J2EE connector (only with JDK 1.3):
+#SUB_DIRS = util protocol engine authentication client j2ee/k2
+
 LOCAL_FILES = \
 			$(CLASS_DIR)/Main.class \
 			$(CLASS_DIR)/MainGUI.class
