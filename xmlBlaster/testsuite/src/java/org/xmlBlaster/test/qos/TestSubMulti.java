@@ -38,7 +38,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubMulti
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubMulti
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestSubMulti
  * </pre>
  */
 public class TestSubMulti extends TestCase implements I_Callback
