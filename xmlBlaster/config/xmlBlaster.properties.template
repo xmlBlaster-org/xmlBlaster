@@ -113,8 +113,8 @@ EmailDriver.from=xmlblast@localhost
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
 DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
 #DispatchPlugin/defaultPlugin=Priority,1.0
+dispatch/clientSide/DispatchPlugin/defaultPlugin=undef
 dispatch/callback/DispatchPlugin/defaultPlugin=undef
-#dispatch/callback/DispatchPlugin/defaultPlugin=undef
 #DispatchPlugin/defaultPlugin=undef
 
 
@@ -122,7 +122,7 @@ dispatch/callback/DispatchPlugin/defaultPlugin=undef
 #dispatch/callback/DispatchPlugin/defaultPlugin=undef
 
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
-PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
+PriorizedDeliveryPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
    <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'> \
      <action do='send'  ifPriority='7-9'/> \
      <action do='queue'  ifPriority='2-6'/> \
@@ -212,8 +212,8 @@ persistence/msgUnitStore/maxEntries = 100000000
 
 
 # Tail back queue on client side (contains the real data of all message types)
-queue/client/maxEntriesCache = 1000
-queue/client/maxEntries = 10000000
+queue/clientSide/maxEntriesCache = 1000
+queue/clientSide/maxEntries = 10000000
 #------------------------------------------------------------------------------
 
 
