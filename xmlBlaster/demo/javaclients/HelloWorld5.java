@@ -107,8 +107,8 @@ public class HelloWorld5
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit("HelloWorld5", "Example: java HelloWorld5\n");
+         glob.getLog(null).info("HelloWorld5", "Example: java HelloWorld5\n");
+         System.exit(1);
       }
 
       new HelloWorld5(glob);
