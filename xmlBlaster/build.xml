@@ -2116,6 +2116,7 @@ TODO
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
@@ -2225,7 +2226,7 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestQueue,TestClientProperty,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
+      <foreach list="TestQueue,TestProperty,TestClientProperty,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
@@ -2303,9 +2304,11 @@ TODO
            <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
-           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba tests? -->
-           <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Compile Socket tests? -->
-           <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
+           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba specific tests (TestCorbaDriver.cpp) ? -->
+           <!-- Is a library detail: -->
+           <!-- define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" / -->   <!-- Compile Socket tests? -->
+           <!-- define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" / -->   <!-- Add the log4cplus logging library -->
+           <!-- define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" / --> <!-- Compile SQLite tests? -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
@@ -2316,6 +2319,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
@@ -2363,6 +2367,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
