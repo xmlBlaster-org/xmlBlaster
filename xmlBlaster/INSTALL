@@ -415,4 +415,32 @@ to compile and run xmlBlaster with orbacus do the following:
 
 -------------------------------------------------------------------------
 
+
+
+CORBA tuning with jacorb.properties:
+------------------------------------
+Increasing jacorb.outbuf_size=2048 to 16384 yields 1-5% performance gain
+
+Changing jacorb.reference_caching=off to 'on' does help nothing, +-2%
+
+Increasing jacorb.poa.thread_pool_max=20 to 1000                             
+       and jacorb.poa.thread_pool_min=5  to 100  decreases performance 10-40%
+
+Increasing jacorb.poa.queue_max=100 to 1000 does help nothing, +-2%
+        but increases stability on heavy load (even higher values
+		  decrease performance).
+
+Changing jacorb.poa.thread_priority=MAX_PRIORITY (10) to 5 (NORM_PRIORITY)
+        does help nothing, +-2%
+
+
+
+Tuning with TowerJ native compiler:
+-----------------------------------
+
+This increases message throughput for approximatly 20-35%
+It runs very stable.
+
+
+
 Marcel - ruff@swand.lake.de
