@@ -1,4 +1,8 @@
-#  Makefile
+#------------------------------------------------------------------------------
+#Name:      Makefile
+#Project:   xmlBlaster
+#Comment:   Makefile for sub directories
+#------------------------------------------------------------------------------
 
 SUB_DIRS = idl java/org/xmlBlaster
 
