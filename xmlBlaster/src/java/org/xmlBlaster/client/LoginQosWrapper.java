@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.6 2000/11/12 13:20:08 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.7 2001/01/30 14:05:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -25,6 +25,7 @@ import java.util.Vector;
  *        &lt;noPtP />
  *        &lt;callback type='IOR'>
  *           IOR:10000010033200000099000010....
+ *           &lt;burstMode collectTime='400' />
  *        &lt;/callback>
  *     &lt;/qos>
  * </pre>
