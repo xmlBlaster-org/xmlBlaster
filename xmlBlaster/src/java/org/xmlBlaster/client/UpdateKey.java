@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.10 2000/01/21 19:06:53 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.11 2000/02/18 14:53:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -17,7 +17,7 @@ import org.xml.sax.helpers.*;
 
 
 /**
- * This class encapsulates the Message meta data and unique identifier.
+ * This class encapsulates the Message meta data and unique identifier of a received message.
  * <p />
  * A typical <b>update</b> key could look like this:<br />
  * <pre>
