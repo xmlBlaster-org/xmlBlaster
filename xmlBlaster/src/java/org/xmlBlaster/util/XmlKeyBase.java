@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.27 1999/12/20 15:35:04 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.28 2000/01/07 20:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -103,6 +103,9 @@ public class XmlKeyBase
 
    /** Some further content info, e.g. the version number */
    protected String contentMimeExtended = null;
+
+   /** Is the internal state of xmlBlaster queried? */
+   protected boolean isInternalStateQuery = false;
 
 
    /**
@@ -265,6 +268,18 @@ public class XmlKeyBase
 
 
    /**
+    * Accessing the internal state of xmlBlaster. 
+    * <br />
+    * @return true if accessing <__sys__xy>
+    */
+   public boolean isInternalStateQuery() throws XmlBlasterException
+   {
+      loadDomTree();
+      return isInternalStateQuery;
+   }
+
+
+   /**
     * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
     */
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException
@@ -349,6 +364,10 @@ public class XmlKeyBase
          throw new XmlBlasterException(ME+".WrongRootNode", "The root node must be named \"key\"\n" + xmlKey_literal);
       }
 
+      isInternalStateQuery = false;
+      if (xmlKey_literal.indexOf("<__sys__internal>") != -1 && xmlKey_literal.indexOf("</__sys__internal>") != -1)
+         isInternalStateQuery = true;
+
       keyOid = null;
       queryType = (isPublish) ? PUBLISH : EXACT_QUERY;
 
@@ -368,6 +387,8 @@ public class XmlKeyBase
                else {
                   keyOid = val;
                   if (Log.TRACE) Log.trace(ME, "Found key oid=\"" + keyOid + "\"");
+                  if (keyOid.indexOf("__sys__") != -1)
+                     isInternalStateQuery = true;
                }
             }
 
@@ -527,6 +548,7 @@ public class XmlKeyBase
          sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>\n");
          sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid).append("</isGeneratedOid>\n");
          sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>\n");
+         sb.append(offset).append("   <isInternalStateQuery>").append(isInternalStateQuery).append("</isInternalStateQuery>\n");
          sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
          sb.append(offset).append("</XmlKeyBase>\n");
       } catch (XmlBlasterException e) {

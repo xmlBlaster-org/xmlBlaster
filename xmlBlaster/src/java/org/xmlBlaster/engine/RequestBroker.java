@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.42 1999/12/22 12:26:18 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.43 2000/01/07 20:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
+import org.xmlBlaster.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientListener;
@@ -28,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -183,6 +184,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
+      if (xmlKey.isInternalStateQuery())
+         updateInternalStateInfo(clientInfo);
+
       String returnOid = "";
       if (xmlKey.getQueryType() != XmlKey.EXACT_QUERY) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
          returnOid = xmlKey.getUniqueKey();
@@ -224,10 +228,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * </pre>
     * @return A sequence of 0 - n MessageUnit structs
     */
-   public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
+   public MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
+      if (xmlKey.isInternalStateQuery())
+         updateInternalStateInfo(clientInfo);
+
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
-      MessageUnit[] messageUnitArr = new MessageUnit[xmlKeyVec.size()];
+      MessageUnitContainer[] messageUnitContainerArr = new MessageUnitContainer[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
@@ -235,11 +242,74 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             xmlKeyExact = xmlKey;
 
          MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
-         messageUnitArr[ii] = messageUnitHandler.getMessageUnit();;
+
+         // wrap messageUnit and qos into a MessageUnitContainer
+         MessageUnitContainer messageUnitContainer = new MessageUnitContainer();
+         messageUnitContainer.messageUnit = messageUnitHandler.getMessageUnit();
+         messageUnitContainer.qos = "<qos></qos>";
+         messageUnitContainerArr[ii] = messageUnitContainer;
       }
 
       getMessages += xmlKeyVec.size();
-      return messageUnitArr;
+      return messageUnitContainerArr;
+   }
+
+
+   /**
+    * Refresh internal informations about the xmlBlaster state. 
+    * <p />
+    * Sets for example the totally allocated memory in the JVM.
+    * <br />
+    * This is the internal representation:
+    * <pre>
+    *    &lt;xmlBlaster>                   &lt;!-- Deliver informations about internal state of xmlBlaster -->
+    *    
+    *       &lt;key oid='__sys__TotalMem'> &lt;!-- Amount of totally allocated RAM [bytes] -->
+    *          &lt;__sys__internal>
+    *          &lt;/__sys__internal>
+    *       &lt;/key>
+    *    
+    *       &lt;key oid='__sys__FreeMem'>  &lt;!-- Amount of free RAM in virtual machine, before new Ram must be allocated [bytes] -->
+    *          &lt;__sys__internal>
+    *          &lt;/__sys__internal>
+    *       &lt;/key>
+    * </pre>
+    *
+    * @param clientInfo The client who triggered the refresh
+    * @return A sequence of 0...n MessageUnitContainer structs
+    */
+   private void updateInternalStateInfo(ClientInfo clientInfo) throws XmlBlasterException
+   {
+      String oid = "__sys__TotalMem";
+      String content = "" + Runtime.getRuntime().totalMemory();
+      updateInternalStateInfoHelper(clientInfo, oid, content);
+
+      oid = "__sys__FreeMem";
+      content = "" + Runtime.getRuntime().freeMemory();
+      updateInternalStateInfoHelper(clientInfo, oid, content);
+
+      oid = "__sys__UsedMem";
+      content = "" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+      updateInternalStateInfoHelper(clientInfo, oid, content);
+
+      // Add here more internal states
+   }
+
+
+   /**
+    * Little helper to publish internal data into myself
+    */
+   private void updateInternalStateInfoHelper(ClientInfo clientInfo, String oid, String content) throws XmlBlasterException
+   {
+      String xmlKey = "<key oid='" + oid + "' contentMime='text/plain'>\n   <__sys__internal>\n   </__sys__internal>\n</key>";
+
+      MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+
+      PublishQoS publishQoS = new PublishQoS("<qos></qos>");
+
+      publish(clientInfo, messageUnit, publishQoS);
+
+      if (Log.TRACE) Log.trace(ME, "Refreshed internal state for '" + oid + "'");
    }
 
 

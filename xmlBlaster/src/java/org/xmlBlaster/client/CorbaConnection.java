@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.15 1999/12/20 15:35:53 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.16 2000/01/07 20:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -337,10 +337,26 @@ public class CorbaConnection
 
 
    /**
+    * Login to the server without any callback. 
+    * <p />
+    * Note that only the synchronous get() method is available in this case.
+    * @param loginName The login name for xmlBlaster
+    * @param passwd    The login password for xmlBlaster
+    * @param qos       The Quality of Service for this client
+    * @exception       XmlBlasterException if login fails
+    */
+   public Server login(String loginName, String passwd, String qos) throws XmlBlasterException
+   {
+      return login(loginName, passwd, (BlasterCallback)null, qos);
+   }
+
+
+   /**
     * Login to the server, providing your own BlasterCallback implementation.
     * <p />
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
+    * @param callback  The Callback interface of this client or null if none is used
     * @param qos       The Quality of Service for this client
     * @exception       XmlBlasterException if login fails
     */

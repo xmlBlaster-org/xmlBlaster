@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.15 1999/12/29 15:38:08 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.16 2000/01/07 20:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -509,16 +509,16 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
                      clientQuery = new ClientQuery("ClientQuery-local", "secret");
                   queryOutput.setText("");
                   getQueryHistory().changedHistory(inputTextField.getText());
-                  MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
+                  MessageUnitContainer[] msgArr = clientQuery.get(inputTextField.getText());
                   for (int ii=0; ii<msgArr.length; ii++) {
                      /*
                      UpdateKey updateKey = new UpdateKey();
                      updateKey.init(msgArr[ii].xmlKey);
                      queryOutput.append("### UpdateKey:\n" + updateKey.printOn().toString());
                      */
-                     queryOutput.append("### UpdateKey:\n" + msgArr[ii].xmlKey);
+                     queryOutput.append("### UpdateKey:\n" + msgArr[ii].messageUnit.xmlKey);
                      queryOutput.append("\n");
-                     queryOutput.append("### Content:\n" + new String(msgArr[ii].content) + "\n");
+                     queryOutput.append("### Content:\n" + new String(msgArr[ii].messageUnit.content) + "\n");
                      queryOutput.append("======================================================\n");
                   }
                   if (msgArr.length == 0) {
@@ -596,7 +596,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       /**
        * Query xmlBlaster.
        */
-      MessageUnit[] get(String queryString)
+      MessageUnitContainer[] get(String queryString)
       {
          try {
             String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -604,12 +604,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
                             "</key>";
             String qos = "<qos>\n</qos>";
             stop.restart();
-            MessageUnit[] msgArr = xmlBlaster.get(xmlKey, qos);
+            MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
-            return new MessageUnit[0];
+            return new MessageUnitContainer[0];
          }
       }
 
