@@ -184,7 +184,7 @@ public final class RunlevelManager
                if (ii != from) fireRunlevelEvent(ii, dest, force); // exclusive from
             }
             finally {
-               currRunlevel = dest; // pre/post events are not marked as run levels
+               currRunlevel = ii; // pre/post events are not marked as run levels
                if (dest > from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
@@ -203,7 +203,7 @@ public final class RunlevelManager
                fireRunlevelEvent(ii, dest, force);
             }
             finally {
-               currRunlevel = dest;
+               currRunlevel = ii;
                if (dest < from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
