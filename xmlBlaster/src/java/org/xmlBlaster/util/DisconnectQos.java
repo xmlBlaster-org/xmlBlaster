@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.3 2002/06/27 11:01:52 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.4 2002/06/27 13:00:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -32,6 +32,8 @@ import java.io.Serializable;
  * </pre>
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
+ * @see classtest.DisconnectQosTest
  */
 public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
