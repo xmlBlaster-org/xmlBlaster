@@ -8,10 +8,11 @@ package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -80,11 +81,11 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
-         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which is not null");
       if (cmd.getTail() == null)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       String cmdString = cmd.getTail().trim();
       if (cmdString.startsWith("?"))
@@ -101,10 +102,10 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
 
       log.info(ME, "Found for cmd " + cmdString + "=" + ret);
       if (ret == null)
-         return new MsgUnitRaw[0];
+         return new MsgUnit[0];
       else {
-         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
+         MsgUnit[] msgs = new MsgUnit[1];
+         msgs[0] = new MsgUnit("<key oid='" + cmd.getCommand() + "' />", ret.getBytes(), "text/plain");
          return msgs;
       }
    }
@@ -114,9 +115,9 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
     */
    public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
-         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which is not null");
       if (cmd.getTail() == null)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       /*
       String cmdString = cmd.getTail().trim();
@@ -145,7 +146,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
             return ret;
          }
          catch (JUtilsException e) {
-            throw new XmlBlasterException(e.id, e.getMessage());
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".set", e.id + " " + e.getMessage());
          }
       }
    }

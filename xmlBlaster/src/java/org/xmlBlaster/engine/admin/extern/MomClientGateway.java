@@ -10,19 +10,16 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
 import org.xmlBlaster.authentication.SessionInfo;
-
-import java.util.StringTokenizer;
 
 /**
  * The gateway allows to do administration with xmlBlaster messages. 
@@ -57,8 +54,8 @@ public final class MomClientGateway implements I_ExternGateway
       useMessages = glob.getProperty().get("admin.messages[" + glob.getId() + "]", useMessages);
       if (!useMessages) return false;
 
-      this.instanceCounter++;
-      this.ME = "MomClientGateway" + this.instanceCounter + this.glob.getLogPrefixDashed();
+      instanceCounter++;
+      this.ME = "MomClientGateway" + instanceCounter + this.glob.getLogPrefixDashed();
       this.commandManager = commandManager;
       return true;
    }
@@ -68,20 +65,10 @@ public final class MomClientGateway implements I_ExternGateway
     * @param sessionInfo The client
     * @param command The key oid, for example "__cmd:/node/heron/?numClients"
     */
-   public MsgUnitRaw[] getCommand(SessionInfo sessionInfo, String command) throws XmlBlasterException {
+   public MsgUnit[] getCommand(SessionInfo sessionInfo, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
       String cmdType = "get";
-      if (command == null) {
-         throw new XmlBlasterException(ME, "Ignoring your empty command.");
-      }
-      command = command.trim();
-      if (log.CALL) log.call(ME, "Invoking getCommand(" + command + ")");
-      if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
-         throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
-      }
 
-      int dotIndex = command.indexOf(":");
-      String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
-
+      if (log.CALL) log.call(ME, "Invoking getCommand(" + keyData.getOid() + ")");
       /*
       CommandWrapper cw = new CommandWrapper(glob, query);
 
@@ -98,7 +85,7 @@ public final class MomClientGateway implements I_ExternGateway
       }
       */
 
-      MsgUnitRaw[] msgs = commandManager.get(sessionInfo.getSecretSessionId(), query);
+      MsgUnit[] msgs = commandManager.get(sessionInfo.getSecretSessionId(), keyData, qosData);
       /*
       for (int ii=0; ii<msgs.length; ii++) {
          MsgUnitRaw msg = msgs[ii];
@@ -123,12 +110,12 @@ public final class MomClientGateway implements I_ExternGateway
       String cmdType = "set";
       String command = xmlKey.getOid();
       if (command == null) {
-         throw new XmlBlasterException(ME, "Ignoring your empty command.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Ignoring your empty command.");
       }
       command = command.trim();
       if (log.CALL) log.call(ME, "Invoking setCommand(" + command + ")");
       if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
-         throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Ignoring your empty command '" + command + "'.");
       }
 
       int dotIndex = command.indexOf(":");
@@ -141,7 +128,7 @@ public final class MomClientGateway implements I_ExternGateway
       SetReturn ret = commandManager.set(sessionInfo.getSecretSessionId(), query);
 
       if (ret == null)
-         throw new XmlBlasterException(ME, "Your command '" + ret.commandWrapper.getCommand() + "' failed, reason is unknown");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Your command '" + ret.commandWrapper.getCommand() + "' failed, reason is unknown");
 
       String info = ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString;
       StringBuffer buf = new StringBuffer(160);

@@ -10,20 +10,15 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
-import org.xmlBlaster.engine.admin.I_AdminNode;
-import org.xmlBlaster.engine.admin.I_AdminSubject;
-import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.authentication.SessionInfo;
-
 
 /**
  * Implementation of administrative access to xmlBlaster messages. 
@@ -85,17 +80,17 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
-         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which is not null");
 
       String client = cmd.getThirdLevel();
       if (client == null || client.length() < 1)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
       }
 
       I_XmlBlaster xmlBlaster = glob.getAuthenticate().getXmlBlaster();
@@ -104,26 +99,30 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       //  /node/heron/topic/hello/?content
       String oidTmp = cmd.getUserNameLevel();
       if (oidTmp == null || oidTmp.length() < 1)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       String oid = oidTmp;
       if (oidTmp.startsWith("?"))
          oid = oidTmp.substring(1);
       
+      // TODO should use the key from commandManager
       String xmlKey = "<key oid='" + oid + "'/>";
-      String qos = "<qos/>";
+      // String qos = "<qos/>";
 
-      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, qos);
-         
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, cmd.getQueryQosData().toXml());
+      MsgUnit[] msgUnits = new MsgUnit[msgUnitArrRaw.length];
+      MethodName method = cmd.getQueryQosData().getMethod();
+      for (int i=0; i < msgUnits.length; i++) {
+         msgUnits[i] = new MsgUnit(this.glob, msgUnitArrRaw[i], method);
+      }
       log.info(ME, cmd.getCommand() + " returned " + msgUnitArrRaw.length + " messages");
 
-         if (log.DUMP) {
-            for (int ii=0; ii<msgUnitArrRaw.length; ii++) {
-               log.dump(ME, msgUnitArrRaw[ii].toXml());
-            }
+      if (log.DUMP) {
+         for (int ii=0; ii<msgUnitArrRaw.length; ii++) {
+            log.dump(ME, msgUnitArrRaw[ii].toXml());
          }
-
-      return msgUnitArrRaw;
+      }
+      return msgUnits;
    }
 
    /**
@@ -134,15 +133,15 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
     */
    public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
-         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which is not null");
 
       String client = cmd.getThirdLevel();
       if (client == null || client.length() < 1)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       if (client.startsWith("?")) {
          // for example "/node/heron/topic/Hello/?content=World!"
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
       }
 
       I_XmlBlaster xmlBlaster = glob.getAuthenticate().getXmlBlaster();
@@ -151,11 +150,11 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       //  /node/heron/topic/hello/?content=Hello world
       String oidTmp = cmd.getUserNameLevel();
       if (oidTmp == null || oidTmp.length() < 1)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       String oid = oidTmp;
       if (oidTmp.startsWith("?"))
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
       
       String xmlKey = "<key oid='" + oid + "'/>";
       String qos = "<qos/>";

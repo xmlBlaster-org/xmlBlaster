@@ -9,17 +9,16 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
-import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.key.QueryKeyData;
 
 import remotecons.RemoteServer;
 import remotecons.ifc.CommandHandlerIfc;
@@ -72,7 +71,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    public static final int TELNET_PORT = 2702;
 
    public TelnetGateway() {
-      this.instanceCounter++;
+      instanceCounter++;
    }
 
    /**
@@ -93,7 +92,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private boolean initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPrefixDashed();
+      this.ME = "TelnetGateway" + instanceCounter + this.glob.getLogPrefixDashed();
       this.telnetInstancesSet = new HashSet();
       this.commandManager = commandManager;
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
@@ -322,11 +321,13 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
-            MsgUnitRaw[] msgs = commandManager.get(sessionId, query);
+            QueryKeyData keyData = new QueryKeyData(this.glob);
+            keyData.setOid("__cmd:" + query);
+            MsgUnit[] msgs = commandManager.get(sessionId, keyData, null);
             if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
-               MsgUnitRaw msg = msgs[ii];
+               MsgUnit msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain"))
                   sb.append(msg.getKey()).append("=").append(msg.getContentStr()).append(CRLF);
                else
@@ -414,7 +415,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
       if (loginName==null || passwd==null) {
          log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
-         throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use 'connect loginName password'");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".connect", "login failed: please use 'connect loginName password'");
       }
 
       org.xmlBlaster.client.qos.ConnectQos clientConnectQos = new org.xmlBlaster.client.qos.ConnectQos(glob, loginName, passwd);

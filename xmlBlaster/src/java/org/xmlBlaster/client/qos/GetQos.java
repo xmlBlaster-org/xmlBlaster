@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
@@ -86,6 +87,14 @@ public final class GetQos
     */
    public void addAccessFilter(AccessFilterQos filter) {
       this.queryQosData.addAccessFilter(filter);
+   }
+
+   /**
+    * Adds your supplied get querySpec. 
+    * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/query.plugin.html">The query plugin requirement</a>
+    */
+   public void addQuerySpec(QuerySpecQos querySpec) {
+      this.queryQosData.addQuerySpec(querySpec);
    }
 
    /**

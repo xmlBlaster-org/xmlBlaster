@@ -529,7 +529,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (log.TRACE) log.trace(ME, "Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
          return null;
       }
+      return prepareMsgsFromQueue(ME, this.log, this.msgQueue, entryList);
+   }
 
+   public static ArrayList prepareMsgsFromQueue(String logId, LogChannel log, I_Queue queue, ArrayList entryList) {
       // Remove all expired messages and do a shallow copy
       int size = entryList.size();
       ArrayList result = new ArrayList(size);
@@ -538,19 +541,18 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          // Take care to remove the filtered away messages from the queue as well
          //log.error(ME, "DEBUG ONLY: Analyze msg " + entry.toXml());
          if (entry.isDestroyed()) {
-            log.info(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it");
-            if (log.TRACE) log.trace(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
+            log.info(logId, "Message " + entry.getLogId() + " is destroyed, ignoring it");
+            if (log.TRACE) log.trace(logId, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
             try {
-               msgQueue.removeRandom(entry); // Probably change to use [] for better performance
+               queue.removeRandom(entry); // Probably change to use [] for better performance
             }
             catch (Throwable e) {
-               log.error(ME, "Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
+               log.error(logId, "Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
             }
             continue;
          }
          result.add(entry.clone()); // expired messages are sent as well
       }
-
       return result;
    }
 

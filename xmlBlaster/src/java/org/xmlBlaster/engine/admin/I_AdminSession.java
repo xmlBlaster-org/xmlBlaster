@@ -6,7 +6,10 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * Declares available methods of a session for administration. 
@@ -33,5 +36,7 @@ public interface I_AdminSession {
    public void setDispatcherActive(boolean dispatcherActive);
    /** true if the dispatcher is currently able to dispatch asyncronously */
    public boolean getDispatcherActive();
+   /** gets the entries in the callback queue according to what is specified in the qosData object */
+   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
    
 }

@@ -20,7 +20,6 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -888,12 +887,14 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          if (xmlKey.isAdministrative()) {
             if (!glob.supportAdministrative())
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative get() is not available, try to configure xmlBlaster.");
-            MsgUnitRaw[] raw = glob.getMomClientGateway().getCommand(sessionInfo, xmlKey.getOid());
+            MsgUnit[] raw = glob.getMomClientGateway().getCommand(sessionInfo, xmlKey, getQos.getData());
+            if (getQos.getWantContent())  return raw;
+            
             MsgUnit[] msgUnitArr = new MsgUnit[raw.length];
             for(int i=0; i<raw.length; i++) {
-               String key = "<key oid='" + raw[i].getKey() + "'/>";
-               byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
-               msgUnitArr[i] = new MsgUnit(key, cont, raw[i].getQos());
+               // byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
+               // msgUnitArr[i] = new MsgUnit(key, cont, raw[i].getQos());
+               msgUnitArr[i] = new MsgUnit(raw[i], null, new byte[0], null);
             }
             return msgUnitArr;
          }

@@ -12,17 +12,20 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.engine.SubscriptionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
+import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
@@ -101,6 +104,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private long persistenceId = -1L; 
 
    private ReentrantLock lock = new ReentrantLock();
+   
+   /** this is used for administrative gets (queries on callback queue) */
+   private QueueQueryPlugin queueQueryPlugin;
 
    /**
     * Create this instance when a client did a login.
@@ -603,4 +609,21 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public boolean getDispatcherActive() {
       return this.dispatchManager.isDispatcherActive();
    }
+
+   /**
+    * keyData is currently unused but it is needed to be consistent with the 
+    * admin get convention (i.e. either take no parameters or always take a key
+    * and a qos).
+    */
+   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      if (this.queueQueryPlugin == null) {
+         synchronized (this) {
+            if (this.queueQueryPlugin == null) {
+               this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
+            } 
+         }
+      }
+      return this.queueQueryPlugin.query(this.sessionQueue, keyData, qosData);
+   }
+   
 }

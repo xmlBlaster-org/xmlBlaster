@@ -7,17 +7,18 @@ Comment:   Main manager class for administrative commands
 package org.xmlBlaster.engine.admin;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 /**
  * The manager instance for administrative commands. 
@@ -135,7 +136,7 @@ public final class CommandManager implements I_RunlevelListener
     */
    public synchronized final void register(String key, I_CommandHandler handler) {
       if (key == null || handler == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException(ME + ": Please pass a valid key and handler");
       }
       this.handlerMap.put(key, handler);
@@ -144,26 +145,30 @@ public final class CommandManager implements I_RunlevelListener
 
    /**
     * @param sessionId Is null if not logged in
-    * @param cmd The query string
+    * @param keyData the key containing the cmd.
+    * @param qosData the qos. It can be null. It is null if the request comes
+    *        from the telnet or snmp gateway (since in these cases the qos is 
+    *        wrapped inside the cmd, i.e. here it is inside the oid of the key).
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MsgUnitRaw[] get(String sessionId, String cmd) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "get(" + cmd + ")");
-      if (cmd == null || cmd.length() < 2)
+   public synchronized final MsgUnit[] get(String sessionId, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      String oid = keyData.getOid();
+      if (log.CALL) log.call(ME, "get(" + oid + ")");
+      if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       try {
-         CommandWrapper w = new CommandWrapper(glob, cmd);
+         CommandWrapper w = new CommandWrapper(glob, keyData, qosData);
          String key = w.getThirdLevel();
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
          }
          Object obj = this.handlerMap.get(key); // e.g. "topic" or "client" or "sysprop"
          if (obj == null) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + oid + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         MsgUnitRaw[] ret = handler.get(sessionId, w);
-         if (ret == null) ret = new MsgUnitRaw[0];
+         MsgUnit[] ret = handler.get(sessionId, w);
+         if (ret == null) ret = new MsgUnit[0];
          return ret;
          //return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
       }
@@ -172,7 +177,7 @@ public final class CommandManager implements I_RunlevelListener
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, "get("+cmd+")", e);
+         throw XmlBlasterException.convert(glob, ME, "get("+oid+")", e);
       }
    }
 
@@ -187,7 +192,7 @@ public final class CommandManager implements I_RunlevelListener
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
       try {
-         CommandWrapper w = new CommandWrapper(glob, cmd);
+         CommandWrapper w = new CommandWrapper(glob, cmd, null);
          String key = w.getThirdLevel();
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      AccessFilterQos.java
+Name:      QuerySpecQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
@@ -11,28 +11,27 @@ import org.xmlBlaster.engine.mime.Query;
 
 
 /**
- * Helper class holding filter markup from a subscribe() or get() QoS. 
+ * Helper class holding querySpec markup from a subscribe() or get() QoS. 
  * <p />
  * <pre>
- * &lt;filter type='ContentLength' version='1.0'>
+ * &lt;querySpec type='QueueQuery' version='1.0'>
  *    800
- * &lt;/filter>
+ * &lt;/querySpec>
  * </pre>
  * This example addresses the plugin in xmlBlaster.properties file
  * <pre>
- *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+ *   QuerySpecPlugin[QueueQuery][1.0]=org.xmlBlaster.engine.query.demo.QuerySpec
  * </pre>
- * The filter rules apply for cluster configuration as well.
  *
- * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">MIME based access filter plugin framework</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/query.plugin.html">QuerySpec plugin framework</a>
  */
-public class AccessFilterQos extends QueryRefinementQos {
+public class QuerySpecQos extends QueryRefinementQos {
 
    /**
     */
-   public AccessFilterQos(Global glob) {
-      super(glob, "filter", "mime", "accessFilter.version");
-      this.ME = "AccessFilterQos";
+   public QuerySpecQos(Global glob) {
+      super(glob, "querySpec", "query", "querySpec.version");
+      this.ME = "QuerySpecQos";
    }
 
    /**
@@ -41,9 +40,9 @@ public class AccessFilterQos extends QueryRefinementQos {
     * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
-   public AccessFilterQos(Global glob, String type, String version, String query) {
-      super(glob, type, version, query, "filter", "mime", "accessFilter.version");
-      this.ME = "AccessFilterQos";
+   public QuerySpecQos(Global glob, String type, String version, String query) {
+      super(glob, type, version, query, "querySpec", "query", "querySpec.version");
+      this.ME = "QuerySpecQos";
    }
 
    /**
@@ -52,8 +51,8 @@ public class AccessFilterQos extends QueryRefinementQos {
     * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
-   public AccessFilterQos(Global glob, String type, String version, Query query) {
-      super(glob, type, version, query, "filter", "mime", "accessFilter.version");
+   public QuerySpecQos(Global glob, String type, String version, Query query) {
+      super(glob, type, version, query, "querySpec", "query", "querySpec.version");
    }
 }
 

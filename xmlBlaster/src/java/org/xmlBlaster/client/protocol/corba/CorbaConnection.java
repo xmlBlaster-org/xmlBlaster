@@ -693,7 +693,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    public String[] publishArr(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publishArr() ...");
+      if (log.CALL) log.call(ME, "publishArr() num of Entries: " + msgUnitArr.length);
       try {
          return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {

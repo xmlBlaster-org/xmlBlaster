@@ -6,7 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * SessionInfoProtector protects SessionInfo.java from direct access by administrative tasks. 
@@ -54,4 +57,13 @@ public class SessionInfoProtector implements I_AdminSession
       return this.sessionInfo.getDispatcherActive();
    }
      
+   /**
+    * keyData is currently unused but it is needed to be consistent with the 
+    * admin get convention (i.e. either take no parameters or always take a key
+    * and a qos).
+    */
+   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      return this.sessionInfo.getCbQueueEntries(keyData, qosData);
+   }
+
 }

@@ -63,6 +63,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    private ArrayList filters = null;
    private transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
 
+   /** Query based filter rules */
+   private ArrayList queries = null;
+   private transient QuerySpecQos[] querySpecArr = null; // To cache the querySpecs in an array
+
    /** Query history messages */
    private HistoryQos historyQos;
 
@@ -259,6 +263,30 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
       filterArr = (AccessFilterQos[])filters.toArray(new AccessFilterQos[filters.size()]);
       return filterArr;
+   }
+
+   /**
+    * Adds the querySpec you supplied.
+    */
+   public void addQuerySpec(QuerySpecQos querySpec) {
+      if (this.queries == null) this.queries = new ArrayList();
+      this.querySpecArr = null; // clear cache
+      this.queries.add(querySpec);
+   }
+
+   public ArrayList getQuerySpecs() {
+      return this.queries;
+   }
+
+   /**
+    * Return the subscribe filters or null if none is specified. 
+    */
+   public QuerySpecQos[] getQuerySpecArr() {
+      if (this.querySpecArr != null || this.queries == null || this.queries.size() < 1)
+         return this.querySpecArr;
+
+      this.querySpecArr = (QuerySpecQos[])this.queries.toArray(new QuerySpecQos[this.queries.size()]);
+      return this.querySpecArr;
    }
 
    /**

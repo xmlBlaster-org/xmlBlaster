@@ -8,9 +8,15 @@ package org.xmlBlaster.engine.admin;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.authentication.SessionInfo;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -34,6 +40,9 @@ public final class CommandWrapper
    private final String ME;
    private final Global glob;
    private final LogChannel log;
+
+   private final static String PROP_SEPARATOR = "&";
+   private final static String XMLBLASTER_PREFIX = "xmlBlaster.";
 
    /** The original command (modified to be absolute) */
    private final String cmd;
@@ -59,25 +68,57 @@ public final class CommandWrapper
    String key = null;
    /** "sysprop/?call[auth]=true" this is "true" */
    String value = null;
+   
+   /** the qos properties */
+   QueryQosData qosData;
 
-   public CommandWrapper(Global glob, String cmd) throws XmlBlasterException {
+   /** the key (the admin command itself: it could also be seen as the destination of the admin command) */
+   QueryKeyData keyData;
+
+   /** the properties on the right end */
+   Map props = new HashMap();
+
+   /**
+    * this constructor is currently used for the get 
+    * @param glob
+    * @param keyData the oid must be adjusted inside if the qosData is null.
+    * @param qosData it is null in case the request comes from a telnet or a snmp gateway
+    * @throws XmlBlasterException
+    */
+   public CommandWrapper(Global glob, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      this(glob, CommandWrapper.stripCommand(glob, keyData.getOid()), qosData);
+      // this is for the smnp and telnet 
+      this.keyData = keyData;
+      if (this.qosData == null) {
+         fillKeyAndQos();
+      }
+   }
+
+   /**
+    * TODO This constructor is still used for the 'set' command but should be replaced
+    * @param glob
+    * @param cmd
+    * @param qosData
+    * @throws XmlBlasterException
+    * @deprecated the constructor taking a QueryKeyData should be used instead.
+    */
+   public CommandWrapper(Global glob, String cmd, QueryQosData qosData) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.ME = "CommandWrapper-" + this.glob.getId();
       this.myStrippedClusterNodeId = getStrippedClusterNodeId();
       if (cmd == null)
-         throw new XmlBlasterException(ME, "Your command is null, aborted request");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Your command is null, aborted request");
       if (!cmd.startsWith("/"))
          this.cmd = "/node/" + myStrippedClusterNodeId + "/" + cmd;
       else
          this.cmd = cmd;
+      this.qosData = qosData;
       parse();
    }
 
    private void parse() throws XmlBlasterException {
-
       String prefix = cmd;
-
       int questionIndex = cmd.indexOf("?");
       int equalsIndex = cmd.indexOf("=");
       if (questionIndex >= 0 && equalsIndex >= 0 && questionIndex < equalsIndex)  {
@@ -109,13 +150,13 @@ public final class CommandWrapper
          ii++;
       }
       if (root == null || clusterNodeId == null || third == null) {
-         throw new XmlBlasterException(ME, "Your command is invalid, missing levels: '" + cmd + "'");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parse", "Your command is invalid, missing levels: '" + cmd + "'");
       }
       if (!"node".equals(root)) {
-         throw new XmlBlasterException(ME, "Your root node is invalid, only <node> is supported, sorry '" + cmd + "' rejected");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parse", "Your root node is invalid, only <node> is supported, sorry '" + cmd + "' rejected");
       }
       if (!glob.getId().equals(clusterNodeId) && !myStrippedClusterNodeId.equals(clusterNodeId)) {
-         throw new XmlBlasterException(ME, "Query of foreign cluster node '" + clusterNodeId + "' is not implemented, sorry '" + cmd + "' rejected");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parse", "Query of foreign cluster node '" + clusterNodeId + "' is not implemented, sorry '" + cmd + "' rejected");
       }
 
       int offset = root.length() + clusterNodeId.length() + third.length() + 4;
@@ -219,23 +260,51 @@ public final class CommandWrapper
       return key;
    }
 
-   private void parseKeyValue() throws XmlBlasterException { 
+   private void parseKeyValue() throws XmlBlasterException {
       int qIndex = cmd.indexOf("?");
       if (qIndex < 1 || cmd.length() <= (qIndex+1)) {
          log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '?'");
-         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find '?'");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '?'");
       }
-      String pair = cmd.substring(qIndex+1);
+      String propString = cmd.substring(qIndex+1);
+      StringTokenizer tokenizer = new StringTokenizer(propString.trim(), PROP_SEPARATOR);
 
-      int equalsIndex = pair.indexOf("=");
-      if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
-         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find assignment '='");
-         //Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
-      }
+      boolean keyAlreadyAssigned = false;
+
+
       
-      key = pair.substring(0,equalsIndex).trim();
-      value = pair.substring(equalsIndex+1);
+      while (tokenizer.hasMoreTokens()) {
+         String pair = tokenizer.nextToken().trim();
+         if (pair.length() < 1) continue;
+         int equalsIndex = pair.indexOf("=");
+         /*
+         if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
+            log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find assignment '='");
+            //Thread.currentThread().dumpStack();
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find assignment '='");
+         }
+      
+         String tmpKey = pair.substring(0,equalsIndex).trim();
+         */
+         String tmpKey = null;
+         String tmpValue = null;
+         if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
+            tmpKey = pair.trim();
+            tmpValue = null;
+         }
+         else {
+            tmpKey = pair.substring(0,equalsIndex).trim();
+            tmpValue = pair.substring(equalsIndex+1);
+         } 
+
+         if (tmpKey.indexOf(XMLBLASTER_PREFIX) < 0) {
+            if (keyAlreadyAssigned)
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "only one key which does not start with '" + XMLBLASTER_PREFIX + "' can be assigned");
+            this.key = tmpKey;
+            this.value = tmpValue;
+         }
+         else this.props.put(tmpKey, tmpValue);
+      }
    }
 
    /**
@@ -254,7 +323,7 @@ public final class CommandWrapper
       int equalsIndex = cmd.lastIndexOf("=");
       if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1)) {
          log.warn(ME, "getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
-         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".getCommandStripAssign", "Invalid command '" + cmd + "', can't find assignment '='");
       }
       return cmd.substring(0,equalsIndex).trim();
    }
@@ -286,5 +355,60 @@ public final class CommandWrapper
 
       return sb.toString();
    }
+   
+   public QueryQosData getQueryQosData() {
+      return this.qosData;
+   }
+
+   public QueryKeyData getQueryKeyData() {
+      return this.keyData;
+   }
+
+   /**
+    * Strips a given command (the oid of a queryKey before any any modification) by 
+    * removing the starting '__cmd:' subtring. So for example the input string
+    * '__cmd:/node/heron/?numClients' will be stripped to '/node/heron/?numClients'.
+    * @param glob
+    * @param command the input string (the original oid) to be stripped.
+    * @return
+    * @throws XmlBlasterException
+    */
+   public static String stripCommand(Global glob, String command) throws XmlBlasterException {
+      if (command == null) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CommandWrapper.stripCommand", "Ignoring your empty command.");
+      }
+      command = command.trim();
+      if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CommandWrapper.stripCommand", "Ignoring your empty command '" + command + "'.");
+      }
+
+      int dotIndex = command.indexOf(":");
+      return command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
+   }
+   
+   /**
+    * This has to be invoked after the command has been parsed
+    * @param value the non-null string containing the qos specification.
+    *        for example if the entire command is
+    * '__cmd:/node/heron/?numClients&xmlBlaster.qos=<qos>......</qos>'  
+    * @param keyData must be non null
+    * @param qosData
+    */
+   private void fillKeyAndQos() throws XmlBlasterException {
+      if (this.qosData != null) return;
+      
+      String qosLitteral = (String)this.props.get("xmlBlaster.qos");
+      if (qosLitteral == null) 
+         this.qosData = new QueryQosData(this.glob, MethodName.GET);
+      else {
+         QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
+         this.qosData = factory.readObject(qosLitteral);
+      }
+      int pos = this.sixth.indexOf('&');
+      if (pos > -1) this.sixth = this.sixth.substring(0, pos);
+      
+      this.keyData.setOid("__cmd:/" + this.root + "/" + this.clusterNodeId + "/" + this.sixth);
+   }
+
 }
 

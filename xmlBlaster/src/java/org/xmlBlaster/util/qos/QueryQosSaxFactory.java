@@ -53,10 +53,12 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private boolean inInitialUpdate = false;
    private boolean inNotify = false;
    private boolean inFilter = false;
+   private boolean inQuerySpec = false;
    private boolean inHistory = false;
    private boolean inIsPersistent = false;
 
    private AccessFilterQos tmpFilter = null;
+   private QuerySpecQos tmpQuerySpec = null;
    private HistoryQos tmpHistory = null;
    
    /**
@@ -212,6 +214,18 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("querySpec")) {
+         this.inQuerySpec = true;
+         this.tmpQuerySpec = new QuerySpecQos(glob);
+         boolean ok = this.tmpQuerySpec.startElement(uri, localName, name, character, attrs);
+         if (ok) {
+            this.queryQosData.addQuerySpec(this.tmpQuerySpec);
+         }
+         else
+            this.tmpQuerySpec = null;
+         return;
+      }
+
       if (name.equalsIgnoreCase("history")) {
          inHistory = true;
          tmpHistory = new HistoryQos(glob);
@@ -339,6 +353,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("querySpec")) {
+         this.inQuerySpec = false;
+         if (this.tmpQuerySpec != null)
+            this.tmpQuerySpec.endElement(uri, localName, name, character);
+         return;
+      }
+
       if (name.equalsIgnoreCase("history")) {
          inHistory = false;
          if (tmpHistory != null)
@@ -452,6 +473,11 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       AccessFilterQos[] list = queryQosData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {
          sb.append(list[ii].toXml(extraOffset+Constants.INDENT));
+      }
+
+      QuerySpecQos[] querySpeclist = queryQosData.getQuerySpecArr();
+      for (int ii=0; querySpeclist != null && ii< querySpeclist.length; ii++) {
+         sb.append(querySpeclist[ii].toXml(extraOffset+Constants.INDENT));
       }
 
       HistoryQos historyQos = queryQosData.getHistoryQos();

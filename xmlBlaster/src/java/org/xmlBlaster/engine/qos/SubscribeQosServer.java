@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.QuerySpecQos;
 
 /**
  * Handling of subscribe() quality of services in the server core.
@@ -63,6 +64,13 @@ public final class SubscribeQosServer
     */
    public final AccessFilterQos[] getAccessFilterArr() {
       return this.queryQosData.getAccessFilterArr();
+   }
+
+   /**
+    * Return the get querySpecs or null if none is specified. 
+    */
+   public final QuerySpecQos[] getQuerySpecArr() {
+      return this.queryQosData.getQuerySpecArr();
    }
 
    /**

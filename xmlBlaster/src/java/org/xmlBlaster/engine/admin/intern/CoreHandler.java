@@ -7,12 +7,14 @@ Comment:   Implementation for administrative property access
 package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -22,7 +24,6 @@ import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.SubscriptionInfo;
 
-import java.util.Vector;
 import java.lang.reflect.*;
 import java.beans.PropertyDescriptor;
 
@@ -86,10 +87,27 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       return "CoreHandler";
    }
 
+   private MsgUnit[] doGetInvoke(CommandWrapper cmd, String property, Object impl, Class clazz) 
+      throws XmlBlasterException {
+      Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
+      String ret = ""+ tmp;
+      log.info(ME, "Retrieved " + cmd.getCommand());
+      if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+
+      MsgUnit[] msgs = null;
+      if (tmp instanceof MsgUnit[]) msgs = (MsgUnit[])tmp;
+      else {
+         msgs = new MsgUnit[1];
+         // msgs[0] = new MsgUnit(cmd.getQueryKeyData().toXml(), ret.getBytes(), "text/plain");
+         msgs[0] = new MsgUnit(cmd.getQueryKeyData(), ret.getBytes(), cmd.getQueryQosData());
+      }
+      return msgs;
+   }
+
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
 
@@ -99,12 +117,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (registerKey.startsWith("?")) {
          // for example "/node/heron/?freeMem"
-         String ret = ""+getInvoke(registerKey.substring(1), glob.getRequestBroker(), I_AdminNode.class);
-         log.info(ME, "Retrieved " + cmd.getCommand());
-         if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-         return msgs;
+         return doGetInvoke(cmd, registerKey.substring(1), glob.getRequestBroker(), I_AdminNode.class); 
       }
 
       if (registerKey.equals("client") || registerKey.equals("DEFAULT")) {
@@ -122,11 +135,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
          if (pubSessionId.startsWith("?")) {
             // for example "/node/heron/joe/?uptime"
-            String ret = ""+getInvoke(pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
-            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-            return msgs;
+            return doGetInvoke(cmd, pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
          }
 
          String sessionAttr = cmd.getSessionAttrLevel();
@@ -138,11 +147,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             I_AdminSession sessionInfo = subjectInfo.getSessionByPubSessionId(Long.parseLong(pubSessionId));
             if (sessionInfo == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
-            String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
-            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-            return msgs;
+            return doGetInvoke(cmd, sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
          }
       }
       else if (registerKey.equals("subscription")) {
@@ -160,16 +165,12 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
          if (methodName.startsWith("?")) {
             // for example "/node/heron/subscription/__subId:3/?topicId"
-            String ret = ""+getInvoke(methodName.substring(1), subscriptionInfo, I_AdminSubscription.class);
-            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-            return msgs;
+            return doGetInvoke(cmd, methodName.substring(1), subscriptionInfo, I_AdminSubscription.class);
          }
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
-      return new MsgUnitRaw[0];
+      return new MsgUnit[0];
    }
 
    /**
@@ -231,16 +232,16 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * @param property e.g. "uptime", the method "getUptime()" will be called
     * @param aClass e.g. I_AdminSubject.class
     */
-   private Object getInvoke(String property, Object impl, Class aInterface) throws XmlBlasterException {
+   private Object getInvoke(String property, Object impl, Class aInterface, QueryKeyData keyData, QueryQosData qosData) 
+      throws XmlBlasterException {
       String methodName = null;
       if (property == null || property.length() < 2)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                    "Please pass a vaild command, aborted request.");
       try {
-         Vector params = new Vector();
          Invoker invoker = new Invoker(glob, impl, aInterface);
          methodName = "get" + property.substring(0,1).toUpperCase() + property.substring(1);
-         Object obj = invoker.execute(methodName, params);
+         Object obj = invoker.execute(methodName, qosData, keyData);
          if (log.TRACE) log.trace(ME, "Return for '" + methodName + "' is '" + obj + "'");
          return obj;
          /* This code worked only when a corresponding setXXX() was specified:
@@ -404,47 +405,35 @@ class Invoker
    }
 
    // main method, sucht methode in object, wenn gefunden dann aufrufen.
-   public Object execute(String methodName, Vector params) throws XmlBlasterException {
-      Class[] argClasses = null;
-      Object[] argValues = null;
-      if (params != null) {
-         argClasses = new Class[params.size()];
-         argValues = new Object[params.size()];
-         for (int i = 0; i < params.size(); i++) {
-               argValues[i] = params.elementAt(i);
-               if (argValues[i] instanceof Integer)
-                  argClasses[i] = Integer.TYPE;
-               else if (argValues[i] instanceof Double)
-                  argClasses[i] = Double.TYPE;
-               else if (argValues[i] instanceof Boolean)
-                  argClasses[i] = Boolean.TYPE;
-               else
-                  argClasses[i] = argValues[i].getClass();
-         }
-      }
-
+   public Object execute(String methodName, QueryQosData qosData, QueryKeyData keyData) 
+      throws XmlBlasterException {
+      Class[] argClasses = new Class[0];
       Method method = null;
-
-      /*
-      if (debug) {
-         System.err.println("Searching for method: " + methodName);
-         for (int i = 0; i < argClasses.length; i++)
-               System.err.println("Parameter " + i + ": " +
-                     argClasses[i] + " = " + argValues[i]);
-      }
-      */
-
+      boolean hasArgs = false;
       try {
          method = targetClass.getMethod(methodName, argClasses);
       }
       catch (NoSuchMethodException nsm_e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
-                   "Please check your command, aborted request.", nsm_e);
+         hasArgs = true;
+         try {
+            argClasses = new Class[] { keyData.getClass(), qosData.getClass() };
+            method = targetClass.getMethod(methodName, argClasses);
+         }
+         catch (NoSuchMethodException nsm_e1) {
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                      "Please check your command, aborted request.", nsm_e);
+         }
       }
       catch (SecurityException s_e) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, "CoreHandler",
                    "Aborted request.", s_e);
       }
+
+      Object[] argValues = null;
+      if (hasArgs) {
+         argValues = new Object[] { keyData, qosData };
+      }
+      else argValues = new Object[0];
 
       try {
          // our policy is to make all public methods callable except the ones defined in java.lang.Object

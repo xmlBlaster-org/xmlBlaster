@@ -8,7 +8,6 @@ package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.MsgUnit;
 
 /**
  * Interface to allow different external gateway implementations. 

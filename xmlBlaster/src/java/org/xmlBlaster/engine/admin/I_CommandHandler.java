@@ -6,9 +6,9 @@ Comment:   Interface to hide command handling code
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
  * Interface to allow different command processing implementations. 
@@ -42,7 +42,7 @@ public interface I_CommandHandler {
     *       </ul>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
     */
-   public MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
+   public MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
 
    /**
     * Your plugin should process the set command. 

@@ -7,21 +7,21 @@ Comment:   Main manager class for administrative commands
 package org.xmlBlaster.engine.admin.extern;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
 import org.xmlBlaster.engine.admin.extern.snmp.*;
 
-import java.io.*;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.net.*;
-import java.lang.Integer;
 import jax.*; // import SNMP subagent specific classes
+
+
+
 
 /**
  * The gateway from outside SNMP connections to inside CommandManager. 
@@ -169,17 +169,19 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 
          // !!! Transfer MIB command to internal command !!!!
          // e.g. query="/node/heron/?freeMem"
-         String query = cmd; // TODO mapping
+         // String query = cmd; // TODO mapping
 
-         if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query);
+         QueryKeyData query = new QueryKeyData(this.glob);
+         query.setOid("__cmd:" + cmd);
+         if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query.toXml());
 
-         MsgUnitRaw[] msgs = manager.get(sessionId, query);
+         MsgUnit[] msgs = manager.get(sessionId, query, /*qosData*/ null);
          if (msgs.length == 0)
             return "NOT FOUND";
          else {
             String retValue = "";
             for (int ii=0; ii<msgs.length; ii++) {
-               MsgUnitRaw msg = msgs[ii];
+               MsgUnit msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain")) {
                   retValue = msg.getContentStr() + ", "; // How to handle multi return with SNMP ???
                   // msg.getXmlKey() and msg.getContentStr() contain the data
