@@ -34,6 +34,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlBlasterExceptionTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.MicroEditionTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.StringPairTokenizerTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.Sql92SelectorTest.class));
       suite.addTest(org.xmlBlaster.test.classtest.key.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.qos.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.queue.AllTests.suite());
