@@ -652,7 +652,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       MsgUnit[] msgUnitArr = null;
       msgUnitArr = this.synchronousCache.get(getKey, getQos);
-      log.info(ME, "CHACHE msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
+      if (log.TRACE) log.trace(ME, "CacheDump: msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
       //not found in this.synchronousCache
       if(msgUnitArr == null) {
          msgUnitArr = get(getKey, getQos);  //get messages from xmlBlaster (synchronous)
