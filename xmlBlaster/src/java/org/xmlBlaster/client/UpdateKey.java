@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.12 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.13 2000/04/14 13:16:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -51,10 +51,10 @@ public class UpdateKey extends SaxHandlerBase
    protected String keyOid = null;
 
    /** value from attribute <key oid="" contentMime="..."> */
-   protected String contentMime = null;
+   protected String contentMime = "text/plain";
 
    /** value from attribute <key oid="" contentMimeExtended="..."> */
-   protected String contentMimeExtended = null;
+   protected String contentMimeExtended = "";
 
 
    /**
@@ -80,6 +80,7 @@ public class UpdateKey extends SaxHandlerBase
    /**
     * Find out which mime type (syntax) the content of the message has.
     * @return e.g "text/xml" or "image/png"
+    *         defaults to "text/plain"
     */
    public String getContentMime()
    {
@@ -94,7 +95,7 @@ public class UpdateKey extends SaxHandlerBase
     * You may use this attribute for you own purposes.
     * @return The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or null if not known
+    *         or "" (empty string) if not known
     */
    public String getContentMimeExtended()
    {
@@ -125,6 +126,8 @@ public class UpdateKey extends SaxHandlerBase
                }
                if( attrs.getName(i).equalsIgnoreCase("contentMime") ) {
                   contentMime = attrs.getValue(i).trim();
+                  if (contentMime == null || contentMime.length() < 1)
+                     contentMime = "text/plain";
                }
                if( attrs.getName(i).equalsIgnoreCase("contentMimeExtended") ) {
                   contentMimeExtended = attrs.getValue(i).trim();
@@ -219,10 +222,8 @@ public class UpdateKey extends SaxHandlerBase
       offset += extraOffset;
 
       sb.append(offset).append("<key oid='").append(getUniqueKey()).append("'");
-      if (contentMime != null)
-         sb.append(" contentMime='").append(getContentMime()).append("'");
-      if (contentMimeExtended != null)
-         sb.append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
+      sb.append(" contentMime='").append(getContentMime()).append("'");
+      sb.append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
       sb.append(">\n");
 
       sb.append(offset + "</key>\n");

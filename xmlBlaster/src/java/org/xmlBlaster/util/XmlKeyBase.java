@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.33 2000/03/18 19:45:57 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.34 2000/04/14 13:16:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -104,10 +104,10 @@ public class XmlKeyBase
    protected String keyOid = null;
 
    /** The MIME type of the content, RFC1521 */
-   protected String contentMime = null;
+   protected String contentMime = "text/plain";
 
    /** Some further content info, e.g. the version number */
-   protected String contentMimeExtended = null;
+   protected String contentMimeExtended = "";
 
    /** Is the internal state of xmlBlaster queried? */
    protected boolean isInternalStateQuery = false;
@@ -261,7 +261,7 @@ public class XmlKeyBase
     * You may use this attribute for you own purposes.
     * @return The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or null if not known
+    *         or "" (empty string) if not known
     */
    public String getContentMimeExtended() throws XmlBlasterException
    {
@@ -434,10 +434,12 @@ public class XmlKeyBase
 
             if (isPublish && attribute.getNodeName().equalsIgnoreCase("contentMime")) {
                contentMime = attribute.getNodeValue();
+               if (contentMime == null || contentMime.length()<1) contentMime = "text/plain";
             }
 
             if (isPublish && attribute.getNodeName().equalsIgnoreCase("contentMimeExtended")) {
                contentMimeExtended = attribute.getNodeValue();
+               if (contentMimeExtended == null) contentMimeExtended = "";
             }
 
             if (!isPublish && attribute.getNodeName().equalsIgnoreCase("queryType")) {
@@ -575,10 +577,8 @@ public class XmlKeyBase
 
       try {
          sb.append(offset).append("<XmlKeyBase oid='").append(getUniqueKey()).append("'");
-         if (contentMime != null)
-            sb.append(" contentMime='").append(contentMime).append("'");
-         if (contentMimeExtended != null)
-            sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
+         sb.append(" contentMime='").append(contentMime).append("'");
+         sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
          if (queryType != PUBLISH)
             sb.append(" queryType='").append(getQueryTypeStr()).append("'");
          sb.append(">\n");
