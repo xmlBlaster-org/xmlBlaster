@@ -11,7 +11,7 @@ Comment:   The client driver for the corba protocol
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util;
 
 
 using namespace std;
@@ -104,10 +104,18 @@ CorbaDriverFactory::~CorbaDriverFactory()
    if (log_.trace()) log_.trace(ME, "Destructor end");
 }
 
+CorbaDriverFactory* CorbaDriverFactory::factory_ = NULL;
+
 CorbaDriverFactory& CorbaDriverFactory::getFactory(Global& global, CORBA::ORB_ptr orb)
 {
-   static CorbaDriverFactory factory(global, orb);
-   return factory;
+   //static CorbaDriverFactory factory(global, orb);
+   //return factory;
+   if(factory_ == NULL)
+   {
+     factory_ = new CorbaDriverFactory(global, orb);
+     Object_Lifetime_Manager::instance()->manage_object(factory_);  // if not pre-allocated.
+   }
+   return *factory_;
 }
 
 CorbaDriver& CorbaDriverFactory::getDriverInstance(const string& instanceName)

@@ -11,12 +11,13 @@ Comment:   The Factory for the client driver for the corba protocol
 
 
 #include <util/xmlBlasterDef.h>
-#include <util/objman.h>
-class Object_Lifetime_Manager;
-class CorbaDriver;
+
 #include <client/protocol/corba/CorbaDriver.h>
 
 // for managed objects
+#include <util/objman.h>
+class Object_Lifetime_Manager;
+class CorbaDriver;
 
 
 using namespace std;
