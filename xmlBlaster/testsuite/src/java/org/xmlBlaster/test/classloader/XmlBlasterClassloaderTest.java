@@ -1,0 +1,111 @@
+package org.xmlBlaster.test.classloader;
+
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.*;
+import java.net.URL;
+import java.net.URLClassLoader;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.engine.helper.MessageUnit;
+
+
+import junit.framework.*;
+import java.net.*;
+
+/**
+ * Test SNMP (simple network management protocol) to insert data.
+ * <p />
+ * All methods starting with 'test' and without arguments are invoked automatically
+ * <p />
+ * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.snmp.InsertTest
+ *
+ * @see org.xmlBlaster.engine.admin.extern.snmp.NodeEntryImpl
+ */
+public class XmlBlasterClassloaderTest extends TestCase {
+   protected Global glob;
+   protected LogChannel log;
+   private MessageUnit msgUnit;     // a message to play with
+
+   public XmlBlasterClassloaderTest(String name) {
+      super(name);
+   }
+
+   protected void setUp() {
+      this.glob = Global.instance();
+      this.log = glob.getLog(null);
+      URLClassLoader cl = (URLClassLoader)this.getClass().getClassLoader();
+      URL[] urls = cl.getURLs();
+      String path = "";
+      for( int i = 0; i < urls.length; i++ ) {
+         String file = urls[i].getFile();
+         if( file.endsWith("parser.jar") ) {
+            int pos = file.indexOf("parser.jar");
+            path = urls[i].getProtocol()+"://"+file.substring(0,pos);
+            break;
+         }
+      }
+
+      // Füge ein xerces.jar am Anfang ein, damit im Classpath einen anderen XML-Parser
+      // vorne steht.
+      try {
+         urls = new URL[2];
+         urls[0] = new URL(path+"ant/xerces.jar");
+         urls[1] = new URL(path+"xmlBlaster.jar");
+      }
+      catch (MalformedURLException ex) {
+         Log.error("XmlBlasterClassloaderTest", "error. >>>"+ex.toString());
+      }
+
+      cl = cl.newInstance(urls);
+      try {
+         Class clazz = cl.loadClass("org.xmlBlaster.util.EmbeddedXmlBlaster");
+      }
+      catch (ClassNotFoundException ex) {
+         assertTrue(ex.getMessage(), true);
+      }
+
+   }
+
+   public void testClassloader() {
+      System.out.println("***XmlBlasterClassloaderTest: testClassloader ...");
+
+      try {
+         EmbeddedXmlBlaster embed = EmbeddedXmlBlaster.startXmlBlaster(glob);
+
+         XmlBlasterConnection conn = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob, "marcel", "secret");
+         conn.connect( qos, null ); // Login to xmlBlaster
+
+         // a sample message unit
+         String xmlKey = "<key oid='123' contentMime='text/plain' contentMimeExtended='myMime'>\n" +
+                           "   <TestLogin-AGENT>" +
+                           "   </TestLogin-AGENT>" +
+                           "</key>";
+         String senderContent = "Some content";
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+         conn.publish(msgUnit);
+
+      }
+      catch (Throwable t) {
+         assertTrue( "Some error occured:"+t.toString(), true );
+      }
+
+      System.out.println("***XmlBlasterClassloaderTest: testClassloader [SUCCESS]");
+   }
+
+
+   protected void tearDown() {
+   }
+
+   /**
+    * <pre>
+    *  java org.xmlBlaster.test.snmp.InsertTest
+    * </pre>
+    */
+   public static void main(String args[])
+   {
+      XmlBlasterClassloaderTest testCl = new XmlBlasterClassloaderTest("XmlBlasterClassloaderTest");
+      testCl.setUp();
+      testCl.testClassloader();
+      testCl.tearDown();
+   }
+}

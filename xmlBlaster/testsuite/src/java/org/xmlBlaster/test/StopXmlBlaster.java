@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import junit.framework.*;
 
 /**
- * This client connects to xmlBlaster and stops it with a command message. 
+ * This client connects to xmlBlaster and stops it with a command message.
  * <p />
  * Invoke: java org.xmlBlaster.test.StopXmlBlaster
  */
@@ -22,10 +22,12 @@ public class StopXmlBlaster extends TestCase
 {
    String[] args = new String[0];
 
-   public StopXmlBlaster() { // For Junit invoke
+   public StopXmlBlaster(String name) { // For Junit invoke
+      super(name);
    }
 
-   public StopXmlBlaster(String[] args) { // Used by our main
+   public StopXmlBlaster(String[] args, String name) { // Used by our main
+      super(name);
       this.args = args;
       testStop();
    }
@@ -61,6 +63,6 @@ public class StopXmlBlaster extends TestCase
    }
 
    public static void main(String args[]) {
-      new StopXmlBlaster(args);
+      new StopXmlBlaster(args, "StopXmlBlaster");
    }
 }
