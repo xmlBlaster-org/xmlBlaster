@@ -33,9 +33,6 @@ Changes for 0.79b [???, ?? 2000]
 
  - Renamed servlet-2.0.jar to servlet.jar
 
-   (- Added servlet.jar from tomcat 4.0)
-   (Java Servlet 2.3 and JSP 1.2 specifications)
-
  - Added a simple Python hello world demo,
    see xmlBlaster/demo/python/README
 
