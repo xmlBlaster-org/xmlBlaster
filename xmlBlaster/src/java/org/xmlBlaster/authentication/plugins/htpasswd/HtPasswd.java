@@ -37,6 +37,7 @@ import java.util.Vector;
  * <p />
  * NOTE: Currently the htpasswd file is reread every time a client logs in (see Session.java new HtPasswd())
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html">The security.htpasswd requirement</a>
  */
 public class HtPasswd {
 
@@ -50,6 +51,7 @@ public class HtPasswd {
 
    protected int useFullUsername = ALLOW_PARTIAL_USERNAME;
    protected String htpasswdFilename = null ;
+   /* Key is user name, values is the encrypted password */
    protected Hashtable htpasswd = null ;
 
    private static boolean first = true;
@@ -127,21 +129,36 @@ public class HtPasswd {
       if( htpasswd != null && userName!=null && userPassword!=null ){
          Vector pws = new Vector();
 
-          //find user in Hashtable htpasswd
-          String key;
-          if ( useFullUsername == FULL_USERNAME ) {
-            pws.addElement((String)htpasswd.get(userName));
-          }
-          else { 
+         //find user in Hashtable htpasswd
+         String key;
+         boolean found = false;
+         if ( useFullUsername == FULL_USERNAME ) {
+            String pw = (String)htpasswd.get(userName);
+            pws.addElement(pw);
+            found = true;
+         }
+         else { // ALLOW_PARTIAL_USERNAME
             for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
-              key = (String)e.nextElement();
-              if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " with key='" + key + "'");
-              if ( userName.startsWith(key) ) {
-                pws.addElement((String)htpasswd.get(key));
-              }
+               key = (String)e.nextElement();
+               if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " with key='" + key + "'");
+               if (userName.startsWith(key) || userName.endsWith(key)) {
+                  String pw = (String)htpasswd.get(key);
+                  pws.addElement(pw);
+                  found = true;
+               }
             }
-          }
-          return checkDetailed(userPassword,pws);
+         }
+
+         if (!found) { // allow wildcard entry, for example "*:ad9dfjhf0"
+            for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
+               key = (String)e.nextElement();
+               if (key.equals("*")) {
+                  pws.addElement((String)htpasswd.get(key));
+               }
+            }
+         }
+         
+         return checkDetailed(userPassword,pws);
       }
       return false;
    }//checkPassword
@@ -196,14 +213,8 @@ public class HtPasswd {
                if( st.ttype>=0 ){
                   if( ((char)st.ttype) == ':' ){  // user:password
                      readUser = false ;
-                  }else if ( ((char)st.ttype) == '*') { //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
-                    useFullUsername = SWITCH_OFF;
-                    if (first) {
-                      log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
-                      first = false;
-                    }
-                    end = true;                                  
-                  }else{
+                  }
+                  else{
                      if( readUser ){
                         user.append( (char)st.ttype );
                      }else{
@@ -224,9 +235,22 @@ public class HtPasswd {
 
             case StreamTokenizer.TT_EOL:
                readUser = true ;
-               htpasswd.put( user.toString(), password.toString() );
-               user.setLength(0);
-               password.setLength(0);
+               String u = user.toString().trim();
+               String p = password.toString().trim();
+               if (u.equals("*") && p.length()==0) {
+                  //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
+                  useFullUsername = SWITCH_OFF;
+                  if (first) {
+                     log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
+                     first = false;
+                  }
+                  end = true;                                  
+               }
+               else {
+                  htpasswd.put(u, p);
+                  user.setLength(0);
+                  password.setLength(0);
+               }
                break;
 
             case StreamTokenizer.TT_EOF:
