@@ -34,7 +34,7 @@ print $callback_ref, "\n\n";
 #-------------- login() to AuthServer_obj ---------
 my $loginName = "Perl-Heidi";
 my $xmlBlaster = $authServer->login($loginName, "secret", $callback, "");
-print "login($loginName) successfull\n\n";
+print "login($loginName) successful\n\n";
 
 
 #-------------- publish() a message -------------
@@ -54,7 +54,7 @@ $message = {xmlKey => $xmlKey, content => $content};
 my $qos = "";
 my $publishOid = $xmlBlaster->publish($message, $qos);
 
-print "Successfull published message with new oid=$publishOid\n\n";
+print "Successful published message with new oid=$publishOid\n\n";
 
 
 #-------------- subscribe() to the previous message OID -------

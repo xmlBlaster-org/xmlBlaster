@@ -3,7 +3,7 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.5 1999/12/14 10:30:54 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.6 2000/01/13 06:18:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -65,7 +65,7 @@ public class ClientUpdateQueue
 
 
    /**
-    * Allocates a new LinkedList. 
+    * Allocates a new LinkedList.
     */
    private void init()
    {

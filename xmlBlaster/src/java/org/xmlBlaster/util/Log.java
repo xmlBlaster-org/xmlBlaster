@@ -3,13 +3,13 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.30 1999/12/22 09:39:46 ruff Exp $
+Version:   $Id: Log.java,v 1.31 2000/01/13 06:18:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 
 /**
- * Logging output. 
+ * Logging output.
  * <p />
  * Note that the layout of this class is for optimum performance and ease of use.<br />
  * To increase performance of xmlBlaster you may choose to add final qualifiers<br />

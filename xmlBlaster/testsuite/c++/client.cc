@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
       //-------------- login() to AuthServer_obj ---------
       serverIdl::Server_ptr xmlBlaster = authServer_obj->login("Ben", "secret", callback_impl, "");
-      cout << "Successfull login!" << endl;
+      cout << "Successful login!" << endl;
 
 
       //-------------- publish() a message -------------
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
       //??? message.content(MICO_ULong(content.size()), MICO_ULong(content.size()), (CORBA::Octet*)content.c_str());
 
       string publishOid = xmlBlaster->publish(message, "");
-      cout << "Successfull published message with new oid=" << publishOid << endl;
+      cout << "Successful published message with new oid=" << publishOid << endl;
 
 
       //-------------- subscribe() to the previous message OID -------

@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.7 1999/12/22 09:40:12 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.8 2000/01/13 06:18:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -190,7 +190,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
             com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
             try {
                String uniqueKey = getKeyOid(node);
-               Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successfull query");
+               Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successful query");
                xmlKeyVec.addElement(requestBroker.getXmlKeyFromOid(uniqueKey));
             } catch (Exception e) {
                e.printStackTrace();
@@ -257,7 +257,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Invoked on successfull client login (interface ClientListener)
+    * Invoked on successful client login (interface ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
