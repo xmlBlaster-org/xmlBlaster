@@ -2,6 +2,8 @@ Access bean for Windows ActiveX components, 2004-03-09
 
 This is a first step, the code is not functional yet!
 
+See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+
 With this control you can access xmlBlaster from C#
 or VisualBasic which calls a client side java bean
 which again connects to the xmlBlaster server.
