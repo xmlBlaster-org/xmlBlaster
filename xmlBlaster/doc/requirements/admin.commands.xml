@@ -185,11 +185,15 @@
             <dispatch id='clientSide'>
                <queue>
                   <plugin refid='queue:CACHE'/>
-                  <maxEntries>2000</maxEntries>
-                  <entry id='5563009'>
-                     <topic refid='hello'>
-                        <entry refid='1046976320109000001'/>
-                     </topic>
+                  <maxEntries>200</maxEntries>
+                  <entry id='1046976320144000000' type='publish'>  <!-- client side queued entries -->
+                     <key oid='hello' contentMime='text/plain'/>
+                     <content>Salute</content>
+                     <qos>
+                        <persistent/>
+                        <sender>/node/heron/client/jack</sender>
+                        <expiration lifeTime='-1'/>
+                     </qos>
                   </entry>
                <queue>
                <address id='clientSide'>
@@ -204,29 +208,29 @@
                <cbOneway>false</cbOneway>
                <cbPtpAllowed>true</cbPtpAllowed>
             </dispatch>
-            <!-- command line (or telnet) example -->
-            <!--
-               java HelloWorld3
+<!-- command line (or telnet) example -->
+<!--
+java HelloWorld3
 
-                -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue/clientSide/maxEntries 200
-                -dispatch/clientSide/queue/clientSide/maxEntries 200
-                -dispatch/clientSide/queue//maxEntries 200
-                -queue/clientSide/maxEntries 200
-                -queue//maxEntries 200
+      -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue/clientSide/maxEntries 200
+      -dispatch/clientSide/queue/clientSide/maxEntries 200
+      -dispatch/clientSide/queue//maxEntries 200
+      -queue/clientSide/maxEntries 200
+      -queue//maxEntries 200
 
-                -dispatch/clientSide/pingInterval 10000
+      -dispatch/clientSide/pingInterval 10000
 
-                -dispatch/callback/address/callback/  http://x.y.com:8089
-                -dispatch/callback/address//  http://x.y.com:8089
+      -dispatch/callback/address/callback/  http://x.y.com:8089
+      -dispatch/callback/address//  http://x.y.com:8089
 
-                -dispatch/callback/pingInterval 20000
+      -dispatch/callback/pingInterval 20000
 
-               Old style:
-                  java HelloWorld3 -queue.maxMsg 200
-                                   -pingInterval 10000
-                                   -ior??
-                                   -cb.pingInterval 20000
-            -->
+   Old style:
+      java HelloWorld3 -queue.maxMsg 200
+                        -pingInterval 10000
+                        -ior??
+                        -cb.pingInterval 20000
+-->
 
          </session> <!-- -3 -->
 
@@ -727,7 +731,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.41 $</revision>
+   <revision>$Revision: 1.42 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
