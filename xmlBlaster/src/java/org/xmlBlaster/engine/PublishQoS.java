@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.6 1999/12/20 08:52:58 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.7 2000/01/17 20:06:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -167,8 +167,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
       if (name.equalsIgnoreCase("ForceUpdate")) {
          if (!inQos)
             return;
-         Log.error(ME, "Sorry, ForceUpdate is not yet supported");
-         forceUpdate = false; // !!!
+         forceUpdate = true;
          return;
       }
 
