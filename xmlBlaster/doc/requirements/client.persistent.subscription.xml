@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.persistent.subscription' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>
+      XmlBlaster supports sessions and subscriptions which persist a server crash.
+   </topic>
+   <description>
+      <p>
+      Persistent subscriptions will persist a server crash. After such a crash they are 
+      reestablished during the recovery process. <br/>
+      Subscription persistence is handled together with session persistence (subscription
+      persistence would not work without session persistence). The SessionPersistencePlugin
+      takes care of that.
+      </p>
+      <p>
+      The recovery process must happen before the communication plugins are made available. 
+      This to ensure that recovery will be accomplished completely before any client can 
+      access xmlBlaster. It also must happen after the <code>TopicHandler</code> is 
+      resuscitated.
+      How to ensure this is described in the configuration section below. 
+      </p>
+      <p>
+      A subscription is made persistent explicitly by passing the <code>persistent</code>
+      flag in the subscribeQos. If the session to which it belongs is not persistent at the
+      subscription time, it is implicitly made persistent by the subscrption.
+      </p>
+      <p>
+      The benefit of having persistent subscriptions is that you as a client don't have
+      to bother about resubscribing after a server crash. Since this is handled before any
+      client is able to connect again (the configurator is responsible for that),
+      gaps between possible publishes and subscriber reconnection are eliminated.
+      <p>
+      </p>
+      Delivery of all publishes done before the subscriber can reconnect is thereby ensured.
+      Currently there are some requisites which must be fulfilled to allow a subscription 
+      to be made persistent. These are:
+      <ul>
+        <li>a) The session to which it belongs must be assigned by the client (i.e. he must 
+	  provide a <b>positive sessionId</b>)</li>
+	<li>b) The <b>callback connection</b> must be configured as <b>failsafe</b> (to avoid 
+	     disconnection in cases where the client is inaccessible)</li>
+      </ul>
+      Some of the protocols may be less restrictive than others but if you fulfill the 
+      mentioned requisites, subscription persistency will work on all communication protocols.
+      </p>
+      <p>
+      Persistence of subscriptions is ensured by a persistent I_Map implementation. 
+      Configuration of the storage (for example storage size or cache size) is done on server 
+      side, either by passing parameters on the command line or in the xmlBlaster.properties 
+      file.
+      </p>
+      <p><b>Exceptions:</b>
+        <ul>
+	  <li>If the persistent subscription is done and the storage is overflown, an exception
+	      is thrown back to the client and the subscription is not valid.
+	  </li>
+	  <li>Making a persistent subscription on a transient session implies that the session
+	      is made persistent. If the storage for the persistent sessions is overflown, an
+	      exception is thrown back to the client.
+	  </li>
+	</ul>
+      </p>
+   </description>
+
+   <example lang="Java">
+     <pre>
+      <![CDATA[
+        ....
+SubscribeQos qos = new SubscribeQos(global);
+qos.setPersistent(true);
+        ....
+      ]]>
+      </pre>
+   </example>
+
+   <example lang="XML">
+     <pre>
+      <![CDATA[
+   <key queryType="XPATH">//airport</key>
+   <qos><persistent>true</persistent></qos>
+      ]]>
+     </pre>
+   </example>
+
+   <configuration where="server">
+      <p>
+      The configuration of the plugin happens in the xmlBlasterPlugin.xml file.
+      <pre>
+      <![CDATA[
+   <!--========== SubscriptionPersistencePlugin =============-->
+    ....
+   <plugin id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' />
+      <action do='STOP' onShutdownRunlevel='2' sequence='6'/>
+   </plugin>
+    ....
+      ]]>
+      </pre>
+      It is important that it is started <b>after runlevel 2</b> in order to assure that the topics
+      are there when sessions and subscriptions are recovered. The logical place where to do
+      it is on runlevel 3. Since this runlevel is the one on which communication plugins are
+      loaded it is important that <b><code>subPersistence</code> is loaded before the communication
+      plugins are</b> (by choosing a higher sequence number on load for the communication 
+      plugins).<br/>
+      The name <code>subPersitence</code> specified as the plugin id is not important since
+      the plugin registers itself as a listener.
+      </p>
+      <p>
+      <b><u>The configuration of the size of the storage</u></b><br/>
+      All persistent subscriptions are stored on the same storage which is configurable on server
+      side (the same way as the msgUnitStore and persistent sessions). You can either pass 
+      the parameters in the <code>xmlBlaster.properties</code> file:
+      <pre>
+      ....
+persistence/subscribe/maxEntriesCache = 10
+persistence/subscribe/maxEntries = 200
+      ....
+    </pre>
+      or on the command line when starting xmlBlaster:
+      <pre>
+   java org.xmlBlaster.Main \
+   -persistence/subscribe/maxEntriesCache 10 \
+   -persistence/subscribe/maxEntries 200
+      </pre>
+      </p>
+
+   </configuration>
+   <see type="REQ">client.failsafe</see>
+   <see type="REQ">client.persistent.subscription</see>
+   <see type="API">org.xmlBlaster.engine.I_SessionPersistencePlugin</see>
+   <author><a ref='laghi@swissinfo.org'>Michele Laghi</a></author>
+   <hacker><a ref='laghi@swissinfo.org'>Michele Laghi</a></hacker>
+   <date>2004 02 19</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.client.TestPersistentSession</test>
+   </testcase>
+</requirement>
+
