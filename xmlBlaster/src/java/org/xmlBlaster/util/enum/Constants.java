@@ -168,6 +168,10 @@ public class Constants
    public final static String CLIENTPROPERTY_DEADMSGKEY = INTERNAL_OID_PREFIX_FOR_CORE + "key";
    /** Dead messages transport in their QoS clientProperty the original message QoS in '__qos' */
    public final static String CLIENTPROPERTY_DEADMSGQOS = INTERNAL_OID_PREFIX_FOR_CORE + "qos";
+   /** Dead messages transport in their QoS clientProperty the rcvTimestamp in '__rcvTimestamp' */
+   public final static String CLIENTPROPERTY_RCVTIMESTAMP = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestamp";
+   /** Dead messages transport in their QoS clientProperty the original message oid in '__oid' */
+   public final static String CLIENTPROPERTY_OID = INTERNAL_OID_PREFIX_FOR_CORE + "oid";
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
