@@ -106,6 +106,13 @@ namespace org {
       void run();
 
    public:
+      bool orbRun() {
+         if ( this->connection_ == 0 ) {
+            return false;
+         }
+         this->connection_->getOrb()->run();
+         return true;
+      }
 
       static CorbaDriver& getInstance(Global& global, const string& instanceName, CORBA::ORB_ptr orb=NULL);
 

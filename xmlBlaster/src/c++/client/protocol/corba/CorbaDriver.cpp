@@ -139,8 +139,13 @@ CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName
          if (log.trace()) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
          driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, orb);
          driverMap.insert(DriverMap::value_type(instanceName, driver));
-         if (!driver->orbIsThreadSave() && !isRunning && (orb == NULL))
-            driver->start(); // Start a simulated main loop thread, check if this is really what it should be ...
+         if (driver->orbIsThreadSave()) {
+            driver->start(); // Start main loop thread
+         }
+         else {
+            if (!isRunning && (orb == NULL))
+               driver->start(); // Start a simulated main loop thread, check if this is really what it should be ...
+         }
       }
       else driver = (*iter).second;
    }
@@ -184,22 +189,27 @@ int CorbaDriver::killInstance(const string& instanceName)
 void CorbaDriver::run()
 {
    if (log_.trace()) log_.trace(ME, "the corba loop starts now");
-   doRun_ = true;
-   if (isRunning_) return;
-   log_.info(ME, "the corba loop starts now");
-   isRunning_ = true;
-   while (doRun_) {
-      {
-         Lock lock(mutex_, orbIsThreadSave_);
-         if (log_.trace()) log_.trace(ME, "sweep in running thread");
-         connection_->orbPerformWork();
-      }
-      if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
-      sleep(20); // sleep 20 milliseconds
-      if (log_.trace()) log_.trace(ME, "waiking up");
+   if (orbIsThreadSave()) {
+      orbRun(); // e.g. TAO
    }
-   log_.info(ME, "the corba loop has ended now");
-   isRunning_ = false;
+   else {
+      doRun_ = true;    // e.g. MICO
+      if (isRunning_) return;
+      log_.info(ME, "the corba loop starts now");
+      isRunning_ = true;
+      while (doRun_) {
+         {
+            Lock lock(mutex_, orbIsThreadSave_);
+            if (log_.trace()) log_.trace(ME, "sweep in running thread");
+            connection_->orbPerformWork();
+         }
+         if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
+         sleep(20); // sleep 20 milliseconds
+         if (log_.trace()) log_.trace(ME, "waiking up");
+      }
+      log_.info(ME, "the corba loop has ended now");
+      isRunning_ = false;
+   }
 }
 
 CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, CORBA::ORB_ptr orb)
