@@ -33,6 +33,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     */
    public MsgQueueHistoryEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, msgUnitWrapper, storageId, (SessionName)null);
+      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueHistoryEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
    /**

@@ -35,10 +35,11 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
    public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
-                              String subscriptionId, String state) throws XmlBlasterException {
+                              String subscriptionId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, storageId, receiver);
       this.subscriptionId = subscriptionId;
-      this.state = state;
+      this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
+      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
    /**
