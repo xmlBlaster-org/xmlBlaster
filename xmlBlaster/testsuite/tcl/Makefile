@@ -1,11 +1,11 @@
 # The Tclmico environment should be installed
 # before you can use this Makefile, e.g.:
 
-# export TCLMICO_HOME=/www/tclmico-0.5c
-# export PATH            := ${TCLMICO_HOME}:$(PATH)
-# export LD_LIBRARY_PATH := ${TCLMICO_HOME}:$(LD_LIBRARY_PATH)	LINUX,Sloaris
-# export LIBPATH         := ${TCLMICO_HOME}:$(LIBPATH)          AIX
-# export SHLIB_PATH      := ${TCLMICO_HOME}:$(SHLIB_PATH)       HPUX
+# export TCLCORBACPP_HOME=/www/tclmico-0.5c
+# export PATH            := ${TCLCORBACPP_HOME}:$(PATH)
+# export LD_LIBRARY_PATH := ${TCLCORBACPP_HOME}:$(LD_LIBRARY_PATH)	LINUX,Sloaris
+# export LIBPATH         := ${TCLCORBACPP_HOME}:$(LIBPATH)          AIX
+# export SHLIB_PATH      := ${TCLCORBACPP_HOME}:$(SHLIB_PATH)       HPUX
 
 all: BlasterCallback xmlBlaster.tcl
 

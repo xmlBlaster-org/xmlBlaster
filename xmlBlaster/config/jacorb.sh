@@ -37,7 +37,7 @@ if [ -d ${JacORB_HOME} ] ; then
    CLASSPATH=${JacORB_LIB}/idl.jar:${CLASSPATH}
    CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
-   ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
+   ${ECHO} "$BLACK_LTGREEN   JacORB_HOME    =${JacORB_HOME}  $ESC"
 
    if [ ! -f ${HOME}/jacorb.properties ]; then
       cp ${JacORB_HOME}/config/jacorb.properties.template ${HOME}/jacorb.properties

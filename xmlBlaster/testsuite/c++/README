@@ -12,7 +12,7 @@ These are examples on how to access xmlBlaster from a C++ client
 
 1.) Install MICO (2.3) and set the environment variable to point to MICO
 
-   export MICO_HOME=/opt/local/mico
+   export CORBACPP_HOME=/opt/local/mico
 
 
 2) Compile the clients with

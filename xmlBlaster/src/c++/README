@@ -16,33 +16,33 @@ NOTE:
 HOW TO BUILD THE CLIENT CLASSES:
 
 - retrieve xerces from http://xml.apache.org
-- install xerces (lets say in /usr/local/xerces)
+- install xerces (lets say in /opt/local/xerces)
 - install one c++ implementation of corba (currently MICO or ORBACUS)
 - define the following environment variables if different than the default
   (the given value is the default setting):
 
-     MICO_HOME=/opt/local/mico
-     MICO_VER2.3.5
+     CORBACPP_HOME=/opt/local/mico
+     CORBACPP_VER=2.3.5
      XMLCPP_HOME=/opt/local/xerces-c-src1_6_0
      XMLCPP_VER=1_6_0
     
     USE_CPP=true (which tells the compiler to build the c++-classes)
     XMLCPP_HOME=<directory-where-you-installed-xerces>
-                (for example XMLCPP_HOME=/usr/local/xerces)
-    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_5_1")
+                (for example XMLCPP_HOME=/opt/local/xerces)
+    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_6_0")
     CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
-    ORBACUS_HOME or MICO_HOME (depending if you run with orbacus or mico
-        ex.: ORBACUS_HOME=/usr/local/orbacus
-    ORBACUS_VER or MICO_VER to the version of mico or orbacus
-        ex.: MICO_VER="2.3.6"
+    ORBACUS_HOME or CORBACPP_HOME (depending if you run with orbacus or mico
+        ex.: ORBACUS_HOME=/opt/local/orbacus
+    ORBACUS_VER or CORBACPP_VER to the version of mico or orbacus
+        ex.: CORBACPP_VER="2.3.6"
 
 So if you use bash, an example would be:
 
-export XMLCPP_HOME=/usr/local/xerces
-export XMLCPP_VER="1_5_1"
+export XMLCPP_HOME=/opt/local/xerces
+export XMLCPP_VER="1_6_0"
 export CORBA_CPP="mico"
-export MICO_HOME=/usr/local/mico
-export MICO_VER="2.3.6"
+export CORBACPP_HOME=/opt/local/mico
+export CORBACPP_VER="2.3.6"
 
 Then you can run make from the $XMLBLASTER_HOME directory or from
 $XMLBLASTER_HOME/src/c++
