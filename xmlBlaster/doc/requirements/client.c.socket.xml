@@ -94,24 +94,26 @@
      <h3>Compilation</h3>
      <p>
      A make file or ant based compilation is not yet available,
-     here is an example how to compile single threaded synchronous client:
+     here is an example how to compile single threaded synchronous clients:
      </p>
      <pre>
 cd xmlBlaster/src/c
 
 Linux C:
-   gcc -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
+   gcc -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c
+       socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
 
 Linux C++:
-   g++ -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
+   g++ -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c
+       socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
 
 Windows:
    cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c
                                    socket\xmlBlasterSocket.c ws2_32.lib
 
 Solaris:
-   cc -Xc -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c
-                                   socket/xmlBlasterSocket.c -lsocket -lnsl
+   cc -Xc -g -I. -o HelloWorld HelloWorld.c msgUtil.c
+      socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
      </pre>
      <p>
      To compile a multi threaded client with synchronous access and asynchronous
@@ -123,7 +125,8 @@ cd xmlBlaster/src/c/socket
 Linux C:
    gcc -DXmlBlasterAccessUnparsedMain -Wall -pedantic -g -D_REENTRANT -I..
        -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c
-       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
+       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
+       -lpthread
 
 Windows:
    cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
@@ -132,8 +135,9 @@ Windows:
       ws2_32.lib pthreadVC.lib
     
 Solaris:
-   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain
-       XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c
+   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I..
+       -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c
+       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c
        CallbackServerUnparsed.c -lpthread -lsocket -lnsl
      </pre>
      <p>
@@ -633,6 +637,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 </requirement>
 
