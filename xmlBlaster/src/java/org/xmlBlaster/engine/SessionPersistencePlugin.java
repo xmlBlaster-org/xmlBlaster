@@ -45,7 +45,6 @@ import org.xmlBlaster.util.queue.StorageId;
 public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
    private final static String ME = "SessionPersistencePlugin";
-   private final static String PERSISTENCE_ID = "__persistenceId";
    /** when recovering all subscriptions must be 'noInitialUpdate' because otherwise
     * we would get messages which we already got in the past
     */
@@ -76,17 +75,20 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private HashMap recoverSessions() throws XmlBlasterException {
       I_MapEntry[] entries = this.sessionStore.getAll();
       HashMap sessionIds = new HashMap();
-      boolean isInternal = true;
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SessionEntry) {
             // do connect
             SessionEntry entry = (SessionEntry)entries[i];
             ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
-            ConnectQosServer qos = new ConnectQosServer(this.global, data, isInternal);
+            
+            ConnectQosServer qos = new ConnectQosServer(this.global, data);
+            qos.isFromPersistenceRecovery(true);
+            qos.setPersistenceUniqueId(entry.getUniqueId());
+
             SessionName sessionName = data.getSessionName();
             String sessionId = data.getSessionQos().getSecretSessionId();
             sessionIds.put(sessionName.getAbsoluteName(), sessionId); 
-            if (this.log.TRACE) this.log.trace(ME, "recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "'");
+            if (this.log.TRACE) this.log.trace(ME, "recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
             // if (this.log.TRACE) this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
             ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
             if (this.log.DUMP) this.log.dump(ME, "recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
@@ -107,7 +109,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     */   
    private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
       I_MapEntry[] entries = this.subscribeStore.getAll();
-      boolean isInternal = true;
       
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SubscribeEntry) {
@@ -231,25 +232,25 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
    }
 
+   /**
+    * A new session is added, checks if it shall be persisted. 
+    */
    private void addSession(SessionInfo sessionInfo) throws XmlBlasterException {
 
       ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
+
+      // Is transient?
       if (connectQosData.getPersistentProp() == null || !connectQosData.getPersistentProp().getValue()) return;
       
-      // is it a remote connect or from a recovery ?
-      ClientProperty clientProperty = connectQosData.getClientProperty(PERSISTENCE_ID);
-      if (clientProperty == null) {
-         long uniqueId = new Timestamp().getTimestamp();
-         connectQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
-         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
-         if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
-         sessionInfo.setPersistenceId(uniqueId);
-         this.sessionStore.put(entry);
-      }
-      else  {
-         long uniqueId = clientProperty.getLongValue();
-         sessionInfo.setPersistenceId(uniqueId);
-      }
+      // Avoid recursion
+      if (sessionInfo.getConnectQos().isFromPersistenceRecovery()) return;
+
+      // Persist it
+      long uniqueId = new Timestamp().getTimestamp();
+      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
+      if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
+      sessionInfo.setPersistenceUniqueId(uniqueId);
+      this.sessionStore.put(entry);
    }
 
    /**
@@ -280,11 +281,14 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       removeAssociatedSubscriptions(sessionInfo); 
 
       // TODO add a method I_Queue.removeRandom(long uniqueId)
-      long uniqueId = sessionInfo.getPersistenceId();
+      long uniqueId = sessionInfo.getPersistenceUniqueId();
       if (this.log.TRACE) this.log.trace(ME, "sessionRemoved (persistent) for uniqueId: '" + uniqueId + "'");
       // String sessionId = getOriginalSessionId(connectQosData.getSessionQos().getSecretSessionId());
       SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L);
-      this.sessionStore.remove(entry);
+      int num = this.sessionStore.remove(entry);
+      if (num != 1) {
+         this.log.error(ME, "sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
+      }
    }
 
    /**
@@ -315,10 +319,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
 
       // is it a remote connect ?
-      ClientProperty clientProperty = subscribeQosData.getClientProperty(PERSISTENCE_ID);
+      ClientProperty clientProperty = subscribeQosData.getClientProperty(Constants.PERSISTENCE_ID);
       if (clientProperty == null) {
          long uniqueId = new Timestamp().getTimestamp();
-         subscribeQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
+         subscribeQosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(this.global, Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
          QueryKeyData subscribeKeyData = (QueryKeyData)data;
          
          // to be found when the client usubscribes after a server crash ...
@@ -330,7 +334,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
       else  {    // ... or from a recovery ?
          // TODO handle by recoverSubscriptions(..)
-         subscribeQosData.getClientProperties().remove(PERSISTENCE_ID);
+         subscribeQosData.getClientProperties().remove(Constants.PERSISTENCE_ID);
          long uniqueId = clientProperty.getLongValue();
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
