@@ -3,7 +3,7 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.15 2002/05/16 15:34:50 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.16 2002/06/27 11:08:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -62,6 +62,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean content = true;
    /** <local>false</local>  Inhibit the delivery of messages to myself if i have published it */
    private boolean local = true;
+
+   /** <initialUpdate>false</initialUpdate> Don't send me the xmlKey initialUpdate data on updates */
+   private boolean initialUpdate = true;     
 
    private transient AccessFilterQos tmpFilter = null;
    protected Vector filterVec = null;                      // To collect the filter when sax parsing
@@ -130,6 +133,19 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
+    * Does client wants to have an initial update on subscribe if the message
+    * exists already?
+    *
+    * @return true if initial update wanted
+    *         false if only updates on new publishes are sent
+    */
+   public final boolean initialUpdate()
+   {
+      return initialUpdate;
+   }
+
+
+   /**
     * Does client wish the content data on updates?
     *
     * @return true if clients wishes the content on message update
@@ -176,6 +192,11 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       }
       if (name.equalsIgnoreCase("local")) {
          local = true;
+         return;
+      }
+
+      if (name.equalsIgnoreCase("initialUpdate")) {
+         initialUpdate = true;
          return;
       }
 
@@ -254,6 +275,14 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if (name.equalsIgnoreCase("initialUpdate")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            initialUpdate = new Boolean(tmp).booleanValue();
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("queue")) {
          inQueue = false;
          character.setLength(0);
@@ -306,6 +335,8 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          sb.append(offset).append("   <content>false</content>");
       if (!local)
          sb.append(offset).append("   <local>false</local>");
+      if (!initialUpdate)
+         sb.append(offset).append("   <initialUpdate>false</initialUpdate>");
 
       AccessFilterQos[] filterArr = getFilterQos();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
@@ -330,6 +361,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
             "   <meta>false</meta>\n" +
             "   <content>false</content>\n" +
             "   <local>false</local>\n" +
+            "   <initialUpdate>false</initialUpdate>\n" +
             "   <filter type='ContentLength' version='1.0'>\n" +
             "      8000\n" +
             "   </filter>\n" +
