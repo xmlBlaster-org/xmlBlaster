@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/06/15 16:21:06 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.3 2002/06/25 18:02:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -36,8 +36,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestSubscribeFilter
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.mime.TestSubscribeFilter
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.mime.TestSubscribeFilter
+ *    java junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.mime.TestSubscribeFilter
  * </pre>
  */
 public class TestSubscribeFilter extends TestCase implements I_Callback
@@ -77,7 +77,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = new String[12];
+      String[] args = new String[14];
       args[0] = "-port";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
       args[2] = "-socket.port";
@@ -90,6 +90,8 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
       args[10] = "-client.port";
       args[11] = "" + serverPort;
+      args[12] = "-admin.remoteconsole.port";
+      args[13] = "0";
       glob.init(args);
 
       serverThread = ServerThread.startXmlBlaster(args);
