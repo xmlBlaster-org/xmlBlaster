@@ -23,6 +23,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.feeder \
+			org.xmlBlaster.protocol \
 			org.xmlBlaster.protocol.corba.clientIdl \
 			org.xmlBlaster.protocol.corba.authenticateIdl \
 			org.xmlBlaster.protocol.corba.serverIdl \
