@@ -3,7 +3,7 @@ Name:      TestGet.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cc,v 1.6 2001/10/01 08:56:23 laghi Exp $
+Version:   $Id: TestGet.cc,v 1.7 2001/11/26 09:21:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <strstream.h>
@@ -21,7 +21,7 @@ Version:   $Id: TestGet.cc,v 1.6 2001/10/01 08:56:23 laghi Exp $
  * <p>
  */
 
-using namespace client;
+namespace org { namespace xmlBlaster {
 
 class TestGet {
 private:
@@ -216,11 +216,13 @@ public:
    }
 };
 
+}} // namespace
+
 
 
 int main(int args, char *argc[]) {
 
-   TestGet *testSub = new TestGet("TestGet", "Tim");
+   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet("TestGet", "Tim");
    testSub->setUp(args, argc);
    testSub->testGet();
    testSub->testGetMany();

@@ -3,7 +3,7 @@ Name:      TestLogin.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cc,v 1.8 2001/10/01 08:56:23 laghi Exp $
+Version:   $Id: TestLogin.cc,v 1.9 2001/11/26 09:21:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -28,7 +28,9 @@ Version:   $Id: TestLogin.cc,v 1.8 2001/10/01 08:56:23 laghi Exp $
 //#include <unistd.h>
 #include <util/StopWatch.h>
 
-using namespace client;
+using namespace org::xmlBlaster;
+
+namespace org { namespace xmlBlaster {
 
 class TestLogin : public virtual I_Callback {
 
@@ -93,9 +95,9 @@ public:
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   void update(const string &loginName, client::UpdateKey &updateKey,
+   void update(const string &loginName, UpdateKey &updateKey,
                void *content, long contentSize,
-               client::UpdateQoS &updateQoS) {
+               UpdateQoS &updateQoS) {
       if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
       numReceived_++;
    }
@@ -398,6 +400,8 @@ private:
    }
 };
 
+}} // namespace
+
 
 
 
@@ -413,7 +417,7 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   TestLogin *testSub = new TestLogin("TestLogin", "Tim", "Joe");
+   org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin("TestLogin", "Tim", "Joe");
    testSub->setUp(args, argc);
    testSub->testLoginLogout();
    testSub->tearDown();

@@ -3,7 +3,7 @@ Name:      RamTest.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
+Version:   $Id: RamTest.cc,v 1.7 2001/11/26 09:21:33 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -22,7 +22,7 @@ Version:   $Id: RamTest.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
  * as it cleans up everything after his tests are done. <p>
  */
 
-using namespace client;
+namespace org { namespace xmlBlaster {
 
 /**
  * Constructs the RamTest object.
@@ -248,9 +248,11 @@ public:
    }
 };
 
+}} // namespace
+
 
 int main(int args, char *argc[]) {
-   RamTest *testSub = new RamTest("RamTest", "Tim");
+   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest("RamTest", "Tim");
    testSub->setUp(args, argc);
    testSub->testManyPublish();
    testSub->tearDown();

@@ -3,7 +3,7 @@ Name:      TestSub.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
+Version:   $Id: TestSub.cc,v 1.7 2001/11/26 09:21:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
@@ -19,7 +19,7 @@ Version:   $Id: TestSub.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
  * <p>
  */
 
-using namespace client;
+namespace org { namespace xmlBlaster {
 
 class TestSub: public I_Callback {
 private:
@@ -273,6 +273,8 @@ private:
    }
 };
 
+}} // namespace
+
 
 
 
@@ -288,7 +290,7 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   TestSub *testSub = new TestSub("TestSub", "Tim");
+   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub("TestSub", "Tim");
    testSub->setUp(args, argc);
    testSub->testPublishAfterSubscribeXPath();
    testSub->tearDown();
