@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.2 2002/02/15 12:56:34 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.3 2002/02/15 19:09:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -51,6 +51,7 @@ public class SocketCallbackImpl extends Thread
     * The key is the String requestId, the value the listener thread I_ResponseListener
     */
    private final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
+
 
    /**
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
@@ -106,10 +107,10 @@ public class SocketCallbackImpl extends Thread
       Log.info(ME, "Started callback receiver");
       while(running) {
 
+         Parser receiver = new Parser();
          try {
-            Parser receiver = new Parser();
             receiver.parse(inputStream);
-            Log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+            if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
             // Handling callbacks ...
             if (receiver.isInvoke()) {
@@ -149,6 +150,9 @@ public class SocketCallbackImpl extends Thread
                if (Constants.GET.equals(receiver.getMethodName())) {
                   listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
                }
+               else if (Constants.ERASE.equals(receiver.getMethodName()) || Constants.PUBLISH.equals(receiver.getMethodName())) {
+                  listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
+               }
                else {
                   listener.responseEvent(receiver.getRequestId(), receiver.getQos());
                }
@@ -161,8 +165,6 @@ public class SocketCallbackImpl extends Thread
                listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(ME, "Invalid response message '" + receiver.getMethodName()));
             }
 
-            // We remove the listener here, so the SocketConnect does not need to take care of this
-            removeResponseListener(receiver.getRequestId());
          }
          catch(XmlBlasterException e) {
             Log.error(ME, e.toString());
@@ -172,6 +174,10 @@ public class SocketCallbackImpl extends Thread
             Log.error(ME, "Closing connection to server: " + e.toString());
             sockCon.shutdown();
             throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
+         }
+         finally {
+            // We remove the listener here, so the SocketConnect does not need to take care of this
+            removeResponseListener(receiver.getRequestId());
          }
       }
    }
@@ -192,6 +198,7 @@ public class SocketCallbackImpl extends Thread
    public void shutdown() {
       running = false;
       try { inputStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
+      Log.info(ME, "There are " + responseListenerMap.size() + " messages pending (no response arrived yet");
    }
 } // class SocketCallbackImpl
 

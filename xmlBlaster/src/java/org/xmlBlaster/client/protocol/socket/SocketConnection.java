@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.3 2002/02/15 13:17:25 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.4 2002/02/15 19:09:07 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -47,7 +47,7 @@ import org.xmlBlaster.protocol.socket.Parser;
  * <p />
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseListener
+public class SocketConnection implements I_XmlBlasterConnection
 {
    private String ME = "SocketConnection";
    /** Default port of xmlBlaster socket server is 7607 */
@@ -80,6 +80,7 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
    private long responseWaitTime = 0;
+   private String praefix = null;
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
@@ -186,30 +187,38 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
     * Send a message and block until the response arrives. 
     * <p/>
     * We simulate RPC (remote procedure call) here.
+    * This should be thread save and may be invoked by many
+    * client threads in parallel (though i have not tested it).
+    * @param praefix The praefix to create a unique requestId namspace (just pass the loginName)
     * @return the response object of the request, of type String(QoS), MessageUnit[] or XmlBlasterException
     */
-   private Object execute(Parser parser, OutputStream oStream, String praefix, String sessionId) throws XmlBlasterException, IOException {
-      
-      String requestId = parser.createRequestId(loginName);
+   private Object execute(Parser parser, OutputStream oStream, String praefix, boolean expectingResponse) throws XmlBlasterException, IOException {
+
+      String requestId = parser.createRequestId(praefix);
       final Object[] response = new Object[2];  // As only final variables are accessable from the inner class, we put changeable variables in this array
       response[0] = response[1] = null;
       final Object monitor = new Object();
 
-      cbReceiver.addResponseListener(requestId, new I_ResponseListener() {
-         public void responseEvent(String reqId, Object responseObj) {
-            if (Log.TRACE) Log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
-            synchronized(monitor) {
-               response[0] = responseObj;
-               response[1] = ""; // marker that notify() is called
-               monitor.notify();
+      if (expectingResponse) {
+         cbReceiver.addResponseListener(requestId, new I_ResponseListener() {
+            public void responseEvent(String reqId, Object responseObj) {
+               if (Log.TRACE) Log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
+               synchronized(monitor) {
+                  response[0] = responseObj;
+                  response[1] = ""; // marker that notify() is called
+                  monitor.notify();
+               }
             }
-         }
-      });
+         });
+      }
 
       byte[] rawMsg = parser.createRawMsg();
       if (Log.DUMP) Log.dump(ME, Parser.toLiteral(rawMsg));
       oStream.write(rawMsg);
       oStream.flush();
+
+      if (!expectingResponse)
+         return null;
       
       //if (Log.TRACE) Log.trace(ME, parser.getMethodName() + "(" + requestId + ") send, waiting for response ...");
       
@@ -220,6 +229,8 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
             if (response[1] != null) {
                if (Log.TRACE) Log.trace(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response)");
                if (Log.DUMP) Log.dump(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + response[0]);
+               if (response[0] instanceof XmlBlasterException)
+                  throw (XmlBlasterException)response[0];
                return response[0];
             }
             else {
@@ -282,6 +293,7 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
       }
 
       this.loginName = loginName;
+      this.praefix = this.loginName + ":";
       this.passwd = passwd;
       this.client = client;
       if (qos == null)
@@ -307,6 +319,7 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
 
       this.loginQos = qos;
       this.loginName = qos.getUserId();
+      this.praefix = this.loginName + ":";
       this.passwd = null;
       this.client = client;
 
@@ -337,7 +350,9 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
             if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via Socket with security plugin" + loginQos.toXml());
             Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
-            Object response = execute(parser, oStream, Constants.CONNECT, loginName);
+            String resp = (String)execute(parser, oStream, praefix, true);
+            ConnectReturnQos response = new ConnectReturnQos(resp);
+            this.sessionId = response.getSessionId();
             // return (String)response; // in future change to return QoS
          }
          else {
@@ -350,10 +365,6 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
       }
       catch (ConnectionException e) {
          throw e;
-      }
-      catch (ClassCastException e) {
-         Log.error(ME+".login", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException(ME+".LoginFailed", "return value not a valid String, Class Cast Exception: " + e.toString());
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
@@ -388,36 +399,22 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
          Log.warn(ME, "You are not logged in, no logout possible.");
       }
 
-      Log.error(ME, "logout() is not implemented");
-      /*
       try {
-         if (this.sock != null) {
-            if(passwd==null) {
-               Vector args = new Vector();
-               args.addElement(sessionId);
-               args.addElement(" "); // qos
-               this.sock.execute("authenticate.disconnect", args);
-            }
-            else {
-               Vector args = new Vector();
-               args.addElement(sessionId);
-               this.sock.execute("authenticate.logout", args);
-            }
-         }
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.DISCONNECT, sessionId);
+         parser.addQos("<qos><state>OK</state></qos>");
+         execute(parser, oStream, loginName, false);
          shutdown(); // the callback server
          init();
          return true;
       }
+      catch (XmlBlasterException e) {
+         //Log.error(ME+".disconnect", e.toString());
+         throw new ConnectionException(ME+".disconnect", e.toString());
+      }
       catch (IOException e1) {
-         Log.warn(ME+".logout", "IO exception: " + e1.toString());
+         Log.error(ME+".disconnect", "IO exception: " + e1.toString());
+         throw new ConnectionException(ME+".disconnect", e1.toString());
       }
-      catch (SocketException e) {
-         Log.warn(ME+".logout", "exception: " + extractXmlBlasterException(e).toString());
-      }
-      */
-      shutdown(); // the callback server
-      init();
-      return false;
    }
 
 
@@ -455,27 +452,17 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
    public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering subscribe(id=" + sessionId + ")");
-      throw new XmlBlasterException(ME, "subscribe() is not implemented");
-      /*
       try {
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-         return (String)getSocketClient().execute("xmlBlaster.subscribe", args);
-      }
-      catch (ClassCastException e) {
-         Log.error(ME+".subscribe", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException(ME+".subscribe", "return value not a valid String, Class Cast Exception");
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.SUBSCRIBE, sessionId);
+         parser.addKeyAndQos(xmlKey_literal, qos_literal);
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got subscribe response " + response.toString());
+         return (String)response; // return the QoS
       }
       catch (IOException e1) {
          Log.error(ME+".subscribe", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".subscribe", e1.toString());
       }
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
@@ -487,62 +474,45 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
    public final void unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException, ConnectionException
    {
-      if (Log.CALL) Log.call(ME, "Entering unsubscribe(): id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering unSubscribe(): id=" + sessionId);
+      if (Log.DUMP) Log.dump(ME, "Entering unSubscribe(): id=" + sessionId + " key='" + xmlKey_literal + "' qos='" + qos_literal + "'");
 
-      throw new XmlBlasterException(ME, "unSubscribe() is not implemented");
-      /*
       try {
-         // prepare the argument list:
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-
-         getSocketClient().execute("xmlBlaster.unSubscribe", args);
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UNSUBSCRIBE, sessionId);
+         parser.addKeyAndQos(xmlKey_literal, qos_literal);
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got unSubscribe response " + response.toString());
+         // return (String)response; // return the QoS TODO
+         return;
       }
       catch (IOException e1) {
          Log.error(ME+".unSubscribe", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new ConnectionException(ME+".unSubscribe", e1.toString());
       }
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
 
    /**
     * Publish a message.
+    * The normal publish is handled here like a publishArr
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering publish(): id=" + sessionId);
 
-      throw new XmlBlasterException(ME, "publish() is not implemented");
-      /*
-      Parser parser = new Parser();
-      parser.setType(Parser.INVOKE_TYPE);
-      parser.setMethodName(Constants.PUBLISH);
-      parser.setSessionId(sessionId);
-      parser.setChecksum(false);
-      parser.setCompressed(false);
-      parser.addMessage(msgUnit);
-      byte[] rawMsg = parser.createRawMsg();
-      String send = toLiteral(rawMsg);
-      System.out.println("Created and ready to send: \n|" + send + "|");
-
       try {
-         return (String)getSocketClient().execute("xmlBlaster.publish", args);
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PUBLISH, sessionId);
+         parser.addMessage(msgUnit);
+         Object response = execute(parser, oStream, loginName, true);
+         String[] arr = (String[])response; // return the QoS
+         Log.info(ME, "Got publish response " + arr[0]);
+         return arr[0]; // return the QoS
       }
       catch (IOException e1) {
          Log.error(ME+".publish", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new ConnectionException(ME+".publish", e1.toString());
       }
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
@@ -561,36 +531,17 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
          throw new XmlBlasterException(ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
-
-      throw new XmlBlasterException(ME, "publishArr() is not implemented");
-      /*
       try {
-
-         Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
-         // prepare the argument list (as a Vector)
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         args.addElement(msgUnitArrWrap);
-
-         Vector returnVectorWrap = (Vector)getSocketClient().execute("xmlBlaster.publishArr", args);
-
-      // re-extractXmlBlasterException the resuts to String[]
-         return ProtoConverter.vector2StringArray(returnVectorWrap);
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PUBLISH, sessionId);
+         parser.addMessage(msgUnitArr);
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got publishArr response " + response.toString());
+         return (String[])response; // return the QoS
       }
-
-      catch (ClassCastException e) {
-         Log.error(ME+".publishArr", "not a valid String[]: " + e.toString());
-         throw new XmlBlasterException("Not a valid String[]", "Class Cast Exception");
-      }
-
       catch (IOException e1) {
          Log.error(ME+".publishArr", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new ConnectionException(ME+".publishArr", e1.toString());
       }
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
@@ -620,33 +571,17 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
    {
       if (Log.CALL) Log.call(ME, "Entering erase() id=" + sessionId);
 
-      throw new XmlBlasterException(ME, "erase() is not implemented");
-      /*
       try {
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-
-         Vector vec = (Vector)getSocketClient().execute("xmlBlaster.erase", args);
-         return ProtoConverter.vector2StringArray(vec);
-
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.ERASE, sessionId);
+         parser.addKeyAndQos(xmlKey_literal, qos_literal);
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got erase response " + response.toString());
+         return (String[])response; // return the QoS TODO
       }
-
-      catch (ClassCastException e) {
-         Log.error(ME+".erase", "not a valid Vector: " + e.toString());
-         throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
-      }
-
       catch (IOException e1) {
          Log.error(ME+".erase", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new ConnectionException(ME+".erase", e1.toString());
       }
-
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
@@ -674,30 +609,17 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
                                   String qos_literal) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
-      throw new XmlBlasterException(ME, "get() is not implemented");
-      /*
       try {
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-
-         Vector retVector = (Vector)getSocketClient().execute("xmlBlaster.get", args);
-         // extractXmlBlasterException the vector of vectors to a MessageUnit[] type
-         return ProtoConverter.vector2MessageUnitArray(retVector);
-      }
-      catch (ClassCastException e) {
-         Log.error(ME+".get", "not a valid Vector: " + e.toString());
-         throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.GET, sessionId);
+         parser.addKeyAndQos(xmlKey_literal, qos_literal);
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got get response " + response.toString());
+         return (MessageUnit[])response;
       }
       catch (IOException e1) {
          Log.error(ME+".get", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new ConnectionException(ME+".get", e1.toString());
       }
-      catch (SocketException e) {
-         throw extractXmlBlasterException(e);
-      }
-      */
    }
 
 
@@ -705,17 +627,20 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
     * Check server.
     * @see xmlBlaster.idl
     */
-   public void ping() throws ConnectionException
+   public void ping() throws ConnectionException, XmlBlasterException
    {
-      Log.error(ME, "ping() is not implemented");
-      /*
       try {
-         Vector args = new Vector();
-         getSocketClient().execute("xmlBlaster.ping", args);
-      } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PING, null); // sessionId not necessary
+         parser.addQos("<qos><state>OK</state></qos>");
+         Object response = execute(parser, oStream, loginName, true);
+         Log.info(ME, "Got ping response " + response.toString());
+         // return (String)response; // return the QoS TODO
+         return;
       }
-      */
+      catch (IOException e1) {
+         Log.error(ME+".ping", "IO exception: " + e1.toString());
+         throw new ConnectionException(ME+".ping", e1.toString());
+      }
    }
 
 
