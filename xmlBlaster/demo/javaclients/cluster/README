@@ -86,9 +86,9 @@ IP=192.168.1.2
 
 cluster.node[heron.mycomp.com]=\
    <clusternode id='heron.mycomp.com'>\
-      <info>\
+      <connect><qos>\
          <address type='SOCKET'>${IP}:7600</address>\
-      </info>\
+      </qos></connect>\
       <master type='DomainToMaster'>\
          <![CDATA[<key domain='RUGBY_NEWS'/>]]>\
       </master>\
@@ -96,9 +96,9 @@ cluster.node[heron.mycomp.com]=\
       
 cluster.node.info[avalon.mycomp.com]=\
    <clusternode id='avalon.mycomp.com'>\
-      <info>\
+      <connect><qos>\
          <address type='SOCKET'>${IP}:7601</address>\
-      </info>\
+      </qos></connect>\
    </clusternode>
 cluster.node.master[avalon.mycomp.com]=\
    <clusternode id='avalon.mycomp.com'>\
@@ -109,9 +109,9 @@ cluster.node.master[avalon.mycomp.com]=\
 
 cluster.node.info[golan.mycomp.com]=\
    <clusternode id='golan.mycomp.com'>\
-      <info>\
+      <connect><qos>\
          <address type='SOCKET'>${IP}:7602</address>\
-      </info>\
+      </qos></connect>\
    </clusternode>
 cluster.node.master[golan.mycomp.com]=\
    <clusternode id='golan.mycomp.com'>\

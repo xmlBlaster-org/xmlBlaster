@@ -99,9 +99,9 @@
             <td>Point to point (PtP)</td>
             <td>
             PtP routing in cluster environment is ready available.
-	    If you destination address has an absolute name like '/node/heron/client/joe'
-	    the local node and all direct neighbors are checked and the message is
-	    directly delivered. Otherwise the same routing rule as for Publish/Subscribe apply.
+       If you destination address has an absolute name like '/node/heron/client/joe'
+       the local node and all direct neighbors are checked and the message is
+       directly delivered. Otherwise the same routing rule as for Publish/Subscribe apply.
             </td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -437,31 +437,40 @@
       Here are xmlBlaster internal messages which support clustering:
       <p>
       <table border="1">
-         <tr><th>1</th><th>Mapping of a cluster node ID to a physical xmlBlaster instance</th></tr>
+         <tr><th>1</th><th>Mapping of a cluster node ID to a physical xmlBlaster instance</th><th>Comments</th></tr>
          <tr><td>key</td><td><pre>
 &lt;key oid='__sys__cluster.node.info[heron]'>
    &lt;__sys__cluster.node.info/>
 &lt;/key>
-         </pre></td></tr>
+         </pre></td>
+         <td>
+         The connect tag contains a ConnectQos markup as described in 
+         <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">the interface.connect requirement</a>
+         </td>
+         </tr>
          <tr><td>content</td><td><pre>
 <!-- In future we could distinguish normal clients, slave clients
       and address based maxConnections -->
 
 &lt;clusternode id='heron' maxConnections='800'>
-   &lt;info>
-      &lt;address type='IOR'>IOR:00044550005...&lt;/address>
-      &lt;address type='XMLRPC' maxConnections='20'>
-         http://www.mars.edu/RPC2
-      &lt;/address>
-      &lt;callback type='XMLRPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
-      &lt;backupnode>
-         &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
-         &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
-      &lt;/backupnode>
-      &lt;nameservice>true&lt;/nameservice>
-   &lt;/info>
+   &lt;connect>
+      &lt;qos>
+         &lt;address type='IOR'>IOR:00044550005...&lt;/address>
+         &lt;address type='XMLRPC' maxConnections='20'>
+            http://www.mars.edu/RPC2
+         &lt;/address>
+         &lt;callback type='XMLRPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
+         &lt;backupnode>
+            &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
+            &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
+         &lt;/backupnode>
+         &lt;nameservice>true&lt;/nameservice>
+      &lt;/qos>
+   &lt;connect>
 &lt;/clusternode>
-         </pre></td></tr>
+         </pre></td>
+    <td>The backupnode setting is currently not implemented</td>
+    </tr>
       </table>
       </p>
 
@@ -506,9 +515,9 @@
 // heron is master for everything (domain '*')
 cluster.node[heron]=\
    &lt;clusternode id='heron'>\
-      &lt;info>\
+      &lt;connect>&lt;qos>\
          &lt;address type='IOR' bootstrapHostname='' bootstrapPort='7600'/>\
-      &lt;/info>\
+      &lt;/qos>&lt;connect>\
       &lt;master type='DomainToMaster'>\
          &lt;key queryType='DOMAIN' domain='*'/>\
       &lt;/master>\
@@ -516,7 +525,7 @@ cluster.node[heron]=\
          </pre></td>
          <td>Messages without a domain specified are normally treated
          by its local xmlBlaster node. Here this is switched off.
-	 This cluster nodes is the master for all Pub/Sub messages because of the wildcard '*' setting</td>
+    This cluster nodes is the master for all Pub/Sub messages because of the wildcard '*' setting</td>
          </tr>
 
          <tr><td>2c) key</td><td><pre>
@@ -654,7 +663,7 @@ cluster.node[heron]=\
       </p>
       <pre>
 &lt;clusternode id='heron.mycomp.com'>
-   &lt;info>
+   &lt;connect>&lt;qos>
       &lt;address type='IOR'>
          IOR:09456087000
       &lt;/address>
@@ -664,11 +673,7 @@ cluster.node[heron]=\
       &lt;callback type='RMI'>
          rmi://mycomp.com
       &lt;/callback>
-      &lt;backupnode>
-         &lt;clusternode id='aragon.mycomp.com'/>
-         &lt;clusternode id='bilbo.mycomp.com'/>
-      &lt;/backupnode>
-   &lt;/info>
+   &lt;/qos>&lt;connect>
    
    &lt;master type='DomainToMaster' version='0.9'>
       &lt;![CDATA[
@@ -753,11 +758,11 @@ cluster.node[heron]=\
             <td>cluster.node.info[heron]</td>
             <td><pre>
 &lt;clusternode id='heron'>
-   &lt;info>
+   &lt;connect>&lt;qos>
       &lt;address type='SOCKET'>
          192.168.1.2:7607
       &lt;/address>
-   &lt;/info>
+   &lt;/qos>&lt;connect>
 &lt;/clusternode>
             </pre></td>
             <td>
@@ -789,11 +794,11 @@ cluster.node[heron]=\
             <td>cluster.node[heron]</td>
             <td><pre>
 &lt;clusternode id='heron'>
-   &lt;info>
+   &lt;connect>&lt;qos>
       &lt;address type='SOCKET'>
          192.168.1.2:7607
       &lt;/address>
-   &lt;/info>
+   &lt;/qos>&lt;connect>
    &lt;master type='DomainToMaster'>
       &lt;![CDATA[
       &lt;key domain='RUGBY_NEWS'/>
@@ -846,6 +851,7 @@ cluster.node[heron]=\
    <see type="REQ">cluster.PtP</see>
    <see type="REQ">client.failsafe</see>
    <see type="REQ">util.property</see>
+   <see type="REQ">interface.connect</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterManager</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterNode</see>
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster</see>
@@ -857,7 +863,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>laghi@swissinfo.org</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.47 $</revision>
+   <revision>$Revision: 1.48 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
