@@ -129,7 +129,9 @@
          </tr>
          <tr>
             <td>engine.mime.xpath.extension_functions</td>
-            <td>:contains-ignore-case:org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</td>
+            <td>:contains-ignore-case:
+                org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:
+                recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</td>
             <td>A semicolon separated list of function definitions.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -147,7 +149,7 @@
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
    <date>2003 09 09</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
