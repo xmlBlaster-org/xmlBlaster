@@ -484,6 +484,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
       log.plain(ME, "   -admin.remoteconsole.port If port > 1000 a server is started which is available with telnet [2702].");
       log.plain(ME, "   -xmlBlaster.isEmbedded    If set to true no System.exit() is possible [false].");
+      log.plain(ME, "   -xmlBlaster.activateJmx   Set to true to enable JMX access [false].");
       log.plain(ME, "   -wipeOutJdbcDB true Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
