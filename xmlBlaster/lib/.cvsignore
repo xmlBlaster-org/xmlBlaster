@@ -4,3 +4,8 @@ testsuite.jar
 *.so*
 *.sl*
 *.dll*
+xmlBlasterClient.lib
+xmlBlasterClient.dll
+xmlBlasterClient.exp
+xmlBlasterClient.pdb
+xmlBlasterClient.rsp
