@@ -32,7 +32,7 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
      You can use Ant.  See the build.xml file for more details.
 
 
-XmlBlaster comes compiled and ready to go.
+The XmlBlaster distribution comes compiled and ready to go.
 Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
 
@@ -91,8 +91,7 @@ how to do it.
     This is the recommended way, since you will automatically
     source all enhancements of new xmlBlaster releases.
 
-    Now the installation is finished.
-    After a new login you are ready to start xmlBlaster (see below).
+    After a new login you are ready to go to step 2.
 
 
    b) If you did not follow step a), here is how to setup
