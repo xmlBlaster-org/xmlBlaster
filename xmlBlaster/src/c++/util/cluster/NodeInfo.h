@@ -32,7 +32,7 @@ typedef map<string, CallbackAddress> CbAddressMap;
 typedef map<string, Address>         AddressMap;
 typedef map<string, NodeId>          NodeMap;
 
-class NodeInfo
+class Dll_Export NodeInfo
 {
 private:
    string          ME;

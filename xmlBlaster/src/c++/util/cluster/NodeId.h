@@ -25,7 +25,7 @@ using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
-class NodeId
+class Dll_Export NodeId
 {
 private:
    const string ME;
