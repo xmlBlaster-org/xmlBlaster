@@ -93,7 +93,7 @@ c. How to do a login?
    What about this approach (only interesting tags shown):
 
    <xmlBlaster method="login" loginName="ben" passwd="sunshine"
-               callbackProtocol="EMAIL" callback="ruff@swand.lake.de">
+               callbackProtocol="EMAIL" callback="xmlBlaster@marcelruff.info">
       <qos>
       </qos>
    </xmlBlaster>
@@ -128,4 +128,4 @@ implement it very quickly, see
 cu,
 
 Marcel
-ruff@swand.lake.de
+xmlBlaster@marcelruff.info
