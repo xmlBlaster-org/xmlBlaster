@@ -3,11 +3,6 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-<<<<<<< SocketConnection.java
-Version:   $Id: SocketConnection.java,v 1.44 2003/03/26 11:09:40 ruff Exp $
-=======
-Version:   $Id: SocketConnection.java,v 1.44 2003/03/26 11:09:40 ruff Exp $
->>>>>>> 1.41.6.2
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
