@@ -48,10 +48,21 @@ Start it in the background on Linux:
 Using tomcat 4.0 serlvet enginge (http:jakarta.apache.org):
 ===========================================================
 
+- tomcat/conf/server.xml (optional):
+        <Context path="/xmlBlaster"
+                 docBase="webapps/xmlBlaster"
+                 debug="9"
+                 reloadable="true" >
+        </Context>
+
+add to catalina.sh
+    CP=$CP:$CATALINA_HOME/lib/xmlBlaster.jar
+
 export CATALINA_HOME=$HOME/jakarta-tomcat-4.0
 export PATH=$CATALINA_HOME/bin:$PATH
 startup.sh   (add "tail -f $CATALINA_HOME/logs/catalina.out" to the end of this script)
 
 For deployment see WEB-INF/web.xml
 
-http://localhost:8080/xmlBlaster/SystemInfo
+#http://localhost:8080/xmlBlaster/SystemInfo
+http://localhost:8080/xmlBlaster/systemInfo/systemInfo.html?ActionType=login&xmlBlaster.loginName=karl&xmlBlaster.passwd=secret

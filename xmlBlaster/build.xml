@@ -72,6 +72,12 @@ Else add it manually.
   <property name="lib.dir" value="./lib"/>
   <property name="packages" value="org.xmlBlaster.*"/>
 
+  <property name="www.dir"              value="${demo.dir}/html"/>
+  <property name="WEB-INF"              value="${www.dir}/WEB-INF"/>
+  <property name="WEB-INF.classes"      value="${WEB-INF}/classes"/>
+  <!-- The document root of the servlet engine (deploy dir for war files): -->
+  <property name="WWW_ROOT"             value="${user.home}/jakarta-tomcat-4.0/webapps"/>
+
   <property name="idl" value="org.xmlBlaster.protocol.corba"/>
   <property name="idl.class" value="jacorb.idl.parser"/>
 
@@ -197,6 +203,33 @@ Else add it manually.
                 debug="${debug}"/>
     <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
     <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
+  <!-- =================================================================== -->
+  <target name="deploy_war">
+     <!-- COPY THE SERVLETS IN THE WEB-INF/classes FOLDER -->
+     <mkdir dir="${WEB-INF.classes}/html/systemInfo"/>
+     <copydir src="${build.dest}/html/systemInfo" dest="${WEB-INF.classes}/html/systemInfo"/>
+     <mkdir dir="${WEB-INF.classes}/org/xmlBlaster/protocol/http"/>
+     <copydir src="${build.dest}/org/xmlBlaster/protocol/http" dest="${WEB-INF.classes}/org/xmlBlaster/protocol/http"/>
+     <deltree dir="${www.dir}/javascript"/>
+     <copydir src="${src.dir}/org/xmlBlaster/protocol/http/javascript" dest="${www.dir}/javascript"/>
+     <deltree dir="${www.dir}/persistentWindow"/>
+     <copydir src="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow" dest="${www.dir}/persistentWindow"/>
+     <deltree dir="${www.dir}/xmlBlaster.css"/>
+     <copyfile src="${doc.dir}/howto/xmlBlaster.css" dest="${www.dir}/xmlBlaster.css"/>
+
+     <jar jarfile="${build.dir}/xmlBlaster.war"
+          basedir="${www.dir}/"
+          includes="*.*,systemInfo/*.html,systemInfo/colors/*.*,javascript/**,persistentWindow/**,WEB-INF/**/*.*"/>
+
+     <copyfile src="${lib.dir}/${name}.jar" dest="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
+     <deltree dir="${WWW_ROOT}/xmlBlaster"/>
+     <delete file="${WWW_ROOT}/xmlBlaster.war"/>
+     <copyfile src="${build.dir}/xmlBlaster.war" dest="${WWW_ROOT}/xmlBlaster.war"/>
+     <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
   </target>
 
   <!-- =================================================================== -->
