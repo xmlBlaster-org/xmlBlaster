@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.1 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.2 2000/01/22 11:23:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -13,8 +13,11 @@ import java.util.Vector;
 
 
 /**
- * This class encapsulates the Message meta data and unique identifier (qos) of a publish() message.
+ * This class encapsulates the qos of a publish() message. 
  * <p />
+ * So you don't need to type the 'ugly' XML ASCII string by yourself.
+ * After construction access the ASCCI-XML string with the toXml() method.
+ * <br />
  * A typical <b>publish</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
@@ -41,12 +44,41 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Constructor with given oid and mimeType.
-    * @param oid is optional and will be generated if ""
-    * @param mimeType the MIME type of the content e.g. "text/xml" or "image/gif"
+    * Default constructor for transient messages. 
     */
    public PublishQosWrapper()
    {
+   }
+
+
+   /**
+    * @param isDurable Store the message persistently
+    */
+   public PublishQosWrapper(boolean isDurable)
+   {
+      this.isDurable = isDurable;
+   }
+
+   
+   /**
+    * Mark a message to be updated even that the content didn't change. 
+    * <br />
+    * Default is that xmlBlaster doesn't send messages to subscribed clients, if the message didn't change.
+    */
+   public void setForceUpdate()
+   {
+      this.forceUpdate = true;
+   }
+
+
+   /**
+    * Mark a message to be readonly. 
+    * <br />
+    * Only the first publish() will be accepted, followers are denied.
+    */
+   public void setReadonly()
+   {
+      this.readonly = true;
    }
 
 
