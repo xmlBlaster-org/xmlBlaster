@@ -123,6 +123,9 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                } catch(java.net.BindException e) {
                   Log.warn(ME, "Port " + callbackPort + " for XML-RCP callback server is in use already, trying with port " +  (callbackPort+1));
                   callbackPort++;
+               } catch(java.io.IOException e) {
+                  Log.warn(ME, "Port " + callbackPort + " for XML-RCP callback server is in use already, trying with port " +  (callbackPort+1));
+                  callbackPort++;
                }
                if (ii == (numTries-1)) {
                   Log.error(ME, "Can't find free port " + callbackPort + " for XML-RCP callback server, please use -xmlrpc.portCB=<port> to specify a free one.");
@@ -137,7 +140,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             Log.info(ME, "XmlRpc callback http server not created, because of -xmlrpc.portCB is 0");
       } catch (Exception e) {
          e.printStackTrace();
-         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC callback server port: " + e.toString());
+         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC callback server host=" + hostname + " port=" + callbackPort + ": " + e.toString());
       }
    }
 
