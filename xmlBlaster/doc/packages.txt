@@ -1,6 +1,6 @@
 The Java package structure for xmlBlaster
 =========================================
-Version:   $Id: packages.txt,v 1.8 2000/09/03 18:12:26 kron Exp $
+Version:   $Id: packages.txt,v 1.9 2000/09/03 18:19:27 kron Exp $
 
 - The 'engine' section is the implementation of xmlBlaster
 
@@ -18,7 +18,7 @@ Version:   $Id: packages.txt,v 1.8 2000/09/03 18:12:26 kron Exp $
       cached in the Memory and mapped on the disk with COPY-BACK-Caching.
       Your can query, update, delete, insert, recover MessageUnits.
 
-    * The 'filesore' section store simple file-database.
+    * The 'filestore' section is a simple file-database with NO caching.      
       You can erase, recover and store Messages in files.
 
 - The 'protocol' section is how the client can access xmlBlaster
