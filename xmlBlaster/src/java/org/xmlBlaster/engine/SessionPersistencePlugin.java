@@ -249,6 +249,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       // Avoid recursion
       if (sessionInfo.getConnectQos().isFromPersistenceRecovery()) return;
 
+      if (sessionInfo.getSessionName().isPubSessionIdInternal()) { // negative pubSessionId?
+         log.warn(ME,"To use persistent session/subscriptions you should login with a given publicSessionId, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.session.html");
+      }
+
       // Persist it
       long uniqueId = new Timestamp().getTimestamp();
       SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
