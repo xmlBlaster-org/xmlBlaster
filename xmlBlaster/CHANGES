@@ -16,9 +16,16 @@ TODO:
 
 BUGS:
 
-* In the XmlBlaster GUI the XPath query fails (login is not supported any more).
 
 DONE:
+  - Bugfix:
+    The internal logged in user "__user..." have now unlimited session
+    timeouts.
+
+  - Bugfix:
+    In the XmlBlaster GUI the XPath query failed (login is not supported any more)
+    since 0.79e, this is fixed now
+
   - Renamed SubscribeFilter to AccessFilter
     Renamed SubscribePluginManager to AccessPluginManager
     Added filter support to get() QoS
