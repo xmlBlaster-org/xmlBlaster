@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.29 2002/09/24 21:34:06 ruff Exp $
+Version:   $Id: Executor.java,v 1.30 2002/10/25 09:07:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -415,7 +415,17 @@ public abstract class Executor implements ExecutorBase
       
       // Waiting for the response to arrive ...
       try {
-         boolean awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
+         boolean awaikened = false;
+         while (true) {
+            try {
+               awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
+               break;
+            }
+            catch (InterruptedException e) {
+               log.warn(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
+               // try again
+            }
+         }
          if (awaikened) {
             if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
@@ -430,9 +440,6 @@ public abstract class Executor implements ExecutorBase
             String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
             throw new XmlBlasterException(ME, str);
          }
-      }
-      catch (InterruptedException e) {
-         throw new XmlBlasterException(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
       }
       finally {
          synchronized (latchSet) { latchSet.remove(startSignal); }
