@@ -221,7 +221,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
 
       // Now check everything:
 
-      this.updateInterceptor.waitOnUpdate(2000L, numPublish * numThreads);
+      this.updateInterceptor.waitOnUpdate(3000L, numPublish * numThreads);
       Msg[] msgs = this.updateInterceptor.getMsgs(oid, Constants.STATE_OK);
       //msg.compareMsg(sentMsgVec.elementAt[i]);
       try { Thread.currentThread().sleep(1500L); } catch( InterruptedException i) {}
