@@ -13,7 +13,7 @@ import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
  * This class does nothing else than:
  * <p />
  * 1. Generate the xml string
- *    which is passed as the init() or login() qos string
+ *    which is passed as the connect() or login() qos string
  *    with the help of SecurityQos.java
  * <p />
  * 2. The messages are not crypted or modified, so

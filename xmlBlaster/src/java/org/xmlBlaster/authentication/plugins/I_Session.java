@@ -7,7 +7,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * @author  W. Kleinertz
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/05 12:21:26 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2001/09/08 22:51:50 $)
  */
 
 public interface I_Session {
@@ -38,7 +38,7 @@ public interface I_Session {
 
    /**
     * The current implementation of the user session handling (especially
-    * {@link org.xmlBlaster.Authenticate#init(String, String)})
+    * {@link org.xmlBlaster.Authenticate#connect(String, String)})
     * cannot provide a real sessionId when this object is created. Thus, it
     * uses a temporary id first and changes it to the real in a later step.<p>
     * The purpose of this method is to enable this functionality.<p>

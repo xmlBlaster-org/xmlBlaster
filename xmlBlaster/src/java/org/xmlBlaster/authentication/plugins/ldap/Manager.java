@@ -8,10 +8,13 @@ import java.util.Hashtable;
 
 /**
  * This security manager just implements the necessary interfaces
- * and allows everything - everybody may login, and everybody
- * may do anything with the messages (publish, subscribe ...)
+ * and delegates login checks (authentication of a client) to LDAP. 
+ * <p />
+ * Authorization is not implemented, please read javadoc of LdapGateway
+ * if you need LDAP authorization. 
  *
- * @author Wolfgang Kleinertz
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @see org.xmlBlaster.authentication.plugins.ldap.LdapGateway
  */
 
 public class Manager implements I_Manager{

@@ -1,3 +1,4 @@
+   XMLBLASTER LDAP HOWTO  09/2001 ruff@swand.lake.de
 
 To get started with ldap authentication please
 setup an ldap server first.
@@ -47,7 +48,7 @@ In the log output of xmlBlaster server you should see something like:
 
 Configuration of the LDAP plugin in xmlBlaster.properties:
 
-   ldap.serverUrl=ldap://localhost:389/o=xmlBlaster, c=ORG
+   ldap.serverUrl=ldap://localhost:389/o=xmlBlaster,c=ORG
    ldap.rootDN=cn=Manager,o=xmlBlaster,c=ORG
    ldap.rootPwd=secret
    ldap.loginFieldName=cn
@@ -55,12 +56,13 @@ Configuration of the LDAP plugin in xmlBlaster.properties:
 You may set these settings on command line as well:
 
    java -jar lib/xmlBlaster.jar \
-         -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster, c=ORG" \
+         -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster,c=ORG" \
          -ldap.rootDN "cn=Manager,o=xmlBlaster,c=ORG" \
          -ldap.rootPwd "secret" \
          -ldap.loginFieldName "cn"
 
-NOTE: Authorization for actions is not supported with this plugin,
+NOTE: Authorization of actions (like subcribing/publishing/erasing messages)
+      is not supported with this plugin,
       xmlBlaster logs warnings to notify you about this.
       If you want to implement authorization, please subclass
 
@@ -70,7 +72,7 @@ NOTE: Authorization for actions is not supported with this plugin,
       
          public boolean isAuthorized(String actionKey, String key)
          {
-            DirContext ctx.ldap.getRootContext();
+            DirContext ctx = ldap.getRootContext();
             // ... your LDAP queries to authorize the user action ...
             // return true if user may do this.
          }

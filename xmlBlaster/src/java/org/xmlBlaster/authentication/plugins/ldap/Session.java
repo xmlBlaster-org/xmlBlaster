@@ -13,8 +13,8 @@ import org.xmlBlaster.util.Log;
  * This implements the session AND the subject interface in the same class. 
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @see org.xmlBlaster.authentication.plugins.ldap.LdapGateway
  */
-
 public class Session implements I_Session, I_Subject {
    private static final String ME = "Session";
 

@@ -8,7 +8,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.jutils.text.StringHelper;
 
 /**
- * Parse the default security handling with loginName and password
+ * Parse the security informations loginName and password
  * from the login qos xml string:
  * <pre>
  *  &lt;securityService type="ldap" version="1.0">
@@ -16,7 +16,9 @@ import org.jutils.text.StringHelper;
  *     &lt;passwd>tim&lt;/passwd>
  *  &lt;/securityService>
  * </pre>
+ *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @see org.xmlBlaster.authentication.plugins.ldap.LdapGateway
  */
 public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {

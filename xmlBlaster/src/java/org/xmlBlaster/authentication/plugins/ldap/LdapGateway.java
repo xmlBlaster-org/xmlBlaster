@@ -17,12 +17,12 @@ import java.util.Enumeration;
  * The constructor of this class connects to the specified LDAP server,
  * thereafter you can check the password of a user.
  * <p />
- * Access all accessible attributes for the specified login name (user)
+ * Access of all accessible attributes for the specified login name (user)
  * is possible as well (demo code).
  * <p />
  * Configuration of the LDAP plugin in xmlBlaster.properties:
  * <pre>
- *  ldap.serverUrl=ldap://localhost:389/o=xmlBlaster, c=ORG
+ *  ldap.serverUrl=ldap://localhost:389/o=xmlBlaster,c=ORG
  *  ldap.rootDN=cn=Manager,o=xmlBlaster,c=ORG
  *  ldap.rootPwd=secret
  *  ldap.loginFieldName=cn
@@ -31,7 +31,7 @@ import java.util.Enumeration;
  * You may set these settings on command line as well:
  * <pre>
  *  java -jar lib/xmlBlaster.jar \
- *        -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster, c=ORG" \
+ *        -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster,c=ORG" \
  *        -ldap.rootDN "cn=Manager,o=xmlBlaster,c=ORG" \
  *        -ldap.rootPwd "secret" \
  *        -ldap.loginFieldName "cn"
@@ -47,11 +47,12 @@ import java.util.Enumeration;
  * <pre>
  *   public boolean isAuthorized(String actionKey, String key)
  *   {
- *      DirContext ctx.ldap.getRootContext();
+ *      DirContext ctx = ldap.getRootContext();
  *      // ... your LDAP queries to authorize the user action ...
  *      // return true if user may do this.
  *   }
  * </pre>
+ *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class LdapGateway
@@ -85,10 +86,10 @@ public class LdapGateway
     * <p />
     * To test use your browser and try something like
     * <pre>
-    *   ldap://localhost:389/o=xmlBlaster, c=ORG??sub
+    *   ldap://localhost:389/o=xmlBlaster,c=ORG??sub
     * </pre>
     *
-    * @param serverUrl For example "ldap://localhost:389/o=xmlBlaster, c=ORG"
+    * @param serverUrl For example "ldap://localhost:389/o=xmlBlaster,c=ORG"
     * @param rootDN The distinguishable name of the application super user e.g. "cn=Manager,o=xmlBlaster,c=ORG"
     * @param rootPwd The password e.g. "topsecret"
     * @param  loginFieldName The fieldname where the loginName in LDAP lies (here 'cn') (used for later login as a normal user)
@@ -157,7 +158,7 @@ public class LdapGateway
 
    /**
     * Searches the loginName in LDAP and returns its distinguishable name DN,
-    * e.g. cn=mrf -> returns "cn=mrf, ou=Employee, ou=096, o=xmlBlaster, c=ORG"
+    * e.g. cn=mrf -> returns "cn=mrf, ou=Employee, ou=096, o=xmlBlaster,c=ORG"
     *
     * @param The cn (user identifier == xmlBlaster login name) to look for
     * @param A valid DN for the given cn or an exception
@@ -227,7 +228,7 @@ public class LdapGateway
 
 
    /**
-    * Extract "o=xmlBlaster, c=ORG" from "ldap://localhost:389/o=xmlBlaster, c=ORG":
+    * Extract "o=xmlBlaster,c=ORG" from "ldap://localhost:389/o=xmlBlaster,c=ORG":
     */
    public String getBaseName()
    {
@@ -240,7 +241,7 @@ public class LdapGateway
    }
 
    /**
-    * Get all attributes of this 'PersonEntry'
+    * Get all attributes of this 'Person' objectclass
     * @param loginName The user who does the query (his login name)<br />
     *        If loginName==null, we use the ldap.rootDN which was specified on startup
     * @param password His password<br />
@@ -263,7 +264,7 @@ public class LdapGateway
          else
             userCtx = getUserContext(loginName, password);  // Query from xmlBlaster Admin
 
-         // Search attributes of a PersonEntry objectclass ...
+         // Search attributes of a Person objectclass ...
          NamingEnumeration searchResults = search(userCtx, loginFieldName+"="+lookupUserId);
 
          /*
@@ -479,11 +480,11 @@ public class LdapGateway
    {
       System.out.println("\nUsage:\n\n\torg.xmlBlaster.authentication.plugins.ldap.LdapGateway -loginName <name> -userPassword <passwd>\n\torg.xmlBlaster.authentication.plugins.ldap.LdapGateway -loginName tim -userPassword tim");
 
-      // ldap://localhost:389/o=xmlBlaster, c=ORG??sub
+      // ldap://localhost:389/o=xmlBlaster,c=ORG??sub
       try {
          XmlBlasterProperty.init(args);
 
-         final String serverUrl = XmlBlasterProperty.get("serverUrl", "ldap://localhost:389/o=xmlBlaster, c=ORG");
+         final String serverUrl = XmlBlasterProperty.get("serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
          final String rootDN = XmlBlasterProperty.get("rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
          final String rootPwd =  XmlBlasterProperty.get("rootPwd", "secret");
          final String loginName = XmlBlasterProperty.get("loginName", "tim");

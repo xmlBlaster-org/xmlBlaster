@@ -13,12 +13,14 @@ import org.xmlBlaster.authentication.plugins.ldap.SecurityQos;
  * This class does nothing else than:
  * <p />
  * 1. Generate the xml string
- *    which is passed as the init() or login() qos string
+ *    which is passed as the connect() or login() qos string
  *    with the help of SecurityQos.java
  * <p />
  * 2. The messages are not crypted or modified, so
  *    the importMessage() and exportMessage() methods do nothing.
- * @see org.xmlBlaster.authentication.plugins.demo.SecurityQos
+ *
+ * @see org.xmlBlaster.authentication.plugins.ldap.SecurityQos
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class ClientPlugin implements I_ClientPlugin {
    public static final String ME = "ClientPlugin";
