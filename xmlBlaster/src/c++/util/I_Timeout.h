@@ -20,6 +20,8 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 class  Dll_Export I_Timeout {
    public:
+      virtual ~I_Timeout() {}
+
       /**
       * You will be notified about the timeout through this method.
       * @param userData You get bounced back your userData which you passed

@@ -32,7 +32,7 @@ const char * INFO_QUEUED = "QUEUED";
 const char * RELATING_CALLBACK   = "callback";
 const char * RELATING_SUBJECT    = "subject";
 const char * RELATING_UNRELATED  = "unrelated";
-const char * RELATING_CLIENT     = "connection";
+const std::string RELATING_CLIENT     = "connection";
 const char * RELATING_HISTORY    = "history";
 const char * RELATING_MSGUNITSTORE="msgUnitStore";
 const char * RELATING_TOPICSTORE = "topicStore";
@@ -114,6 +114,6 @@ const int getPriority(string prio, int defaultPriority)
 }
 */
 
-}}}}; // namespace 
+}}}} // namespace 
 
 

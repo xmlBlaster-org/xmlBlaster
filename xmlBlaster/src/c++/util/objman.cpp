@@ -8,6 +8,15 @@ using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::util;
 
+static int gObjectManagerState = 0;
+// Cleanup routine for atexit
+extern "C" void object_manager_cleanup()
+   { 
+     if(gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUT_DOWN &&
+        gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUTTING_DOWN)
+       ;//Object_Lifetime_Manager::instance()->fini();
+   }
+
 namespace org { namespace xmlBlaster { namespace util {
 
 #define PREALLOCATE_OBJECT(TYPE, ID)\
@@ -16,15 +25,6 @@ namespace org { namespace xmlBlaster { namespace util {
   ManagedObject<TYPE> *obj_p;\
   obj_p = new  ManagedObject<TYPE>(t);\
   preallocated_object[ID] = obj_p;\
-}
-
-int gObjectManagerState = 0;
-// Cleanup routine for atexit
-void object_manager_cleanup()
-{ 
-  if(gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUT_DOWN &&
-     gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUTTING_DOWN)
-    ;//Object_Lifetime_Manager::instance()->fini();
 }
 
 //namespace org { namespace xmlBlaster { namespace util {
@@ -130,4 +130,4 @@ int Object_Lifetime_Manager::shutdown ()
   return 0;
 }
 
-}}}; // namespace
+}}} // namespace

@@ -9,7 +9,7 @@ Comment:   Helper to easy get the callback messages
  * Callback the client from XmlBlasterConnection if the connection to xmlBlaster is lost
  * or was reestablished (failsafe mode).
  * <p>
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author <a href='xmlBlaster@marcelruff.info'>Marcel Ruff</a>
  * @author <a href='laghi@swissinfo.org'>Michele Laghi</a>
  */
@@ -26,6 +26,7 @@ typedef enum org::xmlBlaster::util::dispatch::States StatesEnum;
 class Dll_Export I_ConnectionProblems
 {
 public:
+   virtual ~I_ConnectionProblems() {}
 
    /**
     * This is the callback method invoked from org::xmlBlaster::util::dispatch::ConnectionsHandler

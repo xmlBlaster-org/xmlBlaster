@@ -135,7 +135,7 @@ namespace org { namespace xmlBlaster {
    /** Type of a message queue */
    extern Dll_Export const char * RELATING_UNRELATED;
    /** Type of a message queue  on client side */
-   extern Dll_Export const char * RELATING_CLIENT;
+   extern Dll_Export const std::string RELATING_CLIENT;
    /** Type of a history message queue containing references on messages */
    extern Dll_Export const char * RELATING_HISTORY;
    /** Message cache */

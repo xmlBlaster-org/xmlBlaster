@@ -174,8 +174,7 @@ void CorbaConnection::initAuthenticationService()
            xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("bootstrapPort",3412));
         int s = socket(AF_INET, SOCK_STREAM, 0);
         if (s != -1) {
-           int ret=0;
-           if ((ret= ::connect(s, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
+           if (::connect(s, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr)) != -1) {
               string req="GET /AuthenticationService.ior HTTP/1.0\r\n \n";
               int numSent = send(s, req.c_str(), req.size(), 0);
               if (numSent < (int)req.size()) {
@@ -235,7 +234,6 @@ void CorbaConnection::initAuthenticationService()
   text += "locate xmlBlaster\n  - or contact your ";
   text += "system administrator to start a naming service";
 
-  string msg = me() + ".NoAuthService";
   if (useNameService) {
      try {
         if (!nameServerControl_) initNamingService();
@@ -260,6 +258,7 @@ void CorbaConnection::initAuthenticationService()
             authServer_ = authenticateIdl::AuthServer::_narrow(relativeContext.resolve(clusterId, clusterKind));
          }
          catch (XmlBlasterException ex) {
+            log_.info(me(), "Narrow AuthServer failed: " + ex.toString());
          }
 
          /*============================

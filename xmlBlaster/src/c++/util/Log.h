@@ -137,7 +137,9 @@ namespace org { namespace xmlBlaster { namespace util {
          // but otherwise are not built in.
          // _exit is not recognized in strict ISO C mode (`-ansi', `-std=c89' or `-std=c99').
          // _Exit is not recognized in strict C89 mode (`-ansi' or `-std=c89'). 
-#        if  __GNUC__==3
+#        if defined(__ICC)
+            ::exit(val);
+#        elif  __GNUC__==3
             ::exit(val);
 #        else
             ::_exit(val);

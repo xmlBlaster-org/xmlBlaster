@@ -252,9 +252,9 @@ string XmlBlasterException::toXml()
    return buf;
 }
 
+#if defined(_ENABLE_STACK_TRACE_) && defined(__GNUC__)
 string XmlBlasterException::getStackTrace(int maxNumOfLines)
 {
-#ifdef _ENABLE_STACK_TRACE_
    void** arr = new void*[maxNumOfLines];
    /*
    > +Currently, the function name and offset can only be obtained on systems
@@ -284,11 +284,14 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
       ret = "Creation of stackTrace failed";
    }
    return ret;
-#else
-   return "no stack trace provided in this system";
-#endif
 }
+#else
+string XmlBlasterException::getStackTrace(int )
+{
+   return "no stack trace provided in this system";
+}
+#endif
 
-}}}; // namespaces
+}}} // namespaces
 
 

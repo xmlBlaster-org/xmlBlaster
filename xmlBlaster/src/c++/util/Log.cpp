@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.18 2003/07/03 20:54:44 ruff Exp $
+Version:   $Id: Log.cpp,v 1.19 2003/07/04 18:52:08 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -342,7 +342,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       // format: {0}:{1}:{2}:{3}    <timestamp>:<levelStr>:<instance>:<text>
       currentLogFormat = properties_.getStringProperty("LogFormat",
                                                        currentLogFormat);
-      string tmp = properties_.getStringProperty("LogFormat.Date","MEDIUM");
+//      string tmp = properties_.getStringProperty("LogFormat.Date","MEDIUM");
 //       if (tmp == "SHORT") lookAndFeelDate = java.text.DateFormat.SHORT;
 //       else if (tmp.equals("MEDIUM"))
 //          lookAndFeelDate = java.text.DateFormat.MEDIUM;
@@ -360,8 +360,8 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 //       else if (tmp.equals("FULL"))
 //          lookAndFeelTime = java.text.DateFormat.FULL;
 
-      string la = properties_.getStringProperty("LogFormat.Language","");
-      string co = properties_.getStringProperty("LogFormat.Country", "");
+//      string la = properties_.getStringProperty("LogFormat.Language","");
+//      string co = properties_.getStringProperty("LogFormat.Country", "");
 //       if (la != null && co != null) country = new Locale(la, co);
 
 //       String fileName = properties_.getProperty("logFile", (String)null);

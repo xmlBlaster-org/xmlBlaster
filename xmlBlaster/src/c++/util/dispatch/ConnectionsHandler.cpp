@@ -283,7 +283,6 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
          msgUnit.getQos().setSender(connectReturnQos_->getSessionQos());
       }
       return connection_->publish(msgUnit);
-      if (log_.trace()) log_.trace(ME, "publish successful");
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() && connectionProblems_) {
