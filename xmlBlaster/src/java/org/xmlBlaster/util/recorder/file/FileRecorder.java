@@ -40,6 +40,7 @@ import java.io.IOException;
 public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
 {
    private final String ME = "FileRecorder";
+   private Global glob;
    private LogChannel log;
 
    private FileIO rb;
@@ -74,11 +75,12 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    */
    public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
    {
+      this.glob = glob;
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
 
-      createPath();
+      fileName = createPathString();
 
       boolean useSync = glob.getProperty().get("recorder.useSync", false);
 
@@ -106,18 +108,17 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       log.info(ME, "FileRecorder is ready, tail back messages are stored in '" + fileName + "'");
    }
 
-   private String createPath() {
-      fileName = glob.getProperty().get("recorder.path", (String)null);
-      if (fileName == null) {
-         fileName = glob.getProperty().get("recorder.path["+glob.getId()+"]", (String)null);
+   private String createPathString() {
+      String fn = glob.getProperty().get("recorder.path", (String)null);
+      if (fn == null) {
+         fn = glob.getProperty().get("recorder.path["+glob.getId()+"]", (String)null);
       }
-      if (fileName == null) {
-         fileName = glob.getProperty().get("Persistence.Path", System.getProperty("user.home") + System.getProperty("file.separator") + "tmp");
-         fileName += System.getProperty("file.separator") + "fileRecorder";
+      if (fn == null) {
+         fn = glob.getProperty().get("Persistence.Path", System.getProperty("user.home") + System.getProperty("file.separator") + "tmp");
+         fn += System.getProperty("file.separator") + "fileRecorder";
       }
-      fileName += System.getProperty("file.separator") + "tailback-" + glob.getStrippedId() + ".frc";
-      File f = new File(filename);
-      f.mkdirs();
+      fn += System.getProperty("file.separator") + "tailback-" + glob.getStrippedId() + ".frc";
+      return fn;
    }
 
    /**
