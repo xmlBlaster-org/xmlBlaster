@@ -3,13 +3,15 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.11 2002/05/11 10:41:09 ruff Exp $
+Version:   $Id: Global.java,v 1.12 2002/05/11 19:17:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
+import org.jutils.log.LogDeviceConsole;
+import org.jutils.log.LogDeviceFile;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
@@ -24,10 +26,13 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.net.MalformedURLException;
 import java.io.IOException;
+import java.util.Hashtable;
 
 
 /**
  * Global variables to avoid singleton. 
+ *
+ * @see classtest.GlobalTest
  */
 public class Global implements Cloneable
 {
@@ -50,70 +55,183 @@ public class Global implements Cloneable
    public static final int XMLBLASTER_PORT = 3412;
 
    private String[] args;
-   protected final XmlBlasterProperty property;
-   protected boolean showUsage = false;
+   private Property property = null;
 
-   protected final Log log;
-   private final Map nativeCallbackDriverMap;
+   // deprecated
+   protected org.xmlBlaster.util.Log log;
+
+   private /*final*/ Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
-   private final Map objectMap;
+   private /*final*/ Map objectMap;
    private Address bootstrapAddress = null;
    private PluginLoader clientSecurityLoader = null;
 
+   private Hashtable logChannels = new Hashtable();
+   private LogChannel logDefault = null;
+
+   /**
+    * Constructs an initial Global object. 
+    */
    public Global()
    {
+      System.out.println("######Global constructor empty");
       synchronized (Global.class) {
          if (this.firstInstance == null)
             this.firstInstance = this;
       }
       this.args = new String[0];
-      property = new XmlBlasterProperty();
-      log = new Log();
+      initProps(this.args);
+      logDefault = new LogChannel(null, getProperty());
+      log = new org.xmlBlaster.util.Log(); // old style
+      initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
    }
 
+   /**
+    * Constructs an initial Global object which is initialized
+    * by your args array (usually the command line args). 
+    */
    public Global(String[] args)
    {
+      System.out.println("######Global constructor args");
       synchronized (Global.class) {
          if (this.firstInstance == null)
             this.firstInstance = this;
       }
-      property = new XmlBlasterProperty();
-      log = new Log();
+      initProps(args);
+      logDefault = new LogChannel(null, getProperty());
+      log = new org.xmlBlaster.util.Log(); // old style
+      initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
       init(args);
    }
 
-   /** Needed for getClone() only */
-   /*
-   private Global(XmlBlasterProperty prop, Log log, String[] args)
-   {
-      synchronized (Global.class) {
-         if (this.firstInstance == null)
-            this.firstInstance = this;
+   /**
+    * Initialize logging with environment variables. 
+    * <pre>
+    *   -logFile  output.txt
+    *   -logFile[cluster] cluster-output.txt
+    *   -logConsole false
+    *   -logConsole[cluster] true
+    * </pre>
+    */
+   private void initLog(LogChannel lc) {
+      String key = lc.getChannelKey();
+
+      lc.setDefaultLogLevel();
+
+      boolean bVal = getProperty().get("logConsole", true);
+      if (key != null) getProperty().get("logConsole[" + key + "]", bVal);
+      if (bVal == true) {
+         LogDeviceConsole ldc = new LogDeviceConsole(lc);
+         lc.addLogDevice(ldc);
       }
-      property = prop.clone();
-      log = log.clone();
-      nativeCallbackDriverMap = nativeCallbackDriverMap.clone();
-      init(args);
+
+      String strFilename = getProperty().get("logFile", (String)null);
+      if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
+      if (strFilename != null) {
+         LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
+         lc.addLogDevice(ldf);
+         System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
+      }
+
+      // Old logging style:
+      log.initialize(this);
    }
-   */
+
+   /**
+    * Add a new logging output channel. 
+    * <pre>
+    *   glob.addLogChannel(new LogChannel("cluster", glob.getProperty()));
+    *   ...
+    *   LogChannel log = glob.getLog("cluster");
+    *   if (log.TRACE) log.trace("ClusterManager", "Problems with cluster node frodo");
+    * </pre>
+    * Start your application and switch on trace logging for classes using the "cluster" logging key:
+    * <pre>
+    *  java MyApp -trace[cluster] true
+    * </pre>
+    * @param log The channel must contain a none null channel key (here it is "cluster")
+    * @return true if channel is accepted
+    */
+   public boolean addLogChannel(LogChannel log) {
+      if (log == null) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("Global.addLogChannel(null)");
+      }
+      String key = log.getChannelKey();
+      if (key != null && key.length() > 0) {
+         initLog(log);
+         logChannels.put(key, log);
+         return true;
+      }
+      return false;
+   }
+
+   /**
+    * @param if null, the default log channel is returned
+    * @see #addLogChannel(String, LogChannel)
+    */
+   public LogChannel getLog(String key) {
+      if (key == null)
+         return logDefault;
+      return (LogChannel)logChannels.get(key);
+   }
+
+   /**
+    * Access the logging class. 
+    * @deprecated Use getLog(String) instead
+    */
+   public final org.xmlBlaster.util.Log getLog() {
+      return log;
+   }
+
+   /**
+    * private, called from constructor
+    * @return -1 on error
+    */
+   private int initProps(String[] args) {
+      if (property == null) {
+         synchronized (Property.class) {
+            if (property == null) {
+               try {
+                  property = new Property("xmlBlaster.properties", true, args, true);
+               }
+               catch (JUtilsException e) {
+                  System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
+                  try {
+                     property = new Property(null, true, args, true);  // initialize without properties file!
+                  }
+                  catch (JUtilsException e2) {
+                     System.err.println(ME + " ERROR: " + e2.toString());
+                  }
+                  return -1;
+               }
+            }
+         }
+      }
+      return 0;
+   }
 
    /**
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(String[] args)
    {
-      this.args = args;
-      if (this.args == null)
-         this.args = new String[0];
+      this.args = (args==null) ? new String[0] : args;
+
       try {
-         // XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
-         showUsage = property.init(this.args);  // initialize
-         if (showUsage) return 1;
-         return 0;
+         property.addArgs2Props(this.args);
+         logDefault.initialize(property);
+         // TODO: loop through logChannels Hashtable!!!
+
+         // Old style:
+         log.setLogLevel(property);   // Initialize logging as well.
+         log.initialize(this);
+
+         return property.wantsHelp() ? 1 : 0;
       } catch (JUtilsException e) {
          System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
          return -1;
@@ -124,24 +242,16 @@ public class Global implements Cloneable
     * Allows you to query if user wants help. 
     * @return true If '-help' or '-?' was passed to us
     */
-   public final boolean showUsage()
-   {
-      return showUsage;
+   public final boolean wantsHelp() {
+      return property.wantsHelp();
    }
 
    /**
-    * @return 1 Show usage, 0 OK, -1 error
+    * @return 1 Show usage, 0 OK
     */
-   public int init(java.applet.Applet applet)
-   {
-      try {
-         showUsage = property.init(applet);
-         if (showUsage) return 1;
-         return 0;
-      } catch (JUtilsException e) {
-         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
-         return -1;
-      }
+   public int init(java.applet.Applet applet) {
+      property.setApplet(applet);
+      return property.wantsHelp() ? 1 : 0;
    }
 
    /**
@@ -175,8 +285,7 @@ public class Global implements Cloneable
     *    ...
     * </pre>
     */
-   public static Global instance()
-   {
+   public static Global instance() {
       if (firstInstance == null) {
          synchronized (Global.class) {
             if (firstInstance == null)
@@ -191,35 +300,43 @@ public class Global implements Cloneable
     * Note that instance() will return the original instance
     * even if called on the cloned object (it's a static variable).
     */
-   public final Global getClone(String[] args)
-   {
+   public final Global getClone(String[] args) {
+      Global g = (Global)clone();
+      g.init(args);
+      return g;
+   }
+
+   /**
+    * Get a clone, it is a mixture between shallow and deep copy. 
+    * <p />
+    * All immutable elements are a shallow clone.<br />
+    * The properties and log channels are copied with a deep copy
+    * manipulating these will not affect the original Global.<br />
+    * All other attributes are initialized as on startup.
+    */
+   protected Object clone() {
       try {
-         Global g = (Global)this.clone(); // new Global(this.property, this.log, args);
-         /*
-         g.property = new XmlBlasterProperty();
-         g.log = new Log();
-         g.nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
-         */
-         /*
-         g.init(this.args);
-         */
-         g.init(args);
+         Global g = (Global)super.clone();
+         g.property = (Property)this.property.clone();
+         //g.logDefault = 
+         g.logChannels = (Hashtable)this.logChannels.clone();
+         g.nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap()); // (HashMap)((HashMap)this.nativeCallbackDriverMap).clone();
+         g.objectMap = Collections.synchronizedMap(new HashMap());
+         g.bootstrapAddress = null;
+         g.clientSecurityLoader = null;
          return g;
       }
       catch (CloneNotSupportedException e) {
-         Log.error(ME, "Global clone failed: " + e.toString());
+         logDefault.error(ME, "Global clone failed: " + e.toString());
          return null;
       }
    }
 
-   public final XmlBlasterProperty getProperty()
-   {
+   /**
+    * Access the environment properties. 
+    */
+   public final Property getProperty() {
       return property;
-   }
-
-   public final Log getLog()
-   {
-      return log;
    }
 
    /**
@@ -359,7 +476,7 @@ public class Global implements Cloneable
          addr = getBootstrapAddress();
       }
 
-      if (Log.CALL) Log.call(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
+      if (logDefault.CALL) logDefault.call(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
       try {
          if (urlPath != null && urlPath.startsWith("/") == false)
             urlPath = "/" + urlPath;
@@ -370,7 +487,7 @@ public class Global implements Cloneable
          java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
          int numbytes;
          for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
-            if (Log.TRACE) Log.trace(ME, "XmlBlaster on host " + addr.getHostname() + " and port " + addr.getPort() + " returns empty data, trying again after sleeping 10 milli ...");
+            if (logDefault.TRACE) logDefault.trace(ME, "XmlBlaster on host " + addr.getHostname() + " and port " + addr.getPort() + " returns empty data, trying again after sleeping 10 milli ...");
             org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
@@ -378,16 +495,16 @@ public class Global implements Cloneable
          }
          nsis.close();
          String data = bos.toString();
-         if (Log.TRACE) Log.trace(ME, "Retrieved http data='" + data + "'");
+         if (logDefault.TRACE) logDefault.trace(ME, "Retrieved http data='" + data + "'");
          return data;
       }
       catch(MalformedURLException e) {
          String text = "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".";
-         Log.error(ME, text + e.toString());
+         logDefault.error(ME, text + e.toString());
          throw new XmlBlasterException(ME+"NoHttpServer", text);
       }
       catch(IOException e) {
-         if (verbose) Log.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
+         if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
          throw new XmlBlasterException(ME+"NoHttpServer", "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".");
       }
    }
@@ -408,7 +525,7 @@ public class Global implements Cloneable
             try {
                ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
-               Log.warn(ME, "Can't determine local IP address, try e.g. '-hostname 192.168.10.1' on command line: " + e.toString());
+               logDefault.warn(ME, "Can't determine local IP address, try e.g. '-hostname 192.168.10.1' on command line: " + e.toString());
             }
             if (ip_addr == null) ip_addr = "127.0.0.1";
          }
@@ -429,14 +546,22 @@ public class Global implements Cloneable
    }
 
    /**
-    * For testing only
+    * Get a usage string. 
     * <p />
-    * java org.xmlBlaster.util.Global -Persistence.Dummy true -info true
+    * Set the verbosity when loading properties (outputs with System.out).
+    * <p />
+    * 0=nothing, 1=info, 2=trace, configure with
+    * <pre>
+    * java -Dproperty.verbose 2
+    *
+    * java MyApp -property.verbose 2
+    * </pre>
     */
-   public static void main(String args[])
+   public static final String usage()
    {
-      String ME = "Global";
-      Global glob = new Global(args);
-      Log.info(ME, "Persistence.Dummy=" + glob.getProperty().get("Persistence.Dummy", false));
+      String text = "";
+      text += "Logging of Properties:\n";
+      text += "   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup[" + Property.DEFAULT_VERBOSE + "].\n";
+      return text;
    }
 }

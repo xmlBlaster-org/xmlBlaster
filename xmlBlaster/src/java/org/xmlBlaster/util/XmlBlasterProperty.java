@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.17 2002/05/11 08:09:02 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.18 2002/05/11 19:17:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -30,6 +30,10 @@ import java.applet.Applet;
  * </pre>
  * after program startup.
  * @see org.jutils.init.Property
+ * @deprecated Use global.getProperty().get("xy", "someValue"); instead
+ * This class is deprecated and will be removed.
+ * It was a singleton and we had problems with multiple xmlBlaster instances
+ * in one virtual machine.
  */
 public class XmlBlasterProperty
 {
@@ -44,6 +48,7 @@ public class XmlBlasterProperty
     * @param key The key for this property
     * @param value The value for it
     * @return The value, ${...} variables are replaced
+    * @deprecated Use global.getProperty().set("xy", "someValue"); instead
     */
    public static final String set(String key, String value) throws JUtilsException
    {
@@ -57,6 +62,7 @@ public class XmlBlasterProperty
     * @param defaultVal the default value to return if key is not found
     * @return The String value for the given key
     * @see org.jutils.init.Property
+    * @deprecated Use global.getProperty().get("xy", "someValue"); instead
     */
    public static final String get(String key, String defaultVal)
    {

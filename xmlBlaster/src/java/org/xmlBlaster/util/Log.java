@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.64 2002/05/11 08:09:01 ruff Exp $
+Version:   $Id: Log.java,v 1.65 2002/05/11 19:17:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -59,6 +59,10 @@ import org.jutils.runtime.Memory;
  *   }
  * </pre>
  * @see org.jutils.init.Property
+ * @deprecated Use global.getLog("myKey"); instead
+ * This class is deprecated and will be removed.
+ * It was a singleton and we had problems with multiple xmlBlaster instances
+ * in one virtual machine.
  */
 public class Log
 {
@@ -77,24 +81,27 @@ public class Log
       initialize(new String[0]);
    }
 */
+
+   public static void initialize(Global glob) {
+      initialize(glob.getProperty());
+   }
+
    public static void initialize(Property property) {
-   /*
-      if (args != null && args.length > 0) {
-         try { XmlBlasterProperty.addArgs2Props(args); } catch(Throwable e) { System.out.println(e.toString()); }
-      }
-   */
+      /*
+         if (args != null && args.length > 0) {
+            try { XmlBlasterProperty.addArgs2Props(args); } catch(Throwable e) { System.out.println(e.toString()); }
+         }
+      */
       setLogLevel(property);
 
-      Global glob = Global.instance(); // TODO: don't use singleton
-        
-      lc = new LogChannel(XmlBlasterProperty.getProperty());
-      boolean bVal = glob.getProperty().get("logConsole", true);
+      lc = new LogChannel(property);
+      boolean bVal = property.get("logConsole", true);
       if (bVal == true) {
          LogDeviceConsole ldc = new LogDeviceConsole(lc);
          lc.addLogDevice(ldc);
       }
 
-      String strFilename = glob.getProperty().get("logFile", (String)null);
+      String strFilename = property.get("logFile", (String)null);
       if (strFilename != null) {
          LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
          lc.addLogDevice(ldf);
@@ -378,6 +385,7 @@ public class Log
     * delegate log info to LogChannel object.
     */
    public static final void info(String source, String text) {
+      //System.out.println("util.Log.INFO: " + source + " " + text + " lc=" + lc);
       if (lc == null) return;
       lc.info(source, text);
    }
