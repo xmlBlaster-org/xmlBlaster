@@ -58,12 +58,12 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
    if (log_.trace())
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
 //   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
-   if (type == "IOR") {
+   if (type == Constants::IOR) {
 #     ifdef COMPILE_CORBA_PLUGIN
       return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
 #     endif
    }
-   else if (type == "SOCKET") {
+   else if (type == Constants::SOCKET) {
 #     ifdef COMPILE_SOCKET_PLUGIN
       return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(instanceName);
 #     endif
@@ -71,11 +71,11 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
                         string("' not supported");
-   throw new XmlBlasterException(RESOURCE_CONFIGURATION_PLUGINFAILED,
+   throw XmlBlasterException(RESOURCE_CONFIGURATION_PLUGINFAILED,
                     "client-c++",
                     ME + string("::getPlugin"),
                     "en",
-                    "client-c++",
+                    global_.getVersion() + " " + global_.getBuildTimestamp(),
                     "",
                     "",
                     embeddedMsg);
@@ -103,11 +103,11 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
                         string("' not supported");
-   throw new XmlBlasterException(RESOURCE_CONFIGURATION_PLUGINFAILED,
+   throw XmlBlasterException(RESOURCE_CONFIGURATION_PLUGINFAILED,
                     "client-c++",
                     ME + string("::getPlugin"),
                     "en",
-                    "client-c++",
+                    global_.getVersion() + " " + global_.getBuildTimestamp(),
                     "",
                     "",
                     embeddedMsg);
