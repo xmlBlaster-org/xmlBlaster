@@ -60,9 +60,9 @@ public:
 
    void destroyQueue() {
       ClientQueueProperty prop(global_, "");
-      I_Queue *queue = &QueueFactory::getFactory(global_).getPlugin(prop);
+      I_Queue *queue = &QueueFactory::getFactory().getPlugin(global_, prop);
       queue->destroy();
-      QueueFactory::getFactory(global_).releasePlugin(queue);
+      QueueFactory::getFactory().releasePlugin(queue);
    }
 
    void testPublishCompare() 
@@ -143,7 +143,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
       ClientQueueProperty prop(global_, "");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       assertEquals(log_, me, true, queue_->empty(), "The queue must be empty after creation");
       assertEquals(log_, me, 0, queue_->getNumOfEntries(), "The queue must be empty after creation");
       PublishQos qos(global_);
@@ -178,7 +178,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
       ClientQueueProperty prop(global_, "");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       assertEquals(log_, me, true, queue_->empty(), " 1. the queue must be empty after creation");
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
@@ -198,7 +198,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test checks the order in which entries are returned from the queue");
       ClientQueueProperty prop(global_, "");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       ConnectQos connQos(global_);
 
       ConnectQueueEntry e1(global_, ConnectQos(global_), 1);
@@ -279,7 +279,7 @@ public:
       log_.info(me, "this test checks that an excess of entries really throws an exception");
       ClientQueueProperty prop(global_, "");
       prop.setMaxEntries(10);
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       ConnectQos connQos(global_);
       connQos.setPersistent(false);
       int i=0;
@@ -319,7 +319,7 @@ public:
       ConnectQueueEntry entry(global_, connQos);
       int maxBytes = 10 * entry.getSizeInBytes();
       prop.setMaxBytes(maxBytes);
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
 
       assertEquals(log_, me, maxBytes, (int)queue_->getMaxNumOfBytes(), "Setting maxNumOfBytes");
 
@@ -364,7 +364,7 @@ public:
 
    void tearDown() {
       if (queue_) {
-         QueueFactory::getFactory(global_).releasePlugin(queue_);
+         QueueFactory::getFactory().releasePlugin(queue_);
          queue_ = NULL;
       }
    }
