@@ -106,7 +106,7 @@
    </erase>
 
 
-   <!-- QoS when updating messages -->
+   <!-- QoS when updating messages and for return values of get() method -->
    <update>
       <qos>
          <state>          <!-- Server state -->
