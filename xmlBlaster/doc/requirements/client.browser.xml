@@ -24,6 +24,8 @@
          of your application windows, and to avoid a 'waiting' cursor.</li>
          <li>The http connection is pinged automatically with small but
          big enough dummy data, so that the connection does not close.</li>
+         <li>The browser responses on a ping with a 'pong', notifying the servlet
+         that it is alive.</li>
          <li>The browser Javascript code is traceable with the Log Javascript class in util.js</li>
       </ul>
       ]]>
@@ -37,7 +39,7 @@ successful login:
 
       <script language="Javascript1.2">
          /**
-          * Opens a window which holds the persistent http connection. 
+          * Opens a window which holds the persistent http connection.
           * Cut and paste this function 'as is' into your html file.
           */
          function openCallBack()
@@ -82,7 +84,7 @@ successful login:
 
       <script language="Javascript1.2">
          /**
-          * Tell the callbackFrame that i am interested in message updates. 
+          * Tell the callbackFrame that i am interested in message updates.
           * Cut and paste this function 'as is' into your interested html frame
           */
          function initialize()
@@ -93,7 +95,7 @@ successful login:
          }
 
          /**
-          * The callback from xmlBlaster messages arrives here. 
+          * The callback from xmlBlaster messages arrives here.
           * The Javascript objects are defined in callback.js
           * Cut and paste this function 'as is' into your interested html frame
           *
@@ -136,7 +138,7 @@ successful login:
    <hacker>Konrad.Krafft@ds.de</hacker>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>
