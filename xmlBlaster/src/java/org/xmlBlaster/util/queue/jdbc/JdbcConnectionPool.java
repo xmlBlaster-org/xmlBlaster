@@ -429,6 +429,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.log.dump(ME, "initialize -conn busy timeout   : " + this.connectionBusyTimeout);
          this.log.dump(ME, "initialize -driver list         : " + xmlBlasterJdbc);
          this.log.dump(ME, "initialize -max. waiting Threads:" + this.maxWaitingThreads);
+         this.log.dump(ME, "initialize -tableNamePrefix     :" + this.tableNamePrefix);
       }
 
       // could block quite a long time if the number of connections is big
@@ -459,6 +460,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             this.log.info(ME, "diagnostics: initialize -conn busy timeout   : '" + this.connectionBusyTimeout + "'");
             this.log.info(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
             this.log.info(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
+            this.log.dump(ME, "diagnostics: initialize -tableNamePrefix     :" + this.tableNamePrefix);
          }
          else {
             if (this.log.TRACE) this.log.trace(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");

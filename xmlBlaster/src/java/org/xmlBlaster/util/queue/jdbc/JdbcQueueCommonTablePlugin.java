@@ -121,6 +121,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.manager.setUp();
 
 //            this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
+            String nodeId = this.glob.getStrippedId();
+            this.manager.addNode(nodeId);
+            this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxMsg());
+
             this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
             this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
             this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
