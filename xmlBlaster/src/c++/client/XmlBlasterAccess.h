@@ -68,6 +68,7 @@ namespace org { namespace xmlBlaster { namespace client {
  */
 
 typedef std::map<std::string, I_Callback*> CallbackMapType;
+typedef std::map<std::string, std::string> StringMap;
 
 /**
  * This is the main entry point for programmers to the C++ client library. 
@@ -305,6 +306,22 @@ public:
     */
    std::string getStatusString() const;
 
+   /**
+    * Disconnect and cleanup client side resources but keep our login session on server side. 
+    * <p>
+    * As the login session on server side stays alive, all subscriptions stay valid
+    * and callback messages are queued by the server.
+    * If you connect at a later time the server sends us all queued messages.
+    * </p>
+    * <p>
+    * Once you have called this method the XmlBlasterAccess instance
+    * becomes invalid and any further invocation results in 
+    * an XmlBlasterException to be thrown.
+    * </p>
+    * @param map The properties to pass while leaving server.
+    *        Currently this argument has no effect.
+    */
+   void leaveServer(const StringMap &map);
 };
 
 }}} // namespaces

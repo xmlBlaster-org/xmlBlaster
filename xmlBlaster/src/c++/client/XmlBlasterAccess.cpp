@@ -60,8 +60,8 @@ XmlBlasterAccess::~XmlBlasterAccess()
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
       cbServer_ = NULL;
    }
-   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
    if (connection_) {
+	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
       connection_->shutdown();
       delete connection_;
       connection_ = NULL;
@@ -159,6 +159,31 @@ XmlBlasterAccess::initSecuritySettings(const string& /*secMechanism*/, const str
 {
    log_.error(ME, "initSecuritySettings not implemented yet");
 }
+
+void XmlBlasterAccess::leaveServer(const StringMap &map)
+{
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::leaveServer", "You are not connected to the xmlBlaster");
+   }
+   if (cbServer_) {
+	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the callback connection");
+      cbServer_->shutdownCb();
+
+      CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+      CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
+      global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
+      cbServer_ = NULL;
+   }
+   if (connection_) {
+	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
+      connection_->shutdown();
+      delete connection_;
+      connection_ = NULL;
+   }
+   log_.info(ME, "leaveServer() done");
+}
+
 
 bool
 XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
