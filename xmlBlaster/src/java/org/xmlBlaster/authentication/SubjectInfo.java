@@ -389,12 +389,12 @@ public final class SubjectInfo implements I_AdminSubject
                break;
             int countForwarded = forwardToSessionQueue(entry);
             if (countForwarded > 0) {
-               this.subjectQueue.remove(); // Remove the forwarded entry (blocking)
+               this.subjectQueue.removeRandom(entry); // Remove the forwarded entry (blocking)
                numMsgs++;
             }
             else {
                // We need to escape the while(true), (handle a msg to a pubSessionId which is unknown):
-               this.subjectQueue.remove(); // Remove the entry
+               this.subjectQueue.removeRandom(entry); // Remove the entry
 
                String message = "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getLogId() + "' is not delivered";
                MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
