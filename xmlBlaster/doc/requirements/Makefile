@@ -36,6 +36,8 @@ $(requirement_files): %.html: %.xml
 all: precond java collect overview $(requirement_files)
 	$(RM) all.html
 
+doc: all
+
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
 

@@ -2,7 +2,7 @@
 #Name:      Makefile
 #Project:   xmlBlaster.org
 #Comment:   Makefile for doc types
-# $Id: Makefile,v 1.2 2000/03/22 22:38:59 ruff Exp $
+# $Id: Makefile,v 1.3 2000/03/25 00:08:47 ruff Exp $
 #------------------------------------------------------------------------------
 
 include $(XMLBLASTER_HOME)/Makefile.Include
@@ -11,7 +11,9 @@ all: html
 
 html:
 	java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /opt/docbook/html/docbook.xsl whitepaper.html
+	@echo -e "whitepaper.html created"
 
+doc: html
 
 #all: html ps
 #
