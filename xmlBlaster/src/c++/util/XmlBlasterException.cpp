@@ -38,7 +38,7 @@ XmlBlasterException::XmlBlasterException(const string &errorCodeStr,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
+   if (stackTrace_.size() < 1 && isInternal()) stackTrace_ = getStackTrace();
 }
 
 
@@ -65,7 +65,7 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
+   if (stackTrace_.size() < 1 && isInternal()) stackTrace_ = getStackTrace();
 }
 
 
@@ -86,7 +86,7 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
+   if (stackTrace_.size() < 1 && isInternal()) stackTrace_ = getStackTrace();
 }
 
 string XmlBlasterException::getErrorCodeStr() const
@@ -262,6 +262,15 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
    Perhaps a reference to the addr2line program can be added here.  It
    can be used to retrieve symbols even if the -rdynamic flag wasn't
    passed to the linker, and it should work on non-ELF targets as well.
+   o  Under linux, gcc interprets it by setting the 
+      "-export-dynamic" option for ld, which has that effect, according
+      to the linux ld manpage.
+
+   o Under IRIX it's ignored, and the program's happy as a clam.
+
+   o Under SunOS-4.1, gcc interprets it by setting the -dc -dp
+      options for ld, which again forces the allocation of the symbol
+      table in the code produced (see ld(1) on a Sun).
    */
    int bt = backtrace(arr, maxNumOfLines);
    char** list = backtrace_symbols(arr, bt); // malloc the return pointer, the entries don't need to be freed
@@ -271,6 +280,9 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
    }
    free(list);
    delete[] arr;
+   if (ret.size() < 1) {
+      ret = "Creation of stackTrace failed";
+   }
    return ret;
 #else
    return "no stack trace provided in this system";
