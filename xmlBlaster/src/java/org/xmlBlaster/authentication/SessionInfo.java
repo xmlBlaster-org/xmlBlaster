@@ -102,9 +102,6 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /** Incarnation time of this object instance in millis */
    private long uptime;
 
-   /** uniqueId used to store this in queue */
-   private long persistenceId = -1L; 
-
    private ReentrantLock lock = new ReentrantLock();
    
    /** this is used for administrative gets (queries on callback queue) */
