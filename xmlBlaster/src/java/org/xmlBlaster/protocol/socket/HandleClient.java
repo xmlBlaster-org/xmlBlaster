@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.25 2002/09/14 23:10:16 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.26 2002/09/15 17:08:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -67,22 +67,15 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Schutdown connection ...");
+      if (log.TRACE) log.trace(ME, "Schutdown cb connection to " + loginName + " ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
       running = false;
-      try {
-         if (sock != null) {
-            sock.close();
-            sock = null;
-         }
-      }
-      catch(Throwable e) {
-         log.warn(ME, e.toString());
-         e.printStackTrace();
-      }
 
+      driver.removeClient(this);
+      
+      closeSocket();
    
       if (sessionId != null) {
          String tmp = sessionId;
@@ -107,6 +100,13 @@ public class HandleClient extends Executor implements Runnable
          log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
          responseListenerMap.clear();
       }
+   }
+
+   private synchronized void closeSocket() {
+      try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      if (log.TRACE) log.trace(ME, "Closed socket for '" + loginName + "'.");
    }
 
    /**
@@ -245,9 +245,8 @@ public class HandleClient extends Executor implements Runnable
          } // while(running)
       }
       finally {
-         try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-         try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-         try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         driver.removeClient(this);
+         closeSocket();
          if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
