@@ -1475,10 +1475,15 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                // TODO: what about different sessions of myselfLoginName?
                int hopCount = publishQos.count(glob.getNodeId());
                if (hopCount > 0) {
-                  log.warn(ME, "Warning, message oid='" + msgKeyData.getOid()
+                  String text = "Warning, message oid='" + msgKeyData.getOid()
                      + "' passed my node id='" + glob.getId() + "' " + hopCount + " times before, we have a circular routing problem " +
                      " mySelf=" + myselfLoginName.getAbsoluteName() + " sessionName=" +
-                     sessionInfo.getSessionName().getAbsoluteName() + ": " + publishQos.toXml(""));
+                     sessionInfo.getSessionName().getAbsoluteName();
+                  if (publishQos.isPtp() && publishQos.getDestinationArr().length > 0) {
+                     text += ", does the destination cluster node '" + publishQos.getDestinationArr()[0].getDestination() + "' exist?";
+                  }
+                  log.warn(ME, text);
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, text + " Your QoS:" + publishQos.toXml(""));
                }
                int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
                                  // this needs to be checked here as soon as we know which stratum we are!!!
