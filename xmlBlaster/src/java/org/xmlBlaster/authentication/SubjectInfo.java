@@ -8,6 +8,8 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.authentication;
 
 
+import org.jutils.log.LogChannel;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.queue.MsgQueue;
@@ -19,7 +21,6 @@ import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Log;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ import java.util.Collections;
 public class SubjectInfo
 {
    private String ME = "SubjectInfo";
-   private Global glob;
+   private final Global glob;
+   private final LogChannel log;
    /** The unique client identifier */
    private String loginName = null; 
    /** The partner class from the security framework */
@@ -79,13 +81,28 @@ public class SubjectInfo
    public SubjectInfo(I_Subject securityCtx, CbQueueProperty prop, Global glob)
           throws XmlBlasterException
    {
+      this.glob = glob;
+      this.log = this.glob.getLog("auth");
       if (securityCtx==null) {
          String tmp="SubjectInfo(securityCtx==null); // a correct security manager must be set.";
-         Log.error(ME+".illegalArgument", tmp);
+         log.error(ME+".illegalArgument", tmp);
          throw new XmlBlasterException(ME+".illegalArgument", tmp);
       }
       initialize(securityCtx.getName(), securityCtx, prop, glob);
-      if (Log.CALL) Log.call(ME, "Created new SubjectInfo " + instanceId + ": " + toString());
+      if (log.CALL) log.call(ME, "Created new SubjectInfo " + instanceId + ": " + toString());
+   }
+
+   /**
+    * Create this instance when a message is sent to this client, but he is not logged in
+    * <p />
+    * @param loginName The unique login name
+    */
+   public SubjectInfo(String loginName, Global glob) throws XmlBlasterException
+   {
+      this.glob = glob;
+      this.log = this.glob.getLog("auth");
+      initialize(loginName, null, null, glob);
+      if (log.CALL) log.trace(ME, "Creating new empty SubjectInfo for " + loginName);
    }
 
    /**
@@ -102,17 +119,17 @@ public class SubjectInfo
          instanceId = instanceCounter;
          instanceCounter++;
       }
-      this.glob = glob;
       this.loginName = loginName;
+      this.ME = "SubjectInfo-"+instanceCounter+":"+loginName;
       this.securityCtx = securityCtx;
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
-      this.subjectQueue = new SubjectMsgQueue("subject:"+loginName, prop, glob);
-      if (Log.CALL) Log.trace(ME, "Created new SubjectInfo " + loginName);
+      this.subjectQueue = new SubjectMsgQueue(this, "subject:"+loginName, prop, glob);
+      if (log.TRACE) log.trace(ME, "Created new SubjectInfo " + loginName);
    }
 
    public void finalize()
    {
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + getLoginName());
+      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
    }
 
    public boolean isShutdown()
@@ -122,12 +139,12 @@ public class SubjectInfo
 
    public void shutdown()
    {
-      if (Log.CALL) Log.call(ME, "shutdown() of subject " + getLoginName());
+      if (log.CALL) log.call(ME, "shutdown() of subject " + getLoginName());
       this.isShutdown = true;
       this.subjectQueue.shutdown();
       this.subjectQueue = null;
       if (this.sessionMap.size() > 0) {
-         Log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + this.sessionMap.size() + " sessions - memory leak?");
+         log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + this.sessionMap.size() + " sessions - memory leak?");
       }
       this.sessionMap.clear();
       this.callbackAddressCache = null;
@@ -140,17 +157,6 @@ public class SubjectInfo
     */
    public final void setCbQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       this.subjectQueue.setProperty(prop);
-   }
-
-   /**
-    * Create this instance when a message is sent to this client, but he is not logged in
-    * <p />
-    * @param loginName The unique login name
-    */
-   public SubjectInfo(String loginName, Global glob) throws XmlBlasterException
-   {
-      initialize(loginName, null, null, glob);
-      if (Log.CALL) Log.trace(ME, "Creating new empty SubjectInfo for " + loginName);
    }
 
    /**
@@ -185,7 +191,7 @@ public class SubjectInfo
     */
    public boolean isAuthorized(String actionKey, String key) {
       if (securityCtx == null) {
-         Log.warn(ME, "No authorization for '" + actionKey + "' and msg=" + key);
+         log.warn(ME, "No authorization for '" + actionKey + "' and msg=" + key);
          return false;
       }
       return securityCtx.isAuthorized(actionKey, key);
@@ -198,12 +204,12 @@ public class SubjectInfo
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Client [" + loginName + "] queing message");
+      if (log.CALL) log.call(ME, "Client [" + loginName + "] queing message");
       if (entry == null) {
-         Log.error(ME+".Internal", "Can't queue null message");
+         log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
       }
-      //Log.info(ME, toXml());
+      //log.info(ME, toXml());
       subjectQueue.putMsg(entry);
    }
 
@@ -256,14 +262,26 @@ public class SubjectInfo
                   set.add(arr[ii]);
             }
          }
-         this.callbackAddressCache = new CallbackAddress[set.size()];
-         int ii=0;
-         Iterator iSet = set.iterator();
-         while (iSet.hasNext())
-            this.callbackAddressCache[ii++] = (CallbackAddress)iSet.next();
+         this.callbackAddressCache = (CallbackAddress[])set.toArray(new CallbackAddress[set.size()]);
       }
-      Log.info(ME, "Accessing " + this.callbackAddressCache.length + " callback addresses for this queue");
+      if (log.TRACE) log.trace(ME, "Accessing " + this.callbackAddressCache.length + " callback addresses for '" + getLoginName() + "' queue");
       return this.callbackAddressCache;
+   }
+
+   /**
+    * If you have a callback address and want to know to which session it belongs. 
+    * @param addr The address object
+    * @return the sessionInfo or null
+    */
+   public final SessionInfo findSessionInfo(CallbackAddress addr)
+   {
+      Iterator it = getSessions().iterator();
+      while (it.hasNext()) {
+         SessionInfo ses = (SessionInfo)it.next();
+         if (ses.hasAddress(addr))
+            return ses;
+      }
+      return null;
    }
 
    /**
@@ -272,7 +290,7 @@ public class SubjectInfo
    public final void checkNumberOfSessions(ConnectQos qos) throws XmlBlasterException
    {
       if (sessionMap.size() >= qos.getMaxSessions()) {
-         Log.warn(ME, "Max sessions = " + qos.getMaxSessions() + " for user " + getLoginName() + " exhausted, login denied.");
+         log.warn(ME, "Max sessions = " + qos.getMaxSessions() + " for user " + getLoginName() + " exhausted, login denied.");
          throw new XmlBlasterException(ME, "Max sessions = " + qos.getMaxSessions() + " exhausted, login denied.");
       }
    }
@@ -286,15 +304,17 @@ public class SubjectInfo
     */
    public final void notifyAboutLogin(SessionInfo sessionInfo) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "notifyAboutLogin()");
+      if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSessionId() + ")");
       sessionMap.put(sessionInfo.getSessionId(), sessionInfo);
 
       this.callbackAddressCache = null;
-      this.subjectQueue.setCallbackAddresses(getCallbackAddresses());
+      this.subjectQueue.setCbAddresses(getCallbackAddresses());
+
+      if (log.DUMP) log.dump(ME, this.subjectQueue.toXml());
 
       synchronized (this.subjectQueue) {
          if (this.subjectQueue.size() > 0) {
-            if (Log.TRACE) Log.trace(ME, "Flushing " + this.subjectQueue.size() + " messages");
+            if (log.TRACE) log.trace(ME, "Flushing " + this.subjectQueue.size() + " messages");
             this.subjectQueue.activateCallbackWorker();
          }
       }
@@ -309,10 +329,13 @@ public class SubjectInfo
     */
    public final void notifyAboutLogout(String sessionId, boolean clear) throws XmlBlasterException
    {
+      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + sessionId + ", " + clear + ")");
       sessionMap.remove(sessionId);
 
       this.callbackAddressCache = null;
-      this.subjectQueue.setCallbackAddresses(getCallbackAddresses());
+      this.subjectQueue.setCbAddresses(getCallbackAddresses());
+
+      if (log.DUMP) log.dump(ME, this.subjectQueue.toXml());
       
       if (sessionMap.size() == 0 && clear) {
          // "Clearing of subject queue see Authenticate.java:351
