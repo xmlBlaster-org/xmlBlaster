@@ -925,6 +925,19 @@ Solaris:
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
+         <h3>Testing</h3>
+         <p>
+         The testsuite resides in <i>xmlBlaster/testsuite/src/c</i> to compile it
+         use ant:
+         </p>
+         <pre>
+         cd xmlBlaster
+         build.sh c-test
+         </pre>
+         <p>
+         Running the tests directly from <i>ant</i> is currently missing
+         </p>
+
       </table>
 
    </configuration>
@@ -954,10 +967,6 @@ Solaris:
            get all the nice fail safe features for the C lib and to
            make the C++ lib smaller (the CORBA plugin is quite big).</li>
 
-      <li> Add some demo in xmlBlaster/demo/c</li>
-
-      <li> Add testsuite (with ant)</li>
-
       </ul>
       </p>
    </todo>
@@ -974,6 +983,12 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE" lang="C">TestMethods</test> <!-- TestMethods.c -->
+   </testcase>
 </requirement>
 
