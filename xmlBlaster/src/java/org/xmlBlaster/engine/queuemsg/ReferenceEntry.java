@@ -60,8 +60,11 @@ public class ReferenceEntry extends MsgQueueEntry
     */
    public ReferenceEntry(String ME, Global glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
                          Timestamp timestamp, StorageId storageId, SessionName receiver) throws XmlBlasterException {
-      super(glob_, entryType, msgUnitWrapper.getMsgQosData().getPriority(), timestamp,
-            storageId, msgUnitWrapper.getMsgQosData().isPersistent()); // We may not use msgUnitWrapper.isPersistent() as is forced to transient in TopicHandler during initialization
+      super(glob_, entryType, 
+            (msgUnitWrapper==null) ? PriorityEnum.NORM_PRIORITY : msgUnitWrapper.getMsgQosData().getPriority(),
+            timestamp,
+            storageId,
+            (msgUnitWrapper==null) ? true : msgUnitWrapper.getMsgQosData().isPersistent()); // We may not use msgUnitWrapper.isPersistent() as is forced to transient in TopicHandler during initialization
       this.glob = glob_;
       this.ME = ME;
       setMsgUnitWrapper(msgUnitWrapper);
