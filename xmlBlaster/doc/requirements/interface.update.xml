@@ -75,6 +75,33 @@
          </tr>
       </table>
 
+      <h3>Behavior on exceptions thrown by a client in update()</h3>
+
+      <p>If the <code>update()</code> methods throws an exception of type <code>ErrorCode.USER_UPDATE_...</code>
+      the server forwards the rejected message to its error handler. The current
+      error handler is implemented to publish this message as a 'dead letter', that
+      is a message with the <code>key oid='__sys__deadMessage'</code>.
+      You can write a client which subscribes to such dead messages and handles
+      them appropriate.<br />
+      Please note that in the Java client library all other exception types thrown in your
+      <code>update()</code> method are
+      converted to an <code>ErrorCode.USER_UPDATE_INTERNALERROR</code> before
+      being propagated to the server.
+      </p>
+      <p>If the server gets a communication exception from its dispatcher framework
+      it assumes that the client has never seen or processed the message and
+      retries to deliver it as configurated. A communication exception occurs 
+      for example if the network is down or if the client has disappeared. <br />
+      The main configuration settings to control the redeliver behavior are
+      <code>-dispatch/callback/retries</code> and <code>-dispatch/callback/delay</code>.
+      </p>
+      <p>The server side error handler is hidden by an interface and will be
+      a plugin in a future version of xmlBlaster to support customized error behavior.<br />
+      For example such a plugin can look at the thrown error code or error message and follow specific recovery
+      strategies.
+      </p>
+
+      <h3>Note</h3>
       <p>
       Be prepared to receive all sorts of messages on update, like
       normal messages or internal xmlBlaster messages or administrative command messages.
@@ -123,8 +150,8 @@
         2001-12-07 23:31:45.862000002 &lt;!-- The nanos from above but human readable -->
   &lt;/rcvTimestamp>
 
-  &lt;!-- remainingLife is calculated relative to when xmlBlaster has sent the message [millisec] -->
-  &lt;expiration lifeTime='129595811' remainingLife='1200'/>
+  &lt;!-- remainingLife is calculated relative to when xmlBlaster has sent the message -->
+  &lt;expiration lifeTime='129595811' remainingLife='1200'/> <!-- [millisec] -->
   
   &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
   
@@ -142,8 +169,9 @@
       A typical Java client code to handle message updates:
       </p>
       <pre>
-   import org.xmlBlaster.client.key.SubscribeKey;
-   ...
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+...
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) {
@@ -176,6 +204,32 @@
    </p>
    </example>
 
+   <example lang="Java" type="HTML">
+      <p>
+      We provide two demo clients which allow playing with the update behavior on command line.
+      Here is an example how to simulate a subscriber which throws an exception:
+      </p>
+      <pre>
+
+java -jar lib/xmlBlaster.jar
+
+java javaclients.HelloWorldSubscribe -updateException.errorCode user.update.error 
+                                     -updateException.message "I don't want this"
+
+java javaclients.HelloWorldPublish -numPublish 100
+      </pre>
+      <p>We start a server and a subscriber which is configured to throw an exception
+      if a message arrives, then we start a publisher and publish messages.
+      </p>
+      <p>
+      If we want to look a the generated dead messages we start another subscriber:
+      </p>
+      <pre>
+
+java javaclients.HelloWorldSubscribe -oid __sys__deadMessage
+      </pre>
+   </example>
+
    <configuration>
    </configuration>
 
@@ -199,7 +253,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
