@@ -31,6 +31,13 @@ namespace org { namespace xmlBlaster { namespace util {
         }
     };
 
+    /**
+     * Note: The default double precision is 6 digits and will be rounded
+     * You can use <code>interpreter.precision(15);</code> to increase the precision
+     * A "double" has ANSI-C minium of 10 digits, on a PC Linux typically 15
+     * A "long double" has ANSI-C minium of 10 digits, on a PC Linux typically 18
+     * Marcel Ruff
+     */
     template<typename Target, typename Source>
     Target lexical_cast(Source arg)
     {
@@ -41,13 +48,24 @@ namespace org { namespace xmlBlaster { namespace util {
 // # endif
         Target result;
 
+        // Precision fix for "double" and "long double"
+        // Marcel Ruff 2004-01-17
+        //int origPrecision = interpreter.precision(); // 6 digits
+        if (typeid(arg) == typeid(double(1.7L)))
+            interpreter.precision(15);
+        if (typeid(arg) == typeid((long double)(1.7L)))
+            interpreter.precision(18);
+
         if(!(interpreter << arg) || !(interpreter >> result) ||
            !(interpreter >> std::ws).eof())
             throw bad_lexical_cast();
 
+        //interpreter.precision(origPrecision);
+
         return result;
     }
-    Dll_Export extern std::string lexical_cast(bool arg); // See Global.cpp
+    Dll_Export template<> std::string lexical_cast(bool arg); // See Global.cpp
+    Dll_Export template<> const char * lexical_cast(bool arg);
 }}}
 
 
