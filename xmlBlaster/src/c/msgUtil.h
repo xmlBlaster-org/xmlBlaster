@@ -11,35 +11,13 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define true 1
 #define false 0
 
-// Holds a message
-// All member pointers are allocated with malloc(), you need to free() them
-typedef struct MsgUnitStruct {
-   char *key;               // XML formatted ASCII string of message key
-   size_t contentLen;       // Number of bytes in content
-   char *content;           // Raw data (not 0 terminated)
-   char *qos;               // XML formatted ASCII string of Quality of Service
-   char *responseQos;       // Used to transport the response QoS string back to caller
-} MsgUnit;
-
-typedef struct MsgUnitStructArr {
-   bool isOneway;
-   size_t len;
-   MsgUnit *msgUnitArr;
-} MsgUnitArr;
-
+#define MAX_ERRNO_LEN 256
+#define XMLBLASTER_MAX_USAGE_LEN 2048 /* Change XmlBlasterAccessUnparsed.c accordingly */
 #define MAX_REQUESTID_LEN 256
 #define MAX_SECRETSESSIONID_LEN 256
 
-#define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
-#define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
-#define XMLBLASTEREXCEPTION_MESSAGE_FMT "%1020s" 
-typedef struct XmlBlasterExceptionStruct {
-   bool remote; // true if exception is from remote
-   char errorCode[XMLBLASTEREXCEPTION_ERRORCODE_LEN];
-   char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
-} XmlBlasterException;
-
-// See org.xmlBlaster.util.enum.MethodName.java
+/* See org.xmlBlaster.util.enum.MethodName.java */
+#define MAX_METHODNAME_LEN 20
 #define XMLBLASTER_CONNECT "connect"
 #define XMLBLASTER_DISCONNECT "disconnect"
 #define XMLBLASTER_PING "ping"
@@ -49,6 +27,48 @@ typedef struct XmlBlasterExceptionStruct {
 #define XMLBLASTER_SUBSCRIBE "subscribe"
 #define XMLBLASTER_UNSUBSCRIBE "unSubscribe"
 #define XMLBLASTER_ERASE "erase"
+
+typedef struct XmlBlasterBlobStruct {
+   size_t dataLen;
+   char *data;
+} XmlBlasterBlob;
+
+/* Holds a message */
+/* All member pointers are allocated with malloc(), you need to free() them */
+typedef struct MsgUnitStruct {
+   char *key;               /* XML formatted ASCII string of message key */
+   size_t contentLen;       /* Number of bytes in content */
+   char *content;           /* Raw data (not 0 terminated) */
+   char *qos;               /* XML formatted ASCII string of Quality of Service */
+   char *responseQos;       /* Used to transport the response QoS string back to caller */
+} MsgUnit;
+
+typedef struct MsgUnitStructArr {
+   bool isOneway;
+   size_t len;
+   MsgUnit *msgUnitArr;
+} MsgUnitArr;
+
+/* Used to transport information back to callback functions */
+typedef struct MsgRequestInfoStruct {
+   const char *requestIdStr;
+   const char *methodName;
+   XmlBlasterBlob blob;
+} MsgRequestInfo;
+
+#define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
+#define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
+#define XMLBLASTEREXCEPTION_MESSAGE_FMT "%1020s" 
+typedef struct XmlBlasterExceptionStruct {
+   bool remote; /* true if exception is from remote */
+   char errorCode[XMLBLASTEREXCEPTION_ERRORCODE_LEN];
+   char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+} XmlBlasterException;
+
+extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
+
+extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
+extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
 
 extern void freeMsgUnitData(MsgUnit *msgUnit);
 extern void freeMsgUnit(MsgUnit *msgUnit);
@@ -60,8 +80,9 @@ extern char *strcpyAlloc(const char *src);
 extern char *strcatAlloc(char **dest, const char *src);
 extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 extern void trim(char *s);
+extern char *blobDump(XmlBlasterBlob *blob);
 extern char *toReadableDump(char *data, size_t len);
 
 
-#endif // XMLBLASTER_MSGUTIL_H
+#endif /* XMLBLASTER_MSGUTIL_H */
 

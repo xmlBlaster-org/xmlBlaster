@@ -15,9 +15,14 @@ Features:
   
   o Supports synchronous xmlBlaster access with
     connect(), disconnect(), get(), publish(), erase(), ping()
+    See example: XmlBlasterConnectionUnparsedMain.c
   
-  o Asynchronous access with client callback update() is under
-    development
+  o Supports asynchronous access with client callback update()
+    See example: CallbackServerUnparsed.c
+
+  o Supports sync and async communications with pthreads
+    Tested on Linux and Solaris
+    See example: XmlBlasterAccessUnparsed.c
     Posix threads DLL for Win, PocketPC, WinCE:
        http://sources.redhat.com/pthreads-win32
 
@@ -62,14 +67,14 @@ How it works:
 If you want a client connection (without callback) you need
 to include 
 
-   #include <XmlBlasterAccessUnparsed.h>
+   #include <XmlBlasterConnectionUnparsed.h>
 
 in your client code, thats it. In this header is a structure which
 allows you complete synchronous access to xmlBlaster:
 
    XmlBlasterException exception;
 
-   XmlBlasterAccessUnparsed *xb = getXmlBlasterAccessUnparsed(argc, argv);
+   XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
    ...
    response = xb->connect(xb, connectQos, &exception);
    ...
@@ -99,20 +104,58 @@ Next steps:
 
 o Clean up the code
  - make a lib from it
- - add callback support
-   with pthreads on UNIX and
-   http://sources.redhat.com/pthreads-win32 on Windows
+ - add callback support with pthreads
+   on UNIX: DONE
+   on WIN:  OPEN: http://sources.redhat.com/pthreads-win32 on Windows
 
 o Make layers of functionality
- - raw communication
- - adding threading support to allow callbacks in the same process.
+ - raw communication: DONE
+ - adding threading support to allow callbacks in the same process: DONE
  - expat parsing
-
-o Add some demo in xmlBlaster/demo/c
 
 o Wrap it as a C++ protocol plugin to be independend of CORBA and
  use the C++ testsuite for this C implementation 
 
+
+C-SOCKET developers:
+====================
+
+You should check your code at least with:
+
+o UNIX gcc and g++ with and without the -ansi option
+  and with valgrind:
+  valgrind -v --leak-check=yes --show-reachable=yes XmlBlasterConnectionUnparsedMain
+
+o Windows cl
+
+
+Executable sizes on Linux gcc 3.3
+=================================
+
+   XmlBlasterConnectionUnparsedMain  26 KB
+
+
+Open issues:
+============
+
+o Change gethostname() to gethostname_r()
+
+o Throwing an XmlBlasterException from CallbackServer
+  back to xmlBlaster: The exception is buggy encoded
+
+o Adding mutex to every function call
+
+o Invoking xmlBlaster from within the callback thread (in update() function)
+  will deadlock (i believe so).
+  Probably we need to add a thread pool
+
+o Add ant task c-lib
+
+o Add some demo in xmlBlaster/demo/c
+
+o Add testsuite (with ant)
+
+o Write requirement documentation in xmlBlaster/doc/requirements/client.c.socket.xml
 
 
 mr@marcelruff.info 05/2003

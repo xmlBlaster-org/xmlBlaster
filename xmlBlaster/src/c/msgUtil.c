@@ -38,7 +38,7 @@ void freeMsgUnitData(MsgUnit *msgUnit)
    msgUnit->contentLen = 0;
    free(msgUnit->qos);
    free(msgUnit->responseQos);
-   //free(msgUnit);
+   /* free(msgUnit); -> not in this case, as the containing array has not allocated us separately */
 }
 
 /**
@@ -88,7 +88,40 @@ char *contentToString(char *content, MsgUnit *msg)
 /**
  * Allocates the string with malloc for you. 
  * You need to free it with free()
- * @return 1 if OK
+ * @param blob If null it is malloc()'d for you, else the given blob is used to be filled. 
+ * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
+ */
+XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen)
+{
+   if (blob == 0) {
+      blob = (XmlBlasterBlob *)calloc(1, sizeof(XmlBlasterBlob));
+   }
+   blob->dataLen = dataLen;
+   blob->data = (char *)malloc((dataLen+1)*sizeof(char));
+   *(blob->data + dataLen) = 0;
+   memcpy(blob->data, data, dataLen);
+   return blob;
+}
+
+/**
+ * free()'s the data in the given blob, does not free the blob itself. 
+ * @param blob
+ * @return The given blob
+ */
+XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
+{
+   if (blob->data != 0) {
+      free(blob->data);
+      blob->data = 0;
+      blob->dataLen = 0;
+   }
+   return blob;
+}
+
+/**
+ * Allocates the string with malloc for you. 
+ * You need to free it with free()
+ * @return The allocated string
  */
 char *strcpyAlloc(const char *src)
 {
@@ -159,7 +192,7 @@ void trim(char *s)
 
    len = strlen((char *) s);
 
-   {  // find beginning of text
+   {  /* find beginning of text */
       while (first<len) {
          if (!isspace(s[first]))
             break;
@@ -185,6 +218,17 @@ void trim(char *s)
 /**
  * Converts the given binary data to a more readable string,
  * the '\0' are replaced by '*'
+ * @param blob The binary data
+ * @return readable is returned, it must be free()'d
+ */
+char *blobDump(XmlBlasterBlob *blob)
+{
+   return toReadableDump(blob->data, blob->dataLen);
+}
+
+/**
+ * Converts the given binary data to a more readable string,
+ * the '\0' are replaced by '*'
  * @param len The length of the binary data
  * @return readable is returned, it must be free()'d
  */
@@ -204,5 +248,15 @@ char *toReadableDump(char *data, size_t len)
    }
    readable[len] = 0;
         return readable;
+}
+
+/**
+ * Should be called on any xmlBlasterException before using it
+ */
+void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
+{
+   xmlBlasterException->remote = false;
+   *xmlBlasterException->errorCode = 0;
+   *xmlBlasterException->message = 0;
 }
 

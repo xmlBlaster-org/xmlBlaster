@@ -9,27 +9,50 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <string.h>
 #include <socket/xmlBlasterSocket.h>
 
-#ifdef _WINDOWS
-#  define ssize_t signed int
-#endif
+/**
+ * Write the given amount of bytes to socket. 
+ * This method blocks until data all data is sent, we loop
+ * as the low level write() can return when the socket
+ * buffer is full but not all data expected are sent.
+ *
+ * @return number of bytes read, -1 is EOF
+ * @author W. Richard Stevens
+ */
+ssize_t writen(int fd, char *ptr, size_t nbytes)
+{
+   ssize_t nleft, nwritten;
+   int flag = 0; /* MSG_WAITALL; */
 
+   nleft = nbytes;
+   while(nleft > 0) {
+      nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
+      if (nwritten <= 0) {
+         return nwritten; /* error */
+      }
+      nleft -= nwritten;
+      ptr += nwritten;
+   }
+   return nbytes - nleft;
+}
 
 /**
- * Read the given amount of bytes
- * This method blocks until data arrives.
+ * Read the given amount of bytes from socket. 
+ * This method blocks until data arrives, we loop
+ * as the low level recv() can return when the socket
+ * buffer is empty but not all data expected arrived.
  *
- * @return number of bytes read
+ * @return number of bytes read, -1 is EOF
+ * @author W. Richard Stevens
  */
-static size_t readn(int fd, char *ptr, size_t nbytes)
+ssize_t readn(int fd, char *ptr, size_t nbytes)
 {
    ssize_t nread;
-   size_t nleft;
-   int flag = 0; // MSG_WAITALL;
+   ssize_t nleft;
+   int flag = 0; /* MSG_WAITALL; */
    nleft = nbytes;
 
    while(nleft > 0) {
-      nread = recv(fd, ptr, (int)nleft, flag);
-      //nread = read(fd, ptr, (int)nleft);  // UNIX only
+      nread = recv(fd, ptr, (int)nleft, flag); /* read() is deprecated on Win */
       if (nread < 0)
          return nread; /* error, return < 0 */
       else if (nread == 0 || nread == -1)
@@ -53,12 +76,12 @@ char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
    char *data;
    char contentLenStr[126];
    size_t currpos = 0;
-   bool keyWas0 = false; // to avoid that the caller free()'s it
+   bool keyWas0 = false; /* to avoid that the caller free()'s it */
    bool qosWas0 = false;
    bool contentWas0 = false;
 
    if (msgUnit == 0) {
-      if (debug) printf("[XmlBlasterAccessUnparsed] ERROR Invalid msgUnit=NULL in encodeMsgUnit()\n");
+      if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnit=NULL in encodeMsgUnit()\n");
       return (char *)0;
    }
    if (msgUnit->content == 0) {
@@ -83,17 +106,17 @@ char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
 
    data = (char *)malloc(*totalLen);
 
-   memcpy(data+currpos, msgUnit->qos, qosLen+1); // inclusive '\0'
+   memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
    currpos += qosLen+1;
 
-   memcpy(data+currpos, msgUnit->key, keyLen+1); // inclusive '\0'
+   memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
    currpos += keyLen+1;
 
-   memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); // inclusive '\0'
+   memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
    currpos += strlen(contentLenStr)+1;
 
    memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
-   //currpos += msgUnit->contentLen;
+   /* currpos += msgUnit->contentLen; */
 
    if (qosWas0) msgUnit->qos = 0;
    if (qosWas0) msgUnit->qos = 0;
@@ -124,7 +147,7 @@ char *encodeSocketMessage(
    size_t currpos = 0;
    char tmp[256];
    size_t lenUnzipped = dataLen;
-   char lenFormatStr[56]; // = "%10.d";
+   char lenFormatStr[56]; /* = "%10.d"; */
    char lenStr[MSG_LEN_FIELD_LEN+1];
 
    if (data == 0) {
@@ -135,24 +158,24 @@ char *encodeSocketMessage(
 
    rawMsg = (char *)calloc(50 + MAX_SESSIONID_LEN + MAX_METHODNAME_LEN + dataLen, sizeof(char));
 
-   *(rawMsg+MSG_FLAG_POS_TYPE) = msgType;   // e.g. MSG_TYPE_INVOKE
+   *(rawMsg+MSG_FLAG_POS_TYPE) = msgType;   /* e.g. MSG_TYPE_INVOKE */
    *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_VERSION;
 
    currpos = MSG_POS_REQESTID;
-   memcpy(rawMsg+currpos, requestId, strlen(requestId)+1); // inclusive '\0'
+   memcpy(rawMsg+currpos, requestId, strlen(requestId)+1); /* inclusive '\0' */
    currpos += strlen(requestId)+1;
 
-   memcpy(rawMsg+currpos, methodName, strlen(methodName)+1); // inclusive '\0'
+   memcpy(rawMsg+currpos, methodName, strlen(methodName)+1); /* inclusive '\0' */
    currpos += strlen(methodName)+1;
 
-   memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); // inclusive '\0'
+   memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); /* inclusive '\0' */
    currpos += strlen(secretSessionId)+1;
    
    sprintf(tmp, "%u", lenUnzipped);
-   memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); // inclusive '\0'
+   memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); /* inclusive '\0' */
    currpos += strlen(tmp)+1;
 
-   memcpy(rawMsg+currpos, data, dataLen);      // add the msgUnit data
+   memcpy(rawMsg+currpos, data, dataLen);      /* add the msgUnit data */
    *rawMsgLen = currpos+dataLen;
 
    sprintf(lenFormatStr, "%%%d.d", MSG_LEN_FIELD_LEN);
@@ -161,7 +184,7 @@ char *encodeSocketMessage(
    
    if (debug) {
       rawMsgStr = toReadableDump(rawMsg, *rawMsgLen);
-      printf("[XmlBlasterAccessUnparsed] Sending now %u bytes -> '%s'\n", *rawMsgLen, rawMsgStr);
+      printf("[xmlBlasterSocket] Sending now %u bytes -> '%s'\n", *rawMsgLen, rawMsgStr);
       free(rawMsgStr);
    }
 
@@ -176,7 +199,8 @@ char *encodeSocketMessage(
  * @param socketDataHolder The struct to put the parsed message into (needs to be allocated by you or on your stack)
  * @param exception The struct to put exceptions into (needs to be allocated by you or to be on your stack)
  * @param debug Set to true to have debugging output on console
- * @return true: A messages is parsed and put into your socketDataHolder (you need to free(socketDataHolder->data) after working with it)
+ * @return true: A messages is parsed and put into your socketDataHolder
+ *         (you need to free(socketDataHolder->data) after working with it)
  *         or if *exception->errorCode != 0: An error occurred and the exception struct is filled with information (you don't need to free anything)
  *         false: The socket is closed (EOF)
  */
@@ -184,12 +208,12 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
    char ptr[MSG_LEN_FIELD_LEN+1];
-   char *rawMsg;
+   char *rawMsg = 0;
    char tmpPtr[256];
-   size_t numRead;
+   ssize_t numRead;
    size_t currPos = 0;
 
-   // initialize
+   /* initialize */
    memset(msgLenPtr, 0, MSG_LEN_FIELD_LEN+1);
    memset(ptr, 0, MSG_LEN_FIELD_LEN+1);
    memset(tmpPtr, 0, MSG_LEN_FIELD_LEN+1);
@@ -197,11 +221,10 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    memset(exception, 0, sizeof(XmlBlasterException));
    exception->remote = false;
 
-   // read the first 10 bytes to determine the length
-   //numRead = recv(xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN, 0);
+   /* read the first 10 bytes to determine the length */
    numRead = readn(xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
-      return false; // EOF on socket
+      return false; /* EOF on socket */
    }
    if (numRead != MSG_LEN_FIELD_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -214,27 +237,32 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    sscanf(ptr, "%u", &socketDataHolder->msgLen);
    if (debug) printf("[xmlBlasterSocket] Receiving message of size %u ...\n", socketDataHolder->msgLen);
 
-   // read the complete message
+   /* read the complete message */
    rawMsg = (char *)calloc(socketDataHolder->msgLen, sizeof(char));
    memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
-   //numRead = recv(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
    numRead = readn(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
-      return false; // EOF on socket
+      return false; /* EOF on socket */
    }
-   if (numRead != (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN)) {
+   if ((size_t)numRead != (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "[xmlBlasterSocket] ERROR Received numRead=%d message bytes but expected %u", numRead, (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN));
       if (debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return true;
    }
-   if (debug) printf("[xmlBlasterSocket] Read %u bytes from socket\n", socketDataHolder->msgLen);
-   //if (debug) {
-   //   char *tmp = toReadableDump(rawMsg, socketDataHolder->msgLen);
-   //   printf("[xmlBlasterSocket] Read %u bytes from socket\n%s\n", socketDataHolder->msgLen, tmp);
-   //   free(tmp);
-   //}
+
+   if (debug) {
+      char *rawMsgStr = toReadableDump(rawMsg, socketDataHolder->msgLen);
+      printf("[xmlBlasterSocket] Read %u bytes from socket -> '%s'\n", socketDataHolder->msgLen, rawMsgStr);
+      free(rawMsgStr);
+   }
+
+   /* if (debug) {
+      char *tmp = toReadableDump(rawMsg, socketDataHolder->msgLen);
+      printf("[xmlBlasterSocket] Read %u bytes from socket\n%s\n", socketDataHolder->msgLen, tmp);
+      free(tmp);
+   }*/
 
    socketDataHolder->type = *(rawMsg+MSG_FLAG_POS_TYPE);
    if (socketDataHolder->type != MSG_TYPE_INVOKE &&
@@ -273,25 +301,25 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    trim(tmpPtr);
    sscanf(tmpPtr, "%u", &socketDataHolder->dataLenUncompressed);
 
-   // Read the payload
-   socketDataHolder->dataLen = socketDataHolder->msgLen - currPos;
-   socketDataHolder->data = (char *)malloc(socketDataHolder->dataLen * sizeof(char));
-   memcpy(socketDataHolder->data, rawMsg+currPos, socketDataHolder->dataLen);
+   /* Read the payload */
+   socketDataHolder->blob.dataLen = socketDataHolder->msgLen - currPos;
+   socketDataHolder->blob.data = (char *)malloc(socketDataHolder->blob.dataLen * sizeof(char));
+   memcpy(socketDataHolder->blob.data, rawMsg+currPos, socketDataHolder->blob.dataLen);
 
    free(rawMsg);
    rawMsg = 0;
 
-   if (socketDataHolder->type == MSG_TYPE_EXCEPTION) { // convert XmlBlasterException
+   if (socketDataHolder->type == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException */
       size_t currpos = 0;
       exception->remote = true;
-      strncpy0(exception->errorCode, socketDataHolder->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(exception->errorCode, socketDataHolder->blob.data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       currpos += strlen(exception->errorCode) + 1;
-      sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, socketDataHolder->data+currpos);
+      sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, socketDataHolder->blob.data+currpos);
       trim(exception->message);
       
-      free(socketDataHolder->data);
-      socketDataHolder->data = 0;
-      socketDataHolder->dataLen = 0;
+      free(socketDataHolder->blob.data);
+      socketDataHolder->blob.data = 0;
+      socketDataHolder->blob.dataLen = 0;
       return true;
    }
 
@@ -321,11 +349,11 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
       {
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
         
-         // read QoS
+         /* read QoS */
          msgUnit->qos = strcpyAlloc(data+currpos);
          currpos += strlen(msgUnit->qos)+1;
         
-         // read key
+         /* read key */
          if (currpos < dataLen) {
             if (strlen(data+currpos) > 0) {
                msgUnit->key = strcpyAlloc(data+currpos);
@@ -336,7 +364,7 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
             }
          }
         
-         // read content
+         /* read content */
          if (currpos < dataLen) {
             strcpy(ptr, data+currpos);
             currpos += strlen(ptr)+1;

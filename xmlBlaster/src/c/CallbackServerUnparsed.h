@@ -17,23 +17,23 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 
 #define DEFAULT_CALLBACK_SERVER_PORT 7611
 
-// Forward declarations
+/* Forward declarations */
 struct CallbackServerUnparsedStruct;
 typedef struct CallbackServerUnparsedStruct CallbackServerUnparsed;
 
-// Define function pointers
+/* Define function pointers */
 
 /**
  * Use this function directly after creation of the callback server
  * if you want to force to reuse the given socket for callbacks. 
  *
  * @param socketToUse Usually pass -1 so that we establish a callback server, else
- *               pass an opened socket (e.g. from XmlBlasterAccessUnparsed->socketToXmlBlaster)
+ *               pass an opened socket (e.g. from XmlBlasterConnectionUnparsed->socketToXmlBlaster)
  * @return true on success
  */
 typedef bool (* UseThisSocket)(CallbackServerUnparsed *cb, int socketToUse);
 
-typedef void (* InitCallbackServer)(CallbackServerUnparsed *cb);
+typedef int (* InitCallbackServer)(CallbackServerUnparsed *cb);
 
 /**
  * @return true if the socket is open and waits for callback messages
@@ -56,7 +56,21 @@ typedef bool (* IsListening)(CallbackServerUnparsed *cb);
  */
 typedef bool (*UpdateFp)(MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
 
-typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
+/* typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb); */
+
+
+#define MAX_RESPONSE_LISTENER_SIZE 100
+
+typedef void (* ResponseFp)(void *userP, void /*SocketDataHolder*/ *socketDataHolder); /* using void * to avoid including the socket specific header */
+
+typedef struct ResponseListenerStruct {
+   void *userP;
+   const char *requestId;
+   ResponseFp responseFp;
+} ResponseListener;
+
+typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseFp);
+
 
 /**
  * This structure holds a complete callback server instance. 
@@ -71,18 +85,21 @@ struct CallbackServerUnparsedStruct {
    int acceptSocket;
    const char *hostCB;
    int portCB;
+   bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
    bool debug;
-   /**
+   /*
     * Is created by the client and used to validate callback messages in update. 
     * This is sent on connect in ConnectQos.
     * (Is different from the xmlBlaster secret session ID)
-    */
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
+   */
    InitCallbackServer initCallbackServer;
    IsListening isListening;
-   ShutdownCallbackServerRaw shutdown;
+   /* ShutdownCallbackServerRaw shutdown; */
    UpdateFp update;
    UseThisSocket useThisSocket;
+   ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
+   AddResponseListener addResponseListener;
 };
 
 /**
@@ -94,7 +111,7 @@ struct CallbackServerUnparsedStruct {
  * @param update The function pointer on your update() function which handles the received messages
  *               Please read the documentation of UpdateFp above.
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
- * usually by calling freeXmlBlasterAccessUnparsed().
+ * usually by calling freeXmlBlasterConnectionUnparsed().
  */
 extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
                                UpdateFp update);

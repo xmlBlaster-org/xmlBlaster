@@ -8,16 +8,16 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <stdlib.h>
 #ifdef _WINDOWS
 #  include <winsock2.h>
+#  define ssize_t signed int
 #else
 #  include <sys/socket.h>
 #  include <netinet/in.h>
 #  include <netdb.h>
-#  include <arpa/inet.h>   // inet_addr()
-#  include <unistd.h>      // gethostname(), sleep(seconds)
+#  include <arpa/inet.h>   /* inet_addr() */
+#  include <unistd.h>      /* gethostname(), sleep(seconds) */
 #endif
 #include <msgUtil.h>
 
-#define  MAX_METHODNAME_LEN 20
 #define  MAX_SESSIONID_LEN 256
 typedef struct SocketDataHolderStruct {
    size_t msgLen;
@@ -29,13 +29,12 @@ typedef struct SocketDataHolderStruct {
    char methodName[MAX_METHODNAME_LEN];
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t dataLenUncompressed;
-   size_t dataLen;
-   char *data; // allocated with malloc, you need to free() it yourself, is compressed if marked as such
+   XmlBlasterBlob blob; /* blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } SocketDataHolder;
 
 #define MSG_LEN_FIELD_LEN 10
 #define MSG_FLAG_FIELD_LEN 6
-//static const int MSG_FLAG_FIELD_LEN = 6;
+/* static const int MSG_FLAG_FIELD_LEN = 6; */
 enum MSG_FLAG_POS_ENUM {
    MSG_FLAG_POS_CHECKSUM = MSG_LEN_FIELD_LEN,
    MSG_FLAG_POS_COMPRESS,
@@ -46,7 +45,7 @@ enum MSG_FLAG_POS_ENUM {
    MSG_POS_REQESTID
 };
 
-// Settings for MSG_FLAG_POS_TYPE
+/* Settings for MSG_FLAG_POS_TYPE */
 enum XMLBLASTER_MSG_TYPE_ENUM {
    MSG_TYPE_INVOKE = 73,
    MSG_TYPE_RESPONSE = 82,
@@ -56,6 +55,8 @@ enum XMLBLASTER_MSG_TYPE_ENUM {
 #define XMLBLASTER_VERSION 49
 
 
+extern ssize_t writen(int fd, char *ptr, size_t nbytes);
+extern ssize_t readn(int fd, char *ptr, size_t nbytes);
 extern char *encodeSocketMessage(
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
               const char * const requestId, 

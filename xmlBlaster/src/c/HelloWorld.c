@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/xmlBlasterSocket.c socket/XmlBlasterAccessUnparsed.c
+Compile:   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
 Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\*.c ws2_32.lib
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <XmlBlasterAccessUnparsed.h>
+#include <XmlBlasterConnectionUnparsed.h>
 
 /**
  * Access the free memory in the server. 
@@ -23,8 +23,8 @@ int main(int argc, char** argv)
    char *connectQos;
    char *response;
    
-   XmlBlasterAccessUnparsed *xb = getXmlBlasterAccessUnparsed(argc, argv);
-   if (xb == (XmlBlasterAccessUnparsed *)0) {
+   XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
+   if (xb == (XmlBlasterConnectionUnparsed *)0) {
       printf("[HelloWorld] Connection failed, please start xmlBlaster server first\n");
       exit(1);
    }
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
    
    xb->disconnect(xb, 0, &exception);
 
-   freeXmlBlasterAccessUnparsed(xb);
+   freeXmlBlasterConnectionUnparsed(xb);
    printf("[HelloWorld] Good bye.\n");
    exit(0);
 }
