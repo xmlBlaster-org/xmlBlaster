@@ -12,13 +12,13 @@ Comment:   Basic xmlBlaster exception ErrorCode definitions.
  * (TODO)
  * here is an example how to configure the format in your xmlBlaster.properties:
  * <pre>
- *  org::xmlBlaster::util::XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.internal= org::xmlBlaster::util::XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}]\nmessage={4} : {8}\nversionInfo={5}\nstackTrace={7}
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.resource= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.communication= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.user= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.transaction= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
- *  org::xmlBlaster::util::XmlBlasterException.logFormat.legacy= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]
+ *  XmlBlasterException.logFormat.internal= org::xmlBlaster::util::XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}]\nmessage={4} : {8}\nversionInfo={5}\nstackTrace={7}
+ *  XmlBlasterException.logFormat.resource= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.communication= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.user= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.transaction= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.legacy= defaults to org::xmlBlaster::util::XmlBlasterException.logFormat
  * </pre>
  * where the replacements are:
  * <pre>
@@ -166,19 +166,19 @@ namespace org { namespace xmlBlaster { namespace util {
    );
 
    const ErrorCode USER_CONFIGURATION("user.configuration",
-         "org::xmlBlaster::util::Login to xmlBlaster failed due to configuration problems."
+         "Login to xmlBlaster failed due to configuration problems."
    );
 
    const ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED("user.security.authentication.accessDenied",
-         "org::xmlBlaster::util::Login to xmlBlaster failed due to missing privileges."
+         "Login to xmlBlaster failed due to missing privileges."
    );
 
    const ErrorCode USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT("user.security.authentication.illegalArgument",
-         "org::xmlBlaster::util::Login to xmlBlaster failed due to illegal arguments."
+         "Login to xmlBlaster failed due to illegal arguments."
    );
 
    const ErrorCode USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED("user.security.authorization.notAuthorized",
-         "org::xmlBlaster::util::Login to xmlBlaster failed due to missing privileges."
+         "Login to xmlBlaster failed due to missing privileges."
    );
 
    const ErrorCode USER_UPDATE_ERROR("user.update.error",

@@ -18,7 +18,6 @@ Comment:   Manager to retrieve the correct delivery protocol
 #define _UTIL_DISPATCH_DELIVERYMANAGER_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/dispatch/ConnectionsHandler.h>
@@ -35,7 +34,7 @@ class Dll_Export DispatchManager
 private:
    const std::string        ME;
    org::xmlBlaster::util::Global&             global_;
-   org::xmlBlaster::util::Log&                log_;
+   org::xmlBlaster::util::I_Log&                log_;
 
 public:
    DispatchManager(org::xmlBlaster::util::Global& global);

@@ -19,7 +19,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 #define _AUTHENTICATION_SECURITY_QOS_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace authentication {
@@ -30,7 +30,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
    private:
       const std::string ME;
       org::xmlBlaster::util::Global& global_;
-      org::xmlBlaster::util::Log& log_;
+      org::xmlBlaster::util::I_Log& log_;
       std::string       type_;
       std::string       version_;
       std::string       user_;

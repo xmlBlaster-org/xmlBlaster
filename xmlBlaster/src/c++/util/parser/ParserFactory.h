@@ -30,7 +30,7 @@ class Dll_Export ParserFactory {
    private:
    const std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log& log_;
+   org::xmlBlaster::util::I_Log& log_;
 
    static ParserFactory* factory_;
    

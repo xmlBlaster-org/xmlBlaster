@@ -19,7 +19,7 @@ Comment:   Holds the unique name of a cluster node
 
 #include <util/xmlBlasterDef.h>
 #include <string>
-#include <util/Log.h>
+#include <util/I_Log.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
@@ -29,7 +29,7 @@ private:
    const std::string ME;
    std::string       id_;
    org::xmlBlaster::util::Global&      global_;
-   org::xmlBlaster::util::Log&         log_;
+   org::xmlBlaster::util::I_Log&       log_;
 
 public:
    NodeId(org::xmlBlaster::util::Global& global, const std::string& id);

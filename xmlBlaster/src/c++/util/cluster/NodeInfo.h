@@ -10,7 +10,6 @@ Comment:   Holding information about the current node.
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <map>
-#include <util/Log.h>
 
 #include <util/qos/address/CallbackAddress.h>
 #include <util/qos/address/Address.h>

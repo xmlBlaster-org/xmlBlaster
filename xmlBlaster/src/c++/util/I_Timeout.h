@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_I_TIMEOUT_H
 
 #include <util/XmlBCfg.h>
+#include <util/I_Log.h>
 
 namespace org { namespace xmlBlaster { namespace util {
 

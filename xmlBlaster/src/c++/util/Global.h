@@ -3,14 +3,15 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.27 2004/01/21 13:12:26 ruff Exp $
+Version:   $Id: Global.h,v 1.28 2004/02/08 23:10:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
 #define _UTIL_GLOBAL_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
+#include <util/LogManager.h>
 #include <util/XmlBlasterException.h>
 #include <util/Property.h>
 
@@ -31,8 +32,6 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 class Dll_Export Global {
 
-typedef std::map<std::string, org::xmlBlaster::util::Log> LogMap;
-
 friend Global& getInstance(const std::string &instanceName);
 
 // required for managed objects
@@ -41,11 +40,11 @@ friend class Object_Lifetime_Manager;
 
 private:
    const std::string      ME;
-   LogMap                 logMap_;
    Property*              property_;
    int                    args_;
    const char * const*    argv_;
    bool                   isInitialized_;
+   org::xmlBlaster::util::LogManager logManager_;
    org::xmlBlaster::client::protocol::CbServerPluginManager* cbServerPluginManager_;
    org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
    Timeout*               pingTimer_;
@@ -131,10 +130,14 @@ public:
    Global& initialize(int args=0, const char * const argv[]=0);
 
    /**
-    * If no log is found with that name, one is created and added to the
-    * log std::map.
+    * Access the used LogManager. 
     */
-   org::xmlBlaster::util::Log& getLog(const std::string &logName="default");
+   org::xmlBlaster::util::LogManager& getLogManager();
+
+   /**
+    * If no log is found with that name, one is created. 
+    */
+   org::xmlBlaster::util::I_Log& getLog(const std::string &logName="default");
 
    /**
     * Returns the property object associated to this global

@@ -55,7 +55,7 @@ friend class ManagedObject;
 private:
    const std::string   ME;
    org::xmlBlaster::util::Global&        global_;
-   org::xmlBlaster::util::Log&           log_;
+   org::xmlBlaster::util::I_Log&           log_;
    DriversMap     drivers_;         // the std::map containing all drivers created by this factory
    bool           doRun_;           // the command: if set to 'false' the thread will stop.
    bool           isRunning_;       // the status: if the thread is running it is 'true'

@@ -11,7 +11,6 @@ Comment:   Testing the Timeout Features
 #include <util/xmlBlasterDef.h>
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
-#include <util/Log.h>
 #include <util/thread/ThreadImpl.h>
 
 /**
@@ -46,7 +45,7 @@ friend class EmbeddedServerRunner;
 private:
    std::string                ME;
    org::xmlBlaster::util::Global&               global_;
-   org::xmlBlaster::util::Log&                  log_;
+   org::xmlBlaster::util::I_Log&                  log_;
    bool                  isRunning_;
    std::string                applArguments_;
    std::string                jvmArguments_;

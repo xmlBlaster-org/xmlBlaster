@@ -18,7 +18,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/key/QueryKeyData.h>
 #include <util/Constants.h>
-#include <util/Log.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
@@ -27,7 +26,7 @@ class Dll_Export UnSubscribeKey
 protected:
    std::string  ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    /**
     * subscribe(), get() and cluster configuration keys may contain a filter rule

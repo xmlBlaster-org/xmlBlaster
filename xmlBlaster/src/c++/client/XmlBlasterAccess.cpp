@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 #include <util/Timestamp.h>
+#include <util/dispatch/DispatchManager.h>
 
 namespace org { namespace xmlBlaster { namespace client {
 

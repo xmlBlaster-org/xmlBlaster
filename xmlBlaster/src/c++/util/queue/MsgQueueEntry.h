@@ -17,7 +17,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/StatusQosData.h>
 #include <util/qos/QueryQosData.h>
 #include <util/key/QueryKeyData.h>
-#include <util/Log.h>
 
 // circular dependency I_ConnectionsHandler -> Queue -> MsgQueueEntry
 #ifndef _UTIL_DISPATCH_ICONNECTIONSHANDLER_H
@@ -43,7 +42,7 @@ class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 protected:
    std::string        ME;
    org::xmlBlaster::util::Global&       global_;
-   org::xmlBlaster::util::Log&          log_;
+   org::xmlBlaster::util::I_Log&          log_;
    int           priority_;
    bool          persistent_;
    org::xmlBlaster::util::Timestamp     uniqueId_;

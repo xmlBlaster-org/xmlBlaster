@@ -18,7 +18,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #define _CLIENT_PROTOCOL_CBSERVERPLUGINMANAGER_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <string>
@@ -31,7 +31,7 @@ class Dll_Export CbServerPluginManager
 private:
    const std::string ME;
    org::xmlBlaster::util::Global&      global_;
-   org::xmlBlaster::util::Log&         log_;
+   org::xmlBlaster::util::I_Log&         log_;
 
 public:
    CbServerPluginManager(org::xmlBlaster::util::Global& global);

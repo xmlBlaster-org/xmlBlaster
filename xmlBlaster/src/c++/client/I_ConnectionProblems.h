@@ -9,7 +9,7 @@ Comment:   Helper to easy get the callback messages
  * Callback the client from XmlBlasterConnection if the connection to xmlBlaster is lost
  * or was reestablished (failsafe mode).
  * <p>
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author <a href='xmlBlaster@marcelruff.info'>Marcel Ruff</a>
  * @author <a href='laghi@swissinfo.org'>Michele Laghi</a>
  */
@@ -18,6 +18,9 @@ Comment:   Helper to easy get the callback messages
 #define _CLIENT_ICONNECTIONPROBLEMS_H
 
 #include <util/dispatch/I_ConnectionsHandler.h>
+//namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
+//   class I_ConnectionsHandler;
+//}}}}
 
 namespace org { namespace xmlBlaster { namespace client {
 

@@ -59,7 +59,7 @@ private:
 protected:
    std::string  ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
    std::string  serialData_;
 
    /** the state of the message, defaults to "OK" if no state is returned */

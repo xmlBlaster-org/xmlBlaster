@@ -37,7 +37,7 @@ private:
    org::xmlBlaster::client::protocol::I_XmlBlasterConnection* connection_;
    enum States status_;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log& log_;
+   org::xmlBlaster::util::I_Log& log_;
    org::xmlBlaster::util::thread::Mutex connectMutex_;
    org::xmlBlaster::util::thread::Mutex publishMutex_;
    int retries_;
@@ -75,7 +75,7 @@ public:
    org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
 
    /**
-    * org::xmlBlaster::util::Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
+    * Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
     * is CONNECTED it disconnects. If the status is something else, it throws an exception.
     * @param qos The QoS or null
     */

@@ -20,7 +20,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/ReferenceHolder.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/thread/ThreadImpl.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <set>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
@@ -33,7 +33,7 @@ class Dll_Export Queue
 protected:
    std::string        ME;
    org::xmlBlaster::util::Global&       global_;
-   org::xmlBlaster::util::Log&          log_;
+   org::xmlBlaster::util::I_Log&          log_;
    org::xmlBlaster::util::qos::storage::ClientQueueProperty property_;
    StorageType   storage_;
    long          numOfBytes_;

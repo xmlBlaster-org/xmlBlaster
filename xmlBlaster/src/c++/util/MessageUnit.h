@@ -10,7 +10,6 @@ Comment:   Holding a message
  
 #include <string>
 #include <vector>
-#include <util/Log.h>
 #include <client/qos/PublishQos.h>
 #include <client/key/PublishKey.h>
 #include <util/qos/MsgQosData.h>

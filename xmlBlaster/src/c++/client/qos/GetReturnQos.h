@@ -42,7 +42,7 @@ class Dll_Export GetReturnQos
 protected:
    std::string     ME;
    org::xmlBlaster::util::Global&    global_;
-   org::xmlBlaster::util::Log&       log_;
+   org::xmlBlaster::util::I_Log&       log_;
    org::xmlBlaster::util::qos::MsgQosData data_;
 
 public:

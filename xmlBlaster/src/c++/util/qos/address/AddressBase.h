@@ -3,7 +3,7 @@ Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address std::string including protocol
-Version:   $Id: AddressBase.h,v 1.17 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: AddressBase.h,v 1.18 2004/02/08 23:10:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -20,7 +20,7 @@ Version:   $Id: AddressBase.h,v 1.17 2004/01/14 14:54:29 ruff Exp $
 
 #include <util/xmlBlasterDef.h>
 #include <util/Constants.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
@@ -57,7 +57,7 @@ private:
 protected:
    std::string  ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    std::string rootTag_;
 

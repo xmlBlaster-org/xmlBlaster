@@ -11,6 +11,7 @@ Comment:   Handling the Client data
 #include <util/xmlBlasterDef.h>
 #include <util/PropertyDef.h>
 #include <util/Property.h>
+#include <util/I_Log.h>
 
 /**
  * Logging output.
@@ -22,7 +23,7 @@ Comment:   Handling the Client data
  */
 namespace org { namespace xmlBlaster { namespace util {
    
-   class Dll_Export Log {
+   class Dll_Export Log : public I_Log {
       
    private:
 
@@ -299,7 +300,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * These variables may be set in xmlBlaster.properties as well.
        * Don't use the "-" or "+" prefix there.
        */
-      static std::string usage();
+      virtual std::string usage() const;
 
       /**
        * Display some statistic on exit

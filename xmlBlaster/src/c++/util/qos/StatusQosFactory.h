@@ -10,7 +10,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/StatusQosData.h>
 #include <util/parser/XmlHandlerBase.h>
-#include <util/Log.h>
 
 /**
  * Parsing xml QoS (quality of service) of return status. 
@@ -35,7 +34,7 @@ class Dll_Export StatusQosFactory: public org::xmlBlaster::util::parser::XmlHand
 private:
    std::string                    ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
    StatusQosData                  statusQosData_;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */

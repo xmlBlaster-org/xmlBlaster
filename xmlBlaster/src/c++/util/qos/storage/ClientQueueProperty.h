@@ -17,7 +17,6 @@ Comment:   Holding callback queue properties
 
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
 #include <util/Constants.h>
 #include <util/qos/storage/QueuePropertyBase.h>
 #include <util/qos/address/Address.h>

@@ -42,7 +42,7 @@ class Dll_Export HistoryQos
 private:
    const std::string ME; //  = "HistoryQos";
    org::xmlBlaster::util::Global&      global_;
-   org::xmlBlaster::util::Log&         log_;
+   org::xmlBlaster::util::I_Log&         log_;
 
    int numEntries_; // = DEFAULT_numEntries;
 

@@ -8,17 +8,27 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/ConnectQos.h>
-#include <util/MessageUnit.h>
-#include <util/dispatch/DispatchManager.h>
-#include <client/protocol/I_CallbackServer.h>
-#include <client/protocol/CbServerPluginManager.h>
-#include <util/dispatch/ConnectionsHandler.h>
 #include <client/I_ConnectionProblems.h>
 #include <client/I_Callback.h>
-#include <client/xmlBlasterClient.h>
-#include <util/Log.h>
 #include <string>
 #include <vector>
+
+// Note: I_ConnectionProblems.h includes I_ConnectionsHandler.h includes I_XmlBlasterConnection.h
+//       which includes all EraseQos, SubscribeKey etc.
+//       -> We could try to avoid this by forward declaration, but all cpp files must
+//          then include them thereselves.
+
+// Declare classes without the need to include them in this header file
+namespace org { namespace xmlBlaster { namespace util {
+   class MessageUnit;
+}}}
+namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
+   class DispatchManager;
+   class ConnectionsHandler;
+}}}}
+namespace org { namespace xmlBlaster { namespace client { namespace protocol {
+   class I_CallbackServer;
+}}}}
 
 namespace org { namespace xmlBlaster { namespace client {
 
@@ -53,7 +63,7 @@ private:
     */
    org::xmlBlaster::client::I_ConnectionProblems* connectionProblems_;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
    std::string  instanceName_;
    
 public:
@@ -71,7 +81,7 @@ public:
    virtual ~XmlBlasterAccess();
 
    /**
-    * org::xmlBlaster::util::Login to xmlBlaster
+    * Login to xmlBlaster
     * @param qos Your configuration desire
     * @param client If not null callback messages will be routed to client.update()
     */
@@ -107,7 +117,7 @@ public:
    void initSecuritySettings(const std::string& secMechanism, const std::string& secVersion);
 
    /**
-    * org::xmlBlaster::util::Logout from the server. 
+    * Logout from the server. 
     * <p>
     * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
     * Note that this kills the server ping thread as well (if in failsafe mode)

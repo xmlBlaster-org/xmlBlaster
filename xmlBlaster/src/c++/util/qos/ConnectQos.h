@@ -14,8 +14,6 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/ServerRef.h>
 #include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
-#include <util/Log.h>
-
 #include <util/qos/address/AddressFactory.h>
 #include <util/qos/address/Address.h>
 #include <util/qos/address/CallbackAddress.h>
@@ -60,7 +58,7 @@ typedef std::map<std::string, std::string> ClientPropertyMap;
 
 private:
    org::xmlBlaster::util::Global&     global_;
-   org::xmlBlaster::util::Log&        log_;
+   org::xmlBlaster::util::I_Log&        log_;
    mutable org::xmlBlaster::authentication::SecurityQos securityQos_;
    mutable org::xmlBlaster::util::qos::SessionQos  sessionQos_;
    bool        ptp_;

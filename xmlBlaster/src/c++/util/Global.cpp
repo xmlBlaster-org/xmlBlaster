@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $
+Version:   $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -24,13 +24,16 @@ Version:   $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $
 #ifdef COMPILE_CORBA_PLUGIN
 #  include <client/protocol/corba/CorbaDriver.h>
 #endif
+#ifdef XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN
+#  include<util/Log4cplus.h>
+#endif
 
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -56,7 +59,7 @@ using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::protocol;
 
-Global::Global() : ME("Global"), logMap_(), pingerMutex_() 
+Global::Global() : ME("Global"), pingerMutex_() 
 {
    cbServerPluginManager_ = 0;
    pingTimer_             = 0;
@@ -70,7 +73,7 @@ Global::Global() : ME("Global"), logMap_(), pingerMutex_()
 }
 
 /*
-Global::Global(const Global& global) : ME("Global"), logMap_(global.logMap_)
+Global::Global(const Global& global) : ME("Global")
 {
    args_ = global.args_;
    argv_ = global.argv_;
@@ -90,7 +93,6 @@ Global::~Global()
       delete cbServerPluginManager_;
       delete pingTimer_;
       delete dispatchManager_;
-      logMap_.erase(logMap_.begin(), logMap_.end());
    }
    catch (...) {
    }
@@ -212,7 +214,8 @@ string Global::usage()
    sb += "\n";
    sb += org::xmlBlaster::util::qos::storage::CbQueueProperty::usage();
    sb += "\n";
-   sb += org::xmlBlaster::util::Log::usage();
+   const I_Log& ll = getInstance().getLog();
+   sb += ll.usage();
    return sb;
    /*
       StringBuffer sb = new StringBuffer(4028);
@@ -222,24 +225,29 @@ string Global::usage()
    */
 }
 
-
-
-Log& Global::getLog(const string &logName)
+LogManager& Global::getLogManager()
 {
-   LogMap::iterator pos = logMap_.find(logName);
-   if (pos != logMap_.end()) return (*pos).second;
+   return logManager_;
+}
 
-   Log help(getProperty(), args_, argv_, logName);
-   help.initialize();
-   logMap_.insert(LogMap::value_type(logName, help));
-   pos = logMap_.find(logName);
-   if (pos != logMap_.end()) {
-      Log* log = &(*pos).second;
-      return *log;
+I_Log& Global::getLog(const string &logName)
+{
+   try {
+#     ifdef XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN
+         static bool first = true;
+         if (first) {
+            logManager_.setLogFactory("log4cplus", new Log4cplusFactory());
+            logManager_.initialize(property_->getPropertyMap());
+            first = false;
+         }
+         return logManager_.getLogFactory().getLog(logName);
+#     else
+         return logManager_.getLogFactory().getLog(logName); // Use our default Log.cpp
+#     endif
    }
-
-  // if it reaches this point, then a serious error occured
-  throw XmlBlasterException(INTERNAL_UNKNOWN, "UNKNOWN NODE", ME + string("::getLog"));
+   catch(...) {
+      throw XmlBlasterException(INTERNAL_UNKNOWN, "UNKNOWN NODE", ME + string("::getLog() failed to setup logging configuration"));
+   }
 }
 
 int Global::getArgs()

@@ -36,6 +36,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
 {
    clusterNode_      = false;
    duplicateUpdates_ = false;
+   persistent_       = false;
 }
 
 ConnectQosData::ConnectQosData(const ConnectQosData& data)

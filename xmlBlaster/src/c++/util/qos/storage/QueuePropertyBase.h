@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.13 2003/07/03 20:54:50 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.14 2004/02/08 23:10:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -17,7 +17,6 @@ Version:   $Id: QueuePropertyBase.h,v 1.13 2003/07/03 20:54:50 ruff Exp $
 #define _UTIL_QUEUE_QUEUEPROPERTYBASE_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
 #include <util/Constants.h>
 #include <util/qos/address/AddressBase.h>
 
@@ -57,7 +56,7 @@ class Dll_Export QueuePropertyBase
 protected:
    std::string  ME; //  = "QueuePropertyBase";
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    /** The queue plugin type "CACHE" "RAM" "JDBC" */
    std::string type_;
@@ -186,7 +185,7 @@ public:
     */
    QueuePropertyBase(org::xmlBlaster::util::Global& global, const std::string& nodeId);
 
-   QueuePropertyBase(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::Log& log, const std::string& nodeId);
+   QueuePropertyBase(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::I_Log& log, const std::string& nodeId);
 
    QueuePropertyBase(const QueuePropertyBase& prop);
 

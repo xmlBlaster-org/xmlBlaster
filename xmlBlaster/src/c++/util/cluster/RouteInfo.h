@@ -7,10 +7,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_CLUSTER_ROUTEINFO_H
 
 #include <util/xmlBlasterDef.h>
-#include <string>
-#include <util/Log.h>
-
 #include <util/cluster/NodeId.h>
+#include <string>
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 

@@ -42,7 +42,7 @@ namespace org {
       struct ::XmlBlasterAccessUnparsed* connection_;
       std::string ME;
       org::xmlBlaster::util::Global& global_;
-      org::xmlBlaster::util::Log& log_;
+      org::xmlBlaster::util::I_Log& log_;
       org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
       std::string secretSessionId_;
       std::string loginName_;
@@ -119,7 +119,7 @@ namespace org {
 
       const std::string& me() { return ME; }
       org::xmlBlaster::util::Global& getGlobal() { return global_; }
-      org::xmlBlaster::util::Log& getLog() { return log_; }
+      org::xmlBlaster::util::I_Log& getLog() { return log_; }
       org::xmlBlaster::util::key::MsgKeyFactory& getMsgKeyFactory() { return msgKeyFactory_; }
       org::xmlBlaster::util::qos::MsgQosFactory& getMsgQosFactory() { return msgQosFactory_; }
 

@@ -13,9 +13,6 @@ Comment:   Default handling of Sax callbacks
 #include <util/Timestamp.h>
 #include <string>
 #include <map>
-//#include <util/lexical_cast.h>
-//#include <framework/MemBufInputSource.hpp>
-//#include <util/Log.h>
 
 namespace org { namespace xmlBlaster {
 namespace util {

@@ -9,9 +9,8 @@ Comment:   Holding destination address attributes
 #define _UTIL_DESTINATION_H
  
 #include <util/xmlBlasterDef.h>
-#include <string>
-#include <util/Log.h>
 #include <util/qos/SessionQos.h>
+#include <string>
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -29,7 +28,7 @@ private:
 
    std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log& log_;
 
    /** The destination address (==login name) or the XPath query std::string */
    org::xmlBlaster::util::qos::SessionQos sessionQos_;

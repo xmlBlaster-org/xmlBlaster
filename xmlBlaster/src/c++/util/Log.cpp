@@ -259,7 +259,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
           cout << logEntry << instance << " " << text << endl;
     }
 
-   std::string Log::usage() {
+   std::string Log::usage() const {
       std::string text = string("");
       text += string("\nLogging options:");
       text += string("\n   -trace true         Show code trace.");

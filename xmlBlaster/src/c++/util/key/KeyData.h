@@ -34,10 +34,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_KEY_KEYDATA_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
-
-
-
+#include <util/I_Log.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
@@ -55,7 +52,7 @@ class Dll_Export KeyData
 protected:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    /** value from attribute <key oid="..."> */
    mutable std::string oid_;

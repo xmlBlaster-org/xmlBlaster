@@ -187,7 +187,7 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    SocketDriver* socketDriver = static_cast<SocketDriver*>(xa->userObject);
    Global& global = socketDriver->getGlobal();
-   Log& log = socketDriver->getLog();
+   I_Log& log = socketDriver->getLog();
    const string &ME = socketDriver->me();
 
    try {

@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.9 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: CbQueueProperty.h,v 1.10 2004/02/08 23:10:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -17,7 +17,6 @@ Version:   $Id: CbQueueProperty.h,v 1.9 2004/01/14 14:54:29 ruff Exp $
 #define _UTIL_QUEUE_CBQUEUEPROPERTY_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Log.h>
 #include <util/Constants.h>
 #include <util/qos/storage/QueuePropertyBase.h>
 #include <util/qos/address/CallbackAddress.h>

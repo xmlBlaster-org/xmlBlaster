@@ -27,7 +27,7 @@ Comment:   Holding filter address std::string and protocol std::string
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/Query.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <util/Property.h>
 
 #include <string>
@@ -41,7 +41,7 @@ class Dll_Export AccessFilterQos
 {
    const std::string ME;
    org::xmlBlaster::util::Global&      global_;
-   org::xmlBlaster::util::Log&         log_;
+   org::xmlBlaster::util::I_Log&         log_;
 
    /** The filter rule std::string and an object to hold the prepared query on demand  */
    Query query_;

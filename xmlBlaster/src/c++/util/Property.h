@@ -107,6 +107,10 @@ namespace util {
          properties_.erase(properties_.begin(), properties_.end());
       }
 
+      const MapType& getPropertyMap() const {
+         return properties_;
+      }
+
       /**
        * Reads the file specified in filename. If the name is not valid, or if
        * the system can not write to the specified file, then -1 is returned.

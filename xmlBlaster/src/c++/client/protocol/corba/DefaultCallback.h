@@ -10,7 +10,6 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 
 #include <string>
 #include <util/lexical_cast.h>
-#include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/key/UpdateKey.h>
 #include <client/qos/UpdateQos.h>
@@ -36,7 +35,7 @@ namespace org {
 
    protected:
       org::xmlBlaster::util::Global&       global_;
-      org::xmlBlaster::util::Log&          log_;
+      org::xmlBlaster::util::I_Log&          log_;
       org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
       org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
 

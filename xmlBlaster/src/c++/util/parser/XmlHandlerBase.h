@@ -10,14 +10,12 @@ Comment:   Default handling of Sax callbacks
 
 #include <util/xmlBlasterDef.h>
 #include <util/XmlBlasterException.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <util/Timestamp.h>
 #include <string>
 #include <map>
 #include <util/StringTrim.h>
 #include <util/thread/ThreadImpl.h>
-//#include <framework/MemBufInputSource.hpp>
-//#include <util/Log.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace parser {
     
@@ -51,7 +49,7 @@ protected:
     */
    std::string  xmlLiteral_;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    org::xmlBlaster::util::thread::Mutex invocationMutex_;
 

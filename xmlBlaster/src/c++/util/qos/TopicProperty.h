@@ -24,7 +24,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <string>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/HistoryQueueProperty.h>
 #include <util/Prop.h>
@@ -49,7 +49,7 @@ class Dll_Export TopicProperty
 private:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log& log_;
+   org::xmlBlaster::util::I_Log& log_;
    org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty* msgUnitStoreProperty_;
    org::xmlBlaster::util::qos::storage::HistoryQueueProperty* historyQueueProperty_;
 

@@ -12,12 +12,8 @@ Comment:   Default handling of Sax callbacks
 #include <util/parser/I_Parser.h>
 #include <string>
 #include <sax2/DefaultHandler.hpp>
-// #include <framework/MemBufInputSource.hpp>
-
 #include <util/XMLString.hpp>
-// #include <util/Log.h>
 #include <util/StopParseException.h>
-// #include <util/StringTrim.h>
 
 #if defined(XERCES_HAS_CPP_NAMESPACE)
         // Since Xerces 2.2 namespace is introduced:
@@ -35,7 +31,7 @@ class Dll_Export Sax2Parser : public I_Parser, public DefaultHandler {
 private:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
 public:
    /**

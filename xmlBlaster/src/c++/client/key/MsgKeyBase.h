@@ -19,7 +19,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _CLIENT_KEY_MSGKEYBASE_H
 
 #include <util/key/MsgKeyData.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
@@ -28,7 +28,7 @@ class Dll_Export MsgKeyBase
 protected:
    std::string  ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    /**
     * subscribe(), get() and cluster configuration keys may contain a filter rule

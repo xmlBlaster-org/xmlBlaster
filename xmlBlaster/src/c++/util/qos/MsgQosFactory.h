@@ -19,7 +19,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_QOS_MSGQOSFACTORY_H
 
 #include <util/parser/XmlHandlerBase.h>
-#include <util/Log.h>
 #include <util/Destination.h>
 #include <util/qos/MsgQosData.h>
 #include <util/qos/SessionQos.h>

@@ -10,15 +10,13 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
 #define _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
 
-// #include <util/XmlBCfg.h>
 #include <util/xmlBlasterDef.h>
 
 #include <string>
 #include <vector>
 #include <fstream>
-// #include <client/org::xmlBlaster::util::LoginQosWrapper.h>
 #include <client/protocol/corba/DefaultCallback.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <client/protocol/corba/NameServerControl.h>
 #include <util/qos/address/CallbackAddress.h>
 #include <util/MessageUnit.h>
@@ -59,7 +57,7 @@ namespace org {
       std::string                          xmlBlasterIOR_;
       std::string                          callbackIOR_;
       org::xmlBlaster::util::Global&       global_;
-      /* mutable */ org::xmlBlaster::util::Log&     log_;
+      /* mutable */ org::xmlBlaster::util::I_Log&     log_;
       org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
       org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
 
@@ -155,33 +153,6 @@ public:
        */
       void initAuthenticationService();
 
-
-      /**
-       * org::xmlBlaster::util::Login to the server, using the default BlasterCallback implementation.
-       * <p />
-       * You need to implement the org::xmlBlaster::client::I_Callback interface, which informs you 
-       * about arrived messages with its update() method
-       * <p />
-       * If you do multiple logins with the same org::xmlBlaster::client::I_Callback implementation, 
-       * the loginName which is delivered with the update() method may be used
-       * to dispatch the message to the correct client.
-       * <p />
-       * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'>
-       * </pre> tag, so don't use it for a second login, otherwise a second 
-       * callback is inserted !</strong>
-       *
-       * @param loginName The login name for xmlBlaster
-       * @param passwd    The login password for xmlBlaster
-       * @param qos       The Quality of Service for this client (the callback
-       *                  tag will be added automatically if client!=null)
-       * @param client    Your implementation of org::xmlBlaster::client::I_Callback, or null if you 
-       *                  don't want any.
-       * @exception       org::xmlBlaster::util::XmlBlasterException if login fails
-       */
-//      serverIdl::Server_ptr login(const std::string &loginName, const std::string &passwd, 
-//                   const org::xmlBlaster::util::LoginQosWrapper &qos, org::xmlBlaster::client::I_Callback *client=0);
-
-
       /**
        * The new way to connect (i.e. login to xmlBlaster)
        */
@@ -208,30 +179,12 @@ public:
 
 
       /**
-       * org::xmlBlaster::util::Login to the server.
-       * <p />
-       * For internal use only.
-       * The qos needs to be set up correctly if you wish a callback
-       * @exception       org::xmlBlaster::util::XmlBlasterException if login fails
-       */
-//      void loginRaw();
-
-
-      /**
        * Access the login name.
        * @return your login name or null if you are not logged in
        */
       const std::string &getLoginName() const {
          return loginName_;
       }
-      
-      
-      /*
-       * org::xmlBlaster::util::Logout from the server.
-       * @return true successfully logged out
-       *         false failure on logout
-      bool logout();
-       */
       
       
       /**

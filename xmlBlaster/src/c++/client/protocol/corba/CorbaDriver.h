@@ -19,7 +19,6 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
 
-//#include <client/xmlBlasterClient.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
 #include <util/thread/ThreadImpl.h>
@@ -44,7 +43,7 @@ namespace org {
       DefaultCallback* defaultCallback_;
       const std::string     ME;
       org::xmlBlaster::util::Global&          global_;
-      org::xmlBlaster::util::Log&             log_;
+      org::xmlBlaster::util::I_Log&             log_;
       org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
       bool             orbIsThreadSafe_;
 

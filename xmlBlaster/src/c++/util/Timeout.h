@@ -11,7 +11,6 @@ Comment:   Allows you be called back after a given delay.
 #include <util/xmlBlasterDef.h>
 #include <util/I_Timeout.h>
 #include <util/Timestamp.h>
-#include <util/Log.h>
 
 #include <string>
 #include <map>
@@ -107,7 +106,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
    org::xmlBlaster::util::TimestampFactory& timestampFactory_;
 
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::Log&    log_;
+   org::xmlBlaster::util::I_Log&    log_;
 
    /** The synchronization object */
    org::xmlBlaster::util::thread::Mutex invocationMutex_;   
