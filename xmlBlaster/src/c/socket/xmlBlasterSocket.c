@@ -23,10 +23,14 @@ void closeSocket(int fd) {
  * as the low level write() can return when the socket
  * buffer is full but not all data expected are sent.
  *
- * @return number of bytes read, -1 is EOF
+ * This code is not thread safe, you need to add a mutex to 
+ * your calling code if two threads simultaneously want to read
+ * from the same socket 'fd'.
+ *
+ * @return number of bytes written, -1 is EOF
  * @author W. Richard Stevens
  */
-ssize_t writen(int fd, char *ptr, size_t nbytes)
+ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 {
    ssize_t nleft, nwritten;
    int flag = 0; /* MSG_WAITALL; */
@@ -49,10 +53,17 @@ ssize_t writen(int fd, char *ptr, size_t nbytes)
  * as the low level recv() can return when the socket
  * buffer is empty but not all data expected arrived.
  *
+ * This code is not thread safe, you need to add a mutex to 
+ * your calling code if two threads simultaneously want to read
+ * from the same socket 'fd'.
+ *
+ * @param fd The socket descriptor
+ * @param ptr A buffer which is big enough to hold nbytes
+ * @param nbytes The number of bytes to read
  * @return number of bytes read, -1 is EOF
  * @author W. Richard Stevens
  */
-ssize_t readn(int fd, char *ptr, size_t nbytes)
+ssize_t readn(const int fd, char *ptr, const size_t nbytes)
 {
    ssize_t nread;
    ssize_t nleft;
@@ -63,7 +74,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
       nread = recv(fd, ptr, (int)nleft, flag); /* read() is deprecated on Win */
       if (nread < 0)
          return nread; /* error, return < 0 */
-      else if (nread == 0 || nread == -1)
+      else if (nread == 0 || nread == -1) /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
          break;        /* EOF is -1 */
       nleft -= nread;
       ptr += nread;
@@ -267,6 +278,7 @@ char *encodeSocketMessage(
  * This method blocks until data arrives.
  *
  * @param xmlBlasterSocket The socket to read data from (needs to be valid)
+ * @param fpHolder Struct containing the function pointer which access the socket to read from (if necessary decompressing on the fly)
  * @param socketDataHolder The struct to put the parsed message into (needs to be allocated by you or on your stack)
  * @param exception The struct to put exceptions into (needs to be allocated by you or to be on your stack)
  * @param debug Set to true to have debugging output on console
@@ -275,7 +287,8 @@ char *encodeSocketMessage(
  *         Please check socketDataHolder->type if it is an exception.
  *         false: The socket is closed (EOF)
  */
-bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug) 
+bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHolder *fpHolder,
+       SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug)
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
    char *rawMsg = 0;
@@ -296,7 +309,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       numRead = recv(xmlBlasterSocket, packet, MAX_PACKET_SIZE, 0);
    else
       /* read the first 10 bytes to determine the length */
-      numRead = readn(xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
+      numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
       return false; /* EOF on socket */
    }
@@ -340,7 +353,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       numRead -= MSG_LEN_FIELD_LEN;
    }
    else
-      numRead = readn(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
+      numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
       return false; /* EOF on socket */
    }

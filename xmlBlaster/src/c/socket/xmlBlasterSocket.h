@@ -71,8 +71,8 @@ enum MSG_FLAG_POS_ENUM {
 
 
 extern void closeSocket(int fd);
-extern ssize_t writen(int fd, char *ptr, size_t nbytes);
-extern ssize_t readn(int fd, char *ptr, size_t nbytes);
+extern ssize_t writen(const int fd, const char *ptr, const size_t nbytes);
+extern ssize_t readn(const int fd, char *ptr, const size_t nbytes);
 
 /**
  * Creates a raw blob to push over a socket as described in the protocol.socket requirement. 
@@ -92,7 +92,7 @@ extern char *encodeSocketMessage(
               size_t *rawMsgLen);
 Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
 Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
-Dll_Export bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
+Dll_Export bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHolder *fpHolder, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
 Dll_Export void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 Dll_Export void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug);
 Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
