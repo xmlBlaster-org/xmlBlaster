@@ -1,5 +1,9 @@
-<key oid="Hello.txt" contentMime="text/plain">
-   <TestTag>
-   </TestTag>
+<key oid='1'>
+   <foo>
+      <bar>
+         <name>1</name>
+         <time>1054159013515</time>
+      </bar>
+   </foo>
 </key>
 

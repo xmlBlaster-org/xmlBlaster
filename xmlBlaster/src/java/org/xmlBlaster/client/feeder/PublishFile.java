@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.29 2003/03/24 20:00:21 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.30 2003/05/29 11:42:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -100,7 +100,9 @@ public class PublishFile
       byte[] content = null;
       if (contentFile != null) {
          try { content = FileUtil.readFile(contentFile); }
-         catch (JUtilsException e) { }
+         catch (JUtilsException e) {
+            log.error(ME, e.toString());
+         }
       }
       if (content == null && contentGiven != null) {
          content = contentGiven.getBytes();
@@ -115,7 +117,9 @@ public class PublishFile
       String xmlKey = null;
       if (keyFile != null) {
          try { xmlKey = FileUtil.readAsciiFile(keyFile); }
-         catch (JUtilsException e) { }
+         catch (JUtilsException e) {
+            log.error(ME, e.toString());
+         }
       }
       if (xmlKey == null) {
          xmlKey = xmlKeyGiven;
@@ -140,7 +144,9 @@ public class PublishFile
       String xmlQos = null;
       if (qosFile != null) {
          try { xmlQos = FileUtil.readAsciiFile(qosFile); }
-         catch (JUtilsException e) { }
+         catch (JUtilsException e) {
+            log.error(ME, e.toString());
+         }
       }
       if (xmlQos == null) {
          xmlQos = xmlQosGiven;
