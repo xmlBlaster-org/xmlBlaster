@@ -64,7 +64,7 @@ static const char *LOG_TEXT_ESCAPE[] = {
 /**
  * @return e.g. "0.848"
  */
-Dll_Export const char *getXmlBlasterVersion()
+Dll_Export const char *getXmlBlasterVersion(void)
 {
    /* Is replaced by xmlBlaster/build.xml ant task */
    return "@version@";
@@ -115,10 +115,17 @@ Dll_Export char *getStackTrace(int maxNumOfLines)
       return ret;
    }
 #else
-   maxNumOfLines = 0;      /* to make the compiler happy */
+   if (maxNumOfLines > 0) ;      /* to make the compiler happy */
    return strcpyAlloc(""); /* No stack trace provided in this system */
 #endif
 }
+
+#ifndef XMLBLASTER_SLEEP_FALLBACK 
+#  define  XMLBLASTER_SLEEP_FALLBACK 0 /* Initialize to make icc happy */
+#endif
+#ifndef XMLBLASTER_SLEEP_NANO
+#  define XMLBLASTER_SLEEP_NANO 0
+#endif 
 
 /**
  * Sleep for given milliseconds, on none real time systems expect ~ 10 millisecs tolerance. 
@@ -548,8 +555,8 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
       freeaddrinfo(res0);
 #   endif /* SOME_CLIENT_EXAMPLE */
 #   ifdef SOME_SERVER_EXAMPLE
-     The following example tries to open a wildcard listening socket onto ser-
-     vice ``http'', for all the address families available.
+     /* The following example tries to open a wildcard listening socket onto ser-
+     vice ``http'', for all the address families available. */
 
       struct addrinfo hints, *res, *res0;
       int error;

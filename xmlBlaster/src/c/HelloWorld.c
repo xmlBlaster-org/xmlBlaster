@@ -10,6 +10,9 @@ Compile:
   Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
    util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
             -DXMLBLASTER_C_COMPILE_AS_CPP
+  Linux Intel compiler:
+        icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
   Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c util\*.c socket\*.c ws2_32.lib
   Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
         util/Properties.c socket/xmlBlasterSocket.c

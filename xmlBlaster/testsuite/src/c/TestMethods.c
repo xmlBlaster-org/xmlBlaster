@@ -16,13 +16,13 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include "test.h"
 
 int tests_run = 0;
-int argc = 0;
-char** argv = 0;
+static int argc = 0;
+static char** argv = 0;
 #define  ERRORSTR_LEN 4096
-char errorString[ERRORSTR_LEN+1];
-char *updateContent = 0;
-void *updateUserData;
-const char *CONTENT = "Some message payload";
+static char errorString[ERRORSTR_LEN+1];
+static char *updateContent = 0;
+static void *updateUserData;
+static const char *CONTENT = "Some message payload";
 
 /**
  * Here we receive the callback messages from xmlBlaster
@@ -32,6 +32,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException
 {
    size_t i;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   if (xmlBlasterException != 0) ;  /* Supress compiler warning */
    updateUserData = xa;
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit *msg = &msgUnitArr->msgUnitArr[i];

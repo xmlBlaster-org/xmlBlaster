@@ -91,7 +91,7 @@ Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBla
 Dll_Export extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
 Dll_Export extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
 
-Dll_Export extern const char *getXmlBlasterVersion();
+Dll_Export extern const char *getXmlBlasterVersion(void);
 Dll_Export extern char *getStackTrace(int maxNumOfLines);
 Dll_Export extern void sleepMillis(long millis);
 Dll_Export extern void xmlBlasterFree(char *p);

@@ -160,9 +160,10 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
       free(tmphstbuf);
       if (portP != 0)
-         xmlBlasterAddr.sin_port = portP->s_port;
-      else
+         xmlBlasterAddr.sin_port = (u_short)portP->s_port;
+      else {
          xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
+      }
       xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
       if (xb->socketToXmlBlaster != -1) {
          int ret=0;
@@ -207,14 +208,15 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          }
          else {
             char errnoStr[MAX_ERRNO_LEN];
-            SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
+            char *p = strerror(errno);
+            SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
 #           ifdef _LINUX
             strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
 #           endif
             strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                     "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, %s",
-                     __FILE__, __LINE__, serverHostName, servTcpPort, errnoStr);
+                     "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, ret=%d, %s",
+                     __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
             if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
             return false;
          }
@@ -291,13 +293,11 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    size_t rawMsgLen = 0;
    char *rawMsg = (char *)0;
    char *rawMsgStr;
-   size_t lenUnzipped = dataLen_;
    char requestIdStr[MAX_REQUESTID_LEN];
 
    if (data_ == 0) {
       data_ = "";
       dataLen_ = 0;
-      lenUnzipped = 0;
    }
 
    if (exception == 0) {

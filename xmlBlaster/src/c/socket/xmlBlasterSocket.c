@@ -150,7 +150,7 @@ char *encodeSocketMessage(
 
    rawMsg = (char *)calloc(50 + MAX_SESSIONID_LEN + MAX_METHODNAME_LEN + dataLen, sizeof(char));
 
-   *(rawMsg+MSG_FLAG_POS_TYPE) = msgType;   /* e.g. MSG_TYPE_INVOKE */
+   *(rawMsg+MSG_FLAG_POS_TYPE) = (char)msgType;   /* e.g. MSG_TYPE_INVOKE */
    *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_SOCKET_VERSION;
 
    currpos = MSG_POS_REQESTID;

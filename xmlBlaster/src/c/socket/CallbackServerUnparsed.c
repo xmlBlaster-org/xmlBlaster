@@ -382,7 +382,6 @@ static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketData
 
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr)
 {
-   ssize_t numSent;
    char *rawMsg;
    size_t rawMsgLen;
    size_t dataLen = 0;
@@ -422,14 +421,13 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
                              data, dataLen, cb->logLevel >= LOG_DUMP, &rawMsgLen);
    free(data);
 
-   numSent = writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
+   /*ssize_t numSent =*/(void) writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
 }
 
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception)
 {
-   ssize_t numSent;
    size_t currpos = 0;
    char *rawMsg;
    size_t rawMsgLen;
@@ -457,7 +455,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    free(data);
    free(msgUnit.content);
 
-   numSent = writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
+   /*ssize_t numSent =*/(void) writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
 }
