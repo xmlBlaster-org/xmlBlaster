@@ -10,11 +10,11 @@
       <![CDATA[
       The xmlBlaster.properties file is searched in the following locations and the given order:
 
-       1. $HOME                 user.home
+       1. Local directory       .
 
        2. $PROJECT_HOME         e.g java -DPROJECT_HOME=/opt/xmlBlaster ...
 
-       3. Local directory       .
+       3. $HOME                 user.home
 
        4. java.ext.dirs         e.g.  /opt/jdk1.2.2/jre/lib/ext
 
@@ -27,7 +27,7 @@
    <see type="API">org.jutils.init.Property</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
