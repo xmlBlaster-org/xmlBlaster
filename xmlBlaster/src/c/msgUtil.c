@@ -278,7 +278,8 @@ void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
 
 /**
  * Thread safe host lookup. 
- * @author Caolan McNamara (2000) <caolan@skynet.ie>
+ * NOTE: If the return is not NULL you need to free(*tmphstbuf)
+ * @author Caolan McNamara (2000) <caolan@skynet.ie> (with some leak fixes by Marcel)
  */
 struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
 {
@@ -406,8 +407,11 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
       *hstbuflen *= 2;
       *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
    }
-   if (res)
-      return NULL;
+   if (res) {
+      free(*tmphstbuf);
+      *tmphstbuf = 0;
+      return 0;
+   }
    return hp;
 #else
 #  ifdef HAVE_FUNC_GETHOSTBYNAME_R_5
@@ -443,8 +447,11 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
          }
          memset((void *)(*tmphstbuf),0,*hstbuflen);
 
-         if (0 != gethostbyname_r(host,hostbuf,(struct hostent_data *)*tmphstbuf))
-            return NULL;
+         if (0 != gethostbyname_r(host,hostbuf,(struct hostent_data *)*tmphstbuf)) {
+            free(*tmphstbuf);
+            *tmphstbuf = 0;
+            return 0;
+         }
          return hostbuf;
 #     else
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
