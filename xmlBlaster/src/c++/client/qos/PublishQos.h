@@ -66,7 +66,7 @@ public:
    /**
     * Default constructor for transient PtP messages.
     * <p />
-    * To make the message persistent, use the isPersistent() method
+    * To make the message persistent, use the setPersistent(true) method
     * @param destination The object containing the destination address.<br />
     *        To add more destinations, us the addDestination() method.
     */
