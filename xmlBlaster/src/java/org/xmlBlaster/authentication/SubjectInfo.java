@@ -28,7 +28,9 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -537,7 +539,15 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
             try {
-               MsgQueueUpdateEntry entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
+               I_Map cache = ((ReferenceEntry)entry).getMsgUnitCache();
+               if (cache == null) {
+                  if (log.TRACE) log.trace(ME, "forwardToSessionQueue: MsgUnitStore is null for '" + entry.getLogId() + "'");
+                  break;
+               }
+               MsgQueueUpdateEntry entryCb = null;
+               synchronized(cache) {
+                  entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
+               }
                sessionInfo.queueMessage(entryCb);
                countForwarded++;
             }
