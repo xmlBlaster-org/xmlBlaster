@@ -37,7 +37,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 void QueryQosData::init() 
 {
-   QosData::init();
+//   QosData::init();
    subscriptionId_ = "";
    forceDestroy_   = false;
    meta_           = true;

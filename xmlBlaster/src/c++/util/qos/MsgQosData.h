@@ -114,6 +114,8 @@ private:
    /** The priority of the message */
    PriorityEnum priority_; // = PriorityEnum.NORM_PRIORITY;
 
+   void init();
+
 protected:
    /**
     * ArrayList for loginQoS, holding all destination addresses (Destination objects)
@@ -125,8 +127,6 @@ protected:
    bool receiveTimestampHumanReadable_; // = Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
 
    Prop<bool> forceDestroy_;
-
-   virtual void init();
 
    void copy(const MsgQosData& data);
 

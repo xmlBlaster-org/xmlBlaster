@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.2 2003/01/07 20:41:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -41,6 +41,11 @@ Dll_Export       string DEFAULT_dispatchPlugin     = "";
 AddressBase::AddressBase(Global& global, const string& rootTag)
    : global_(global), log_(global.getLog("core"))
 {
+
+   defaultPingInterval_ = 0;
+   defaultRetries_      = 0;
+   defaultDelay_        = 0;
+
    // set the defaults here ...
    ME = "AddressBase";
    nodeId_ = "";
@@ -462,24 +467,6 @@ string AddressBase::getDispatchPlugin() const
 }
 
 
-long AddressBase::getDefaultPingInterval()
-{
-   return 0;
-}
-
-int AddressBase::getDefaultRetries()
-{
-   return 0;
-}
-
-long AddressBase::getDefaultDelay()
-{
-   return 0;
-}
-
-
-
-
 /**
  * Dump state of this object into a XML ASCII string.
  * <br>
@@ -503,11 +490,11 @@ string AddressBase::toXml(const string& extraOffset)
        ret += string(" port='") + lexical_cast<string>(getPort()) + string("'");
    if (DEFAULT_sessionId != getSessionId())
        ret += string(" sessionId='") + getSessionId() + string("'");
-   if (getDefaultPingInterval() != getPingInterval())
+   if (defaultPingInterval_ != getPingInterval())
        ret += string(" pingInterval='") + lexical_cast<string>(getPingInterval()) + string("'");
-   if (getDefaultRetries() != getRetries())
+   if (defaultRetries_ != getRetries())
        ret += string(" retries='") + lexical_cast<string>(getRetries()) + string("'");
-   if (getDefaultDelay() != getDelay())
+   if (defaultDelay_ != getDelay())
        ret += string(" delay='") + lexical_cast<string>(getDelay()) + string("'");
    if (DEFAULT_oneway != oneway()) {
        string onewayStr = "false";

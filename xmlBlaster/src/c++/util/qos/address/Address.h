@@ -3,7 +3,7 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: Address.h,v 1.2 2003/01/07 20:41:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -68,18 +68,6 @@ public:
    void setMaxMsg(long maxMsg);
 
    long getMaxMsg() const;
-
-   /** How often to retry if connection fails: defaults to -1 (retry forever) */
-   int getDefaultRetries();
-
-   /** Delay between connection retries in milliseconds (5000 is a good value): defaults to 0, a value bigger 0 switches fails save mode on */
-   long getDefaultDelay();
-
-   // /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec), a value of 0 switches fails save mode off */
-   // public long getDefaultDelay() { return 5 * 1000L; };
-
-   /** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
-   long getDefaultPingInterval();
 
    /** For logging only */
    string getSettings();

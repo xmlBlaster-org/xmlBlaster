@@ -43,6 +43,7 @@ namespace org {
       DefaultCallback* defaultCallback_;
       const string     ME;
       Global&          global_;
+      Log&             log_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
       const string     instanceName_;

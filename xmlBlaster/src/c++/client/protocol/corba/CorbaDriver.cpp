@@ -62,6 +62,7 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
 CorbaDriver::CorbaDriver(Global& global, const string& instanceName, bool connectionOwner)
    : ME(string("CorbaDriver-") + instanceName), 
      global_(global), 
+     log_(global.getLog("client")),
      statusQosFactory_(global), 
      msgQosFactory_(global), 
      instanceName_(instanceName)
@@ -207,7 +208,9 @@ CorbaDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 PublishReturnQos CorbaDriver::publish(const MessageUnit& msgUnit)
 {
    _COMM_TRY
+      if (log_.CALL) log_.call(ME, "publish");
       string ret = connection_->publish(msgUnit);
+      if (log_.TRACE) log_.trace(ME, "successfully published");
       return PublishReturnQos(global_, statusQosFactory_.readObject(ret));
    _COMM_CATCH("::publish", false, false)
 }

@@ -37,7 +37,7 @@ private:
    Global& global_;
    Log&    log_;
 
-   EmbeddedServer     embeddedServer_;
+   EmbeddedServer*    embeddedServer_;
    XmlBlasterAccess   *connection_;
    ConnectQos         *connQos_;
    ConnectReturnQos   *connRetQos_;
@@ -53,17 +53,17 @@ public:
       : ME("TestFailsafe"), 
         global_(glob), 
         log_(glob.getLog()),
-        embeddedServer_(glob, "", "-call true -trace true > failsafe.dump 2>&1"),
         updateMutex_()
    {
-      connection_   = NULL;
-      connQos_      = NULL;
-      connRetQos_   = NULL;
-      subQos_       = NULL;
-      subKey_       = NULL;
-      pubQos_       = NULL;
-      pubKey_       = NULL;
-      numOfUpdates_ = 0;
+      embeddedServer_ = NULL;
+      connection_     = NULL;
+      connQos_        = NULL;
+      connRetQos_     = NULL;
+      subQos_         = NULL;
+      subKey_         = NULL;
+      pubQos_         = NULL;
+      pubKey_         = NULL;
+      numOfUpdates_   = 0;
    }
 
    virtual ~TestFailsafe()
@@ -75,6 +75,7 @@ public:
       delete subKey_;
       delete pubQos_;
       delete pubKey_;
+      delete embeddedServer_;
    }
 
    bool reConnected()
@@ -97,21 +98,21 @@ public:
    void setUp()
    {
       try {   
-         if (embeddedServer_.isSomeServerResponding()) {
-            log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
-            assert(0);
-         }
-         embeddedServer_.start();
-         Thread::sleepSecs(10);
-
          connection_ = new XmlBlasterAccess(global_);
          connection_->initFailsafe(this);
 
+         embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", connection_);
+/* currently commented out (problems with multithreading)
+         if (embeddedServer_->isSomeServerResponding()) {
+            log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
+            assert(0);
+         }
+*/
+         embeddedServer_->start();
+         Thread::sleepSecs(10);
          connQos_ = new ConnectQos(global_, "guy", "secret");
-
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
-//         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
-         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, NULL));  // Login to xmlBlaster, register for updates
+         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
 
          subKey_ = new SubscribeKey(global_);
@@ -166,10 +167,10 @@ public:
             log_.info(ME, string("publishing msg '") + msg + "'");
             PublishReturnQos pubRetQos = connection_->publish(msgUnit);
             if (i == 2) {
-               embeddedServer_.stop();
+               embeddedServer_->stop();
             }
             if (i == 12) {
-               embeddedServer_.start();
+               embeddedServer_->start();
             }
             try {
                Thread::sleepSecs(1);
@@ -214,7 +215,7 @@ public:
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
-//      Lock lock(updateMutex_);
+      Lock lock(updateMutex_);
  //     log_.info(ME, "update: key    : " + updateKey.toXml());
 //      log_.info(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);

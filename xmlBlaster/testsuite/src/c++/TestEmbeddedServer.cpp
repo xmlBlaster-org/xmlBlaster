@@ -7,12 +7,13 @@ Comment:   Testing the Timeout Features
 
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
+#include <util/EmbeddedServer.h>
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
-#include <util/thread/Thread.h>
 #include <boost/lexical_cast.hpp>
+#include "testSuite.h"
 
 /**
  *
@@ -27,82 +28,57 @@ using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
 
-class TestEmbeddedServer : public Thread
+class TestEmbeddedServer
 {
 private:
    string            ME;
    Global&           global_;
    Log&              log_;
-   XmlBlasterAccess* connection_;
-   bool&             doStop_;
-   Mutex             mutex_;
-   Condition*        condition_;
-   string            name_;
+
 public:
-   TestEmbeddedServer(Global& glob, const string name, bool& doStop, Condition* condition=NULL) 
+   TestEmbeddedServer(Global& glob) 
       : ME("TestEmbeddedServer"), 
         global_(glob), 
-	log_(glob.getLog()), 
-	doStop_(doStop),
-	mutex_(), 
-	condition_(condition), 
-	name_(name)
+        log_(glob.getLog())
    {
-      connection_ = NULL;
-      doStop_ = false;
    }
 
    virtual ~TestEmbeddedServer()
    {
-      delete connection_;
    }
 
-   void starter()
-   {  while (!doStop_) {
-         system("java org.xmlBlaster.Main");
-	 if (!condition_) return;
-         Lock lock(mutex_);
-         condition_->wait(lock, 1200000L);  // wait maximum 20 minutes
-      }
-   }
-
-   void killer()
+   void setUp()
    {
-      while (!doStop_) {
-         Thread::sleep(30000);
-	 if (!connection_) connection_ = new XmlBlasterAccess(global_);
-	 ConnectQos connQos(global_, "killer", "secret");
-	 connection_->connect(connQos, NULL);
-
-	 PublishKey key(global_);
-	 key.setOid("__cmd:?exit=-1");
-	 PublishQos qos(global_);
-	 MessageUnit msgUnit(key, "", qos);
-	 connection_->publish(msgUnit);
-	 delete connection_;
-	 connection_ = NULL;
-	 Thread::sleep(20000);
-	 if (condition_) condition_->notify();
-      }
    }
 
-   void run()
+   void tearDown()
    {
-      if ( name_ == "killer" ) killer();
-      else if ( name_ == "starter") starter();
-      else {
-         bool doStop = false;
-         Condition condition;
-	 TestEmbeddedServer serverStarter(global_, "starter", doStop, &condition);
-	 TestEmbeddedServer serverKiller(global_, "killer", doStop, &condition);
-         serverStarter.start();
-	 serverKiller.start();
-	 Thread::sleepSecs(180);
-	 doStop = true;
-	 serverStarter.join();
-	 serverKiller.join();
-      }
    }
+
+   void testEmbeddedServer()
+   {
+      log_.info(ME, "testing the embedded server");
+      log_.info(ME, "note that you should shut down running xmlBlaster servers before you run this test");
+      log_.info(ME, "an xmlBlaster server instance will be started now and after 15 seconds it will be");
+      log_.info(ME, "shut down. It then waits 10 seconds and starts again another server.");
+      log_.info(ME, "it then will live for 15 seconds and die. The test ends there.");
+      Thread::sleepSecs(3);
+      EmbeddedServer server(global_);
+      log_.info(ME, "starting the embedded server now");
+      server.start();
+      Thread::sleepSecs(15);
+      log_.info(ME, "stopping the embedded server now");
+      server.stop();
+      server.sleepSecs(10);
+      log_.info(ME, "starting the embedded server now");
+      server.start();
+      Thread::sleepSecs(15);
+      log_.info(ME, "stopping the embedded server now");
+      server.stop();
+      server.join();
+      log_.info(ME, "testEmbeddedServer ended successfully");
+   }
+
 };
 
 
@@ -113,11 +89,11 @@ int main(int args, char *argv[])
    XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
-  
-   bool doStop = false;
-   TestEmbeddedServer server(glob, "main", doStop, NULL);
-   server.start();
-   server.join();
+   TestEmbeddedServer test(glob);
+   
+   test.setUp();
+   test.testEmbeddedServer();
+   test.tearDown();
 
    return 0;
 }

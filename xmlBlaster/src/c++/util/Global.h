@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.9 2002/12/21 00:18:44 laghi Exp $
+Version:   $Id: Global.h,v 1.10 2003/01/07 20:41:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -115,14 +115,14 @@ public:
    /**
     * Returns the property object associated to this global
     */
-   Property& getProperty();
+   Property& getProperty() const;
 
    string getLocalIP() const;
 
    /**
     * Returns the bootstrap host name
     */
-    string getBootstrapHostname();
+    string getBootstrapHostname() const;
 
     string getCbHostname() const;
 

@@ -49,6 +49,8 @@ public:
  
    SubscribeReturnQos getSubscribeReturnQos() const;
 
+   string toXml(const string& indent="") const;
+
 };
 
 }}}} // namespace

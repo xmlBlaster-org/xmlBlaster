@@ -140,7 +140,7 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- General C++ compiling setup for VisialC++, Borland and GCC          -->
+   <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
    <!-- =================================================================== -->
    <property name="compiler" value="gcc"/> <!-- "gcc" "VC6" "bcc" -->
    <property name="debug" value="true" />
@@ -150,6 +150,8 @@ TODO
    <property name="CORBACPP_VER" value="2.3.7"/>
    <property name="CORBACPP_HOME" value="/opt/local/mico"/>
    <property name="XMLCPP_VER" value="1_7_0"/>
+   <property name="THREAD_SRC" value="src/c++/libs/thread/src"/> <!-- use the internal boost library -->
+   <property name="THREAD_INC" value="src/c++"/> <!-- use the internal boost library -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
@@ -1198,6 +1200,8 @@ TODO
       <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
+      <echo message=" THREAD_SRC    = ${THREAD_SRC}"/>
+      <echo message=" THREAD_INC    = ${THREAD_INC}"/>
 
       <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
       <switch value="${os.family}" caseinsensitive="false">
@@ -1272,7 +1276,9 @@ TODO
          <fileset dir="${src.cpp.dir}/client/key" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/client/protocol/corba" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/authentication" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp"/>
+<!--         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp"/> -->
+         <fileset dir="${THREAD_SRC}" includes="*.cpp"/>
+         <sysincludepath location="${THREAD_INC}" />
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}/include" />

@@ -31,12 +31,13 @@ namespace org { namespace xmlBlaster { namespace util {
 class EmbeddedServer : public Thread
 {
 private:
-   string  ME;
-   Global& global_;
-   Log&    log_;
-   bool    isRunning_;
-   string  applArguments_;
-   string  jvmArguments_;
+   string            ME;
+   Global&           global_;
+   Log&              log_;
+   bool              isRunning_;
+   string            applArguments_;
+   string            jvmArguments_;
+   XmlBlasterAccess* externalAccess_;
 
 public:
    /**
@@ -49,8 +50,15 @@ public:
     * responding) and a user 'embeddedKiller' to kill the server. If you have configured an authentication
     * service for xmlBlaster make sure that these users have credentials and that 'embeddedKiller' has
     * authorization to kill the server.
+    * 
+    * @param glob the global variable
+    * @param jvmArguments the arguments to pass to the java virtual machine.
+    * @param applArguments the arguments to pass to the application.
+    * @param externalAccess the pointer to the external XmlBlasterAccess object. If this is NULL, then an
+    *        own instance is created each time, otherwise the external is used. This parameter is needed
+    *        where the communication protocol does not support multithreading.
     */
-   EmbeddedServer(Global& glob, const string& jvmArguments = "", const string& applArguments="");
+   EmbeddedServer(Global& glob, const string& jvmArguments = "", const string& applArguments="", XmlBlasterAccess* externalAccess=NULL);
 
    virtual ~EmbeddedServer();
 
@@ -67,7 +75,7 @@ public:
     * flag defaults to 'false'.
     * The method returns 'true' if a server was shutdown, 'false' otherwise.
     */
-   bool stop(bool shutdownExternal=false);
+   bool stop(bool shutdownExternal=false, bool warnIfNotRunning=true);
 
 
    /**

@@ -10,20 +10,22 @@ Comment:   Testing the Timeout Features
 
 namespace org { namespace xmlBlaster { namespace util {
 
-EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const string& applArguments) 
+EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const string& applArguments, XmlBlasterAccess* externalAccess) 
    : Thread(),
      ME("EmbeddedServer"), 
      global_(glob), 
      log_(glob.getLog())
 {
-   isRunning_     = false;
-   applArguments_ = applArguments;
-   jvmArguments_  = jvmArguments;
+   isRunning_      = false;
+   applArguments_  = applArguments;
+   jvmArguments_   = jvmArguments;
+   externalAccess_ = externalAccess; 
 }
 
 EmbeddedServer::~EmbeddedServer()
 {
- stop();
+   externalAccess_ = NULL;
+   stop(false, false);
 }
 
 void EmbeddedServer::run()
@@ -32,10 +34,12 @@ void EmbeddedServer::run()
       log_.warn(ME, "the current server is already running. ignoring the start command.");
       return;
    }
+/* currently commented out (could give problems if multithreading not supported)
    if (isSomeServerResponding()) {
       log_.error(ME, "an external server is already running. Please shut it down");
       return;
    }
+*/
    string cmdLine = string("java ") + jvmArguments_ + " org.xmlBlaster.Main " + applArguments_;
    log_.info(ME, "starting the embedded server with command line: '" + cmdLine + "'");
    if ( system(NULL) ) {
@@ -60,38 +64,43 @@ void EmbeddedServer::run()
    }
 }
 
-bool EmbeddedServer::stop(bool shutdownExternal)
+bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
 {
    if (!isRunning_ && !shutdownExternal) {
-      log_.warn(ME, "the current embedded server is not running. Ignoring this 'stop' command");
+      if (warnIfNotRunning)
+         log_.warn(ME, "the current embedded server is not running. Ignoring this 'stop' command");
       return false;
-   }
-
-   XmlBlasterAccess conn(global_, "embedded");
-   try {
-      SessionQos sessionQos(global_);
-      sessionQos.setAbsoluteName("embeddedKiller");
-      ConnectQos connQos(global_, "embeddedKiller", "secret");
-      connQos.setSessionQos(sessionQos);
-      // to be sure not to store the kill msg in a client queue ...
-      Address address(global_);
-      address.setDelay(0);
-      connQos.setAddress(address);
-      conn.connect(connQos, NULL);
-   }
-   catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         log_.warn(ME, "there is no server responding, ignoring this 'stop' command");
-         return false;
-      }
-      throw ex;
    }
 
    PublishKey key(global_);
    key.setOid("__cmd:?exit=-1");
    PublishQos qos(global_);
    MessageUnit msgUnit(key, "", qos);
-   conn.publish(msgUnit);
+
+   if (!externalAccess_) {
+      XmlBlasterAccess conn(global_, "embedded");
+      try {
+         SessionQos sessionQos(global_);
+         sessionQos.setAbsoluteName("embeddedKiller");
+         ConnectQos connQos(global_, "embeddedKiller", "secret");
+         connQos.setSessionQos(sessionQos);
+         // to be sure not to store the kill msg in a client queue ...
+         Address address(global_);
+         address.setDelay(0);
+         connQos.setAddress(address);
+         conn.connect(connQos, NULL);
+      }
+      catch (XmlBlasterException& ex) {
+         if ( ex.isCommunication() ) {
+            log_.warn(ME, "there is no server responding, ignoring this 'stop' command");
+            return false;
+         }
+         throw ex;
+      }
+      conn.publish(msgUnit);
+   }
+   else externalAccess_->publish(msgUnit);
+
    return true;
 }
 
@@ -99,12 +108,17 @@ bool EmbeddedServer::stop(bool shutdownExternal)
 bool EmbeddedServer::isSomeServerResponding() const
 {
    try {
-      XmlBlasterAccess conn(global_);
       SessionQos sessionQos(global_);
       sessionQos.setAbsoluteName("embeddedTester");
       ConnectQos connQos(global_, "embeddedTester", "secret");
       connQos.setSessionQos(sessionQos);
-      conn.connect(connQos, NULL);
+      if (externalAccess_) {
+         externalAccess_->connect(connQos, NULL);
+      }
+      else {
+         XmlBlasterAccess conn(global_);
+         conn.connect(connQos, NULL);
+      }
       return true;
    }
    catch (XmlBlasterException& ex) {

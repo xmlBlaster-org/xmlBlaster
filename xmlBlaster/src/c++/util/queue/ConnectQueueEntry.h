@@ -41,7 +41,8 @@ public:
 
    ConnectReturnQos getConnectReturnQos() const;
 
-   virtual string onlyForTesting() const;
+   string toXml(const string& indent="") const;
+
 
 };
 

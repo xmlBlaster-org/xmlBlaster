@@ -71,7 +71,6 @@ class Dll_Export QueryQosData : public QosData
    /** Query history messages */
    HistoryQos historyQos_;
 
-
    void init();
 
    void copy(const QueryQosData& data);

@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: Address.cpp,v 1.2 2003/01/07 20:41:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -37,9 +37,9 @@ inline void Address::initialize()
    setType(global_.getProperty().getStringProperty("client.protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime", DEFAULT_collectTime));
    setCollectTimeOneway(global_.getProperty().getLongProperty("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
-   setPingInterval(global_.getProperty().getLongProperty("pingInterval", getDefaultPingInterval()));
-   setRetries(global_.getProperty().getIntProperty("retries", getDefaultRetries()));
-   setDelay(global_.getProperty().getLongProperty("delay", getDefaultDelay()));
+   setPingInterval(global_.getProperty().getLongProperty("pingInterval", defaultPingInterval_));
+   setRetries(global_.getProperty().getIntProperty("retries", defaultRetries_));
+   setDelay(global_.getProperty().getLongProperty("delay", defaultDelay_));
    setOneway(global_.getProperty().getBoolProperty("oneway", DEFAULT_oneway));
    setCompressType(global_.getProperty().getStringProperty("compress.type", DEFAULT_compressType));
    setMinSize(global_.getProperty().getLongProperty("compress.minSize", DEFAULT_minSize));
@@ -76,11 +76,14 @@ inline void Address::initialize()
 Address::Address(Global& global, const string& type, const string& nodeId)
  : AddressBase(global, "address")
 {
+ 	 defaultRetries_      = -1;
+   defaultDelay_        = 0;
+   defaultPingInterval_ = 10000;
+   pingInterval_ = defaultPingInterval_;
+   retries_      = defaultRetries_;
+   delay_        = defaultDelay_;
    ME = "Address";
    if (nodeId != "") nodeId_ = nodeId;
-   pingInterval_ = getDefaultPingInterval();
-   retries_ = getDefaultRetries();
-   delay_ = getDefaultDelay();
    initialize();
    if (type != "")   type_ = type;
 }
@@ -104,26 +107,6 @@ void Address::setMaxMsg(long maxMsg)
 long Address::getMaxMsg() const
 {
    return maxMsg_;
-}
-
-/** How often to retry if connection fails: defaults to -1 (retry forever) */
-int Address::getDefaultRetries()
-{
-   return -1;
-}
-
-/** Delay between connection retries in milliseconds (5000 is a good value): defaults to 0, a value bigger 0 switches fails save mode on */
-long Address::getDefaultDelay()
-{
-   return 0;
-}
-// /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec), a value of 0 switches fails save mode off */
-// public long getDefaultDelay() { return 5 * 1000L; };
-
-/** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
-long Address::getDefaultPingInterval()
-{
-   return 10000;
 }
 
 /** For logging only */
@@ -158,9 +141,9 @@ string Address::usage()
    text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<string>(DEFAULT_collectTime) + "].\n");
    text += string("                       This allows performance tuning, try set it to 200.\n");
  //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
-   text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<string>(getDefaultPingInterval()) + "]\n");
-   text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<string>(getDefaultRetries()) + "]\n");
-   text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<string>(getDefaultDelay()) + "]\n");
+   text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<string>(defaultPingInterval_) + "]\n");
+   text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<string>(defaultRetries_) + "]\n");
+   text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<string>(defaultDelay_) + "]\n");
    text += string("                       A delay value > 0 switches fails save mode on, 0 switches it off\n");
  //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
  //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";

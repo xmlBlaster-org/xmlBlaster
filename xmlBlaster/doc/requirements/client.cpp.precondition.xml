@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.cpp.precondition' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      In order to build and run c++ clients, several preconditions need to be fulfilled.
+   </topic>
+   <description>
+
+     <p>To use the c++ client library several libraries are needed.
+        <ul>
+	   <li>parser library (currently only apache's xerces-c is supported)</li>
+	   <li>CORBA library (MICO, TAO and ORBACUS are supported)</li>
+	   <li>thread library: boost</li>
+	</ul>
+     </p>
+     <p><b>XERCES-C</b><br/>
+        you can download the xerces-c library from <a href="http://xml.apache.org/xerces-c/index.html">
+	apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
+	library for your platform.
+	<br/>
+	<b>NOTE for unix users:</b> once you have installed xerces-c you need to make a little adjustment
+	by hand. Lets call the directory where you installed xerces-c $XMLCPP_HOME. 
+	Then you can go to $XMLCPP_HOME/lib. There you will find a shared library
+	libxerces-c.so.$XMLCPP_VER where $XMLCPP_VER is the version you just installed (for example 21.0). 
+	Then you must create two symbolic links to that library as<br/>
+<pre>ln -s libxerces-c.so.21.0 libxerces-c.so
+ln -s libxerces-c.so.21.0 libxerces-c.so.21</pre>
+        <br/>
+	Now, when building with ant, the xerces-c library will be used. In build.properties make sure that
+	the $XMLCPP_VER is empty.
+     </p>
+     <p><b>CORBA</b><br/>
+     <b>MICO</b><br/>
+     If want to use MICO as the corba implementation you can download it from 
+     <a href="http://www.mico.org">the mico homepage</a>. On how to install and build MICO please
+     follow as usual the instructions given there. Once it is installed, open the file
+     build.properties in the $XMBLASTER_HOME directory. There you must adjust <br/>
+     <ul>
+        <li>CORBA_CPP</li>
+	<li>CORBACPP_HOME</li>
+	<li>CORBACPP_VER</li>
+     </ul>
+     to the correct values. 
+     <br/>
+     <b>TAO</b><br/>
+     If you want to use TAO please follow the <a href="client.cpp.tao.html">specific TAO requirement</a>
+     </p>
+     <p>
+        <b>Threads Library</b><br/>
+	Currently the threads library used in xmlBlaster is the boost threads library. It is part of the
+	client library itself, so you don't need to retreive it separately. However, if you would like to 
+	find more information about it, or if you want another version you can find it on
+	<a href="http://www.boost.org">the boost homepage</a>.
+	</p>In the build.properties there are two parameters which tell ant where to find the sources and
+	the includes for the thread library. If you use the default don't make any change. If you use an
+	external boost, then you can point to its thread sources with the variable THREADS_SRC and to the
+	includes with THREADS_INC.
+	<p>
+     </p>
+   </description>
+
+   <configuration where="client">
+<pre>
+XMLCPP_HOME   = /usr/local
+XMLCPP_VER    =
+CORBA_CPP     = mico
+CORBACPP_HOME = /usr/local/mico
+CORBACPP_VER  = 2.3.7
+THREAD_SRC    = src/c++/libs/thread/src
+THREAD_INC    = src/c++
+</pre>
+   </configuration>
+
+   <see type="REQ">client.cpp.tao</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2003 01 07</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+

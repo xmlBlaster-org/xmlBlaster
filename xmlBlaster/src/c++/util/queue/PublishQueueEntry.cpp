@@ -23,10 +23,12 @@ void* PublishQueueEntry::getEmbeddedObject()
 // this should actually be in another interface but since it is an only method we put it here.
 MsgQueueEntry& PublishQueueEntry::send(I_XmlBlasterConnection& connection)
 {
+   if (log_.CALL) log_.call(ME, "send");
    if (publishReturnQos_) {
       delete publishReturnQos_;
       publishReturnQos_ = NULL;
    }
+   if (log_.DUMP) log_.dump(ME, string("send: ") + PublishQueueEntry::toXml());
    publishReturnQos_ = new PublishReturnQos(connection.publish(*msgUnit_));
    return *this;
 }
@@ -41,9 +43,13 @@ PublishReturnQos PublishQueueEntry::getPublishReturnQos() const
    return *publishReturnQos_;
 }
 
-string PublishQueueEntry::onlyForTesting() const 
+string PublishQueueEntry::toXml(const string& indent) const
 {
-   return "PublishQueueEntry";
+   string extraOffset = "   " + indent;
+   string ret = indent + "<publishQueueEntry>\n" + 
+                extraOffset + msgUnit_->toXml(indent) +
+                indent + "</publishQueueEntry>\n";
+   return ret;
 }
 
 

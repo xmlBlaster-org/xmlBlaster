@@ -49,6 +49,8 @@ public:
  
    UnSubscribeReturnQos getUnSubscribeReturnQos() const;
 
+   virtual string toXml(const string& indent="") const;
+
 };
 
 }}}} // namespace

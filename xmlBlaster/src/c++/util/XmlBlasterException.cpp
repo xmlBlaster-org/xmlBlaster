@@ -38,7 +38,7 @@ XmlBlasterException::XmlBlasterException(const string &errorCodeStr,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
 }
 
 
@@ -65,7 +65,7 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
 }
 
 
@@ -86,7 +86,7 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
    if (embeddedMessage_ == "") {
       embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
-   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+   if (stackTrace_ == "" && isInternal()) stackTrace_ = getStackTrace();
 }
 
 string XmlBlasterException::getErrorCodeStr() const

@@ -15,7 +15,12 @@ using org::xmlBlaster::util::qos::storage::QueueProperty;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 MsgQueue::MsgQueue(Global& global, const QueueProperty& property)
-   : ME("MsgQueue"), global_(global), log_(global.getLog("queue")), property_(property), storage_(), accessMutex_()
+   : ME("MsgQueue"), 
+     global_(global), 
+     log_(global.getLog("queue")), 
+     property_(property), 
+     storage_(), 
+     accessMutex_()
 {
    numOfBytes_ = 0;
 }
@@ -53,6 +58,8 @@ MsgQueue::~MsgQueue()
 
 void MsgQueue::put(MsgQueueEntry *entry)
 {
+   log_.call(ME, "put");
+
    Lock lock(accessMutex_);
    if (!entry) throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::put", "the entry is NULL");
    if (numOfBytes_+entry->getSizeInBytes() > ((size_t)property_.getMaxBytes()) ) {
@@ -70,7 +77,7 @@ void MsgQueue::put(MsgQueueEntry *entry)
    }
    catch (exception& ex) {
       throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::put", ex.what());
-   }	  
+   }      
    catch (...) {
       throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::put", "the original type of this exception is unknown");
    }

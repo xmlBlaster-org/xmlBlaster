@@ -23,7 +23,10 @@ using org::xmlBlaster::util::MessageUnit;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool durable)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
+   : ReferenceCounterBase(), 
+     ME("MsgQueueEntry"), 
+     global_(global), 
+     log_(global.getLog("queue"))
 {
    connectQos_       = NULL;
    connectReturnQos_ = NULL;
@@ -40,7 +43,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
 }
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool durable)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
 {
    connectQos_       = new ConnectQos(connectQos);
    msgUnit_          = NULL;
@@ -58,7 +61,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
 
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type, int priority, bool durable)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
 {
    connectQos_       = NULL;
    msgUnit_          = NULL;
@@ -88,7 +91,7 @@ MsgQueueEntry::~MsgQueueEntry()
 }
 
 MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
-   : ReferenceCounterBase(entry), ME(entry.ME), global_(entry.global_)
+   : ReferenceCounterBase(entry), ME(entry.ME), global_(entry.global_), log_(entry.log_)
 {
    connectQos_       = NULL;
    msgUnit_          = NULL;
@@ -142,5 +145,19 @@ string MsgQueueEntry::getEmbeddedType() const
    return embeddedType_;
 }
 
+string MsgQueueEntry::toXml(const string& indent)
+{
+   return "<notImplemented/>\n";
+}
+
+
+MsgQueueEntry& MsgQueueEntry::send(I_XmlBlasterConnection& connection)
+{
+   log_.error(ME, "send not implemented");
+   return *this;
+}
+
+
 
 }}}} // namespace
+

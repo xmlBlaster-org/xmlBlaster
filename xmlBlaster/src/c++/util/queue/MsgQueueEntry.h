@@ -18,12 +18,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/StatusQosData.h>
 #include <util/qos/QueryQosData.h>
 #include <util/key/QueryKeyData.h>
-
+#include <util/Log.h>
 #include <stddef.h>
 
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util;
 using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
 using org::xmlBlaster::util::qos::ConnectQos;
 using org::xmlBlaster::util::ReferenceCounterBase;
@@ -44,6 +45,7 @@ class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 protected:
    string        ME;
    Global&       global_;
+   Log&          log_;
    int           priority_;
    bool          durable_;
    Timestamp     uniqueId_;
@@ -206,7 +208,9 @@ public:
 
 
    // this should actually be in another interface but since it is an only method we put it here.
-   virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection) = 0;
+   virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection); // = 0;
+
+   virtual string toXml(const string& indent=""); // const = 0;
 
 };
 

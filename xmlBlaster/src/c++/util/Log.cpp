@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.11 2003/01/06 12:15:11 laghi Exp $
+Version:   $Id: Log.cpp,v 1.12 2003/01/07 20:41:36 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -315,13 +315,14 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::initSpecificTrace(const string& trace, const string& traceId)
    {
-      if (properties_->propertyExists(trace)) {
-         if (properties_->getBoolProperty(trace, false))
-            addLogLevel(traceId);
-         else removeLogLevel(traceId);
-      }
       if (properties_->propertyExists(trace + "[" + name_ + "]")) {
          if (properties_->getBoolProperty(trace + "[" + name_ + "]", false))
+            addLogLevel(traceId);
+         else removeLogLevel(traceId);
+         return;
+      }
+      if (properties_->propertyExists(trace)) {
+         if (properties_->getBoolProperty(trace, false))
             addLogLevel(traceId);
          else removeLogLevel(traceId);
       }

@@ -22,10 +22,12 @@ void* UnSubscribeQueueEntry::getEmbeddedObject()
 // this should actually be in another interface but since it is an only method we put it here.
 MsgQueueEntry& UnSubscribeQueueEntry::send(I_XmlBlasterConnection& connection)
 {
+   if (log_.CALL) log_.call(ME, "send");
    if (statusQosData_) {
       delete statusQosData_;
       statusQosData_ = NULL;
    }
+   if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
    // the return value is not stored ...
    connection.unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
 
@@ -47,6 +49,16 @@ UnSubscribeReturnQos UnSubscribeQueueEntry::getUnSubscribeReturnQos() const
    return UnSubscribeReturnQos(global_, *statusQosData_);
 }
 
+
+string UnSubscribeQueueEntry::toXml(const string& indent) const
+{
+   string extraOffset = "   " + indent;
+   string ret = indent + "<unSubscribeQueueEntry>\n" + 
+                extraOffset + queryKeyData_->toXml("  ") +
+                extraOffset + queryQosData_->toXml("  ") +
+                indent + "</unSubscribeQueueEntry>\n";
+   return ret;
+}
 
 }}}} // namespace
 

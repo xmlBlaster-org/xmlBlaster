@@ -3,7 +3,7 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: CallbackAddress.cpp,v 1.2 2003/01/07 20:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/address/CallbackAddress.h>
@@ -22,9 +22,9 @@ inline void CallbackAddress::initialize()
    setType(global_.getProperty().getStringProperty("cb.protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
    setCollectTimeOneway(global_.getProperty().getLongProperty("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
-   setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval", getDefaultPingInterval()));
-   setRetries(global_.getProperty().getIntProperty("cb.retries", getDefaultRetries()));
-   setDelay(global_.getProperty().getLongProperty("cb.delay", getDefaultDelay()));
+   setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval", defaultPingInterval_));
+   setRetries(global_.getProperty().getIntProperty("cb.retries", defaultRetries_));
+   setDelay(global_.getProperty().getLongProperty("cb.delay", defaultDelay_));
    useForSubjectQueue(global_.getProperty().getBoolProperty("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue));
    setOneway(global_.getProperty().getBoolProperty("cb.oneway", DEFAULT_oneway));
    setCompressType(global_.getProperty().getStringProperty("cb.compress.type", DEFAULT_compressType));
@@ -55,11 +55,14 @@ inline void CallbackAddress::initialize()
 CallbackAddress::CallbackAddress(Global& global, const string& type, const string nodeId)
    : AddressBase(global, "callback")
 {
+   defaultRetries_      = 0;
+   defaultDelay_        = Constants::MINUTE_IN_MILLIS;
+   defaultPingInterval_ = Constants::MINUTE_IN_MILLIS;
    ME = "CallbackAddress";
    if (nodeId != "") nodeId_ = nodeId;
-   pingInterval_ = getDefaultPingInterval();
-   retries_ = getDefaultRetries();
-   delay_ = getDefaultDelay();
+   pingInterval_ = defaultPingInterval_;
+   retries_      = defaultRetries_;
+   delay_        = defaultDelay_;
    initialize();
    if (type != "") setType(type);
 }
@@ -73,25 +76,6 @@ CallbackAddress& CallbackAddress::operator =(const AddressBase& addr)
    AddressBase::copy(addr);
    return *this;
 }
-
-/** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
-int CallbackAddress::getDefaultRetries()
-{
-   return 0;
-}
-
-/** Delay between connection retries in milliseconds: defaults to one minute */
-long CallbackAddress::getDefaultDelay()
-{
-   return Constants::MINUTE_IN_MILLIS;
-}
-
-/** Ping interval: pinging every given milliseconds, defaults to one minute */
-long CallbackAddress::getDefaultPingInterval()
-{
-   return Constants::MINUTE_IN_MILLIS;
-}
-
 
 /**
  * Shall this address be used for subject queue messages?
@@ -132,9 +116,9 @@ string CallbackAddress::usage()
    if (DEFAULT_oneway) help = "true";
    text += string("   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [") + help + string("]\n");
 
-   text += string("   -cb.pingInterval    Pinging every given milliseconds [") + lexical_cast<string>(getDefaultPingInterval()) + string("]\n");
-   text += string("   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [") + lexical_cast<string>(getDefaultRetries()) + string("]\n");
-   text += string("   -cb.delay           Delay between callback retries in milliseconds [") + lexical_cast<string>(getDefaultDelay()) + string("]\n");
+   text += string("   -cb.pingInterval    Pinging every given milliseconds [") + lexical_cast<string>(defaultPingInterval_) + string("]\n");
+   text += string("   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [") + lexical_cast<string>(defaultRetries_) + string("]\n");
+   text += string("   -cb.delay           Delay between callback retries in milliseconds [") + lexical_cast<string>(defaultDelay_) + string("]\n");
    text += string("   -cb.compress.type   With which format message be compressed on callback [") + DEFAULT_compressType + string("]\n");
    text += string("   -cb.compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<string>(DEFAULT_minSize) + string("]\n");
 

@@ -33,8 +33,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
    {
    public:
 
-//         virtual ~I_XmlBlasterConnection() = 0;
-
+      virtual ~I_XmlBlasterConnection() 
+      {
+      }
 
       /**
        * connect() is a login or authentication as well, the authentication schema
@@ -49,7 +50,6 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * @return ConnectReturnQos
        */
       virtual ConnectReturnQos connect(const ConnectQos& qos) = 0;
-
 
       /**
        * Logout from xmlBlaster.
@@ -80,17 +80,6 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
       virtual bool isLoggedIn() = 0;
 
       virtual string ping(const string& qos) = 0;
-
-      // The following methods correspond to the I_XmlBlaster interface
-/*
-      virtual string subscribe(const string& xmlKey, const string& qos) = 0;
-      virtual vector<MessageUnit> get(const string& xmlKey, const string& qos) = 0;
-      virtual vector<string> unSubscribe(const string& xmlKey, const string& qos) = 0;
-      virtual string publish(const MessageUnit& msgUnit) = 0;
-      virtual void publishOneway(const vector<MessageUnit> &msgUnitArr) = 0;
-      virtual vector<string> publishArr(vector<MessageUnit> msgUnitArr) = 0;
-      virtual vector<string> erase(const string& xmlKey, const string& qos) = 0;
-*/
 
       virtual SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos) = 0;
 

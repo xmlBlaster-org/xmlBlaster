@@ -55,6 +55,9 @@ typedef vector<RouteInfo> RouteVector;
 
 class Dll_Export QosData
 {
+private:
+   void init();
+
 protected:
    string  ME;
    Global& global_;
@@ -78,8 +81,6 @@ protected:
     * ArrayList containing RouteInfo objects
     */
    RouteVector routeNodeList_;
-
-   virtual void init();
 
    void copy(const QosData& data);
 

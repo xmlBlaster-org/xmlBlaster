@@ -44,7 +44,7 @@ public:
 
    PublishReturnQos getPublishReturnQos() const;
 
-   string onlyForTesting() const;
+   string toXml(const string& indent="") const;
 
 };
 

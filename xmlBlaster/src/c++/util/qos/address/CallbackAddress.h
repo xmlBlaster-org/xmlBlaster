@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: CallbackAddress.h,v 1.2 2003/01/07 20:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -65,15 +65,6 @@ public:
     * Assignment operator
     */
    CallbackAddress& operator =(const AddressBase& addr);
-
-   /** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
-   int getDefaultRetries();
-
-   /** Delay between connection retries in milliseconds: defaults to one minute */
-   long getDefaultDelay();
-
-   /** Ping interval: pinging every given milliseconds, defaults to one minute */
-   long getDefaultPingInterval();
 
    /**
     * Shall this address be used for subject queue messages?

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.12 2003/01/06 12:15:11 laghi Exp $
+Version:   $Id: Global.cpp,v 1.13 2003/01/07 20:41:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
@@ -68,7 +68,7 @@ void Global::initialize(int args, const char * const argc[])
    isInitialized_ = true;
 }
 
-Property& Global::getProperty()
+Property& Global::getProperty() const
 {
    if (property_ == NULL)
      throw XmlBlasterException(USER_CONFIGURATION,
@@ -112,7 +112,7 @@ string Global::getLocalIP() const
    return string("127.0.0.1");
 }
 
-string Global::getBootstrapHostname()
+string Global::getBootstrapHostname() const
 {
    string ret = getProperty().getProperty(string("hostname"));
    if (ret == "") return getLocalIP();
@@ -121,8 +121,8 @@ string Global::getBootstrapHostname()
 
 string Global::getCbHostname() const
 {
-   std::cout << "Global::getCbHostname implementation is not finished" << std::endl;
-   return "127.0.0.1"; // STILL TO BE IMPLEMENTED !!!
+//   std::cout << "Global::getCbHostname implementation is not finished" << std::endl;
+   return getBootstrapHostname();
 }
 
 CbServerPluginManager& Global::getCbServerPluginManager()

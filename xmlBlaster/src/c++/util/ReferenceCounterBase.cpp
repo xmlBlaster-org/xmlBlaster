@@ -3,7 +3,7 @@ Name:      ReferenceCounterBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper class to be used as a base for classes to be reference counted
-Version:   $Id: ReferenceCounterBase.cpp,v 1.2 2003/01/05 15:33:20 laghi Exp $
+Version:   $Id: ReferenceCounterBase.cpp,v 1.3 2003/01/07 20:41:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/ReferenceCounterBase.h>
@@ -15,12 +15,12 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 
 ReferenceCounterBase::ReferenceCounterBase()
-   : refCount_(0), shareable_(true)
+   : refCount_(0) // , shareable_(true)
 {
 }
 
 ReferenceCounterBase::ReferenceCounterBase(const ReferenceCounterBase& ref)
-   :   refCount_(0), shareable_(true)
+   :   refCount_(0) // , shareable_(true)
 {
 }
 
@@ -45,6 +45,7 @@ void ReferenceCounterBase::removeReference()
    if (--refCount_ == 0) delete this;
 }
 
+/*
 void ReferenceCounterBase::markUnshareable()
 {
    shareable_ = false;
@@ -60,7 +61,7 @@ bool ReferenceCounterBase::isShared() const
    return refCount_ > 1;
 }
 
-
+*/
 
 }}} // namespace
 

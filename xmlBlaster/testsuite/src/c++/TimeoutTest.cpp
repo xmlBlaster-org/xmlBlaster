@@ -31,8 +31,10 @@ private:
    string ME;
    Timeout *timeoutObject;
    Global& global_;
+   int     count_;
 public:
    TimeoutTest(Global& global, string name) : ME(name), global_(global) {
+      count_ = 0;
    }
 
    virtual ~TimeoutTest()
@@ -44,8 +46,11 @@ public:
       cout << "this is the timeout for the test" << endl;
       if (userData == NULL) return;
       Timeout *to = static_cast<Timeout*>(userData);
-      to->addTimeoutListener(this, 1000, to);
-      cout << "next timeout will occur in about 1 s" << endl;
+      if (count_ < 10) {
+         to->addTimeoutListener(this, 1000, to);
+         cout << "next timeout will occur in about 1 s" << endl;
+         count_++;
+      }
    }
 
    void testTimeout() 
@@ -58,10 +63,8 @@ public:
 
       // waiting some time ... (you can't use join because the timeout thread
       // never stops ...
-      Timestamp delay = 10000;
-      delay *= 1000000;
       std::cout << ME << " main thread is sleeping now" << std::endl;
-      Thread::sleep(delay);
+      Thread::sleepSecs(12);
       std::cout << ME << " after waiting to complete" << std::endl;
    }
 

@@ -24,7 +24,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
      deliveryManager_(deliveryManager), 
      status_(START), 
      global_(global), 
-     log_(global.getLog("delivery")),
+     log_(global.getLog("dispatch")),
      connectionMutex_()
 {
    QueueProperty prop(global_, "");
@@ -433,7 +433,7 @@ void ConnectionsHandler::timeout(void *userData)
                  log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
               }
            }
-           startPinger();       
+           startPinger();
         }
      }
      catch (XmlBlasterException ex) {
@@ -500,11 +500,14 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
 
    long ret = 0;
    while (!queueToFlush->empty()) {
+      log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep");
       vector<EntryType> entries = queueToFlush->peekWithSamePriority();
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
+            if (log_.TRACE) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
             (*iter)->send(*connection_);
+            if (log_.TRACE) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
          catch (XmlBlasterException &ex) {
            if (ex.isCommunication()) toPollingOrDead();
@@ -546,6 +549,7 @@ bool ConnectionsHandler::isFailsafe() const
 
 bool ConnectionsHandler::startPinger()
 {
+   log_.call(ME, "startPinger");
    if (pingIsStarted_) return false;
 
    long delay        = 10000;

@@ -35,6 +35,10 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
    {
    public:
 
+      virtual ~I_CallbackServer() 
+      {
+      }
+
       /**
        * Initialize and start the callback server.
        * <p />
@@ -50,7 +54,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * @return E.g. "RMI", "SOCKET", "XML-RPC"
        */
       virtual string getCbProtocol() = 0;
-   
+         
       /**
        * Returns the current callback address.
        * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XML-RPC"

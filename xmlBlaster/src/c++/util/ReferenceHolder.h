@@ -3,7 +3,7 @@ Name:      ReferenceHolder.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Entry Holder to use with stl containers as containers of references
-Version:   $Id: ReferenceHolder.h,v 1.6 2003/01/05 22:31:30 laghi Exp $
+Version:   $Id: ReferenceHolder.h,v 1.7 2003/01/07 20:41:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCEHOLDER_H
@@ -32,10 +32,10 @@ private:
    void init() const
    {
       if (!element_) return;
-      if (!element_->isShareable()) {
+//      if (!element_->isShareable()) {
 //         element_ = new T(*element_);
          // throw an exception here since the class could have virtual methods.
-      }
+//      }
       element_->addReference();
    }
 

@@ -22,10 +22,12 @@ void* ConnectQueueEntry::getEmbeddedObject()
 // this should actually be in another interface but since it is an only method we put it here.
 MsgQueueEntry& ConnectQueueEntry::send(I_XmlBlasterConnection& connection)
 {
+   if (log_.CALL) log_.call(ME, "send");
    if (connectReturnQos_) {
       delete connectReturnQos_;
       connectReturnQos_ = NULL;
    }
+   if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
    connectReturnQos_ = new ConnectReturnQos(connection.connect(*connectQos_));
    return *this;
 }
@@ -40,9 +42,14 @@ ConnectReturnQos ConnectQueueEntry::getConnectReturnQos() const
    return *connectReturnQos_;
 }
 
-string ConnectQueueEntry::onlyForTesting() const 
+
+string ConnectQueueEntry::toXml(const string& indent) const
 {
-   return "ConnectQueueEntry";
+   string extraOffset = "   " + indent;
+   string ret = indent + "<connectQueueEntry>\n" +
+          extraOffset + connectQos_->toXml(indent) +
+          indent + "</connectQueueEntry>\n";
+   return ret;
 }
 
 
