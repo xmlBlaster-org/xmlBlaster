@@ -698,7 +698,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       Address address = connectQos.getAddress();
       if (address == null) {
-         address = new Address(glob);
+         address = glob.getBootstrapAddress();
          connectQos.setAddress(address);
       }
 
@@ -932,6 +932,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             this.connectReturnQos = driver.connect(connectQos);
             firstConnect = false;
             initFailSave();
+            log.info(ME, "Connected to " + getServerNodeId() + ", your public session ID is " + connectReturnQos.getPublicSessionId());
          }
          else   
             this.connectReturnQos = driver.loginRaw();
