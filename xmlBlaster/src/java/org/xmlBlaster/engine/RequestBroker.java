@@ -831,7 +831,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             MsgUnit[] msgUnitArr = new MsgUnit[raw.length];
             for(int i=0; i<raw.length; i++) {
                String key = "<key oid='" + raw[i].getKey() + "'/>";
-               msgUnitArr[i] = new MsgUnit(glob, key, raw[i].getContent(), raw[i].getQos());
+               byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
+               msgUnitArr[i] = new MsgUnit(glob, key, cont, raw[i].getQos());
             }
             return msgUnitArr;
          }
@@ -923,7 +924,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   }
 
                   GetReturnQosServer retQos = new GetReturnQosServer(glob, msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
-                  mm = new MsgUnit(mm, null, null, retQos.getData());
+                  byte[] cont = (getQos.getWantContent()) ? mm.getContent() : new byte[0];
+                  mm = new MsgUnit(mm, null, cont, retQos.getData());
                   msgUnitList.add(mm);
 
                } // for each history entry
