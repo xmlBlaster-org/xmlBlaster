@@ -41,12 +41,15 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 JAVAC_FLAGS= -deprecation -g
 
 ifdef JIKES_HOME
-JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+   JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 else
 ifdef JDK_1_1
-JAVAC= javac $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+   JAVAC= javac $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 else
-JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+   # Use this if you didn't copy orb.properties to java.home/lib directory:
+   #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+	#
+   JAVAC= javac $(JAVAC_FLAGS) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
 endif
 endif
 #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
