@@ -37,8 +37,8 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-#JAVAC_FLAGS=
-JAVAC_FLAGS= -deprecation -g
+JAVAC_FLAGS=  -g
+#JAVAC_FLAGS= -deprecation -g
 
 ifdef JIKES_HOME
    JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
