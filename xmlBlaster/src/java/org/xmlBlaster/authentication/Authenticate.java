@@ -223,7 +223,16 @@ final public class Authenticate implements I_Authenticate
          ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
          returnQos.setSessionId(sessionId); // securityInfo is not coded yet !
 
-         log.info(ME, "Successful login for client " + subjectCtx.getName() + ", " + subjectInfo.getNumSessions() + " sessions are in use.");
+         // Now some nice logging ...
+         StringBuffer sb = new StringBuffer(256);
+         sb.append("Successful login for client ").append(subjectCtx.getName());
+         sb.append(", session:").append(sessionInfo.getInstanceId());
+         sb.append(((connectQos.getSessionTimeout() > 0L) ?
+                         " expires after"+org.jutils.time.TimeHelper.millisToNice(connectQos.getSessionTimeout()) :
+                         " lasts forever"));
+         sb.append(", ").append(subjectInfo.getNumSessions()).append(" of ");
+         sb.append(connectQos.getMaxSessions()).append(" sessions are in use.");
+         log.info(ME, sb.toString());
          if (log.DUMP) log.dump(ME, toXml());
          if (log.DUMP) log.dump(ME, "Returned QoS:\n" + returnQos.toXml());
          if (log.CALL) log.call(ME, "Leaving connect()");
@@ -341,7 +350,7 @@ final public class Authenticate implements I_Authenticate
 
       SessionInfo sessionInfo = (SessionInfo)obj;
 
-      log.info(ME, "Disconnecting client " + sessionInfo.getLoginName() + " (sessionId=" + sessionId + ")");
+      log.info(ME, "Disconnecting client " + sessionInfo.getLoginName() + ", instanceId=" + sessionInfo.getInstanceId() + ", sessionId=" + sessionId);
 
       I_Session oldSessionCtx = sessionInfo.getSecuritySession();
       oldSessionCtx.getManager().releaseSession(sessionId, null);
@@ -516,8 +525,7 @@ final public class Authenticate implements I_Authenticate
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      if (sessionInfoMap.size() != loginNameSubjectInfoMap.size())
-         log.error(ME, "Inconsistent client maps, sessionInfoMap.size()=" + sessionInfoMap.size() + " and loginNameSubjectInfoMap.size()=" + loginNameSubjectInfoMap.size());
+      log.info(ME, "Client maps, sessionInfoMap.size()=" + sessionInfoMap.size() + " and loginNameSubjectInfoMap.size()=" + loginNameSubjectInfoMap.size());
       Iterator iterator = loginNameSubjectInfoMap.values().iterator();
 
       sb.append(offset).append("<Authenticate>");
