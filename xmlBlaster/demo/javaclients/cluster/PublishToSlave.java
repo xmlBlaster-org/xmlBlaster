@@ -5,6 +5,7 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -29,6 +30,7 @@ public class PublishToSlave implements I_Callback
 
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", "RUGBY_NEWS");
          PublishQosWrapper pq = new PublishQosWrapper();
+         pq.setPriority(Constants.MIN_PRIORITY);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "We won".getBytes(), pq.toXml());
          String retQos = con.publish(msgUnit);
          Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' to xmlBlaster node, the returned QoS is: " + retQos);

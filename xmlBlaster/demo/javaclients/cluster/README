@@ -4,9 +4,6 @@ Please read the cluster requirement
 
 first.
 
-1. Copy this to your $HOME/xmlBlaster.properties to configure a cluster
-=======================================================================
-
 
 2. Start avalon (the xmlBlaster slave node):
 ============================================

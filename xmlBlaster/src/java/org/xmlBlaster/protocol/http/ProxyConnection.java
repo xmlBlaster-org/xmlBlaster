@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.31 2002/05/01 21:40:11 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.32 2002/05/02 19:08:39 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -35,7 +35,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
@@ -65,7 +65,7 @@ public class ProxyConnection implements I_Callback
          throw new XmlBlasterException(ME+".AccessDenied", "Please give proper login name and password");
 
       //establish a CORBA based connection to server
-      xmlBlasterConnection = new XmlBlasterConnection(new String[0], "IOR");
+      xmlBlasterConnection = new XmlBlasterConnection(glob);
 
       // initFailSave() ???
 

@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.3 2002/05/02 12:35:43 ruff Exp $
+Version:   $Id: Address.java,v 1.4 2002/05/02 19:08:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -14,7 +14,7 @@ import org.xml.sax.Attributes;
 
 
 /**
- * Helper class holding address string and protocol string.
+ * Helper class holding address string, protocol string and client side connection properties.
  * <p />
  * <pre>
  * &lt;address type='XML-RPC' sessionId='4e56890ghdFzj0'
@@ -22,7 +22,7 @@ import org.xml.sax.Attributes;
  *           oneway='false'>
  *    http://server:8080/cb
  *    &lt;compress type='gzip' minSize='1000'/>
- *    &lt;burstMode collectTime='400'/>
+ *    &lt;burstMode collectTime='400'/> <!-- for publishOneway() calls -->
  * &lt;/address>
  * </pre>
  */
@@ -82,26 +82,61 @@ public class Address extends AddressBase
     */
    private void initialize()
    {
-      collectTime = glob.getProperty().get("collectTime", DEFAULT_collectTime);
-      pingInterval = glob.getProperty().get("pingInterval", DEFAULT_pingInterval);
-      retries = glob.getProperty().get("retries", DEFAULT_retries);
-      delay = glob.getProperty().get("delay", DEFAULT_delay);
-      oneway = glob.getProperty().get("oneway", DEFAULT_oneway);
-      compressType = glob.getProperty().get("compress.type", DEFAULT_compressType);
-      minSize = glob.getProperty().get("compress.minSize", DEFAULT_minSize);
-      ptpAllowed = glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed);
-      sessionId = glob.getProperty().get("sessionId", DEFAULT_sessionId);
+      setType(glob.getProperty().get("client.protocol", getType()));
+      setCollectTime(glob.getProperty().get("burstMode.collectTime", DEFAULT_collectTime));
+      setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
+      setPingInterval(glob.getProperty().get("pingInterval", getDefaultPingInterval()));
+      setRetries(glob.getProperty().get("retries", getDefaultRetries()));
+      setDelay(glob.getProperty().get("delay", getDefaultDelay()));
+      setOneway(glob.getProperty().get("oneway", DEFAULT_oneway));
+      setCompressType(glob.getProperty().get("compress.type", DEFAULT_compressType));
+      setMinSize(glob.getProperty().get("compress.minSize", DEFAULT_minSize));
+      setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
+      setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
       if (nodeId != null) {
-         collectTime = glob.getProperty().get("collectTime["+nodeId+"]", collectTime);
-         pingInterval = glob.getProperty().get("pingInterval["+nodeId+"]", pingInterval);
-         retries = glob.getProperty().get("retries["+nodeId+"]", retries);
-         delay = glob.getProperty().get("delay["+nodeId+"]", delay);
-         oneway = glob.getProperty().get("oneway["+nodeId+"]", oneway);
-         compressType = glob.getProperty().get("compress.type["+nodeId+"]", compressType);
-         minSize = glob.getProperty().get("compress.minSize["+nodeId+"]", minSize);
-         ptpAllowed = glob.getProperty().get("ptpAllowed["+nodeId+"]", ptpAllowed);
-         sessionId = glob.getProperty().get("sessionId["+nodeId+"]", sessionId);
+         setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
+         setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", collectTime));
+         setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));
+         setPingInterval(glob.getProperty().get("pingInterval["+nodeId+"]", pingInterval));
+         setRetries(glob.getProperty().get("retries["+nodeId+"]", retries));
+         setDelay(glob.getProperty().get("delay["+nodeId+"]", delay));
+         setOneway(glob.getProperty().get("oneway["+nodeId+"]", oneway));
+         setCompressType(glob.getProperty().get("compress.type["+nodeId+"]", compressType));
+         setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", minSize));
+         setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", ptpAllowed));
+         setSessionId(glob.getProperty().get("sessionId["+nodeId+"]", sessionId));
       }
+   }
+
+   /** How often to retry if connection fails: defaults to -1 (retry forever) */
+   public int getDefaultRetries() { return -1; }
+
+   /** Delay between connection retries in milliseconds: defaults to 5 seconds */
+   public long getDefaultDelay() { return 5 * 1000L; };
+
+   /** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
+   public long getDefaultPingInterval() { return 10 * 1000L; }
+
+   /**
+    * Get a usage string for the connection parameters
+    */
+   public final String usage()
+   {
+      String text = "\n";
+      text += "Control connection to xmlBlaster server\n";
+      text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
+      //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
+      //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
+      text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";
+      text += "                       This allows performance tuning, try set it to 200.\n";
+      //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
+      text += "   -pingInterval       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -retries            How often to retry if connection fails [" + getDefaultRetries() + "]\n";
+      text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
+      //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
+      //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
+      text += "\n";
+      return text;
    }
 
    /** For testing: java org.xmlBlaster.engine.helper.Address */

@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.11 2002/05/02 12:35:43 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.12 2002/05/02 19:08:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -47,6 +47,15 @@ public class CallbackAddress extends AddressBase
       setType(type);
    }
 
+   /** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
+   public int getDefaultRetries() { return 0; }
+
+   /** Delay between connection retries in milliseconds: defaults to one minute */
+   public long getDefaultDelay() { return Constants.MINUTE_IN_MILLIS; };
+
+   /** Ping interval: pinging every given milliseconds, defaults to one minute */
+   public long getDefaultPingInterval() { return Constants.MINUTE_IN_MILLIS; }
+
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
     * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
@@ -68,27 +77,31 @@ public class CallbackAddress extends AddressBase
     * Configure property settings
     */
    private void initialize() {
-      collectTime = glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime);
-      pingInterval = glob.getProperty().get("cb.pingInterval", DEFAULT_pingInterval);
-      retries = glob.getProperty().get("cb.retries", DEFAULT_retries);
-      delay = glob.getProperty().get("cb.delay", DEFAULT_delay);
-      useForSubjectQueue = glob.getProperty().get("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue);
-      oneway = glob.getProperty().get("cb.oneway", DEFAULT_oneway);
-      compressType = glob.getProperty().get("cb.compress.type", DEFAULT_compressType);
-      minSize = glob.getProperty().get("cb.compress.minSize", DEFAULT_minSize);
-      ptpAllowed = glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed);
-      sessionId = glob.getProperty().get("cb.sessionId", DEFAULT_sessionId);
+      setType(glob.getProperty().get("cb.protocol", getType()));
+      setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
+      setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
+      setPingInterval(glob.getProperty().get("cb.pingInterval", getDefaultPingInterval()));
+      setRetries(glob.getProperty().get("cb.retries", getDefaultRetries()));
+      setDelay(glob.getProperty().get("cb.delay", getDefaultDelay()));
+      useForSubjectQueue(glob.getProperty().get("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue));
+      setOneway(glob.getProperty().get("cb.oneway", DEFAULT_oneway));
+      setCompressType(glob.getProperty().get("cb.compress.type", DEFAULT_compressType));
+      setMinSize(glob.getProperty().get("cb.compress.minSize", DEFAULT_minSize));
+      setPtpAllowed(glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed));
+      setSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
       if (nodeId != null) {
-         collectTime = glob.getProperty().get("cb.burstMode.collectTime["+nodeId+"]", collectTime);
-         pingInterval = glob.getProperty().get("cb.pingInterval["+nodeId+"]", pingInterval);
-         retries = glob.getProperty().get("cb.retries["+nodeId+"]", retries);
-         delay = glob.getProperty().get("cb.delay["+nodeId+"]", delay);
-         useForSubjectQueue = glob.getProperty().get("cb.useForSubjectQueue["+nodeId+"]", useForSubjectQueue);
-         oneway = glob.getProperty().get("cb.oneway["+nodeId+"]", oneway);
-         compressType = glob.getProperty().get("cb.compress.type["+nodeId+"]", compressType);
-         minSize = glob.getProperty().get("cb.compress.minSize["+nodeId+"]", minSize);
-         ptpAllowed = glob.getProperty().get("cb.ptpAllowed["+nodeId+"]", ptpAllowed);
-         sessionId = glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId);
+         setType(glob.getProperty().get("cb.protocol["+nodeId+"]", getType()));
+         setCollectTime(glob.getProperty().get("cb.burstMode.collectTime["+nodeId+"]", collectTime));
+         setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));
+         setPingInterval(glob.getProperty().get("cb.pingInterval["+nodeId+"]", pingInterval));
+         setRetries(glob.getProperty().get("cb.retries["+nodeId+"]", retries));
+         setDelay(glob.getProperty().get("cb.delay["+nodeId+"]", delay));
+         useForSubjectQueue(glob.getProperty().get("cb.useForSubjectQueue["+nodeId+"]", useForSubjectQueue));
+         setOneway(glob.getProperty().get("cb.oneway["+nodeId+"]", oneway));
+         setCompressType(glob.getProperty().get("cb.compress.type["+nodeId+"]", compressType));
+         setMinSize(glob.getProperty().get("cb.compress.minSize["+nodeId+"]", minSize));
+         setPtpAllowed(glob.getProperty().get("cb.ptpAllowed["+nodeId+"]", ptpAllowed));
+         setSessionId(glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId));
       }
    }
 
@@ -120,6 +133,30 @@ public class CallbackAddress extends AddressBase
     */
    public void setPtpAllowed(boolean ptpAllowed) {
       this.ptpAllowed = ptpAllowed;
+   }
+
+   /**
+    * Get a usage string for the server side supported callback connection parameters
+    */
+   public String usage()
+   {
+      String text = "\n";
+      text += "Control xmlBlaster server side callback (if we install a local callback server)\n";
+      text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
+      text += "   -cb.queue.maxMsg    The max. capacity of the queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
+      text += "   -cb.queue.onOverflow  Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
+      text += "   -cb.queue.onFailure   Error handling when callback failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
+      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
+      text += "                         This allows performance tuning, try set it to 200.\n";
+      text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
+      text += "   -cb.pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -cb.retries         How often to retry if callback fails [" + getDefaultRetries() + "]\n";
+      text += "   -cb.delay           Delay between callback retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      text += "\n";
+      return text;
    }
 
    /** For testing: java org.xmlBlaster.engine.helper.CallbackAddress */

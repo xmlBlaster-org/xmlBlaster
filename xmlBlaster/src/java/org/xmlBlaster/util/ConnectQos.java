@@ -3,12 +3,13 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.12 2002/05/02 12:36:40 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.13 2002/05/02 19:08:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
@@ -118,6 +119,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Holding queue property if session related, a reference to a queuePropertyVec entry */
    private transient QueueProperty sessionQueueProperty = null;
 
+   /** The Address object holding the connection configuration */
+   private Address address = null;
+
    /**
     * Default constructor for clients without asynchronous callbacks
     * and default security plugin (as specified in xmlBlaster.properties)
@@ -212,6 +216,18 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       this.securityQos = securityQos;
       initialize(glob);
+   }
+
+   /**
+    * Default constructor with a specified callback address. 
+    * <p />
+    * @param callback The object containing the callback address.<br />
+    *        To add more callbacks, us the addCallbackAddress() method.
+    */
+   public ConnectQos(Global glob, CallbackAddress callback)
+   {
+      initialize(glob);
+      addCallbackAddress(callback);
    }
 
    private final void initialize(Global glob)
@@ -340,19 +356,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       else
          return null;
    }
-
-   /**
-    * Default constructor with a specified callback address. 
-    * <p />
-    * @param callback The object containing the callback address.<br />
-    *        To add more callbacks, us the addCallbackAddress() method.
-    */
-   public ConnectQos(Global glob, CallbackAddress callback)
-   {
-      initialize(glob);
-      addCallbackAddress(callback);
-   }
-
 
    /**
     * Allows to specify how you want to identify yourself. 
@@ -504,12 +507,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       return null;
    }
 
-
    /**
     * Adds a server reference
     */
-   public final void setServerRef(ServerRef addr)
-   {
+   public final void setServerRef(ServerRef addr) {
       serverRefVec.addElement(addr);
       serverRefArr = null; // reset to be recalculated on demand
    }
@@ -517,30 +518,42 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * @param Set if we accept point to point messages
     */
-   public final void setPtpAllowed(boolean ptpAllowed)
-   {
+   public final void setPtpAllowed(boolean ptpAllowed) {
       this.ptpAllowed = ptpAllowed;
    }
-
 
    /**
     * Allow to receive Point to Point messages (default). 
     * Every callback may suppress PtP as well.
     */
-   public final void allowPtP()
-   {
+   public final void allowPtP() {
       setPtpAllowed(true);
    }
-
 
    /**
     * I don't want to receive any PtP messages.
     */
-   public void disallowPtP()
-   {
+   public void disallowPtP() {
       setPtpAllowed(false);
    }
 
+   /**
+    * Add an address to which we want to connect, with all the configured parameters. 
+    * <p />
+    * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
+    */
+   public final void setAddress(Address address) {
+      this.address = address;
+   }
+
+   /**
+    * The connection address and properties of the xmlBlaster server
+    * we want connect to.
+    * @return null if not configured
+    */
+   public final Address getAddress() {
+      return this.address;
+   }
 
    /**
     * Add a callback address where to send the message (for PtP). 
@@ -549,8 +562,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Note you can invoke this multiple times to allow multiple callbacks.
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
-   public final void addCallbackAddress(CallbackAddress callback)
-   {
+   public final void addCallbackAddress(CallbackAddress callback) {
       QueueProperty prop = new QueueProperty(glob, null); // Use default queue properties for this callback address
       prop.setCallbackAddress(callback);
       queuePropertyVec.addElement(prop);

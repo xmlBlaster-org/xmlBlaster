@@ -35,6 +35,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
+import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
@@ -191,12 +192,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * java ... -client.protocol XML-RPC
     * </pre>
     */
-   public XmlBlasterConnection() throws XmlBlasterException
-   {
+   public XmlBlasterConnection() throws XmlBlasterException {
       initArgs(null);
-      initDriver(null);
-      initFailSave(null);
-      initBurstMode();
    }
 
    /**
@@ -219,20 +216,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *    xmlBlasterConnection = new XmlBlasterConnection(args); // Find orb
     * </pre>
     */
-   public XmlBlasterConnection(String[] args) throws XmlBlasterException
-   {
+   public XmlBlasterConnection(String[] args) throws XmlBlasterException {
       initArgs(args);
-      initDriver(null);
-      initFailSave(null);
-      initBurstMode();
    }
 
-   public XmlBlasterConnection(Global glob) throws XmlBlasterException
-   {
+   public XmlBlasterConnection(Global glob) throws XmlBlasterException {
       this.glob = glob;
-      initDriver(null);
-      initFailSave(null);
-      initBurstMode();
    }
 
    /**
@@ -242,6 +231,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param protocol e.g. "IOR", "RMI", "XML-RPC", "SOCKET"
     *                 IOR is the CORBA driver.
     */
+    /*
    public XmlBlasterConnection(String[] args, String driverType) throws XmlBlasterException
    {
       initArgs(args);
@@ -257,13 +247,15 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initFailSave(null);
       initBurstMode();
    }
+      */
+
 
    /**
     * Initialize client side burst mode. 
     */
-   private void initBurstMode()
+   private void initBurstMode(Address address)
    {
-      this.publishOnewayCollectTime = XmlBlasterProperty.get("client.publishOneway.collectTime", 0L);
+      this.publishOnewayCollectTime = address.getCollectTime(); // XmlBlasterProperty.get("client.publishOneway.collectTime", 0L);
       if (this.publishOnewayCollectTime > 0L) {
          this.publishOnewayBurstModeVec = new Vector(1000);
          this.publishOnewayTimer = new Timeout("PublishOnewayTimer");
@@ -328,9 +320,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Load the desired protocol driver like CORBA or RMI driver.
     */
-   private void initDriver(String driverType) throws XmlBlasterException
+   private void initDriver(Address addr) throws XmlBlasterException
    {
-      if (driverType == null) driverType = XmlBlasterProperty.get("client.protocol", "IOR");
+      String driverType = addr.getType();
+      if (driverType == null || driverType.length() < 1)
+         throw new XmlBlasterException(ME+".UnknownDriver", "Connection to " + getServerNodeId() + " failed, the protocol type is unknown");
 
       Log.info(ME, "Using 'client.protocol=" + driverType + "' to access " + getServerNodeId());
 
@@ -355,7 +349,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Load the desired protocol driver like SOCKET, CORBA(IOR), RMI or XML-RPC driver.
-    */
+    TODO: generic class loading -> use PluginManager
    private void initDriver(String driverType, String driverClassName) throws XmlBlasterException
    {
       if (driverType == null) driverType = XmlBlasterProperty.get("client.protocol", "IOR");
@@ -377,6 +371,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          throw new XmlBlasterException(ME+".InvalidDriver", text);
       }
    }
+   */
 
    /**
     * Initialize fail save mode.
@@ -678,6 +673,15 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "connect() ...");
       if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
+
+      Address address = qos.getAddress();
+      if (address == null) {
+         address = new Address(glob);
+         qos.setAddress(address);
+      }
+      initDriver(address);
+      initBurstMode(address);
+      initFailSave(null);
 
       // Load the client helper to export/import messages:
       initSecuritySettings(qos.getSecurityPluginType(), qos.getSecurityPluginVersion());
@@ -1734,36 +1738,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
-      text += "Control xmlBlaster callback (if we install a callback server)\n";
-      text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
-      text += "   -cb.queue.maxMsg    The max. capacity of the queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
-      text += "   -cb.queue.onOverflow  Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
-      text += "   -cb.queue.onFailure   Error handling when callback failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
-      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
-      text += "                         This allows performance tuning, try set it to 200.\n";
-      text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
-      text += "   -cb.pingInterval    Pinging every given milliseconds [" + CallbackAddress.DEFAULT_pingInterval + "]\n";
-      text += "   -cb.retries         How often to retry if callback fails [" + CallbackAddress.DEFAULT_retries + "]\n";
-      text += "   -cb.delay           Delay between callback retires in milliseconds [" + CallbackAddress.DEFAULT_delay + "]\n";
-      text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
-      text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
-      text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
-      text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
       text += "                       Force the given authentication schema, here the GUI is enforced\n";
       text += "                       Clients can overwrite this with ConnectQos.java\n";
-      text += "\n";
-      text += "Fail Save Mode:\n";
-      text += "   -client.failSave.retryInterval   How many milli seconds sleeping before we retry a connection [5000]\n";
-      text += "   -client.failSave.pingInterval    How many milli seconds sleeping between the pings [10 * 1000]\n";
-      text += "   -client.failSave.retries         Number of retries if connection cannot directly be established [-1] (-1 is forever)\n";
-      text += "   -client.failSave.maxInvocations  How many messages shall we queue max (using the InvocationRecorder) [10000]\n";
-      text += "\n";
-      text += "Client side burst mode:\n";
-      //text += "   -client.publish.collectTime       Number of milliseconds xmlBlaster shall collect before publishing [0]\n";
-      text += "   -client.publishOneway.collectTime Number of milliseconds xmlBlaster shall collect before publishOneway  [0]\n";
+
       Log.plain(text);
+      Log.plain(new Address(new Global()).usage());
+      Log.plain(new CallbackAddress(new Global()).usage());
       Log.plain(SocketConnection.usage());
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());

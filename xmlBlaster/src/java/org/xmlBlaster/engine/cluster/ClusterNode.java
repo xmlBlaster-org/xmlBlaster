@@ -120,6 +120,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // TODO: get the protocol, login properties, callback properties etc. from the __sys__ messages as well:
 
          Address addr = getNodeInfo().getAddress();
+         Log.info(ME, "DUMP ADDRESS=" + addr.toXml());
          Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" +
              addr.getAddress() + "' using protocol=" + addr.getType());
 

@@ -18,6 +18,14 @@ BUGS:
 
 
 DONE:
+
+  - Incompatible change of command line options:
+    -client.failSave.retryInterval   ->  -delay
+    -client.failSave.pingInterval    ->  -pingInterval
+    -client.failSave.retries         ->  -retries
+    -client.failSave.maxInvocations  ->  -queue.maxMsg
+    -client.publishOneway.collectTime->  -burstMode.collectTimeOneway
+
   - The generated key oid now contains the node id
 
   - The default boot strap port is now 3412,

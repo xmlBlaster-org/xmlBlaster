@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.16 2002/03/13 16:41:08 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.17 2002/05/02 19:08:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -51,10 +51,20 @@ public class PublishQosWrapper extends QosWrapper
    private Vector destVec = null;
    /** The priority of the message */
    private int priority = Constants.NORM_PRIORITY;
-   private boolean isVolatile = false;
-   private boolean isDurable = false;
-   private boolean forceUpdate = true;
-   private boolean readonly = false;
+   
+   // Check settings in PublishQos.java!
+   public static boolean DEFAULT_isVolatile = false; // Check settings in PublishQos.java!
+   private boolean isVolatile = DEFAULT_isVolatile;
+   
+   public static boolean DEFAULT_isDurable = false;
+   private boolean isDurable = DEFAULT_isDurable;
+   
+   public static boolean DEFAULT_forceUpdate = true;
+   private boolean forceUpdate = DEFAULT_forceUpdate;
+
+   public static boolean DEFAULT_readonly = false;
+   private boolean readonly = DEFAULT_readonly;
+
    private long remainingLife = XmlBlasterProperty.get("message.remainingLife", 0L);
 
 
@@ -216,15 +226,16 @@ public class PublishQosWrapper extends QosWrapper
             sb.append(destination.toXml());
          }
       }
-      sb.append("\n   <priority>").append(priority).append("</priority>");
-      if (remainingLife >= 0) {
+      if (Constants.NORM_PRIORITY != priority)
+        sb.append("\n   <priority>").append(priority).append("</priority>");
+      if (remainingLife > 0L) {
          sb.append("\n   <expiration remainingLife='").append(remainingLife).append("'/>");
       }
-      if (isVolatile)
-      sb.append("\n   <isVolatile>").append(isVolatile).append("</isVolatile>");
+      if (DEFAULT_isVolatile != isVolatile)
+         sb.append("\n   <isVolatile>").append(isVolatile).append("</isVolatile>");
       if (isDurable)
          sb.append("\n   <isDurable/>");
-      if (forceUpdate == false)
+      if (DEFAULT_forceUpdate != forceUpdate)
          sb.append("\n   <forceUpdate>").append(forceUpdate).append("</forceUpdate>");
       if (readonly)
          sb.append("\n   <readonly/>");
