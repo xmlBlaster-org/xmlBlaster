@@ -16,7 +16,6 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.enum.Constants;
 
 import java.util.*;
-import java.io.*;
 
 
 /**
@@ -498,7 +497,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          if (sub == null) {
             log.error(ME + ".Internal", "Sorry, can't remove client subscriptionId=" + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found, subMap size=" + subMap.size());
             log.plain(ME, toXml());
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
             return;
          }
          sub.removeSubscribe(); // removes me from TopicHandler::subscriberMap

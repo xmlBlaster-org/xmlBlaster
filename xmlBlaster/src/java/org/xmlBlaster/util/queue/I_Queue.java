@@ -6,7 +6,6 @@ Comment:   Interface for the queues (persistent and cache)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 

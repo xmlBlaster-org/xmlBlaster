@@ -6,11 +6,9 @@ Comment:   Interface for a map (persistent and cache)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
-import java.util.ArrayList;
 
 
 /**

@@ -12,7 +12,6 @@ import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.protocol.I_Authenticate;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
@@ -21,7 +20,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
-import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;
@@ -114,7 +112,7 @@ final public class Authenticate implements I_RunlevelListener
                        String xmlQoS_literal, String secretSessionId)
                           throws XmlBlasterException
    {
-      Thread.currentThread().dumpStack();
+      Thread.dumpStack();
       log.error(ME, "login() not implemented");
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "login() not implemented and deprecated");
    }
@@ -394,7 +392,7 @@ final public class Authenticate implements I_RunlevelListener
          I_Manager securityMgr = plgnLdr.getManager(secretSessionId);
          I_Session sessionSecCtx = securityMgr.getSessionById(secretSessionId);
          if (sessionSecCtx == null) {
-            throw new XmlBlasterException("Authenticate.disconnect", "You are not connected, your secretSessionId is invalid.");
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_NOT_CONNECTED, ME + " Authenticate.disconnect", "You are not connected, your secretSessionId is invalid.");
          }
          try {
             securityMgr.releaseSession(secretSessionId, sessionSecCtx.importMessage(qos_literal));
@@ -407,7 +405,7 @@ final public class Authenticate implements I_RunlevelListener
          if (sessionInfo.getCbQueueNumMsgs() > 0) {
             long sleep = glob.getProperty().get("cb.disconnect.pending.sleep", 1000L); // TODO: allow configuration over DisconnectQos
             log.info(ME, "Sleeping cb.disconnect.pending.sleep=" + sleep + " millis in disconnect(" + sessionInfo.getId() + ") to deliver " + sessionInfo.getCbQueueNumMsgs() + " pending messages ...");
-            try { Thread.currentThread().sleep(sleep); } catch( InterruptedException i) {}
+            try { Thread.sleep(sleep); } catch( InterruptedException i) {}
          }
 
          SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
@@ -450,7 +448,7 @@ final public class Authenticate implements I_RunlevelListener
    {
       if (subjectName == null || subjectName.getLoginName().length() < 2) {
          log.warn(ME + ".InvalidClientName", "Given loginName is null");
-         throw new XmlBlasterException(ME + ".InvalidClientName", "Your given loginName is null or shorter 2 chars, loginName rejected");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".InvalidClientName", "Your given loginName is null or shorter 2 chars, loginName rejected");
       }
 
       SubjectInfo subjectInfo = getSubjectInfoByName(subjectName);
@@ -548,7 +546,7 @@ final public class Authenticate implements I_RunlevelListener
     * <p />
     * @return the SessionInfo object or null if not known
     */
-   public final SessionInfo getSessionInfo(String secretSessionId) {
+   private final SessionInfo getSessionInfo(String secretSessionId) {
       synchronized(this.sessionInfoMap) {
          return (SessionInfo)this.sessionInfoMap.get(secretSessionId);
       }
@@ -557,7 +555,7 @@ final public class Authenticate implements I_RunlevelListener
    /**
     * Returns a current snapshot of all sessions
     */
-   public final SessionInfo[] getSessionInfoArr() {
+   private final SessionInfo[] getSessionInfoArr() {
       synchronized(this.sessionInfoMap) {
          return (SessionInfo[])this.sessionInfoMap.values().toArray((new SessionInfo[this.sessionInfoMap.size()]));
       }
@@ -588,7 +586,7 @@ final public class Authenticate implements I_RunlevelListener
    public final void logout(String secretSessionId) throws XmlBlasterException
    {
       log.error(ME, "logout not implemented");
-      throw new XmlBlasterException(ME, "logout not implemented");
+      throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME + ".logout not implemented");
    }
 
 
