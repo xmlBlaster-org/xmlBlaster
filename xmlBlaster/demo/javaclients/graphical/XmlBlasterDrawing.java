@@ -28,9 +28,10 @@ import org.xmlBlaster.client.I_Callback;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Enumeration;
 import java.io.IOException;
-import CH.ifa.draw.framework.*;
+import CH.ifa.draw.framework.Drawing;
+import CH.ifa.draw.framework.FigureAttributeConstant;
+import CH.ifa.draw.framework.FigureEnumeration;
 
 
 /**
@@ -41,13 +42,12 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    private static final String ME = "XmlBlasterDrawing";
    private Global global;
    private LogChannel log;
-   private boolean doRecord;
+	/* inhibit events to avoid loops when events are generated in update method */
+   private boolean doPublishEvent; 
    /** key = timestamp, value = object reference (Figure) */
    private Hashtable timestampFigureTable; 
    /** key = object reference (Figure), value = timestamp */
    private Hashtable figureTimestampTable;
-   private HashSet[] newAdded;
-   private HashSet[] newRemoved;
    private HashSet[] newChanged;
    private int currentIndex = 0;
    private int publishIndex = 1;
@@ -58,7 +58,9 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    private ConnectReturnQos connectReturnQos;
    private String drawingName = "GraphicChat";
    private SubscribeReturnQos subscribeReturnQos;
-
+	private final static FigureAttributeConstant FIGURE_ID = new FigureAttributeConstant("FigureId");
+	private final static FigureAttributeConstant TO_FRONT = new FigureAttributeConstant("FigureId");
+	private boolean isBurstPublish; // if true publish are collected and sent on bulk
 
    public XmlBlasterDrawing() {
       super();
@@ -74,26 +76,28 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    public void init(Global global) {
       this.global = global;
       this.log = this.global.getLog("graphical");
-      this.doRecord = true;
+		if (this.log.CALL) this.log.call(ME, "init");
+      this.doPublishEvent = true;
       this.timestampFigureTable = new Hashtable();
       this.figureTimestampTable = new Hashtable();
-      this.newAdded = new HashSet[2];
-      this.newRemoved = new HashSet[2];
       this.newChanged = new HashSet[2];
       for (int i=0; i < 2; i++) {
-         this.newAdded[i] = new HashSet();
-         this.newRemoved[i] = new HashSet();
          this.newChanged[i] = new HashSet();
       }
-      //this.publishDelay = this.global.getProperty().get("publishDelay", 500L);
-      //this.timeout = new Timeout("PublishTimer");
-      //this.timeout.addTimeoutListener(this, this.publishDelay, this);
+      this.publishDelay = this.global.getProperty().get("publishDelay", 200L);
+      if (this.publishDelay > 0L) this.isBurstPublish = true;
+      else isBurstPublish = false;
+      if (this.isBurstPublish) {
+         this.timeout = new Timeout("PublishTimer");
+         this.timeout.addTimeoutListener(this, this.publishDelay, this);
+      }  
       initConnection();
    }
 
 
    public void initConnection() {
       try {
+			if (this.log.CALL) this.log.call(ME, "initConnection");
          this.access = this.global.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(this.global);
          this.connectReturnQos = this.access.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -137,12 +141,25 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       }
    }
 
+	private void traceToFront(String method, Figure fig) {
+      Boolean toFront = (Boolean)fig.getAttribute(TO_FRONT);
+		if (toFront != null) {
+		   this.log.trace(ME, "figureChanged: TO_FRONT is '" + toFront.booleanValue() + "'");
+		}
+	}
+
+
    synchronized public void figureChanged(FigureChangeEvent e) {
-      if (e.getFigure() instanceof Drawing) return;
+		if (this.log.CALL) this.log.call(ME, "figureChanged event='" + e.toString() + "'");
+      if (e.getFigure() instanceof Drawing) {
+			if (this.log.TRACE) this.log.trace(ME, "figureChanged for a Drawing instance " + e.getFigure());
+      	return;
+      } 
       super.figureChanged(e);
-      if (this.doRecord) {
-         publish(e.getFigure(), false);
-         //this.newChanged[this.currentIndex].add(e.getFigure());
+      if (this.doPublishEvent) {
+      	if (this.log.TRACE) traceToFront("figureChanged", e.getFigure()); 
+         if (this.isBurstPublish) this.newChanged[this.currentIndex].add(e.getFigure()); 
+         else recursivePublish(e.getFigure());
       }
       if (this.log.CALL) this.log.call(ME, "figureChanged " + e.getFigure());
    }
@@ -169,7 +186,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 */
 
-   protected void add(String figureId, Figure figure) {
+   protected void addToTable(String figureId, Figure figure) {
       synchronized (this.figureTimestampTable) {
          this.figureTimestampTable.put(figure, figureId);
          this.timestampFigureTable.put(figureId, figure);
@@ -177,6 +194,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    protected void remove(String figureId, Figure figure) {
+		if (this.log.CALL) this.log.call(ME, "remove");
       synchronized (this.figureTimestampTable) {
          if (figure != null) {
             this.figureTimestampTable.remove(figure);
@@ -187,20 +205,27 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       }
    }
 
+	private String getFigureId(Figure figure) {
+		// MEMO: getAttribute does not work when using 'group'
+		String figureId = (String)figure.getAttribute(FIGURE_ID);
+		// String figureId = (String)this.figureTimestampTable.get(figure);
+		if (figureId == null) {
+			String timestamp = "" + (new Timestamp()).getTimestampLong();
+			figureId = this.drawingName + "-" + timestamp;
+			figure.setAttribute(FIGURE_ID, figureId);
+			addToTable(figureId, figure);
+		}
+		return figureId;
+	}
+
+
    synchronized public Figure add(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "add");
       if (figure instanceof Drawing) return figure;
-      if (this.doRecord) {
-         String timestamp = "" + (new Timestamp()).getTimestampLong();
-         String figureId = (String)figure.getAttribute("FigureId");
-         boolean isNew = (figureId == null);
-         if (figureId == null) {
-            figureId = this.drawingName + "-" + timestamp;
-            figure.setAttribute("FigureId", figureId);
-         }
-         add(figureId, figure);
-         publish(figure, isNew);
-         //this.newAdded[this.currentIndex].add(figure);
+      if (this.doPublishEvent) {
+			String figureId = getFigureId(figure);
+			if (this.isBurstPublish) this.newChanged[this.currentIndex].add(figure);
+			else recursivePublish(figure);
          if (this.log.TRACE) this.log.trace(ME, "add: adding '" + figureId + "'");
       }
       return super.add(figure);
@@ -212,8 +237,9 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       super.addAll(fe);
    }
 */
-   public void bringToFront(Figure figure) {
+   synchronized public void bringToFront(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "bringToFront");
+      if (this.doPublishEvent) figure.setAttribute(TO_FRONT, new Boolean(true));
       super.bringToFront(figure);
    }
 
@@ -224,19 +250,39 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 */
 
+
+   private void recursiveErase(Figure fig) throws XmlBlasterException {
+	   erase(fig);
+	   FigureEnumeration iter = fig.figures();
+	   while (iter.hasNextFigure()) {
+		   Figure child = iter.nextFigure();
+		   recursiveErase(child);
+	   }
+   }
+
+	private void erase(Figure figure) throws XmlBlasterException {
+		if (this.log.CALL) this.log.call(ME, "erase");
+		if (figure == null) return;
+		String figureId = (String)figure.getAttribute(FIGURE_ID);
+		if (figureId == null) return;
+		if (this.log.TRACE) this.log.trace(ME, "erase '" + figureId + "'");
+		EraseKey ek = new EraseKey(this.global, figureId);
+		EraseQos eq = new EraseQos(this.global);
+		EraseReturnQos[] eraseArr = this.access.erase(ek, eq);
+//		the removing is handled by the timeout
+//	  this.newRemoved[this.currentIndex].add(figure);
+	}
+
+
    synchronized public Figure orphan(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "orphan");
       if (figure instanceof Drawing) return figure;
-      if (this.doRecord) {
+      if (this.doPublishEvent) {
          try {
-            // the removing is handled by the timeout
-            //this.newRemoved[this.currentIndex].add(figure);
-            EraseKey ek = new EraseKey(this.global, (String)figure.getAttribute("FigureId"));
-            EraseQos eq = new EraseQos(this.global);
-            EraseReturnQos[] eraseArr = this.access.erase(ek, eq);
+				recursiveErase(figure);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "orphan '" + (String)figure.getAttribute("FigureId") + "' exception : " + ex.getMessage());
+            this.log.error(ME, "orphan '" + (String)figure.getAttribute(FIGURE_ID) + "' exception : " + ex.getMessage());
             ex.printStackTrace();
          }
       }
@@ -270,17 +316,18 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 */
 
-   public void sendToBack(Figure figure) {
+   public synchronized void sendToBack(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "sendToBack");
+		if (this.doPublishEvent) figure.setAttribute(TO_FRONT, new Boolean(false));
       super.sendToBack(figure);
    }
 
-   public void sendToLayer(Figure figure, int layerNr) {
+   public synchronized void sendToLayer(Figure figure, int layerNr) {
       if (this.log.CALL) this.log.call(ME, "sendToLayer");
       super.sendToLayer(figure, layerNr);
    }
 
-   public void setTitle(java.lang.String name) {
+   public synchronized void setTitle(java.lang.String name) {
       if (this.log.CALL) this.log.call(ME, "");
       super.setTitle(name);
    }
@@ -289,94 +336,46 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    /**
     * Invoked by the timer
     */
-   public void timeout(Object userData) {
-      if (this.log.CALL) this.log.call(ME, "timeout");
-      swapIndex();
-      int addedSize = this.newAdded[this.publishIndex].size();
-      int changedSize = this.newChanged[this.publishIndex].size();
-      int removedSize = this.newRemoved[this.publishIndex].size();
-
-      if (addedSize < 1 && changedSize < 1 && removedSize < 1) {
-         this.timeout.addTimeoutListener(this, this.publishDelay, this);
-         return;
+   public synchronized void timeout(Object userData) {
+		try {
+			swapIndex();
+			if (this.newChanged[this.publishIndex].size() == 0) return;
+			Iterator iter = this.newChanged[this.publishIndex].iterator();
+			while (iter.hasNext()) {
+				Figure fig = (Figure)iter.next();
+				if (fig instanceof Drawing) continue;
+				recursivePublish(fig);
+			}
+   		this.newChanged[this.publishIndex].clear();
       }
-
-
-      Hashtable tmpAdded = new Hashtable();
-      Hashtable tmpChanged = new Hashtable();
-      Hashtable tmpRemoved = new Hashtable();
-
-      if (addedSize > 0) {
-         Iterator iter = this.newAdded[this.publishIndex].iterator();
-         while (iter.hasNext()) {
-            Figure fig = (Figure)iter.next();
-            if (fig instanceof Drawing) continue;
-            String figureId = (String)this.figureTimestampTable.get(fig);
-            this.log.info(ME, "timeout: newAdded: " + fig + " " + figureId);
-            tmpAdded.put(figureId, fig);
-         }
-         this.newAdded[this.publishIndex].clear();
-      }
-
-      if (changedSize > 0) {
-         Iterator iter = this.newChanged[this.publishIndex].iterator();
-         while (iter.hasNext()) {
-            Figure fig = (Figure)iter.next();
-                                if (fig instanceof Drawing) continue;
-            String figureId = (String)this.figureTimestampTable.get(fig);
-            this.log.info(ME, "timeout: newChanged: " + fig + " " + figureId);
-            tmpChanged.put(figureId, fig);
-         }
-         this.newChanged[this.publishIndex].clear();
-      }
-      if (removedSize > 0) {
-         Iterator iter = this.newRemoved[this.publishIndex].iterator();
-         while (iter.hasNext()) {
-            Figure fig = (Figure)iter.next();
-            if (fig instanceof Drawing) continue;
-            String figureId = (String)this.figureTimestampTable.get(fig);
-            this.log.info(ME, "timeout: newRemoved: " + fig + " " + figureId);
-            if (figureId != null ) {
-               if (this.log.TRACE) this.log.trace(ME, "orphan: removing the figureId '" + figureId + "'");
-               remove(figureId, fig);
-               tmpRemoved.put(figureId, fig);
-            }
-         }
-         this.newRemoved[this.publishIndex].clear();
-      }
-
-      // publish the message here ...
-      try {
-         MessageContent content = new MessageContent(this.log, tmpAdded, tmpChanged, tmpRemoved);
-         PublishKey pk = new PublishKey(this.global, this.drawingName, "text/xml", "1.0");
-         pk.setClientTags("<drawingName>"+this.drawingName+"</drawingName>");
-         PublishQos pq = new PublishQos(this.global);
-         MsgUnit msgUnit = new MsgUnit(pk, content.toBytes(), pq);
-         this.access.publish(msgUnit);
-      }
-      catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception occured when publishing: " + ex.getMessage());
-      }
-      catch (IOException ex) {
-         this.log.error(ME, "IOException occured when publishing: " + ex.getMessage());
-      }
-      this.timeout.addTimeoutListener(this, this.publishDelay, this);
+		catch (Throwable ex) {
+			this.log.warn(ME ,"timeout: exception occured in timeout: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+		finally {
+			this.timeout.addTimeoutListener(this, this.publishDelay, this);
+		}
    }
 
-   private void publish(Figure figure, boolean isNew) {
+   private void publish(Figure figure) {
+		if (this.log.CALL) this.log.call(ME, "publish");
+		if (this.log.DUMP) {
+			this.log.dump(ME, "publish");
+			Thread.dumpStack();
+		} 
+		if (figure == null) return;
       // publish the message here ...
       try {
-         String figureId = (String)figure.getAttribute("FigureId");
-         Hashtable hash = new Hashtable();
-         hash.put(figureId, figure);
-         Hashtable tmpAdded = isNew ? hash : new Hashtable();
-         Hashtable tmpChanged = isNew ? new Hashtable() : hash;
-         MessageContent content = new MessageContent(this.log, tmpAdded, tmpChanged, new Hashtable());
+			if (this.log.TRACE) traceToFront("publish", figure);
+         String figureId = getFigureId(figure);
+			if (this.log.TRACE) this.log.trace(ME, "publish '" + figureId + "'");
+         MessageContent content = new MessageContent(this.log, figureId, figure);
          PublishKey pk = new PublishKey(this.global, figureId, "application/draw", "1.0");
          pk.setClientTags("<drawingName>"+this.drawingName+"</drawingName>");
          PublishQos pq = new PublishQos(this.global);
          MsgUnit msgUnit = new MsgUnit(pk, content.toBytes(), pq);
          this.access.publish(msgUnit);
+         if (figure.getAttribute(TO_FRONT) != null) figure.setAttribute(TO_FRONT, null);
       }
       catch (IOException ex) {
          this.log.error(ME, "exception occured when publishing: " + ex.toString());
@@ -386,93 +385,93 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       }
    }
 
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+	private void recursiveFigureUpdate(Figure fig) {
+		currentFigureUpdate(fig);
+		FigureEnumeration iter = fig.figures();
+		while (iter.hasNextFigure()) {
+			Figure child = iter.nextFigure();
+			recursiveFigureUpdate(child);
+		}
+	}
+
+	private void recursivePublish(Figure fig) {
+		publish(fig);
+		FigureEnumeration iter = fig.figures();
+		while (iter.hasNextFigure()) {
+			Figure child = iter.nextFigure();
+			recursivePublish(child);
+		}
+	}
+
+	private void currentFigureUpdate(Figure fig) {
+		if (this.log.CALL) this.log.call(ME, "currentFigureUpdate");
+		boolean sendToBack = false;
+		boolean sendToFront = false;
+		Boolean toFront = (Boolean)fig.getAttribute(TO_FRONT);
+		if (toFront != null) {
+			boolean val = toFront.booleanValue();
+			this.log.info(ME, "update: the attribute 'TO_FRONT' is set to '" + val + "'"); 
+			if (val == true) sendToFront = true;
+			else sendToBack = true;				
+		}
+		String figureId = (String)fig.getAttribute(FIGURE_ID);
+		if (this.log.TRACE) this.log.trace(ME, "currentFigureUpdate '" + figureId + "'");
+		if (figureId == null) return;
+		// String figureId = msgContent.getFigureId();
+		this.log.info(ME, "update figure: '" + figureId  + "' changed or added");
+		Figure oldFigure = (Figure)this.timestampFigureTable.get(figureId);
+		addToTable(figureId, fig);
+		if (oldFigure == null) {
+			super.add(fig);
+		}
+		else {
+			super.replace(oldFigure, fig);
+			if (sendToFront) bringToFront(fig);
+			else if (sendToBack) sendToBack(fig);
+			fig.setAttribute(TO_FRONT, null);
+			FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
+			figureRequestUpdate(ev);
+		}
+		FigureChangeEvent ev1 = new FigureChangeEvent(fig);
+		figureRequestUpdate(ev1);
+	}
+
+   public synchronized String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       this.log.info(ME, "update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
-      Hashtable tmpAdded = null;
-      Hashtable tmpChanged = null;
-      Hashtable tmpRemoved = null;
-      MessageContent msgContent = null;
       try {
-         if (!updateQos.isErased()) {
-            msgContent = MessageContent.fromBytes(content);
-            tmpAdded = msgContent.getAdded();
-            tmpChanged = msgContent.getChanged();
-            tmpRemoved = msgContent.getRemoved();
-            this.log.info(ME, "update added " + tmpAdded.size() + " changed " + tmpChanged.size() + " removed " + tmpRemoved.size() + " figures");
+         lock();
+         this.doPublishEvent = false;
+              
+         if (updateQos.isErased()) {
+            log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+            String figureId = updateKey.getOid();
+            Figure fig = (Figure)this.timestampFigureTable.get(figureId);
+            remove(figureId, fig);
+            
+            if (fig != null) {
+               super.orphan(fig);
+               FigureChangeEvent ev = new FigureChangeEvent(fig);
+               figureRequestUpdate(ev);
+            }
+            return "OK";
          }
 
-         synchronized (this) {
-            try {
-               lock();
-               this.doRecord = false;
-              
-               if (updateQos.isErased()) {
-                  log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
-                  String figureId = updateKey.getOid();
-                  Figure fig = (Figure)this.timestampFigureTable.get(figureId);
-                  remove(figureId, fig);
-                  if (fig != null) {
-                     super.orphan(fig);
-                     FigureChangeEvent ev = new FigureChangeEvent(fig);
-                     figureRequestUpdate(ev);
-                  }
-                  return "OK";
-               }
-
-               Enumeration enum = tmpAdded.keys();
-               while (enum.hasMoreElements()) {
-                  String figureId = (String)enum.nextElement();
-                  Figure fig = (Figure)tmpAdded.get(figureId);
-                  add(figureId, fig);
-                  super.add(fig);
-               }
-              
-               enum = tmpChanged.keys();
-               while (enum.hasMoreElements()) {
-                  String figureId = (String)enum.nextElement();
-                  Figure fig = (Figure)tmpChanged.get(figureId);
-                  Figure oldFigure = (Figure)this.timestampFigureTable.get(figureId);
-                  add(figureId, fig);
-                  if (oldFigure == null) {
-                     super.add(fig);
-                  }
-                  else
-                     super.replace(oldFigure, fig);
-                  if (oldFigure != null) {
-                     FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
-                     figureRequestUpdate(ev);
-                  }
-                  FigureChangeEvent ev1 = new FigureChangeEvent(fig);
-                  figureRequestUpdate(ev1);
-               }
-              
-               enum = tmpRemoved.keys();
-               while (enum.hasMoreElements()) {
-                  String figureId = (String)enum.nextElement();
-                  Figure fig = (Figure)this.timestampFigureTable.get(figureId);
-                  remove(figureId, fig);
-                  if (fig != null) {
-                     super.orphan(fig);
-                     FigureChangeEvent ev = new FigureChangeEvent(fig);
-                     figureRequestUpdate(ev);
-                  }
-               }
-            }
-            finally {
-               this.doRecord = true;
-               unlock();
-            }
-         } // sync
+		   MessageContent msgContent = MessageContent.fromBytes(content);
+         Figure fig = msgContent.getFigure();
+			recursiveFigureUpdate(fig);
       }
-      catch (IOException ex) {
-         this.log.error(ME, "update: an IOException occured when reconstructing the content: " + ex.getMessage());
+		catch (IOException ex) {
+			this.log.error(ME, "update: an IOException occured when reconstructing the content: " + ex.getMessage());
+		}
+		catch (Throwable ex) {
+			this.log.error(ME, "update: a Throwable occured when reconstructing the content (acknowledge anyway): " + ex.getMessage());
+			ex.printStackTrace();
+		}
+      finally {
+         this.doPublishEvent = true;
+         unlock();
       }
       return "OK";
    }
-
-
 }
-
-
-
 
