@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.27 2003/03/27 12:18:46 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.28 2003/03/31 09:43:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -53,6 +53,7 @@ public class HttpIORServer extends Thread
     */
    public HttpIORServer(Global glob, String ip_addr, int port)
    {
+      super("XmlBlaster.HttpIORServer");
       this.glob = glob;
       this.log = glob.getLog("protocol");
       this.ip_addr = ip_addr;
