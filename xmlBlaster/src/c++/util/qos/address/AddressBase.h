@@ -3,7 +3,7 @@ Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address std::string including protocol
-Version:   $Id: AddressBase.h,v 1.15 2003/10/15 13:13:08 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.16 2003/10/15 14:54:43 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -122,7 +122,7 @@ protected:
     * <p>
     * Setting it to 'null' (which is the default) lets the server choose the plugin
     * </p>
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html">The dispatch.control.plugin requirement</a>
     */
    std::string dispatchPlugin_; // = DEFAULT_dispatchPlugin;
 
@@ -394,7 +394,7 @@ public:
     * DispatchPlugin/defaultPlugin=Priority,1.0
     * </pre>
     * </p>
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html">The dispatch.control.plugin requirement</a>
     */
    void setDispatchPlugin(const std::string& dispatchPlugin);
 

@@ -155,7 +155,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Defaults to true. 
-    * @param setWantLocal false Inhibit the delivery of messages to myself if i have published it.
+    * @param setWantLocal false Inhibit the dispatch of messages to myself if i have published it.
     */
    public void setWantLocal(boolean local) {
       this.local.setValue(local);
@@ -163,7 +163,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Defaults to true. 
-    * @return false Inhibit the delivery of messages to myself if i have published it.
+    * @return false Inhibit the dispatch of messages to myself if i have published it.
     */
    public boolean getWantLocal() {
       return this.local.getValue();

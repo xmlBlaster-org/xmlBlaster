@@ -47,10 +47,10 @@ public final class DispatchWorker implements Runnable
     * which contains pre parsed objects like SubscribeQosReturn etc.
     */
    public void run(ArrayList entryList) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Starting push remote delivery of " + ((entryList!=null)?entryList.size():0) + " entries.");
+      if (log.CALL) log.call(ME, "Starting push remote dispatch of " + ((entryList!=null)?entryList.size():0) + " entries.");
       MsgQueueEntry[] entries = null;
       try {
-         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDeliveryInterceptor();
+         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDispatchInterceptor();
          if (msgInterceptor != null) {
             log.error(ME, "Communication dispatch plugin support is missing in sync mode - not implemented");
             /*!!! filter or whatever
@@ -84,11 +84,11 @@ public final class DispatchWorker implements Runnable
     * Asynchronous pull mode, invoked by DispatchWorkerPool.execute() -> see DispatchManager calling it
     */
    public void run() {
-      if (log.CALL) log.call(ME, "Starting remote delivery with " + this.msgQueue.getNumOfEntries() + " entries.");
+      if (log.CALL) log.call(ME, "Starting remote dispatch with " + this.msgQueue.getNumOfEntries() + " entries.");
       ArrayList entryList = null;
       ArrayList entryListChecked = null;
       try {
-         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDeliveryInterceptor();
+         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDispatchInterceptor();
          if (msgInterceptor != null) {
                entryListChecked = msgInterceptor.handleNextMessages(dispatchManager, null); // should call prepareMsgsFromQueue() immediately
                entryList = entryListChecked;

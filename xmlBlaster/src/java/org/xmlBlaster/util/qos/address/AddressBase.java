@@ -116,7 +116,7 @@ public abstract class AddressBase
     * <p>
     * Setting it to 'null' (which is the default) lets the server choose the plugin
     * </p>
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html">The dispatch.control.plugin requirement</a>
     */
    public String DEFAULT_dispatchPlugin = PluginManagerBase.NO_PLUGIN_TYPE; // "undef";
    protected PropString dispatchPlugin = new PropString(DEFAULT_dispatchPlugin);
@@ -680,7 +680,7 @@ public abstract class AddressBase
     * DispatchPlugin/defaultPlugin=Priority,1.0
     * </pre>
     * </p>
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html">The dispatch.control.plugin requirement</a>
     */
    public void setDispatchPlugin(String dispatchPlugin) {
       this.dispatchPlugin.setValue(dispatchPlugin);

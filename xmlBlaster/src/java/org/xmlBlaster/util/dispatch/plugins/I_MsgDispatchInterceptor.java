@@ -31,7 +31,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
    public void initialize(Global glob, String typeVersion) throws XmlBlasterException;
 
    /**
-    * This is called once for each delivery manager using this plugin. 
+    * This is called once for each dispatch manager using this plugin. 
     */
    public void addDispatchManager(DispatchManager dispatchManager);
 
@@ -76,8 +76,8 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * @return An ArrayList containing the I_QueueEntry to send.<br />
     *         If list.size() == 0 the worker thread stops and does nothing<br />
     *         If list.size() > 0 the given messages are sent
-    * @exception If XmlBlasterException is thrown, delivery of messages is stopped.
-    *            other exceptions giving up delivery (as configured with I_MsgErrorHandler,
+    * @exception If XmlBlasterException is thrown, dispatch of messages is stopped.
+    *            other exceptions giving up dispatch (as configured with I_MsgErrorHandler,
     *            usually shutdown queue and sending dead messages).
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException;

@@ -46,7 +46,7 @@ import junit.framework.*;
 
 /**
  * This client tests the
- * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">delivery.control.plugin requirement</a>
+ * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html">dispatch.control.plugin requirement</a>
  * <p />
  * We start our own xmlBlaster server in a thread.
  * This client may be invoked multiple time on the same xmlBlaster server,

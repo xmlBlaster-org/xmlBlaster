@@ -22,7 +22,7 @@
 
    <!--========== DISPATCHER PLUGINS =================-->
    <plugin id='dispatchPriority'
-           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin'
            jar='/tmp/my.jar'>
       <attribute id='config'>
          <![CDATA[

@@ -20,7 +20,7 @@ import org.xmlBlaster.util.queue.I_Queue;
  * When the connection is fine again, the holdback queue is flushed to the
  * real queue of the DispatchManager.
  * </p>
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html" target="others">the delivery.control.plugin requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html" target="others">the dispatch.control.plugin requirement</a>
  * @author xmlBlaster@marcelruff.info
  */
 public final class DispatchManagerEntry

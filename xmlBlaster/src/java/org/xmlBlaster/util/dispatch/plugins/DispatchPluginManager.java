@@ -20,7 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <pre>
  * // xmlBlaster.properties or on command line
  * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
- * DispatchPlugin[FeedMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.FeedMotionDeliveryPlugin
+ * DispatchPlugin[FeedMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.FeedMotionDispatchPlugin
  * DispatchPlugin/defaultPlugin=Priority,1.0
  * # Switch off:
  * # DispatchPlugin/defaultPlugin=undef

@@ -693,7 +693,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    /**
     * @return The interceptor plugin if available, otherwise null
     */
-   public I_MsgDispatchInterceptor getMsgDeliveryInterceptor() {
+   public I_MsgDispatchInterceptor getMsgDispatchInterceptor() {
       return this.msgInterceptor;
    }
 

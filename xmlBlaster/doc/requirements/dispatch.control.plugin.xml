@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='delivery.control.plugin' type='NEW' prio='HIGH' status='CLOSED'>
-   <topic>XmlBlaster has a plugin interface which allows to control the message delivery</topic>
+<requirement id='dispatch.control.plugin' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster has a plugin interface which allows to control the message dispatch</topic>
    <description>
       <p>
       XmlBlaster allows you to send messages over remote lines in the following ways:
@@ -28,7 +28,7 @@
       Please study the following illustration which shows an example for this use case.
       </p>
       <br />
-      <img src="DeliveryPluginOverview.gif" border="0" title="XmlBlaster communication plugin example" alt="Example how to use the dispatcher plugin" />
+      <img src="DispatchPluginOverview.gif" border="0" title="XmlBlaster communication plugin example" alt="Example how to use the dispatcher plugin" />
       <br />
       <p>
       On the left there are permanently published messages. They have different priorities, 
@@ -62,7 +62,7 @@
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
          <li>I_MsgDispatchInterceptor: Which forces you to implement some methods which allows you to control the message flow</li>
       </ul>
-      This is simple and straight forward (see requirement delivery.plugin.priorizedDelivery).
+      This is simple and straight forward (see requirement dispatch.plugin.priorizedDispatch).
       </p>
       <p>
       Note that this is only an example what you can do. The status message and priority configuration
@@ -113,17 +113,17 @@
       </table>
       <!-- p>
       For coding and configuration of plugins please read the
-      requirement delivery.plugin.priorizedDelivery (see link below)
+      requirement dispatch.plugin.priorizedDispatch (see link below)
       </p -->
    </configuration>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor</see>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
-   <see type="REQ">delivery.plugin.priorizedDelivery</see>
+   <see type="REQ">dispatch.plugin.priorizedDispatch</see>
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 10 30</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

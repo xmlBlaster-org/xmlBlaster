@@ -60,7 +60,7 @@ import java.util.Iterator;
  * </ol>
  * @see org.xmlBlaster.util.dispatch.plugins.prio.ConfigurationParser
  * @see org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html" target="others">the delivery.control.plugin requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.control.plugin.html" target="others">the dispatch.control.plugin requirement</a>
  * @author xmlBlaster@marcelruff.info
  */
 public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, I_Plugin, I_PropertyChangeListener, I_Notify
@@ -117,7 +117,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    }
 
    /**
-    * This is called once for each delivery manager using this plugin. 
+    * This is called once for each dispatch manager using this plugin. 
     */
    public void addDispatchManager(DispatchManager dispatchManager) {
       DispatchManagerEntry managerEntry = new DispatchManagerEntry(dispatchManager);
@@ -170,7 +170,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
 
             // Activate ...
             statusChanged(this.currMsgStatus);
-            log.info(ME, "Reconfigured priorized delivery plugin with '" + ev.getKey() + "', currMsgStatus=" + this.currMsgStatus);
+            log.info(ME, "Reconfigured priorized dispatch plugin with '" + ev.getKey() + "', currMsgStatus=" + this.currMsgStatus);
          }
          catch (XmlBlasterException e) {
             log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.getMessage());
@@ -219,7 +219,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    public final String getVersion() { return "1.0"; }
 
    /**
-    * Changing the status of the delivery strategy. 
+    * Changing the status of the dispatch strategy. 
     * <p>
     * Enforced by I_Notify
     * </p>
@@ -233,7 +233,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          this.currMsgStatus = status;
          this.currMsgStatusConfiguration = parser.getStatusConfiguration(currMsgStatus);
          this.hasDefaultActionOnly = this.currMsgStatusConfiguration.defaultActionOnly(); // cache for performance
-         log.info(ME, "Changed priorized delivery from old status=" + oldStatus + " to new status=" + this.currMsgStatus);
+         log.info(ME, "Changed priorized dispatch from old status=" + oldStatus + " to new status=" + this.currMsgStatus);
          if ((oldStatus==null&&this.currMsgStatus!=null) ||
              (oldStatus!=null && !oldStatus.equals(this.currMsgStatus))) {
             Iterator it = this.dispatchManagerEntryMap.values().iterator();
@@ -523,7 +523,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    }
 
    /**
-    * Deregister a delivery manager. 
+    * Deregister a dispatch manager. 
     * @see I_MsgDispatchInterceptor#shutdown(DispatchManager)
     */ 
    public void shutdown(DispatchManager dispatchManager) throws XmlBlasterException {

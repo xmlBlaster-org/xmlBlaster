@@ -38,7 +38,7 @@
       </p>
       <br />
 
-      <img src="PriorizedDispatchPluginOverview.gif" border="0" title="XmlBlaster priorized delivery plugin overview" alt="Overview of the priorized delivery plugin" />
+      <img src="PriorizedDispatchPluginOverview.gif" border="0" title="XmlBlaster priorized dispatch plugin overview" alt="Overview of the priorized dispatch plugin" />
 
       <br />
       <p>
@@ -100,7 +100,7 @@
       </p>
       <br />
 
-      <img src="PriorizedDispatchPluginConfiguration.gif" border="0" title="XmlBlaster priorized delivery plugin configuration" alt="Configuration of the priorized delivery plugin" />
+      <img src="PriorizedDispatchPluginConfiguration.gif" border="0" title="XmlBlaster priorized dispatch plugin configuration" alt="Configuration of the priorized dispatch plugin" />
 
       <br />
       <h3>How does my status message look like?</h3>
@@ -245,10 +245,10 @@ For coding examples please look into the testsuite, links are provided below.
    <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.ConfigurationParser</see>
    <see type="API">org.xmlBlaster.util.dispatch.DispatchManager</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
-   <see type="REQ">delivery.control.plugin</see>
+   <see type="REQ">dispatch.control.plugin</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 08</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
