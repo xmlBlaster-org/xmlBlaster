@@ -35,7 +35,6 @@ TODO:
 BUGS:
 
 * PtP isDurable redelivery
-* Memory leak in isVolatile
 
 
 Changes for 0.79dev [xxx, xx 200x]
