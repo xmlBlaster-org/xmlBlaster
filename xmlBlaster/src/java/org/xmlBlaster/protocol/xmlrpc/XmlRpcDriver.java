@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.5 2000/10/11 20:47:37 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.6 2000/10/14 20:13:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -85,10 +85,7 @@ public class XmlRpcDriver implements I_Driver
       this.xmlBlasterImpl = xmlBlasterImpl;
 
       // similar to -Dsax.driver=com.sun.xml.parser.Parser
-      String dr = System.getProperty("sax.driver");
-      if (dr == null) {
-         System.setProperty("sax.driver", "com.sun.xml.parser.Parser");
-      }
+      System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
       try {
          webserver = new WebServer(xmlPort);
