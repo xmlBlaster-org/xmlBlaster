@@ -103,6 +103,8 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
    /** Switch on debugging output */
    const bool isDebug_; //  = false;
 
+   const bool detached_;
+
    org::xmlBlaster::util::TimestampFactory& timestampFactory_;
 
    org::xmlBlaster::util::Global& global_;
@@ -118,7 +120,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
    /**
     * Starts the thread
     */
-    void start();
+    bool start(bool detached);
 
 //   friend class TimeoutRunner;
  public:
@@ -136,7 +138,8 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
     ~Timeout();
 
    /**
-    * used to join the thread used by this instance
+    * Used to join the thread used by this instance. 
+    * Don't call this method for detached running threads.
     */
    void join();
 

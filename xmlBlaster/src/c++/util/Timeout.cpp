@@ -21,7 +21,7 @@ Timeout::Timeout(Global& global)
    : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
      timeoutMap_(), isRunning_(false), isReady_(false),
      mapHasNewEntry_(false), isActive_(true),
-     isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
+     isDebug_(false), detached_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("org.xmlBlaster.util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
@@ -29,7 +29,7 @@ Timeout::Timeout(Global& global)
    // the thread will only be instantiated when starting
    if (log_.call()) log_.call(ME, " default constructor");
    if (log_.trace()) log_.trace(ME, " default constructor: after creating timeout condition");
-   start();
+   start(detached_);
    if (log_.trace()) log_.trace(ME, " default constructor: after starting the thread");
 }
 
@@ -37,37 +37,50 @@ Timeout::Timeout(Global& global, const string &name)
    : Thread(), ME("Timeout"), threadName_(name),
      timeoutMap_(), isRunning_(false), isReady_(false),
      mapHasNewEntry_(false), isActive_(true),
-     isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
+     isDebug_(false), detached_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("org.xmlBlaster.util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
    // the thread remains uninitialized ...
    ME += "-" + name + "-" + lexical_cast<std::string>(this);
    if (log_.call()) log_.call(ME, " alternative constructor");
-   start();
+   start(detached_);
    if (log_.trace()) log_.trace(ME, " default constructor: after starting the thread");
 }
 
 Timeout::~Timeout() 
 {
    if (log_.call()) log_.call(ME, " destructor");
+
    shutdown();
-   while (isActive_) { } // wait for the thread to finish
+
+   if (!detached_)
+      join();
+
+   if (isActive_) { /* Should never happen */
+      for (int i=0; i<200; i++) {
+         if (!isActive_) break;
+         log_.warn(ME, "Waiting for timer thread to finish");
+         //Thread::yield();
+         Thread::sleep(10);
+      }
+   }
 }
 
 
-void Timeout::start() 
+bool Timeout::start(bool detached) 
 {
-   if (log_.call()) log_.call(ME, " start");
+   if (log_.call()) log_.call(ME, " start" + lexical_cast<string>(detached));
    isRunning_ = true;
    if (log_.trace()) log_.trace(ME, " before creating the running thread");
-   Thread::start();
+   Thread::start(detached);
 
    if (log_.trace()) log_.trace(ME, " start: waiting for the thread to be ready (waiting for the first timeout addition)");
    while (!isReady_) {
       Thread::sleep(5);
    }
    if (log_.trace()) log_.trace(ME, " start: running thread created and ready");
+   return true;
 }
 
 void Timeout::join() 
@@ -78,6 +91,9 @@ void Timeout::join()
 
 Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) 
 {
+   if (!isRunning_) 
+      throw org::xmlBlaster::util::XmlBlasterException(USER_WRONG_API_USAGE, "", ME + ".addTimeoutListener", "en", "The timer is not running");
+
    //if (log_.call()) log_.call(ME, " addTimeoutListener");
    Timestamp key = 0;
    if (delay < 1) log_.error(ME, ": addTimeoutListener with delay = " + lexical_cast<std::string>(delay));
@@ -108,10 +124,13 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
 Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) 
 {
    if (log_.call()) log_.call(ME, " refreshTimeoutListener");
-   if (key < 0) {
-      log_.error(ME, "In Timeout.cpp refreshTimeoutListener() is key < 0");
-      // throw an exception here ...
-   }
+
+   if (!isRunning_) 
+      throw org::xmlBlaster::util::XmlBlasterException(USER_WRONG_API_USAGE, "", ME + ".refreshTimeoutListener", "en", "The timer is not running");
+
+   if (key < 0)
+      throw org::xmlBlaster::util::XmlBlasterException(INTERNAL_ILLEGALARGUMENT, "", ME + ".refreshTimeoutListener", "en", "In Timeout.cpp refreshTimeoutListener() is key < 0");
+
    I_Timeout *callback = 0;
    void *userData = 0;
    {
@@ -200,54 +219,62 @@ void Timeout::run()
    Container *container = NULL;
    Container tmpContainer;
 
-   while (isRunning_) {
+   try {
+      while (isRunning_) {
 
-      if (log_.trace()) log_.trace(ME, " run(): is running");
-      Timestamp delay = 100000 * Constants::MILLION; // sleep veeery long
+         if (log_.trace()) log_.trace(ME, " run(): is running");
+         Timestamp delay = 100000 * Constants::MILLION; // sleep veeery long
 
-      {
-         Lock lock(invocationMutex_);
+         {
+            Lock lock(invocationMutex_);
 
-         TimeoutMap::iterator iter = timeoutMap_.begin();
-         if (iter == timeoutMap_.end()) {
-            if (log_.trace()) log_.trace(ME, "No timer is registered, nothing to do");
+            TimeoutMap::iterator iter = timeoutMap_.begin();
+            if (iter == timeoutMap_.end()) {
+               if (log_.trace()) log_.trace(ME, "No timer is registered, nothing to do");
+            }
+            else {
+               if (log_.trace()) log_.trace(ME, " The timeout is not empty");
+               Timestamp nextWakeup = (*iter).first;
+               if (log_.trace()) log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<std::string>(nextWakeup) + " ns");
+               delay = nextWakeup - timestampFactory_.getTimestamp();
+
+               if (log_.trace()) log_.trace(ME, "run, delay       : " + lexical_cast<std::string>(delay) + " ns");
+               if ( delay < 0 ) delay = 0;
+
+               if (delay <= 0) {
+                  tmpContainer = (*iter).second;
+                  timeoutMap_.erase((*iter).first);
+                  container = &tmpContainer;
+                  if (log_.trace()) log_.trace(ME, "Timeout occurred, calling listener with real time error of " + lexical_cast<std::string>(delay) + " nanos");
+               }
+            }
+            mapHasNewEntry_ = false;
          }
-         else {
-            if (log_.trace()) log_.trace(ME, " The timeout is not empty");
-            Timestamp nextWakeup = (*iter).first;
-            if (log_.trace()) log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<std::string>(nextWakeup) + " ns");
-            delay = nextWakeup - timestampFactory_.getTimestamp();
-
-            if (log_.trace()) log_.trace(ME, "run, delay       : " + lexical_cast<std::string>(delay) + " ns");
-            if ( delay < 0 ) delay = 0;
-
-            if (delay <= 0) {
-               tmpContainer = (*iter).second;
-               timeoutMap_.erase((*iter).first);
-               container = &tmpContainer;
-               if (log_.trace()) log_.trace(ME, "Timeout occurred, calling listener with real time error of " + lexical_cast<std::string>(delay) + " nanos");
+         // must be outside the sync
+         if (container != NULL) {
+             (container->first)->timeout(container->second);
+             container = NULL;
+         }
+         Timestamp milliDelay = delay / Constants::MILLION;
+         if (milliDelay > 0) {
+            if (log_.trace()) log_.trace(ME, "sleeping ... " + lexical_cast<std::string>(milliDelay) + " milliseconds");
+            Lock waitForTimeoutLock(waitForTimeoutMutex_);
+            if (!mapHasNewEntry_) {
+               isReady_ = true;
+               if (!isRunning_) break;
+               waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
+               //if (log_.trace()) log_.trace(ME, "waking up ... ");
             }
          }
-         mapHasNewEntry_ = false;
       }
-      // must be outside the sync
-      if (container != NULL) {
-          (container->first)->timeout(container->second);
-          container = NULL;
-      }
-      Timestamp milliDelay = delay / Constants::MILLION;
-      if (milliDelay > 0) {
-         if (log_.trace()) log_.trace(ME, "sleeping ... " + lexical_cast<std::string>(milliDelay) + " milliseconds");
-
-         Lock waitForTimeoutLock(waitForTimeoutMutex_);
-         if (!mapHasNewEntry_) {
-            isReady_ = true;
-            waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
-            //if (log_.trace()) log_.trace(ME, "waking up ... ");
-         }
-      }
+      if (log_.trace()) log_.trace(ME, "The running thread is exiting");
    }
-   if (log_.trace()) log_.trace(ME, "the running thread is exiting");
+   catch (const std::exception &e) {
+      log_.error(ME, string("The running thread is exiting: ") + e.what());
+   }
+   catch (...) {
+      log_.error(ME, "The running thread is exiting with an unknown exception");
+   }
    isActive_ = false;
 }
 
