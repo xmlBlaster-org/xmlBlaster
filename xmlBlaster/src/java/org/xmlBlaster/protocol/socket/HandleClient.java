@@ -147,6 +147,10 @@ public class HandleClient extends Executor implements Runnable
          if (xmlBlasterException.isUser())
             throw xmlBlasterException;
 
+         // The SOCKET protocol plugin throws this when a client has shutdown its callback server
+         if (xmlBlasterException.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE)
+            throw xmlBlasterException;
+
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "SOCKET callback of " + msgArr.length + " messages failed", xmlBlasterException);
       }
