@@ -21,8 +21,6 @@ import org.xmlBlaster.engine.admin.I_AdminSubscription;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.SubscriptionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
-import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Vector;
 import java.lang.reflect.*;
@@ -114,7 +112,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
 
-         SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
+         I_AdminSubject subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
          if (subjectInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
 
@@ -137,7 +135,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
          if (sessionAttr.startsWith("?")) {
             // for example "client/joe/ses17/?queue/callback/maxEntries"
-            SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
+            I_AdminSession sessionInfo = subjectInfo.getSessionByPubSessionId(Long.parseLong(pubSessionId));
             if (sessionInfo == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
             String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
@@ -196,7 +194,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
 
-      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
+      I_AdminSubject subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
       if (subjectInfo == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
 
@@ -217,7 +215,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (sessionAttr.startsWith("?")) {
          // for example "client/joe/ses17/?queue/callback/maxEntries"
-         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
+         I_AdminSession sessionInfo = subjectInfo.getSessionByPubSessionId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());

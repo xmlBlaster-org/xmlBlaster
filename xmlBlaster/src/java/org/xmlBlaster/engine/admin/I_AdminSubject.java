@@ -24,5 +24,6 @@ public interface I_AdminSubject {
    public int getNumSessions();
    public int getMaxSessions();
    public String getSessionList();
+   public I_AdminSession getSessionByPubSessionId(long pubSessionId);
    public String getKillClient() throws XmlBlasterException;
 }
