@@ -78,7 +78,7 @@
    
    &lt;!-- Administration: configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
       &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
@@ -101,6 +101,8 @@
    
    &lt;isDurable/>  &lt;!-- message is recovered on server crash -->
 
+   &lt;forceUpdate/>  &lt;!-- message is put to destination queue even if destination is not logged in -->
+
    &lt;!-- Send to all login sessions of user 'Tim', if Tim is offline queue it -->
    &lt;destination queryType='EXACT' forceQueuing='true'>
       Tim
@@ -117,6 +119,32 @@
 
    &lt;!-- Administration: configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+   &lt;/topic>
+&lt;/qos>
+</pre>
+   </example>
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is a full QoS of an <b>administrative</b> message.
+      </p>
+      <p>
+      Such a message configures the topic only and does not contain any user content,
+      it is not updated to subscribers and is not put to the history queue.<br />
+      Usually this is the first published message for a specific key oid (=topic).
+      </p>
+<pre>
+&lt;qos>
+   &lt;!-- 9 is highest -->
+   &lt;priority>9&lt;/priority>
+   
+   &lt;!-- Don't do any PtP or Pub/Sub actions, just configure the topic -->
+   &lt;administrative/>
+   
+   &lt;!-- Configure the topic on first publish -->
+   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
       &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
       &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
@@ -263,7 +291,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
