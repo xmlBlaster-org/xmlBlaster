@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='engine.qos.queryspec.QueueQuery' type='NEW' prio='HIGH' status='CLOSED'>
-   <topic>XmlBlaster has a plugin which is used to query arbitrary queues</topic>
+   <topic>XmlBlaster has a plugin which is used to query message entries on arbitrary queues</topic>
    <description>
       <p>
       As an implementation of the I_Query interface the following plugin is invoked when doing a query to a queue.
@@ -64,7 +64,8 @@
 
    <example lang="Java" type="HTML">
       <p>
-      <b>These is an example key and QoS of a get() invoked from within the XmlScript demo:</b>
+      <b>These is an example key and QoS of a get() invoked from within the 
+         <a href="/xmlBlaster/doc/requirements/client.script.html">XmlScript</a> demo:</b>
       </p>
 
       <pre>
@@ -102,9 +103,10 @@ xmlBlaster.qos=&lt;qos>&lt;querySpec type='QueueQuery'>\
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.messages</see>         
    <see type="REQ">queryspec.plugin.queueQuery</see>            
+   <see type="REQ">client.script</see>            
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 05 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
