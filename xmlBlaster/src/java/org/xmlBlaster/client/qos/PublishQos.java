@@ -36,7 +36,7 @@ import org.xmlBlaster.engine.helper.Destination;
  *        joe
  *     &lt;/destination>
  *     &lt;destination>
- *        Tim
+ *        /node/heron/client/Tim/-2
  *     &lt;/destination>
  *  &lt;/qos>
  * </pre>

@@ -54,7 +54,7 @@ import org.xml.sax.helpers.*;
  *        Tim
  *     &lt;/destination>
  *     &lt;destination queryType='EXACT'>
- *        Ben
+ *        /node/heron/client/Ben
  *     &lt;/destination>
  *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
  *        //[GROUP='Manager']
@@ -84,6 +84,7 @@ import org.xml.sax.helpers.*;
  *   &lt;/rcvTimestamp>
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.PtP.html">The engine.qos.publish.destination.PtP requirement</a>
  * @author ruff@swand.lake.de
  */
 public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_MsgQosFactory
@@ -197,7 +198,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          }
          String tmp = character.toString().trim(); // The address or XPath query string
          if (tmp.length() > 0) {
-            this.destination.setDestination(new SessionName(glob, tmp)); // set address or XPath query string if it is before the ForceQueuing tag
+            this.destination.setDestination(new SessionName(glob, tmp)); // set address or XPath query string if it is before inner tags
             character.setLength(0);
          }
          return;
