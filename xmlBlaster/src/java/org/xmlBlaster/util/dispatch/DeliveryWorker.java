@@ -107,7 +107,7 @@ public class DeliveryWorker implements Runnable
     * Asynchronous pull mode, invoked by DeliveryWorkerPool.execute() -> see DeliveryManager calling it
     */
    public void run() {
-      if (log.CALL) log.call(ME, "Starting remote delivery with " + msgQueue.getNumOfEntries() + " entries.");
+      if (log.CALL) log.call(ME, "Starting remote delivery with " + this.msgQueue.getNumOfEntries() + " entries.");
       ArrayList entryList = null;
       MsgQueueEntry[] entries = null;
       try {
@@ -116,10 +116,10 @@ public class DeliveryWorker implements Runnable
                entryList = msgInterceptor.handleNextMessages(deliveryManager, null); // should call prepareMsgsFromQueue() immediately
          }
          else {
-            synchronized (msgQueue) {
-               //entryList = (MsgQueueEntry[])msgQueue.take(-1); --> get()
+            synchronized (this.msgQueue) {
+               //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
-               entryList = msgQueue.peekSamePriority(-1, -1L);
+               entryList = this.msgQueue.peekSamePriority(-1, -1L);
                deliveryManager.prepareMsgsFromQueue(entryList);
             }
          }
@@ -131,19 +131,22 @@ public class DeliveryWorker implements Runnable
 
          entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
          
-         if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
+         if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
          
          Object returnVals = deliveryManager.getDeliveryConnectionsHandler().send(entries);
          
-         if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + msgQueue.getNumOfEntries());
+         if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
+
+         /*{
+            int n = entries.length;
+            for(int i=0; i<n; i++)
+               log.error(ME, "DEBUG ONLY - after sent" + ((org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry)entries[i]).getMsgUnit().toXml());
+         }*/
 
          // messages are successfully sent, remove them now from queue (sort of a commit()):
-         msgQueue.removeRandom(entries);
+         this.msgQueue.removeRandom(entries);
 
-         // Add code for message life cycle !!!
-         //!!! entries[i].getMsgUnitWrapper().addEnqueueCounter(-1);
-
-         if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
+         if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
       }
       catch(Throwable throwable) {
          deliveryManager.handleWorkerException(entryList, throwable);
@@ -153,7 +156,7 @@ public class DeliveryWorker implements Runnable
          entryList = null;
       }
 
-      if (log.TRACE) log.trace(ME, "Finished callback job. " + msgQueue.getNumOfEntries() + " messages in the queue. " + deliveryManager.getDeliveryStatistic().toXml(""));
+      if (log.TRACE) log.trace(ME, "Finished callback job. " + this.msgQueue.getNumOfEntries() + " messages in the queue. " + deliveryManager.getDeliveryStatistic().toXml(""));
    }
 }
 
