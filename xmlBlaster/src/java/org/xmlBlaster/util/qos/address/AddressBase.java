@@ -19,6 +19,7 @@ import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 
 /**
@@ -37,6 +38,7 @@ public abstract class AddressBase
    protected final LogChannel log;
 
    private Hashtable pluginAttributes;
+   private Properties pluginInfoParameters = new Properties();
 
    /** The root xml element: &lt;callback> or &lt;address>, is set from the derived class */
    protected String rootTag = null;
@@ -205,11 +207,39 @@ public abstract class AddressBase
    }
 
    /**
+    * Set the PluginInfo parameters (deived from xmlBlasterPlugins.xml of xmlBlaster.properties). 
+    * <br />
+    * As a plugin developer you should call this method if you have a PluginInfo instance
+    * to use the default paramaters of the plugin.
+    * <br />
+    * Example from xmlBlasterPlugins.xml:
+    * <br />
+    *  &lt;plugin id='SOCKET_UDP' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+    *     ...
+    *     &lt;attribute id='useUdpForOneway'>true</attribute>
+    *  &lt;/plugin>
+    * <p/>
+    * These settings are used as default settings for the plugin with lowest priority
+    */
+   public void setPluginInfoParameters(Properties parameters) {
+      if (parameters == null) {
+         this.pluginInfoParameters = new Properties();
+      }
+      else {
+         this.pluginInfoParameters = parameters;
+      }
+   }
+
+   public String getEnvPrefix() {
+      return this.envPrefix;
+   }
+
+   /**
     * Plugins may query their properties here
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropString getEnv(String key, String defaultValue) {
-      PropString tmp = new PropString(key, defaultValue);
+      PropString tmp = new PropString(key, this.pluginInfoParameters.getProperty(key,defaultValue));
       if (this.pluginAttributes != null) {
          Object val = this.pluginAttributes.get(key);
          if (val != null) {
@@ -226,6 +256,9 @@ public abstract class AddressBase
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropInt getEnv(String key, int defaultValue) {
+      String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
+      defaultValue = Integer.valueOf(defaultStr).intValue();
+
       PropInt tmp = new PropInt(key, defaultValue);
       if (this.pluginAttributes != null) {
          Object val = this.pluginAttributes.get(key);
@@ -243,6 +276,9 @@ public abstract class AddressBase
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropLong getEnv(String key, long defaultValue) {
+      String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
+      defaultValue = Long.valueOf(defaultStr).longValue();
+
       PropLong tmp = new PropLong(key, defaultValue);
       if (this.pluginAttributes != null) {
          Object val = this.pluginAttributes.get(key);
@@ -260,6 +296,9 @@ public abstract class AddressBase
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropBoolean getEnv(String key, boolean defaultValue) {
+      String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
+      defaultValue = Boolean.valueOf(defaultStr).booleanValue();
+
       PropBoolean tmp = new PropBoolean(key, defaultValue);
       if (this.pluginAttributes != null) {
          Object val = this.pluginAttributes.get(key);
