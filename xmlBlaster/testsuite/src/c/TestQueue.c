@@ -50,6 +50,12 @@ static const char * test_queue()
    I_Queue *queueP = 0;
    const char *dbName = "xmlBlasterClient-C-Test.db";
 
+   const int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
+   const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
+   const char *data[] =      { "1. Hello"           , "2. World"           , "3. High Prio 1"     , "4. High Prio 2"     , "5. done"};
+   const int numPut = sizeof(idArr)/sizeof(int64_t);
+   int lenPut = 0;
+
    unlink(dbName); /* Delete old db file */
 
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
@@ -77,12 +83,7 @@ static const char * test_queue()
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
 
    {
-      int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
-      int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
-      char *data[] =      { "1. Hello"           , "2. World"           , "3. High Prio 1"     , "4. High Prio 2"     , "5. done"};
       size_t i;
-      int numPut = sizeof(idArr)/sizeof(int64_t);
-      int len = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
          queueEntry.priority = prioArr[i];
@@ -90,15 +91,15 @@ static const char * test_queue()
          queueEntry.uniqueId = idArr[i];
          strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
          queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
-         queueEntry.embeddedBlob.data = data[i];
+         queueEntry.embeddedBlob.data = (char *)data[i];
          queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
-         len += strlen(queueEntry.embeddedBlob.data);
+         lenPut += strlen(queueEntry.embeddedBlob.data);
 
          queueP->put(queueP, &queueEntry, &exception);
          mu_assert_checkException("put()", exception);
       }
       mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
-      mu_assertEqualsInt("put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
 
       printf("-----------------------------------------\n");
@@ -109,55 +110,236 @@ static const char * test_queue()
 
       entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
       mu_assertEqualsString("create() isShutdown", "resource.db.unavailable", exception.errorCode);
+      freeQueueEntryArr(entries);
       freeQueue(queueP);
 
       queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
       mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
-      mu_assertEqualsInt("put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
       printf("-----------------------------------------\n");
    }
 
-   
-   entries = queueP->peekWithSamePriority(queueP, 0, 0, &exception);
-   mu_assert_checkException("peekWithSamePriority()", exception);
-   mu_assert(" peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+   {
+      int j;
+      printf("-----------------------------------------\n");
+      printf("Testing peekWithSamePriority 9 ...\n");
+      for (j=0; j<10; j++) {
+         entries = queueP->peekWithSamePriority(queueP, 0, 0, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 0, entries->len);
+         freeQueueEntryArr(entries);
 
-   entries = queueP->peekWithSamePriority(queueP, 1, -1, &exception);
-   mu_assert_checkException("peekWithSamePriority()", exception);
-   mu_assert(" peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         entries = queueP->peekWithSamePriority(queueP, 1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
 
-   entries = queueP->peekWithSamePriority(queueP, -1, 3, &exception);
-   mu_assert_checkException("peekWithSamePriority()", exception);
-   mu_assert(" peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         entries = queueP->peekWithSamePriority(queueP, -1, 3, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
 
-   entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
-   mu_assert_checkException("peekWithSamePriority()", exception);
-   mu_assert(" peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 2, entries->len);
-   if (entries != 0) {
-      size_t i;
-      printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
-      for (i=0; i<entries->len; i++) {
-         QueueEntry *queueEntry = &entries->queueEntryArr[i];
-         char *dump = queueEntryToXmlLimited(queueEntry, 200);
-         printf("%s\n", dump);
-         free(dump);
+         mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+         mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+         mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
       }
+      {
+         size_t i;
+         entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 2, entries->len);
+         printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
+         for (i=0; i<entries->len; i++) {
+            char *tmp;
+            int expectedIndex = i+2;
+            QueueEntry *queueEntry = &entries->queueEntryArr[i];
+            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            printf("%s\n", dump);
+            free(dump);
+            mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
+            mu_assertEqualsInt("priority", 9, queueEntry->priority);
+            mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
+            mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
+            tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
+            mu_assertEqualsString("blob", data[expectedIndex], tmp);
+            free(tmp);
+         }
+         freeQueueEntryArr(entries);
+      }
+      printf("-----------------------------------------\n");
+   }
+
+   {
+      int32_t numRemoved;
+      printf("-----------------------------------------\n");
+      printf("Testing randomRemove prio=9 ...\n");
+      printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
+      entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+
+      numRemoved = queueP->randomRemove(queueP, entries, &exception);
+      mu_assert_checkException("randomRemove()", exception);
+      mu_assertEqualsInt("numRemoved", 2, (int)numRemoved);
+
+      numRemoved = queueP->randomRemove(queueP, entries, &exception);
+      mu_assert_checkException("randomRemove()", exception);
+      mu_assertEqualsInt("numRemoved", 0, (int)numRemoved);
+
+      freeQueueEntryArr(entries);
+
+      mu_assertEqualsInt("put() numOfEntries", 3, queueP->getNumOfEntries(queueP));
+      lenPut = strlen(data[0]) + strlen(data[1]) + strlen(data[4]);
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+      printf("-----------------------------------------\n");
+   }
+
+
+   {
+      int j;
+      printf("-----------------------------------------\n");
+      printf("Testing peekWithSamePriority 5 ...\n");
+      for (j=0; j<10; j++) {
+         entries = queueP->peekWithSamePriority(queueP, 0, 0, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 0, entries->len);
+         freeQueueEntryArr(entries);
+
+         entries = queueP->peekWithSamePriority(queueP, 1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
+
+         entries = queueP->peekWithSamePriority(queueP, -1, 3, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
+      }
+      {
+         size_t i;
+         entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 2, entries->len);
+         printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
+         for (i=0; i<entries->len; i++) {
+            char *tmp;
+            int expectedIndex = (i==0) ? 0 : 4;
+            QueueEntry *queueEntry = &entries->queueEntryArr[i];
+            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            printf("%s\n", dump);
+            free(dump);
+            mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
+            mu_assertEqualsInt("priority", 5, queueEntry->priority);
+            mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
+            mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
+            tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
+            mu_assertEqualsString("blob", data[expectedIndex], tmp);
+            free(tmp);
+         }
+         freeQueueEntryArr(entries);
+      }
+
+      mu_assertEqualsInt("put() numOfEntries", 3, queueP->getNumOfEntries(queueP));
+      lenPut = strlen(data[0]) + strlen(data[1]) + strlen(data[4]);
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+      printf("-----------------------------------------\n");
+   }
+
+   {
+      int32_t numRemoved;
+      printf("-----------------------------------------\n");
+      printf("Testing randomRemove prio=5 ...\n");
+      printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
+      entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+
+      numRemoved = queueP->randomRemove(queueP, entries, &exception);
+      mu_assert_checkException("randomRemove()", exception);
+      mu_assertEqualsInt("numRemoved", 2, (int)numRemoved);
+
+      numRemoved = queueP->randomRemove(queueP, entries, &exception);
+      mu_assert_checkException("randomRemove()", exception);
+      mu_assertEqualsInt("numRemoved", 0, (int)numRemoved);
+
+      freeQueueEntryArr(entries);
+
+      mu_assertEqualsInt("put() numOfEntries", 1, queueP->getNumOfEntries(queueP));
+      lenPut = strlen(data[1]);
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+      printf("-----------------------------------------\n");
    }
 
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
-   queueP->randomRemove(queueP, entries, &exception);
-   mu_assert_checkException("randomRemove()", exception);
 
-   freeQueueEntryArr(entries);
-   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
+   {
+      int j;
+      printf("-----------------------------------------\n");
+      printf("Testing peekWithSamePriority 1 ...\n");
+      for (j=0; j<10; j++) {
+         entries = queueP->peekWithSamePriority(queueP, 0, 0, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 0, entries->len);
+         freeQueueEntryArr(entries);
+
+         entries = queueP->peekWithSamePriority(queueP, 1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
+
+         entries = queueP->peekWithSamePriority(queueP, -1, 3, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         freeQueueEntryArr(entries);
+      }
+      {
+         size_t i;
+         entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+         mu_assert_checkException("peekWithSamePriority()", exception);
+         mu_assert(" peekWithSamePriority()", entries != 0);
+         mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
+         printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
+         for (i=0; i<entries->len; i++) {
+            char *tmp;
+            int expectedIndex = (i==0) ? 1 : 0;
+            QueueEntry *queueEntry = &entries->queueEntryArr[i];
+            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            printf("%s\n", dump);
+            free(dump);
+            mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
+            mu_assertEqualsInt("priority", 1, queueEntry->priority);
+            mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
+            mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
+            tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
+            mu_assertEqualsString("blob", data[expectedIndex], tmp);
+            free(tmp);
+         }
+         freeQueueEntryArr(entries);
+      }
+
+      mu_assertEqualsInt("put() numOfEntries", 1, queueP->getNumOfEntries(queueP));
+      lenPut = strlen(data[1]);
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+      printf("-----------------------------------------\n");
+   }
    
    queueP->clear(queueP, &exception);
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
+   mu_assertEqualsInt("put() numOfEntries", 0, queueP->getNumOfEntries(queueP));
+   mu_assertEqualsInt("put() numOfBytes", 0, (int)queueP->getNumOfBytes(queueP));
+   mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
 
    queueP->shutdown(queueP, &exception);
    freeQueue(queueP);
