@@ -184,14 +184,14 @@ public class TestSession extends TestCase implements I_Callback
 
 
    /**
-    * We login with session timeout 1 sec, call every 500 millis get()
+    * We login with session timeout 2 sec, call every 1000 millis get()
     * which should respan the session timeout. 
-    * If this goes well for 2 sec, the refresh seems to work
+    * If this goes well for 8 sec, the refresh seems to work
     */
    public void testSessionTimeoutRespan()
    {
       log.info(ME, "testSessionTimeoutRespan() ...");
-      long timeout = 1000L;
+      long timeout = 2000L;
       XmlBlasterConnection con = null;
       try {
          try {
