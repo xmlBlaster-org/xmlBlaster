@@ -89,7 +89,7 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
  */
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception)
 {
-   const char *servTcpPort = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/port", "7607");
+   const char *servTcpPort = 0;
 
    struct sockaddr_in xmlBlasterAddr;
    struct hostent hostbuf, *hostP = 0;
@@ -122,8 +122,12 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       return true;
    }
 
+   servTcpPort = xb->props->getString(xb->props, "plugin/socket/port", "7607");
+   servTcpPort = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/port", servTcpPort);
+
    strcpy(serverHostName, "localhost");
    gethostname(serverHostName, 250);
+   strncpy0(serverHostName, xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName), 250);
    strncpy0(serverHostName, xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName), 250);
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
@@ -157,6 +161,42 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
       if (xb->socketToXmlBlaster != -1) {
          int ret=0;
+         const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
+         int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
+         localHostName = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/localHostname", localHostName);
+         localPort = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/localPort", localPort);
+
+         /* Sometimes a user may whish to force the local host/port setting (e.g. for firewall tunneling
+            and on multi homed hosts */
+         if (localHostName != 0 || localPort > 0) {
+            struct sockaddr_in localAddr;
+            struct hostent localHostbuf, *localHostP = 0;
+            char *tmpLocalHostbuf=0;
+            size_t localHostbuflen=0;
+            memset(&localAddr, 0, sizeof(localAddr));
+            localAddr.sin_family = AF_INET;
+            if (localHostName) {
+               localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen);
+               if (localHostP != 0) {
+                  localAddr.sin_addr.s_addr = ((struct in_addr *)(localHostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
+                  free(tmpLocalHostbuf);
+               }
+            }
+            if (localPort > 0) {
+               localAddr.sin_port = htons((unsigned short)localPort);
+            }
+            if (bind(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+               if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
+                  "Failed binding local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                     localHostName, localPort);
+            }
+            else {
+               xb->log(xb->logLevel, LOG_INFO, __FILE__,
+                  "Bound local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                     localHostName, localPort);
+            }
+         }
+
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
             if (xb->logLevel>=LOG_INFO) xb->log(xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
          }
@@ -201,7 +241,11 @@ const char *xmlBlasterConnectionUnparsedUsage()
       "\n  -dispatch/connection/plugin/socket/hostname [localhost]"
       "\n                       Where to find xmlBlaster"
       "\n  -dispatch/connection/plugin/socket/port [7607]"
-      "\n                       The port where xmlBlaster listens";
+      "\n                       The port where xmlBlaster listens"
+      "\n  -dispatch/connection/plugin/socket/localHostname [NULL]"
+      "\n                       Force the local IP, useful on multi homed computers"
+      "\n  -dispatch/connection/plugin/socket/localPort [0]"
+      "\n                       Force the local port, useful to tunnel firewalls";
 }
 
 /**
