@@ -103,7 +103,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //   private final int queueIncrement;
    private java.util.HashSet nodesCache;
    private String pingStatement;
-
+   private String blobVarName;
+   private String keyAttr;
 
    /**
     * @param JdbcConnectionPool the pool to be used for the connections to
@@ -171,6 +172,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       this.pingStatement = (String)names.get("pingStatement");
       if (this.pingStatement == null) this.pingStatement = "SHOW ALL";
+
+      this.blobVarName = (String)names.get("blobVarName");
+      if (this.pingStatement == null) this.pingStatement = "blob";
+
+      this.keyAttr = (String)names.get("keyAttr");
+      if (this.keyAttr == null) this.keyAttr = ""; // could be "not null" for MySQL
 
       this.tableNamePrefix = this.pool.getTableNamePrefix();
       // this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
@@ -394,7 +401,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!nodesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.nodesTableName + "' as the 'nodes' table");
-            req = "CREATE TABLE " + this.nodesTableName.toUpperCase() + " (nodeId " + this.stringTxt + ", PRIMARY KEY (nodeId))";
+            req = "CREATE TABLE " + this.nodesTableName.toUpperCase() + " (nodeId " + this.stringTxt + this.keyAttr + ", PRIMARY KEY (nodeId))";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
             update(req, conn);
@@ -402,8 +409,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!queuesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.queuesTableName + "' as the 'queues' table");
-            req = "CREATE TABLE " + this.queuesTableName.toUpperCase() + " (queueName " + this.stringTxt +
-                  ", nodeId " + this.stringTxt +
+            req = "CREATE TABLE " + this.queuesTableName.toUpperCase() + " (queueName " + this.stringTxt + this.keyAttr +
+                  ", nodeId " + this.stringTxt + this.keyAttr +
                   ", numOfBytes " + this.longintTxt +
                   ", numOfEntries " + this.longintTxt +
                   ", PRIMARY KEY (queueName, nodeId)" + 
@@ -415,14 +422,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!entriesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.entriesTableName + "' as the 'entries' table");
-            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + " (dataId " + this.longintTxt +
-                  ", nodeId " + this.stringTxt +
-                  ", queueName " + this.stringTxt +
+            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + " (dataId " + this.longintTxt + this.keyAttr +
+                  ", nodeId " + this.stringTxt + this.keyAttr +
+                  ", queueName " + this.stringTxt + this.keyAttr +
                   ", prio " + this.intTxt +
                   ", flag " + this.stringTxt +
                   ", durable " + this.booleanTxt +
                   ", byteSize " + this.longintTxt +
-                  ", blob " + this.blobTxt +
+                  ", " + this.blobVarName + " " + this.blobTxt +
                   ", PRIMARY KEY (dataId, queueName)" + 
                   ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " ON DELETE CASCADE)";
             if (this.log.TRACE) 
@@ -709,7 +716,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       try {
          conn = this.pool.getConnection();
-         String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , byteSize = ? , blob = ? WHERE  dataId = ? AND nodeId = ? AND queueName = ?";
+         String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , byteSize = ? , " + this.blobVarName + " = ? WHERE  dataId = ? AND nodeId = ? AND queueName = ?";
 
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), req);
          preStatement = conn.prepareStatement(req);
