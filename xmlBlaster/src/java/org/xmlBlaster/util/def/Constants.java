@@ -85,7 +85,9 @@ public class Constants
    /** The returned message status if OK */
    public final static String STATE_OK = "OK";
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
-   
+
+   /* C-client if queued on client side: "<qos><state id='OK' info='QUEUED'/></qos>" */
+      
    public final static String STATE_WARN = "WARNING";
    public final static String RET_WARN = "<qos><state id='" + Constants.STATE_WARN + "'/></qos>";
 
