@@ -181,7 +181,7 @@ sub getServerSysInfo {
 	my $messages ;
 	my $message_unit ;
 
-	my @sysInternal = ('__sys__TotalMem','__sys__FreeMem','__sys__UsedMem','__sys__UserList' );
+	my @sysInternal = ('__cmd:?totalMem','__cmd:?freeMem','__cmd:?usedMem','__sys__UserList' );
 	foreach my $keyoid ( @sysInternal ){
 		print "> get $keyoid...";
 		$messages = $server->call('xmlBlaster.get', $sessionId, "<key oid='$keyoid'></key>", "<qos></qos>");

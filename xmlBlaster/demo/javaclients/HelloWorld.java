@@ -23,7 +23,7 @@ public class HelloWorld
 
          con.connect(null, null);    // Login to xmlBlaster as "guest"
 
-         MessageUnit[] msgs = con.get("<key oid='__sys__FreeMem'/>", null);
+         MessageUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
 
          Log.info("HelloWorld", "xmlBlaster has currently " + new String(msgs[0].getContent()) +
                       " bytes of free memory");

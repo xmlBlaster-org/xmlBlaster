@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.14 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.15 2002/06/18 13:51:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -220,7 +220,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     * Query xmlBlaster for its current memory consumption. 
     */
    long getUsedServerMemory() {
-      String xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
+      String xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       try {
          MessageUnit[] msgArr = oneConnection.get(xmlKey, qos);

@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.5 2002/05/01 21:40:17 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.6 2002/06/18 13:51:56 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -157,7 +157,7 @@ public:
 
       try {
          // 1. Query the current memory allocated in xmlBlaster
-         string xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
+         string xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
          string qos    = "<qos></qos>";
          serverIdl::MessageUnitArr_var
             msgArr = senderConnection_->get(xmlKey, qos);

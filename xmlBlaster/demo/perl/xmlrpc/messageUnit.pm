@@ -142,7 +142,7 @@ sub dump {
 	$str .= ('='x40)."\n" ;
 	return $str ;
 
-	####print "[[[[[[ ",$message->{ __sys__TotalMem }," \n";
+	####print "[[[[[[ ",$message->{ __cmd:?totalMem }," \n";
 
 	#$sum = $result->{'sum'};
 	#$difference = $result->{'difference'};

@@ -3,7 +3,7 @@ Name:      TestSessionCb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSessionCb.java,v 1.1 2002/06/07 18:23:25 ruff Exp $
+Version:   $Id: TestSessionCb.java,v 1.2 2002/06/18 13:51:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -141,7 +141,7 @@ public class TestSessionCb extends TestCase
          assertTrue("Update is missing", assertInUpdate != null);
 
          try {
-            con1.get("<key oid='__sys__FreeMem'/>", null);
+            con1.get("<key oid='__cmd:?freeMem'/>", null);
             fail("XmlBlaster should have killed us because of callback problems");
          }
          catch (XmlBlasterException e) {

@@ -7,21 +7,19 @@
 <!-- Exapmples how to subscribe to MessageUnits: -->
 
 <!-- Accessing the current xmlBlaster allocated memory
-        java testsuite.org.xmlBlaster.query.DomQueryTest Internal.xml "xmlBlaster/key[@oid='__sys__TotalMem']" -->
+        java testsuite.org.xmlBlaster.query.DomQueryTest Internal.xml "xmlBlaster/key[@oid='__sys__Login']" -->
 
 <!-- Accessing all xmlBlaster internal data
         java testsuite.org.xmlBlaster.query.DomQueryTest Internal.xml xmlBlaster/key/__sys__internal -->
 
 <xmlBlaster>
 
-   <key oid='__sys__TotalMem'>
+   <key oid='__sys__Login'>
       <__sys__internal>
       </__sys__internal>
    </key>
 
-   <key oid='__sys__FreeMem'>
-      <__sys__internal>
-      </__sys__internal>
+   <key oid='__cmd:?freeMem'>
    </key>
 
 </xmlBlaster>

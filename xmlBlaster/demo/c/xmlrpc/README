@@ -84,7 +84,7 @@ Run it:
 
 
 (You may also want to start a Java client to receive the messages like:
-  java org.xmlBlaster.client.reader.SubscribeMessage  -loginName ben  -passwd secret  -oid __sys__TotalMem
+  java org.xmlBlaster.client.reader.SubscribeMessage  -loginName ben  -passwd secret  -oid __cmd:?totalMem
 ) 
 
 

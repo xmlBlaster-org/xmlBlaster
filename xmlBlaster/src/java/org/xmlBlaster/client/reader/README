@@ -11,7 +11,7 @@ Example for subscribing to a message:
    - And subscirbe to a message
      (here the actual memory consumption of xmlBlaster):
 
-     java org.xmlBlaster.client.reader.SubscribeMessage  -loginName Tim  -passwd secret  -oid __sys__TotalMem
+     java org.xmlBlaster.client.reader.SubscribeMessage  -loginName Tim  -passwd secret  -oid __cmd:?totalMem
 
 
 How to get help:

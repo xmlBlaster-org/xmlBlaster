@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.20 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: RamTest.java,v 1.21 2002/06/18 13:51:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -148,7 +148,7 @@ public class RamTest extends TestCase
 
       try {
          // 1. Query the current memory allocated in xmlBlaster
-         String xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
+         String xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = senderConnection.get(xmlKey, qos);
 

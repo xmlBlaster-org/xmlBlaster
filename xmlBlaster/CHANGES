@@ -37,6 +37,9 @@ Changes for xxxxx [xxx, xx 200x]
     numNodes, nodeList etc.
     Parts of them are burned during compilation with ant/build.xml
 
+  - Removed internal messages __sys__FreeMem, __sys__TotalMem and __sys__UsedMem
+    Please use __cmd:?freeMem, __cmd:?totalMem and __cmd:?usedMem instead.
+
 
 Changes for 0.79f [Jun, 17 2002]
 ================================

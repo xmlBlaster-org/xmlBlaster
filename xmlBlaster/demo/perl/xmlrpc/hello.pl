@@ -13,7 +13,7 @@ $sessionId = $server->call('authenticate.login', "ben", "secret", "<qos></qos>",
 print "\nLogin success with sessionId=$sessionId \n";
 
 # Call the server and get its current memory consumption.
-$message = $server->call('xmlBlaster.get', $sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>");
+$message = $server->call('xmlBlaster.get', $sessionId, "<key oid='__cmd:?totalMem'></key>", "<qos></qos>");
 print "\nResult for a get():\n----------------\n $message \n----------------\n";
 
 #$message = $server->call('xmlBlaster.publish', $sessionId, "<key oid='MyMessage'></key>", "Hello world", "<qos><forceUpdate /></qos>");

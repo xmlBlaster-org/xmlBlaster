@@ -38,8 +38,8 @@
             Log.info(ME, "Now we are connected to xmlBlaster MOM server");
 
             Log.info(ME, "Getting a message - checking free memory in server ...");
-            // GetKeyWrapper helps us to create this string "<key oid='__sys__FreeMem' queryType='EXACT'></key>";
-            GetKeyWrapper key = new GetKeyWrapper("__sys__FreeMem", "EXACT");
+            // GetKeyWrapper helps us to create this string "<key oid='__cmd:?freeMem' queryType='EXACT'></key>";
+            GetKeyWrapper key = new GetKeyWrapper("__cmd:?freeMem", "EXACT");
             GetQosWrapper qos = new GetQosWrapper(); // helps us to create "<qos></qos>":
 
             try {

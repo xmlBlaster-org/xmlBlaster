@@ -519,10 +519,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       try {
          if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
 
-         if (xmlKey.isInternalMsg()) {
-            updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
-         }
-
          CbQueueProperty[] props = subscribeQos.getQueueProperties();
          if (props.length > 1) {         // WE NEED TO RETURN A STRING[] (currently wer return a simple String!!
             log.warn(ME, "subscribe for more than one queue is currently not supported");
@@ -615,10 +611,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (glob.isAdministrationCommand(xmlKey)) {
             return glob.getMomClientGateway().getCommand(sessionInfo, xmlKey.getUniqueKey());
          }
-
-         // Note: Internal messages are currently not checkable with the mime access filter
-         if (xmlKey.isInternalMsg())
-            updateInternalStateInfo(unsecureSessionInfo);
 
          if (xmlKey.getKeyOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
             String query = xmlKey.toXml();
@@ -728,44 +720,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          e.printStackTrace();
          throw new XmlBlasterException("RequestBroker.get.InternalError", e.toString());
       }
-   }
-
-   /**
-    * Refresh internal informations about the xmlBlaster state.
-    * <p />
-    * Sets for example the totally allocated memory in the JVM.
-    * <br />
-    * This is the internal representation:
-    * <pre>
-    *    &lt;xmlBlaster>                   &lt;!-- Deliver informations about internal state of xmlBlaster -->
-    *
-    *       &lt;key oid='__sys__TotalMem'> &lt;!-- Amount of totally allocated RAM [bytes] -->
-    *          &lt;__sys__internal>
-    *          &lt;/__sys__internal>
-    *       &lt;/key>
-    *
-    *       &lt;key oid='__sys__FreeMem'>  &lt;!-- Amount of free RAM in virtual machine, before new Ram must be allocated [bytes] -->
-    *          &lt;__sys__internal>
-    *          &lt;/__sys__internal>
-    *       &lt;/key>
-    * </pre>
-    *
-    * @param sessionInfo unsecureSessionInfo (internal user)
-    * @return A sequence of 0...n MessageUnit structs
-    */
-   private void updateInternalStateInfo(SessionInfo sessionInfo) throws XmlBlasterException
-   {
-      String oid = "__sys__TotalMem";
-      String content = "" + Runtime.getRuntime().totalMemory();
-      updateInternalStateInfoHelper(sessionInfo, oid, content);
-
-      oid = "__sys__FreeMem";
-      content = "" + Runtime.getRuntime().freeMemory();
-      updateInternalStateInfoHelper(sessionInfo, oid, content);
-
-      oid = "__sys__UsedMem";
-      content = "" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
-      updateInternalStateInfoHelper(sessionInfo, oid, content);
    }
 
    private void updateInternalUserList(SessionInfo sessionInfo) throws XmlBlasterException

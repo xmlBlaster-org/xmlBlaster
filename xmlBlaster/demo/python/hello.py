@@ -35,7 +35,7 @@ print "\nLogin success with on ", server_url, " sessionId=", sessionId
 # -----------------------------------------------------
 # Call the server and get its current memory consumption.
 print "\n*  Trying to access the consumed memory of the xmlBlaster server ..."
-messages = server.xmlBlaster.get( sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>")
+messages = server.xmlBlaster.get( sessionId, "<key oid='__cmd:?totalMem'></key>", "<qos></qos>")
 print "   Received ", len(messages), " messages:"
 for msg in messages:
    key = msg[0]
@@ -74,7 +74,7 @@ for msg in messages:
 # -----------------------------------------------------
 # Asynchronous access - not yet implemented
 # We need to instantiate a Python xmlRpc callback server first
-#server.xmlBlaster.subscribe( sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>")
+#server.xmlBlaster.subscribe( sessionId, "<key oid='__cmd:?totalMem'></key>", "<qos></qos>")
 
 
 # -----------------------------------------------------

@@ -91,7 +91,7 @@
       </sysprop>
 
       <numMsgs>7140</numMsgs>
-      <msgList>hello,radar.track,myMessage,__sys__FreeMem,...</msgList>
+      <msgList>hello,radar.track,myMessage,...</msgList>
       <msg>
          <hello>
             <key></key>
@@ -476,7 +476,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

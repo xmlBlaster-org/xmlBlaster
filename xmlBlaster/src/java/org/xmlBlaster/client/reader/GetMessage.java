@@ -3,7 +3,7 @@ Name:      GetMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to get from command line a message
-Version:   $Id: GetMessage.java,v 1.2 2002/06/18 09:43:18 ruff Exp $
+Version:   $Id: GetMessage.java,v 1.3 2002/06/18 13:51:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -31,7 +31,7 @@ import org.xmlBlaster.engine.helper.Constants;
  * for example for debugging reasons.
  * Invoke examples:<br />
  * <pre>
- *    java org.xmlBlaster.client.reader.GetMessage  -loginName  Tim  -passwd  secret  -oid  __sys__TotalMem
+ *    java org.xmlBlaster.client.reader.GetMessage  -loginName  Tim  -passwd  secret  -oid  __cmd:?totalMem
  * </pre>
  * For other supported options type
  * <pre>
@@ -129,7 +129,7 @@ public class GetMessage
 
 
    /**
-    * Invoke:  java org.xmlBlaster.client.reader.GetMessage  -loginName Tim  -passwd secret  -oid __sys__TotalMem
+    * Invoke:  java org.xmlBlaster.client.reader.GetMessage  -loginName Tim  -passwd secret  -oid __cmd:?totalMem
     */
    public static void main(String args[]) {
       Global glob = new Global();

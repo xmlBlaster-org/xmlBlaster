@@ -48,8 +48,7 @@
 
    <!-- Deliver information about internal state of xmlBlaster -->
    <get>
-      <key oid='__sys__TotalMem' queryType='EXACT'>  <!-- Amount of totally allocated RAM [bytes] -->
-      </key>
+      <key oid='__cmd:?totalMem' queryType='EXACT'/>  <!-- Amount of totally allocated RAM [bytes] -->
    </get>
 
 

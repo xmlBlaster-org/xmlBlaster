@@ -3,7 +3,7 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.4 2002/06/02 15:34:57 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.5 2002/06/18 13:51:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -32,7 +32,7 @@ import java.util.Vector;
  *     &lt;state id='OK'/>
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
- *     &lt;subscriptionId>subscriptionId:__sys__TotalMem&lt;/subscriptionId>
+ *     &lt;subscriptionId>subId:1&lt;/subscriptionId>
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>

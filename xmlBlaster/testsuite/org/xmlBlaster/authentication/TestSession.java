@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.1 2002/06/07 18:23:25 ruff Exp $
+Version:   $Id: TestSession.java,v 1.2 2002/06/18 13:51:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -166,7 +166,7 @@ public class TestSession extends TestCase implements I_Callback
 
          try {
             log.info(ME, "Check access ...");
-            con.get("<key oid='__sys__FreeMem'/>", null);
+            con.get("<key oid='__cmd:?freeMem'/>", null);
             assertTrue("get of expired login session is not possible", false);
          }
          catch (Exception e) {
@@ -211,7 +211,7 @@ public class TestSession extends TestCase implements I_Callback
             for (int ii=0; ii<4; ii++) {
                try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
                log.info(ME, "Check access #" + ii + " ...");
-               con.get("<key oid='__sys__FreeMem'/>", null);
+               con.get("<key oid='__cmd:?freeMem'/>", null);
                log.info(ME, "Check access #" + ii + " OK");
             }
          }
@@ -258,7 +258,7 @@ public class TestSession extends TestCase implements I_Callback
                   qos.clearSessions(true);
                   con[ii].connect(qos, this);
                   log.info(ME, "Success, login is possible again");
-                  con[ii].get("<key oid='__sys__FreeMem'/>", null);
+                  con[ii].get("<key oid='__cmd:?freeMem'/>", null);
                   log.info(ME, "Success, get works");
                }
                catch (Exception e2) {

@@ -51,7 +51,7 @@ sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "mySessio
 print "\nLogin success with sessionId=", sessionId;
 
 # Call the server and get its current memory consumption.
-message = server.xmlBlaster.get( sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>");
+message = server.xmlBlaster.get( sessionId, "<key oid='__cmd:?totalMem'></key>", "<qos></qos>");
 print "Result for a get():\n\n", message;
 
 # Logout from xmlBlaster
