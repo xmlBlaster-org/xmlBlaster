@@ -35,6 +35,7 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
 CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 #------------------------------------------------------------------------------
 
 
