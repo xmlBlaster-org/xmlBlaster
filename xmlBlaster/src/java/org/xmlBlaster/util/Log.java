@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.39 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: Log.java,v 1.40 2000/03/13 16:50:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -174,7 +174,7 @@ public class Log
 
 
    /**
-    * Set logging level from start parameter and initialize properties. 
+    * Set logging level from start parameter and initialize properties.
     * <br />
     * Example:<br />
     * <pre>jaco org.xmlBlaster.Main +trace +dump +calls +dump</pre>
@@ -565,7 +565,10 @@ public class Log
 
 
    /**
-    * Command line usage.
+    * Command line usage. 
+    * <p />
+    * These variables may be set in xmlBlaster.properties as well.
+    * Don't use the "-" or "+" prefix there.
     */
    public static void usage()
    {
