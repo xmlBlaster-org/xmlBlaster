@@ -162,8 +162,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * and destroys low level connection and callback server.
     * You can customize the behavior with disconnectQos.
     * <p />
-    * Behavior on client side:<br />
-    * The server side session resources are destroyed, pending messages are delete.
+    * Behavior on server side:<br />
+    * The server side session resources are destroyed, pending messages are deleted.
     * <p />
     * NOTE: If you want to keep all resources on server side for this login session
     *       but want to halt your client,
