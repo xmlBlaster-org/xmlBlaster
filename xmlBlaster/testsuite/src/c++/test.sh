@@ -16,6 +16,8 @@ bin/TestTimeout
 echo "going to test the timestamp"
 sleep $DELAY_TIME
 bin/TestTimestamp
+sleep $DELAY_TIME
+bin/TestThread
 
 # these are the methods which use an xmlBlaster server (either embedded or external)
 

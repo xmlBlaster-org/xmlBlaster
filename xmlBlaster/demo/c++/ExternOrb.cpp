@@ -5,8 +5,7 @@
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
-
-#include <client/protocol/corba/CorbaDriver.h>
+#include <client/protocol/corba/CorbaDriverFactory.h>
 
 /**
  * This demo shows how to use XmlBlasterAccess with an orb which is already initialized. Since
@@ -100,8 +99,7 @@ public:
       start(); // to start the orb worker ...
       try {
       // CorbaDriver driver = 
-      CorbaDriver::getInstance(global_, "externOrb", false, orb_);
-         XmlBlasterAccess con(global_, "externOrb");
+         XmlBlasterAccess con(global_);
          con.initFailsafe(this);
 
          // Creates a connect qos with the user 'joe' and the password 'secret'
@@ -161,7 +159,11 @@ public:
       }
    }
 
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string& /*sessionId*/, 
+                 UpdateKey& updateKey, 
+                 void* /*content*/, 
+                 long /*contentSize*/, 
+                 UpdateQos& updateQos)
    {
       log_.info(ME, "update: key: " + updateKey.toXml());
       log_.info(ME, "update: qos: " + updateQos.toXml());
