@@ -268,6 +268,23 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       return usedName;
    }
 
+   public String toString() {
+      String tmp = getClass().getName();
+      if (this.propName != null && this.propName.length() > 0) {
+         tmp = this.propName;
+      }
+      String value = getValueString();
+      if (value != null) {
+         if (value.length() < 1) {
+            tmp += "='" + value + "'";
+         }
+         else {
+            tmp += "=" + value;
+         }
+      }
+      return tmp;
+   }
+
    /** The literal XML string of the QoS */
    public String toXml() {
       return toXml("");
