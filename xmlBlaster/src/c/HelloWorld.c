@@ -48,7 +48,7 @@ int main(int argc, char** argv)
    response = xb->connect(xb, connectQos, &exception);
    free(response);
    if (*exception.errorCode != '\0') {
-      printf("[client] Caught exception during connect, errorCode=%s, message=%s",
+      printf("[client] Caught exception during connect, errorCode=%s, message=%s\n",
              exception.errorCode, exception.message);
       freeXmlBlasterConnectionUnparsed(xb);
       exit(1);
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
    
    msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
    if (*exception.errorCode != '\0') {
-      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s",
+      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s\n",
              exception.errorCode, exception.message);
       freeXmlBlasterConnectionUnparsed(xb);
       exit(1);
