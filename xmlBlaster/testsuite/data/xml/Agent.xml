@@ -10,6 +10,9 @@
 <!-- Accessing key with oid=2
         java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key[@oid='2'] -->
 
+<!-- Accessing key with oid=2 or 3
+        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "xmlBlaster/key[@oid='2' or @oid='3']" -->
+
 <!-- Accessing all FileProof drivers
         java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] -->
 
