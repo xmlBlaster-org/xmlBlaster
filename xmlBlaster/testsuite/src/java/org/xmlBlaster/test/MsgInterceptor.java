@@ -55,6 +55,7 @@ public class MsgInterceptor implements I_Callback
                    " priority=" + updateQos.getPriority() +
                    " state=" + updateQos.getState() +
                    " content=" + cont);
+      log.info(ME, "Receiving update of a message " + updateQos.toXml());
       if (!updateQos.isErased()) {
          msgs.add(new Msg(cbSessionId, updateKey, content, updateQos));
       }
