@@ -979,8 +979,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          return false;
       }
 
-      if (recorder != null && recorder.size() > 0)
-         Log.warn(ME, "You called disconnect(). Please note that there are " + recorder.size() + " unsent invocations/messages in the queue");
+      if (recorder != null && recorder.getNumUnread() > 0)
+         Log.warn(ME, "You called disconnect(). Please note that there are " + recorder.getNumUnread() + " unsent invocations/messages in the queue");
 
       synchronized (callbackMap) {
          Set keys = callbackMap.keySet();
@@ -1603,7 +1603,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          return 0;
       }
 
-      return recorder.size();
+      return (int)recorder.getNumUnread();
    }
 
 
@@ -1621,11 +1621,22 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public void resetQueue()
    {
       if (recorder == null) {
-         Log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
+         Log.warn(ME, "Internal error: don't call resetQueue(), you are not in fail save mode");
          return;
       }
 
-      recorder.reset();
+      recorder.destroy();
+   }
+
+
+   public void shutdownQueue()
+   {
+      if (recorder == null) {
+         Log.warn(ME, "Internal error: don't call shutdownQueue(), you are not in fail save mode");
+         return;
+      }
+
+      recorder.shutdown();
    }
 
 
