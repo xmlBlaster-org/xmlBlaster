@@ -8,6 +8,7 @@ package org.xmlBlaster.util;
 
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
+import org.jutils.text.StringHelper;
 import org.jutils.log.LogChannel;
 import org.jutils.log.LogDeviceConsole;
 import org.jutils.log.LogDeviceFile;
@@ -63,6 +64,8 @@ public class Global implements Cloneable
    protected String errorText = null;
 
    protected String cbHostname = null;
+
+   protected String addressNormalized = null;
 
 
    // deprecated
@@ -493,7 +496,7 @@ public class Global implements Cloneable
     * @return ""
     */
    public String getAdminId() {
-      return org.jutils.text.StringHelper.replaceAll(getId(), "/", "");
+      return StringHelper.replaceAll(getId(), "/", "");
    }
 
    /**
@@ -502,10 +505,10 @@ public class Global implements Cloneable
     * @return ""
     */
    public String getStrippedId() {
-      String strippedId = org.jutils.text.StringHelper.replaceAll(getId(), "/", "");
-      strippedId = org.jutils.text.StringHelper.replaceAll(strippedId, ".", "_");
-      strippedId = org.jutils.text.StringHelper.replaceAll(strippedId, ":", "_");
-      return org.jutils.text.StringHelper.replaceAll(strippedId, "\\", "");
+      String strippedId = StringHelper.replaceAll(getId(), "/", "");
+      strippedId = StringHelper.replaceAll(strippedId, ".", "_");
+      strippedId = StringHelper.replaceAll(strippedId, ":", "_");
+      return StringHelper.replaceAll(strippedId, "\\", "");
    }
 
    /**
