@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.9 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.10 2001/08/31 15:24:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -25,11 +25,19 @@ import java.util.Vector;
  * A typical <b>login</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
+ *        &lt;session timeout='3600000' maxSessions='20'>
+ *        &lt;/session>
  *        &lt;noPtP />
  *        &lt;callback type='IOR'>
  *           IOR:10000010033200000099000010....
  *           &lt;burstMode collectTime='400' />
  *        &lt;/callback>
+ *        &lt;securityService type="simple" version="1.0">
+ *          &lt;![CDATA[
+ *          &lt;user>michele&lt;/user>
+ *          &lt;passwd>secret&lt;/passwd>
+ *          ]]>
+ *        &lt;/securityService>
  *     &lt;/qos>
  * </pre>
  * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
@@ -37,17 +45,8 @@ import java.util.Vector;
  * This is generated automatically from the XmlBlasterConnection class when instantiating
  * the callback driver.
  * <p />
- * A typical login sequence looks like this:
- * <pre>
- *   &lt;securityService type="simple" version="1.0">
- *      &lt;![CDATA[
- *         &lt;user>name&lt;/user>
- *         &lt;passwd>passwd&lt;/passwd>
- *      ]]>
- *   &lt;/securityService>
- * </pre>
- * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
+ * @see org.xmlBlaster.authentication.ClientQoS
  */
 public class LoginQosWrapper extends QosWrapper
 {
@@ -61,6 +60,13 @@ public class LoginQosWrapper extends QosWrapper
 
    /** PtP messages wanted? */
    protected boolean noPtP = false; // <noPtP />    <!-- Don't send me any PtP messages (prevents spamming) -->
+
+   /** Default session span of life is one hour */
+   protected long sessionTimeout = 3600L * 1000L; // One hour
+   /** Maximum of six parallel logins for the same client */
+   protected int maxSessions = 6;
+   /** Passing own sessionId is not yet supported */
+   protected String sessionId = null;
 
    private PluginLoader pMgr;
    private I_ClientHelper plugin;
@@ -107,6 +113,19 @@ public class LoginQosWrapper extends QosWrapper
    public LoginQosWrapper(boolean noPtP)
    {
       this.noPtP = noPtP;
+   }
+
+
+   /**
+    * Allows to set session specific informations. 
+    *
+    * @param timeout The login session will be destroyed after given milliseconds
+    * @param maxSessions The client wishes to establish this maximum of sessions in parallel
+    */
+   public void setSessionData(long timeout, int maxSessions)
+   {
+      this.sessionTimeout = timeout;
+      this.maxSessions = maxSessions;
    }
 
 
@@ -215,7 +234,7 @@ public class LoginQosWrapper extends QosWrapper
       if(plugin!=null) {
          secInitQoSWrapper = getPlugin().getInitQoSWrapper();
       }
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(160);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
@@ -223,6 +242,13 @@ public class LoginQosWrapper extends QosWrapper
       sb.append("<qos>\n");
       if (noPtP)
          sb.append(offset + "   <noPtP />");
+
+      sb.append(offset).append("   <session timeout='").append(sessionTimeout).append("' maxSessions='").append(maxSessions).append("'>");
+      if(sessionId!=null) {
+         sb.append(offset).append("      <sessionId>").append(sessionId).append("</sessionId>");
+      }
+      sb.append(offset).append("   </session>");
+
       for (int ii=0; ii<addressVec.size(); ii++) {
          CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
          sb.append(ad.toXml("   ")).append("\n");
@@ -236,4 +262,16 @@ public class LoginQosWrapper extends QosWrapper
       return sb.toString();
    }
 
+   /** For testing: java org.xmlBlaster.client.LoginQosWrapper */
+   public static void main(String[] args)
+   {
+      try {
+         org.xmlBlaster.util.XmlBlasterProperty.init(args);
+         LoginQosWrapper qos = new LoginQosWrapper(new CallbackAddress("IOR"));
+         System.out.println(qos.toXml());
+      }
+      catch(Throwable e) {
+         Log.error("TestFailed", e.toString());
+      }
+   }
 }
