@@ -401,12 +401,14 @@ public final class SubjectInfo implements I_AdminSubject
             }
             else {
                // We need to escape the while(true), (handle a msg to a pubSessionId which is unknown):
-               this.subjectQueue.removeRandom(entry); // Remove the entry
-
                String message = "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getLogId() + "' is not delivered";
                MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
-               this.glob.getRequestBroker().deadMessage(msgQueueEntries, null, message);
+               MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, null);  // this.subjectQueue
+               msgErrorHandler.handleErrorSync(msgErrorInfo);
+               // !!!
+               //this.glob.getRequestBroker().deadMessage(msgQueueEntries, null, message);
 
+               this.subjectQueue.removeRandom(entry); // Remove the entry
                //XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
                //    "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getId() + "' is not delivered");
                //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, ex);
