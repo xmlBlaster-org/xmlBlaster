@@ -4,7 +4,7 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: html.xsl,v 1.12 2000/03/22 23:41:43 ruff Exp $
+Version:   $Id: html.xsl,v 1.13 2000/03/23 10:05:46 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -28,9 +28,9 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/03/22 23:41:43 $ $Author: ruff $
+       Last updated $Date: 2000/03/23 10:05:46 $ $Author: ruff $
    </p>
-   <p class="sitetitel">XmlBlaster Requirements Reference</p>
+   <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
 
    IMPORTANT NOTE: Many features are not yet documented here (work in progress)!<br />
    The examples are in Java, but similar coding is used for other languages like C++ and Perl
@@ -39,7 +39,7 @@ Author:    ruff@swand.lake.de
    <table cellpadding="2" cellspacing="4">
       <thead>
          <tr>
-         <th><b>ID</b></th>
+         <th><b>Requirement - ID</b></th>
          <th>Status</th>
          <th>Topic / Description / Example</th>
          </tr>
@@ -70,7 +70,10 @@ Author:    ruff@swand.lake.de
    <tr>
       <td></td>
       <td></td>
-      <td class="description" colspan="1"><xsl:value-of select="description" disable-output-escaping="yes"/></td>
+      <td class="description" colspan="1">
+         <xsl:value-of select="description"/>
+         <!-- xsl:value-of select="description" disable-output-escaping="yes"/ -->
+      </td>
    </tr>
 
    <xsl:if test="example">
