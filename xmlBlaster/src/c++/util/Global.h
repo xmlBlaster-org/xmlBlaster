@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.31 2004/03/25 10:41:54 ruff Exp $
+Version:   $Id: Global.h,v 1.32 2004/04/30 08:23:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -223,8 +223,8 @@ public:
     static const std::string& getBoolAsString(bool val);
 
     /**
-
-     * Access the id (as a String) currently used on server side.
+     * Access the unique local id (as a String), 
+     * on client side typically the loginName with the public sessionId. 
      * @return ""
      */
     std::string getId() const;
@@ -245,7 +245,7 @@ public:
     std::string getStrippedString(const std::string& text) const;
 
     /**
-     * Currently set by engine.Global, used server side only.
+     * Set after successful login. 
      * @param a unique id
      */
     void setId(const std::string& id);
