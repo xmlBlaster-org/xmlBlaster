@@ -3,13 +3,19 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
- 
+
+ o #13180 cpptasks.jar - Updated cpp tasks (C/C++ compilation) to CVS version from 2005-02-03
+
+ o #13178 JavascriptCallback.java - Escape quotation marks in XML content as suggested by Paul Wujek Xp2 Telecom Inc.
+
  o #13174 Extended DeadMessageDumper:
    Changed to create missing directory, now supports ${} replacement
 
  o #13173 More detailed logging for mime XPathFilter plugin
  
  o #13168 C client library ported to HPUX 11.11 with gcc 3.4.3
+    cd xmlBlaster/demo/c/socket/bin
+    gcc -g -o Publisher ../../../../build.tmp/objC/Publisher.o -L/home/ruff/xmlBlaster/lib -lxmlBlasterClientC  -L/usr/lib -lpthread
 
  o #13163 DbWatcher - Fixed INSERT reporting
 
