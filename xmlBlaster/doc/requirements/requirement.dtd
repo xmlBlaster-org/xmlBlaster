@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<!ELEMENT requirement (
+	topic,
+	description,
+	author,
+	date,
+	revision,
+	fix*
+	)>
+
+<!ENTITY % text "#PCDATA">
+
+<!ELEMENT topic  (%text;)>
+<!ELEMENT description  (%text;)> 
+<!ELEMENT author  (%text;)> 
+<!ELEMENT date  (%text;)> 
+<!ELEMENT revision  (%text;)> 
+
+<!ELEMENT fix (
+	name,
+	comment,
+	status,
+	test
+	)>
+
+<!ELEMENT name  (%text;)> 
+<!ELEMENT comment  (%text;)> 
+<!ELEMENT status  (%text;)> 
+<!ELEMENT test  (%text;)> 
+
+<!ATTLIST requirement
+          id ID #REQUIRED
+			 prio  (LOW | MEDIUM | HIGH) "LOW"
+          type (NEW | BUG) "BUG">
+<!ATTLIST test tool (SUITE | MANUAL) "SUITE">  
