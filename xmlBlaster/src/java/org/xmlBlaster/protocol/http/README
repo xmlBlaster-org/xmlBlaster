@@ -21,6 +21,32 @@ We need to run the JVM with the jacorb.jar file first in the bootclasspath
 otherwise the JDK-internal CORBA is used.
 
 
+
+Using Suns Web Development Kit (JSWDK):
+=======================================
+The servlet setup is easy if you use JSWDK.
+
+The JavaServer Web Development Kit (JSWDK)1.0.1 combines the reference
+implementation for JavaServer PagesTM 1.0.1 and the JavaTMServlet API (2.1).
+   http://java.sun.com/products/jsp/download.html
+and
+   http://java.sun.com/products/servlet/
+
+Configure it in webserver.xml:
+   <Service id="service0" port="8082">
+	....
+
+Start the server:
+   startserver
+
+Test it (netscape):
+   http://localhost:8082/
+	http://localhost:8082/examples/servlet/HelloWorldExample
+
+(The servlets are in examples/WEB-INF/servlets)
+
+
+
 Installing and configuring JServ for Apache:
 ============================================
 
