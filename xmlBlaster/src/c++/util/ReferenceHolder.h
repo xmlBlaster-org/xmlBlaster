@@ -3,7 +3,7 @@ Name:      ReferenceHolder.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Entry Holder to use with stl containers as containers of references
-Version:   $Id: ReferenceHolder.h,v 1.4 2003/01/05 15:33:20 laghi Exp $
+Version:   $Id: ReferenceHolder.h,v 1.5 2003/01/05 15:35:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCEHOLDER_H
@@ -56,8 +56,8 @@ public:
    {
       if (element_ != refHolder.element_) {
          if (element_) element_->removeReference();
-	 element_ = refHolder.element_;
-	 init();
+         element_ = refHolder.element_;
+         init();
       }
       return *this;
    }
@@ -89,11 +89,17 @@ public:
       return *element_ < *other.element_;
    }
 
+   /*
+   bool operator >(const ReferenceHolder<T> other) const
+   {
+      return !(this->operator<(other)) && !(this->operator==(other));
+   }
+   */
+
    bool operator >(const ReferenceHolder<T> other) const
    {
       return !(*element_ < *other.element_) && !(*element_ == *other.element_);
    }
-
 
 //   friend bool operator== (const ReferenceHolder<T>& lhs, const ReferenceHolder<T>& rhs);
 
