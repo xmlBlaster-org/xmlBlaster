@@ -1,0 +1,7 @@
+This frameset pops up a little window in your browser
+which contains a frameset and handles the persistent
+http connection to the web server.
+
+For an example how to use it see
+
+  xmlBlaster/demo/html/systemInfo 
