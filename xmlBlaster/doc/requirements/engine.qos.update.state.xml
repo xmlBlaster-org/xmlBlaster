@@ -1,17 +1,46 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.update.state' type='NEW' prio='LOW' status="INWORK">
+<requirement id='engine.qos.update.state' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster sends the state of a message in the qos argument of an update</topic>
    <description>
+     <p>
       When a client receives an update message, the state is usually set to OK.
-      If the message is expired, the state is set to 'EXPIRED'.
       You may retrieve the message state in the qos argument of the update though the &lt;state&gt; tag.
+     </p>
+     Here is a list predefined states:
+     <table>
+       <tr>
+      	 <td>State</td>
+       	 <td>Description</td>
+       	 <td>Impl</td>
+       </tr>
+       <tr>
+      	 <td>OK</td>
+       	 <td>OK</td>
+         <td><img src="ok.gif" border="0" alt="yes" /></td>
+       </tr>
+       <tr>
+      	 <td>TIMEOUT</td>
+       	 <td>If user given timeout occured</td>
+       	 <td><img src="no.gif" border="0" alt="no" /></td>
+       </tr>
+       <tr>
+      	 <td>ERASED</td>
+       	 <td>The message was destroyed</td>
+         <td><img src="ok.gif" border="0" alt="yes" /></td>
+       </tr>
+       <!-- tr>
+      	 <td>FORWARD_ERROR</td>
+       	 <td>In cluster environment: The message couldn't be forwarded to the master node</td>
+         <td><img src="ok.gif" border="0" alt="yes" /></td>
+       </tr -->
+     </table>
    </description>
    <example lang="Java">
       <![CDATA[
       <qos>
-         <state id='OK'/>     <!-- Server state OK | EXPIRED | ERASED etc. -->
+         <state id='OK'/>
       </qos>
       ]]>
    </example>
@@ -20,7 +49,7 @@
    <see type="API">org.xmlBlaster.engine.helper.Constants</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 11</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
