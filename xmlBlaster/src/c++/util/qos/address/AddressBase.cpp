@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.17 2003/10/15 14:54:42 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.18 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -25,7 +25,7 @@ using namespace org::xmlBlaster::util;
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 const int    DEFAULT_port               = 3412;
-const string DEFAULT_type               = "IOR";
+const string DEFAULT_type               = Global::getDefaultProtocol(); //"IOR";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
 const bool   DEFAULT_oneway             = false;
@@ -120,7 +120,7 @@ string AddressBase::getSettings() const
 }
 
 /**
- * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
+ * @param type    The protocol type, e.g. "IOR", "SOCKET", "XMLRPC"
  */
 void AddressBase::setType(const string& type)
 {
@@ -214,7 +214,7 @@ string AddressBase::getAddress() const
 
 /**
  * Returns the protocol type.
- * @return e.g. "EMAIL" or "IOR" (never null).
+ * @return e.g. "SOCKET" or "IOR" (never null).
  */
 string AddressBase::getType() const
 {
@@ -460,8 +460,8 @@ string AddressBase::toXml(const string& extraOffset) const
 {
    if (log_.call()) log_.call(ME, "::toXml");
    string ret;
-   string offset = string("\n   ");
-   offset += extraOffset;
+   string offset = Constants::OFFSET + extraOffset;
+   string offset2 = offset + Constants::INDENT;
 
    ret += offset + string("<") + rootTag_  + string(" type='") + getType() + string("'");
    if ( (getVersion()!="") && (getVersion()!=DEFAULT_version))
@@ -494,17 +494,17 @@ string AddressBase::toXml(const string& extraOffset) const
    if (getAddress() != "")
       ret += offset + string("   ") + getAddress();
    if (getCollectTime() != DEFAULT_collectTime) {
-      ret += offset + string("   ") + string("<burstMode");
+      ret += offset2 + string("<burstMode");
       if (getCollectTime() != DEFAULT_collectTime)
          ret += string(" collectTime='") + lexical_cast<std::string>(getCollectTime()) + string("'");
       ret += string("/>");
    }
    if (getCompressType() != DEFAULT_compressType)
-      ret += offset + string("   ") + string("<compress type='") + getCompressType() + string("' minSize='") + lexical_cast<std::string>(getMinSize()) + string("'/>");
+      ret += offset2 + string("<compress type='") + getCompressType() + string("' minSize='") + lexical_cast<std::string>(getMinSize()) + string("'/>");
    if (ptpAllowed_ != DEFAULT_ptpAllowed) {
       string ptpAllowedStr = "false";
       if (ptpAllowed_) ptpAllowedStr = "true";
-      ret += offset + string("   ") + string("<ptp>") + ptpAllowedStr + string("</ptp>");
+      ret += offset2 + string("<ptp>") + ptpAllowedStr + string("</ptp>");
    }
    ret += offset + string("</") + rootTag_ + string(">");
    return ret;

@@ -35,6 +35,7 @@ private:
    long         timeout_;
    int          maxSessions_;
    bool         clearSessions_;
+   bool         reconnectSameClientOnly_;
    std::string  sessionId_;
    std::string  clusterNodeId_;
    std::string  subjectId_;
@@ -48,6 +49,7 @@ private:
       timeout_       = data.timeout_;
       maxSessions_   = data.maxSessions_;
       clearSessions_ = data.clearSessions_;
+      reconnectSameClientOnly_ = data.reconnectSameClientOnly_;
       sessionId_     = data.sessionId_;
       clusterNodeId_ = data.clusterNodeId_;
       subjectId_     = data.subjectId_;
@@ -85,6 +87,8 @@ public:
    void setMaxSessions(int maxSessions);
    bool getClearSessions() const;
    void setClearSessions(bool clearSessions);
+   bool getReconnectSameClientOnly() const;
+   void setReconnectSameClientOnly(bool reconnectSameClientOnly);
 
    /**
     * Sets the absolute name. It checks if it really is an absolute name,
@@ -109,6 +113,10 @@ public:
    std::string getSecretSessionId() const;
    void setSecretSessionId(const std::string& sessionId);
    std::string toXml(const std::string& extraOffset="") const;
+   /**
+    * Get a usage string for the session parameters
+    */
+   static std::string usage();
 };
 
 class Dll_Export SessionQosFactory: public util::XmlQoSBase

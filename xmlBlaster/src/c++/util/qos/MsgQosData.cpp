@@ -450,8 +450,8 @@ string MsgQosData::toXml(const string& extraOffset) const
 {
    string ret;
 
-   string offset = "\n " + extraOffset;
-   string extraOffset1 = extraOffset + " ";
+   string offset = Constants::OFFSET + extraOffset;
+   string extraOffset1 = extraOffset + Constants::INDENT;
 
    // WARNING: This dump must be valid, as it could be used by the
    //          persistent store

@@ -62,7 +62,7 @@ public:
    /**
     * Get a usage std::string for the connection parameters
     */
-   std::string usage();
+   static std::string usage();
 
 };
 

@@ -3,7 +3,7 @@ Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address std::string including protocol
-Version:   $Id: AddressBase.h,v 1.16 2003/10/15 14:54:43 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.17 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -199,7 +199,7 @@ public:
    std::string getSettings() const;
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
+    * @param type    The protocol type, e.g. "IOR", "SOCKET", "XMLRPC"
     */
    void setType(const std::string& type);
 
@@ -253,7 +253,7 @@ public:
 
    /**
     * Returns the protocol type.
-    * @return e.g. "EMAIL" or "IOR" (never null).
+    * @return e.g. "SOCKET" or "IOR" (never null).
     */
    std::string getType() const;
 

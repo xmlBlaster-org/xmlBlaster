@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.13 2003/12/15 15:39:42 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.14 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -115,7 +115,7 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
       }
       if (address_->getType() == "") {
          log_.error(ME, string("Missing '") + address_->rootTag_ + string("' attribute 'type' in QoS"));
-         address_->setType("IOR");
+         address_->setType(Global::getDefaultProtocol());
       }
 
       if (address_->getSecretSessionId() == "") {

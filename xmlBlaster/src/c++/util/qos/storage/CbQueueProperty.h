@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.8 2003/07/03 20:54:50 ruff Exp $
+Version:   $Id: CbQueueProperty.h,v 1.9 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -89,7 +89,7 @@ public:
    /**
     * Get a usage std::string for the connection parameters
     */
-   std::string usage();
+   static std::string usage();
 };
 
 }}}}} // namespace

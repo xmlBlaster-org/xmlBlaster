@@ -33,7 +33,7 @@ StatusQosFactory::StatusQosFactory(Global& global)
 
 void StatusQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   log_.call(ME, "startElement");
+   log_.call(ME, "startElement <" + name + ">");
 
    if (name.compare("qos") == 0) {
      statusQosData_ = StatusQosData(global_); // kind of reset

@@ -90,21 +90,15 @@ using namespace org::xmlBlaster::util::qos::address;
    {
       string text = "";
       text += string("Control client side failsafe queue properties (message recorder):\n");
-      text += string("   -queue/connection/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("].\n");
-      text += string("                       0 switches recording of invocations off.\n");
-      text += string("                       -1 sets it to unlimited.\n");
-      text += string("   -queue/callback/type    The queue plugin type [") + DEFAULT_type + string("].\n");
-      text += string("   -queue/callback/version The queue plugin type [") + DEFAULT_version + string("].\n");
-      text += string("   -recorder.type      The plugin type to use for tail back messages in failsafe mode [FileRecorder]\n");
-      text += string("   -recorder.version   The version of the plugin [1.0]\n");
-      text += string("   -recorder.path      The path (without file name) for the file for FileRecorder [<is generated>]\n");
-      text += string("   -recorder.fn        The file name (without path) for the file for FileRecorder [<is generated unique>]\n");
-      text += string("   -recorder.rate      The playback rate in msg/sec on reconnect e.g. 200 is 200 msg/sec, -1 is as fast as possible [-1]\n");
-      text += string("   -recorder.mode      The on-overflow mode: ") + string(Constants::ONOVERFLOW_EXCEPTION) + string(" | ") + string(Constants::ONOVERFLOW_DISCARD) + string(" | )" + string(Constants::ONOVERFLOW_DISCARDOLDEST) + string(" [") + string(Constants::ONOVERFLOW_EXCEPTION) + string("]\n"));
-    //text += string("   -queue/callback/maxBytes     The maximum size in kBytes of this queue [" + DEFAULT_bytesDefault + "].\n";
-    //text += string("   -queue/callback/expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += string("   -queue/callback/onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
-    //text += string("   -queue/callback/onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
+      text += string("   -queue/connection/maxEntries [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("]\n");
+      text += string("                       The maximum allowed number of messages in this queue.\n");
+      text += string("                       0 switches recording of invocations off, -1 sets it to unlimited.\n");
+    //text += string("   -queue/connection/type    The queue plugin type [") + DEFAULT_type + string("].\n");
+    //text += string("   -queue/connection/version The queue plugin type [") + DEFAULT_version + string("].\n");
+    //text += string("   -queue/connection/maxBytes     The maximum size in kBytes of this queue [" + DEFAULT_bytesDefault + "].\n";
+    //text += string("   -queue/connection/expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
+    //text += string("   -queue/connection/onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
+    //text += string("   -queue/connection/onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
       return text;
    }
 

@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.13 2003/10/01 16:55:40 ruff Exp $
+Version:   $Id: Address.cpp,v 1.14 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -32,46 +32,47 @@ inline void Address::initialize()
 {
    setPort(global_.getProperty().getIntProperty("bootstrapPort", getPort()));
 
-   setType(global_.getProperty().getStringProperty("client.protocol", getType()));
-   setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime", DEFAULT_collectTime));
-   setPingInterval(global_.getProperty().getLongProperty("pingInterval", defaultPingInterval_));
-   setRetries(global_.getProperty().getIntProperty("retries", defaultRetries_));
-   setDelay(global_.getProperty().getLongProperty("delay", defaultDelay_));
-   setOneway(global_.getProperty().getBoolProperty("oneway", DEFAULT_oneway));
-   setCompressType(global_.getProperty().getStringProperty("compress.type", DEFAULT_compressType));
-   setMinSize(global_.getProperty().getLongProperty("compress.minSize", DEFAULT_minSize));
-   setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed", DEFAULT_ptpAllowed));
-   setSecretSessionId(global_.getProperty().getStringProperty("sessionId", DEFAULT_sessionId));
-   setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
+   setType(global_.getProperty().getStringProperty("protocol", getType()));
+   setType(global_.getProperty().getStringProperty("dispatch/connection/protocol", getType()));
+   setCollectTime(global_.getProperty().getLongProperty("dispatch/connection/burstMode/collectTime", DEFAULT_collectTime));
+   setPingInterval(global_.getProperty().getLongProperty("dispatch/connection/pingInterval", defaultPingInterval_));
+   setRetries(global_.getProperty().getIntProperty("dispatch/connection/retries", defaultRetries_));
+   setDelay(global_.getProperty().getLongProperty("dispatch/connection/delay", defaultDelay_));
+   setOneway(global_.getProperty().getBoolProperty("dispatch/connection/oneway", DEFAULT_oneway));
+   setCompressType(global_.getProperty().getStringProperty("dispatch/connection/compress.type", DEFAULT_compressType));
+   setMinSize(global_.getProperty().getLongProperty("dispatch/connection/compress.minSize", DEFAULT_minSize));
+   setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/connection/ptpAllowed", DEFAULT_ptpAllowed));
+   setSecretSessionId(global_.getProperty().getStringProperty("dispatch/connection/sessionId", DEFAULT_sessionId));
+   setDispatchPlugin(global_.getProperty().getStringProperty("dispatch/connection/DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
    if (nodeId_ != "") {
-      setPort(global_.getProperty().getIntProperty("port["+nodeId_+"]", getPort()));
+      setPort(global_.getProperty().getIntProperty("dispatch/connection/port["+nodeId_+"]", getPort()));
 
-      setType(global_.getProperty().getStringProperty("client.protocol["+nodeId_+"]", getType()));
-      setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime["+nodeId_+"]", getCollectTime()));
-      setPingInterval(global_.getProperty().getLongProperty("pingInterval["+nodeId_+"]", getPingInterval()));
-      setRetries(global_.getProperty().getIntProperty("retries["+nodeId_+"]", getRetries()));
-      setDelay(global_.getProperty().getLongProperty("delay["+nodeId_+"]", getDelay()));
-      setOneway(global_.getProperty().getBoolProperty("oneway["+nodeId_+"]", oneway()));
-      setCompressType(global_.getProperty().getStringProperty("compress.type["+nodeId_+"]", getCompressType()));
-      setMinSize(global_.getProperty().getLongProperty("compress.minSize["+nodeId_+"]", getMinSize()));
-      setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed["+nodeId_+"]", isPtpAllowed()));
-      setSecretSessionId(global_.getProperty().getStringProperty("sessionId["+nodeId_+"]", getSecretSessionId()));
-      setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
+      setType(global_.getProperty().getStringProperty("dispatch/connection/protocol["+nodeId_+"]", getType()));
+      setCollectTime(global_.getProperty().getLongProperty("dispatch/connection/burstMode/collectTime["+nodeId_+"]", getCollectTime()));
+      setPingInterval(global_.getProperty().getLongProperty("dispatch/connection/pingInterval["+nodeId_+"]", getPingInterval()));
+      setRetries(global_.getProperty().getIntProperty("dispatch/connection/retries["+nodeId_+"]", getRetries()));
+      setDelay(global_.getProperty().getLongProperty("dispatch/connection/delay["+nodeId_+"]", getDelay()));
+      setOneway(global_.getProperty().getBoolProperty("dispatch/connection/oneway["+nodeId_+"]", oneway()));
+      setCompressType(global_.getProperty().getStringProperty("dispatch/connection/compress.type["+nodeId_+"]", getCompressType()));
+      setMinSize(global_.getProperty().getLongProperty("dispatch/connection/compress.minSize["+nodeId_+"]", getMinSize()));
+      setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/connection/ptpAllowed["+nodeId_+"]", isPtpAllowed()));
+      setSecretSessionId(global_.getProperty().getStringProperty("dispatch/connection/sessionId["+nodeId_+"]", getSecretSessionId()));
+      setDispatchPlugin(global_.getProperty().getStringProperty("dispatch/connection/DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
    }
 
    // TODO: This is handled in ClientQueueProperty.java already ->
    //      long maxEntries = global_.getProperty().getLongProperty("queue/connection/maxEntries", CbQueueProperty.DEFAULT_maxEntriesDefault);
-   long maxEntries = global_.getProperty().getLongProperty("queue/maxEntries", 10000l);
+   long maxEntries = global_.getProperty().getLongProperty("queue/connection/maxEntries", 10000l);
    setMaxEntries(maxEntries);
    if (nodeId_ != "") {
-      setMaxEntries(global_.getProperty().getLongProperty("queue/maxEntries["+nodeId_+"]", getMaxEntries()));
+      setMaxEntries(global_.getProperty().getLongProperty("queue/connection/maxEntries["+nodeId_+"]", getMaxEntries()));
    }
 }
 
 Address::Address(Global& global, const string& type, const string& nodeId)
  : AddressBase(global, "address")
 {
-         defaultRetries_      = -1;
+   defaultRetries_      = -1;
    defaultDelay_        = 0;
    defaultPingInterval_ = 10000;
    pingInterval_ = defaultPingInterval_;
@@ -133,13 +134,17 @@ string Address::usage()
    // is in ClientQueueProperty.java: text += "   -queue/connection/maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue/callback/onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue/callback/onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
-   text += string("   -burstMode.collectTime Number of milliseconds we shall collect publish messages [" + lexical_cast<std::string>(DEFAULT_collectTime) + "].\n");
+   text += string("   -dispatch/connection/burstMode/collectTime [" + lexical_cast<std::string>(DEFAULT_collectTime) + "]\n");
+   text += string("                       Number of milliseconds we shall collect publish messages.\n");
    text += string("                       This allows performance tuning, try set it to 200.\n");
  //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
-   text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<std::string>(defaultPingInterval_) + "]\n");
-   text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<std::string>(defaultRetries_) + "]\n");
-   text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<std::string>(defaultDelay_) + "]\n");
-   text += string("                       A delay value > 0 switches fails save mode on, 0 switches it off\n");
+   text += string("   -dispatch/connection/pingInterval [" + lexical_cast<std::string>(defaultPingInterval_) + "]\n");
+   text += string("                       Pinging every given milliseconds.\n");
+   text += string("   -dispatch/connection/retries [" + lexical_cast<std::string>(defaultRetries_) + "]\n");
+   text += string("                       How often to retry if connection fails (-1 is forever).\n");
+   text += string("   -dispatch/connection/delay [" + lexical_cast<std::string>(defaultDelay_) + "]\n");
+   text += string("                       Delay between connection retries in milliseconds.\n");
+   text += string("                       A delay value > 0 switches fails save mode on, 0 switches it off.\n");
  //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
  //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
  //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";

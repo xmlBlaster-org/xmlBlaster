@@ -40,7 +40,8 @@ void SessionQosData::initialize(const string& absoluteName, const string& defaul
    timeout_ = global_.getProperty().getLongProperty("session.timeout", 86400000);
    maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
    clearSessions_ = global_.getProperty().getBoolProperty("session.clearSessions", false);
-   sessionId_ = global_.getProperty().getStringProperty("session.sessionId", "");
+   reconnectSameClientOnly_ = global_.getProperty().getBoolProperty("session.reconnectSameClientOnly", false);
+   sessionId_ = global_.getProperty().getStringProperty("session.secretSessionId", "");
 
    if (!absoluteName.empty()) {
       setAbsoluteName(absoluteName);
@@ -82,18 +83,18 @@ void SessionQosData::setAbsoluteName(const string& name)
    pubSessionId_ = 0; // resets the value if previously set
    string relative = "";
    if (name.empty())
-      throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name is empty");
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name is empty");
 
    if (name[0] == '/') { // then it is an absolute name
       StringStripper stripper("/");
       vector<std::string> help = stripper.strip(name);
       help.erase(help.begin()); // since it is empty for sure.
       if (help.size() < 4) 
-         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
+         throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
       if (help[0] == "node") clusterNodeId_ = help[1];
-      else throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. It should start with '/node'");
+      else throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. It should start with '/node'");
       if (help[2] != "client") 
-         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. '/client' is missing");
+         throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. '/client' is missing");
    
       for (size_t i=3; i < help.size(); i++) {
          relative += help[i];
@@ -105,7 +106,7 @@ void SessionQosData::setAbsoluteName(const string& name)
    StringStripper relStripper("/");
    vector<std::string> relHelp = relStripper.strip(relative);
    if (relHelp.empty()) {
-                throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
    }
 
    size_t ii = 0;
@@ -116,7 +117,7 @@ void SessionQosData::setAbsoluteName(const string& name)
             subjectId_ = relHelp[ii++];
          }
          else {
-                      throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
+            throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
          }
       }
       else subjectId_ = tmp;
@@ -199,6 +200,16 @@ void SessionQosData::setClearSessions(bool clearSessions)
    clearSessions_ = clearSessions;
 }
 
+bool SessionQosData::getReconnectSameClientOnly() const
+{
+   return reconnectSameClientOnly_;
+}
+
+void SessionQosData::setReconnectSameClientOnly(bool reconnectSameClientOnly)
+{
+   reconnectSameClientOnly_ = reconnectSameClientOnly;
+}
+
 string SessionQosData::getSecretSessionId() const
 {
    return sessionId_;
@@ -211,13 +222,15 @@ void SessionQosData::setSecretSessionId(const string& sessionId)
 
 string SessionQosData::toXml(const string& extraOffset) const
 {
-   string offset = extraOffset; // currently unused.
-   string ret = string("<session");
-
+   string offset = Constants::OFFSET + extraOffset;
+   string ret;
+   
+   ret += offset + string("<session");
    ret += string(" name='")  + getAbsoluteName() + string("'");
-   ret += string(" timeout='") + lexical_cast<std::string>(getTimeout()) + string("'") + 
-          string(" maxSessions='") + lexical_cast<std::string>(getMaxSessions()) + string("'") +
-          string(" clearSessions='") + Global::getBoolAsString(clearSessions_) + string("'");
+   ret += string(" timeout='") + lexical_cast<std::string>(getTimeout()) + string("'");
+   ret += string(" maxSessions='") + lexical_cast<std::string>(getMaxSessions()) + string("'");
+   ret += string(" clearSessions='") + Global::getBoolAsString(clearSessions_) + string("'");
+   ret += string(" reconnectSameClientOnly='") + Global::getBoolAsString(reconnectSameClientOnly_) + string("'");
    
    if (!sessionId_.empty()) {
       ret += string(" sessionId='") + sessionId_ + string("'");
@@ -277,6 +290,10 @@ void SessionQosFactory::startElement(const string &name, const AttributeMap& att
             if (tmpValue == "true") sessionQos_->clearSessions_ = true;
             else sessionQos_->clearSessions_ = false;
          }
+         else if (tmpName.compare("reconnectSameClientOnly") == 0) {
+            if (tmpValue == "true") sessionQos_->reconnectSameClientOnly_ = true;
+            else sessionQos_->reconnectSameClientOnly_ = false;
+         }
          else if (tmpName.compare("sessionId") == 0) {
             sessionQos_->sessionId_ = tmpValue;
          }
@@ -315,6 +332,27 @@ SessionQosData SessionQosFactory::readObject(const string& qos)
    return *sessionQos_;
 }
 
+   /**
+    * Get a usage string for the connection parameters
+    */
+   string SessionQosData::usage()
+   {
+      string text;
+      text += string("Control my login session settings:\n");
+      text += string("   -session.name []\n");
+      text += string("                       The name for login, e.g. 'joe' or with public session ID 'joe/2'.\n");
+      text += string("   -session.timeout ["+lexical_cast<std::string>(Constants::DAY_IN_MILLIS)+"], defaults to one day.\n");
+      text += string("                       How long lasts our login session in milliseconds, 0 is forever.\n");
+      text +=        "   -session.maxSessions [10]\n";
+      text += string("                       Maximum number of simultanous logins per client.\n");
+      text += string("   -session.clearSessions [false]\n");
+      text += string("                       Kill other sessions running under my login name.\n");
+      text += string("   -session.reconnectSameClientOnly [false]\n");
+      text += string("                       Only creator client may reconnect to session.\n");
+      text += string("   -session.secretSessionId []\n");
+      text += string("                       The secret sessionId.\n");
+      return text;
+   }
 }}}} // namespaces
 
 
@@ -328,7 +366,7 @@ int main(int args, char* argv[])
 {
     {
        string qos = "<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n" +
-             string("         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n");
+             string("         clearSessions='false' reconnectSameClientOnly='false' sessionId='IIOP:01110728321B0222011028'/>\n");
 
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);

@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address std::string and protocol std::string
-Version:   $Id: CallbackAddress.h,v 1.6 2003/07/03 20:54:49 ruff Exp $
+Version:   $Id: CallbackAddress.h,v 1.7 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -41,7 +41,7 @@ private:
 public:
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
+    * @param type    The protocol type, e.g. "IOR", "SOCKET", "XMLRPC"
     * @param nodeId  A unique std::string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>

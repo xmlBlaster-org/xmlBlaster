@@ -18,33 +18,34 @@ using namespace org::xmlBlaster::util;
 inline void CallbackAddress::initialize()
 {
    initHostname(global_.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
-   setPort(global_.getProperty().getIntProperty("cb.port", getPort()));
-   setType(global_.getProperty().getStringProperty("cb.protocol", getType()));
-   setCollectTime(global_.getProperty().getLongProperty("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
-   setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval", defaultPingInterval_));
-   setRetries(global_.getProperty().getIntProperty("cb.retries", defaultRetries_));
-   setDelay(global_.getProperty().getLongProperty("cb.delay", defaultDelay_));
-   useForSubjectQueue(global_.getProperty().getBoolProperty("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue));
-   setOneway(global_.getProperty().getBoolProperty("cb.oneway", DEFAULT_oneway));
-   setCompressType(global_.getProperty().getStringProperty("cb.compress.type", DEFAULT_compressType));
-   setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize", DEFAULT_minSize));
-   setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed", DEFAULT_ptpAllowed));
-   setSecretSessionId(global_.getProperty().getStringProperty("cb.sessionId", DEFAULT_sessionId));
-   setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
+   setPort(global_.getProperty().getIntProperty("dispatch/callback/port", getPort()));
+   setType(global_.getProperty().getStringProperty("protocol", getType()));
+   setType(global_.getProperty().getStringProperty("dispatch/callback/protocol", getType()));
+   setCollectTime(global_.getProperty().getLongProperty("dispatch/callback/burstMode/collectTime", DEFAULT_collectTime)); // sync update()
+   setPingInterval(global_.getProperty().getLongProperty("dispatch/callback/pingInterval", defaultPingInterval_));
+   setRetries(global_.getProperty().getIntProperty("dispatch/callback/retries", defaultRetries_));
+   setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay", defaultDelay_));
+   useForSubjectQueue(global_.getProperty().getBoolProperty("dispatch/callback/useForSubjectQueue", DEFAULT_useForSubjectQueue));
+   setOneway(global_.getProperty().getBoolProperty("dispatch/callback/oneway", DEFAULT_oneway));
+   setCompressType(global_.getProperty().getStringProperty("dispatch/callback/compress.type", DEFAULT_compressType));
+   setMinSize(global_.getProperty().getLongProperty("dispatch/callback/compress.minSize", DEFAULT_minSize));
+   setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/callback/ptpAllowed", DEFAULT_ptpAllowed));
+   setSecretSessionId(global_.getProperty().getStringProperty("dispatch/callback/sessionId", DEFAULT_sessionId));
+   setDispatchPlugin(global_.getProperty().getStringProperty("dispatch/callback/DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
    if (nodeId_ != "") {
-      setPort(global_.getProperty().getIntProperty("cb.port["+nodeId_+"]", getPort()));
-      setType(global_.getProperty().getStringProperty("cb.protocol["+nodeId_+"]", getType()));
-      setCollectTime(global_.getProperty().getLongProperty("cb.burstMode.collectTime["+nodeId_+"]", collectTime_));
-      setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval["+nodeId_+"]", pingInterval_));
-      setRetries(global_.getProperty().getIntProperty("cb.retries["+nodeId_+"]", retries_));
-      setDelay(global_.getProperty().getLongProperty("cb.delay["+nodeId_+"]", delay_));
-      useForSubjectQueue(global_.getProperty().getBoolProperty("cb.useForSubjectQueue["+nodeId_+"]", useForSubjectQueue_));
-      setOneway(global_.getProperty().getBoolProperty("cb.oneway["+nodeId_+"]", oneway_));
-      setCompressType(global_.getProperty().getStringProperty("cb.compress.type["+nodeId_+"]", compressType_));
-      setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize["+nodeId_+"]", minSize_));
-      setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed["+nodeId_+"]", ptpAllowed_));
-      setSecretSessionId(global_.getProperty().getStringProperty("cb.sessionId["+nodeId_+"]", sessionId_));
-      setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
+      setPort(global_.getProperty().getIntProperty("dispatch/callback/port["+nodeId_+"]", getPort()));
+      setType(global_.getProperty().getStringProperty("dispatch/callback/protocol["+nodeId_+"]", getType()));
+      setCollectTime(global_.getProperty().getLongProperty("dispatch/callback/burstMode/collectTime["+nodeId_+"]", collectTime_));
+      setPingInterval(global_.getProperty().getLongProperty("dispatch/callback/pingInterval["+nodeId_+"]", pingInterval_));
+      setRetries(global_.getProperty().getIntProperty("dispatch/callback/retries["+nodeId_+"]", retries_));
+      setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay["+nodeId_+"]", delay_));
+      useForSubjectQueue(global_.getProperty().getBoolProperty("dispatch/callback/useForSubjectQueue["+nodeId_+"]", useForSubjectQueue_));
+      setOneway(global_.getProperty().getBoolProperty("dispatch/callback/oneway["+nodeId_+"]", oneway_));
+      setCompressType(global_.getProperty().getStringProperty("dispatch/callback/compress.type["+nodeId_+"]", compressType_));
+      setMinSize(global_.getProperty().getLongProperty("dispatch/callback/compress.minSize["+nodeId_+"]", minSize_));
+      setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/callback/ptpAllowed["+nodeId_+"]", ptpAllowed_));
+      setSecretSessionId(global_.getProperty().getStringProperty("dispatch/callback/sessionId["+nodeId_+"]", sessionId_));
+      setDispatchPlugin(global_.getProperty().getStringProperty("dispatch/callback/DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
    }
 }
 
@@ -106,23 +107,30 @@ string CallbackAddress::usage()
 {
    string text;
    text += string("Control xmlBlaster server side callback (if we install a local callback server):\n");
-   text += string("   -cb.sessionId       The session ID which is passed to our callback server update() method.\n");
-   text += string("   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [") + lexical_cast<std::string>(DEFAULT_collectTime) + string("].\n");
-   text += string("                         The burst mode allows performance tuning, try set it to 200.\n");
+   text += string("   -dispatch/callback/sessionId []\n");
+   text += string("                       The session ID which is passed to our callback server update() method.\n");
+   text += string("   -dispatch/callback/burstMode/collectTime [") + lexical_cast<std::string>(DEFAULT_collectTime) + string("]\n");
+   text += string("                       Number of milliseconds xmlBlaster shall collect callback messages.\n");
+   text += string("                       The burst mode allows performance tuning, try set it to 200.\n");
 
    string help = "false";
    if (DEFAULT_oneway) help = "true";
-   text += string("   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [") + help + string("]\n");
+   text += string("   -dispatch/callback/oneway [") + help + string("]\n");
+   text += string("                       Shall the update() messages be send oneway (no application level ACK).\n");
 
-   text += string("   -cb.pingInterval    Pinging every given milliseconds [") + lexical_cast<std::string>(defaultPingInterval_) + string("]\n");
-   text += string("   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [") + lexical_cast<std::string>(defaultRetries_) + string("]\n");
-   text += string("   -cb.delay           Delay between callback retries in milliseconds [") + lexical_cast<std::string>(defaultDelay_) + string("]\n");
-   text += string("   -cb.compress.type   With which format message be compressed on callback [") + DEFAULT_compressType + string("]\n");
-   text += string("   -cb.compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<std::string>(DEFAULT_minSize) + string("]\n");
+   text += string("   -dispatch/callback/pingInterval [") + lexical_cast<std::string>(defaultPingInterval_) + string("]\n");
+   text += string("                       Pinging every given milliseconds.\n");
+   text += string("   -dispatch/callback/retries [") + lexical_cast<std::string>(defaultRetries_) + string("]\n");
+   text += string("                       How often to retry if callback fails.\n");
+   text += string("                       -1 forever, 0 no retry, > 0 number of retries.\n");
+   text += string("   -dispatch/callback/delay [") + lexical_cast<std::string>(defaultDelay_) + string("]\n");
+   text += string("                       Delay between callback retries in millisecond.\n");
+   //text += string("   -dispatch/callback/compress.type   With which format message be compressed on callback [") + DEFAULT_compressType + string("]\n");
+   //text += string("   -dispatch/callback/compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<std::string>(DEFAULT_minSize) + string("]\n");
 
-   help = "false";
-   if (DEFAULT_ptpAllowed) help = "true";
-   text += string("   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [") + help + string("]\n");
+   //help = "false";
+   //if (DEFAULT_ptpAllowed) help = "true";
+   //text += string("   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [") + help + string("]\n");
    //text += "   -cb.DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
    return text;
 }
@@ -158,10 +166,10 @@ int main(int args, char* argv[])
 
          int                nmax = 8;
          const char** argc = new const char*[nmax];
-         string help = string("-cb.sessionId[") +nodeId + string("]");
+         string help = string("-dispatch/callback/sessionId[") +nodeId + string("]");
          argc[0] = help.c_str();
          argc[1] = "OK";
-         argc[2] = "-cb.sessionId";
+         argc[2] = "dispatch/callback/sessionId";
          argc[3] = "ERROR";
          argc[4] = "-cb.pingInterval";
          argc[5] = "8888";

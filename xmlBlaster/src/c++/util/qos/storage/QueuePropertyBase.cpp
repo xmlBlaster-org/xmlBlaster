@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.19 2003/07/03 20:54:50 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.20 2004/01/14 14:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -71,13 +71,13 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
    // prefix is e.g. "queue/history/" or "persistence/topicStore/"
    setMaxEntries(global_.getProperty().getLongProperty(prefix+"maxEntries", DEFAULT_maxEntriesDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntries OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntries -> " + lexical_cast<string>(getMaxEntries()));
    setMaxEntriesCache(global_.getProperty().getLongProperty(prefix+"maxEntriesCache", DEFAULT_maxEntriesCacheDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntriesCache OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntriesCache -> " + lexical_cast<string>(getMaxEntriesCache()));
    setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytes OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytes -> " + lexical_cast<string>(getMaxBytes()));
    setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytesCache OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytesCache -> " + lexical_cast<string>(getMaxBytesCache()));
 
    setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*maxBytesCache_)));
    setStoreSwapBytes(global_.getProperty().getLongProperty(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*maxBytesCache_)));
@@ -526,8 +526,8 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
     */
    string QueuePropertyBase::toXml(const string& extraOffset) const
    {
-      string offset = "\n   ";
-      string ret;
+      string offset = Constants::OFFSET + extraOffset;
+      string ret;   
       ret += offset + string("<!-- QueuePropertyBase -->");
 
       ret += offset + string("<queue relating='") + getRelating();
@@ -558,7 +558,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
          ret += string("'>");
          AddressVector::const_iterator iter = addressArr_.begin();
          while (iter != addressArr_.end()) {
-            ret += (*iter).toXml(extraOffset + "   ");
+            ret += (*iter).toXml(extraOffset + Constants::INDENT);
             iter++;
          }
          ret += offset + string("</queue>");
