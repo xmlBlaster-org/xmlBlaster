@@ -338,8 +338,13 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          }
          else if (!sessionInfo.getSessionName().equalsAbsolute(qosData.getSender())) {
             //if (! publishQos.isFromPersistenceStore()) {
-            log.warn(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
-            qosData.setSender(sessionInfo.getSessionName());
+            if (!this.authenticate.acceptWrongSenderAddress(sessionInfo)) {
+               log.warn(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
+               qosData.setSender(sessionInfo.getSessionName());
+            }
+            else {
+               log.info(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we accept it");
+            }
          }
       }
 
