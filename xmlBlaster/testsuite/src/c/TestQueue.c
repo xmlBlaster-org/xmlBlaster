@@ -191,7 +191,6 @@ static const char * test_overflow()
    const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
    const char *data[] =      { ""                   , ""                   , ""                   , ""                   , ""};
    const size_t numPut = sizeof(idArr)/sizeof(int64_t);
-   int lenPut = 0;
 
    printf("\n---------test_overflow-------------------\n");
    destroy(dbName); /* Delete old db file */
@@ -216,8 +215,10 @@ static const char * test_overflow()
 
    {  /* Test entry overflow */
       size_t i;
+      int lenPut = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
+         memset(&queueEntry, 0, sizeof(QueueEntry));
          queueEntry.priority = prioArr[i];
          queueEntry.isPersistent = true;
          queueEntry.uniqueId = idArr[i];
@@ -245,8 +246,10 @@ static const char * test_overflow()
 
    {  /* Test byte overflow */
       size_t i;
+      int lenPut = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
+         memset(&queueEntry, 0, sizeof(QueueEntry));
          queueEntry.priority = prioArr[i];
          queueEntry.isPersistent = true;
          queueEntry.uniqueId = idArr[i];
@@ -266,6 +269,38 @@ static const char * test_overflow()
 
       }
       mu_assertEqualsInt("put() numOfEntries", 3, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+
+   }
+   queueP->clear(queueP, &exception);
+
+   {  /* Test byte overflow with preset entry size */
+      size_t i;
+      int lenPut = 0;
+      for (i=0; i<numPut; i++) {
+         QueueEntry queueEntry;
+         memset(&queueEntry, 0, sizeof(QueueEntry));
+         queueEntry.priority = prioArr[i];
+         queueEntry.isPersistent = true;
+         queueEntry.uniqueId = idArr[i];
+         queueEntry.sizeInBytes = 20;
+         strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+         queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
+         queueEntry.embeddedBlob.data = "0123456789";
+         queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
+
+         queueP->put(queueP, &queueEntry, &exception);
+         if (i < 2) { /* (index 0 and 1): 2 entries * 20 bytes = 40 bytes */
+            mu_assert_checkException("put()", exception);
+            lenPut += queueEntry.sizeInBytes;
+         }
+         else {
+            mu_assert_checkWantException("put() numOfBytes overflow", exception);
+         }
+
+      }
+      mu_assertEqualsInt("put() numOfEntries", 2, queueP->getNumOfEntries(queueP));
       mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
 
@@ -327,6 +362,7 @@ static const char * test_queue()
       size_t i;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
+         memset(&queueEntry, 0, sizeof(QueueEntry));
          queueEntry.priority = prioArr[i];
          queueEntry.isPersistent = true;
          queueEntry.uniqueId = idArr[i];
@@ -395,14 +431,14 @@ static const char * test_queue()
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
-            free(dump);
+            freeEntryDump(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
             mu_assertEqualsInt("priority", 9, queueEntry->priority);
             mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
             mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
             tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
             mu_assertEqualsString("blob", data[expectedIndex], tmp);
-            free(tmp);
+            freeEntryDump(tmp);
          }
          freeQueueEntryArr(entries);
       }
@@ -470,14 +506,14 @@ static const char * test_queue()
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
-            free(dump);
+            freeEntryDump(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
             mu_assertEqualsInt("priority", 5, queueEntry->priority);
             mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
             mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
             tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
             mu_assertEqualsString("blob", data[expectedIndex], tmp);
-            free(tmp);
+            freeEntryDump(tmp);
          }
          freeQueueEntryArr(entries);
       }
@@ -551,14 +587,14 @@ static const char * test_queue()
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
-            free(dump);
+            freeEntryDump(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
             mu_assertEqualsInt("priority", 1, queueEntry->priority);
             mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
             mu_assertEqualsInt("bloblen", strlen(data[expectedIndex]), queueEntry->embeddedBlob.dataLen);
             tmp = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
             mu_assertEqualsString("blob", data[expectedIndex], tmp);
-            free(tmp);
+            freeEntryDump(tmp);
          }
          freeQueueEntryArr(entries);
       }
