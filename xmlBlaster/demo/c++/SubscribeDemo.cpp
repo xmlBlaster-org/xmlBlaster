@@ -8,6 +8,7 @@ Comment:   Little demo to show how a subscribe is done
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 
 namespace std {
@@ -290,22 +291,23 @@ public:
       //      with single threaded 'mico' or SOCKET protocol
 
       log_.info(ME, "Receiving update #" + lexical_cast<string>(updateCounter) + " of a message, secret sessionId=" + sessionId + " ...");
-      log_.plain(ME,"============= START #" + lexical_cast<string>(updateCounter) + " '" + updateKey.getOid() + "' =======================");
-      
 
+      stringstream sout;
+      sout << endl << "============= START #" << updateCounter << " '" << updateKey.getOid() << "' =======================";
       string contentStr((char*)content, (char*)(content)+contentSize);
-      log_.plain(ME, "<xmlBlaster>");
-      log_.plain(ME, updateKey.toXml("  "));
-      log_.plain(ME, " <content size='" + lexical_cast<string>(contentSize) + "'>");
+      sout << endl << "<xmlBlaster>";
+      sout << updateKey.toXml("  ");
+      sout << endl << " <content size='" << contentSize << "'>";
       if (contentSize < maxContentLength)
-         log_.plain(ME, contentStr);
+         sout << endl << contentStr;
       else
-         log_.plain(ME, contentStr.substr(0, maxContentLength-5) + " ...");
-      log_.plain(ME, " </content>");
-      log_.plain(ME, updateQos.toXml("  "));
-      log_.plain(ME, "</xmlBlaster>");
-      log_.plain(ME,"============= END #" + lexical_cast<string>(updateCounter) + " '" + updateKey.getOid() + "' =========================");
-      log_.plain(ME,"");
+         sout << endl << contentStr.substr(0, maxContentLength-5) << " ...";
+      sout << endl << " </content>";
+      sout << updateQos.toXml("  ");
+      sout << endl << "</xmlBlaster>";
+      sout << endl << "============= END #" << updateCounter << " '" << updateKey.getOid() << "' =========================";
+      sout << endl;
+      log_.plain(ME, sout.str());
 
       // Dump the ClientProperties decoded (the above dump may contain Base64 encoding):
       const QosData::ClientPropertyMap& propMap = updateQos.getClientProperties();
