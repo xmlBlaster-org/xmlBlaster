@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.8 2002/03/19 21:32:47 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.9 2002/03/22 08:17:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -59,7 +59,6 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       this.cbWorkerPool = glob.getCbWorkerPool();
       this.burstModeTimer = glob.getBurstModeTimer();
       setProperty(prop);
-      log.info(ME, "Created queue: " + prop.getSettings());
    }
 
    public void finalize()
@@ -69,21 +68,21 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          timerKey = null;
       }
 
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + this.name);
+      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + this.name);
    }
 
    public void shutdown()
    {
-      Log.info(ME, "Entering shutdown(" + super.size() + ")");
+      log.info(ME, "Entering shutdown(" + super.size() + ")");
       //Thread.currentThread().dumpStack();
       synchronized (this) {
          if (super.size() > 0) {
-            Log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
+            log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
             handleFailure(null);
          }
          isShutdown = true;
       }
-      if (Log.CALL) Log.call(ME, "shutdown() of queue " + this.name);
+      if (log.CALL) log.call(ME, "shutdown() of queue " + this.name);
       if (timerKey != null) {
          this.burstModeTimer.removeTimeoutListener(timerKey);
          timerKey = null;
@@ -109,12 +108,12 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             return true;
          }
          else {
-            Log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, " + msg.length + " messages are lost.");
+            log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, " + msg.length + " messages are lost.");
             return false;
          }
       }
       else {
-         Log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msg.length + " messages are lost.");
+         log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msg.length + " messages are lost.");
          return false;
       }
    }
@@ -158,7 +157,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final void connectionLost()
    {
       this.errorCounter++;
-      Log.warn(ME, "Lost callback connection for " + getName() + " errorCounter=" + this.errorCounter);
+      log.warn(ME, "Lost callback connection for " + getName() + " errorCounter=" + this.errorCounter);
    }
 
    /**
@@ -171,14 +170,14 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       synchronized (this) {
          timerKey = null;
          if (cbWorkerIsActive) {
-            Log.info(ME, "Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
+            //log.info(ME, "Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
             return;
          }
-         Log.info(ME, "Burst mode timeout occurred, starting callback worker thread ...");
+         //log.info(ME, "Burst mode timeout occurred, starting callback worker thread ...");
          try {
             cbWorkerPool.execute(this, new CbWorker(glob, this));
          } catch (XmlBlasterException e) {
-            Log.error(ME, "PANIC: Error occurred, not handled: " + e.toString());
+            log.error(ME, "PANIC: Error occurred, not handled: " + e.toString());
          }
       }
    }
@@ -207,7 +206,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             log.error(ME, "Ignoring multiple callback address");
          }
          if (addr.length > 0) {
-            log.info(ME, this.property.getSettings());
+            log.info(ME, "Queue settings: " + this.property.getSettings());
          }
          cbInfo = new CbInfo(glob, addr);
       }
@@ -229,42 +228,40 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final MsgQueueEntry[] takeMsgs()
    {
       if (isShutdown) {
-         Log.error(ME, "The queue is shutdown, no message access is possible.");
+         log.error(ME, "The queue is shutdown, no message access is possible.");
          Thread.currentThread().dumpStack();
          return new MsgQueueEntry[0];
       }
-      //synchronized (this) {
-         int size = super.size();
-         if (log.TRACE) log.trace(ME, "Accessing " + size + " messages from queue");
-         MsgQueueEntry[] entries = new MsgQueueEntry[size];
-         int ii = 0;
-         for (int jj=0; jj<size; jj++) {
-            try {
-               MsgQueueEntry entry = (MsgQueueEntry)super.take();
-               if (entry.isExpired() == true) {
-                  Log.warn(ME, "Removed expired message " + entries[ii].getUniqueKey());
-               }
-               else {
-                  entries[ii] = entry;
-                  ii++;
-               }
-               //try { Log.info(ME, "Taking " + new String(entries[ii].getMessageUnit().getContent())); } catch(Exception e) {}
+      int size = super.size();
+      //if (log.TRACE) log.trace(ME, "Accessing " + size + " messages from queue");
+      MsgQueueEntry[] entries = new MsgQueueEntry[size];
+      int ii = 0;
+      for (int jj=0; jj<size; jj++) {
+         try {
+            MsgQueueEntry entry = (MsgQueueEntry)super.take();
+            if (entry.isExpired() == true) {
+               log.warn(ME, "Removed expired message " + entries[ii].getUniqueKey());
             }
-            catch(InterruptedException e) {
-               log.error(ME, "Caught unexpected InterruptedException in take(): " + e);
-               return null;
+            else {
+               entries[ii] = entry;
+               ii++;
             }
+            //try { log.info(ME, "Taking " + new String(entries[ii].getMessageUnit().getContent())); } catch(Exception e) {}
          }
-         if (ii < size) {
-            MsgQueueEntry[] tmp = new MsgQueueEntry[ii];
-            for (int kk=0; kk<ii; kk++) {
-               tmp[kk] = entries[kk];
-            }
-            return tmp;
+         catch(InterruptedException e) {
+            log.error(ME, "Caught unexpected InterruptedException in take(): " + e);
+            return null;
          }
+      }
+      if (ii < size) {
+         MsgQueueEntry[] tmp = new MsgQueueEntry[ii];
+         for (int kk=0; kk<ii; kk++) {
+            tmp[kk] = entries[kk];
+         }
+         return tmp;
+      }
 
-         return entries;
-      //}
+      return entries;
    }
 
    /**
@@ -287,14 +284,14 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     */
    public final void putMsgs(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      //if (Log.CALL) Log.call(ME, "Entering putMsgs(" + msg.length + ")");
+      //if (log.CALL) log.call(ME, "Entering putMsgs(" + msg.length + ")");
       if (msg == null) {
-         Log.error(ME, "msg==null");
+         log.error(ME, "msg==null");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal null argument fir putMsgs()");
       }
       if (isShutdown) {
-         Log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
+         log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
          Thread.currentThread().dumpStack();
          handleFailure(msg);
          return;
@@ -303,14 +300,14 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          //synchronized (this) {
             if (msg.length + size() > property.getMaxMsg()) {
                if (property.onOverflowBlock()) {
-                  Log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
+                  log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
                }
                else if (property.onOverflowDeadLetter()) { // not tested yet!!!
                   glob.getRequestBroker().deadLetter(msg);
                   return;
                }
                else {
-                  Log.error(ME, "PANIC: onOverflow='" + property.getOnOverflow() + "' is not implemented, messages are lost.");
+                  log.error(ME, "PANIC: onOverflow='" + property.getOnOverflow() + "' is not implemented, messages are lost.");
                }
             }
             for (int ii=0; ii<msg.length; ii++) {
@@ -332,11 +329,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final void activateCallbackWorker() throws XmlBlasterException
    {
       if (isShutdown) {
-         Log.error(ME, "The queue is shutdown, can't activate callback worker thread.");
+         log.error(ME, "The queue is shutdown, can't activate callback worker thread.");
          Thread.currentThread().dumpStack();
          return;
       }
-      if (Log.CALL) Log.call(ME, "Entering activateCallbackWorker()  cbWorkerIsActive=" + cbWorkerIsActive);
+      //if (log.CALL) log.call(ME, "Entering activateCallbackWorker()  cbWorkerIsActive=" + cbWorkerIsActive);
       CallbackAddress addr = property.getCurrentCallbackAddress();
       if (addr != null) {
          // TODO: A SubjectQueue may have many sessions to send the messages, here we use the collectTime of the first!!!!
@@ -346,17 +343,17 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          if (this.errorCounter > 0) {
             if (addr.getRetries() != -1 && this.errorCounter > addr.getRetries()) {
                burstModeTimer.removeTimeoutListener(timerKey);
-               Log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
+               log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
 
                handleFailure(null);
 
                if (this instanceof SessionMsgQueue) {
                   SessionMsgQueue q = (SessionMsgQueue)this;
-                  Log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
+                  log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
                   glob.getAuthenticate().disconnect(q.getSessionId(), null);
                }
                else
-                  Log.error(ME, "Recovery handling is not coded yet");
+                  log.error(ME, "Recovery handling is not coded yet");
 
                shutdown();
                return;
@@ -365,7 +362,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             if (delay > 0L) {
                synchronized (this) {
                   if (timerKey == null) {
-                     Log.info(ME, "Starting error recovery timer with " + delay + " msec, retry #" + this.errorCounter + " of " + addr.getRetries());
+                     log.info(ME, "Starting error recovery timer with " + delay + " msec, retry #" + this.errorCounter + " of " + addr.getRetries());
                      timerKey = burstModeTimer.addTimeoutListener(this, delay, null);
                   }
                }
@@ -374,11 +371,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          }
 
          long collectTime = addr.getCollectTime(); // burst mode if > 0L
-         //Log.info(ME, "Entering activateCallbackWorker() collectTime=" + collectTime + " cbWorkerIsActive=" + cbWorkerIsActive);
+         //log.info(ME, "Entering activateCallbackWorker() collectTime=" + collectTime + " cbWorkerIsActive=" + cbWorkerIsActive);
          if (collectTime > 0L) {
             synchronized (this) {
                if (timerKey == null) {
-                  Log.info(ME, "Starting burstMode timer with " + collectTime + " msec");
+                  //log.info(ME, "Starting burstMode timer with " + collectTime + " msec");
                   timerKey = burstModeTimer.addTimeoutListener(this, collectTime, null);
                }
             }
@@ -388,7 +385,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          }
       }
       else {
-         if (Log.TRACE) Log.trace(ME, "No callback address available");
+         if (log.TRACE) log.trace(ME, "No callback address available");
       }
    }
 
