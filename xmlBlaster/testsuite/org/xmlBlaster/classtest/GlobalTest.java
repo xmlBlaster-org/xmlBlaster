@@ -37,16 +37,22 @@ public class GlobalTest extends TestCase {
 
    public void testClone() {
       System.out.println("***GlobalTest: testClone ...");
+      
+      Global old = Global.instance();
+      assertEquals("Argument not set", true, old.getProperty().get("test.xy", false));
+
       String[] args = new String[2];
       args[0] = "-test.clone";
       args[1] = "true";
-      Global old = Global.instance();
-      assertEquals("Argument not set", true, old.getProperty().get("test.xy", false));
       Global glob = old.getClone(args);
+
       assertEquals("Argument not set anymore", true, old.getProperty().get("test.xy", false));
+      assertEquals("Second argument should not be in original instance", false, old.getProperty().get("test.clone", false));
+
       assertEquals("First argument is lost", true, glob.getProperty().get("test.xy", false));
       assertEquals("Second argument is lost", true, glob.getProperty().get("test.clone", false));
-      assertTrue("Scond argument should not be in original instance", true == glob.getProperty().get("test.clone", false));
+      
       System.out.println("***GlobalTest: testClone [SUCCESS]");
    }
 }
+
