@@ -383,7 +383,7 @@ static const char * test_queue()
             char *tmp;
             int expectedIndex = i+2;
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
-            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
             free(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
@@ -458,7 +458,7 @@ static const char * test_queue()
             char *tmp;
             int expectedIndex = (i==0) ? 0 : 4;
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
-            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
             free(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
@@ -539,7 +539,7 @@ static const char * test_queue()
             char *tmp;
             int expectedIndex = (i==0) ? 1 : 0;
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
-            char *dump = queueEntryToXmlLimited(queueEntry, 200);
+            char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
             free(dump);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
