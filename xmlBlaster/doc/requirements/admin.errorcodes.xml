@@ -76,7 +76,7 @@
    </description>
 
    <example lang="XML" type="RAW">
-An xml represantation is
+An xml representation is
 
 XmlBlasterException.toXml():
 ============================
@@ -106,17 +106,44 @@ XmlBlasterException.toXml():
  &lt;/exception>
    </example>
 
-   <example lang="XML" type="RAW">
+   <example lang="any" type="RAW">
 // Example showing how to convert an Exception (as a server developer)
+
 try {
+
    ... // Throws exceptions 
+
 }
 catch (CorbaException ex) {
+
    throw new XmlBlasterException(glob,
                                  XmlBlasterException.COMMUNICATION+".connectionLost",
                                  this.getClass().getName(),
                                  "No callback connection to client joe",
                                  ex);
+
+}
+   </example>
+
+   <example lang="any" type="RAW">
+// Example showing usage by a client
+
+try {
+
+   ... // Throws exceptions 
+
+}
+catch (XmlBlasterException ex) {
+
+   if (ex.isInternalError()) {
+      // Displaying all information available:
+      log4j.error(ex.toString());
+   }
+   else {
+      // Displaying errorCode, reason and embedded exception message if available:
+      log4j.error(ex.getMessage());
+   }
+
 }
    </example>
 
@@ -130,7 +157,7 @@ catch (CorbaException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
