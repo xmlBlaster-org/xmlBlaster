@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.3 1999/12/13 12:35:49 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.4 1999/12/13 14:04:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -29,6 +29,7 @@ import test.framework.*;
  * Invoke examples:<br />
  * <code>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
  * </code>
  */
