@@ -1,11 +1,6 @@
 .
 ..
 .cvsignore
-BUGS
-CVS
-Change.callback
-LICENSE
-LICENSE-LGPL
 Makefile
 ROADMAP
 heini
