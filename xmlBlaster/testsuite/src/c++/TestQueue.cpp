@@ -39,15 +39,28 @@ private:
    string    ME;
    Global&   global_;
    I_Log&    log_;
-   I_Queue* queue_; 
+   I_Queue* queue_;
+
+public:
+   /** The values for "-queue/connection/type"; */
+   std::vector<string> types;
 
 public:
    TestQueue(Global& global, string name) : ME(name), global_(global), log_(global.getLog("test"))
    {
       queue_ = NULL;
+      types.push_back("RAM");
+      types.push_back("SQLite");
    }
 
    virtual ~TestQueue() { }
+
+   void destroyQueue() {
+      ClientQueueProperty prop(global_, "");
+      I_Queue *queue = &QueueFactory::getFactory(global_).getPlugin(prop);
+      queue->destroy();
+      QueueFactory::getFactory(global_).releasePlugin(queue);
+   }
 
    void testPublishCompare() 
    {
@@ -121,7 +134,35 @@ public:
    }
 
 
-   void testWithOneEntry()
+   void testWithOnePublishEntry()
+   {
+      string me = ME + "::testWithOneEntry";
+      log_.info(me, "");
+      log_.info(me, "this test creates a queue. The following checks are done:");
+      ClientQueueProperty prop(global_, "");
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
+      assertEquals(log_, me, true, queue_->empty(), "The queue must be empty after creation");
+      assertEquals(log_, me, 0, queue_->getNumOfEntries(), "The queue must be empty after creation");
+      PublishQos qos(global_);
+      PublishKey key(global_);
+      const string contentStr = "BlaBla";
+      MessageUnit messageUnit(key, contentStr, qos);
+      PublishQueueEntry entry(global_, messageUnit);
+
+      queue_->put(entry);
+      assertEquals(log_, me, false, queue_->empty(), " 2. the queue must contain entries after invoking put one time");
+      assertEquals(log_, me, 1, queue_->getNumOfEntries(), " 2b. the queue must contain one entry after invoking put one time");
+      
+      vector<EntryType> ret = queue_->peekWithSamePriority();
+      assertEquals(log_, me, (size_t)1, ret.size(), " 3. the number of entries peeked after one put must be 1");
+
+      //assertEquals(log_, me, (long)1, queue_->randomRemove(ret.begin(), ret.end()), " 4. randomRemove must return 1 entry deleted");
+      //assertEquals(log_, me, true, queue_->empty(), " 5. after removing all entries (it was only 1 entry) the queue  must be empty");
+      log_.info(me, "ends here. Test was successful.");
+   }
+
+
+   void testWithOneConnectEntry()
    {
       string me = ME + "::testWithOneEntry";
       log_.info(me, "");
@@ -267,6 +308,7 @@ public:
 
    void setUp() 
    {
+      destroyQueue(); // Destroy old queue
    }
 
    void tearDown() {
@@ -282,42 +324,61 @@ public:
 
 using namespace org::xmlBlaster::test;
 
+/** Compile:  build -DexeName=TestQueue cpp-test-single */
 int main(int args, char *argc[]) 
 {
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argc);
 
-   TestQueue testObj = TestQueue(glob, "TestQueue");
+   try {
+      Global& glob = Global::getInstance();
+      glob.initialize(args, argc);
 
-   testObj.setUp();
-   testObj.testPublishCompare();
-   testObj.tearDown();
+      TestQueue testObj = TestQueue(glob, "TestQueue");
 
-   testObj.setUp();
-   testObj.testConnectCompare();
-   testObj.setUp();
-   testObj.tearDown();
+      for (std::vector<string>::size_type i=0; i < testObj.types.size(); i++) {
+         glob.getProperty().setProperty("queue/connection/type", testObj.types[i], true);
+         std::cout << "Testing queue type '" << glob.getProperty().get("queue/connection/type", string("eRRoR")) << "'" << std::endl;
 
-   testObj.setUp();
-   testObj.testMixedCompare();
-   testObj.tearDown();
+         testObj.setUp();
+         testObj.testPublishCompare();
+         testObj.tearDown();
 
-   testObj.setUp();
-   testObj.testWithOneEntry();
-   testObj.tearDown();
+         testObj.setUp();
+         testObj.testConnectCompare();
+         testObj.setUp();
+         testObj.tearDown();
 
-   testObj.setUp();
-   testObj.testOrder();
-   testObj.tearDown();
+         testObj.setUp();
+         testObj.testMixedCompare();
+         testObj.tearDown();
 
-   testObj.setUp();
-   testObj.testMaxMsg();
-   testObj.tearDown();
+         testObj.setUp();
+         testObj.testWithOnePublishEntry();
+         testObj.tearDown();
 
-   testObj.setUp();
-   testObj.testMaxEntries();
-   testObj.tearDown();
+         testObj.setUp();
+         testObj.testWithOneConnectEntry();
+         testObj.tearDown();
+
+         testObj.setUp();
+         testObj.testOrder();
+         testObj.tearDown();
+
+         testObj.setUp();
+         testObj.testMaxMsg();
+         testObj.tearDown();
+
+         testObj.setUp();
+         testObj.testMaxEntries();
+         testObj.tearDown();
+
+      }
+   }
+   catch (const XmlBlasterException &e) {
+      std::cerr << "TestQueue FAILED: " << e.getMessage() << std::endl;
+      assert(0);
+
+   }
 
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
