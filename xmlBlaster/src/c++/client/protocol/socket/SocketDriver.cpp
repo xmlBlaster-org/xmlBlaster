@@ -676,15 +676,14 @@ string SocketDriver::usage()
 }
 
 // Exception conversion ....
-org::xmlBlaster::util::XmlBlasterException SocketDriver::convertFromSocketException(const ::ExceptionStruct& ex)
+org::xmlBlaster::util::XmlBlasterException SocketDriver::convertFromSocketException(const ::ExceptionStruct& ex) const
 {
-   string tmp = "";     // Missing: serverSide?
    return org::xmlBlaster::util::XmlBlasterException(
-            ex.errorCode==0?tmp:string(ex.errorCode),
-            tmp,
+            (*ex.errorCode=='\0')?string("internal.unknown"):string(ex.errorCode),
+            string(""),
             ME,
             "en",
-            (*ex.message=='\0')?tmp:string(ex.message),
+            string(ex.message),
             global_.getVersion() + " " + global_.getBuildTimestamp());
             // TODO: isServerSide!!!
 }
