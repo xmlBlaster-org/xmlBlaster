@@ -2,6 +2,19 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Package structure change:
+   org.xmlBlaster.engine.helper.Address -> org.xmlBlaster.util.qos.address.Address
+   org.xmlBlaster.engine.helper.AddressBase -> org.xmlBlaster.util.qos.address.AddressBase
+   org.xmlBlaster.engine.helper.CallbackAddress -> org.xmlBlaster.util.qos.address.CallbackAddress
+   org.xmlBlaster.engine.helper.Destination -> org.xmlBlaster.util.qos.address.Destination
+   org.xmlBlaster.engine.helper.ServerRef -> org.xmlBlaster.util.qos.address.ServerRef
+   org.xmlBlaster.engine.helper.CbQueueProperty -> org.xmlBlaster.util.qos.storage.CbQueueProperty
+   org.xmlBlaster.engine.helper.HistoryQueueProperty -> org.xmlBlaster.util.qos.storage.HistoryQueueProperty
+   org.xmlBlaster.engine.helper.QueueProperty -> org.xmlBlaster.util.qos.storage.QueueProperty
+   org.xmlBlaster.engine.helper.QueuePropertyBase -> org.xmlBlaster.util.qos.storage.QueuePropertyBase
+   org.xmlBlaster.engine.helper.TopicCacheProperty -> org.xmlBlaster.util.qos.storage.TopicCacheProperty
+   org.xmlBlaster.engine.helper.AccessFilterQos -> org.xmlBlaster.util.qos.storage.AccessFilterQos
+
  o Perl: Renamed MessageUnit to MsgUnit (to be similar to Java)
 
  o <readonly/> is now an attribute of the qos-topic tag.
@@ -976,8 +989,8 @@ Changes for 0.78 [Jul, 14 2000]
     org.xmlBlaster.engine.persistence.I_PersistenceDriver -> org.xmlBlaster.engine.I_PersistenceDriver
     org.xmlBlaster.engine.persistence.FileDriver          -> org.xmlBlaster.engine.FileDriver
     org.xmlBlaster.util.MsgUnit                       -> org.xmlBlaster.util.MsgUnit
-    org.xmlBlaster.util.Destination                       -> org.xmlBlaster.engine.helper.Destination
-    org.xmlBlaster.util.CallbackAddress                   -> org.xmlBlaster.engine.helper.CallbackAddress
+    org.xmlBlaster.util.Destination                       -> org.xmlBlaster.util.qos.address.Destination
+    org.xmlBlaster.util.CallbackAddress                   -> org.xmlBlaster.util.qos.address.CallbackAddress
     NOTE: You need to replace your xmlBlaster.properties
     with the new xmlBlaster.properties.template!
 

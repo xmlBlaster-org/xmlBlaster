@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.soap.SoapConnection; // The SoapException to XmlBlasterException converter
 

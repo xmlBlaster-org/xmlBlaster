@@ -26,7 +26,7 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.helper.ServerRef;
+import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;

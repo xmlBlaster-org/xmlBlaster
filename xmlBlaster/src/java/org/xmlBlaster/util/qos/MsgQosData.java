@@ -15,7 +15,7 @@ import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;

@@ -9,7 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.mime.Query;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 
 /**
  * @deprecated Use org.xmlBlaster.client.qos.SubscribeQos instead, this class

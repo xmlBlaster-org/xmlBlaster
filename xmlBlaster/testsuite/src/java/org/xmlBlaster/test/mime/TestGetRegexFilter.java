@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.4 2002/12/18 13:16:15 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.5 2002/12/20 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 import org.xmlBlaster.test.Util;

@@ -3,11 +3,11 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.7 2002/11/26 12:39:28 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.8 2002/12/20 16:32:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;

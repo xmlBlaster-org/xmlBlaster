@@ -8,7 +8,7 @@ package org.xmlBlaster.client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 
 /**
  * This class encapsulates the qos of a get() message.

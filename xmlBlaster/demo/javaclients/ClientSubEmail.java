@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.17 2002/12/18 13:50:50 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.18 2002/12/20 16:31:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
                                                        
 
 /**

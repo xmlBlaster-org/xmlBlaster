@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;

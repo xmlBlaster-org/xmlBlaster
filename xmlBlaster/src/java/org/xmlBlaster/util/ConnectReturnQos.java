@@ -2,7 +2,7 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.helper.ServerRef;
+import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**

@@ -22,7 +22,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.helper.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import junit.framework.*;

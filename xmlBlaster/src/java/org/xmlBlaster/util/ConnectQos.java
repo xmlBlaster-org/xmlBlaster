@@ -3,19 +3,19 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.35 2002/12/20 15:29:53 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.36 2002/12/20 16:32:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.AddressBase;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.QueueProperty;
-import org.xmlBlaster.engine.helper.CbQueueProperty;
-import org.xmlBlaster.engine.helper.ServerRef;
+import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
@@ -696,7 +696,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Adds a queue description. 
     * This allows to set all supported attributes of a client side queue and an address to reach xmlBlaster
     * @param prop The property object of the client side queue which shall be established. 
-    * @see org.xmlBlaster.engine.helper.Address
+    * @see org.xmlBlaster.util.qos.address.Address
     */
    public final void addClientQueueProperty(QueueProperty prop) {
       if (prop == null) return;
@@ -736,7 +736,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Adds a queue description. 
     * This allows to set all supported attributes of a callback queue and a callback address
     * @param prop The property object of the callback queue which shall be established in the server for calling us back.
-    * @see org.xmlBlaster.engine.helper.CallbackAddress
+    * @see org.xmlBlaster.util.qos.address.CallbackAddress
     */
    public final void addCbQueueProperty(CbQueueProperty prop) {
       if (prop == null) return;

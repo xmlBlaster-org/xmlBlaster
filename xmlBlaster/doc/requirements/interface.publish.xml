@@ -127,7 +127,7 @@
    import org.xmlBlaster.client.key.PublishKey;
    import org.xmlBlaster.client.qos.PublishQos;
    import org.xmlBlaster.util.SessionName;
-   import org.xmlBlaster.engine.helper.Destination;
+   import org.xmlBlaster.util.qos.address.Destination;
 
    ...
 
@@ -172,7 +172,7 @@
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>

@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.enum.Constants;
 
 import org.xml.sax.Attributes;

@@ -22,7 +22,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
-import org.xmlBlaster.engine.helper.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RunlevelManager;

@@ -13,7 +13,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
 

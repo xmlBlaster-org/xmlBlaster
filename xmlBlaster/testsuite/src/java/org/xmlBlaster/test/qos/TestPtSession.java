@@ -28,7 +28,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;

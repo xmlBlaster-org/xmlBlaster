@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
 /**

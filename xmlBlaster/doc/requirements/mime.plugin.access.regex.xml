@@ -82,7 +82,7 @@
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
    import org.xmlBlaster.util.MsgUnit;
-   import org.xmlBlaster.engine.helper.AccessFilterQos;
+   import org.xmlBlaster.util.qos.AccessFilterQos;
 
    GetQos qos = new GetQos(glob);
 
@@ -133,7 +133,7 @@
    <see type="INTERNET">http://www.cacas.org/java/gnu/regexp/</see>
    <see type="INTERNET">http://developer.java.sun.com/developer/technicalArticles/releases/1.4regex/</see>
    <see type="API">org.xmlBlaster.engine.mime.regex.GnuRegexFilter</see>
-   <see type="API">org.xmlBlaster.engine.helper.AccessFilterQos</see>
+   <see type="API">org.xmlBlaster.util.qos.AccessFilterQos</see>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
@@ -141,7 +141,7 @@
    <see type="REQ">cluster</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

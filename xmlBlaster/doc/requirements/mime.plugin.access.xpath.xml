@@ -77,7 +77,7 @@
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
    import org.xmlBlaster.util.MsgUnit;
-   import org.xmlBlaster.engine.helper.AccessFilterQos;
+   import org.xmlBlaster.util.qos.AccessFilterQos;
 
    GetQos qos = new GetQos(glob);
 
@@ -125,7 +125,7 @@
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.mime.xpath.XPathFilter</see>
-   <see type="API">org.xmlBlaster.engine.helper.AccessFilterQos</see>
+   <see type="API">org.xmlBlaster.util.qos.AccessFilterQos</see>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
@@ -133,7 +133,7 @@
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
    <date>2002 09 27</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

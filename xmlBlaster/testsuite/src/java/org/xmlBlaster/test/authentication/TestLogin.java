@@ -19,7 +19,7 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 
 import junit.framework.*;

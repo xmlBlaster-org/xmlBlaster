@@ -6,8 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
-import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.enum.Constants;
 
 /**
@@ -86,7 +86,7 @@ public class QueueProperty extends QueuePropertyBase
       return super.usage("Control client side fail save queue properties (message recorder):");
    }
 
-   /** For testing: java org.xmlBlaster.engine.helper.QueueProperty */
+   /** For testing: java org.xmlBlaster.util.qos.storage.QueueProperty */
    public static void main(String[] args) {
       QueueProperty prop = new QueueProperty(new Global(args), null);
       System.out.println(prop.toXml());

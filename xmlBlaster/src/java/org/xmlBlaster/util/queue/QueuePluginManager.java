@@ -11,7 +11,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**

@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.cpp,v 1.4 2002/12/18 12:15:40 ruff Exp $
+Version:   $Id: ServerRef.cpp,v 1.5 2002/12/20 16:31:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
@@ -86,7 +86,7 @@ string ServerRef::toXml(const string& extraOffset) const
 
 using org::xmlBlaster::util::ServerRef;
 
-/** For testing: java org.xmlBlaster.engine.helper.ServerRef */
+/** For testing: java org.xmlBlaster.util.qos.address.ServerRef */
 int main()
 {
    try {

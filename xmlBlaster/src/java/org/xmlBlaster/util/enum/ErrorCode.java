@@ -147,8 +147,8 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.engine.helper.QueueProperty"),
-            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.engine.helper.CbQueueProperty")
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.QueueProperty"),
+            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
       );
 
@@ -157,8 +157,8 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.engine.helper.QueueProperty"),
-            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.engine.helper.CbQueueProperty")
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.QueueProperty"),
+            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
       );
 
@@ -198,7 +198,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_CONFIGURATION_ADDRESS = new ErrorCode("resource.configuration.address",
          "A remote address you passed is invalid, please check your configuration.",
          new ResourceInfo[] {
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.engine.helper.AddressBase")
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.address.AddressBase")
          }
       );
 
@@ -231,8 +231,8 @@ public final class ErrorCode implements java.io.Serializable
          "The remote connection is not established and we are currently polling for it.",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.engine.helper.Address"),
-            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.engine.helper.CallbackAddress")
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.address.Address"),
+            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.address.CallbackAddress")
          }
       );
 
@@ -240,8 +240,8 @@ public final class ErrorCode implements java.io.Serializable
          "The remote connection is not established and we have given up to poll for it.",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.engine.helper.Address"),
-            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.engine.helper.CallbackAddress")
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.address.Address"),
+            new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.address.CallbackAddress")
          }
       );
 

@@ -8,8 +8,8 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.TopicCacheProperty;
-import org.xmlBlaster.engine.helper.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 
 
 /**

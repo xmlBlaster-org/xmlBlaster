@@ -90,7 +90,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 
 // connect to xmlBlaster (not shown here) ...
 
@@ -134,7 +134,7 @@ catch(XmlBlasterException e) {
    <see type="API">HelloWorld5</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 27</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
 /**
  * MsgStorePluginManager loads the I_Map implementation plugins. 

@@ -22,7 +22,7 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.error.MsgErrorInfo;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
 import java.util.ArrayList;
 import java.util.Map;

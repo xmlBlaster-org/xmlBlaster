@@ -41,11 +41,11 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.QueueProperty;
-import org.xmlBlaster.engine.helper.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -722,7 +722,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          address.setDelay(addressFailSaveSettings.getDelay());
          address.setRetries(addressFailSaveSettings.getRetries());
          address.setPingInterval(addressFailSaveSettings.getPingInterval());
-         address.setMaxMsg(addressFailSaveSettings.getMaxMsg());
+         //address.setMaxMsg(addressFailSaveSettings.getMaxMsg());
       }
 
       initDriver(address);
@@ -788,7 +788,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private void initFailSave() {
       try {
          if (this.clientProblemCallback != null && this.recorder==null &&
-             connectQos.getAddress().getMaxMsg() != 0) { // fail save mode (RamRecorder or FileRecorder):
+             connectQos.getClientQueueProperty().getMaxMsg() != 0) { // fail save mode (RamRecorder or FileRecorder):
 
             String type = glob.getProperty().get("recorder.type", (String)null);
             type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
@@ -797,7 +797,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             version = glob.getProperty().get("recorder.version["+getServerNodeId()+"]", version);
 
             this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, createRecorderFileName(),
-                            connectQos.getAddress().getMaxMsg(), this, null);
+                            connectQos.getClientQueueProperty().getMaxMsg(), this, null);
 
             String mode = glob.getProperty().get("recorder.mode", (String)null);
             mode = glob.getProperty().get("recorder.mode["+getServerNodeId()+"]", mode);

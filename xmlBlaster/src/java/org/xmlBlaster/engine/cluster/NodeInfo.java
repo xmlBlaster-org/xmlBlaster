@@ -8,8 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.enum.Constants;
 

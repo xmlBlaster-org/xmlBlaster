@@ -24,8 +24,8 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
-import org.xmlBlaster.engine.helper.CbQueueProperty;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -413,10 +413,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
       try {
          log.plain("",new org.xmlBlaster.util.ConnectQos(glob).usage());
       } catch (XmlBlasterException e) {}
-      log.plain("",new org.xmlBlaster.engine.helper.Address(glob).usage());
-      log.plain("",new org.xmlBlaster.engine.helper.QueueProperty(glob,null).usage());
-      log.plain("",new org.xmlBlaster.engine.helper.CallbackAddress(glob).usage());
-      log.plain("",new org.xmlBlaster.engine.helper.CbQueueProperty(glob,null,null).usage());
+      log.plain("",new org.xmlBlaster.util.qos.address.Address(glob).usage());
+      log.plain("",new org.xmlBlaster.util.qos.storage.QueueProperty(glob,null).usage());
+      log.plain("",new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());
+      log.plain("",new org.xmlBlaster.util.qos.storage.CbQueueProperty(glob,null,null).usage());
       log.plain("",org.xmlBlaster.client.protocol.socket.SocketConnection.usage());
       log.plain("",org.xmlBlaster.client.protocol.corba.CorbaConnection.usage());
       log.plain("",org.xmlBlaster.client.protocol.rmi.RmiConnection.usage());

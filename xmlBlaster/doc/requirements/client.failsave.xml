@@ -354,7 +354,7 @@ try {
 
    <example lang="Java">
       <![CDATA[
-import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.util.qos.address.Address;
 
 // Example with hard coded fail save settings
 // Here the callback methods are not shown
@@ -445,7 +445,7 @@ catch (XmlBlasterException e) {
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.26 $</revision>
+   <revision>$Revision: 1.27 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

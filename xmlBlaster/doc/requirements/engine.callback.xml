@@ -177,7 +177,7 @@
    <![CDATA[
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
    ...
 
@@ -274,8 +274,8 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
    </configuration>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
-   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
-   <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
+   <see type="API">org.xmlBlaster.util.qos.address.CallbackAddress</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueueProperty</see>
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
    <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.test.qos.TestCallbackConfig</see>
@@ -286,7 +286,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.24 $</revision>
+   <revision>$Revision: 1.25 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

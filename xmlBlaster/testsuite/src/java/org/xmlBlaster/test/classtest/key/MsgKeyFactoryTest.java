@@ -10,7 +10,7 @@ import org.xmlBlaster.client.key.GetReturnKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import junit.framework.*;
 

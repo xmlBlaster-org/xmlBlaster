@@ -13,7 +13,7 @@ import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 
 /**

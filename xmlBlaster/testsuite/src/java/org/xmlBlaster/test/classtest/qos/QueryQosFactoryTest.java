@@ -9,7 +9,7 @@ import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.engine.mime.Query;
 
 import junit.framework.*;

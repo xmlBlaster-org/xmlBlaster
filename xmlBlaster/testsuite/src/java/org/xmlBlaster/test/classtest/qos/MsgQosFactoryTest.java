@@ -10,9 +10,9 @@ import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.engine.helper.HistoryQueueProperty;
-import org.xmlBlaster.engine.helper.TopicCacheProperty;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 
 import junit.framework.*;

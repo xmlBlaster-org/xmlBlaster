@@ -13,12 +13,12 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.RouteInfo;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
-import org.xmlBlaster.engine.helper.HistoryQueueProperty;
-import org.xmlBlaster.engine.helper.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
 
 import java.io.*;
 import java.util.ArrayList;

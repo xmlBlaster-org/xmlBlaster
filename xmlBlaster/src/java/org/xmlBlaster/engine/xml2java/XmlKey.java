@@ -17,7 +17,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.engine.helper.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
@@ -32,7 +32,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    private String ME = "MapPlugin";
    private StorageId mapId;
    private HashMap storage;
-   private QueuePropertyBase property; // org.xmlBlaster.engine.helper.TopicCacheProperty;
+   private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.TopicCacheProperty;
    private Global glob;
    private LogChannel log;
    private boolean isShutdown = false;
@@ -288,7 +288,7 @@ public final class MapPlugin implements I_Map, I_Plugin
          Global glob = new Global(args);
          MapPlugin pl = new MapPlugin();
          StorageId mapId = new StorageId("topic", "/node/unknown");
-         pl.initialize(mapId, new org.xmlBlaster.engine.helper.TopicCacheProperty(glob, glob.getId()));
+         pl.initialize(mapId, new org.xmlBlaster.util.qos.storage.TopicCacheProperty(glob, glob.getId()));
       }
       catch (XmlBlasterException e) {
          System.out.println("ERROR: " + e.getMessage());

@@ -39,13 +39,13 @@ You receive this sessionId with your message update (example for Java):
    }
       ]]>
    </example>
-   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
+   <see type="API">org.xmlBlaster.util.qos.address.CallbackAddress</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
    <author>?</author>
    <hacker>?</hacker>
    <date>2002 01 22</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

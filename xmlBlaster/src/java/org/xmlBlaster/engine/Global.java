@@ -17,7 +17,7 @@ import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.ProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;

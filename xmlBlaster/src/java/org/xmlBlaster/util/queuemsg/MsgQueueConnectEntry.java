@@ -14,7 +14,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.address.Destination;
 
 import java.util.ArrayList;
 

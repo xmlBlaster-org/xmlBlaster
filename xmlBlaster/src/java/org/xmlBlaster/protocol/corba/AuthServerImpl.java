@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.24 2002/12/18 16:15:19 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.25 2002/12/20 16:32:33 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.engine.helper.ServerRef;
+import org.xmlBlaster.util.qos.address.ServerRef;
 
 import org.omg.PortableServer.*;
 
