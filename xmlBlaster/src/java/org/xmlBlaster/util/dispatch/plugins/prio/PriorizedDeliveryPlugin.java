@@ -16,6 +16,7 @@ import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -61,7 +62,7 @@ import java.util.Iterator;
  * @see org.xmlBlaster.util.dispatch.plugins.prio.ConfigurationParser
  * @see org.xmlBlaster.test.dispatch.TestPriorizedDeliveryPlugin
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html" target="others">the delivery.control.plugin requirement</a>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, I_Plugin, I_PropertyChangeListener, I_Notify
 {
@@ -349,7 +350,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                deliveryManager.getQueue().removeRandom(entry);
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getQueueId() + "': " + e.toString());
+               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.toString());
                e.printStackTrace();
             }
          }
@@ -358,7 +359,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                deliveryManager.getQueue().removeRandom(entry);
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getQueueId() + "': " + e.toString());
+               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.toString());
                e.printStackTrace();
             }
          }
@@ -388,16 +389,16 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                String type = queueProperties.getType();
                String version = queueProperties.getVersion();
                String typeVersion = glob.getProperty().get("PriorizedDeliveryPlugin.queue.plugin", type+","+version);
-               queue = glob.getQueuePluginManager().getPlugin(typeVersion,
-                                  "PriorizedDeliveryPlugin:"+managerEntry.getDeliveryManager().getQueue().getQueueId(),
-                                  queueProperties);
+               StorageId storageId = new StorageId("PriorizedDeliveryPlugin", managerEntry.getDeliveryManager().getQueue().getStorageId().getPostfix());
+               queue = glob.getQueuePluginManager().getPlugin(typeVersion, storageId, queueProperties);
+               queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting (otherwise we have memory leaks)
                managerEntry.setHoldbackQueue(queue);
-               log.info(ME, "Created holdback queue '" + queue.getQueueId() + "' with " + queue.getNumOfEntries() + " entries");
+               log.info(ME, "Created holdback queue '" + queue.getStorageId() + "' with " + queue.getNumOfEntries() + " entries");
             }
          }
       }
       queue.put(entry, true);
-      if (log.TRACE) log.trace(ME, "Filled to holdback queue '" + queue.getQueueId() + "' one entry, it has now " + queue.getNumOfEntries() + " entries");
+      if (log.TRACE) log.trace(ME, "Filled to holdback queue '" + queue.getStorageId() + "' one entry, it has now " + queue.getNumOfEntries() + " entries");
    }
 
    /**
@@ -409,7 +410,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          DeliveryManager deliveryManager = managerEntry.getDeliveryManager();
          I_Queue holdbackQueue = managerEntry.getHoldbackQueue();
          if (holdbackQueue != null && holdbackQueue.getNumOfEntries() > 0) {
-            log.info(ME, "Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getQueueId());
+            log.info(ME, "Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId());
             ArrayList list = null;
             int lastSize = -99;
             while (holdbackQueue.getNumOfEntries() > 0) {
@@ -417,13 +418,13 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                try {
                   list = holdbackQueue.peek(-1, -1);
                   if (holdbackQueue.getNumOfEntries() == lastSize) {
-                     log.error(ME, "PANIC: " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getQueueId() + " can't be flushed, giving up!");
+                     log.error(ME, "PANIC: " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId() + " can't be flushed, giving up!");
                      break;
                   }
                   lastSize = (int)holdbackQueue.getNumOfEntries();
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Can't flush holdbackQueue '" + holdbackQueue.getQueueId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.toString());
+                  log.error(ME, "PANIC: Can't flush holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.toString());
                   e.printStackTrace();
                   continue;
                }
@@ -442,11 +443,11 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                try {
                   long num = holdbackQueue.remove(list.size(), -1);
                   if (num != list.size()) {
-                     log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getQueueId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
+                     log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getQueueId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.toString());
+                  log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.toString());
                }
             }
 

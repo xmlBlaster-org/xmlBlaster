@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 /**
  * Takes messages from the queue and tries to send them back to a client. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class DeliveryWorker implements Runnable
 {
@@ -37,7 +37,7 @@ public class DeliveryWorker implements Runnable
       this.log = glob.getLog("dispatch");
       this.deliveryManager = mgr;
       this.msgQueue = mgr.getQueue();
-      ME = "DeliveryWorker-" + this.msgQueue.getQueueId(); 
+      ME = "DeliveryWorker-" + this.msgQueue.getStorageId(); 
    }
 
    /**
@@ -141,7 +141,7 @@ public class DeliveryWorker implements Runnable
          msgQueue.removeRandom(entries);
 
          // Add code for message life cycle !!!
-         //!!! entries[i].getMessageUnitWrapper().addEnqueueCounter(-1);
+         //!!! entries[i].getMsgUnitWrapper().addEnqueueCounter(-1);
 
          if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
       }

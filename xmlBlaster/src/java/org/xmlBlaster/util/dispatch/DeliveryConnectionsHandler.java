@@ -3,7 +3,7 @@ Name:      DeliveryConnectionsHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
@@ -57,7 +57,7 @@ import java.util.ArrayList;
  * Note: toAlive(), toPolling() and toDead() are called
  *       by a single DeliveryConnection only, telling its state change.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 abstract public class DeliveryConnectionsHandler
 {
@@ -78,7 +78,7 @@ abstract public class DeliveryConnectionsHandler
     * @param cbAddr The addresses i shall connect to
     */
    public DeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager, AddressBase[] cbAddr) throws XmlBlasterException {
-      this.ME = "DeliveryConnectionsHandler-" + deliveryManager.getQueue().getQueueId();
+      this.ME = "DeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
       this.deliveryManager = deliveryManager;

@@ -7,7 +7,7 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 
 /**
  * The Interface allows to callback when a status message arrived. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_Notify
 {

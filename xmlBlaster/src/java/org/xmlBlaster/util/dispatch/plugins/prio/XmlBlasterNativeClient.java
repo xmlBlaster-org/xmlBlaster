@@ -13,7 +13,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Destination;
@@ -47,7 +47,7 @@ import java.util.Iterator;
  * <p>
  * Exactly one instance of this class exists in the Global scope
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class XmlBlasterNativeClient implements I_Callback
 {
@@ -165,7 +165,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       pq.setSender(new SessionName(glob, getLoginName())); // Set ourself as sender
       pq.setState(action);
       pq.setStateInfo("Notification about special message treatment in plugin " + pluginName + ", dispatcher state=" + currStatus);
-      MessageUnit msgUnit = new MessageUnit("<key oid='" + entry.getKeyOid() + "'/>", "", pq.toXml());
+      MsgUnit msgUnit = new MsgUnit(glob, "<key oid='" + entry.getKeyOid() + "'/>", "", pq.toXml());
       //xmlBlasterImpl.publish(sessionId, msgUnit);
       xmlBlasterCon.publish(msgUnit);
    }

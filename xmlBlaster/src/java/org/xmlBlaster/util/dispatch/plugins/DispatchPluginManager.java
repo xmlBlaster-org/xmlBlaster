@@ -28,7 +28,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <pre>
  *    I_MsgDeliveryInterceptor interceptor = glob.getDispatchPluginManager().getPlugin("Priority", "1.0", "XY", queuePropertyBase);
  * </pre>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html" target="others">dispatch.plugin</a>
  */
 public class DispatchPluginManager extends PluginManagerBase

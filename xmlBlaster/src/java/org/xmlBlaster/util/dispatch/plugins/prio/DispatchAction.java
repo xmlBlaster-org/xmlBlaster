@@ -15,7 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * The StatusConfiguration instance holds zero to n instances of this class.
  * </p>
  * @see StatusConfiguration
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class DispatchAction
 {

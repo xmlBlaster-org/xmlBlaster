@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * Plugins of this interface have only one instance per plugin-typeVersion for each Global scope
  * so you can look at it like a singleton.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_MsgDeliveryInterceptor extends I_ConnectionStateListener
 {

@@ -21,7 +21,7 @@ import org.xmlBlaster.util.queue.I_Queue;
  * real queue of the DeliveryManager.
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html" target="others">the delivery.control.plugin requirement</a>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class DeliveryManagerEntry
 {

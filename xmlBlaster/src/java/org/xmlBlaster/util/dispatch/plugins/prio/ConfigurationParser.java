@@ -42,7 +42,7 @@ import java.util.HashMap;
  * <!-- The plugin type and version are currently optional and not checked -->
  * </pre>
  * @see org.xmlBlaster.test.dispatch.ConfigurationParserTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
 {

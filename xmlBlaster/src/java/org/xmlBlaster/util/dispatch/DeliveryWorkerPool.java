@@ -3,8 +3,8 @@ Name:      DeliveryWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: DeliveryWorkerPool.java,v 1.2 2002/11/26 12:39:40 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: DeliveryWorkerPool.java,v 1.3 2002/12/18 11:44:40 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 

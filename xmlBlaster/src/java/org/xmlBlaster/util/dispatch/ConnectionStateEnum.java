@@ -11,7 +11,7 @@ package org.xmlBlaster.util.dispatch;
  * <p>
  * Note that this implementation has a fixed number of four states.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class ConnectionStateEnum implements java.io.Serializable
 {

@@ -33,7 +33,7 @@ import java.util.ArrayList;
  * further we communicate with the dispatcher plugin if one is configured. 
  * <p />
  * There is one instance of this class per queue and remote connection.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 {
@@ -69,7 +69,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DeliveryManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
 
-      this.ME = "DeliveryManager-" + msgQueue.getQueueId();
+      this.ME = "DeliveryManager-" + msgQueue.getStorageId().getId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
 
@@ -358,9 +358,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       ArrayList result = new ArrayList(size);
       for (int ii=0; ii<size; ii++) {
          MsgQueueEntry entry = (MsgQueueEntry)entryList.get(ii);
-         if (entry.isExpired()) {
-            if (log.TRACE) log.trace(ME, "Message " + entry.getLogId() + " is expired, ignoring it: "
-                                     + entry.toXml());
+         if (entry.isDestroyed()) {
+            log.info(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it");
+            if (log.TRACE) log.trace(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
             try {
                msgQueue.removeRandom(entry);
             }
@@ -368,6 +368,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                log.error(ME, "Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
             }
             continue;
+         }
+         if (entry.isExpired()) {
+            log.info(ME, "Message " + entry.getLogId() + " is expired but not destroyed, forwarding it");
          }
          result.add(entry.clone());
       }
@@ -379,7 +382,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * When somebody puts a new entry into the queue, we want to be
     * notified about this after the entry is fed.
     * <p>
-    * E.g. called by SessionInfo.java, MessageUnitHandler.java etc.
+    * E.g. called by SessionInfo.java, TopicHandler.java etc.
     */
    public void notifyAboutNewEntry() {
       this.notifyCounter++;
@@ -486,7 +489,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       }
 
       if (deliveryConnectionsHandler.isDead()) {
-         String text = "No recoverable remote connection available, giving up queue " + msgQueue.getQueueId() + ".";
+         String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
          return false;
       }
@@ -590,7 +593,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * For logging
     */
    public String getId() {
-      return this.msgQueue.getQueueId();
+      return this.msgQueue.getStorageId().getId();
    }
 
    /**

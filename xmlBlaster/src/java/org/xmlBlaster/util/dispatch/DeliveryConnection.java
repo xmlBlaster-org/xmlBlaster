@@ -43,7 +43,7 @@ import java.io.IOException;
  * Not that DeliveryConnection can't recover from DEAD state
  * you need to create a new instance if desired
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 abstract public class DeliveryConnection implements I_Timeout
@@ -73,11 +73,11 @@ abstract public class DeliveryConnection implements I_Timeout
    public DeliveryConnection(Global glob, DeliveryConnectionsHandler connectionsHandler, AddressBase address) {
       if (address == null)
          throw new IllegalArgumentException("DeliveryConnection expects an address!=null");
-      this.ME = "DeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getQueueId();
+      this.ME = "DeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
       this.connectionsHandler = connectionsHandler;
-      this.myId = connectionsHandler.getDeliveryManager().getQueue().getQueueId();
+      this.myId = connectionsHandler.getDeliveryManager().getQueue().getStorageId().getId();
       this.pingTimer = glob.getCbPingTimer();
       this.address = address;
    }
@@ -128,7 +128,7 @@ abstract public class DeliveryConnection implements I_Timeout
    public void finalize()
    {
       if (this.timerKey != null) {
-         this.pingTimer.removeTimeoutListener(timerKey);
+         this.pingTimer.removeTimeoutListener(this.timerKey);
          this.timerKey = null;
       }
 

@@ -11,7 +11,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 /**
  * Listen to connection states of the dispatcher framework. 
  * <p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_ConnectionStateListener
 {
