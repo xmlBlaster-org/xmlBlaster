@@ -4,20 +4,26 @@
 Changes for 0.76 [?, 2000]
 ===============================
 
+   - xmlBlaster.properties can now be placed in 'java.home' directory
+     as well (this is for example /opt/jdk1.2.2/jre/lib).
+     This feature may be helpful if you want to start a deamon
+     or a servlet which has no home directory.
+     see org.xmlBlaster.util.Property for more informations
+
    - xmlBlaster now uses the new JacORB 1.1 with SSL support
 
-	- .jacorb_properties is renamed to jacorb.properties
-	  YOU NEED TO REMOVE YOUR $HOME/.jacorb_properties and
-	  configure $HOME/jacorb.properties
-	  Use the xmlBlaster/jacorb.properties.template as a base
+   - .jacorb_properties is renamed to jacorb.properties
+     YOU NEED TO REMOVE YOUR $HOME/.jacorb_properties and
+     configure $HOME/jacorb.properties
+     Use the xmlBlaster/jacorb.properties.template as a base
 
    - Peter added the sweet rainbow fish to our control panel
 
-	- Enhancements with browser callback framework
+   - Enhancements with browser callback framework
 
-	- XmlKey.getContentMimeExtended() now returns "" (empty string)
-	  as default fallback. Before the default was null.
-	  This is smarter when used in XSL style sheets.
+   - XmlKey.getContentMimeExtended() now returns "" (empty string)
+     as default fallback. Before the default was null.
+     This is smarter when used in XSL style sheets.
 
 Changes for 0.75 [Mar.28, 2000]
 ===============================
