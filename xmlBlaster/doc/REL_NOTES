@@ -1,54 +1,54 @@
-        Release notes for xmlBlaster    (http://www.xmlBlaster.org)
+    Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.77 [?, 2000]
+Changes for 0.77 [Jun, 3 2000]
 ===============================
-        - browser callback enhancement:
-          It is now possible to pass the loginname and the password
-          through the session object    of the servlet (cookie).
-          This allows you to    use your own authentication.
-          See client.browser.xml requirement    how to do it.
+  - browser callback enhancement:
+    It is now possible to pass the loginname and the password
+    through the session object of the servlet (cookie).
+    This allows you to use your own authentication.
+    See client.browser.xml requirement how to do it.
 
-        - Bugfix for    XPath subscription match errors.
-          Thanks to "Brett Palmer" <plum001@hotmail.com>
-          for finding and describing    this bug.
+  - Bugfix for XPath subscription match errors.
+    Thanks to "Brett Palmer" <plum001@hotmail.com>
+    for finding and describing this bug.
 
-        - Stripped from jacorb.jar unneeded classes.
-          This reduces the size from    3.7 MB to 2.3 MB.
+  - Stripped from jacorb.jar unneeded classes.
+    This reduces the size from 3.7 MB to 2.3 MB.
 
-        - Bug work around for thread    leak: The thread leak from
-          JacORB 1.1    is for the bug being fixed in CorbaConnection.java
+  - Bug work around for thread leak: The thread leak from
+    JacORB 1.1 is for the bug being fixed in CorbaConnection.java
 
-        - Bugfix in CorbaConnection.java: Cleanup for Callback server added.
+  - Bugfix in CorbaConnection.java: Cleanup for Callback server added.
 
-        - Changed XML parser    to jaxp 1.0.1 and added servlet support
-          to    xtdash.jar (from original xt.jar).
-          NOTE: You need to remove xml.jar from your    CLASSPATH and
-          add jaxp.jar and parser.jar (see xmlBlaster/lib directory)
+  - Changed XML parser to jaxp 1.0.1 and added servlet support
+    to xtdash.jar (from original xt.jar).
+    NOTE: You need to remove xml.jar from your CLASSPATH and
+    add jaxp.jar and parser.jar (see xmlBlaster/lib directory)
 
-        - Changed xmlBlaster.idl
-          from
-        login(in string loginName, in string passwd,
-                        in clientIdl::BlasterCallback cb,
-                        in serverIdl::XmlType qos)
-          to
-        login(in string loginName, in string passwd,
-                        in serverIdl::XmlType qos)
-          The callback protocol and address is now passed using
-          the xml based qos.
-          NOTE: You need to change your client code as well!
-          See requirement engine.qos.login.callback
+  - Changed xmlBlaster.idl
+    from
+       login(in string loginName, in string passwd,
+                  in clientIdl::BlasterCallback cb,
+                  in serverIdl::XmlType qos)
+    to
+       login(in string loginName, in string passwd,
+                  in serverIdl::XmlType qos)
+    The callback protocol and address is now passed using
+    the xml based qos.
+    NOTE: You need to change your client code as well!
+    See requirement engine.qos.login.callback
 
-        - CORBA implementors    other than JACORB and MICO can now be used. ORBACUS
-          can work for the xmlBlaster server, java clients and c++ clients. You
-          need OB-4.0b3 (for    c++) and JOB-4.0b3 (for Java) or higher. You can
-          find more about ORBACUS at    http://www.ooc.com.
+  - CORBA implementors other than JACORB and MICO can now be used. ORBACUS
+    can work for the xmlBlaster server, java clients and c++ clients. You
+    need OB-4.0b3 (for c++) and JOB-4.0b3 (for Java) or higher. You can
+    find more about ORBACUS at http://www.ooc.com.
 
-        - Persistent    browser callback bugfixes
-          * Added proper logout
-          * Fixed security hole
-          * Added support to    set system properties through initArgs
-          * Removed memory leak
-          * Added ping/pong,    to allow servlet to detect a lost browser
+  - Persistent browser callback bugfixes
+    * Added proper logout
+    * Fixed security hole
+    * Added support to set system properties through initArgs
+    * Removed memory leak
+    * Added ping/pong, to allow servlet to detect a lost browser
 
 
 Changes for 0.76 [May.8, 2000]
@@ -57,26 +57,26 @@ Changes for 0.76 [May.8, 2000]
           clients cheap synchronous polling for a message (Java only).
           See xmlBlaster/doc/requirements/client.cache.xml
 
-        - Added demo    for http browser callback without closing the http
+        - Added demo for http browser callback without closing the http
           connection.
           See
-         xmlBlaster/doc/requirements/client.browser.xml
-         xmlBlaster/demo/html/systemInfo
-         xmlBlaster/src/java/org/xmlBlaster/protocol/http
+            xmlBlaster/doc/requirements/client.browser.xml
+            xmlBlaster/demo/html/systemInfo
+            xmlBlaster/src/java/org/xmlBlaster/protocol/http
           and online:
-          http://www.xmlBlaster.org/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret
+            http://www.xmlBlaster.org/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret
 
           Netscape 4.x on Linux/HPUX/Win and
-          Netscape 4.7 / MSIE 5 on WinNT and    Win98
+          Netscape 4.7 / MSIE 5 on WinNT and Win98
           runs fine.
 
-        - Bugfixes (especially memory leak fixed) in    browser
+        - Bugfixes (especially memory leak fixed) in browser
           callback framework.
 
-        - Logging output can    now be customized.
-          You can choose the    Date and Time formatting and the
+        - Logging output can now be customized.
+          You can choose the Date and Time formatting and the
           language and country.
-          The amount    of logging information is adjustable as well.
+          The amount of logging information is adjustable as well.
           Example:
         "Saturday, April 29, 2000 7:05:49 PM GMT+02:00 INFO Published AuthServer IOR on port 7609"
           or    in french:
@@ -96,16 +96,16 @@ Changes for 0.76 [May.8, 2000]
           or    a servlet which has no home directory.
           See org.xmlBlaster.util.Property for more informations
 
-        - xmlBlaster    now uses the new JacORB 1.1 with SSL support
+        - xmlBlaster now uses the new JacORB 1.1 with SSL support
 
-        - .jacorb_properties    is renamed to jacorb.properties
-          YOU NEED TO REMOVE    YOUR $HOME/.jacorb_properties and
+        - .jacorb_properties is renamed to jacorb.properties
+          YOU NEED TO REMOVE YOUR $HOME/.jacorb_properties and
           configure $HOME/jacorb.properties
-          Use the xmlBlaster/jacorb.properties.template as a    base
+          Use the xmlBlaster/jacorb.properties.template as a base
 
-        - Peter added the sweet rainbow fish    to our control panel
+        - Peter added the sweet rainbow fish to our control panel
 
-        - Enhancements with browser callback    framework
+        - Enhancements with browser callback framework
 
         - XmlKey.getContentMimeExtended() now returns "" (empty string)
           as    default fallback. Before the default was null.
@@ -116,11 +116,11 @@ Changes for 0.75 [Mar.28, 2000]
 
         - Konrad completed the fabulous Browser callback framework!
           And it works incredible well.
-          Browsers get instant callback updates from    xmlBlaster messages
+          Browsers get instant callback updates from xmlBlaster messages
           through a persistent http connection.
-          It    supports many feature like browser pinging, slow
+          It supports many feature like browser pinging, slow
           browser queuing etc.
-          Konrad will write a little    tutorial in the next week.
+          Konrad will write a little tutorial in the next week.
           See xmlBlaster/src/java/org/xmlBlaster/protocol/http
           See xmlBlaster/doc/http/BlasterHttpProxy.gif
 
@@ -128,37 +128,37 @@ Changes for 0.75 [Mar.28, 2000]
           from command line for a message (for testing/debugging).
           See xmlBlaster/src/java/org/xmlBlaster/client/reader/README
 
-        - Added two internal    messages with key oid="__sys__Login"
+        - Added two internal messages with key oid="__sys__Login"
           and key oid="__sys__Logout"
-          You may subscribe on those    messages if you want to be informed
-          about other client    which login or logout
+          You may subscribe on those messages if you want to be informed
+          about other client which login or logout
 
-        - Added a xmlBlaster    reference handbook to xmlBlaster.org
+        - Added a xmlBlaster reference handbook to xmlBlaster.org
           This page is generated from the requirement XML files in the
           xmlBlaster/doc/requirements directory of the distribution.
-          It    is available on our homepage in the 'Doc' section.
+          It is available on our homepage in the 'Doc' section.
 
         - Bugfix if the Callback of a PtP receiver is disappeared,
           this usually happens when the receiver crashes without a logout.
           Now the XmlBlasterException with e.id="CallbackFailed" is thrown
-          to    the sender,  and the message is queued for the receiver
-          if    the qos flag <ForceQueuing> was set.
+          to the sender,  and the message is queued for the receiver
+          if the qos flag <ForceQueuing> was set.
 
-        - Allow clients to ping xmlBlaster, to test reliable    the connection.
-          The xmlBlaster.idl    was extended with a ping() method.
-          Java clients may use CorbaConnection.java to automatically    test
+        - Allow clients to ping xmlBlaster, to test reliable the connection.
+          The xmlBlaster.idl was extended with a ping() method.
+          Java clients may use CorbaConnection.java to automatically test
           ping the connection.
 
         - Added <qos> tag <subscriptionId> for update messages.
-          This allows the client to find out    which of his subscriptions
+          This allows the client to find out which of his subscriptions
           caused this update.
 
-        - Added <qos> tag <state> for update    messages.
+        - Added <qos> tag <state> for update messages.
           This is not finished, it always shows OK for the moment.
 
-        - Command line parameters (args) and    xmlBlaster.property file entries are
-          merged. The 'args'    overwrite the property file variables.
-          Every xmlBlaster.property variable    may as well be specified on
+        - Command line parameters (args) and xmlBlaster.property file entries are
+          merged. The 'args' overwrite the property file variables.
+          Every xmlBlaster.property variable may as well be specified on
           command line. The leading "-" or "+" from the command line    key is
           stripped before it    is merged into the properties hash table.
           For example, the "-iorFile" command line argument corresponds to the
@@ -168,37 +168,37 @@ Changes for 0.75 [Mar.28, 2000]
 
 Changes for 0.74 [Feb.29, 2000]
 ==============================
-        - New XML based requirements    framework.
+        - New XML based requirements framework.
           See xmlBlaster/doc/requirements
 
-        - 'Fail save' client    connection for Java clients added.
+        - 'Fail save' client connection for Java clients added.
           Clients begin polling and automatic local recording of messages
-          if    xmlBlaster server disappears.
+          if xmlBlaster server disappears.
           See CorbaConnection.java
 
         - C++ POA demo client added [Michele]
           See xmlBlaster/testsuite/c++
 
-        - Recorder to record/playback of messages in    slow/fast motion added.
+        - Recorder to record/playback of messages in slow/fast motion added.
           See InvocationRecorder.java
 
-        - CorbaConnection: logout(boolean) deprecated -> use    logout() now.
+        - CorbaConnection: logout(boolean) deprecated -> use logout() now.
 
         - Changed xmlBlaster.idl: messageUnit    -> msgUnit
                                   messageUnitArr -> msgUnitArr
-          Case does not matter, IDL is case-insensitive when    detecting name clashes.
-          (Thanks to    Michele Laghi)
+          Case does not matter, IDL is case-insensitive when detecting name clashes.
+          (Thanks to Michele Laghi)
 
-        - Added a guide line    for xmlBLaster core developer.
+        - Added a guide line for xmlBLaster core developer.
           See xmlBlaster/doc/developer-guidelines.html
 
-        - Set up xmlBLaster to use Ant as it's build    system [James]
+        - Set up xmlBLaster to use Ant as it's build system [James]
 
         - Added the revolutionary XML based JDBC database gateway. [James]
           see xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc
           see xmlBlaster/demo/javaclients/jdbc
 
-        - Added servlet - browser callback framework    (not yet finished)
+        - Added servlet - browser callback framework (not yet finished)
           see xmlBlaster/src/java/org/xmlBlaster/protocol/http
 
 
@@ -207,55 +207,55 @@ Changes for 0.73 [Feb.20, 2000]
         - Use the -P    option to check out, so old directories won't show up any more:
           cvs checkout -P xmlBlaster
 
-        - Migrated to JacORB    1.0 beta 15
+        - Migrated to JacORB 1.0 beta 15
 
         - Reorganized package structure
           org.xmlBlaster.authenticateIdl  ->    org.xmlBlaster.protocol.corba.authenticateIdl
-          org.xmlBlaster.serverIdl           -> org.xmlBlaster.protocol.corba.serverIdl
-          org.xmlBlaster.clientIdl           -> org.xmlBlaster.protocol.corba.clientIdl
+          org.xmlBlaster.serverIdl        -> org.xmlBlaster.protocol.corba.serverIdl
+          org.xmlBlaster.clientIdl        -> org.xmlBlaster.protocol.corba.clientIdl
           org.xmlBlaster.client.filestore ->    org.xmlBlaster.protocol.corba.client.feeder
           org.xmlBlaster.engine.xml2java  ->    new added
 
         - Improved client / server connection negotiation (IOR bootstrapping)
 
-        - Introduced    DocBook schema
+        - Introduced DocBook schema
           Documentation is written in xml, and converted
-          to    html/pdf etc. with XSL style sheets.
+          to html/pdf etc. with XSL style sheets.
           See example in xmlBlaster/doc/whitepaper/README
 
-        - Further minor changes (see    cvs log or cvsweb if you really want to know it)
+        - Further minor changes (see cvs log or cvsweb if you really want to know it)
 
 
 Changes for 0.72 [Feb.1, 2000]
 ==============================
 
         - Support for new QoS tag <ForceQueuing /> in PtP style.
-          * Without this flag, a message published to a client which    is not
-                 logged in throws       an exception.
-          * Using this flag,    the message will be queued by xmlBlaster
-                 until the client       logs in. On login, all queued messages
-                 are sent       to the client immediately.
+          * Without this flag, a message published to a client which is not
+                 logged in throws an exception.
+          * Using this flag, the message will be queued by xmlBlaster
+                 until the client logs in. On login, all queued messages
+                 are sent to the client immediately.
 
-        - Added some    simple console input mode, to control xmlBlaster
-          Type <?> and <Enter> when xmlBlaster is running to    get help.
+        - Added some simple console input mode, to control xmlBlaster
+          Type <?> and <Enter> when xmlBlaster is running to get help.
 
-        - Extended control panel GUI    to support
+        - Extended control panel GUI to support
           * dumping of xmlBlaster internal state
-          * clearing    the logging window
-          * toggle from control panel GUI to    console mode and back again
+          * clearing the logging window
+          * toggle from control panel GUI to console mode and back again
 
-        - Bug fixed for subscribe with oid and later    publish of this message.
+        - Bug fixed for subscribe with oid and later publish of this message.
           The BigXmlDom was not updated properly.
 
         - Added support for <qos><Readonly /></qos>,
-          where only    the first publish is accepted.
+          where only the first publish is accepted.
 
         - Added logging redirection to file,
-          use on command line "-?" to query possible    parameters.
+          use on command line "-?" to query possible parameters.
 
         - Bug fixed for multiple login (without logout) and PtP messages.
 
-        - Bug fixed for multiple <isDurable>    messages.
+        - Bug fixed for multiple <isDurable> messages.
 
         - Added missing FileDriver.erase().
 
@@ -267,22 +267,22 @@ Changes for 0.71 [Jan.20 2000]
 
         - Added the incredible MOM slide show, see http://www.xmlBlaster.org
 
-        - Added SubscribeKeyWrapper.java SubscribeQosWrapper.java as    client helper
-          to    help to hide raw XML ASCII strings
+        - Added SubscribeKeyWrapper.java SubscribeQosWrapper.java as client helper
+          to help to hide raw XML ASCII strings
 
         - Added simple persistent store (file based)
           Needs to be configured in $HOME/xmlBlaster.properties
 
-        - Added a xmlBlaster.properties file    (should be placed into $HOME).
-          see xmlBlaster/xmlBlaster.properties.template as a    base to start with
+        - Added a xmlBlaster.properties file (should be placed into $HOME).
+          see xmlBlaster/xmlBlaster.properties.template as a base to start with
 
-        - Renamed file names    from ...QoS... to ...Qos...
+        - Renamed file names from ...QoS... to ...Qos...
 
         - Added a file feeder PublishFile.java (publishes files as message to xmlBlaster)
 
-        - Added some    help to xmlBlaster/doc/programming-guide.lyx (still ugly)
+        - Added some help to xmlBlaster/doc/programming-guide.lyx (still ugly)
 
         - Added usage text, invoke at command line with -? option
 
-        - Small changes here    and there
+        - Small changes here and there
 
