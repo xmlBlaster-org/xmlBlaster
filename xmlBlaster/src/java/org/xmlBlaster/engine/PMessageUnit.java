@@ -3,7 +3,7 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine
-Version:   $Id: PMessageUnit.java,v 1.9 2000/07/25 14:28:06 kron Exp $
+Version:   $Id: PMessageUnit.java,v 1.10 2000/09/15 17:16:15 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
@@ -12,7 +12,7 @@ import java.io.*;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import gnu.regexp.*;
 
@@ -32,7 +32,7 @@ public class PMessageUnit implements Serializable
       isDurable = durable;
       timeStamp = System.currentTimeMillis();
       msgUnit   = mu;
-      // PublishQoS is now in the MessageUnit  
+      // PublishQoS is now in the MessageUnit
       size = mu.xmlKey.length() + mu.content.length  + mu.qos.length() + 2200;
       oid = getOid();
    }

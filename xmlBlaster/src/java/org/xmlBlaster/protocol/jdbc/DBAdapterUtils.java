@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.5 2000/07/03 16:39:50 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.6 2000/09/15 17:16:19 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -16,7 +16,7 @@ import com.sun.xml.tree.XmlDocument;
 import com.sun.xml.tree.ElementNode;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Text;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 /**
  * Class declaration

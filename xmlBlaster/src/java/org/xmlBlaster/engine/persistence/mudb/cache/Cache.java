@@ -3,7 +3,7 @@ Name:      Cache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Caches MessageUnits by LRU.
-Version:   $Id: Cache.java,v 1.1 2000/09/03 18:01:52 kron Exp $
+Version:   $Id: Cache.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.cache;
@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.*;
 
 import org.jutils.JUtilsException;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Property;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -61,7 +61,7 @@ public class Cache
       // File-database
       try
       {
-        // Read properties 
+        // Read properties
         _dbPath = XmlBlasterProperty.get("Persistence.Path",System.getProperty("user.dir"));
 
         // Test database-/swapfile
@@ -71,7 +71,7 @@ public class Cache
         // Database-file
         if(!dbfile.exists())
         {
-           // Create database-file 
+           // Create database-file
            _fileDb    =  new RecordsFile(_dbPath+"/xmlBlaster.msg", 64);
         }else
         {
@@ -111,7 +111,7 @@ public class Cache
    {
 
       if(pmsgUnit.oid == null){
-         Log.warning(ME,"Sorry can't write to cache, because no oid was given.");
+         Log.warn(ME,"Sorry can't write to cache, because no oid was given.");
          return;
       }
 
@@ -146,7 +146,7 @@ public class Cache
          return;
 
       }else {
-         // --- SWAP --- 
+         // --- SWAP ---
          _overflowCount++;
 
          checkCacheSize();
@@ -157,7 +157,7 @@ public class Cache
    }
 
 
-   /** 
+   /**
     * Checks the cachesize. If the cachesize is max. then swap the oldest
     * used message for the memory to the swapfile.
     */
@@ -223,7 +223,7 @@ public class Cache
             _fileDb.insertRecord(rw);
          }
       }catch(XmlBlasterException e){
-         Log.warning(ME,"Can't insert PMessageUnit to persistent-file : "+e.reason);
+         Log.warn(ME,"Can't insert PMessageUnit to persistent-file : "+e.reason);
       }catch(IOException io){
          Log.error(ME,io.toString());
       }
@@ -245,7 +245,7 @@ public class Cache
             _fileSwap.insertRecord(rw);
 
       }catch(XmlBlasterException e){
-         Log.warning(ME,"Can't insert PMessageUnit to swapfile : "+e.reason);
+         Log.warn(ME,"Can't insert PMessageUnit to swapfile : "+e.reason);
       }catch(IOException io){
          Log.error(ME,io.toString());
       }
@@ -271,7 +271,7 @@ public class Cache
 
             String deletedOid = _lru.removeEntry(oid);
             if(deletedOid == null)
-               Log.warning(ME,"Can't delete oid:"+deletedOid+" from Lru.");
+               Log.warn(ME,"Can't delete oid:"+deletedOid+" from Lru.");
 
             // Calculate new cachesize.
             _cacheSize = _cacheSize - pmu.size;
@@ -285,9 +285,9 @@ public class Cache
          try{
                _fileSwap.deleteRecord(oid);
          }catch(XmlBlasterException e){
-            Log.warning(ME,"Can't delete PMessageUnit from swapfile : "+e.reason);
+            Log.warn(ME,"Can't delete PMessageUnit from swapfile : "+e.reason);
          }catch(IOException io){
-            Log.warning(ME,io.toString());
+            Log.warn(ME,io.toString());
          }
       }
 
@@ -298,9 +298,9 @@ public class Cache
          try{
             _fileDb.deleteRecord(oid);
          }catch(XmlBlasterException e){
-            Log.warning(ME,"Can't delete PMessageUnit from filedb : "+e.reason);
+            Log.warn(ME,"Can't delete PMessageUnit from filedb : "+e.reason);
          }catch(IOException io){
-            Log.warning(ME,io.toString());
+            Log.warn(ME,io.toString());
          }
       }
 
@@ -428,7 +428,7 @@ public class Cache
       return _cacheSize;
    }
 
-   /** 
+   /**
     * Removes all cache-entries and also swapfile-entries.
     */
    public void clearCache(){

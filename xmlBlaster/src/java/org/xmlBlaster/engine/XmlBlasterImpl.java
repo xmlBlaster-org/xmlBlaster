@@ -3,14 +3,14 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.4 2000/06/25 18:32:41 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.5 2000/09/15 17:16:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.RequestBroker;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.Authenticate;

@@ -3,7 +3,7 @@ Name:      RamTest.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cc,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: RamTest.cc,v 1.3 2000/09/15 17:16:21 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -12,11 +12,11 @@ Version:   $Id: RamTest.cc,v 1.2 2000/07/06 23:42:27 laghi Exp $
 #include <util/StopWatch.h>
 
 /**
- * This client publishes 1000 different messages to measure RAM 
+ * This client publishes 1000 different messages to measure RAM
  * consumption/message. <br />
  * The RAM consumption in kByte/Message is logged to the console.  <br />
- * Note that this is the net RAM consumption, without any content and a very 
- * small XmlKey. You may see this as the internal memory overhead in 
+ * Note that this is the net RAM consumption, without any content and a very
+ * small XmlKey. You may see this as the internal memory overhead in
  * xmlBlaster for each published message. <br />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done. <p>
@@ -45,12 +45,12 @@ private:
    string           publishOid_;
    string           senderName_;
    string           senderContent_;
-   string           contentMime_; 
-   string           contentMimeExtended_; 
+   string           contentMime_;
+   string           contentMimeExtended_;
    util::Log log_;
 
 public:
-   RamTest(const string &testName, const string &loginName) : log_(), 
+   RamTest(const string &testName, const string &loginName) : log_(),
       stopWatch_() {
       senderName_   = loginName;
       publishOid_   = "";
@@ -58,7 +58,7 @@ public:
       contentMimeExtended_ = "1.0";
       senderConnection_ = 0;
    }
-   
+
    ~RamTest() {
       delete senderConnection_;
    }
@@ -73,7 +73,7 @@ public:
       try {
          senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
-         senderConnection_->login(senderName_, passwd, 0); 
+         senderConnection_->login(senderName_, passwd, 0);
           // Login to xmlBlaster without Callback
       }
       catch (CORBA::Exception &e) {
@@ -92,29 +92,29 @@ public:
 //      stopWatch = new StopWatch();
 
       for (int i=0; i < NUM_PUBLISH; i++) {
-	 char buffer[256];
-	 ostrstream out(buffer, 255);
-	 out << "<key oid='RamTest-" << (i+1) << "'>\n" << "</key>" << (char)0;
+         char buffer[256];
+         ostrstream out(buffer, 255);
+         out << "<key oid='RamTest-" << (i+1) << "'>\n" << "</key>" << (char)0;
          string xmlKey = buffer;
          string qos = "<qos></qos>";
-	 serverIdl::StringArr* strArr = 0;
+         serverIdl::StringArr* strArr = 0;
          try {
             strArr = senderConnection_->erase(xmlKey, qos);
-	    if (!strArr) {
-	       cerr << "returned erased oid array == null" << endl;
-	       assert(0);
-	    }
-	    if (strArr->length() != 1) {
-	       cerr << "num erased messages is wrong" << endl;
-	       assert(0);
-	    }
-         } 
-	 catch(serverIdl::XmlBlasterException &e) { 
-	    log_.error(me(), string("XmlBlasterException: ") 
-		       + string(e.reason)); 
-	 }
+            if (!strArr) {
+               cerr << "returned erased oid array == null" << endl;
+               assert(0);
+            }
+            if (strArr->length() != 1) {
+               cerr << "num erased messages is wrong" << endl;
+               assert(0);
+            }
+         }
+         catch(serverIdl::XmlBlasterException &e) {
+            log_.error(me(), string("XmlBlasterException: ")
+                       + string(e.reason));
+         }
       }
-      
+
 //        long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
 //        Log.info(ME, "Success: Erasing done, " + NUM_PUBLISH + " messages erased, average messages/second = " + avg);
 
@@ -130,35 +130,35 @@ public:
    void testPublish() {
       if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
       long usedMemBefore = 0L;
-      
+
       serverIdl::MessageUnitArr msgUnitArr(NUM_PUBLISH);
       msgUnitArr.length(NUM_PUBLISH);
 
       char buffer[128];
 
       for (int i=0; i < NUM_PUBLISH; i++) {
-	 ostrstream out(buffer, 127);
-	 out << i+1 << (char)0;
-//           string xmlKey = string("<key oid='RamTest-") + buffer 
-//  	    + "' contentMime='" 
-//  	    + contentMime_ + "' contentMimeExtended='" + contentMimeExtended_
-//  	    + "'>\n   <RamTest-AGENT id='192.168.124.10' subId='1' " 
-//  	    + "type='generic'>      <RamTest-DRIVER id='FileProof' "
-//  	    + "pollingFreq='10'>      </RamTest-DRIVER>"
-//  	    + "   </RamTest-AGENT></key>";
+         ostrstream out(buffer, 127);
+         out << i+1 << (char)0;
+//           string xmlKey = string("<key oid='RamTest-") + buffer
+//          + "' contentMime='"
+//          + contentMime_ + "' contentMimeExtended='" + contentMimeExtended_
+//          + "'>\n   <RamTest-AGENT id='192.168.124.10' subId='1' "
+//          + "type='generic'>      <RamTest-DRIVER id='FileProof' "
+//          + "pollingFreq='10'>      </RamTest-DRIVER>"
+//          + "   </RamTest-AGENT></key>";
 
          string xmlKey = string("<key oid='RamTest-") + buffer + "'></key>";
-	 senderContent_ = buffer;
+         senderContent_ = buffer;
          serverIdl::MessageUnit msgUnit;
-	 CORBA::String_var help = CORBA::string_dup(xmlKey.c_str());
-	 msgUnit.xmlKey  = help;
-	 msgUnit.xmlKey[xmlKey.length()] = (char)0;
-	 msgUnit.content = serverIdl::
-	    ContentType(senderContent_.length()+1,
-			senderContent_.length()+1,
-			(CORBA::Octet*)senderContent_.c_str());
-	 msgUnit.qos   = "<qos></qos>";
-	 msgUnitArr[i] = msgUnit;
+         CORBA::String_var help = CORBA::string_dup(xmlKey.c_str());
+         msgUnit.xmlKey  = help;
+         msgUnit.xmlKey[xmlKey.length()] = (char)0;
+         msgUnit.content = serverIdl::
+            ContentType(senderContent_.length()+1,
+                        senderContent_.length()+1,
+                        (CORBA::Octet*)senderContent_.c_str());
+         msgUnit.qos   = "<qos></qos>";
+         msgUnitArr[i] = msgUnit;
       }
 
       try {
@@ -166,76 +166,76 @@ public:
          string xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
          string qos    = "<qos></qos>";
          serverIdl::MessageUnitArr_var
-	    msgArr = senderConnection_->get(xmlKey, qos);
-	 if (!msgArr) {
-	    cerr << "returned msgArr == null" << endl;
-	    assert(0);
-	 }
-	 if (msgArr->length() != 1) {
-	    cerr << "msgArr.length!=1" << endl;
-	    assert(0);
-	 }
-	 serverIdl::MessageUnit msgUnit = (*msgArr)[0];
-	 
-	 
-//    	 if (msgUnitCont.size() == 0) {
-//    	    cerr << "returned msgArr[0].msgUnit == null" << endl;
-//    	    assert(0);
-//    	 }
-	 if (msgUnit.content.length() == 0) {
-	    cerr << "returned msgArr[0].msgUnit.content.length == 0" << endl;
-	    assert(0);
-	 }
-	 
-	 char *mem = (char*)&msgUnit.content[0];
-	 mem[msgUnit.content.length()] = (char)0; // null terminated string !!!
-	 log_.info(me(), string("xmlBlaster used allocated memory before ") +
-		   "publishing = " + mem);
-	 
+            msgArr = senderConnection_->get(xmlKey, qos);
+         if (!msgArr) {
+            cerr << "returned msgArr == null" << endl;
+            assert(0);
+         }
+         if (msgArr->length() != 1) {
+            cerr << "msgArr.length!=1" << endl;
+            assert(0);
+         }
+         serverIdl::MessageUnit msgUnit = (*msgArr)[0];
+
+
+//       if (msgUnitCont.size() == 0) {
+//          cerr << "returned msgArr[0].msgUnit == null" << endl;
+//          assert(0);
+//       }
+         if (msgUnit.content.length() == 0) {
+            cerr << "returned msgArr[0].msgUnit.content.length == 0" << endl;
+            assert(0);
+         }
+
+         char *mem = (char*)&msgUnit.content[0];
+         mem[msgUnit.content.length()] = (char)0; // null terminated string !!!
+         log_.info(me(), string("xmlBlaster used allocated memory before ") +
+                   "publishing = " + mem);
+
          stopWatch_.restart();
          // 2. publish all the messages
-         serverIdl::StringArr_var publishOidArr = 
-	    senderConnection_->publishArr(msgUnitArr);
+         serverIdl::StringArr_var publishOidArr =
+            senderConnection_->publishArr(msgUnitArr);
 
-	 for (int i=0; i < 1000; i++) {
-	    cout << msgUnitArr[i].xmlKey << endl;
-	    cout << (char*)&(msgUnitArr[i].content)[0] << endl;
-	 }
+         for (int i=0; i < 1000; i++) {
+            cout << msgUnitArr[i].xmlKey << endl;
+            cout << (char*)&(msgUnitArr[i].content)[0] << endl;
+         }
 
- 
-	 double elapsed = 0.001 * stopWatch_.elapsed();
+
+         double elapsed = 0.001 * stopWatch_.elapsed();
          long avg = (long)((double)NUM_PUBLISH / elapsed);
-	 char buffer[1024];
-	 ostrstream out(buffer, 1023);
-	 out << "Success: Publishing done, " << NUM_PUBLISH;
-	 out << " messages sent, average messages/second = " << avg << (char)0;
-	 log_.info(me(), buffer);
-	 if (!publishOidArr) {
-	    cerr << "returned publishOidArr == null" << endl;
-	    assert(0);
-	 }
-	 
-	 if (publishOidArr->length() != NUM_PUBLISH) {
-	    cerr << "numPublished is wrong" << endl;
-	    assert(0);
-	 }
-	 
-         // 3. Query the memory allocated in xmlBlaster after publishing all 
-	 // the messages
+         char buffer[1024];
+         ostrstream out(buffer, 1023);
+         out << "Success: Publishing done, " << NUM_PUBLISH;
+         out << " messages sent, average messages/second = " << avg << (char)0;
+         log_.info(me(), buffer);
+         if (!publishOidArr) {
+            cerr << "returned publishOidArr == null" << endl;
+            assert(0);
+         }
+
+         if (publishOidArr->length() != NUM_PUBLISH) {
+            cerr << "numPublished is wrong" << endl;
+            assert(0);
+         }
+
+         // 3. Query the memory allocated in xmlBlaster after publishing all
+         // the messages
          msgArr = senderConnection_->get(xmlKey, qos);
          char *usedMemAfter = (char*)&(*msgArr)[0].content[0];
-	 usedMemAfter[(*msgArr)[0].content.length()] = (char)0;
+         usedMemAfter[(*msgArr)[0].content.length()] = (char)0;
          log_.info(me(), string("xmlBlaster used allocated memory after ") +
-		   "publishing = " + usedMemAfter);
-	 
-      } 
-      
+                   "publishing = " + usedMemAfter);
+
+      }
+
       catch(serverIdl::XmlBlasterException &e) {
-         log_.warning(me(), string("XmlBlasterException: ")+string(e.reason));
+         log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
          assert(0);
-      } 
+      }
       catch(CORBA::Exception &e) {
-         log_.warning(me(), string("Exception: ") + to_string(e));
+         log_.warn(me(), string("Exception: ") + to_string(e));
          assert(0);
       }
    }

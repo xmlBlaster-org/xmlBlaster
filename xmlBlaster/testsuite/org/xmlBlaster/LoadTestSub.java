@@ -3,11 +3,11 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.18 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.19 2000/09/15 17:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -133,7 +133,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          // assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       // assert("returned null subscribeOid", subscribeOid != null);
@@ -177,7 +177,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -213,7 +213,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
       numReceived++;
       /*
@@ -246,7 +246,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }

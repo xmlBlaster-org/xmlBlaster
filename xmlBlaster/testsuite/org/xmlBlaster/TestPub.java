@@ -3,11 +3,11 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.11 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestPub.java,v 1.12 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
@@ -123,7 +123,7 @@ public class TestPub extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
@@ -156,7 +156,7 @@ public class TestPub extends TestCase implements I_Callback
             publishOid = senderConnection.publish(msgUnit);
             Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
             assert("publish - XmlBlasterException: " + e.reason, false);
          }
          assert("returned publishOid == null", publishOid != null);
@@ -209,7 +209,7 @@ public class TestPub extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -242,7 +242,7 @@ public class TestPub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }

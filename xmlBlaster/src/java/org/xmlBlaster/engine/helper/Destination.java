@@ -3,11 +3,11 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.1 2000/06/26 07:12:36 ruff Exp $
+Version:   $Id: Destination.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 
 /**

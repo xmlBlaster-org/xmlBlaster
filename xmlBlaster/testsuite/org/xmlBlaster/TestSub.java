@@ -3,11 +3,11 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.22 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestSub.java,v 1.23 2000/09/15 17:16:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -127,7 +127,7 @@ public class TestSub extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
@@ -159,7 +159,7 @@ public class TestSub extends TestCase implements I_Callback
          assertEquals("Wrong publishOid", publishOid, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -229,7 +229,7 @@ public class TestSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }

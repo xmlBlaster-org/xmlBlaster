@@ -3,11 +3,11 @@ Name:      XmlRpcProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: XmlRpcProxy.java,v 1.6 2000/06/26 15:22:50 ruff Exp $
+Version:   $Id: XmlRpcProxy.java,v 1.7 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -135,7 +135,7 @@ public class XmlRpcProxy implements I_Callback
          corbaConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
          if (Log.TRACE) Log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
+         Log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
       }
    }
 

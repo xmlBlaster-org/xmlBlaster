@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: SaxHandlerBase.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_SAXHANDLERBASE_H
@@ -55,7 +55,7 @@ namespace util {
        */
       SaxHandlerBase(int args=0, char *argc[]=0) : log_(args, argc),
 	 charTrimmer_(), xmlChTrimmer_() {
-	 if (log_.CALLS) log_.trace(me(), "Creating new SaxHandlerBase");
+	 if (log_.CALL) log_.trace(me(), "Creating new SaxHandlerBase");
       }
 
       
@@ -130,7 +130,7 @@ namespace util {
       /** Start element. */
       
       void startElement(const XMLCh* const name, AttributeList& attrs) {
-	 log_.warning(me(),"Please provide your startElement() impl.");
+	 log_.warn(me(),"Please provide your startElement() impl.");
       }
 
       /**
@@ -163,7 +163,7 @@ namespace util {
 
       /** End element. */
       void endElement(const XMLCh* const name) {
-	 log_.warning(me(),"Please provide your startElement() impl.");
+	 log_.warn(me(),"Please provide your startElement() impl.");
       }
       
 
@@ -180,7 +180,7 @@ namespace util {
       void warning(const SAXParseException &ex) {
 	 string txt = getLocationString(ex);
 	 txt += string("\n") + xmlLiteral_;
-	 log_.warning(me(), txt);
+	 log_.warn(me(), txt);
       }
       
       
@@ -188,7 +188,7 @@ namespace util {
       void error(const SAXParseException &ex) {
 	 string txt = getLocationString(ex);
 	 txt += string("\n") + xmlLiteral_;
-	 log_.warning(me(), txt);
+	 log_.warn(me(), txt);
       }
 
 
@@ -196,7 +196,7 @@ namespace util {
       void fatalError(const SAXParseException &ex) {
 	 string txt = getLocationString(ex);
 	 txt += string("\n") + xmlLiteral_;
-	 log_.warning(me(), txt);
+	 log_.warn(me(), txt);
 	 throw ex;
       }
 

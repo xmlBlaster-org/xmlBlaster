@@ -3,7 +3,7 @@ Name:      TestMuDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing MessageUnit database
-Version:   $Id: TestMuDb.java,v 1.1 2000/09/03 17:38:02 kron Exp $
+Version:   $Id: TestMuDb.java,v 1.2 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -27,7 +27,7 @@ import java.io.*;
 import java.util.*;
 
 import org.jutils.JUtilsException;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -52,17 +52,17 @@ public class TestMuDb extends TestCase
 {
    private final static String ME = "TestXmlDb";
    private MuDb mudb;
-   
-   private String content; 
+
+   private String content;
    private String qos;
-   private String qosD; 
+   private String qosD;
 
    public TestMuDb(String testName)
    {
       super(testName);
       setup();
    }
-   
+
    public void setup()
    {
       mudb = new MuDb();
@@ -76,7 +76,7 @@ public class TestMuDb extends TestCase
    {
       MessageUnit mu;
       String key;
-      
+
       key = "<?xml version='1.0' ?>\n"+"<key oid='"+oid+"'>\n"+"<person pid='10"+oid+"' gid='200'>\n" +"<name age='31' sex='f'>Lisa</name>\n"+
                "<surname>Schmid</surname>\n"+ "<adress>\n <street>Bakerstreet 2a</street>\n </adress>\n"+"</person>\n"+" </key>\n";
 
@@ -86,12 +86,12 @@ public class TestMuDb extends TestCase
          mu = new MessageUnit(key,content.getBytes(),qos);
       }
       String result = mudb.insert(mu);
-//      assertNotEquals("Can't insert MessageUnit with oid : "+result+" because Key exists", result, oid); 
+//      assertNotEquals("Can't insert MessageUnit with oid : "+result+" because Key exists", result, oid);
    }
 
    public void testGet()
    {
-      Log.calls(ME,"Testcase ...... testGet()");
+      Log.call(ME,"Testcase ...... testGet()");
       // Add a MessageUnit with oid=100
       insertMsg("100",true);
 
@@ -107,7 +107,7 @@ public class TestMuDb extends TestCase
 
    public void testDelete()
    {
-      Log.calls(ME,"Testcase ...... testDelete()");
+      Log.call(ME,"Testcase ...... testDelete()");
       mudb.delete("100");
       PMessageUnit pmu = mudb.get("100");
 
@@ -119,7 +119,7 @@ public class TestMuDb extends TestCase
 
    public void testQuery()
    {
-      Log.calls(ME,"Testcase ...... testQuery()");
+      Log.call(ME,"Testcase ...... testQuery()");
       insertMsg("100",true);
       insertMsg("101",true);
       insertMsg("102",true);
@@ -140,7 +140,7 @@ public class TestMuDb extends TestCase
 
    public void testInsertQuery()
    {
-      Log.calls(ME,"Testcase ...... testInsertQuery()");
+      Log.call(ME,"Testcase ...... testInsertQuery()");
       for(int i=100;i<200;i++){
          insertMsg(String.valueOf(i),true);
       }
@@ -162,7 +162,7 @@ public class TestMuDb extends TestCase
 
    public void testInsertMsgPerSecond()
    {
-      Log.calls(ME,"Testcase ...... testInsertMsgPerSecond()");
+      Log.call(ME,"Testcase ...... testInsertMsgPerSecond()");
       StopWatch stop = new StopWatch();
       for(int i=100;i<1100;i++){
          insertMsg(String.valueOf(i),false);
@@ -172,12 +172,12 @@ public class TestMuDb extends TestCase
       {
          assert("Can't insert 1000 MessageUnits",false);
       }else{
-         float msgSec = 1000f / (stop.elapsed()/1000f); 
+         float msgSec = 1000f / (stop.elapsed()/1000f);
          Log.info(ME,"MessageUnits per Second by INSERT : "+String.valueOf((int)msgSec)+" Msg/sec.");
       }
 
       stop.restart();
-    
+
       // Query-time-test
       Enumeration msgIter = mudb.query("//key");
       Log.info(ME,"Time for a simple query (1000 MessageUnits):"+stop.toString());
@@ -193,10 +193,10 @@ public class TestMuDb extends TestCase
 
       mudb.showCacheState();
       stop.restart();
-      // Delete MessageUnits 
+      // Delete MessageUnits
       for(int i=100;i<1100;i++){
         mudb.delete(String.valueOf(i));
-      }      
+      }
       Log.info(ME,"1000 MessageUnits deleted in: "+stop.toString());
    }
 
@@ -205,7 +205,7 @@ public class TestMuDb extends TestCase
    */
    public void testCacheSize()
    {
-      Log.calls(ME,"Testcase ...... testCacheSize()");
+      Log.call(ME,"Testcase ...... testCacheSize()");
       StopWatch stop = new StopWatch();
       long varSize[] = {0L, 1000000L, 2000000L, 4000000L};
 
@@ -235,7 +235,7 @@ public class TestMuDb extends TestCase
            mudb.delete(String.valueOf(i));
          }
          Log.info(ME,"    Delete 1000 MUs....in..."+stop.toString());
-         
+
       }
    }
 
@@ -275,6 +275,6 @@ public class TestMuDb extends TestCase
       testMuDb.testInsertMsgPerSecond();
       testMuDb.testCacheSize();
       Log.exit(TestMuDb.ME, "Good bye");
-   } 
+   }
 
 }

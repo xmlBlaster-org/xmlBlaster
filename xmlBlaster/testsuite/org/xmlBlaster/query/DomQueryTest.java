@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.4 2000/06/19 15:48:40 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.5 2000/09/15 17:16:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package testsuite.org.xmlBlaster.query;
@@ -23,7 +23,7 @@ import com.jclark.xsl.om.*;
 import java.io.File;
 import java.io.IOException;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import java.util.Properties;

@@ -3,11 +3,11 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.45 2000/07/13 12:30:54 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.46 2000/09/15 17:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
 
@@ -39,9 +39,9 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.45 $
+ * @version $Revision: 1.46 $
  */
-public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
+public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
    private static boolean propertyRead = false;
 
@@ -66,7 +66,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
       // Log.addLogLevel("TRACE"); // Use this to trace the code
-      // Log.addLogLevel("CALLS");
+      // Log.addLogLevel("CALL");
       // Log.addLogLevel("TIME");
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
@@ -97,7 +97,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      if (Log.CALLS) Log.calls("BlasterHttpProxyServlet", "Entering doGet() ... " + Memory.getStatistic());
+      if (Log.CALL) Log.call("BlasterHttpProxyServlet", "Entering doGet() ... " + Memory.getStatistic());
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
@@ -342,7 +342,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
                Log.trace(ME, "Success: Subscribe on " + subscribeOid + " done");
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
@@ -366,7 +366,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                String publishOid = xmlBlaster.publish(msgUnit);
                Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
@@ -433,7 +433,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
 
    /**
-    * Event fired by Log.java through interface LogListener.
+    * Event fired by LogChannel.java through interface LogableDevice.
     * <p />
     * Log output from Log.info(); etc. into Servlet log file.
     * <p />
@@ -444,7 +444,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     * System.out.println("Hello"); will be printed to the console
     * where you started the servlet engine.
     */
-   public void log(String str)
+   public void log(int level, String source, String str)
    {
       getServletContext().log(str);
    }

@@ -3,7 +3,7 @@ Name:      ReqBaseServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ReqBaseServlet.java,v 1.5 2000/08/07 11:17:52 freidlin Exp $
+Version:   $Id: ReqBaseServlet.java,v 1.6 2000/09/15 17:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -21,7 +21,7 @@ import com.jclark.xsl.sax.ServletDestination;
 import com.jclark.xsl.sax.OutputMethodHandlerImpl;
 import com.jclark.xsl.sax.XSLProcessorImpl;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 
 /*
@@ -84,7 +84,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         Log.warning(ME, "servlet output broken:"+e.toString());
+         Log.warn(ME, "servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 
@@ -109,7 +109,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         Log.warning(ME, "servlet output broken:"+e.toString());
+         Log.warn(ME, "servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 

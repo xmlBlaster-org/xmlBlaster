@@ -3,11 +3,11 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.2 2000/06/26 06:40:28 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.client.CorbaConnection;
@@ -36,9 +36,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientSub
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub -name "Jeff"
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientSub -name "Jeff"
  * </pre>
  */
 public class ClientSub implements I_Callback
@@ -58,7 +58,7 @@ public class ClientSub implements I_Callback
          Log.plain("   -name               The login name [ClientSub].");
          CorbaConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
+         Log.plain("Example: jaco javaclients.corba.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
       }
 
@@ -90,7 +90,7 @@ public class ClientSub implements I_Callback
                corbaConnection.subscribe(key.toXml(), qos.toXml());
                Log.info(ME, "Subscribe done, there should be no Callback");
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
@@ -122,7 +122,7 @@ public class ClientSub implements I_Callback
                publishOid = corbaConnection.publish(msgUnit);
                Log.info(ME, "Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
          }
 

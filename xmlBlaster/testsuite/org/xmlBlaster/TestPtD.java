@@ -3,11 +3,11 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.18 2000/07/14 14:34:41 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.19 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -199,7 +199,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -234,7 +234,7 @@ public class TestPtD extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }

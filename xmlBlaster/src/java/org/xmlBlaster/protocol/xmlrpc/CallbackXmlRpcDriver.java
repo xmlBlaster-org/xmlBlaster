@@ -3,12 +3,12 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.2 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.3 2000/09/15 17:16:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.LogManager;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
@@ -49,7 +49,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by
     * xmlBlaster after instantiation of this class, telling us
     * the address to callback.
-    * @param  callbackAddress Contains the stringified XML-RPC callback handle of 
+    * @param  callbackAddress Contains the stringified XML-RPC callback handle of
     *                      the client
     */
    public void init(CallbackAddress callbackAddress) throws XmlBlasterException
@@ -74,7 +74,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
    public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper,
-                                org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) 
+                                org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
       throws XmlBlasterException
    {
       // transform the msgUnits to Vectors
@@ -89,20 +89,20 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             // send an update to the client
 
             xmlRpcClient.execute("update", args);
-            LogManager.info("xmlBlaster", ME, "Received message update '" + 
-                            new String(msgUnitArr[i].content) + "' from sender '" 
+            Log.info(ME, "Received message update '" +
+                            new String(msgUnitArr[i].content) + "' from sender '"
                             + clientInfo.toString() + "'");
          }
       }
       catch (XmlRpcException ex) {
-         LogManager.error("xmLBlaster", ME + ".sendUpdate", "xml-rpc exception: " + ex.toString());
+         Log.error(ME + ".sendUpdate", "xml-rpc exception: " + ex.toString());
          throw new XmlBlasterException("CallbackFailed", "xml-rpc exception" + ex.toString());
       }
       catch (IOException ex1) {
-         LogManager.error("xmlBlaster", ME + ".sendUpdate", "I/O exception: " + ex1.toString());
+         Log.error(ME + ".sendUpdate", "I/O exception: " + ex1.toString());
          throw new XmlBlasterException("CallbackFailed", "I/O exception: " + ex1.toString());
       }
-      
+
    }
 
 

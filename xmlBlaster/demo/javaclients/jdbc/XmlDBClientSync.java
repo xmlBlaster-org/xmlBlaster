@@ -1,6 +1,6 @@
 package javaclients.jdbc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 

@@ -3,11 +3,11 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.8 2000/06/25 18:32:40 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.9 2000/09/15 17:16:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.*;
 import java.net.*;
@@ -22,7 +22,7 @@ import java.io.*;
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -43,7 +43,7 @@ public class HttpIORServer extends Thread
    {
       this.ior = ior;
       this.HTTP_PORT = port;
-      if (Log.CALLS) Log.calls(ME, "Creating new HttpIORServer");
+      if (Log.CALL) Log.call(ME, "Creating new HttpIORServer");
       start();
    }
 
@@ -74,7 +74,7 @@ public class HttpIORServer extends Thread
       }
 
       if (listen != null) {
-         try { listen.close(); } catch (java.io.IOException e) { Log.warning(ME, "listen.close()" + e.toString()); }
+         try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
          listen = null;
       }
    }
@@ -85,7 +85,7 @@ public class HttpIORServer extends Thread
     */
    public void shutdown()// throws IOException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering shutdown");
+      if (Log.CALL) Log.call(ME, "Entering shutdown");
       running = false;
 
       boolean closeHack = true;
@@ -96,7 +96,7 @@ public class HttpIORServer extends Thread
             java.net.Socket socket = new Socket(listen.getInetAddress(), HTTP_PORT);
             socket.close();
          } catch (java.io.IOException e) {
-            Log.warning(ME, "shutdown problem: " + e.toString());
+            Log.warn(ME, "shutdown problem: " + e.toString());
          }
       }
 
@@ -106,7 +106,7 @@ public class HttpIORServer extends Thread
             listen = null;
          }
       } catch (java.io.IOException e) {
-         Log.warning(ME, "shutdown problem: " + e.toString());
+         Log.warn(ME, "shutdown problem: " + e.toString());
       }
    }
 }
@@ -135,7 +135,7 @@ class HandleRequest extends Thread
     */
    public void run()
    {
-      if (Log.CALLS) Log.calls(ME, "Handling client request, accessing AuthServer IOR ...");
+      if (Log.CALL) Log.call(ME, "Handling client request, accessing AuthServer IOR ...");
       try {
          BufferedReader iStream = new BufferedReader(new InputStreamReader(sock.getInputStream()));
          DataOutputStream oStream = new DataOutputStream(sock.getOutputStream());

@@ -3,12 +3,12 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.23 2000/07/12 12:55:28 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.24 2000/09/15 17:16:18 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -112,7 +112,7 @@ public class ProxyConnection implements I_Callback
     */
    public void cleanup()
    {
-      if (Log.CALLS) Log.calls(ME, "Entering cleanup() ...");
+      if (Log.CALL) Log.call(ME, "Entering cleanup() ...");
 
 
       synchronized(httpConnections) {
@@ -182,7 +182,7 @@ public class ProxyConnection implements I_Callback
    public void addHttpPushHandler( String sessionId, HttpPushHandler pushHandler ) throws XmlBlasterException
    {
       if( sessionId == null || pushHandler == null ) {
-         Log.warning(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
+         Log.warn(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
          throw new XmlBlasterException(ME, "You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
       }
 

@@ -3,11 +3,11 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.13 2000/07/11 08:52:07 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.14 2000/09/15 17:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -49,7 +49,7 @@ public class XmlDBAdapter
    }
 
    /**
-    * Query the database. 
+    * Query the database.
     * <p />
     * INSERT, UPDATE, CREATE results look like this (content variable):
     * <pre>
@@ -140,7 +140,7 @@ public class XmlDBAdapter
       return new MessageUnit[0];
    }
 
- 
+
    /**
     * Parse the XML encoded SQL statement.
     */
@@ -152,7 +152,7 @@ public class XmlDBAdapter
          document = XmlDocument.createXmlDocument(bais, false);
       }
       catch (Exception e) {
-         Log.warning(ME, "Exception in create: " + e);
+         Log.warn(ME, "Exception in create: " + e);
 
          throw (e);
       }
@@ -166,7 +166,7 @@ public class XmlDBAdapter
     */
    private XmlDocument queryDB(ConnectionDescriptor descriptor) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering queryDB() ...");
+      if (Log.CALL) Log.call(ME, "Entering queryDB() ...");
       Connection  conn = null;
       Statement   stmt = null;
       ResultSet   rs = null;
@@ -202,7 +202,7 @@ public class XmlDBAdapter
          }
       }
       catch (SQLException e) {
-         Log.warning(ME, "Exception in query '" + descriptor.getCommand() + "' : " + e);
+         Log.warn(ME, "Exception in query '" + descriptor.getCommand() + "' : " + e);
          throw new XmlBlasterException(ME, e.getMessage());
       }
 
@@ -238,7 +238,7 @@ public class XmlDBAdapter
 
 
    /**
-    * SELECT results in XML. 
+    * SELECT results in XML.
     */
    private MessageUnit[] getResponseMessage(XmlDocument doc)
    {
@@ -249,7 +249,7 @@ public class XmlDBAdapter
 
 
    /**
-    * Create the result/exception/return message. 
+    * Create the result/exception/return message.
     * <p />
     * Note that the Publish...Wrapper are for get() and update() identical
     * @param content

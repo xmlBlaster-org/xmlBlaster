@@ -3,11 +3,11 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.6 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.7 2000/09/15 17:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -153,7 +153,7 @@ public class CorbaDriver implements I_Driver
     */
    public void shutdown()
    {
-      if (Log.CALLS) Log.calls(ME, "Shutting down ...");
+      if (Log.CALL) Log.call(ME, "Shutting down ...");
       boolean wait_for_completion = true;
 
       try {
@@ -162,7 +162,7 @@ public class CorbaDriver implements I_Driver
          if (iorFile != null) FileUtil.deleteFile(null, iorFile);
       }
       catch (Throwable e) {
-         Log.warning(ME, "Problems during ORB cleanup: " + e.toString());
+         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
 
@@ -170,14 +170,14 @@ public class CorbaDriver implements I_Driver
          try {
             Log.trace(ME, "Deactivate POA ...");
             rootPOA.deactivate_object(rootPOA.reference_to_id(authRef));
-         } catch(Exception e) { Log.warning(ME, "POA deactivate authentication servant failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate authentication servant failed"); }
       }
 
       if (rootPOA != null) {
          try {
             Log.trace(ME, "Deactivate POA Manager ...");
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
          rootPOA = null;
       }
 
@@ -200,7 +200,7 @@ public class CorbaDriver implements I_Driver
     */
    private NamingContext getNamingService() throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "getNamingService() ...");
+      if (Log.CALL) Log.call(ME, "getNamingService() ...");
       if (nc != null)
          return nc;
 
@@ -209,7 +209,7 @@ public class CorbaDriver implements I_Driver
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
          if (nameServiceObj == null) {
-            Log.warning(ME + ".NoNameService", "Can't access naming service, is there any running?");
+            Log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
@@ -228,7 +228,7 @@ public class CorbaDriver implements I_Driver
          throw e;
       }
       catch (Exception e) {
-         Log.warning(ME + ".NoNameService", "Can't access naming service: " + e.toString());
+         Log.warn(ME + ".NoNameService", "Can't access naming service: " + e.toString());
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
    }
@@ -241,7 +241,7 @@ public class CorbaDriver implements I_Driver
    {
       if (orb != null)
          return orb;
-      Log.warning(ME, "orb was not initialized");
+      Log.warn(ME, "orb was not initialized");
       return org.omg.CORBA.ORB.init(new String[0], null);
    }
 

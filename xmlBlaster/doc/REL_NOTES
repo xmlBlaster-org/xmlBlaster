@@ -1,5 +1,16 @@
     Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
+
+Changes for 0.79 [?, ? 2000]
+==============================
+  - Changed package for FileDriver, modify xmlBlaster.properties to
+      Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
+
+  - Changed logging to use jutils Log classes
+
+  - Michele completed xml-rpc support
+
+
 Changes for 0.78 [Jul, 14 2000]
 ==============================
   - Added generic database access from James to xmlBlaster core.

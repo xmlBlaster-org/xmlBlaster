@@ -3,11 +3,11 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.13 2000/06/26 07:12:35 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.14 2000/09/15 17:16:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -42,7 +42,7 @@ public class AuthenticationInfo
       this.loginName = loginName;
       this.passwd = passwd;
       this.clientQoS = clientQoS;
-      if (Log.CALLS) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
+      if (Log.CALL) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
    }
 
 

@@ -3,11 +3,11 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.2 2000/06/26 06:40:28 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -31,9 +31,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientXml
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml -name "Jeff"
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientXml -name "Jeff"
  * </pre>
  */
 public class ClientXml implements I_Callback
@@ -51,7 +51,7 @@ public class ClientXml implements I_Callback
          Log.plain("   -passwd             The password [secret].");
          CorbaConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
+         Log.plain("Example: jaco javaclients.corba.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
       }
 

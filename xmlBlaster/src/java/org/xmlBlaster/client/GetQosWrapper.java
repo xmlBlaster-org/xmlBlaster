@@ -3,18 +3,18 @@ Name:      GetQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: GetQosWrapper.java,v 1.1 2000/07/11 08:50:17 ruff Exp $
+Version:   $Id: GetQosWrapper.java,v 1.2 2000/09/15 17:16:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 
 
 /**
- * This class encapsulates the qos of a get() message. 
+ * This class encapsulates the qos of a get() message.
  * <p />
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCII-XML string with the toXml() method.

@@ -3,11 +3,11 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.12 2000/06/26 07:12:37 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.13 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
@@ -195,7 +195,7 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -225,7 +225,7 @@ public class TestPersistence extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }

@@ -4,11 +4,11 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.2 2000/06/26 13:47:45 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -34,7 +34,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public BlasterCallbackImpl(java.lang.String name) {
       this.ME = "BlasterCallbackImpl-" + name;
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
    }
 
 
@@ -44,7 +44,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    public BlasterCallbackImpl() {
       super();
       this.ME = "BlasterCallbackImpl";
-      if (Log.CALLS) Log.trace(ME, "Entering constructor without argument");
+      if (Log.CALL) Log.trace(ME, "Entering constructor without argument");
    }
 
 

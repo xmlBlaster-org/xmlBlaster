@@ -3,11 +3,11 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.11 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.12 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
@@ -48,7 +48,7 @@ public class XmlToDom
     */
    public final void create(String xmlKey_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Creating DOM tree");
+      if (Log.CALL) Log.trace(ME, "Creating DOM tree");
 
       if (this.xmlKey_literal != null) {
          xmlDoc = null;

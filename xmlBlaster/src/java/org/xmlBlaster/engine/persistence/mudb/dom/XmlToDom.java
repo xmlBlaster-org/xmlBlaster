@@ -2,8 +2,8 @@
 Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Parse a xml-instance to DOM. 
-Version:   $Id: XmlToDom.java,v 1.1 2000/09/03 18:02:23 kron Exp $
+Comment:   Parse a xml-instance to DOM.
+Version:   $Id: XmlToDom.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.dom;
@@ -12,11 +12,10 @@ import java.io.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.ParserFactory;
-import org.xmlBlaster.engine.xmldb.dom.*;
 import com.sun.xml.tree.XmlDocument;
 
 
-class XmlToDom 
+class XmlToDom
 {
     static class SaxCreate implements DocumentHandler
     {
@@ -66,13 +65,13 @@ class XmlToDom
         }
 
         public void startElement(String s, AttributeList attributelist)
-        { 
+        {
             Element element=null;
 
             if(_rootNode == null)
             {
               //System.out.println("NULL : "+s);
-              
+
               _rootNode = (Node)_document.createElement(s);;
             }else
             {
@@ -99,7 +98,7 @@ class XmlToDom
         final int iws;
         Node _rootNode;
         XmlDocument _document;
- 
+
     }
 
 

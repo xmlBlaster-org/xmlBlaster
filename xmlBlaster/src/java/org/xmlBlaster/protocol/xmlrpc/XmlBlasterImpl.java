@@ -3,12 +3,12 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.3 2000/09/01 21:18:55 laghi Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.4 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
 import java.util.Vector;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -17,12 +17,12 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
 
 
 /**
- * Implements the xmlBlaster server XML-RPC interface. Because the xml-rpc 
+ * Implements the xmlBlaster server XML-RPC interface. Because the xml-rpc
  * protocol does not recognize user-defined classes, these must be converted to
  * something which xml-rpc does understand. That's why following transformations
  * will take place:
  * <pre>
- * MessageUnit are converted to Vector 
+ * MessageUnit are converted to Vector
  * MessageUnit[] are converted to Vector (of Vector)
  * String[] are converted to Vector (of String)
  * boolean are converted to int
@@ -41,10 +41,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * Constructor.
     */
-   public XmlBlasterImpl(org.xmlBlaster.protocol.I_XmlBlaster blasterNative) 
+   public XmlBlasterImpl(org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
       throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering constructor ...");
+      if (Log.CALL) Log.call(ME, "Entering constructor ...");
       this.blasterNative = blasterNative;
    }
 
@@ -52,23 +52,23 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * Subscribe to messages.
     */
-   public String subscribe(String sessionId, String xmlKey_literal, String qos_literal) 
+   public String subscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
 
       try {
-         if (Log.CALLS) Log.calls(ME, "Entering subscribe() xmlKey=\n" 
+         if (Log.CALL) Log.call(ME, "Entering subscribe() xmlKey=\n"
                                   + xmlKey_literal + ") ...");
          StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
          String oid = blasterNative.subscribe(sessionId, xmlKey_literal, qos_literal);
-         
+
          if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
          return oid;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -77,11 +77,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * @see xmlBlaster.idl
     */
-   public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) 
+   public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
       try {
-         Log.calls(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
+         Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
          StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
          blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
@@ -89,7 +89,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -103,7 +103,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
       throws XmlBlasterException
    {
 
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.CALL) Log.call(ME, "Entering publish() ...");
 
       try {
 
@@ -119,7 +119,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
       }
 
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -132,7 +132,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
       throws XmlBlasterException
    {
 
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.CALL) Log.call(ME, "Entering publish() ...");
 
       try {
 
@@ -148,7 +148,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
       }
 
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -159,19 +159,19 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * @see xmlBlaster.idl
     */
-   public Vector publishArr(String sessionId, Vector msgUnitArrWrap) 
+   public Vector publishArr(String sessionId, Vector msgUnitArrWrap)
       throws XmlBlasterException
    {
 
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.CALL) Log.call(ME, "Entering publish() ...");
       int arrayLength = msgUnitArrWrap.size();
 
       if (arrayLength < 1) {
-         if (Log.TRACE) 
+         if (Log.TRACE)
             Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
          return new Vector(); // empty Vector return
       }
-      
+
       try {
          MessageUnit[] msgUnitArr = ProtoConverter.vector2MessageUnitArray(msgUnitArrWrap);
          String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
@@ -182,9 +182,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          Log.error(ME+".publish", "not a valid MessageUnit: " + e.toString());
          throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
       }
-      
+
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
 
@@ -195,18 +195,18 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * @see xmlBlaster.idl
     */
-   public Vector erase(String sessionId, String xmlKey_literal, String qos_literal) 
+   public Vector erase(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
       try {
-         if (Log.CALLS) Log.calls(ME, "Entering erase() xmlKey=\n" + xmlKey_literal + ") ...");
+         if (Log.CALL) Log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal + ") ...");
 
          String[] retArr = blasterNative.erase(sessionId, xmlKey_literal, qos_literal);
 
          return ProtoConverter.stringArray2Vector(retArr);
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -218,13 +218,13 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
     * @return content
     * @see xmlBlaster.idl
     */
-   public Vector get(String sessionId, String xmlKey_literal, String qos_literal) 
+   public Vector get(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
 
       try {
 
-         if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+         if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
          StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
          MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
@@ -237,7 +237,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          return msgUnitArrWrap;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); 
+         throw new XmlBlasterException(e.id, e.reason);
          // transform native exception to Corba exception
       }
    }
@@ -254,11 +254,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
 
    //   public String toXml() throws XmlBlasterException;
 
-   public String toXml(String extraOffset) throws XmlBlasterException 
+   public String toXml(String extraOffset) throws XmlBlasterException
    {
       return blasterNative.toXml(extraOffset);
    }
-   
-   
+
+
 }
 

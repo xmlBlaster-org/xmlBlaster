@@ -3,7 +3,7 @@ Name:      MuDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Stores MessageUnits in a file-database or holds in a Cache.
-Version:   $Id: MuDb.java,v 1.1 2000/09/03 18:00:42 kron Exp $
+Version:   $Id: MuDb.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb;
@@ -13,7 +13,7 @@ import org.w3c.dom.*;
 import java.util.Enumeration;
 import java.util.Vector;
 import org.xmlBlaster.util.*;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -100,7 +100,7 @@ public class MuDb
          RE expression = new RE("(.*)<isDurable(.*)");
          isDurable = expression.isMatch(mu.qos);
       }catch(REException e){
-         Log.warning(ME,"Can't recognize QoS of this MessageUnit! I set isDurable=false");
+         Log.warn(ME,"Can't recognize QoS of this MessageUnit! I set isDurable=false");
       }
 
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);

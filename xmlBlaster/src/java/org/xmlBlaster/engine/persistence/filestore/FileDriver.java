@@ -3,12 +3,12 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.1 2000/09/03 17:56:55 kron Exp $
+Version:   $Id: FileDriver.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 

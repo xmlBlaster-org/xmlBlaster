@@ -3,12 +3,12 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.9 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.10 2000/09/15 17:16:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
@@ -64,7 +64,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public AuthServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate, I_XmlBlaster blaster)
    {
-      if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
+      if (Log.CALL) Log.call(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.authenticate = authenticate;
 
@@ -106,7 +106,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          Log.error(ME, e.toString());
       }
 
-      if (Log.CALLS) Log.trace(ME, "Leaving constructor");
+      if (Log.CALL) Log.trace(ME, "Leaving constructor");
    }
 
 
@@ -129,7 +129,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
                        String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (Log.CALL) Log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
       if (loginName==null || passwd==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
@@ -156,7 +156,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       try {
          String tmpSessionId = authenticate.login(loginName, passwd, qos_literal, sessionId);
          if (tmpSessionId == null || !tmpSessionId.equals(sessionId)) {
-            Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+            Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
             throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
          }
 
@@ -179,7 +179,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering logout()");
+      if (Log.CALL) Log.call(ME, "Entering logout()");
       try {
          authenticate.logout(getSessionId(xmlServer));
       }

@@ -3,15 +3,15 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.8 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.9 2000/09/15 17:16:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.Log;
 import org.jutils.collection.Queue;
 import org.jutils.JUtilsException;
 
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
 
@@ -25,7 +25,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements I_InvocationRecorder
@@ -70,7 +70,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    private void init(int maxEntries, I_InvocationRecorder serverCallback,
                               I_CallbackRaw clientCallback)
    {
-      if (Log.CALLS) Log.calls(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
+      if (Log.CALL) Log.call(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
       this.queue = new Queue(ME, maxEntries);
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
@@ -127,7 +127,7 @@ public class InvocationRecorder implements I_InvocationRecorder
             break;
       }
       if (cont == null) {
-         Log.warning(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         Log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
          throw new XmlBlasterException(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
       }
 
@@ -147,7 +147,7 @@ public class InvocationRecorder implements I_InvocationRecorder
                try {
                   Thread.currentThread().sleep(originalElapsed - actualElapsed);
                } catch(InterruptedException e) {
-                  Log.warning(ME, "Thread sleep got interrupted, this invocation is not in sync");
+                  Log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
                }
             }
             callback(cont);
@@ -363,7 +363,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
 
    /**
-    * For I_CallbackRaw interface. 
+    * For I_CallbackRaw interface.
     * @see xmlBlaster.idl
     */
    public void update(MessageUnit [] msgUnitArr)

@@ -3,11 +3,11 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.5 2000/07/11 08:52:44 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.6 2000/09/15 17:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -64,7 +64,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    }
 
    /**
-    * Hack for synchronous get() access. 
+    * Hack for synchronous get() access.
     */
    public static NamedConnectionPool getNamedPool()
    {
@@ -151,7 +151,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
       if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-         Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+         Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
          throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
       }
       Log.info(ME, "login for '" + loginName + "' successful.");
@@ -164,7 +164,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void update(String sender, byte[] content)
    {
-      if (Log.CALLS) Log.calls(ME, "SQL message from '" + sender + "' received");
+      if (Log.CALL) Log.call(ME, "SQL message from '" + sender + "' received");
       XmlDBAdapterWorker worker = new XmlDBAdapterWorker(sender, content, this, namedPool);
       worker.start();     // In future use callback thread !!!!!
    }
@@ -198,11 +198,11 @@ public class JdbcDriver implements I_Driver, I_Publish
             Log.info(ME, "Jdbc driver '" + driver + "' loaded.");
          }
          catch (Throwable e) {
-            Log.warning(ME, "Couldn't initialize driver =>" + driver);
+            Log.warn(ME, "Couldn't initialize driver =>" + driver);
          }
       }
       if (numDrivers == 0) {
-         Log.warning(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
+         Log.warn(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
       }
    }
 }

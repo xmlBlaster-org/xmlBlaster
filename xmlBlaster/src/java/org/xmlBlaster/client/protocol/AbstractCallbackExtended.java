@@ -3,20 +3,20 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.1 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.2 2000/09/15 17:16:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.log.LogManager;
+import org.xmlBlaster.util.Log;
 /**
  * This is a little abstract helper class which extends the I_CallbackExtended
  * interface to become suited for protocols like xml-rpc. Note that you need to
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended
@@ -40,12 +40,12 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * @param loginName The name to whom the callback belongs
     * @param updateKeyLiteral The arrived key (as an xml-string)
     * @param content   The arrived message content
-    * @param updateQosLiteral  Quality of Service of the MessageUnit 
+    * @param updateQosLiteral  Quality of Service of the MessageUnit
     *                      (as an xml-string)
     * @see I_CallbackExtended
     */
-   public void update(String loginName, String updateKeyLiteral, byte[] content, 
-                      String updateQoSLiteral) throws XmlBlasterException 
+   public void update(String loginName, String updateKeyLiteral, byte[] content,
+                      String updateQoSLiteral) throws XmlBlasterException
    {
       try {
          UpdateKey updateKey = new UpdateKey();
@@ -54,24 +54,24 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          update(loginName, updateKey, content, updateQoS);
       }
       catch (XmlBlasterException e) {
-         LogManager.error("xmlBlaster", ME + ".update", "Parsing error: " + e.toString());
+         Log.error(ME + ".update", "Parsing error: " + e.toString());
          throw new XmlBlasterException("Parsing Error", "check the key passed" + e.toString());
       }
    }
 
-   
+
    /**
-    * The class which extends AbstractCallbackExtended must implement this 
+    * The class which extends AbstractCallbackExtended must implement this
     * method.
     *
     * @param loginName The name to whom the callback belongs
     * @param updateKey The arrived key (as an xml-string)
     * @param content   The arrived message content
-    * @param updateQos  Quality of Service of the MessageUnit 
+    * @param updateQos  Quality of Service of the MessageUnit
     *                 (as an xml-string)
     * @see org.xmlBlaster.client.I_Callback
     */
-   public abstract void update(String loginName, UpdateKey updateKey, byte[] content, 
+   public abstract void update(String loginName, UpdateKey updateKey, byte[] content,
                                UpdateQoS updateQoS);
 }
 

@@ -3,11 +3,11 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.5 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.6 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,7 +37,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public AuthServerImpl(Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering constructor ...");
+      if (Log.CALL) Log.call(ME, "Entering constructor ...");
       this.authenticate = authenticate;
    }
 
@@ -55,7 +55,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       String sessionId = null; // pass this in future with qos?
-      if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (Log.CALL) Log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
       if (loginName==null || password==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
@@ -66,7 +66,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       try {
          String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
          if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-            Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+            Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
             throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
          }
          if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
@@ -87,7 +87,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
    public void logout(final String sessionId)
                         throws RemoteException, XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering logout()");
+      if (Log.CALL) Log.call(ME, "Entering logout()");
       authenticate.logout(sessionId);
    }
 

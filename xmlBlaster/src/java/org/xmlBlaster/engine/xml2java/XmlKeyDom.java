@@ -3,12 +3,12 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.8 2000/07/02 17:21:33 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.9 2000/09/15 17:16:17 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
@@ -141,7 +141,7 @@ public class XmlKeyDom implements I_MergeDomNode
             if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
             nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
          } catch (Exception e) {
-            Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
+            Log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
             e.printStackTrace();
             throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
          }
@@ -163,7 +163,7 @@ public class XmlKeyDom implements I_MergeDomNode
       }
 
       else {
-         Log.warning(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
+         Log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
          throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
 
@@ -178,14 +178,14 @@ public class XmlKeyDom implements I_MergeDomNode
    protected final String getKeyOid(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws XmlBlasterException
    {
       if (node == null) {
-         Log.warning(ME+".NoParentNode", "no parent node found");
+         Log.warn(ME+".NoParentNode", "no parent node found");
          throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
       }
 
       String nodeName = node.getNodeName();      // com.sun.xml.tree.ElementNode: getLocalName();
 
       if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
-         Log.warning(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+         Log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
          throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
       }
 
@@ -223,7 +223,7 @@ public class XmlKeyDom implements I_MergeDomNode
          }
       }
 
-      Log.warning(ME+".InternalKeyOid", "Internal getKeyOid() error");
+      Log.warn(ME+".InternalKeyOid", "Internal getKeyOid() error");
       throw new XmlBlasterException(ME+".InternalKeyOid", "Internal getKeyOid() error");
    }
 

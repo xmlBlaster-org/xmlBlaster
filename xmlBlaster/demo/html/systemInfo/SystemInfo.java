@@ -3,12 +3,12 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.14 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.15 2000/09/15 17:16:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
@@ -76,7 +76,7 @@ public class SystemInfo extends HttpServlet
     */
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering SystemInfo.doRequest() ...");
+      if (Log.CALL) Log.call(ME, "Entering SystemInfo.doRequest() ...");
       StopWatch stop = new StopWatch();
 
       String sessionId = request.getRequestedSessionId();
@@ -154,7 +154,7 @@ public class SystemInfo extends HttpServlet
          pw.close();
       }
       catch(IOException e) {
-         Log.warning(ME, "Could not deliver HTML page to browser:"+e.toString());
+         Log.warn(ME, "Could not deliver HTML page to browser:"+e.toString());
          throw new ServletException(e.toString());
       }
    }
@@ -198,7 +198,7 @@ public class SystemInfo extends HttpServlet
       }
       catch(IOException e) {
          String text = "Sending XML data to browser failed: " + e.toString();
-         Log.warning(ME, text);
+         Log.warn(ME, text);
          PrintWriter pw;
          try { pw = response.getWriter(); } catch(IOException e2) { Log.error(ME, "2.xml send problem"); return; }
          pw.println("<html><body>Request Problems" + text + "</body></html>");

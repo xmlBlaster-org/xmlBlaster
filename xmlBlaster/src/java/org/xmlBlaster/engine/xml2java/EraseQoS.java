@@ -3,12 +3,12 @@ Name:      EraseQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: EraseQoS.java,v 1.4 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: EraseQoS.java,v 1.5 2000/09/15 17:16:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.AttributeList;
 import java.util.Vector;
@@ -30,7 +30,7 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public EraseQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Creating EraseQoS(" + xmlQoS_literal + ")");
+      if (Log.CALL) Log.call(ME, "Creating EraseQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
 

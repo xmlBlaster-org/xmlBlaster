@@ -3,12 +3,12 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.35 2000/07/14 13:06:33 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.36 2000/09/15 17:16:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -71,7 +71,7 @@ public class MessageUnitHandler
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
 
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
+      if (Log.CALL) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
 
       // mimeType and content remains unknown until first data is fed
    }
@@ -94,12 +94,12 @@ public class MessageUnitHandler
       this.msgUnitWrapper = msgUnitWrapper;
       this.uniqueKey = msgUnitWrapper.getXmlKey().getUniqueKey();
 
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
+      if (Log.CALL) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
    }
 
 
    /**
-    * Check if this MessageUnit is already published and contains correct data. 
+    * Check if this MessageUnit is already published and contains correct data.
     * @return true a MessageUnit object is published, so you may do updates<br />
     *         false this handler holds subscriptions only, no message content is yet known
     */
@@ -116,7 +116,7 @@ public class MessageUnitHandler
    final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (msgUnitWrapper == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + Log.getStackTrace());
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.text.StackTrace.getStackTrace());
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnitWrapper = null");
       }
       return msgUnitWrapper;
@@ -172,7 +172,7 @@ public class MessageUnitHandler
       for (int ii=0; ii<arr.length; ii++)
          requestBroker.fireSubscriptionEvent(arr[ii], false);
 
-      Log.warning(ME, "No subscribed client notifiction about message erase() yet implemented");
+      Log.warn(ME, "No subscribed client notifiction about message erase() yet implemented");
 
       subscriberMap.clear();
       // subscriberMap = null;    is final, can't assign null
@@ -279,7 +279,7 @@ public class MessageUnitHandler
          subs = (SubscriptionInfo)subscriberMap.remove(subscriptionInfoUniqueKey);
       }
       if (subs == null)
-         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+         Log.warn(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
 
       return subs;
    }

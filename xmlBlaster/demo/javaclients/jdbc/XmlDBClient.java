@@ -1,6 +1,6 @@
 package javaclients.jdbc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.client.UpdateQoS;
 
 /**
  * Example code how to access the xmlBlaster JDBC service
- * asynchronous with the subscribe() method. 
+ * asynchronous with the subscribe() method.
  * <p />
  * The result of the query is delivered asynchronously
  * with the callback update() method.

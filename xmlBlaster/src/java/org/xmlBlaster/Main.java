@@ -3,12 +3,12 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.49 2000/07/03 13:39:12 ruff Exp $
+Version:   $Id: Main.java,v 1.50 2000/09/15 17:16:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.jutils.JUtilsException;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
@@ -128,7 +128,7 @@ public class Main
       boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {
          try { Thread.currentThread().wait();
-         } catch(InterruptedException e) { Log.warning(ME, "Caught exception: " + e.toString()); }
+         } catch(InterruptedException e) { Log.warn(ME, "Caught exception: " + e.toString()); }
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
@@ -309,7 +309,7 @@ public class Main
                keyboardUsage();
          }
          catch (IOException e) {
-            Log.warning(ME, e.toString());
+            Log.warn(ME, e.toString());
          }
       }
    }

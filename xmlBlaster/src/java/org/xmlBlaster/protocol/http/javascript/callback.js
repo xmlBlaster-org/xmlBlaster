@@ -111,7 +111,7 @@ function UpdateKey(xml)
    this.root = top.Xparse(xml);     // The Javascript DOM tree
    var keyNode = this.root.contents[0];
    if (keyNode.name != "key") {
-      Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
+      Log.warn('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
       return;
    }
    for(attrib in keyNode.attributes) {
@@ -137,7 +137,7 @@ function UpdateQos(xml)
          break;
    }
    if (qosNode.name != "qos") {
-      Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
+      Log.warn('Qos tag is missing in new arrvied message, received only unknown tags.');
       return;
    }
 
@@ -281,7 +281,7 @@ function sendMessageQueue(queueName)
    else {
       Log.info("Frame "+fmq.frame.name+" is not ready. Try it again.");
       if( fmq.retries > 200 ) {                            //more than 200*100ms = 20 sec. not availible
-         Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"], can't flush update queue.");
+         Log.warn("Maximum number of retries reached for frame ["+fmq.frame.name+"], can't flush update queue.");
          fmq.messageQueue.length = 0;
          if (fmq.timeOutHandle != null)
             window.clearTimeout( fmq.timeOutHandle );

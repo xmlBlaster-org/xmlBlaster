@@ -3,11 +3,11 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.11 2000/06/26 13:48:15 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.12 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Property;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -92,7 +92,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
-          Log.warning(ME, "setUp() - login failed");
+          Log.warn(ME, "setUp() - login failed");
       }
       catch (Exception e) {
           Log.error(ME, "setUp() - login failed: " + e.toString());
@@ -152,7 +152,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          subscribeOid = corbaConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
@@ -222,7 +222,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       }
       catch(XmlBlasterException e) {
          if (e.id.equals("TryingReconnect"))
-            Log.warning(ME, e.id + " exception: Lost connection, my connection layer is polling");
+            Log.warn(ME, e.id + " exception: Lost connection, my connection layer is polling");
          else if (e.id.equals("NoConnect"))
             assert("Lost connection, my connection layer is not polling", false);
          else
@@ -241,7 +241,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    public void lostConnection()
    {
-      Log.warning(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
+      Log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
    }
 
 

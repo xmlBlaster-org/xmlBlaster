@@ -3,11 +3,11 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.7 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.8 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.CorbaConnection;
@@ -106,7 +106,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       try {
          xmlBlaster.unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         Log.warning(ME+"-subscribe", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("unSubscribe - XmlBlasterException: " + e.reason, false);
       }
 
@@ -128,7 +128,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         Log.warning(ME+"-subscribe", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);

@@ -3,11 +3,11 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.3 2000/06/26 17:17:54 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.4 2000/09/15 17:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -150,7 +150,7 @@ public class NativeDriver implements I_Driver
 
       String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
       if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-         Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+         Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
          throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
       }
       Log.info(ME, "login for '" + loginName + "' successful.");

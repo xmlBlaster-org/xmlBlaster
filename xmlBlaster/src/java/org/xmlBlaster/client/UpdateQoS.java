@@ -3,11 +3,11 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.12 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.13 2000/09/15 17:16:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.AttributeList;
 
@@ -41,8 +41,8 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public UpdateQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS(" + xmlQoS_literal + ")");
-      //if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS()");
+      if (Log.CALL) Log.call(ME, "Creating UpdateQoS(" + xmlQoS_literal + ")");
+      //if (Log.CALL) Log.call(ME, "Creating UpdateQoS()");
       init(xmlQoS_literal);
    }
 
@@ -96,7 +96,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warning(ME, "Ignoring sent <state> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <state> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found state tag");
          }
@@ -110,7 +110,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warning(ME, "Ignoring sent <sender> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found sender tag");
          }
@@ -124,7 +124,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warning(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found subscriptionId tag");
          }

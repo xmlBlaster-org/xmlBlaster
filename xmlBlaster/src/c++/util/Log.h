@@ -3,7 +3,7 @@ Name:      Log.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: Log.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #define _TERM_WITH_COLORS_
@@ -21,7 +21,7 @@ Version:   $Id: Log.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
  * <p />
  * Note that the layout of this class is for optimum performance and ease of 
  * use.<br />
- * to CALLS/TIME/TRACE/DUMP variables to achieve dead code elimination (see 
+ * to CALL/TIME/TRACE/DUMP variables to achieve dead code elimination (see 
  * code below).
  */
 
@@ -36,7 +36,7 @@ namespace util {
       /**
        * Produce logging output on important method calls.
        * <p />
-       * Switch CALLS mode to <code>false</code> for performance reasons<br />
+       * Switch CALL mode to <code>false</code> for performance reasons<br />
        * or switch it to <code>true</code> for debugging reasons.
        * <p />
        * Setting to false:<br />
@@ -46,7 +46,7 @@ namespace util {
        * to false and comment out the code in method setPreLogLevelCheck(). 
        * Then recompile to achieve real dead code elimination.
        * <p />
-       * The same applies for CALLS, TIME, TRACE and DUMP
+       * The same applies for CALL, TIME, TRACE and DUMP
        */
       
       /**
@@ -57,7 +57,7 @@ namespace util {
       static const int L_ERROR  = 0x2;   // Internal error occured
       static const int L_WARN   = 0x4;   // Warning about user actions
       static const int L_INFO   = 0x8;   // Important informational logs only
-      static const int L_CALLS  = 0x10;  // Trace entry of methods
+      static const int L_CALL  = 0x10;  // Trace entry of methods
       static const int L_TIME   = 0x20;  // Show elapsed milliseconds
       static const int L_TRACE  = 0x40;  // Trace application flow
       static const int L_DUMP   = 0x80;  // Dump internal state
@@ -100,11 +100,11 @@ namespace util {
       /**
        * Output text for different logging levels
        */
-      string timeX, callsX, traceX, plainX, infoX;
+      string timeX, callX, traceX, plainX, infoX;
       string warnX, errorX, panicX, exitX;
 
 #ifdef _TERM_WITH_COLORS_
-      string timeE, callsE, traceE, plainE, infoE;
+      string timeE, callE, traceE, plainE, infoE;
       string warnE, errorE, panicE, exitE;
 #endif // _TERM_WITH_COLORS_
 
@@ -119,7 +119,7 @@ namespace util {
 	 else if (logLevel == "ERROR") return L_ERROR;
 	 else if (logLevel == "WARN" ) return L_WARN;
 	 else if (logLevel == "INFO" ) return L_INFO;
-	 else if (logLevel == "CALLS") return L_CALLS;
+	 else if (logLevel == "CALL") return L_CALL;
 	 else if (logLevel == "TIME" ) return L_TIME;
 	 else if (logLevel == "TRACE") return L_TRACE;
 	 else if (logLevel == "DUMP" ) return L_DUMP;
@@ -137,7 +137,7 @@ namespace util {
       
             
      public:
-      static bool CALLS, TIME, TRACE, DUMP;
+      static bool CALL, TIME, TRACE, DUMP;
       
       
       Log(int args=0, char *argc[]=0);
@@ -161,7 +161,7 @@ namespace util {
        * Set logging level from start parameter and initialize properties.
        * <br />
        * Example:<br />
-       * <pre>jaco org.xmlBlaster.Main +trace +dump +calls +dump</pre>
+       * <pre>jaco org.xmlBlaster.Main -trace true -dump true -call true -dump true</pre>
        *
        */
       void setLogLevel(int argc, char *args[]);
@@ -233,7 +233,7 @@ namespace util {
        * Use this for logging output where the xmlBlaster administrator shall 
        * be informed<br /> for example a login denied event
        */
-      void warning(const string &instance, const string &text);
+      void warn(const string &instance, const string &text);
       
       
       /**
@@ -265,7 +265,7 @@ namespace util {
       /**
        * Tracing when entering methods
        */
-      void calls(const string &instance, const string &text);
+      void call(const string &instance, const string &text);
 
       
       /**

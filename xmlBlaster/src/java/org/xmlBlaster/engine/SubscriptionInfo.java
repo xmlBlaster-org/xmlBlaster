@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.26 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.27 2000/09/15 17:16:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -85,7 +85,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       else
          this.unSubscribeQoS = (UnSubscribeQoS)qos;
 
-      if (Log.CALLS) Log.trace(ME, "Created new SubscriptionInfo " + xmlKey.getUniqueKey());
+      if (Log.CALL) Log.trace(ME, "Created new SubscriptionInfo " + xmlKey.getUniqueKey());
    }
 
 
@@ -133,7 +133,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public void removeSubscribe() throws XmlBlasterException
    {
       if (myHandler == null) {
-         Log.warning(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         Log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
          return;
       }
       myHandler.removeSubscriber(uniqueKey);
@@ -148,7 +148,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (myHandler == null) {
-         Log.warning(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         Log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
          throw new XmlBlasterException(ME + ".NoMessageUnitWrapper", "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
       }
       return myHandler.getMessageUnitWrapper();

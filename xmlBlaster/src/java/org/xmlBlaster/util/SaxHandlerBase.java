@@ -3,11 +3,11 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.7 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import java.io.*;
 import org.xml.sax.*;
@@ -40,7 +40,7 @@ public class SaxHandlerBase extends HandlerBase
     */
    public SaxHandlerBase()
    {
-      if (Log.CALLS) Log.trace(ME, "Creating new SaxHandlerBase");
+      if (Log.CALL) Log.trace(ME, "Creating new SaxHandlerBase");
    }
 
 
@@ -123,7 +123,7 @@ public class SaxHandlerBase extends HandlerBase
    /** Start element. */
    public void startElement(String name, AttributeList attrs)
    {
-      Log.warning(ME, "Please provide your startElement() implementation");
+      Log.warn(ME, "Please provide your startElement() implementation");
    }
 
 
@@ -147,7 +147,7 @@ public class SaxHandlerBase extends HandlerBase
    /** End element. */
    public void endElement(String name)
    {
-      Log.warning(ME, "Please provide your startElement() implementation");
+      Log.warn(ME, "Please provide your startElement() implementation");
    }
 
 
@@ -164,21 +164,21 @@ public class SaxHandlerBase extends HandlerBase
    /** Warning. */
    public void warning(SAXParseException ex)
    {
-      Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      Log.warn(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
    }
 
 
    /** Error. */
    public void error(SAXParseException ex)
    {
-      Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      Log.warn(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
    }
 
 
    /** Fatal error. */
    public void fatalError(SAXParseException ex) throws SAXException
    {
-      Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      Log.warn(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
       throw ex;
    }
 

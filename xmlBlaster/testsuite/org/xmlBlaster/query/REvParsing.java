@@ -2,14 +2,14 @@
 Name:      REvParsing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Comparison between RegExp and XML-Parsing. 
-Version:   $Id: REvParsing.java,v 1.1 2000/09/01 19:09:08 kron Exp $
+Comment:   Comparison between RegExp and XML-Parsing.
+Version:   $Id: REvParsing.java,v 1.2 2000/09/15 17:16:23 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.query;
 
 import org.jutils.io.FileUtil;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.jutils.JUtilsException;
 import org.jutils.time.StopWatch;
@@ -19,8 +19,8 @@ import java.util.Vector;
 import java.io.*;
 
 import org.xml.sax.*;
-import javax.xml.parsers.SAXParserFactory;  
-import javax.xml.parsers.ParserConfigurationException;  
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 
 import gnu.regexp.*;
@@ -59,8 +59,8 @@ public class REvParsing extends HandlerBase
       try{
          expression = new RE("oid=(\'|\"|\\s)(.*)(\'|\")");
          REMatch match[] = expression.getAllMatches(xmlInstance);
-         
-         for(int y=0; y < match.length; y++) 
+
+         for(int y=0; y < match.length; y++)
          {
             if(match != null)
             {
@@ -81,7 +81,7 @@ public class REvParsing extends HandlerBase
          Log.error(ME,"Can't create RE."+e.toString());
       }
 
-      Log.info(ME,"Time for parsing "+countOids+ " oids by Regexp: "+stop.toString());      
+      Log.info(ME,"Time for parsing "+countOids+ " oids by Regexp: "+stop.toString());
    }
 
    /**
@@ -95,7 +95,7 @@ public class REvParsing extends HandlerBase
       factory.setValidating(false);
       StopWatch stop = new StopWatch();
       try
-      { 
+      {
          SAXParser saxParser = factory.newSAXParser();
          saxParser.parse(new File(uri), new REvParsing() );
       } catch (SAXParseException spe) {
@@ -121,7 +121,7 @@ public class REvParsing extends HandlerBase
 
 
    public static void main(String[] arg)
-   { 
+   {
       try {
          XmlBlasterProperty.init(arg);
       } catch(org.jutils.JUtilsException e) {
@@ -145,5 +145,5 @@ public class REvParsing extends HandlerBase
       Log.plain(ME, "");
       System.exit(1);
    }
-} 
+}
 

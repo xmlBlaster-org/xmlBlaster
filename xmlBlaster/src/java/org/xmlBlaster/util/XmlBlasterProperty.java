@@ -3,13 +3,13 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.9 2000/09/13 14:41:32 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.10 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import java.util.Properties;
 

@@ -3,7 +3,7 @@ Name:      UpdateQoS.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
-Version:   $Id: UpdateQoS.h,v 1.3 2000/07/07 17:02:11 laghi Exp $
+Version:   $Id: UpdateQoS.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;
@@ -58,9 +58,9 @@ namespace client {
        */
       UpdateQoS(const string &xmlQoS_literal, int args=0, char *argc[]=0) 
 	 : util::XmlQoSBase(args, argc) {
-	 if (log_.CALLS) log_.calls(me(), string("Creating UpdateQoS(") + 
+	 if (log_.CALL) log_.call(me(), string("Creating UpdateQoS(") + 
 				    xmlQoS_literal + ")");
-	 //if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS()");
+	 //if (Log.CALL) Log.call(ME, "Creating UpdateQoS()");
 	 inState_          = false;
 	 state_            = "";
 	 inSender_         = false;
@@ -120,7 +120,7 @@ namespace client {
 	       string msg = "Ignoring sent <";
 	       msg += string(attrName) + "> attribute ";
 	       msg += string(nameStr) + " = " + valueStr;
-	       log_.warning(me(), msg);
+	       log_.warn(me(), msg);
 	       delete nameStr;
 	       delete valueStr;
 	    }

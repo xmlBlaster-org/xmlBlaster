@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.6 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.7 2000/09/15 17:16:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -21,7 +21,7 @@ import com.jclark.xsl.om.*;
 import java.io.File;
 import java.io.IOException;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import java.util.Properties;
@@ -167,7 +167,7 @@ class DomQueryTest
                try {
                   Log.info(ME, "Found key oid=\"" + getKeyOID(node) + "\"\n");
                } catch (Exception e) {
-                  Log.warning(ME, "Found no xmlBlaster key oid. " + e.toString());
+                  Log.warn(ME, "Found no xmlBlaster key oid. " + e.toString());
                }
             }
          }

@@ -3,11 +3,11 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.11 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: RamTest.java,v 1.12 2000/09/15 17:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
 
@@ -171,10 +171,10 @@ public class RamTest extends TestCase
          Log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/NUM_PUBLISH));
 
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       } catch(Exception e) {
-         Log.warning(ME, "Exception: " + e.toString());
+         Log.warn(ME, "Exception: " + e.toString());
          e.printStackTrace();
          assert("get or publish - Exception: " + e.toString(), false);
       }

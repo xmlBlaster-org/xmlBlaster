@@ -4,12 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Extends ByteArrayOutputStream to provide a way of writing the buffer to
            a DataOutput without re-allocating it.
-Version:   $Id: DbByteArrayOutputStream.java,v 1.1 2000/09/03 18:02:59 kron Exp $
+Version:   $Id: DbByteArrayOutputStream.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.file;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.io.*;
 

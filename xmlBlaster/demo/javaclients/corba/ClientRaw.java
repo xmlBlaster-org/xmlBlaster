@@ -3,11 +3,11 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.1 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.2 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -33,9 +33,9 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientRaw `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw `cat /tmp/NS_Ref`
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientRaw -name "Jeff" `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -name "Jeff" `cat /tmp/NS_Ref`
  * </pre>
  */
 public class ClientRaw
@@ -76,7 +76,7 @@ public class ClientRaw
             if (nc == null) {
                Log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref\n"
-                           + "   jaco javaclients.ClientRaw `cat /tmp/NS_Ref`\n");
+                           + "   jaco javaclients.corba.ClientRaw `cat /tmp/NS_Ref`\n");
                Log.panic(ME, "Read xmlBlaster/INSTALL for help");
             }
             authServer = AuthServerHelper.narrow(nc.resolve(name));
@@ -111,7 +111,7 @@ public class ClientRaw
             xmlBlaster = authServer.login(loginName, passwd, qos);
             Log.info(ME, "Login done");
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
 
 
@@ -126,7 +126,7 @@ public class ClientRaw
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
             Log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
          }
@@ -152,7 +152,7 @@ public class ClientRaw
                String publishOid = xmlBlaster.publish(msgUnit);
                Log.trace(ME, "Returned oid=" + publishOid);
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
             Log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
          }
@@ -168,19 +168,19 @@ public class ClientRaw
          try {
             authServer.logout(xmlBlaster);
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
 
          //----------- Shutdown my callback server -----------------
          try {
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { Log.warning(ME, "POA deactivate callback failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
 
 
          //----------- Stop the POA --------------------------------
          try {
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
 
          //----------- Shutdown the ORB ----------------------------
          orb.shutdown(true);
@@ -227,11 +227,11 @@ class RawCallback implements BlasterCallbackOperations
    final String ME;
 
    /**
-    * Construct it. 
+    * Construct it.
     */
    public RawCallback(java.lang.String name) {
       this.ME = "RawCallback-" + name;
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
    }
 
 

@@ -3,11 +3,11 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.32 2000/07/13 09:45:53 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.33 2000/09/15 17:16:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ClientInfo;
@@ -54,7 +54,7 @@ public class Authenticate
     */
    public Authenticate()
    {
-      if (Log.CALLS) Log.calls(ME, "Entering constructor");
+      if (Log.CALL) Log.call(ME, "Entering constructor");
    }
 
 
@@ -92,7 +92,7 @@ public class Authenticate
       ClientInfo clientInfo = getClientInfoByName(loginName);
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
-         Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
+         Log.warn(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
          try {
             resetClientInfo(clientInfo.getUniqueKey(), false);
          } catch(XmlBlasterException e) {
@@ -143,7 +143,7 @@ public class Authenticate
    public final ClientInfo getOrCreateClientInfoByName(String loginName) throws XmlBlasterException
    {
       if (loginName == null || loginName.length() < 2) {
-         Log.warning(ME + ".InvalidClientName", "Given loginName='" + loginName + "' is invalid");
+         Log.warn(ME + ".InvalidClientName", "Given loginName='" + loginName + "' is invalid");
          throw new XmlBlasterException(ME + ".InvalidClientName", "Your given loginName is null or shorter 2 chars, loginName rejected");
       }
 
@@ -245,7 +245,7 @@ public class Authenticate
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
             ip = addr.getHostAddress();
          } catch (Exception e) {
-            Log.warning(ME, "Can't determin your IP address");
+            Log.warn(ME, "Can't determin your IP address");
             ip = "localhost";
          }
 

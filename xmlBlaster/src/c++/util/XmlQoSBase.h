@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it 
            with SAX
-Version:   $Id: XmlQoSBase.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: XmlQoSBase.h,v 1.3 2000/09/15 17:16:12 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <string>
@@ -46,7 +46,7 @@ namespace util {
 	*/
        XmlQoSBase(int args=0, char *argc[]=0) : SaxHandlerBase(args,argc) {
 	  inQos_ = false;
-	  if (log_.CALLS) log_.trace(me(), "Creating new XmlQoSBase");
+	  if (log_.CALL) log_.trace(me(), "Creating new XmlQoSBase");
        }
 
 

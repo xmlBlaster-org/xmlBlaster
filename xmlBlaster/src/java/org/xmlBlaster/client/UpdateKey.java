@@ -3,11 +3,11 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.15 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.16 2000/09/15 17:16:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -63,7 +63,7 @@ public class UpdateKey extends SaxHandlerBase
     */
    public UpdateKey()
    {
-      if (Log.CALLS) Log.trace(ME, "Creating new UpdateKey");
+      if (Log.CALL) Log.trace(ME, "Creating new UpdateKey");
    }
 
 
@@ -134,9 +134,9 @@ public class UpdateKey extends SaxHandlerBase
                }
             }
             if (keyOid == null)
-               Log.warning(ME, "The oid of the message is missing");
+               Log.warn(ME, "The oid of the message is missing");
             if (contentMime == null)
-               Log.warning(ME, "The contentMime of the message is missing");
+               Log.warn(ME, "The contentMime of the message is missing");
          }
          return true;
       }

@@ -3,12 +3,12 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.5 2000/06/26 07:12:36 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.6 2000/09/15 17:16:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -35,7 +35,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -121,6 +121,6 @@ public class CallbackRmiDriver implements I_CallbackDriver
    {
       // How do we close the socket??
       cb = null;
-      Log.warning(ME, "shutdown implementation is missing");
+      Log.warn(ME, "shutdown implementation is missing");
    }
 }

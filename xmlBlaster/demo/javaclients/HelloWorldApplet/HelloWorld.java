@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.9 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.10 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -35,7 +35,7 @@ import java.awt.*;
  *    application:  jaco javaclients.HelloWorldApplet.HelloWorld
  * </code>
  */
-public class HelloWorld extends Applet implements I_Callback, ActionListener, org.jutils.log.LogListener, WindowListener
+public class HelloWorld extends Applet implements I_Callback, ActionListener, org.jutils.log.LogableDevice, WindowListener
 {
    private static String ME = "HelloWorld";
    public static boolean isApplet = false;     // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
@@ -76,7 +76,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       setUp();
 
       Log.setDefaultLogLevel();
-      Log.addLogListener(this);
+      Log.getLogChannel().addLogDevice(this);
       Log.info(ME, "Connected to xmlBlaster");
 
       validate();
@@ -176,7 +176,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          corbaConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + oid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
       }
    }
 
@@ -190,7 +190,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          // With ForceUpdate, following messages with the same content will be updated
          corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         Log.warning(ME+"-doPublish", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
       }
       Log.info(ME, "Success: Published message");
    }
@@ -234,7 +234,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     * <p />
     * Log output into TextField<br />
     */
-   public void log(String str)
+   public void log(int level, String source, String str)
    {
       logOutput.setText(str + "\n");
    }

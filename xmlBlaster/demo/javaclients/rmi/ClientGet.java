@@ -3,11 +3,11 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.6 2000/06/26 06:47:01 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.7 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -102,7 +102,7 @@ public class ClientGet
                publishOid = blasterServer.publish(sessionId, msgUnit);
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
             Log.trace(ME, "Publishing done" + stop.nice());
          }
@@ -151,7 +151,7 @@ public class ClientGet
                publishOid = blasterServer.publish(sessionId, msgUnit);
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.warn(ME, "XmlBlasterException: " + e.reason);
             }
             Log.trace(ME, "Publishing done" + stop.nice());
          }
@@ -215,7 +215,7 @@ public class ClientGet
          java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
          hostname = addr.getHostName();
       } catch (Exception e) {
-         Log.warning(ME, "Can't determin your hostname");
+         Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
       hostname = XmlBlasterProperty.get("rmi.hostname", hostname);

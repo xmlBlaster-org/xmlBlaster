@@ -3,11 +3,11 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.33 2000/07/13 09:47:30 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.34 2000/09/15 17:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
 import org.jutils.text.StringHelper;
 
@@ -183,7 +183,7 @@ public class HttpPushHandler
     */
    private void cleanup()
    {
-      if (Log.CALLS) Log.calls(ME, "Entering cleanup(" + sessionId + ") ...");
+      if (Log.CALL) Log.call(ME, "Entering cleanup(" + sessionId + ") ...");
       try {
          ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
          if (pc != null) {
@@ -192,7 +192,7 @@ public class HttpPushHandler
          }
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + Log.getStackTrace());
+         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.text.StackTrace.getStackTrace());
       }
    }
 
@@ -306,7 +306,7 @@ public class HttpPushHandler
     */
    private void pushToBrowser(boolean confirm) throws ServletException, IOException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering pushToBrowser() ...");
+      if (Log.CALL) Log.call(ME, "Entering pushToBrowser() ...");
 
       synchronized(pushQueue) {
          if(pushQueue.size() == 0)
@@ -442,7 +442,7 @@ public class HttpPushHandler
       retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");
       retStr.append("</body></html>\n");
-      Log.warning("HttpPushHandler", "Sending alert to browser: " + text);
+      Log.warn("HttpPushHandler", "Sending alert to browser: " + text);
       return retStr.toString();
    }
 
@@ -528,7 +528,7 @@ public class HttpPushHandler
       private long counter = 0L;
 
       /**
-       * Response from the browser on our ping. 
+       * Response from the browser on our ping.
        * <p />
        * Sometimes the browser is fine but suddenly a pong is missing,
        * for example ... "refresh-2084", "refresh-2086", ...<br />
@@ -554,10 +554,10 @@ public class HttpPushHandler
          this.ME = "HttpPingThread-" + loginName;
          this.pushHandler = pushHandler;
          this.PING_INTERVAL = pingInterval;
-         if (Log.CALLS) Log.calls(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
+         if (Log.CALL) Log.call(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         if (Log.CALLS) Log.calls(ME, "Pinging browser ...");
+         if (Log.CALL) Log.call(ME, "Pinging browser ...");
          while (pingRunning) {
 
             try {
@@ -572,7 +572,7 @@ public class HttpPushHandler
                //if (false) {  //// Switched off !!!!!
                if (waitForPong > 2) {  // Allow three pongs delay over slow connections
                // This ping doesn't work over the internet??????
-                  Log.warning(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
+                  Log.warn(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
                   pushHandler.cleanup();
                   stopThread();
                }
@@ -584,7 +584,7 @@ public class HttpPushHandler
                }
             } catch(Exception e) {
                //error handling: browser closed connection.
-               Log.warning(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
+               Log.warn(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
                pushHandler.cleanup();
                stopThread();
             }

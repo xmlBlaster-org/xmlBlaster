@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.8 2000/08/03 13:36:08 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.9 2000/09/15 17:16:19 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.jutils.JUtilsException;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.I_Timeout;
 import org.jutils.time.Timeout;
@@ -213,7 +213,7 @@ public class NamedConnectionPool
 
 
    /**
-    * Inner class, every user of the Named pool has its own connection pool. 
+    * Inner class, every user of the Named pool has its own connection pool.
     * <p />
     * If the resource pool is exhausted, the request will poll for a connection
     * 5 times, with 1 sec sleeping in between.<br />
@@ -351,7 +351,7 @@ public class NamedConnectionPool
             }
             catch (JUtilsException e) {
                if (e.id.equals("ResourceExhaust") && ii < maxResourceExhaustRetries) {
-                  if (ii == 0) Log.warning(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+                  if (ii == 0) Log.warn(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                   Sleeper.sleep(resourceExhaustSleepGap);
                   ii++;
                }
@@ -388,7 +388,7 @@ public class NamedConnectionPool
          if (Log.TRACE) Log.trace(ME, "Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
          synchronized(meetingPoint) {
             if (poolManager.getNumBusy() != 0) {
-               Log.warning(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
+               Log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
                synchronized(timeoutHandle) {
                   timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
                }

@@ -3,7 +3,7 @@ Name:      DefaultCallback.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
-Version:   $Id: DefaultCallback.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: DefaultCallback.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_DEFAULTCALLBACK_H
@@ -57,7 +57,7 @@ namespace client {
 	 boss_         = boss;
 	 loginName_    = name;
 	 // cache_ = cache;
-	 if (log_.CALLS) log_.trace(me(),"Entering constructor with argument");
+	 if (log_.CALL) log_.trace(me(),"Entering constructor with argument");
       }
 
       DefaultCallback(const DefaultCallback &el) : log_() {
@@ -93,16 +93,16 @@ namespace client {
        */
       void update(const serverIdl::MessageUnitArr& msgUnitArr) {
 
-	 if (log_.CALLS) {
+	 if (log_.CALL) {
 	    char buffer[256];
 	    ostrstream out(buffer, 255);
 	    out << "Receiving update of " << msgUnitArr.length();
 	    out << " message ..." << (char)0;
-	    log_.calls(me(), buffer);
+	    log_.call(me(), buffer);
 	 }
 	 
 	 if (msgUnitArr.length() == 0) {
-	    log_.warning(me(), "Entering update() with 0 messages");
+	    log_.warn(me(), "Entering update() with 0 messages");
 	    return;
 	 }
 	 for (int i=0; i < msgUnitArr.length(); i++) {
@@ -146,7 +146,7 @@ namespace client {
 				msgUnit.content.length(), *updateQoS); 
 		  // Call my boss
 	       }
-	       else log_.warning(me(), "can not update: no callback defined");
+	       else log_.warn(me(), "can not update: no callback defined");
 	    }
 	    delete updateKey;
 	    delete updateQoS;

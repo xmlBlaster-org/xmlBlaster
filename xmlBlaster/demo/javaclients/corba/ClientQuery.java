@@ -3,11 +3,11 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.2 2000/06/26 06:40:28 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -25,7 +25,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke example:<br />
  * <pre>
- *    jaco javaclients.ClientQuery -queryXpath "//key"
+ *    jaco javaclients.corba.ClientQuery -queryXpath "//key"
  * </pre>
  */
 public class ClientQuery

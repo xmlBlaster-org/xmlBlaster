@@ -3,12 +3,12 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.1 2000/07/02 18:06:47 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.2 2000/09/15 17:16:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
@@ -54,7 +54,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
 
 
    /**
-    * This sends the SQL query to the JDBC service for processing. 
+    * This sends the SQL query to the JDBC service for processing.
     * <p />
     * This method is enforced by interface I_CallbackDriver and is called by xmlBlaster
     * @exception e.id="CallbackFailed", should be caught and handled appropriate

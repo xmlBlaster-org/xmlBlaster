@@ -3,11 +3,11 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.14 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.15 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -154,7 +154,7 @@ public class TestLogin extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warning(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
@@ -180,7 +180,7 @@ public class TestLogin extends TestCase implements I_Callback
          publishOid = senderConnection.publish(msgUnit);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
-         Log.warning(ME+"-testPublish", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-testPublish", "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -227,7 +227,7 @@ public class TestLogin extends TestCase implements I_Callback
          MessageUnit mu = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid = secondConnection.publish(mu);
       } catch(XmlBlasterException e) {
-         Log.warning(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
+         Log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
          assert("second - publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(1000L, 1);              // message arrived?
@@ -266,7 +266,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
       numReceived++;
    }
 

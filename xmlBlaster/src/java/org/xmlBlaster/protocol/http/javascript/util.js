@@ -94,7 +94,7 @@ function debugF(level, str, currentFrame)
  * Logging of errors/warnings/infos.
  * Example:
  *    Log.error("The variable listenerList is empty.");
- *    Log.warning("Performance over internet is slow.");
+ *    Log.warn("Performance over internet is slow.");
  *    Log.info("Login granted.");
  *    Log.trace("Entering ping() method.");
 */
@@ -425,7 +425,7 @@ function LogHandler()
 /**
  * The log handler, use this to invoke your logging output.
  * Example:
- *    Log.warning("Performance over internet is slow.");
+ *    Log.warn("Performance over internet is slow.");
  */
 var Log = new LogHandler();
 

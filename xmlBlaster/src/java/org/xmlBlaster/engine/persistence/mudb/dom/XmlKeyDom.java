@@ -2,8 +2,8 @@
 Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Stores the xmlkey in a DOM. 
-Version:   $Id: XmlKeyDom.java,v 1.1 2000/09/03 18:02:23 kron Exp $
+Comment:   Stores the xmlkey in a DOM.
+Version:   $Id: XmlKeyDom.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.dom;
 
@@ -14,15 +14,10 @@ import java.util.*;
 import org.w3c.dom.*;
 
 import org.xmlBlaster.util.*;
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.engine.PMessageUnit;
-
-import org.xmlBlaster.engine.xmldb.*;
-import org.xmlBlaster.engine.xmldb.file.*;
-import org.xmlBlaster.engine.xmldb.dom.*;
-import org.xmlBlaster.engine.xmldb.cache.*;
 
 import com.jclark.xsl.om.*;
 import com.jclark.xsl.dom.XMLProcessorImpl;
@@ -34,7 +29,7 @@ import com.sun.xml.tree.XmlDocument;
 import com.sun.xml.tree.ElementNode;
 import gnu.regexp.*;
 
-public class XmlKeyDom 
+public class XmlKeyDom
 {
 
    private static final String ME = "XmlKeyDom";
@@ -75,7 +70,7 @@ public class XmlKeyDom
       }
       if(!keyExists(pmu.oid)){
          _oidTable.addElement(pmu.oid);
-      }else{   
+      }else{
          return;
       }
 
@@ -100,7 +95,7 @@ public class XmlKeyDom
       return nl.getLength();
    }
 
-   //updates a node in the XmlKeyDom 
+   //updates a node in the XmlKeyDom
    public final int update(/*Message*/)
    {
       /** Update Key and MessageUnit **/
@@ -122,7 +117,7 @@ public class XmlKeyDom
          if(oid.equals(getOid))
          {
             _rootNode.removeChild(node);
-            break;   
+            break;
          }
       }
       _oidTable.remove(oid);
@@ -185,13 +180,13 @@ public class XmlKeyDom
    private org.w3c.dom.Node getKeyNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
       if (node == null) {
-         Log.warning(ME+".NoParentNode", "no parent node found");
+         Log.warn(ME+".NoParentNode", "no parent node found");
          throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
       }
       String nodeName = node.getNodeName();
 
       if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
-         Log.warning(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+         Log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
          throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
       }
 

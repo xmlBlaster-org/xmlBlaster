@@ -3,11 +3,11 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.8 2000/06/25 18:32:40 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.9 2000/09/15 17:16:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -152,7 +152,7 @@ public class SubscribeMessage implements I_Callback
          corbaConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
          if (Log.TRACE) Log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
+         Log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
       }
    }
 

@@ -3,12 +3,12 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.63 2000/07/12 12:48:04 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.64 2000/09/15 17:16:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.63 $
+ * @version $Revision: 1.64 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -175,7 +175,7 @@ public class CorbaConnection implements I_InvocationRecorder
          XmlBlasterProperty.addArgs2Props(args); // enforce that the args are added to the xmlBlaster.properties hash table
       }
       catch (JUtilsException e) {
-         Log.warning(ME, e.toString());
+         Log.warn(ME, e.toString());
       }
       if (orb == null) // Thread leak !!!
          orb = org.omg.CORBA.ORB.init(args, null);
@@ -234,7 +234,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
-      if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
+      if (Log.CALL) Log.call(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
       this.clientCallback = connCallback;
       this.retryInterval = retryInterval;
       this.pingInterval = pingInterval;
@@ -256,7 +256,7 @@ public class CorbaConnection implements I_InvocationRecorder
    {
       if (cache != null)
          return; // Is initialized already
-      if (Log.CALLS) Log.calls(ME, "Initializing cache: size=" + size);
+      if (Log.CALL) Log.call(ME, "Initializing cache: size=" + size);
       cache = new BlasterCache( this, size );
       Log.info(ME,"BlasterCache has been initialized with size="+size);
    }
@@ -316,7 +316,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    NamingContext getNamingService() throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "getNamingService() ...");
+      if (Log.CALL) Log.call(ME, "getNamingService() ...");
       if (nameService != null)
          return nameService;
 
@@ -333,12 +333,12 @@ public class CorbaConnection implements I_InvocationRecorder
                        " - try to specify '-iorFile <fileName>' if server is running on same host (not using any naming service)\n" +
                        " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact your system administrator to start a naming service";
-         Log.warning(ME + ".NoNameService", text);
+         Log.warn(ME + ".NoNameService", text);
          throw new XmlBlasterException("NoNameService", text);
       }
       if (nameServiceObj == null) {
          if (!isReconnectPolling)
-            Log.warning(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
+            Log.warn(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
          throw new XmlBlasterException("NoNameService", "Can't access naming service (null), is there any running?");
       }
       if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
@@ -354,7 +354,7 @@ public class CorbaConnection implements I_InvocationRecorder
                              // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
-         Log.warning(ME + ".NoNameService", "Can't access naming service");
+         Log.warn(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException("NoNameService", e.toString());
       }
    }
@@ -381,7 +381,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    AuthServer getAuthenticationService() throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "getAuthenticationService() ...");
+      if (Log.CALL) Log.call(ME, "getAuthenticationService() ...");
       if (authServer != null) {
          return authServer;
       }
@@ -422,7 +422,7 @@ public class CorbaConnection implements I_InvocationRecorder
          }
          catch(Exception e) {
             if (!isReconnectPolling)
-               Log.warning(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
+               Log.warn(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
          }
       }
       if (Log.TRACE) Log.trace(ME, "No -iorHost / iorPort ...");
@@ -448,7 +448,7 @@ public class CorbaConnection implements I_InvocationRecorder
          }
          catch(Exception e) {
             if (isInFailSaveMode()) {
-               if (!isReconnectPolling)  Log.warning(ME + ".NoAuthService", text);
+               if (!isReconnectPolling)  Log.warn(ME + ".NoAuthService", text);
             }
             else {
                Log.error(ME + ".NoAuthService", text);
@@ -500,9 +500,9 @@ public class CorbaConnection implements I_InvocationRecorder
    public synchronized Server login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
    {
       this.ME = "CorbaConnection-" + loginName;
-      if (Log.CALLS) Log.calls(ME, "login() ...");
+      if (Log.CALL) Log.call(ME, "login() ...");
       if (xmlBlaster != null) {
-         Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
+         Log.warn(ME, "You are already logged in, returning cached handle on xmlBlaster");
          return xmlBlaster;
       }
 
@@ -537,7 +537,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    private void loginRaw() throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
+      if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
       try {
          AuthServer authServer = getAuthenticationService();
          xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
@@ -636,15 +636,15 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public synchronized boolean logout()
    {
-      if (Log.CALLS) Log.calls(ME, "logout() ...");
+      if (Log.CALL) Log.call(ME, "logout() ...");
 
       killPing();
 
       if (xmlBlaster == null) {
          if (!isInFailSaveMode() || recorder.size() == 0)
-            Log.warning(ME, "No logout, you are not logged in");
+            Log.warn(ME, "No logout, you are not logged in");
          else
-            Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
+            Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
          shutdownCallbackServer();
          // Thread leak !!!
          // orb.shutdown(true);
@@ -661,9 +661,9 @@ public class CorbaConnection implements I_InvocationRecorder
          xmlBlaster = null;
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
+         Log.warn(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
       } catch(Exception e) {
-         Log.warning(ME, e.toString());
+         Log.warn(ME, e.toString());
          e.printStackTrace();
       }
 
@@ -730,7 +730,7 @@ public class CorbaConnection implements I_InvocationRecorder
       if (rootPOA != null && callback != null) {
          try {
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { Log.warning(ME, "POA deactivate callback failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
          callback = null;
       }
 
@@ -739,7 +739,7 @@ public class CorbaConnection implements I_InvocationRecorder
       if (rootPOA != null) {
          try {
             rootPOA.the_POAManager().deactivate(true, true);
-         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
          rootPOA = null;
       }
       */
@@ -781,7 +781,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "subscribe() ...");
+      if (Log.CALL) Log.call(ME, "subscribe() ...");
       try {
          return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -800,7 +800,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
+      if (Log.CALL) Log.call(ME, "unSubscribe() ...");
       try {
          getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -845,7 +845,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "publishArr() ...");
+      if (Log.CALL) Log.call(ME, "publishArr() ...");
       try {
          return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -865,7 +865,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "erase() ...");
+      if (Log.CALL) Log.call(ME, "erase() ...");
       try {
          return getXmlBlaster().erase(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -885,7 +885,7 @@ public class CorbaConnection implements I_InvocationRecorder
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
    {
       MessageUnit[] units = null;
-      if (Log.CALLS) Log.calls(ME, "get() ...");
+      if (Log.CALL) Log.call(ME, "get() ...");
       try {
          //Is cache installed?
          if (cache != null) {
@@ -922,7 +922,7 @@ public class CorbaConnection implements I_InvocationRecorder
          return;
       try {
          getXmlBlaster().ping();
-         if (Log.CALLS) Log.calls(ME, "ping success() ...");
+         if (Log.CALL) Log.call(ME, "ping success() ...");
          return;
       } catch(Exception e) {
          if (Log.TRACE) Log.trace(ME, "ping failed, xmlBlaster seems to be down, try to reactivate connection ...");
@@ -939,7 +939,7 @@ public class CorbaConnection implements I_InvocationRecorder
    public int queueSize()
    {
       if (recorder == null) {
-         Log.warning(ME, "Internal error: don't call queueSize(), you are not in fail save mode");
+         Log.warn(ME, "Internal error: don't call queueSize(), you are not in fail save mode");
          return 0;
       }
 
@@ -950,7 +950,7 @@ public class CorbaConnection implements I_InvocationRecorder
    public void flushQueue() throws XmlBlasterException
    {
       if (recorder == null) {
-         Log.warning(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
+         Log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
          return;
       }
 
@@ -961,7 +961,7 @@ public class CorbaConnection implements I_InvocationRecorder
    public void resetQueue()
    {
       if (recorder == null) {
-         Log.warning(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
+         Log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
          return;
       }
 
@@ -988,7 +988,7 @@ public class CorbaConnection implements I_InvocationRecorder
          this.corbaConnection = corbaConnection;
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
-         if (Log.CALLS) Log.calls(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
+         if (Log.CALL) Log.call(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
       }
 
       public void run() {
@@ -1001,7 +1001,7 @@ public class CorbaConnection implements I_InvocationRecorder
                corbaConnection.isReconnectPolling = false;
                return;
             } catch(Exception e) {
-               Log.warning(ME, "No connection established, the xmlBlaster server still seems to be down");
+               Log.warn(ME, "No connection established, the xmlBlaster server still seems to be down");
                try {
                   Thread.currentThread().sleep(RETRY_INTERVAL);
                } catch (InterruptedException i) { }
@@ -1029,7 +1029,7 @@ public class CorbaConnection implements I_InvocationRecorder
       PingThread(CorbaConnection corbaConnection, long pingInterval) {
          this.corbaConnection = corbaConnection;
          this.PING_INTERVAL = pingInterval;
-         if (Log.CALLS) Log.calls(ME, "Entering constructor ping interval=" + pingInterval + " millis");
+         if (Log.CALL) Log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
       }
       public void run() {
          Log.info(ME, "Pinging xmlBlaster server");
@@ -1093,7 +1093,7 @@ class DefaultCallback implements I_CallbackRaw, org.xmlBlaster.protocol.corba.cl
       this.boss = boss;
       this.loginName = name;
       this.cache = cache;
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
    }
 
 
@@ -1134,14 +1134,14 @@ class DefaultCallback implements I_CallbackRaw, org.xmlBlaster.protocol.corba.cl
    public void update(MessageUnit [] msgUnitArr)
    {
       if (msgUnitArr == null) {
-         Log.warning(ME, "Entering update() with null array.");
+         Log.warn(ME, "Entering update() with null array.");
          return;
       }
       if (msgUnitArr.length == 0) {
-         Log.warning(ME, "Entering update() with 0 messages.");
+         Log.warn(ME, "Entering update() with 0 messages.");
          return;
       }
-      if (Log.CALLS) Log.calls(ME, "Receiving update of " + msgUnitArr.length + " message ...");
+      if (Log.CALL) Log.call(ME, "Receiving update of " + msgUnitArr.length + " message ...");
 
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];

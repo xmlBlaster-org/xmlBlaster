@@ -15,8 +15,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine/persistence/mudb
 #------------------------------------------------------------------------------
 SUB_DIRS = dom file cache 
 LOCAL_FILES = \
-      $(CLASS_DIR)/MuDb.class \
-      $(CLASS_DIR)/MuDbDriver.class
+      $(CLASS_DIR)/MuDb.class
 
 #------------------------------------------------------------------------------
 

@@ -3,12 +3,12 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.5 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.6 2000/09/15 17:16:17 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.AttributeList;
 import java.util.Vector;

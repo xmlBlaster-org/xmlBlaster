@@ -3,11 +3,11 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.39 2000/06/25 20:15:40 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.40 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xml.sax.InputSource;
 
@@ -147,7 +147,7 @@ public class XmlKeyBase
       this.isPublish = isPublish;
       queryType = (isPublish) ? PUBLISH : EXACT_QUERY;
 
-      if (Log.CALLS) Log.trace(ME, "Creating new XmlKey for isPublish=" + isPublish);
+      if (Log.CALL) Log.trace(ME, "Creating new XmlKey for isPublish=" + isPublish);
 
       this.xmlKey_literal = xmlKey_literal.trim();
 
@@ -450,7 +450,7 @@ public class XmlKeyBase
                else if (val.equalsIgnoreCase("REGEX"))
                   queryType = REGEX_QUERY;
                else {
-                  Log.warning(ME+".UnknownQueryType", "Unknown queryType " + val + ", setting default to EXACT");
+                  Log.warn(ME+".UnknownQueryType", "Unknown queryType " + val + ", setting default to EXACT");
                   //throw new XmlBlasterException(ME+".UnknownQueryType", "Unknown queryType " + val + ", your xmlKey is invalid");
                }
             }
@@ -463,7 +463,7 @@ public class XmlKeyBase
       }
 
       if (isPublish && contentMime == null) {
-         Log.warning(ME+".MissingContentMime", "Missing \"contentMime\" attribute in \"key\" tag");
+         Log.warn(ME+".MissingContentMime", "Missing \"contentMime\" attribute in \"key\" tag");
          contentMime = "text/plain";
       }
 
@@ -501,8 +501,8 @@ public class XmlKeyBase
          xmlToDom.mergeRootNode(merger);
       }
       else {
-         Log.plain(Log.getStackTrace());
-         Log.warning(ME, "You should call mergeNode only for publish");
+         Log.plain(org.jutils.text.StackTrace.getStackTrace());
+         Log.warn(ME, "You should call mergeNode only for publish");
       }
    }
 
@@ -592,7 +592,7 @@ public class XmlKeyBase
          sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
          sb.append(offset).append("</XmlKeyBase>\n");
       } catch (XmlBlasterException e) {
-         Log.warning(ME, "Caught exception in printOn()");
+         Log.warn(ME, "Caught exception in printOn()");
       }
       return sb;
    }

@@ -3,12 +3,12 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.10 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.11 2000/09/15 17:16:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.List;
 import java.util.LinkedList;
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -48,7 +48,7 @@ public class ClientUpdateQueue
    public ClientUpdateQueue()
    {
       MAX_BYTES = 100 * 1000L;  // 100 kByte is maximum queue size
-      if (Log.CALLS) Log.calls(ME, "Creating new ClientUpdateQueue ...");
+      if (Log.CALL) Log.call(ME, "Creating new ClientUpdateQueue ...");
       init();
    }
 
@@ -60,7 +60,7 @@ public class ClientUpdateQueue
    public ClientUpdateQueue(long maxBytes)
    {
       this.MAX_BYTES = maxBytes;
-      if (Log.CALLS) Log.calls(ME, "Creating new ClientUpdateQueue(" + maxBytes + ") ...");
+      if (Log.CALL) Log.call(ME, "Creating new ClientUpdateQueue(" + maxBytes + ") ...");
       init();
    }
 
@@ -149,7 +149,7 @@ public class ClientUpdateQueue
     */
    public final long getBytesUsed() throws XmlBlasterException
    {
-      Log.warning(ME, "Sorry, getBytesUsed() not yet implemented");
+      Log.warn(ME, "Sorry, getBytesUsed() not yet implemented");
       return currentBytes;
    }
 

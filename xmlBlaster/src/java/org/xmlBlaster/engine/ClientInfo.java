@@ -3,12 +3,12 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.39 2000/07/03 13:40:01 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.40 2000/09/15 17:16:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Property;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.39 $
+ * @version $Revision: 1.40 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -68,7 +68,7 @@ public class ClientInfo
    {
       instanceId = instanceCounter;
       instanceCounter++;
-      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
+      if (Log.CALL) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
       notifyAboutLogin(authInfo);
    }
 
@@ -82,7 +82,7 @@ public class ClientInfo
    {
       instanceId = instanceCounter;
       instanceCounter++;
-      if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
+      if (Log.CALL) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
       this.loginName = loginName;
    }
 
@@ -174,7 +174,7 @@ public class ClientInfo
       }
 
       if (!destination.forceQueuing()) {
-         Log.warning(ME+".NotLoggedIn", "Can't deliver message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client '" + getLoginName() + "', <ForceQueing> is not set, message is lost.");
+         Log.warn(ME+".NotLoggedIn", "Can't deliver message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client '" + getLoginName() + "', <ForceQueing> is not set, message is lost.");
          throw new XmlBlasterException(ME+".NotLoggedIn", "Can't deliver message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client '" + getLoginName() + "', <ForceQueing> is not set, message is lost.");
       }
 
@@ -350,7 +350,7 @@ public class ClientInfo
             MessageUnitWrapper msgUnitWrapper = messageQueue.pull();
             if (msgUnitWrapper == null)
                break;
-            Log.warning(ME, "Logout of client " + toString() + " wich still has messages in the queue");
+            Log.warn(ME, "Logout of client " + toString() + " wich still has messages in the queue");
             msgUnitWrapper = null;
          }
          messageQueue = null;

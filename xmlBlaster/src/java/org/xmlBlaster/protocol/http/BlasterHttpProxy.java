@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.21 2000/07/12 12:55:27 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.22 2000/09/15 17:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -11,7 +11,7 @@ import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.*;
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class BlasterHttpProxy
 {
@@ -133,7 +133,7 @@ public class BlasterHttpProxy
     */
    public static void cleanupByLoginName(String loginName)
    {
-      if (Log.CALLS) Log.calls(ME, "Entering cleanupByLoginName(" + loginName + ")");
+      if (Log.CALL) Log.call(ME, "Entering cleanupByLoginName(" + loginName + ")");
       synchronized(proxyConnections) {
          proxyConnections.remove(loginName);
       }

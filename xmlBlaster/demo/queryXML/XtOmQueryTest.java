@@ -13,12 +13,12 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.5 2000/06/19 15:48:36 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.6 2000/09/15 17:16:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import java.io.File;
@@ -162,9 +162,9 @@ class XtOmQueryTest
             com.jclark.xsl.om.Node parent = node.getParent();
 
             if (parent == null)
-               Log.warning(ME, "No parent");
+               Log.warn(ME, "No parent");
             else {
-               Log.warning(ME, "Got parent");
+               Log.warn(ME, "Got parent");
             }
          }
       }

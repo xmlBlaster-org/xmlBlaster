@@ -3,11 +3,11 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.9 2000/07/11 09:26:24 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.10 2000/09/15 17:16:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 

@@ -3,11 +3,11 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.12 2000/06/26 07:12:34 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.13 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -147,7 +147,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          try {
             String str = xmlBlaster.publish(msgUnit);
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Publishing done");
          input.setText("");
@@ -218,7 +218,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          try {
             xmlBlaster.subscribe(xmlKey, "<qos></qos>");
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to '" + publishOid + "' ...");
       }
@@ -235,7 +235,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       try {
          xmlBlaster.unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
       }
       Log.info(ME, "Unsubscribe done");
 

@@ -3,7 +3,7 @@ Name:      UpdateKey.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.h,v 1.3 2000/07/07 17:02:11 laghi Exp $
+Version:   $Id: UpdateKey.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_UPDATEKEY_H
@@ -74,7 +74,7 @@ namespace client {
 	 keyOid_              = "";
 	 contentMime_         = "text/plain";
 	 contentMimeExtended_ = "";
-	 if (log_.CALLS) log_.trace(me(), "Creating new UpdateKey");
+	 if (log_.CALL) log_.trace(me(), "Creating new UpdateKey");
       }
 
 
@@ -163,9 +163,9 @@ namespace client {
 	       delete attrName;
 	    }
 	    if (keyOid_ == "")
-	       log_.warning(me(), "The oid of the message is missing");
+	       log_.warn(me(), "The oid of the message is missing");
 	    if (contentMime_ == "")
-	       log_.warning(me(), 
+	       log_.warn(me(), 
 			    "The contentMime of the message is missing");
 	    return true;
 	 }

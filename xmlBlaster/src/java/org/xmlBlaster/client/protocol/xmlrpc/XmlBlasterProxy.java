@@ -2,8 +2,8 @@
 Name:      XmlBlasterProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM 
-Version:   $Id: XmlBlasterProxy.java,v 1.2 2000/09/01 21:22:54 laghi Exp $
+Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
+Version:   $Id: XmlBlasterProxy.java,v 1.3 2000/09/15 17:16:14 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -11,7 +11,7 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -31,14 +31,14 @@ import helma.xmlrpc.XmlRpcException;
 
 /**
  * This is an xmlBlaster proxy. It implements the interface I_XmlBlaster
- * through AbstractCallbackExtended. The client can invoke it as if the 
+ * through AbstractCallbackExtended. The client can invoke it as if the
  * xmlBlaster would be on the same VM, making this way the xml-rpc protocol
  * totally transparent.
  * <p />
  * @author michele.laghi@attglobal.net
  */
 public class XmlBlasterProxy extends AbstractCallbackExtended
-   implements org.xmlBlaster.protocol.I_XmlBlaster   
+   implements org.xmlBlaster.protocol.I_XmlBlaster
 {
    private String ME = "XmlBlasterProxy";
    protected String url = "http://localhost:8080"; // address of xmlBlaster server
@@ -50,10 +50,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * One instance of this represents one xmlBlaster server.
     * @param url The complete url of the xmlBlaster server. For example
     *            "http://localhost:8080".
-    * @param callbackPort The port on which this proxy listens for incoming 
+    * @param callbackPort The port on which this proxy listens for incoming
     *                   callbacks (for example: 8081).
     */
-   public XmlBlasterProxy (String url, int callbackPort) 
+   public XmlBlasterProxy (String url, int callbackPort)
       throws XmlBlasterException
    {
       try {
@@ -76,7 +76,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          Log.error(ME+".constructor", "IO Exception: " + e1.toString());
          throw new XmlBlasterException("IO Exception", e1.toString());
       }
-      
+
    }
 
 
@@ -85,7 +85,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String subscribe (String sessionId, XmlKey xmlKey, 
+   public final String subscribe (String sessionId, XmlKey xmlKey,
                                   SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
       // convert xmlKey & subscribeQoS to strings (xml literals)
@@ -101,11 +101,11 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * Subscribe to messages.
     * <p />
     */
-   public final String subscribe (String sessionId, String xmlKey_literal, 
+   public final String subscribe (String sessionId, String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
    {
 
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe: id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering subscribe: id=" + sessionId);
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
@@ -117,7 +117,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
       catch (ClassCastException e) {
          Log.error(ME+".subscribe", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException("return value not a valid String", 
+         throw new XmlBlasterException("return value not a valid String",
                                        "Class Cast Exception");
       }
 
@@ -138,7 +138,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void unSubscribe (String sessionId, XmlKey xmlKey, 
+   public final void unSubscribe (String sessionId, XmlKey xmlKey,
                                   UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
       // convert XmlKey & UnSubscribeQoS to literals
@@ -154,10 +154,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void unSubscribe (String sessionId, String xmlKey_literal, 
+   public final void unSubscribe (String sessionId, String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unsubscribe(): id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering unsubscribe(): id=" + sessionId);
 
       try {
          // prepare the argument list:
@@ -165,7 +165,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          args.addElement(sessionId);
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
-         
+
          xmlRpcClient.execute("xmlBlaster.unSubscribe", args);
       }
 
@@ -185,14 +185,14 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    /**
     * Publish a message.
     */
-   public final String publish (String sessionId, XmlKey xmlKey, MessageUnit msgUnit, 
+   public final String publish (String sessionId, XmlKey xmlKey, MessageUnit msgUnit,
                                 PublishQoS publishQoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish(): id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering publish(): id=" + sessionId);
 
       String xmlKey_literal = xmlKey.toXml();
       String publishQoS_literal = publishQoS.toXml();
-      
+
       try {
          // convert from MessageUnit to Vector
          Vector msgUnitWrap = ProtoConverter.messageUnit2Vector(msgUnit);
@@ -227,7 +227,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String publish (String sessionId, MessageUnit msgUnit) 
+   public final String publish (String sessionId, MessageUnit msgUnit)
       throws XmlBlasterException
    {
       XmlKey xmlKey = new XmlKey(msgUnit.xmlKey, true);
@@ -244,31 +244,31 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] publishArr (String sessionId, MessageUnit[] msgUnitArr) 
+   public final String[] publishArr (String sessionId, MessageUnit[] msgUnitArr)
       throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publishArr: id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
          Log.error(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments", 
+         throw new XmlBlasterException(ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
 
       try {
-         
+
          Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
          // prepare the argument list (as a Vector)
          Vector args = new Vector();
          args.addElement(sessionId);
          args.addElement(msgUnitArrWrap);
-         
+
          Vector returnVectorWrap = (Vector)xmlRpcClient.execute("xmlBlaster.publishArr", args);
-         
+
       // re-convert the resuts to String[]
          return ProtoConverter.vector2StringArray(returnVectorWrap);
       }
-      
+
       catch (ClassCastException e) {
          Log.error(ME+".publishArr", "not a valid String[]: " + e.toString());
          throw new XmlBlasterException("Not a valid String[]", "Class Cast Exception");
@@ -292,7 +292,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase (String sessionId, XmlKey xmlKey, EraseQoS eraseQoS) 
+   public final String[] erase (String sessionId, XmlKey xmlKey, EraseQoS eraseQoS)
       throws XmlBlasterException
    {
 
@@ -309,10 +309,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase (String sessionId, String xmlKey_literal, String qos_literal) 
+   public final String[] erase (String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering erase() id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering erase() id=" + sessionId);
 
       try {
          // prepare the argument list (as a Vector) for xml-rpc
@@ -320,10 +320,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          args.addElement(sessionId);
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
-         
+
          Vector vec = (Vector)xmlRpcClient.execute("xmlBlaster.erase", args);
          return ProtoConverter.vector2StringArray(vec);
-         
+
       }
 
       catch (ClassCastException e) {
@@ -350,7 +350,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (String sessionId, XmlKey xmlKey, GetQoS getQoS) 
+   public final MessageUnit[] get (String sessionId, XmlKey xmlKey, GetQoS getQoS)
       throws XmlBlasterException
    {
       String xmlKey_literal = xmlKey.toXml();
@@ -366,23 +366,23 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (String sessionId, String xmlKey_literal, 
+   public final MessageUnit[] get (String sessionId, String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+      if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
 
       try {
          Vector args = new Vector();
          args.addElement(sessionId);
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
-         
+
          Vector retVector = (Vector)xmlRpcClient.execute("xmlBlaster.get", args);
          // convert the vector of vectors to a MessageUnit[] type
          return ProtoConverter.vector2MessageUnitArray(retVector);
-         
+
       }
-      
+
       catch (ClassCastException e) {
          Log.error(ME+".get", "not a valid Vector: " + e.toString());
          throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
@@ -392,7 +392,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          Log.error(ME+".get", "IO exception: " + e1.toString());
          throw new XmlBlasterException("IO exception", e1.toString());
       }
-      
+
       catch (XmlRpcException e2) {
          Log.error(ME+".get", "xml-rpc exception: " + e2.toString());
          throw new XmlBlasterException("xml-rpc exception", e2.toString());
@@ -400,13 +400,13 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    }
 
 
-   public String toXml () throws XmlBlasterException 
+   public String toXml () throws XmlBlasterException
    {
       return toXml("");
    }
 
 
-   public String toXml (String extraOffset) throws XmlBlasterException 
+   public String toXml (String extraOffset) throws XmlBlasterException
    {
       try {
          Vector args = new Vector();
@@ -434,21 +434,21 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
 
    // The following methods are not defined in AbstractCallbackExtended
-   
+
    /**
-    * Does a login, returns a handle to xmlBlaster interface. 
+    * Does a login, returns a handle to xmlBlaster interface.
     * <p />
     * @param loginName The unique login name
     * @param password
     * @return sessionId The unique ID for this client
     * @exception XmlBlasterException If user is unknown
     */
-   public String login (String loginName, String password, String qos_literal, 
+   public String login (String loginName, String password, String qos_literal,
                         String sessionId)
-      throws XmlBlasterException 
+      throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering login: name=" + loginName);
-      
+      if (Log.CALL) Log.call(ME, "Entering login: name=" + loginName);
+
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
@@ -461,7 +461,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
       catch (ClassCastException e) {
          Log.error(ME+".login", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException("return value not a valid String", 
+         throw new XmlBlasterException("return value not a valid String",
                                        "Class Cast Exception");
       }
 
@@ -486,8 +486,8 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     */
    public void logout (final String sessionId) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering logout: id=" + sessionId);
-      
+      if (Log.CALL) Log.call(ME, "Entering logout: id=" + sessionId);
+
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
@@ -509,10 +509,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    /**
     * The update method.
     */
-   public void update (String loginName, UpdateKey updateKey, byte[] content, 
+   public void update (String loginName, UpdateKey updateKey, byte[] content,
                        UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Entering update(): loginName: " + loginName);
+      if (Log.CALL) Log.call(ME, "Entering update(): loginName: " + loginName);
       // insert here what you want to do with the message....
       System.err.println("THE UPDATE HAS BEEN CALLED SUCCESSFULLY !!!! ");
       System.err.println("The message sent is: ");
@@ -530,7 +530,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
       // build the proxy
       try {
          XmlBlasterProxy proxy = new XmlBlasterProxy("http://localhost:8080", 8081);
-         
+
          String qos = "<qos><callback type='XML-RPC'>http://localhost:8081</callback></qos>";
          String sessionId = "Session1";
 
@@ -541,13 +541,13 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          byte[] content = contentString.getBytes();
 
          PublishKeyWrapper xmlKey = new PublishKeyWrapper("", "text/xml", null);
-      
+
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
          String publishOid = proxy.publish(sessionId, msgUnit);
          System.err.println("Published message with " + publishOid);
 
          SubscribeKeyWrapper subscribeKey = new SubscribeKeyWrapper(publishOid);
-         
+
          System.err.println("Subscribe key: " + subscribeKey.toXml());
 
          proxy.subscribe(sessionId, subscribeKey.toXml(), "");
@@ -556,13 +556,13 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          proxy.erase(sessionId, subscribeKey.toXml(), "");
 
          System.exit(0);
-                  
+
       } catch(XmlBlasterException e) {
          System.err.println("XmlBlasterException: " + e.toString());
       }
-      
+
       // wait for some time here ....
-      
+
    }
 
 

@@ -3,11 +3,11 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.34 2000/06/26 12:59:35 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.35 2000/09/15 17:16:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,7 +38,7 @@ import jacorb.poa.gui.beans.FillLevelBar;
  * The available start parameters are similar to Main
  * @see Main
  */
-public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListener
+public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";
@@ -140,13 +140,14 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
 
 
    /**
-    * Event fired by Log.java through interface LogListener.
+    * Event fired by LogChannel.java through interface LogableDevice.
     * <p />
     * Log output into TextArea<br />
     * If the number of lines displayed is too big, cut half of them
     */
-   public void log(String str)
+   public void log(int level, String source, String str)
    {
+      str = Log.bitToLogLevel(level) + " [" + source + "] " + str;
       if (logOutput == null) {
          System.err.println(str + "\n");
          return;
@@ -233,7 +234,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    private void init()
    {
       Log.setDefaultLogLevel();
-      Log.addLogListener(this);
+      Log.getLogChannel().addLogDevice(this);
 
       setLayout(new GridBagLayout());
       GridBagConstraints gbc = new GridBagConstraints();
@@ -247,7 +248,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
             toolkit.beep();
             if (clientQuery != null)
                clientQuery.logout();
-            Log.addLogListener(null);
+            //Log.getLogChannel().removeLogDevice(this);
             Log.exit(ME, "Good bye!");
          }
       }
@@ -339,7 +340,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
                Authenticate auth = xmlBlasterMain.getAuthenticate();
                StringBuffer buf = new StringBuffer(auth.toXml());
                buf.append(xmlBlasterMain.getXmlBlaster().toXml());
-               log(buf.toString());
+               log(org.jutils.log.LogConstants.LOG_DUMP, "MainGUI", buf.toString());
                Log.info(ME, "Dump end");
             }
             catch(XmlBlasterException ee) {
@@ -373,7 +374,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    private void hideWindow()
    {
       if (isShowing()) {
-         Log.addLogListener(null);
+         Log.getLogChannel().removeLogDevice(this);
          Log.info(ME, "Press <g> and <Enter> to popup the GUI again (press ? for other options).");
          setVisible(false); // dispose(); would clean up all resources
       }
@@ -388,7 +389,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    {
       if (!isShowing()) {
          if (Log.TRACE) Log.trace(ME, "Show window again ...");
-         Log.addLogListener(this);
+         Log.getLogChannel().addLogDevice(this);
          show();
       }
    }
@@ -511,8 +512,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
       info.addItemListener(new LogLevelListener());
       container.add(info);
 
-      if (true/*Log.CALLS*/) { // Log.CALLS=true/false: check for dead code elimination
-         Checkbox calls = new Checkbox("CALLS", null, false);
+      if (true/*Log.CALL*/) { // Log.CALL=true/false: check for dead code elimination
+         Checkbox calls = new Checkbox("CALL", null, false);
          calls.addItemListener(new LogLevelListener());
          container.add(calls);
       }
@@ -689,7 +690,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
       private String sessionId = null;
 
       /**
-       * Login to xmlBlaster and get a sessionId. 
+       * Login to xmlBlaster and get a sessionId.
        */
       public GuiQuery(Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
       {

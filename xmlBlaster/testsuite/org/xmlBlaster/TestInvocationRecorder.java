@@ -3,11 +3,11 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.10 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.11 2000/09/15 17:16:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
@@ -146,7 +146,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "subscribe() ...");
+      if (Log.CALL) Log.call(ME, "subscribe() ...");
       numSubscribe++;
       assertEquals("subscribe(xmlKey): ", xmlKey_subscribe, xmlKey_literal);
       assertEquals("subscribe(xmlKey): ", qos_subscribe, qos_literal);
@@ -160,7 +160,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
+      if (Log.CALL) Log.call(ME, "unSubscribe() ...");
       numUnSubscribe++;
    }
 
@@ -171,7 +171,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "publish() ...");
+      if (Log.CALL) Log.call(ME, "publish() ...");
       numPublish++;
       return dummyS;
    }
@@ -183,7 +183,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "publishArr() ...");
+      if (Log.CALL) Log.call(ME, "publishArr() ...");
       numPublishArr++;
       return dummySArr;
    }
@@ -195,7 +195,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "erase() ...");
+      if (Log.CALL) Log.call(ME, "erase() ...");
       numErase++;
       return dummySArr;
    }
@@ -207,7 +207,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "get() ...");
+      if (Log.CALL) Log.call(ME, "get() ...");
       numGet++;
       assertEquals("get(xmlKey): ", xmlKey_get, xmlKey_literal);
       assertEquals("get(xmlKey): ", qos_get, qos_literal);
@@ -216,13 +216,13 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
 
    /**
-    * This is the callback method enforced by interface I_CallbackRaw. 
+    * This is the callback method enforced by interface I_CallbackRaw.
     * <p />
     * @param MessageUnit Container for the Message
     */
    public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
-      if (Log.CALLS) Log.calls(ME, "update() ...");
+      if (Log.CALL) Log.call(ME, "update() ...");
       numUpdate++;
    }
 

@@ -3,11 +3,11 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.9 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.10 2000/09/15 17:16:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 import org.jutils.time.StopWatch;
@@ -168,7 +168,7 @@ public class SystemInfoPublisher
       try {
          corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
       }
 
       Log.info(ME, "Published message " + oid + " with value " + content);

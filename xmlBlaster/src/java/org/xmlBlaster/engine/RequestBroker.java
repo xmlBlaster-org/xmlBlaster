@@ -3,12 +3,12 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.80 2000/09/03 17:55:40 kron Exp $
+Version:   $Id: RequestBroker.java,v 1.81 2000/09/15 17:16:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.80 $
+ * @version $Revision: 1.81 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -132,7 +132,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    private void loadPersistentMessages()
    {
-      if(Log.CALLS) Log.calls(ME,"Loding messages from persistence to Memory.....");
+      if(Log.CALL) Log.call(ME,"Loding messages from persistence to Memory.....");
       persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (persistenceDriver == null) return;
       try {
@@ -184,7 +184,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (persistenceDriver == null) {
          String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
          if (driverClass == null) {
-            Log.warning(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
+            Log.warn(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
             usePersistence = false;
             return (I_PersistenceDriver)null;
          }
@@ -228,7 +228,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                             String qos_literal) throws XmlBlasterException
    {
       // !!! TODO
-      Log.warning(ME, "setting client attributes is not yet supported: " + xmlAttr_literal);
+      Log.warn(ME, "setting client attributes is not yet supported: " + xmlAttr_literal);
    }
 
 
@@ -268,7 +268,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      if (Log.CALL) Log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
@@ -317,7 +317,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
 
@@ -340,7 +340,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
 
          if( msgUnitHandler == null ) {
-            Log.warning(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+            Log.warn(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
             throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
          }
 
@@ -449,7 +449,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       }
 
       else {
-         Log.warning(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
+         Log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
          throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
 
@@ -548,7 +548,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      if (Log.CALL) Log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
       String suppliedXmlKey = xmlKey.getUniqueKey().substring(0); // remember (clone) supplied oid, another oid may be generated later
 
@@ -566,7 +566,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null) {
-            Log.warning(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+            Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
             throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
 
          }
@@ -663,14 +663,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String publish(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.CALL) Log.call(ME, "Entering publish() ...");
 
       if (msgUnit == null || publishQoS==null || xmlKey==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
       }
 
-      if (Log.CALLS) Log.calls(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
+      if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
 
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
@@ -740,7 +740,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          }
       }
       else {
-         Log.warning(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+         Log.warn(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
          throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
       }
 
@@ -773,7 +773,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
                XmlKey queryXmlKey = existingQuerySubscription.getXmlKey();
                if (!queryXmlKey.isQuery() || queryXmlKey.getQueryType() != XmlKey.XPATH_QUERY) { // query: subscription without a given oid
-                  Log.warning(ME,"Only XPath queries are supported, ignoring subscription.");
+                  Log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
                   continue;
                }
                String xpath = queryXmlKey.getQueryString();
@@ -811,7 +811,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
       String[] oidArr = new String[xmlKeyVec.size()];
@@ -820,7 +820,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
 
          if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
-            Log.warning(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
+            Log.warn(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
             oidArr[ii] = ""; // !!! how to report to client?
                              // !!! how to delete XPath subscriptions, still MISSING ???
             continue;
@@ -854,7 +854,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.remove(uniqueKey);
          if (obj == null) {
-            Log.warning(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+            Log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
             throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
          }
       }

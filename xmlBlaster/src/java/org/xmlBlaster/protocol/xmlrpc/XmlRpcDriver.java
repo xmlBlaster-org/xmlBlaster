@@ -3,11 +3,11 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.3 2000/09/01 21:18:55 laghi Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.4 2000/09/15 17:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.LogManager;
+import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -23,7 +23,7 @@ import java.io.IOException;
 
 
 /**
- * XmlRpc driver class to invoke the xmlBlaster server over HTTP XML-RPC. 
+ * XmlRpc driver class to invoke the xmlBlaster server over HTTP XML-RPC.
  * <p />
  * This driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
@@ -39,7 +39,7 @@ import java.io.IOException;
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
- * @see 
+ * @see
  */
 public class XmlRpcDriver implements I_Driver
 {
@@ -72,13 +72,13 @@ public class XmlRpcDriver implements I_Driver
     * Enforced by interface I_Driver.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) 
+   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
 
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
-      LogManager.info("xmlBlaster", ME, "Started successfully XML-RPC driver.");
+      Log.info(ME, "Started successfully XML-RPC driver.");
 
       // similar to -Dsax.driver=com.sun.xml.parser.Parser
       String dr = System.getProperty("sax.driver");
@@ -91,7 +91,7 @@ public class XmlRpcDriver implements I_Driver
          webserver.addHandler("authenticate", authenticate);
          webserver.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
       } catch (IOException e) {
-         LogManager.error("xmlBlaster", ME, "Error creating webserver: " + e.toString());
+         Log.error(ME, "Error creating webserver: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -104,7 +104,7 @@ public class XmlRpcDriver implements I_Driver
     */
    public void shutdown()
    {
-      LogManager.info("xmlBlaster", ME, "Shutting down XML-RPC driver ...");
+      Log.info(ME, "Shutting down XML-RPC driver ...");
       try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
    }
 

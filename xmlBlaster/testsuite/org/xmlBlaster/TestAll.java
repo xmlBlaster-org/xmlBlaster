@@ -3,11 +3,11 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.24 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: TestAll.java,v 1.25 2000/09/15 17:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import test.framework.*;
 
 

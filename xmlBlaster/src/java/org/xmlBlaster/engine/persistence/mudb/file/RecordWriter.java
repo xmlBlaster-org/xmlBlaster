@@ -3,12 +3,12 @@ Name:      RecordWriter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Used to construct a new record an dwrite it to file as byte buffer
-Version:   $Id: RecordWriter.java,v 1.1 2000/09/03 18:02:59 kron Exp $
+Version:   $Id: RecordWriter.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.file;
 
-import org.jutils.log.Log;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.*;
