@@ -15,9 +15,11 @@ Compile:
 #include <socket/xmlBlasterSocket.h> /* gethostname() */
 #include <CallbackServerUnparsed.h>
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 #  define socklen_t int
 #  define ssize_t signed int
+#elif defined(__alpha)
+#  define socklen_t int
 #else
 #  include <unistd.h>
 #endif
