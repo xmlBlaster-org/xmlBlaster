@@ -7,13 +7,13 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -33,6 +33,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /** The global handle */
    private Global glob;
+   /** Logging to channel "core" */
+   private final LogChannel log;
    /** The initiatior of this subscription */
    private SessionInfo sessionInfo;
    /** reference on MsgQueue */
@@ -70,6 +72,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public SubscriptionInfo(Global glob, SessionInfo sessionInfo, MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = this.glob.getLog("core");
       init(sessionInfo, msgQueue, xmlKey, qos);
    }
 
@@ -83,6 +86,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, XmlKey xmlKey) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = this.glob.getLog("core");
       this.querySub = querySub;
       init(sessionInfo, querySub.getMsgQueue(), xmlKey, querySub.getSubscribeQoS());
    }
@@ -92,6 +96,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       this.sessionInfo = sessionInfo;
       this.msgQueue = msgQueue;
       this.xmlKey = xmlKey;
+      getUniqueKey(); // initialize the unique id this.uniqueKey
 
       // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
       if (qos instanceof SubscribeQoS) {
@@ -108,7 +113,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       else
          this.unSubscribeQos = (UnSubscribeQoS)qos;
 
-      if (Log.CALL) Log.trace(ME, "Created SubscriptionInfo " + xmlKey.getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getUniqueKey() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
    /**
@@ -148,7 +153,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    protected void finalize()
    {
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collect " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
    public final AccessFilterQos[] getFilterQos()
@@ -161,7 +166,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    private void erase()
    {
-      if (Log.TRACE) Log.trace(ME, "Entering erase()");
+      if (log.TRACE) log.trace(ME, "Entering erase()");
       // msgQueue = null; not my business
       xmlKey = null;
       xmlQoSBase = null;
@@ -178,17 +183,21 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    {
       if (myHandler == null) {
          Thread.currentThread().dumpStack();
-         Log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
+         log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
       }
 
       this.myHandler = myHandler;
+
+      if (this.myHandler != null) {
+         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getLoginName() + "' message '" + this.myHandler.getUniqueKey() + "'");
+      }
    }
 
    public final MessageUnitHandler getMessageUnitHandler()
    {
       if (myHandler == null) {
          Thread.currentThread().dumpStack();
-         Log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
+         log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
       }
       return myHandler;
    }
@@ -210,7 +219,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       try {
          if (myHandler == null) {
             if (!getXmlKey().isQuery()) {
-               Log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+               log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
                Thread.dumpStack();
             }
             return;
@@ -228,7 +237,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    {
       if (myHandler == null) {
          if (!getXmlKey().isQuery()) {
-            Log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+            log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
             Thread.dumpStack();
          }
          throw new XmlBlasterException(ME + ".NoMessageUnitWrapper", "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
