@@ -20,6 +20,7 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.GlobalLogTest.class));
       suite.addTest(new TestSuite(classtest.XmlKeySaxTest.class));
       suite.addTest(new TestSuite(classtest.FileIOTest.class));
+      suite.addTest(new TestSuite(classtest.TimeoutTest.class));
       suite.addTest(new TestSuite(classtest.InvocationRecorderTest.class));
       suite.addTest(new TestSuite(classtest.PublishRetQosTest.class));
       suite.addTest(new TestSuite(classtest.EraseRetQosTest.class));

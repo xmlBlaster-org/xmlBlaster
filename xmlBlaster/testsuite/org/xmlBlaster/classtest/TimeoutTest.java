@@ -44,7 +44,7 @@ public class TimeoutTest extends TestCase {
             },
             500L, null);
 
-         try { Thread.currentThread().sleep(1000); } catch (InterruptedException e) {}
+         try { Thread.currentThread().sleep(800L); } catch (InterruptedException e) {}
          assertEquals("Timeout not occurred after 1 sec.", true, event);
       }
       
@@ -130,8 +130,8 @@ public class TimeoutTest extends TestCase {
    /**
     * We test a big load
     */
-   public void testLoad() {
-      System.out.println("***TimeoutTest: testLoad ...");
+   public void testStressLoad() {
+      System.out.println("***TimeoutTest: testStressLoad ...");
 
       String ME = "Timeout-Tester";
       Timeout timeout = new Timeout();
@@ -167,6 +167,6 @@ public class TimeoutTest extends TestCase {
          try { Thread.currentThread().sleep(500L); } catch (Exception e) { fail("*****ERROR:main interrupt: " + e.toString()); }
       }
 
-      System.out.println("***TimeoutTest: testLoad [SUCCESS]");
+      System.out.println("***TimeoutTest: testStressLoad [SUCCESS]");
    }
 }
