@@ -4,11 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.1 1999/12/12 18:21:41 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.2 1999/12/13 12:20:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
@@ -20,7 +21,7 @@ import test.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a love letter. 
+ * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a love letter.
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
  * Manuel is the 'sender' and Ulrike the 'receiver'
@@ -31,7 +32,7 @@ import test.framework.*;
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
  * </code>
  */
-public class TestPtD extends TestCase
+public class TestPtD extends TestCase implements I_Callback
 {
    private Server senderXmlBlaster = null;
    private final static String ME = "TestPtD";
@@ -67,61 +68,25 @@ public class TestPtD extends TestCase
    /**
     * Sets up the fixture.
     * <p />
-    * Connect to xmlBlaster and login
+    * Creates a CORBA connection and does a login.<br />
+    * - One connection for the sender client<br />
+    * - One connection for the receiver client
     */
    protected void setUp()
    {
-      if (initReceiver() == false) 
-         return;
-
-      if (initSender() == false)
-         return;
-   }
-
-
-   /**
-    * Creates a CORBA connection and does a login. 
-    * <p />
-    * @return true: No errors, false: panic
-    */
-   private boolean initReceiver()
-   {
-      boolean retVal = true;
       try {
+         String passwd = "secret";
+
          receiverConnection = new CorbaConnection(args);
-         BlasterCallback callback = receiverConnection.createCallbackServer(new TestPtDCallback(receiverName, this));
-         if (Log.TRACE) Log.trace(receiverName, "Exported BlasterCallback Server interface for " + receiverName);
-         String passwd = "some";
-         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, callback, "<qos></qos>");
-      }
-      catch (Exception e) {
-          Log.error(ME, e.toString());
-          retVal = false;
-      }
-      return retVal;
-   }
+         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
 
-
-   /**
-    * Creates a CORBA connection and does a login. 
-    * <p />
-    * @return true: No errors, false: panic
-    */
-   private boolean initSender()
-   {
-      boolean retVal = true;
-      try {
          senderConnection = new CorbaConnection(args);
-         BlasterCallback callback = senderConnection.createCallbackServer(new TestPtDCallback(senderName, this));
-         if (Log.TRACE) Log.trace(senderName, "Exported BlasterCallback Server interface for " + senderName);
-         String passwd = "some";
-         senderXmlBlaster = senderConnection.login(senderName, passwd, callback, "<qos></qos>");
+         senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
-          retVal = false;
+          e.printStackTrace();
       }
-      return retVal;
    }
 
 
@@ -148,13 +113,13 @@ public class TestPtD extends TestCase
 
       // Construct a love message and send it to Ulrike
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
-                        "</key>";
+                      "</key>";
 
       String qos = "<qos>" +
-                     "   <destination queryType='EXACT'>" +
+                   "   <destination queryType='EXACT'>" +
                            receiverName +
-                     "   </destination>" +
-                     "</qos>";
+                   "   </destination>" +
+                   "</qos>";
 
       senderContent = "Hi " + receiverName + ", i love you, " + senderName;
       MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
@@ -173,60 +138,28 @@ public class TestPtD extends TestCase
 
 
    /**
-    * Method is used by TestRunner to load these tests
+    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * informing the client in an asynchronous mode about a new message. 
+    * <p />
+    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
+    * this update is called.
+    *
+    * @param loginName The name to whom the callback belongs
+    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
+    * @param updateKey The arrived key
+    * @param content   The arrived message content
+    * @param qos       Quality of Service of the MessageUnit
     */
-   public static Test suite()
+   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-       TestSuite suite= new TestSuite();
+      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
-       String[] args = new String[0];  // dummy
+      numReceived += 1;
 
-       suite.addTest(new TestPtD("testPtOneDestination", args));
-
-       return suite;
-   }
-
-
-   /**
-    * The TestPtDCallback.update calls this method, to allow some error checking. 
-    * @param loginName        The name to whom the callback belongs
-    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
-    * @param qos_literal_Arr  Quality of Service for each MessageUnit
-    */
-   public void update(String loginName, MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
-   {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of " + messageUnitArr.length + " message ...");
-
-      if (messageUnitArr.length != 0)
-         numReceived += messageUnitArr.length;
-      else
-         numReceived = -1;       // error
-
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
-         UpdateKey updateKey = null;
-         UpdateQoS updateQoS = null;
-         String keyOid = null;
-         byte[] content = messageUnit.content;
-         try {
-            updateKey = new UpdateKey(messageUnit.xmlKey);
-            keyOid = updateKey.getUniqueKey();
-            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
-         } catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
-         }
-
-         // Now we know all about the received message, dump it or do some checks
-         Log.plain("UpdateKey", updateKey.printOn().toString());
-         Log.plain("content", (new String(content)).toString());
-         Log.plain("UpdateQoS", updateQoS.printOn().toString());
-         Log.info(ME, "Received message [" + keyOid + "] from publisher " + updateQoS.getSender());
-
-         assertEquals("Wrong receveiver", receiverName, loginName);
-         assertEquals("Wrong sender", senderName, updateQoS.getSender());
-         assertEquals("Wrong oid of message returned", publishOid, keyOid);
-         assertEquals("Message content is corrupted", new String(senderContent), new String(content));
-      }
+      assertEquals("Wrong receveiver", receiverName, loginName);
+      assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      assertEquals("Wrong oid of message returned", publishOid, keyOid);
+      assertEquals("Message content is corrupted", new String(senderContent), new String(content));
 
       messageArrived = true;
    }
@@ -259,6 +192,21 @@ public class TestPtD extends TestCase
 
 
    /**
+    * Method is used by TestRunner to load these tests
+    */
+   public static Test suite()
+   {
+       TestSuite suite= new TestSuite();
+
+       String[] args = new String[0];  // dummy
+
+       suite.addTest(new TestPtD("testPtOneDestination", args));
+
+       return suite;
+   }
+
+
+   /**
     * Invoke: jaco testsuite.org.xmlBlaster.TestPtD
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
@@ -276,39 +224,3 @@ public class TestPtD extends TestCase
       Log.exit(TestPtD.ME, "Good bye");
    }
 }
-
-
-/**
- * Example for a callback implementation.
- */
-class TestPtDCallback implements BlasterCallbackOperations
-{
-   private final String ME;
-   private final TestPtD boss;
-   private final String loginName;
-
-   /**
-    * Construct a persistently named object.
-    */
-   public TestPtDCallback(String name, TestPtD boss)
-   {
-      this.ME = "TestPtDCallback-" + name;
-      this.boss = boss;
-      this.loginName = name;
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
-   }
-
-
-   /**
-    * This is the callback method invoked from the server
-    * informing the client in an asynchronous mode about new messages. 
-    * @param loginName        The name to whom the callback belongs
-    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
-    * @param qos_literal_Arr  Quality of Service for each MessageUnit
-    */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
-   {
-      boss.update(loginName, messageUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
-   }
-} // TestPtDCallback
-

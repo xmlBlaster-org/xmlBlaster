@@ -3,11 +3,12 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.6 1999/12/12 18:21:41 ruff Exp $
+Version:   $Id: TestSub.java,v 1.7 1999/12/13 12:20:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
@@ -32,7 +33,7 @@ import test.framework.*;
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
  * </code>
  */
-public class TestSub extends TestCase
+public class TestSub extends TestCase implements I_Callback
 {
    private Server xmlBlaster = null;
    private static String ME = "Tim";
@@ -43,6 +44,8 @@ public class TestSub extends TestCase
    private String publishOid = "";
    private CorbaConnection senderConnection;
    private String senderName;
+   private String senderContent;
+   private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
 
@@ -57,6 +60,7 @@ public class TestSub extends TestCase
    {
        super(testName);
        this.senderName = loginName;
+       this.receiverName = loginName;
        this.args = args;
    }
 
@@ -70,15 +74,12 @@ public class TestSub extends TestCase
    {
       try {
          senderConnection = new CorbaConnection(args); // Find orb
-
-         // Building a Callback server
-         BlasterCallback callback = senderConnection.createCallbackServer(new TestSubCallback(ME, this));
-
+         String passwd = "secret";
          String qos = "<qos></qos>";
-         String passwd = "some";
-         xmlBlaster = senderConnection.login(senderName, passwd, callback, qos);  // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
+          Log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -150,8 +151,8 @@ public class TestSub extends TestCase
                         "      </TestSub-DRIVER>"+
                         "   </TestSub-AGENT>" +
                         "</key>";
-      String content = "Yeahh, i'm the new content";
-      MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+      senderContent = "Yeahh, i'm the new content";
+      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
          publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
@@ -182,56 +183,28 @@ public class TestSub extends TestCase
 
 
    /**
-    * Method is used by TestRunner to load these tests
+    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * informing the client in an asynchronous mode about a new message. 
+    * <p />
+    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
+    * this update is called.
+    *
+    * @param loginName The name to whom the callback belongs
+    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
+    * @param updateKey The arrived key
+    * @param content   The arrived message content
+    * @param qos       Quality of Service of the MessageUnit
     */
-   public static Test suite()
+   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-       TestSuite suite= new TestSuite();
+      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
-       String[] args = new String[0];  // dummy
-       String loginName = "Tim";
+      numReceived += 1;
 
-       suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName, args));
-
-       return suite;
-   }
-
-
-   /**
-    * The TestSubCallback.update calls this method, to allow some error checking. 
-    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
-    * @param qos_literal_Arr  Quality of Service for each MessageUnit
-    */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
-   {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of " + messageUnitArr.length + " message ...");
-
-      if (messageUnitArr.length != 0)
-         numReceived += messageUnitArr.length;
-      else
-         numReceived = -1;       // error
-
-
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
-         UpdateKey updateKey = null;
-         UpdateQoS updateQoS = null;
-         String keyOid = null;
-         byte[] content = messageUnit.content;
-         try {
-            updateKey = new UpdateKey(messageUnit.xmlKey);
-            keyOid = updateKey.getUniqueKey();
-            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
-         } catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
-         }
-
-         // Now we know all about the received message, dump it or do some checks
-         Log.plain("UpdateKey", updateKey.printOn().toString());
-         Log.plain("content", (new String(content)).toString());
-         Log.plain("UpdateQoS", updateQoS.printOn().toString());
-         Log.info(ME, "Received message [" + keyOid + "] from publisher " + updateQoS.getSender());
-      }
+      assertEquals("Wrong receveiver", receiverName, loginName);
+      assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      assertEquals("Wrong oid of message returned", publishOid, keyOid);
+      assertEquals("Message content is corrupted", new String(senderContent), new String(content));
 
       messageArrived = true;
    }
@@ -264,6 +237,19 @@ public class TestSub extends TestCase
 
 
    /**
+    * Method is used by TestRunner to load these tests
+    */
+   public static Test suite()
+   {
+       TestSuite suite= new TestSuite();
+       String[] args = new String[0];  // dummy
+       String loginName = "Tim";
+       suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName, args));
+       return suite;
+   }
+
+
+   /**
     * Invoke: jaco testsuite.org.xmlBlaster.TestSub
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
@@ -283,36 +269,4 @@ public class TestSub extends TestCase
       Log.exit(TestSub.ME, "Good bye");
    }
 }
-
-
-/**
- * Example for a callback implementation.
- */
-class TestSubCallback implements BlasterCallbackOperations
-{
-   private final String ME;
-   private final TestSub boss;
-
-   /**
-    * Construct a persistently named object.
-    */
-   public TestSubCallback(java.lang.String name, TestSub boss)
-   {
-      this.ME = "TestSubCallback-" + name;
-      this.boss = boss;
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
-   }
-
-
-   /**
-    * This is the callback method invoked from the server
-    * informing the client in an asynchronous mode about new messages
-    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
-    * @param qos_literal_Arr  Quality of Service for each MessageUnit
-    */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
-   {
-      boss.update(messageUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
-   }
-} // TestSubCallback
 
