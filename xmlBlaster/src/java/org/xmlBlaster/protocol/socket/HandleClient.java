@@ -68,6 +68,10 @@ public class HandleClient extends Executor implements Runnable
       t.start();
    }
 
+   synchronized public boolean isShutdown() {
+      return (this.running == false);
+   }
+
    /**
     * Close connection for one specific client
     */
@@ -75,7 +79,7 @@ public class HandleClient extends Executor implements Runnable
       if (!running)
          return;
 
-      if (log.TRACE) log.trace(ME, "Schutdown cb connection to " + loginName + " ...");
+      if (log.TRACE) log.trace(ME, "Shutdown cb connection to " + loginName + " ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
