@@ -3,7 +3,7 @@ Name:      PluginManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Baseclass to load plugins.
-Version:   $Id: PluginManagerBase.java,v 1.17 2002/08/24 17:57:47 ruff Exp $
+Version:   $Id: PluginManagerBase.java,v 1.18 2002/08/25 15:17:21 ruff Exp $
 Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -11,6 +11,8 @@ package org.xmlBlaster.util;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.classloader.PluginClassLoader;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -178,11 +180,11 @@ abstract public class PluginManagerBase {
          if (factory != null) {
             if (log.TRACE) log.trace(ME, "useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
 
-            XmlBlasterClassLoader myLoader = factory.getXmlBlasterClassLoader(this, pluginName);
+            PluginClassLoader myLoader = factory.getPluginClassLoader(this, pluginName);
             if (log.TRACE) log.trace(ME, "Found " + myLoader.getURLs().length + " plugin specific jar files for '" + pluginName + "' preferenced by xmlBlaster classLoader");
 
             plugin = (I_Plugin)myLoader.loadClass(pluginName).newInstance();
-            if (log.TRACE) log.trace(ME, "Found I_Plugin '" + pluginName + "', loaded by XmlBlasterClassLoader");
+            if (log.TRACE) log.trace(ME, "Found I_Plugin '" + pluginName + "', loaded by PluginClassLoader");
           }
          else { // Use JVM default class loader:
            Class cl = java.lang.Class.forName(pluginName);

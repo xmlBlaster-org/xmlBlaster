@@ -3,12 +3,13 @@ Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.7 2002/08/24 18:03:35 ruff Exp $
+Version:   $Id: ClassLoaderFactory.java,v 1.1 2002/08/25 15:17:21 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util;
+package org.xmlBlaster.util.classloader;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.text.StringHelper;
@@ -28,7 +29,7 @@ public class ClassLoaderFactory {
    /**
     * We are a singleton in respect to a Global instance.
     */
-   ClassLoaderFactory (Global glob) {
+   public ClassLoaderFactory (Global glob) {
      ++instanceCounter;
      this.ME = "ClassLoaderFactory-" + instanceCounter;
      this.glob = glob;
@@ -60,12 +61,12 @@ public class ClassLoaderFactory {
     *
     * @param caller Type of the calling class
     * @param plugin Name of the plugin to be loaded and for which the classpath have to be extended.
-    * @return a XmlBlasterClassLoader which contains the URL of the parent class loader.
+    * @return a PluginClassLoader which contains the URL of the parent class loader.
     *           and the URL related to the callers class.
     * @exception XmlBlasterException if the array of URLs can not be formed.
     */
-   public XmlBlasterClassLoader getXmlBlasterClassLoader(Object caller, String plugin) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering getXmlBlasterClassLoader for plugin=" + plugin);
+   public PluginClassLoader getPluginClassLoader(Object caller, String plugin) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getPluginClassLoader for plugin=" + plugin);
       String basePath = null;
       classPath = new ArrayList(); // new array containing all String URL for the new classpath
 
@@ -83,7 +84,7 @@ public class ClassLoaderFactory {
          File baseDir = new File(basePath);
 
          if ( !baseDir.exists() || !baseDir.canRead() )
-            return ( new XmlBlasterClassLoader(new URL[0], plugin ) );
+            return ( new PluginClassLoader(glob, new URL[0], plugin ) );
 
          String list[] = baseDir.list(); // getting content
 
@@ -108,7 +109,7 @@ public class ClassLoaderFactory {
          classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
 
       if (log.TRACE) log.trace(ME, "Found " + (classPath.size()-1) + " jar files in '" + basePath + "'");
-      return new XmlBlasterClassLoader( stringToUrl(classPath), plugin );
+      return new PluginClassLoader(glob, stringToUrl(classPath), plugin );
    }
 
    /**
@@ -121,7 +122,8 @@ public class ClassLoaderFactory {
     * @param caller Type of the calling class
     * @param plugin The plugin name e.g. "org.xmlBlaster.protocol.corba.CorbaDriver"
     *               or null
-    * @return The base path for the caller specific additional classes.
+    * @return The base path for the caller specific additional classes, is never null
+    * @exception On failure
     */
    public static LoaderInfo getLoaderInfo(Object caller, String plugin) throws XmlBlasterException {
       //if (log.CALL) log.call(ME, "Entering getLoaderInfo");
@@ -234,61 +236,5 @@ public class ClassLoaderFactory {
          return null;
       }
    }
-} // class ClassLoaderFactory
+}
 
-/**
- * Helper struct holding infos about a plugin classname
- */
-class LoaderInfo {
-   /** "org.xmlBlaster.protocol.corba.CorbaDriver" */
-   String pluginName;
-
-   /**
-      * The path only:
-      * if from "/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar" -> "/home/xmlblast/xmlBlaster/lib/"
-      * if from class file -> "/home/xmlblast/xmlBlaster/classes/"
-      */
-   String rootPath;
-
-   /** "/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar" or null if not from jar file loaded */
-   String jarPath;
-
-   /** "xmlBlaster.jar" or null if not from jar file */
-   String jarName;
-
-   /** "org/xmlBlaster/protocol/corba/CorbaDriver" */
-   String pluginSlashed;
-
-   /** Path where we search for jar files for this plugin
-      *  "/home/xmlblast/xmlBlaster/lib/org/xmlBlaster/protocol/corba/CorbaDriver"
-      */
-   String basePath;
-
-   public LoaderInfo(String pluginName, String rootPath, String jarPath,
-                     String jarName, String pluginSlashed) {
-      this.pluginName = pluginName;
-      this.rootPath = rootPath;
-      this.jarPath = jarPath;
-      this.jarName = jarName;
-      this.pluginSlashed = pluginSlashed;
-      this.basePath = this.rootPath + this.pluginSlashed;
-      doHack();
-   }
-
-   private void doHack() {
-      // The Makefile puts the .class files into xmlBlaster/classes
-      // but the plugin jars are searched under xmlBlaster/lib
-      // Remove this hack when the Makefiles are replaced by ant
-      int cl = this.rootPath.indexOf("xmlBlaster/classes/");
-      if (cl >= 0) {
-         this.basePath = this.rootPath.substring(0, cl) + "xmlBlaster/lib/" + this.pluginSlashed;
-      }
-   }
-
-   public String toString() {
-      return "pluginName=" + pluginName + " rootPath=" + rootPath + 
-         " jarPath=" + jarPath + " jarName=" + jarName +
-         " pluginSlashed=" + pluginSlashed + 
-         " basePath=" + basePath;
-   }
-} // class LoaderInfo

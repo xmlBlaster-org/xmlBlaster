@@ -1,13 +1,14 @@
 /*------------------------------------------------------------------------------
-Name:      XmlBlasterClassLoader.java
+Name:      PluginClassLoader.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util;
+package org.xmlBlaster.util.classloader;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.net.URL;
@@ -19,19 +20,19 @@ import java.net.MalformedURLException;
  * to prefer locally found classes and only if not found delegate
  * to the JVM class loader
  */
-public class XmlBlasterClassLoader extends URLClassLoader {
+public class PluginClassLoader extends URLClassLoader {
 
-   private String ME = "XmlBlasterClassLoader";
+   private String ME = "PluginClassLoader";
    private final String pluginName;
    private String pluginPackage;
    private final LogChannel log;
 
-   public XmlBlasterClassLoader(URL[] urls, String pluginName) {
+   public PluginClassLoader(Global glob, URL[] urls, String pluginName) {
       super(urls);
-      log = Global.instance().getLog("classloader");
+      log = glob.getLog("classloader");
       this.pluginName = pluginName;
       this.pluginPackage = pluginName.substring(0, pluginName.lastIndexOf("."));
-      this.ME = "XmlBlasterClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
+      this.ME = "PluginClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
    }
 
    public Class loadClass(String name) throws ClassNotFoundException {

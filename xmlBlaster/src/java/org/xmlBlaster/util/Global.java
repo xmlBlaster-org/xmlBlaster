@@ -18,6 +18,7 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.authentication.HttpIORServer;
 
 import java.util.Properties;
