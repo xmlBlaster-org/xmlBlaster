@@ -15,6 +15,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace key {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 QueryKeyData::QueryKeyData(Global& global) : KeyData(global), accessFilterVector_()
 {
