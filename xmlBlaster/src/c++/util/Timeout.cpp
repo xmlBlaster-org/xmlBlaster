@@ -180,7 +180,7 @@ void Timeout::run()
       Lock waitForTimeoutLock(waitForTimeoutMutex_);
 
       log_.trace(ME, " operator (): is running");
-      double delay = 100000.0; // sleep veeery long
+      Timestamp delay = 100000 * Constants::MILLION; // sleep veeery long
 
 
       {
@@ -192,20 +192,20 @@ void Timeout::run()
          else {
             log_.trace(ME, " The timeout is not empty");
             Timestamp nextWakeup = (*iter).first;
-            log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
-            double next = nextWakeup / Constants::MILLION;
-            double current = timestampFactory_.getTimestamp() / Constants::MILLION;
-            delay = next - current;
+            log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ns");
+            delay = nextWakeup - timestampFactory_.getTimestamp();
 
-            log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
-            log_.trace(ME, "run, current time: " + lexical_cast<string>(current) + " ms");
-            log_.trace(ME, "run, delay       : " + lexical_cast<string>(delay) + " ms");
-            if (delay <= 1.0e-9) {
+            log_.trace(ME, "run, delay       : " + lexical_cast<string>(nextWakeup) + " ns");
+				if ( delay < 0 ) {
+					delay = 0;
+				}
+
+            if (delay <= 0) {
                tmpContainer = (*iter).second;
                timeoutMap_.erase((*iter).first);
                container = &tmpContainer;
                if (isDebug_)
-                  std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " millis" << std::endl;
+                  std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " nanos" << std::endl;
             }
          }
       }
@@ -214,10 +214,11 @@ void Timeout::run()
           (container->first)->timeout(container->second);
           container = NULL;
       }
-      {
-         log_.trace(ME, "sleeping ... " + lexical_cast<string>(delay) + " milliseconds");
+		Timestamp milliDelay = delay / Constants::MILLION;
+      if (milliDelay > 0) {
+         log_.trace(ME, "sleeping ... " + lexical_cast<string>(milliDelay) + " milliseconds");
          isReady_ = true;
-         waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)delay);
+         waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
          log_.trace(ME, "waking up .. ");
       }
    }
