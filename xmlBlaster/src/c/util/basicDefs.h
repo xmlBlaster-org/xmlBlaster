@@ -41,7 +41,11 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  define VSNPRINTF vsnprintf    /* stdarg.h */
 #endif
 
-#if defined(_WINDOWS)
+#if defined(__sun)
+  typedef long long int64_t;
+  typedef int int32_t;
+  typedef short int16_t;
+#elif defined(_WINDOWS)
   typedef long long int64_t;
   typedef int int32_t;
   typedef short int16_t;
