@@ -94,22 +94,21 @@ public class ServerEntryFactory implements I_EntryFactory
             ByteArrayInputStream bais = new ByteArrayInputStream(blob);
             ObjectInputStream objStream = new ObjectInputStream(bais);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 7) {
+            if (obj.length != 6) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 7 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+                  "Expected 6 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
-            Long uniqueId = (Long)obj[0];
-            String keyOid = (String)obj[1];
-            Long msgUnitWrapperUniqueId = (Long)obj[2];
-            String receiverStr = (String)obj[3];
-            String subscriptionId = (String)obj[4];
-            String state = (String)obj[5];
-            Integer redeliverCount = (Integer)obj[6];
-            log.info(ME, "storageId=" + storageId + ": Read uniqueId=" + uniqueId + " topic keyOid=" + keyOid +
+            String keyOid = (String)obj[0];
+            Long msgUnitWrapperUniqueId = (Long)obj[1];
+            String receiverStr = (String)obj[2];
+            String subscriptionId = (String)obj[3];
+            String state = (String)obj[4];
+            Integer redeliverCount = (Integer)obj[5];
+            log.info(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
                          " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
                          " subscriptionId=" + subscriptionId + " state=" + state + " redeliverCount=" + redeliverCount);
             SessionName receiver = new SessionName(glob, receiverStr);
-            Timestamp updateEntryTimestamp = new Timestamp(uniqueId.longValue());
+            Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId.longValue(), persistent, receiver,
@@ -124,14 +123,13 @@ public class ServerEntryFactory implements I_EntryFactory
             ByteArrayInputStream bais = new ByteArrayInputStream(blob);
             ObjectInputStream objStream = new ObjectInputStream(bais);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 3) {
+            if (obj.length != 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 3 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+                  "Expected 2 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
-            Long uniqueId = (Long)obj[0];
-            String keyOid = (String)obj[1];
-            Long msgUnitWrapperUniqueId = (Long)obj[2];
-            Timestamp updateEntryTimestamp = new Timestamp(uniqueId.longValue());
+            String keyOid = (String)obj[0];
+            Long msgUnitWrapperUniqueId = (Long)obj[1];
+            Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueHistoryEntry((org.xmlBlaster.engine.Global)this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId.longValue(), persistent);

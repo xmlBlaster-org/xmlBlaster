@@ -60,10 +60,10 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    }
 
    /**
-    * The embeddded object for this implementing class is an Object[7]
+    * The embeddded object for this implementing class is an Object[6]
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.getUniqueIdLong(),
+      Object[] obj = { 
                        this.keyOid,
                        new Long(this.msgUnitWrapperUniqueId),
                        this.receiver.getAbsoluteName(),
