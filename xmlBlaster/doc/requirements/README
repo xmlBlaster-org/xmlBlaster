@@ -33,6 +33,14 @@ java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml
 
 
 
+<xsl:template match="other-content">
+ <br/>
+  <font color="red">
+    <xsl:apply-templates/>
+  </font>
+ <br/>
+</xsl:template>
+
 
 
 Collect all xml into one xsl/html:
