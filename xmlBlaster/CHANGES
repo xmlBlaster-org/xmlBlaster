@@ -2,6 +2,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
+  - New 'passwd' style Security Plugin from Cyrille Giquello, see
+
+      xmlBlaster/src/java/org/xmlBlaster> cd authentication/plugins/htpasswd/README
 
   - Added Update QoS element <queue> with queue informations
     (Thanks to Cyrille)
