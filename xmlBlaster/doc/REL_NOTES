@@ -1,9 +1,17 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
   
+Changes for 0.77 [?, 2000]
+===============================
+
    - CORBA implementors other than JACORB and MICO can now be used. ORBACUS 
      can work for the xmlBlaster server, java clients and c++ clients. You 
      need OB-4.0b3 (for c++) and JOB-4.0b3 (for Java) or higher. You can 
      find more about ORBACUS at http://www.ooc.com.
+
+	- Persistent browser callback bugfixes
+	  * Added proper logout
+     * Removed memory leak
+     * Added ping/pong, to allow servlet to detect a lost browser
 
 
 Changes for 0.76 [May.8, 2000]
@@ -14,12 +22,16 @@ Changes for 0.76 [May.8, 2000]
 
    - Added demo for http browser callback without closing the http
      connection.
-     See xmlBlaster/demo/html/systemInfo
+     See
+         xmlBlaster/doc/requirements/client.browser.xml
+         xmlBlaster/demo/html/systemInfo
+         xmlBlaster/src/java/org/xmlBlaster/protocol/http
      and online:
      http://www.xmlBlaster.org/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret
-	  Netscape 4.x on Linux/HPUX/Win and
-	  Netscape 4.7 / MSIE 5 on WinNT and Win98
-	  runs fine.
+
+     Netscape 4.x on Linux/HPUX/Win and
+     Netscape 4.7 / MSIE 5 on WinNT and Win98
+     runs fine.
 
    - Bugfixes (especially memory leak fixed) in browser
      callback framework.
