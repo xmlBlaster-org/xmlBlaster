@@ -48,9 +48,9 @@ namespace org {
       string me() const {
          return string("CorbaConnection");
       }
-      static CORBA::ORB_ptr           orb_;
-      static PortableServer::POA_ptr  poa_;
-      static unsigned short           numOfSessions_;
+     /* static*/ CORBA::ORB_ptr           orb_;
+      /*static*/ PortableServer::POA_ptr  poa_;
+//      static unsigned short           numOfSessions_;
       NameServerControl*              nameServerControl_;
       authenticateIdl::AuthServer_ptr authServer_;
       serverIdl::Server_ptr           xmlBlaster_;

@@ -25,6 +25,24 @@ namespace org {
 typedef pair<CorbaDriver*, int>  DriverEntry;
 typedef map<string, DriverEntry> DriversMap;
 
+/**
+ * Factory used to create instances of CorbaDriver objects. It currently is a singleton class and has for
+ * that reason private constructors, destructor and assignment operator. 
+ * To get a reference to the singleton instance you must invoke getFactory(...).
+ * 
+ * This factory has a running thread in which the orb performs its work. For threadsafe orbs, this is a
+ * blocking invocation to orb.run() (which exits when shutting down the orb). For singlethreaded orbs, it is
+ * a loop invoking orb.perform_work() with a sleep interval of 20 ms between each invocation to that method.
+ *
+ * You can either pass to this factory a previously instantiated orb by passing it explicitly, or you can 
+ * let it instantiate the default orb (with the arguments you passed at application startup) by not passing
+ * any orb or by passing NULL.
+ * If you pass an external orb, then this factory will not start the mentionned working thread nor it will 
+ * free the orb resources. You must handle that on your own.
+ * If you let the factory create an orb instance, then this factory will start the thread and will cleanup
+ * all resources used by the orb.
+ *
+ */
 class Dll_Export CorbaDriverFactory : public Thread
 {
 friend CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
@@ -33,13 +51,14 @@ private:
    const string   ME;
    Global&        global_;
    Log&           log_;
-   DriversMap     drivers_;
-   bool           doRun_;
-   bool           isRunning_; 
-   Mutex          mutex_, getterMutex_;
-   bool           orbIsThreadSafe_;
-   CORBA::ORB_ptr orb_;
-   bool           isOwnOrb_;
+   DriversMap     drivers_;	    // the map containing all drivers created by this factory
+   bool           doRun_;           // the command: if set to 'false' the thread will stop.
+   bool           isRunning_;       // the status: if the thread is running it is 'true'
+   Mutex          mutex_,           // the mutex passed to all CorbaDriver instances (for singlethreaded)
+                  getterMutex_;     // the mutex used for creating/deleting CorbaDriver instances
+   bool           orbIsThreadSafe_; // flag telling if the orb is a singletheraded or multithreaded orb
+   CORBA::ORB_ptr orb_;             // the orb used (either created here or passed in constructor
+   bool           isOwnOrb_;        // 'true' if the orb has been created by this factory.
 
    /**
     * Only used by getInstance()
@@ -81,12 +100,22 @@ public:
     *
     * @param global the global parameter to pass
     * @param orb the orb to pass. Note that if you pass NULL (the default) then an own orb is initialized in
-    *        the CorbaConnection class encapsulated by CorbaDriver.
+    *        the CorbaConnection class encapsulated by CorbaDriver. If you pass an orb different from NULL,
+    *        then you are responsible of making the orb perform work and you must clean up its resources
+    *        i.e. you must call expicitly shutdown and destroy on work completition.
     */
    static CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
-   
+
+   /**
+    * gets an instance of a corba driver with the specified name.
+    */
    CorbaDriver& getDriverInstance(const string& instanceName);
 
+   /**
+    * Kills the driver instance with the given name. Note that if you invoked getDriverInstance several 
+    * times with the same instanceName, you just decrement the internal reference counter. When the reference
+    * counter reaches zero, the driver is really destroyed.
+    */
    int killDriverInstance(const string& instanceName);
 
 };

@@ -163,7 +163,7 @@ void CorbaDriver::initialize(const string& name, I_Callback &client)
 string CorbaDriver::getCbProtocol()
 {
     return "IOR";
-}
+}                             
 
 string CorbaDriver::getCbAddress()
 {

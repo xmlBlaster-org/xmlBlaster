@@ -79,6 +79,7 @@ CorbaDriverFactory& CorbaDriverFactory::operator =(const CorbaDriverFactory&)
 
 CorbaDriverFactory::~CorbaDriverFactory()
 {
+   if (log_.call()) log_.call(ME, "Destructor start");
    Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.begin();
    while (iter != drivers_.end()) {
@@ -86,18 +87,25 @@ CorbaDriverFactory::~CorbaDriverFactory()
       iter++;
    }
    drivers_.erase(drivers_.begin(), drivers_.end());
+   if (log_.trace()) log_.trace(ME, "erased all drivers");
    if (!orbIsThreadSafe_) { // stop the running thread
       if (isRunning_) {
+        if (log_.trace()) log_.trace(ME, "stopping the thread which performs orb work");
         doRun_ = false;
         join();
       }
    }
    if (isOwnOrb_) {
       if (CORBA::is_nil(orb_)) {
+         if (log_.trace()) log_.trace(ME, "shutting down the orb");
+         orb_->shutdown(true);
+         if (log_.trace()) log_.trace(ME, "destroying the orb");
          orb_->destroy();
+         if (log_.trace()) log_.trace(ME, "releasing the orb");
          CORBA::release(orb_);
       }                                 
    }
+   if (log_.trace()) log_.trace(ME, "Destructor end");
 }
 
 CorbaDriverFactory& CorbaDriverFactory::getFactory(Global& global, CORBA::ORB_ptr orb)
@@ -116,7 +124,9 @@ CorbaDriver& CorbaDriverFactory::getDriverInstance(const string& instanceName)
       DriversMap::iterator iter = drivers_.find(instanceName);
       if (iter == drivers_.end()) {
          if (log_.trace()) log_.trace("CorbaDriver", string("created a new instance for ") + instanceName);
-         driver = new CorbaDriver(global_, mutex_, instanceName, orb_);
+
+         CORBA::ORB_ptr orb = CORBA::ORB::_duplicate(orb_);
+         driver = new CorbaDriver(global_, mutex_, instanceName, orb);
          // initially the counter is set to 1
          drivers_.insert(DriversMap::value_type(instanceName, pair<CorbaDriver*, int>(driver, 1)));
          if (!isRunning_) start(); // if threadSafe isRunning_ will never be set to true
@@ -134,6 +144,7 @@ CorbaDriver& CorbaDriverFactory::getDriverInstance(const string& instanceName)
 
 int CorbaDriverFactory::killDriverInstance(const string& instanceName)
 {
+   log_.call(ME, "killDriverInstance");
    Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.find(instanceName);
    if (iter == drivers_.end()) return -1;
@@ -145,13 +156,15 @@ int CorbaDriverFactory::killDriverInstance(const string& instanceName)
       CorbaDriver* driver = (*iter).second.first;
       drivers_.erase(iter);
       delete driver;
-      if (drivers_.empty()) {
+      if (drivers_.empty() && isOwnOrb_) {
          if (!orbIsThreadSafe_) {
             if (isRunning_) {
                doRun_ = false;
                join(); // wait until the run thread has returned ...
             }
          }
+//         orb_->shutdown(true);
+//         orb_->destroy();
          return 0;
       }
    }
@@ -169,6 +182,8 @@ bool CorbaDriverFactory::orbRun()
 void CorbaDriverFactory::run()
 {
    if (log_.trace()) log_.trace(ME, "the corba loop starts now");
+   if (!isOwnOrb_) return;
+
    if (orbIsThreadSafe_) {
       orbRun(); // e.g. TAO
    }
@@ -177,16 +192,30 @@ void CorbaDriverFactory::run()
       if (isRunning_) return;
       log_.info(ME, "the corba loop starts now");
       isRunning_ = true;
-      while (doRun_) {
-         { // this is for the scope of the lock ...
-            Lock lock(mutex_, orbIsThreadSafe_);
-            if (log_.trace()) log_.trace(ME, "sweep in running thread");
-            while (orb_->work_pending()) orb_->perform_work();
+
+      try {
+         while (doRun_) {
+            {  // this is for the scope of the lock ...
+               Lock lock(mutex_, orbIsThreadSafe_);
+               if (log_.trace()) log_.trace(ME, "sweep in running thread");
+               while (orb_->work_pending()) orb_->perform_work();
+            }
+            if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
+            sleep(20); // sleep 20 milliseconds
+            if (log_.trace()) log_.trace(ME, string("awakening, doRun is: ") + lexical_cast<string>(doRun_));
          }
-         if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
-         sleep(20); // sleep 20 milliseconds
-         if (log_.trace()) log_.trace(ME, "waiking up");
       }
+      catch(CORBA::Exception &ex) {
+         log_.warn(ME, string("a corba exception occured in the running thread. It has now been stopped: ") + to_string(ex));
+      }
+      catch (exception &ex) {
+         log_.warn(ME, string("an exception occured in the running thread. It has now been stopped: ") + ex.what());
+      }
+
+      catch (...) {
+         log_.warn(ME, "an unknown exception occured in the running thread. It has now been stopped");
+      }
+
       log_.info(ME, "the corba loop has ended now");
       isRunning_ = false;
    }

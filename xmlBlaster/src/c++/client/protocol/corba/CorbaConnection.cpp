@@ -48,20 +48,23 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
   if (log_.call()) log_.call(me(), "CorbaConnection constructor ...");
-  if (numOfSessions_ == 0) {
+//  if (numOfSessions_ == 0) {
      if (orb) orb_ = orb;
      else {
         int args                 = global_.getArgs();
         const char * const* argc = global_.getArgc();
         orb_ = CORBA::ORB_init(args, const_cast<char **>(argc)); //, "XmlBlaster-C++-Client");
      }
+/*
   }
   else {
      if (orb) {
         throw XmlBlasterException(USER_CONFIGURATION, "c++-client", me() + " constructor: this constructor can only be called as the first instance of this class. Use the other constructor (please consult the API)");
      }
   }
-  numOfSessions_++;
+*/
+
+//  numOfSessions_++;
   nameServerControl_ = 0;
   numLogins_         = 0;
   xmlBlaster_        = 0;
@@ -75,22 +78,24 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
 
 CorbaConnection::~CorbaConnection() 
 {
-   if (log_.call()) log_.call(me(), "CorbaConnection destructor ...");
-   numOfSessions_--;
+   if (log_.call()) log_.call(me(), "destructor");
 
    delete nameServerControl_;
    
+   if (log_.trace()) log_.trace(me(), "destructor: invoking shutdown");
    shutdown();
    
+   if (log_.trace()) log_.trace(me(), "destructor: invoking shutdownCb");
    shutdownCb();
+   if (log_.trace()) log_.trace(me(), "destructor: deleting the defaultCallback");
    delete defaultCallback_;
 
-   if (numOfSessions_ == 0) {
-      CORBA::release(orb_);
-      CORBA::release(poa_);
-      orb_ = 0;
-      poa_ = 0;
-   }
+   if (log_.trace()) log_.trace(me(), "destructor: releasing the orb");
+   if (!CORBA::is_nil(orb_)) CORBA::release(orb_);
+   if (log_.trace()) log_.trace(me(), "destructor: releasing the poa");
+   if (!CORBA::is_nil(poa_)) CORBA::release(poa_);
+   orb_ = 0;
+   poa_ = 0;
 }
 
 string
@@ -949,9 +954,9 @@ void CorbaConnection::usage()
   log.plain(me, "");
 }
 
-CORBA::ORB_ptr CorbaConnection::orb_           = 0;
-unsigned short CorbaConnection::numOfSessions_ = 0;
-PortableServer::POA_ptr CorbaConnection::poa_  = 0;
+// CORBA::ORB_ptr CorbaConnection::orb_           = 0;
+// unsigned short CorbaConnection::numOfSessions_ = 0;
+// PortableServer::POA_ptr CorbaConnection::poa_  = 0;
 
 }}}}} // end of namespace
 
