@@ -2,8 +2,6 @@
 Name:      ExecutorBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   ExecutorBase base class for Executor, defines common constants
-Version:   $Id: ExecutorBase.java,v 1.3 2002/03/18 00:29:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
