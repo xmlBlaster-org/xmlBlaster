@@ -82,11 +82,9 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    protected transient ServerRef[] serverRefArr;
    protected Vector serverRefVec = new Vector();  // <serverRef type="IOR">IOR:000122200...</serverRef>
 
-   /** Holding queue properties for the server side callback queue */
-   protected transient Vector cbQueuePropertyVec = new Vector();
-   /** Holding queue property if subject related, a reference to a cbQueuePropertyVec entry */
-   private transient CbQueueProperty subjectCbQueueProperty;
-   /** Holding queue property if session related, a reference to a cbQueuePropertyVec entry */
+   /** Holding queue property if subject related, configures the queue which holds PtP messages for the client on the server */
+   private transient CbQueueProperty subjectQueueProperty;
+   /** Holding queue property if session related, configures the callback queue of the client */
    private transient CbQueueProperty sessionCbQueueProperty;
 
 
@@ -133,39 +131,11 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    }
 
    private void initialize(Global glob) {
-      this.sessionQos = new SessionQos(this.glob, this.nodeId);
       this.securityQos = getSecurityPlugin(null,null).getSecurityQos();
       this.securityQos.setCredential(accessPassword(null));
       if (this.sessionQos.getSessionName() != null) {
-         try {
-            setUserId(this.sessionQos.getSessionName().getLoginName());
-         }
-         catch (XmlBlasterException e) {
-            log.error(ME, "Ignoring problem: " + e.getMessage());
-         }
+         this.securityQos.setUserId(this.sessionQos.getSessionName().getLoginName());
       }
-   }
-
-   /**
-    * Returns never null. 
-    * <p />
-    * If no CbQueueProperty exists, a RELATING_SESSION queue property object is created
-    * on the fly.
-    * <p />
-    * If more than one CbQueueProperty exists, the first is chosen. (Verify this behavior)!
-    */
-   public CbQueueProperty getCbQueueProperty() {
-      if (this.cbQueuePropertyVec.size() > 0)
-         return (CbQueueProperty)this.cbQueuePropertyVec.elementAt(0);
-
-      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, this.nodeId.toString()));
-      return (CbQueueProperty)this.cbQueuePropertyVec.elementAt(0);
-   }
-
-   public CbQueueProperty[] getCbQueuePropertArr() {
-      if (this.cbQueuePropertyVec.size() == 0)
-         getCbQueueProperty(); // force creation
-      return (CbQueueProperty[])this.cbQueuePropertyVec.toArray(new CbQueueProperty[this.cbQueuePropertyVec.size()]);
    }
 
    /**
@@ -173,19 +143,19 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
     */
-   public CbQueueProperty getSubjectCbQueueProperty() {
-      if (this.subjectCbQueueProperty == null) {
-         this.subjectCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId.toString());
+   public CbQueueProperty getSubjectQueueProperty() {
+      if (this.subjectQueueProperty == null) {
+         this.subjectQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId.toString());
       }
-      return this.subjectCbQueueProperty;
+      return this.subjectQueueProperty;
    }
 
-   public void setSubjectCbQueueProperty(CbQueueProperty subjectCbQueueProperty) {
-      this.subjectCbQueueProperty = subjectCbQueueProperty;
+   public void setSubjectQueueProperty(CbQueueProperty subjectQueueProperty) {
+      this.subjectQueueProperty = subjectQueueProperty;
    }
 
-   public boolean subjectCbQueuePropertyIsInitialized() {
-      return (this.subjectCbQueueProperty != null);
+   public boolean hasSubjectQueueProperty() {
+      return (this.subjectQueueProperty != null);
    }
 
    /**
@@ -193,8 +163,16 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     */
    public CbQueueProperty getSessionCbQueueProperty() {
       if (this.sessionCbQueueProperty == null)
-         this.sessionCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId.toString());
+         this.sessionCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, nodeId.toString());
       return this.sessionCbQueueProperty;
+   }
+
+   public void setSessionCbQueueProperty(CbQueueProperty sessionCbQueueProperty) {
+      this.sessionCbQueueProperty = sessionCbQueueProperty;
+   }
+
+   public boolean hasSessionCbQueueProperty() {
+      return (this.sessionCbQueueProperty != null);
    }
 
    /**
@@ -468,42 +446,16 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Add a callback address where to send the message (for PtP). 
+    * Add a callback address where to send the message
     * <p />
     * Creates a default CbQueueProperty object to hold the callback address argument.<br />
-    * Note you can invoke this multiple times to allow multiple callbacks.
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
+    //* Note you can invoke this multiple times to allow multiple callbacks.
    public void addCallbackAddress(CallbackAddress callback) {
-      CbQueueProperty prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, this.nodeId.toString()); // Use default queue properties for this callback address
+      // Use default queue properties for this callback address
+      CbQueueProperty prop = getSessionCbQueueProperty();
       prop.setCallbackAddress(callback);
-      addCbQueueProperty(prop);
-      //queuePropertyArr = null; // reset to be recalculated on demand
-   }
-
-   /**
-    * Adds a queue description. 
-    * This allows to set all supported attributes of a callback queue and a callback address
-    * @param prop The property object of the callback queue which shall be established in the server for calling us back.
-    * @see org.xmlBlaster.util.qos.address.CallbackAddress
-    */
-   public void addCbQueueProperty(CbQueueProperty prop) {
-      if (prop == null) return;
-      if (prop.isSessionRelated()) {
-         if (this.sessionCbQueueProperty != null) {
-            log.warn(ME, "addCbQueueProperty() overwrites previous session queue setting");
-            Thread.currentThread().dumpStack();
-         }
-         this.sessionCbQueueProperty = prop;
-      }
-      else if (prop.isSubjectRelated()) {
-         if (this.subjectCbQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
-         this.subjectCbQueueProperty = prop;
-      }
-      else {
-         log.error(ME, "Added callback address but relating='' is null");
-      }
-      this.cbQueuePropertyVec.addElement(prop);
    }
 
    /**
