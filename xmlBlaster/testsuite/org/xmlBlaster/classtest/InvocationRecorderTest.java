@@ -191,6 +191,9 @@ public class InvocationRecorderTest extends TestCase {
       catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
+      finally {
+         recorder.destroy();
+      }
    }
 
    public void testOnOverflowException() {
@@ -264,6 +267,9 @@ public class InvocationRecorderTest extends TestCase {
       catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
+      finally {
+         recorder.destroy();
+      }
    }
 
    public void testOnOverflowDiscardOldest() {
@@ -308,6 +314,9 @@ public class InvocationRecorderTest extends TestCase {
       catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
+      finally {
+         recorder.destroy();
+      }
    }
 
    public void testOnOverflowDiscard() {
@@ -349,6 +358,9 @@ public class InvocationRecorderTest extends TestCase {
       }
       catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
+      }
+      finally {
+         recorder.destroy();
       }
    }
 
