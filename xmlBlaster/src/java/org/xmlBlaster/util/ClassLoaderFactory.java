@@ -3,7 +3,7 @@ Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.3 2002/07/13 18:59:22 ruff Exp $
+Version:   $Id: ClassLoaderFactory.java,v 1.4 2002/07/13 20:58:46 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -26,7 +26,7 @@ public class ClassLoaderFactory {
    private int instanceCounter = 0;
 
    /**
-    * We are a singleton in respect to a Global instance. 
+    * We are a singleton in respect to a Global instance.
     */
    ClassLoaderFactory (Global glob) {
      ++instanceCounter;
@@ -137,10 +137,6 @@ public class ClassLoaderFactory {
 
    Adding the name of the calling class as path to the basepath.
 
-   This may be critical because one may rename xmlBlaster.jar.
-
-   !!! TODO: How do I now which jar-file my(this) class came from ??? !!!
-
    @param caller Type of the calling class
    @return The base path for the caller specific additional classes.
    */
@@ -148,36 +144,22 @@ public class ClassLoaderFactory {
       if (log.CALL) log.call(ME, "Entering getBasePath");
 
       URL callersURL[] = null; // all URLs of the callers classpath
-      String basePath = ""; // i.e. '/home/goetzger/java/xmlBlaster/lib/'
+      String basePath = ""; // i.e. '/home/developer/java/xmlBlaster/lib/'
       String callerClassName = null; // i.e. 'org.xmlBlaster.util.ClassLoaderFactory'
 
-      String jarName = "xmlBlaster.jar"; // !!! critical if on renames xmlBlaster.jar
-      int jarIndex = -1;
+      String classResource = which(caller, plugin);
+      if (log.TRACE)
+         log.trace(ME, "pluginName '" + plugin + "' loaded by " + classResource );
+
+      log.info(ME, "pluginName '" + plugin + "' loaded by " + classResource );
 
       // occures at the beginning of the return String of the getClass().toString() - call
       // i.e. for this class: className: 'class org.xmlBlaster.util.ClassLoaderFactory'
       String classType = "class ";
 
-      String fileSeparator = System.getProperty("file.separator");
-
-      callersURL = getClassLoaderURLs((Object) caller); // all URLs of the callers classpath
-      // check for null!?
-
-      for (int ii=0; ii < callersURL.length; ii++) {
-           if (log.TRACE)
-            log.trace(ME, ii +": " + callersURL[ii].getFile() + "[" + callersURL[ii].toString() + "]");
-         // getting the path from CP where jarName is contained
-         jarIndex = callersURL[ii].getFile().lastIndexOf(jarName);
-         if (jarIndex != -1) {
-            basePath = callersURL[ii].getFile().substring(0, jarIndex);
-            break; // no further search, taking the first hit
-         } // end of if -1
-      } // end of for
-      if (log.TRACE) log.trace(ME, "BasePath: '" + basePath + "'" );
-
       if (plugin.equals("")) {
          callerClassName = caller.getClass().toString();
-           callerClassName = callerClassName.substring(classType.length(), callerClassName.length());
+         callerClassName = callerClassName.substring(classType.length(), callerClassName.length());
       } else {
          callerClassName = plugin;
          if (log.TRACE) log.trace(ME, "taking pluginName");
@@ -185,12 +167,33 @@ public class ClassLoaderFactory {
 
       if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
 
+      String fileSeparator = System.getProperty("file.separator");
       // Now we need to replace the '.' from the package name to the '/' for a path name.
       // vi compliant ;-) :s/\./\//cg
-      // Or even better: replace it by the property file.delimiter of the desired OS.
-      callerClassName = StringHelper.replaceAll(callerClassName, ".", fileSeparator); // replace . by fileSeperator
+      // Or even better: replace it by the property file.separator of the desired OS.
+      callerClassName = StringHelper.replaceAll(callerClassName, ".", fileSeparator); // replace '.' by fileSeperator
       // callerClassName = callerClassName.replaceAll("\\.", fileSeparator); // since JDK 1.4 :-(
       if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
+
+      if(classResource.indexOf('!') == -1) {
+         // Determine the BasePath from classes
+         // log.warn(ME, "Class not loaded from jar, don't know how to determine basePath");
+         basePath = classResource.substring(0, classResource.lastIndexOf(callerClassName));
+      } else {
+
+         // Determine the BasePath from jar
+         // 'file:/home/xmlblaster/work/xmlBlaster/lib/xmlBlaster.jar!/org/xmlBlaster/engine/cluster/simpledomain/RoundRobin.class'
+         String jarFile = classResource.substring(classResource.indexOf("/"), classResource.indexOf("!"));
+         String jarName = jarFile.substring(jarFile.lastIndexOf("/") + 1, jarFile.length()	);
+         basePath = jarFile.substring(0, jarFile.lastIndexOf(jarName));
+
+         if (log.TRACE) log.trace(ME, "jarFile = '" + jarFile + "'");
+         if (log.TRACE) log.trace(ME, "jarName = '" + jarName + "'");
+      } // end of if
+      // log.info(ME, "basePath: '" + basePath + "'" );
+      if (log.TRACE) log.trace(ME, "basePath: '" + basePath + "'" );
+
+
 
       // Return the base path combined with the caller specific path.
       if (log.TRACE) log.trace(ME, "baseLibPath: '" + basePath + callerClassName + "'");
@@ -283,7 +286,7 @@ public class ClassLoaderFactory {
 
 
 /*
- * <code>JWhich</code> is a utility that takes a Java class name
+ * <code>which</code> is a utility that takes a Java class name
  * and displays the absolute pathname of the class file that would
  * be loaded first by the class loader, as prescribed by the
  * class path.
@@ -311,7 +314,9 @@ public class ClassLoaderFactory {
    * containing the specified class name, as prescribed
    * by the current classpath.
    *
+   * @param caller
    * @param className Name of the class.
+   * @return Url of resource of className.
    */
    public String which(Object caller, String className) {
 
@@ -328,7 +333,7 @@ public class ClassLoaderFactory {
       } else {
          if (log.TRACE) log.trace(ME, "\nClass '" + className + "' not found in \n'" + System.getProperty("java.class.path") + "'");
       }
-      return classUrl.toString();
+      return classUrl.getFile().toString();
    } // end of which
 
 
