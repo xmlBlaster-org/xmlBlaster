@@ -104,7 +104,7 @@ proprietary Protocol plugins (not CORBA)
 ----------------------------------------
 - Protocol plugins (www.webdav.com)
 - state less protocols (email, http, webDav)
-
+  For HTTP and XML see: http://www.xmlrpc.com/spec
 
 xmlBlaster homepage
 -------------------
