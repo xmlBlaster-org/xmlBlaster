@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.1 2000/01/23 22:44:34 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.2 2000/01/24 09:03:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -66,7 +66,7 @@ public class TestUnSub extends TestCase implements I_Callback
 
 
    /**
-    * Sets up the fixture.
+    * Sets up the fixture (login).
     * <p />
     * Connect to xmlBlaster and login
     */
@@ -86,7 +86,7 @@ public class TestUnSub extends TestCase implements I_Callback
 
 
    /**
-    * Tears down the fixture.
+    * Tears down the fixture (logout).
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
@@ -212,7 +212,8 @@ public class TestUnSub extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Construct a message and publish it,<br />
+    * TEST: Publish a message, subscribe on it with XPATH and
+    *       unSubscribe again with the returned oid. 
     */
    public void testSubscribeUnSubscribeExact()
    {
@@ -227,7 +228,8 @@ public class TestUnSub extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Construct a message and publish it,<br />
+    * TEST: Publish a message, subscribe on it with XPATH and 
+    *       unSubscribe again with the same XPATH query. 
     */
    public void testSubscribeUnSubscribeXPath()
    {
@@ -330,7 +332,7 @@ public class TestUnSub extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testSubscribeUnSubscribeExact();
       testSub.tearDown();
-      
+
       Log.exit(TestUnSub.ME, "Good bye");
    }
 }
