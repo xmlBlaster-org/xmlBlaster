@@ -173,6 +173,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
+    * engin.Global returns true, util.Global returns false
+    * @return true
+    */
+   public boolean isServerSide() {
+      return true;
+   }
+
+   /**
     * The unique name of this xmlBlaster server instance.
     * @return Can be null during startup
     */
