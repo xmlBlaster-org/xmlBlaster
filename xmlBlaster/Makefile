@@ -35,6 +35,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.authentication.plugins.htpasswd \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.protocol \
+			org.xmlBlaster.client.protocol.socket \
 			org.xmlBlaster.client.protocol.corba \
 			org.xmlBlaster.client.protocol.rmi \
 			org.xmlBlaster.client.protocol.xmlrpc \
@@ -49,6 +50,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.jdbc \
 			org.xmlBlaster.protocol.rmi \
 			org.xmlBlaster.protocol.xmlrpc \
+			org.xmlBlaster.protocol.socket \
 			org.xmlBlaster.protocol.nativ \
 			org.xmlBlaster.util
 
