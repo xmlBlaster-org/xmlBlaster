@@ -1,0 +1,35 @@
+The xmlBlaster test suite uses
+
+JUNIT 1.0 testsuite from Kent Beck and Erich Gamma
+
+   see http://members.pingnet.ch/gamma/junit.htm
+
+
+Note that Junit is extended by some methods in TestCase.java
+------------------------------------------------------------
+  3 methods assertNotEquals(...) are added
+  the modified test.jar is distributed in $XMLBLASTER_HOME/lib/test.jar
+
+
+This is how junit is build new:
+-------------------------------
+export JUNIT_HOME=/opt/junit
+export CLASSPATH=${CLASSPATH}:${JUNIT_HOME}/test.jar:${JUNIT_HOME}
+
+cd $JUNIT_HOME/test/framework/
+   jikes *.java
+
+cd $JUNIT_HOME
+   jar uvf test.jar test/framework/*.class
+
+The test.jar file is added to xmlBlaster/lib directory
+
+
+Start the Testsuite:
+--------------------
+
+With GUI support invoke:
+   jaco -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+
+For command line output invoke:
+   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
