@@ -3,6 +3,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ 
+ o C++ Clients: requests are now threadsafe: mutual block on requests (update thread is
+   not blocked). For example a publish can not be done simultaneously as a publish on the
+   same connection.
+
+ o C++ Clients: fixed bug in lexical_cast for string to string on solaris
+
  o C++ clients: QueueFactory and ParserFactory are now stateless (no global nor log)
 
  o bugfix in c++ client properties: empty spaces are allowed inside strings.
