@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.9 2002/09/09 13:35:44 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.10 2002/09/24 21:33:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -21,6 +21,8 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
+
+import java.io.IOException;
 
 
 /**
@@ -45,6 +47,8 @@ public class CbConnection implements I_Timeout
    private int state = IS_ALIVE;
 
    private int retryCounter = 0;
+
+   private String cbKey = null;
 
    /**
     * @param msgQueue The message queue witch i belong to
@@ -77,18 +81,18 @@ public class CbConnection implements I_Timeout
       
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
       //if (cbAddress.getId().equalsIgnoreCase("NATIVE")) {
-      cbDriver = glob.getNativeCallbackDriver(cbAddress.getType() + cbAddress.getAddress());
-      if (cbDriver != null)  { // && obj.toString().indexOf("org.xmlBlaster.protocol.socket.CallbackSocketDriver") >= 0) {
-         cbDriver.init(glob, cbAddress);
-         if (log.TRACE) log.trace(ME, "Created native callback driver for protocol '" + cbAddress.getType() + "'");
-         return;
+      cbKey = cbAddress.getType() + cbAddress.getAddress();
+      cbDriver = glob.getNativeCallbackDriver(cbKey); //  + msgQueue.getPublicSessionId());
+
+      if (cbDriver == null) { // instantiate the callback plugin ...
+         cbDriver = glob.getProtocolManager().getCbProtocolManager().getNewCbProtocolDriverInstance(cbAddress.getType());
+         if (cbDriver == null) {
+            log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported, try setting 'CbProtocolPlugin["+cbAddress.getType()+"][1.0]=' in xmlBlaster.properties");
+            throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported");
+         }
       }
-
-      cbDriver = glob.getProtocolManager().getCbProtocolManager().getNewCbProtocolDriverInstance(cbAddress.getType());
-
-      if (cbDriver == null) {
-         log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported, try setting 'CbProtocolPlugin["+cbAddress.getType()+"][1.0]=' in xmlBlaster.properties");
-         throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported");
+      else {
+         if (log.TRACE) log.trace(ME, "Created native callback driver for protocol '" + cbAddress.getType() + "'");
       }
 
       try {
@@ -98,17 +102,8 @@ public class CbConnection implements I_Timeout
          handleTransition(false, true);
       }
 
-      if (cbAddress.getPingInterval() > 0L) // respan ping timer
+      if (cbAddress.getPingInterval() > 0L) // respan ping timer (even on native plugin we do a dummy ping)
          timerKey = cbPingTimer.addTimeoutListener(this, cbAddress.getPingInterval(), null);
-      /* This gives deadlock on second login session if first is stale
-         The login and shutdown don't like each other
-         So we span a ping timer to check with the ping thread.
-      try {
-         ping("");
-      }
-      catch (XmlBlasterException e) {
-      }
-      */
 
       if (log.TRACE) log.trace(ME, "Created callback driver for protocol '" + cbAddress.getType() + "'");
    }
@@ -158,19 +153,19 @@ public class CbConnection implements I_Timeout
          try {
             if (log.TRACE) log.trace(ME, "Going to check if client callback server is available again ...");
             cbDriver.init(glob, cbAddress);
+            try {
+               ping("");
+            }
+            catch (XmlBlasterException e) {
+            }
          }
          catch (XmlBlasterException e) {
             handleTransition(false, false);
          }
          catch (Throwable e) {
             log.error(ME, "Callback reconnect polling error: " + e.toString());
-            e.printStackTrace();
+            //if (!(e instanceof IOException)) e.printStackTrace();
             handleTransition(false, false);
-         }
-         try {
-            ping("");
-         }
-         catch (XmlBlasterException e) {
          }
       }
    }
@@ -224,6 +219,12 @@ public class CbConnection implements I_Timeout
          handleTransition(false, true);
          throw e;
       }
+      catch (Throwable e) {
+         log.error(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + getStateStr() + ": " + e.toString());
+         handleTransition(false, true);
+         //if (!(e instanceof IOException)) e.printStackTrace();
+         throw new XmlBlasterException(ME, e.toString());
+      }
    }
 
    /** Ping the callback server of the client */
@@ -247,6 +248,12 @@ public class CbConnection implements I_Timeout
          if (isAlive() && log.TRACE) log.trace(ME, "Exception from callback ping(), retryCounter=" + retryCounter + ", state=" + getStateStr());
          handleTransition(false, false);
          throw e;
+      }
+      catch (Throwable e) {
+         log.error(ME, "Exception from callback ping(), retryCounter=" + retryCounter + ", state=" + getStateStr() + ": " + e.toString());
+         handleTransition(false, false);
+         //if (!(e instanceof IOException)) e.printStackTrace();
+         throw new XmlBlasterException(ME, e.toString());
       }
    }
 
@@ -323,6 +330,7 @@ public class CbConnection implements I_Timeout
       if (cbDriver != null) {
          cbDriver.shutdown();
       }
+      glob.removeNativeCallbackDriver(cbKey); //  + msgQueue.getPublicSessionId());
    }
 
    public final boolean isAlive() {
