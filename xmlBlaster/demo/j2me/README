@@ -1,3 +1,5 @@
+READ: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.j2me.html
+
 
 1) start a tomcat  (to have the applet proxy running)
 
