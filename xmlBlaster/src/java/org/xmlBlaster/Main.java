@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.101 2002/06/28 13:01:13 ruff Exp $
+Version:   $Id: Main.java,v 1.102 2002/07/13 16:58:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -387,14 +387,14 @@ public class Main implements I_RunlevelListener
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
             log.info(ME, Memory.getStatistic());
             if (controlPanel == null) {
-               int width = 46;
+               int width = 48;
                org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
                String line = sh.charChain('-', width);
                String bound = "|";
                log.info(ME, line);
-               String ver = bound + " xmlBlaster " + glob.getVersion() + " is ready for requests";
+               String ver = bound + " xmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp();
                log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
-               String help = bound + " press <?> and <enter> for options";
+               String help = bound + " READY - press <?> and <enter> for options";
                log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
                log.info(ME, line);
             }
