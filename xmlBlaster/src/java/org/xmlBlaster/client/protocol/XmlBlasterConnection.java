@@ -604,7 +604,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * with loginName/Password schema:
     * <pre>
     *    &lt;qos>
-    *       &lt;securityService type=\"simple\" version=\"1.0\">
+    *       &lt;securityService type='htpasswd' version='1.0'>
     *          &lt;![CDATA[
     *             &lt;user>aUser&lt;/user>
     *             &lt;passwd>theUsersPwd&lt;/passwd>
