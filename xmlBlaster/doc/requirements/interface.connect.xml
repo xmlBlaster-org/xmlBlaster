@@ -146,6 +146,11 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     We recommend to use the <b>updateOneway</b> setting from the subscribe QoS
     to configure this only for well chosen subscriptions (see requirement interface.subscribe).
     </p>
+    <p>
+    Once you have made a session persistent (see engine.persistence.session) and you are reconnecting,
+    the new connection will ignore the <i>persistent</i> flag. Once made persistent, the session
+    will remain persistent.
+    </p>
    </example>
 
    <example lang="XML" type="HTML">

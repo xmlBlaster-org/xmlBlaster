@@ -73,6 +73,12 @@
           </li>
         </ul>
       </p>
+    <p>
+    Once you have made a session persistent and you are reconnecting,
+    the new connection will ignore the <i>persistent</i> flag. Once made persistent, the session
+    will remain persistent.
+    </p>
+
    </description>
 
    <example lang="Java">
