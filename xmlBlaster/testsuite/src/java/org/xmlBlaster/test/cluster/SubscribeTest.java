@@ -16,6 +16,8 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -161,23 +163,52 @@ public class SubscribeTest extends TestCase {
             SubscribeReturnQos srq = bilboCon2.subscribe(sk.toXml(), sq.toXml());
          }
 
-         System.err.println("->Publish to avalon ...");
-         PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
-         PublishQos avalon_pq = new PublishQos(glob);
-         MsgUnit avalon_msgUnit = new MsgUnit(avalon_pk, contentStr, avalon_pq);
-         PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
-         assertEquals("oid changed", oid, avalon_prq.getKeyOid());
+         // First test subscribe ...
+         {
+            System.err.println("->Publish to avalon ...");
+            PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
+            PublishQos avalon_pq = new PublishQos(glob);
+            MsgUnit avalon_msgUnit = new MsgUnit(avalon_pk, contentStr, avalon_pq);
+            PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
+            assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
-         if (1 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
-         assertEquals("message from avalon", 1, updateCounterBilbo);
-         if (1 != updateCounterBilbo2) log.error(ME, "Did not expect " + updateCounterBilbo2 + " updates");
-         assertEquals("message from avalon #2", 1, updateCounterBilbo2);
-         updateCounterBilbo = 0;
-         updateCounterBilbo2 = 0;
+            try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+            if (1 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+            assertEquals("message from avalon", 1, updateCounterBilbo);
+            if (1 != updateCounterBilbo2) log.error(ME, "Did not expect " + updateCounterBilbo2 + " updates");
+            assertEquals("message from avalon #2", 1, updateCounterBilbo2);
+            updateCounterBilbo = 0;
+            updateCounterBilbo2 = 0;
+         }
 
          System.err.println("->testSubscribeTwice done, SUCCESS.");
+
+         // ... and now test unSubscribe
+         {
+            System.err.println("->UnSubscribe from bilbo ...");
+            UnSubscribeKey usk = new UnSubscribeKey(glob, oid);
+            usk.setDomain(domain);
+            UnSubscribeQos usq = new UnSubscribeQos(glob);
+            UnSubscribeReturnQos[] usrq = bilboCon.unSubscribe(usk, usq);
+            assertEquals("", 1, usrq.length);
+
+            System.err.println("->Publish to avalon ...");
+            PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
+            PublishQos avalon_pq = new PublishQos(glob);
+            MsgUnit avalon_msgUnit = new MsgUnit(avalon_pk, contentStr, avalon_pq);
+            PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
+            assertEquals("oid changed", oid, avalon_prq.getKeyOid());
+
+
+            try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+            if (0 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+            assertEquals("message from avalon", 0, updateCounterBilbo);
+            if (1 != updateCounterBilbo2) log.error(ME, "Did not expect " + updateCounterBilbo2 + " updates");
+            assertEquals("message from avalon #2", 1, updateCounterBilbo2);
+            updateCounterBilbo = 0;
+            updateCounterBilbo2 = 0;
+         }
 
          System.err.println("->Trying to erase the message at the slave node ...");
          EraseKey ek = new EraseKey(glob, oid);
