@@ -23,6 +23,7 @@ import org.xmlBlaster.util.dispatch.DeliveryConnection;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.util.enum.MethodName;
 
 
 /**
@@ -126,7 +127,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDeliveryManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
          for (int i=0; i<msgUnitRawArr.length; i++) {
-            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgUnitRawArr[i]);
+            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgUnitRawArr[i], MethodName.UNKNOWN);
          }
          if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgUnitRawArr.length + " messages.");
       }

@@ -302,7 +302,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgUnitArr.length];
          I_Session sec = sessionInfo.getSecuritySession();
          for (int ii=0; ii<msgUnitArr.length; ii++)
-            msgUnitRawArr[ii] = sec.exportMessage(msgUnitArr[ii].getMsgUnitRaw());
+            msgUnitRawArr[ii] = sec.exportMessage(msgUnitArr[ii].getMsgUnitRaw(), MethodName.GET);
 
          return msgUnitRawArr;
       }

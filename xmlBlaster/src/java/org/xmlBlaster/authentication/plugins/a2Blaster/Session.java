@@ -11,6 +11,7 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.client.api.CorbaConnection;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * @author wolfgang.kleinertz@epost.de
@@ -232,7 +233,7 @@ public class Session implements I_Session, I_Subject {
     * @see #importMessage(MsgUnitRaw)
     * implements: I_Session.exportMessage(MsgUnitRaw);<br>
     */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".exportMessage(...)", "-------START-----\n");
       if (log.DUMP) log.dump(ME+".exportMessage(...)", "in "+msg.toXml());

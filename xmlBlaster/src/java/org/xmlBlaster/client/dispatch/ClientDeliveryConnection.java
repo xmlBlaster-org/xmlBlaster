@@ -165,7 +165,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       // We export/encrypt the message (call the interceptor)
       if (securityInterceptor != null) {
          for (int i=0; i<msgArr.length; i++) {
-            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgArr[i].getMsgUnitRaw());
+            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgArr[i].getMsgUnitRaw(), MethodName.PUBLISH);
          }
          if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr.length + " publish messages.");
       }

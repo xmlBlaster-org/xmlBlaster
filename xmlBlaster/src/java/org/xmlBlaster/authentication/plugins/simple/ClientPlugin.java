@@ -101,7 +101,7 @@ public class ClientPlugin implements I_ClientPlugin {
     * @exception XmlBlasterException Thrown if the message cannot be processed
     * @see #importMessage(MsgUnitRaw)
     */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException
    {
       return msg;
    }

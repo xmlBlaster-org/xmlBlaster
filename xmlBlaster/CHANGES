@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Added MethodName argument to exportMessage in security message interceptor
+
  o Zhang Zhi Wei added a Microsoft SQL Server port for our persistence layer
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.sqlserver.html
 

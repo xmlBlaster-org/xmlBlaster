@@ -198,7 +198,7 @@ public class Session implements I_Session, I_Subject {
     * @exception XmlBlasterException Thrown if the message cannot be processed
     * @see #importMessage(MsgUnitRaw)
     */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
       return msg;
 

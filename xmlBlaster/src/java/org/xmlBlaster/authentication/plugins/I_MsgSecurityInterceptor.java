@@ -49,5 +49,5 @@ public interface I_MsgSecurityInterceptor {
    /** Use this to export (encrypt) the content */
    public byte[] exportMessage(byte[] content) throws XmlBlasterException;
    /** Use this to export (encrypt) separately the xmlKey,content,qos of MsgUnitRaw */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException;
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException;
 }
