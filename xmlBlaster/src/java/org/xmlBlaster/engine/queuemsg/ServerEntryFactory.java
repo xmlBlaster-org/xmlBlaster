@@ -100,7 +100,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Long msgUnitWrapperUniqueId = (Long)obj[1];
             String receiverStr = (String)obj[2];
             String subscriptionId = (String)obj[3];
-            String state = (String)obj[4];
+            String flag = (String)obj[4]; // was state in older release
             Integer redeliverCount = (Integer)obj[5];
 
             // We read the message content as well but don't parse it yet:
@@ -121,13 +121,13 @@ public class ServerEntryFactory implements I_EntryFactory
 
             if (log.TRACE) log.trace(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
                          " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
-                         " subscriptionId=" + subscriptionId + " state=" + state + " redeliverCount=" + redeliverCount);
+                         " subscriptionId=" + subscriptionId + " flag=" + flag + " redeliverCount=" + redeliverCount);
             SessionName receiver = new SessionName(glob, receiverStr);
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes, 
-                                           receiver, subscriptionId, state, redeliverCount.intValue(),
+                                           receiver, subscriptionId, flag, redeliverCount.intValue(),
                                            qos, key, content);
          }
          catch (Exception ex) {
