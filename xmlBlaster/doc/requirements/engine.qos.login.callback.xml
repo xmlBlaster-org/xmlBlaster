@@ -136,6 +136,7 @@
    <p>
    The Thread pooling will be probably based on Doug Lea's lib
    http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
+   </p>
    </changerequest>
 
 
@@ -187,7 +188,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
