@@ -9,15 +9,177 @@
       a message instances are the single messages published (probably with identical oid).
       The message instances build a history queue of a topic.
       </p>
+      <h3>
+      Message lifecycle overview
+      </h3>
+      <br />
+      <img src="engine.message.expiry.gif" border="0" title="Message lifecycle overview" alt="Message lifecycle overview" />
+      <br />
       <p>
-      Lets have a look at the states of a topic:
+      Every message key oid defines a topic. You publish any number of messages with the
+      same oid, those MessageUnit instances are distinguished by the unique receive timestamp.
       </p>
+      <p>
+      The messages are queryable from the history queue. The history queue only
+      contains references to the real messageUnit which is handled by the cache
+      implementation.
+      </p>
+      <p>
+      For every subscription puts a reference of a messageUnit into a client specific
+      callback queue, from where the messages are sent to the client.
+      </p>
+      <p>
+      The pointers on the cache entries are reference counted. If no weak reference
+      exists anymore the cache entry is destroyed.
+      </p>
+      <p>
+      If a cache entry is swapped to harddisk, the weak references are set
+      to null by the Java virtual machine. In this case, the access forces 
+      a lookup and the message is swapped back to the cache.
+      </p>
+
+
+      <h3>
+      The logical states of a topic (= messages with same key oid)
+      </h3>
       <br />
       <img src="TopicLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster topic" alt="Lifecycle of an xmlBlaster topic" />
       <br />
       <p>
-      Lets have a look at the states of a message instance:
+      The above states break down to internal conditions.
       </p>
+      <h3>
+      Internal conditions of a topic:
+      </h3>
+      <table border="1">
+         <tr>
+            <th>state</th>
+            <th>Is visible?<br />XPATH queries are possible<br />has BigXmlDom entry</th>
+            <th>Referenced by<br />history queue</th>
+            <th>Referenced by<br />callback queue</th>
+            <th>Has subscriptions</th>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>true</td>
+            <td>true</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>true</td>
+            <td>true</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>true</td>
+            <td>false</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>true</td>
+            <td>false</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>false</td>
+            <td>true</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>false</td>
+            <td>true</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>alive</b></td>
+            <td>true</td>
+            <td>false</td>
+            <td>false</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>unreferenced</b></td>
+            <td>true</td>
+            <td>false</td>
+            <td>false</td>
+            <td>false</td>
+         </tr>
+
+         <tr>
+            <td><b>invalid</b></td>
+            <td>false</td>
+            <td>true</td>
+            <td>true</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>invalid</b></td>
+            <td>false</td>
+            <td>true</td>
+            <td>true</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>invalid</b></td>
+            <td>false</td>
+            <td>true</td>
+            <td>false</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>invalid</b></td>
+            <td>false</td>
+            <td>true</td>
+            <td>false</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>invalid</b></td>
+            <td>false</td>
+            <td>false</td>
+            <td>true</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>softErased</b></td>
+            <td>false</td>
+            <td>false</td>
+            <td>true</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td><b>unconfigured</b></td>
+            <td>false</td>
+            <td>false</td>
+            <td>false</td>
+            <td>true</td>
+         </tr>
+         <tr>
+            <td><b>start/dead</b></td>
+            <td>false</td>
+            <td>false</td>
+            <td>false</td>
+            <td>false</td>
+         </tr>
+      </table>
+
+      <p>
+      </p>
+
+      <h3>
+      Possible states of a message instance:
+      </h3>
       <br />
       <img src="MessageInstanceLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster message instance" alt="Lifecycle of an xmlBlaster message instance" />
       <br />
@@ -36,7 +198,7 @@
    <see type="REQ">engine.message</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
