@@ -4,23 +4,27 @@
 <requirement id='engine.qos.update.subscriptionId' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster sends the subscription id in the qos arguments of an update</topic>
    <description>
+      <p>
       Sometimes when a client receives an update message, she wants to know
       which of its subscriptions caused this update. You may retrieve the subscription id
-      in the qos argument of the update using the &lt;subscriptionId&gt; tag.
+      in the qos argument of the update using the &lt;subscribe id=''&gt; tag.<br />
       This is is the same which she got as return value of the former subscribe() invocation.
+      </p>
+      <p>
+      Update messages which where sent as PtP messages (and therefore where not subscribed)
+      are marked with &lt;subscribe id='__subId:PtP'&gt;
+      </p>
    </description>
    <example lang="Java">
-      <![CDATA[<qos>
-         <subscriptionId> <!-- The same id which you got returned from your previous subscribe() -->
-            Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
-         </subscriptionId>
-      </qos>]]>
+<![CDATA[<qos>
+   <subscribe id='__subId:2'/> <!-- The same id which you got returned from your previous subscribe() -->
+</qos>]]>
    </example>
    <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.client.key.UpdateKey</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 03 02</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
