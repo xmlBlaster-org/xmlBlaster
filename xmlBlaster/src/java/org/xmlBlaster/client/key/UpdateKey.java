@@ -14,6 +14,23 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p>
  * See MsgKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
+ * A typical key could look like this:<br />
+ * <pre>
+ *     &lt;key oid='4711' contentMime='text/xml'>
+ *        &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
+ *           &lt;DRIVER id='FileProof' pollingFreq='10'>
+ *           &lt;/DRIVER>
+ *        &lt;/AGENT>
+ *     &lt;/key>
+ * </pre>
+ * <p>
+ * NOTE: The key attributes like <i>oid</i> or <i>contentMime</i> are parsed already
+ * and available with the getter methods in this class and the superclass.
+ * <br />
+ * The application specific tags and their attributes (like AGENT or DRIVER in the above example)
+ * are received as a 'raw' XML ASCII string with the <i>getClientTags()</i> or <i>toXml()</i> methods.
+ * If you want to look at them you need to parse them yourself, usually by using an XML parser (DOM or SAX parser).
+ * </p>
  * @see org.xmlBlaster.util.key.MsgKeySaxFactory
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.update.html" target="others">the interface.update requirement</a>
  */
