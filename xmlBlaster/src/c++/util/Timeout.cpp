@@ -232,7 +232,7 @@ namespace org { namespace xmlBlaster { namespace util {
          {
             log_.trace(ME, "sleeping ... " + lexical_cast<string>(delay) + " milliseconds");
             isReady_ = true;
-            waitForTimeoutCondition_.wait(waitForTimeoutLock, delay);
+            waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)delay);
             log_.trace(ME, "waking up .. ");
          }
       }
