@@ -195,6 +195,8 @@ TODO
    <property name="c.debug" value="true" />
    <property name="c.obj.dir" value="${build.dir}/objC" />
    <property name="gcc.enableStackTrace" value="-D_ENABLE_STACK_TRACE_" /> <!-- Use -U... to undefine for OSF -->
+   <property name="sqlite.include.dir" location="${src.c.dir}/util/queue"/> <!-- Path to sqlite.h, http://www.sqlite.org -->
+   <property name="sqlite.lib.dir" location="${lib.dir}"/>                  <!-- Path to libsqlite.so -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -248,20 +250,7 @@ TODO
       <compilerarg value="-D${thread.impl}" />
    </compiler>
 
-   <!-- Compile C++ -->
-   <compiler id="g++" name="g++" exceptions="true" multithreaded="true" if="use-gcc"> <!-- unless="" -->
-      <compilerarg value="-Wall" />
-      <compilerarg value="-pedantic" />
-      <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to supress warning: ISO C++ does not support `long long' -->
-      <compilerarg value="-Wstrict-prototypes"/>
-      <compilerarg value="-D_REENTRANT" />
-      <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="-D${thread.impl}" />
-   </compiler>
-
-   <!-- Compile C -->
+   <!-- Compile C/C++ -->
    <compiler id="gcc" name="gcc" if="use-gcc">
       <compilerarg value="-Wall" />
       <compilerarg value="-pedantic" />
@@ -270,6 +259,7 @@ TODO
       <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-D${thread.impl}" />
       <compilerarg value="-x" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ -->
       <compilerarg value="c++" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- (follow up of above -x, to avoid quotes) Compile lib as C++ -->
    </compiler>
@@ -1706,13 +1696,7 @@ TODO
                <case value="true">
                </case>
                <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
-                  <switch value="${use-g++}" caseinsensitive="true">
-                    <case value="true">
-                    </case>
-                    <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
-                      <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for KAI compiler) -->
-                    </default>
-                  </switch>
+                  <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for KAI compiler) -->
                </default>
             </switch>
          </case>                                     <!-- Probably we need to set it all the time in build.properties -->
@@ -1723,7 +1707,6 @@ TODO
          </default>
       </switch>
       <echo message=" use-gcc       = ${use-gcc}"/>  <!-- Linux/UNIX default -->
-      <echo message=" use-g++       = ${use-g++}"/>  <!-- Linux/UNIX default -->
       <echo message=" use-icc       = ${use-icc}"/>  <!-- Intel C/C++ compiler -->
       <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
@@ -2094,7 +2077,6 @@ TODO
       <cc debug="${cpp.debug}" link="${CPP_LINK}"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
-         <compiler refid="g++"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
@@ -2170,8 +2152,6 @@ TODO
 
          <linker name="gcc"  if="use-gcc" />
 
-         <linker name="g++"  if="use-g++" />
-
          <linker name="icc"  if="use-icc" />
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
@@ -2202,6 +2182,9 @@ TODO
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
+
+            <!-- libsqlite.so --> 
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
          </linker>
 
          <linker name="bcc"  if="use-bcc" />
@@ -2288,7 +2271,6 @@ TODO
           outfile="${compileCppSourcePath}/bin/${exeName}"
           objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
-         <compiler refid="g++"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
@@ -2365,6 +2347,9 @@ TODO
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
 
+            <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
 
@@ -2408,6 +2393,9 @@ TODO
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
+
+            <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
@@ -2461,6 +2449,9 @@ TODO
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
 
+            <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
             <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
@@ -2493,7 +2484,6 @@ TODO
           objdir="${c.obj.dir}"
           multithreaded="true">
          <compiler refid="gcc"/>
-         <compiler refid="g++"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
@@ -2503,6 +2493,7 @@ TODO
          <fileset dir="${build.src.c.dir}/util/queue" includes="*.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
 
          <includepath location="${build.src.c.dir}" />
+         <includepath location="${sqlite.include.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <!-- define name="TC" value="1" if="windows" /--> <!-- Force C compiling: TC, to force C++: TP -->
@@ -2521,33 +2512,25 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc" unless="XMLBLASTER_C_COMPILE_AS_CPP">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
-         </linker>
-
-         <linker name="g++"  if="XMLBLASTER_C_COMPILE_AS_CPP">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
-         </linker>
-
-         <linker name="g++"  if="use-g++">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
          <linker name="icc"  if="use-icc">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
            <syslibset libs="ws2_32" />
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
          <linker name="bcc"  if="use-bcc">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
          <linker name="CC"  if="use-CC">
-           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
          </linker>
@@ -2614,15 +2597,17 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          </linker>
 
          <linker name="icc" if="use-icc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          </linker>
@@ -2630,6 +2615,7 @@ TODO
          <linker name="msvc" if="use-msvc">
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
             <syslibset libs="ws2_32" />
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
@@ -2641,6 +2627,7 @@ TODO
          <linker name="CC" if="use-CC"> <!-- SunOS -->
             <syslibset dir="/lib" libs="socket,posix4,nsl"/>
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" /> <!-- libxmlBlasterClientC.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
              <!-- Burn .so path into executables: -R path1:path2:...
