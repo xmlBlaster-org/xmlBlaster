@@ -194,8 +194,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "SubscribeQos=\n" + sq.toXml());
 
          if (interactive) {
-            log.info(ME, "Hit a key to subscribe '" + qStr + "'");
-            try { System.in.read(); } catch(java.io.IOException e) {}
+            Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
          }
 
          SubscribeReturnQos srq = con.subscribe(sk, sq);
@@ -211,8 +210,7 @@ public class HelloWorldSubscribe implements I_Callback
 
          if (unSubscribe) {
             if (interactive) {
-               log.info(ME, "Hit a key to unSubscribe");
-               try { System.in.read(); } catch(java.io.IOException e) {}
+               Global.waitOnKeyboardHit("Hit a key to unSubscribe");
             }
 
             UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
@@ -225,8 +223,7 @@ public class HelloWorldSubscribe implements I_Callback
             log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
          }
 
-         log.info(ME, "Hit a key to exit");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         Global.waitOnKeyboardHit("Hit a key to exit");
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
@@ -282,8 +279,7 @@ public class HelloWorldSubscribe implements I_Callback
          try { Thread.sleep(this.updateSleep); } catch( InterruptedException i) {}
          log.info(ME, "Waking up.");
       } else if (this.interactiveUpdate) {
-         log.info(ME, "Hit a key to return from update() (we are blocking the server callback) ...");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         Global.waitOnKeyboardHit("Hit a key to return from update() (we are blocking the server callback) ...");
          log.info(ME, "Returning update() - control goes back to server");
       }
 

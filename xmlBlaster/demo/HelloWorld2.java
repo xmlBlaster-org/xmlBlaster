@@ -35,11 +35,9 @@ public class HelloWorld2 implements I_Callback
          con.publish(new MsgUnit(glob, "<key oid='HelloWorld2'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
-         try {
-            Thread.currentThread().sleep(1000); // wait a second
-            System.out.println("\nHit a key to logout and terminate ...");
-            System.in.read();
-         } catch(Exception e) { }
+         // wait a second
+         try { Thread.currentThread().sleep(1000); } catch(Exception e) { }
+         Global.waitOnKeyboardHit("\nHit a key to logout and terminate ...");
 
          con.erase("<key oid='HelloWorld2'/>", null);
          con.disconnect(null);

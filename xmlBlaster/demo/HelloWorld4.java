@@ -242,9 +242,7 @@ public class HelloWorld4
     */
    private void doOurWork() {
       try {
-         // Wait for keyboard entry
-         log.info(ME, "Success, hit a key to publish messages");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         Global.waitOnKeyboardHit("Success, hit a key to publish messages");
 
          PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
@@ -262,8 +260,7 @@ public class HelloWorld4
 
          // Wait a second for messages to arrive before we logout
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
-         log.info(ME, "Success, hit a key to exit");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         Global.waitOnKeyboardHit("Success, hit a key to exit");
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Houston, we have a problem: " + e.getMessage());

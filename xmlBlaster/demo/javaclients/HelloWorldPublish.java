@@ -211,8 +211,7 @@ public class HelloWorldPublish
          for(int i=0; i<numPublish; i++) {
 
             if (interactive) {
-               log.info(ME, "Hit a key to publish '" + oid + "' #" + (i+1) + "/" + numPublish);
-               try { System.in.read(); } catch(java.io.IOException e) {}
+               Global.waitOnKeyboardHit("Hit a key to publish '" + oid + "' #" + (i+1) + "/" + numPublish);
             }
             else {
                if (sleep > 0) {
@@ -291,8 +290,7 @@ public class HelloWorldPublish
 
          if (erase) {
             if (interactive) {
-               log.info(ME, "Hit a key to erase");
-               try { System.in.read(); } catch(java.io.IOException e) {}
+               Global.waitOnKeyboardHit("Hit a key to erase");
             }
 
             EraseKey ek = new EraseKey(glob, oid);
@@ -303,8 +301,7 @@ public class HelloWorldPublish
             log.info(ME, "Erase success");
          }
 
-         log.info(ME, "Hit a key to exit");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         Global.waitOnKeyboardHit("Hit a key to exit");
 
          if (disconnect) {
             DisconnectQos dq = new DisconnectQos(glob);
