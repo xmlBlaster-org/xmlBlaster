@@ -106,6 +106,14 @@ COMMENT:
             else
                myRectangle.getStyle().setProperty('fill','green')
 
+            /*
+            var typeName = "CPU";
+            if (keyOid == "meminfo") typeName = "RAM";
+            var textName = "text." + typeName;
+   	      //svgdoc.getElementById(textName).firstChild.nodeValue = typeName+" "+value+"%"
+            svgdoc.getElementById(textName).getFirstChild.setData(typeName+" "+value+"%")
+            */
+
             Log.trace("SVG picture is successfully updated with new value");
             
             top.xmlBlasterWindow.setReady( self, true );
