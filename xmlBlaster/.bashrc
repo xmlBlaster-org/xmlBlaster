@@ -183,6 +183,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxt='cd $XMLBLASTER_HOME/testsuite/src'
    alias cdxr='cd $XMLBLASTER_HOME/doc/requirements'
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/src/java/org/xmlBlaster/test'
+   alias build='build.sh'
 
    if [ ! -f ${HOME}/xmlBlaster.properties ]; then
       cp ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
