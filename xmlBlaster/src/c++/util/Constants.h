@@ -139,7 +139,9 @@ namespace org { namespace xmlBlaster {
    /** Type of a history message queue containing references on messages */
    extern Dll_Export const char * RELATING_HISTORY;
    /** Message cache */
-   extern Dll_Export const char * RELATING_TOPICCACHE;
+   extern Dll_Export const char * RELATING_MSGUNITSTORE;
+   /** Persistency for topics */
+   extern Dll_Export const char * RELATING_TOPICSTORE;
 
    /** message queue onOverflow handling, default is blocking until queue takes messages again */
    extern Dll_Export const char * ONOVERFLOW_BLOCK;

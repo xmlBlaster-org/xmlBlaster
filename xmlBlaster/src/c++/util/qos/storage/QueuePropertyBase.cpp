@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.7 2003/01/12 00:47:47 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.8 2003/01/13 11:28:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -69,7 +69,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    }
    if (log_.TRACE) log_.trace(ME, "::initialize: expires for the specific node set");
 
-   // prefix is e.g. "cb.queue." or "msgUnitStore"
+   // prefix is e.g. "queue/history/" or "persistence/topicStore/"
    setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
    if (log_.TRACE) log_.trace(ME, "::initialize: setMaxMsg OK");
    setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
@@ -180,8 +180,10 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
          relating_ = Constants::RELATING_CLIENT;
       else if (Constants::RELATING_HISTORY == relating)
          relating_ = Constants::RELATING_HISTORY;
-      else if (Constants::RELATING_TOPICCACHE == relating)
-         relating_ = Constants::RELATING_TOPICCACHE;
+      else if (Constants::RELATING_MSGUNITSTORE == relating)
+         relating_ = Constants::RELATING_MSGUNITSTORE;
+      else if (Constants::RELATING_TOPICSTORE == relating)
+         relating_ = Constants::RELATING_TOPICSTORE;
       else {
          log_.warn(ME, string("Ignoring relating=") + relating);
       }
@@ -609,7 +611,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
     * @param prop e.g. "maxMsg"
-    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache" or "-msgUnitStore.maxMsg"
+    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache" or "-persistence.maxMsg"
     */
    string QueuePropertyBase::getPropName(const string& token)
    {

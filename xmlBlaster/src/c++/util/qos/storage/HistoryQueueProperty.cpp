@@ -11,11 +11,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
-/*
-#ifndef _UTIL_TOPICCACHEPROPERTY_H
-#define _UTIL_TOPICCACHEPROPERTY_H
-*/
-
 #include <util/qos/storage/HistoryQueueProperty.h>
 #include <boost/lexical_cast.hpp>
 #include <util/Constants.h>
