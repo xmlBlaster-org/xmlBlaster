@@ -41,11 +41,14 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    echo -e "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
    echo -e "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
+	if [ -f ${XMLBLASTER_HOME/lib/xmlBlaster.jar} ]; then
+	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+	fi
    export CLASSPATH
 
    PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
