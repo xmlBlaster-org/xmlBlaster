@@ -52,26 +52,6 @@ JacORB1_0-beta13 : http://www.inf.fu-berlin.de/~brose/jacorb/
 xml-tr2.zip      : http://developer.java.sun.com/developer/products/xml/
 
 
-                         Compile 
-------------------------------------------------------------------
-After you have set environment variables do a new login and type
-
-   make all
-
-in the XMLBLASTER_HOME directory. If you type make you get a usage 
-of all make options.
-
-Usage :
-
-    make all       --> makes everything new
-    make clean     --> deletes all classes
-    make distclean --> deletes all classes/doc/jar
-    make javadoc   --> call 'make javadoc' in xmlBlaster root dir
-    make demo      --> makes everything new and starts a demo
-    make test      --> makes everything new and starts a test scenario
-    make jar       --> makes jar files of all packages into directory $(JAR_DIR)
-
-
 
                       Start xmlBlaster
 -------------------------------------------------------------------
@@ -118,12 +98,34 @@ You have three options to start the xmlBlaster-Server.
      jaco testsuite.org.xmlBlaster.ClientXml
 
 
+
                              Testsuite
 -------------------------------------------------------------------------
 In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
 
 You may also use the provided test clients to study the usage of xmlBlaster.
+
+
+
+                         Compile 
+------------------------------------------------------------------
+After you have set environment variables do a new login and type
+
+   make all
+
+in the XMLBLASTER_HOME directory. If you type make you get a usage 
+of all make options.
+
+Usage :
+
+    make all       --> makes everything new
+    make clean     --> deletes all classes
+    make distclean --> deletes all classes/doc/jar
+    make javadoc   --> call 'make javadoc' in xmlBlaster root dir
+    make demo      --> makes everything new and starts a demo
+    make test      --> makes everything new and starts a test scenario
+    make jar       --> makes jar files of all packages into directory $(JAR_DIR)
 
 
 
