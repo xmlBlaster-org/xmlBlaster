@@ -73,6 +73,9 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 
 
 #------------------------------------------------------------------------------
+# When an XmlBlasterException is thrown, log it to console
+Log.exception=false
+
 # Control logging output format (examples are provided below)
 # <timestamp>:<levelStr>:<instance>:<text>
 #
