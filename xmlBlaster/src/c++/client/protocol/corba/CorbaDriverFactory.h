@@ -22,8 +22,8 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
 
-class Object_Lifetime_Manager;
-template <class TYPE> class ManagedObject;
+//class org::xmlBlaster::util::Object_Lifetime_Manager;
+//template <class TYPE> class org::xmlBlaster::util::ManagedObject;
 
 
 namespace org {
@@ -101,12 +101,11 @@ private:
 
    CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb=NULL);
 
-   ~CorbaDriverFactory();
-
    CorbaDriverFactory(const CorbaDriverFactory& factory);
    CorbaDriverFactory& operator =(const CorbaDriverFactory& factory);
 
 public:
+   ~CorbaDriverFactory();
 
    /**
     * You can assign only one orb per CorbaDriverFactory object. Since this class is currently a singleton,
