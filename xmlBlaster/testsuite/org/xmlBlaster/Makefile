@@ -37,6 +37,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestSub.class \
     $(CLASS_DIR)/TestSubDispatch.class \
     $(CLASS_DIR)/TestSubExact.class \
+    $(CLASS_DIR)/TestSubNoDup.class \
     $(CLASS_DIR)/TestSubXPath.class \
     $(CLASS_DIR)/TestSubXPathMany.class \
     $(CLASS_DIR)/TestSubMulti.class \

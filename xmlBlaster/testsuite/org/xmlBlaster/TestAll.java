@@ -39,6 +39,7 @@ public class TestAll
       suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestGet.suite());
       suite.addTest(TestSubExact.suite());
+      suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
