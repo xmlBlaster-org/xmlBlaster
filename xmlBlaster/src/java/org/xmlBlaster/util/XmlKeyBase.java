@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 
+import java.util.StringTokenizer;
 
 /**
  * XmlKeyBase.
@@ -92,6 +93,8 @@ public class XmlKeyBase
 
    /** The XML ASCII string */
    protected String xmlKey_literal;
+   /** A nicer formatted ASCII XML string (same content as xmlKey_literal but indented) */
+   protected String xmlKey_nice;
 
    /** Value from attribute &lt;key oid="..."> */
    protected String keyOid = null;
@@ -466,6 +469,8 @@ public class XmlKeyBase
          contentMime = "text/plain";
       }
 
+      //xmlKey_nice = toNiceXml("");
+
       // extract the query string <key ...>'The query string'</key>
       if (!isPublish && queryType != EXACT_QUERY) {
          NodeList children = node.getChildNodes();
@@ -484,9 +489,8 @@ public class XmlKeyBase
          }
       }
 
-      if (/*isPublish && */isGeneratedOid) {
-         xmlKey_literal = xmlToDom.domToXml(""); // write the generated key back to literal string
-      }
+      //if (/*isPublish && */isGeneratedOid) We do it allways to have nice formatting for emails etc.
+         xmlKey_literal = xmlToDom.domToXml("\n"); // write the generated key back to literal string
    }
 
 
@@ -595,4 +599,5 @@ public class XmlKeyBase
       }
       return sb;
    }
+
 }

@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.14 2001/02/24 23:17:04 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.15 2001/11/24 23:14:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -159,8 +159,9 @@ public class XmlToDom
 
 
    /**
-    * Dump DOM tree to XML ASCII String.
+    * Dump DOM tree to XML ASCII String. 
     * <p />
+    * A header like "<?xml version="1.0" encoding="UTF-8"?>" is removed
     * @param offset indenting of tags with given blanks e.g. "   "
     * @return string with key meta data in XML syntax
     */
@@ -168,15 +169,17 @@ public class XmlToDom
    {
       StringBuffer sb = new StringBuffer();
       try {
-         java.io.ByteArrayOutputStream out = XmlNotPortable.write(xmlDoc);
+         java.io.ByteArrayOutputStream out = XmlNotPortable.write(getXmlDoc());
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
-            sb.append(offset + st.nextToken());
+            sb.append(offset).append("   ").append(st.nextToken());
          }
-      } catch (Exception e) {
-         return "";
-      }
-      return sb.toString();
+      } catch (Exception e) { Log.error(ME, "Problems in writing DOM"); return ""; }
+      String nice = sb.toString();
+      int index = nice.indexOf("?>");   // Remove header line "<?xml version="1.0" encoding="UTF-8"?>"
+      if (index > 0)
+         return sb.substring(index+2);
+      return nice;
    }
 
 
