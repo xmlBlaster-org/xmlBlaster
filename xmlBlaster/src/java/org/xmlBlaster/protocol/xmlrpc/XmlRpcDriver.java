@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.30 2002/05/19 12:55:54 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.31 2002/05/30 09:52:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -70,6 +70,7 @@ public class XmlRpcDriver implements I_Driver
    {
       return ME;
    }
+
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "XML-RPC"
