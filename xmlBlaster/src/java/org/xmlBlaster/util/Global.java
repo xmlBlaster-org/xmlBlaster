@@ -305,11 +305,22 @@ public class Global implements Cloneable
       if (this.jmxWrapper == null) {
          synchronized (this) {
             if (this.jmxWrapper == null) {
-               this.jmxWrapper = new JmxWrapper(this);
+               boolean activateJmx = getProperty().get("xmlBlaster.activateJmx", false);
+               if (activateJmx) {
+                  this.jmxWrapper = new JmxWrapper(this);
+               }
             }
          }
       }
       return this.jmxWrapper;
+    }
+
+
+    public synchronized void unregisterJmx() throws XmlBlasterException {
+      if (this.jmxWrapper != null) {
+         this.jmxWrapper.unRegister(getStrippedId());
+         this.jmxWrapper = null;
+      }
     }
 
    /**
@@ -1864,6 +1875,13 @@ public class Global implements Cloneable
       if (this.xmlProcessor != null) {
          this.xmlProcessor.shutdown();
          this.xmlProcessor = null;
+      }
+
+      try {
+         unregisterJmx();
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
       }
 
       synchronized (Global.class) {
