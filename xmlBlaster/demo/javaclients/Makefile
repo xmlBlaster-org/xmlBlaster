@@ -7,7 +7,7 @@
 
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
-CLASS_DIR = $(CLASS_TOP_DIR)/demo/javaclients
+CLASS_DIR = $(CLASS_TOP_DIR)/javaclients
 SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients
 #------------------------------------------------------------------------------
 
