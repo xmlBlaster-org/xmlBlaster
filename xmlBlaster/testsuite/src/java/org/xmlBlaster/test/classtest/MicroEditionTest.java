@@ -15,10 +15,10 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.client.protocol.http.applet.BufferedInputStreamMicro;
-import org.xmlBlaster.client.protocol.http.applet.Msg;
-import org.xmlBlaster.client.protocol.http.applet.ObjectInputStreamMicro;
-import org.xmlBlaster.client.protocol.http.applet.ObjectOutputStreamMicro;
+import org.xmlBlaster.client.protocol.http.common.BufferedInputStreamMicro;
+import org.xmlBlaster.client.protocol.http.common.Msg;
+import org.xmlBlaster.client.protocol.http.common.ObjectInputStreamMicro;
+import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.util.Global;
 
 import junit.framework.*;

@@ -1,9 +1,10 @@
 package http.applet;
 
-import org.xmlBlaster.client.protocol.http.applet.I_CallbackRaw;
-import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
 import org.xmlBlaster.client.protocol.http.applet.XmlBlasterAccessRaw;
-import org.xmlBlaster.client.protocol.http.applet.Msg;
+import org.xmlBlaster.client.protocol.http.common.I_CallbackRaw;
+import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.common.Msg;
+
 import java.applet.Applet;
 import java.awt.TextArea;
 import java.awt.Color;

@@ -710,7 +710,7 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${build.dest}"/>
       <jar destfile="${build.war}/xmlBlasterAppletLib.jar"
            basedir="${build.dest}/"
-           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class,**/org/xmlBlaster/util/def/MethodName*,**/org/apache/commons/codec/binary/Base64.class,**/org/apache/commons/codec/*.class">
+           includes="**/org/xmlBlaster/client/protocol/http/common/*.class,**/org/xmlBlaster/client/protocol/http/applet/*.class,**/org/xmlBlaster/util/def/MethodName*,**/org/apache/commons/codec/binary/Base64.class,**/org/apache/commons/codec/*.class">
       </jar>
    </target>
 
