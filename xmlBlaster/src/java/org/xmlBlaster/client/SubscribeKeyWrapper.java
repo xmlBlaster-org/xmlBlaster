@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.5 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.6 2000/07/11 09:26:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -26,7 +26,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *     &lt;/key>
  * </pre>
  *
- * @see org.xmlBlaster.util.KeyWrapper
+ * @see org.xmlBlaster.client.KeyWrapper
  * <p />
  * see xmlBlaster/src/dtd/XmlKey.xml
  * <p />

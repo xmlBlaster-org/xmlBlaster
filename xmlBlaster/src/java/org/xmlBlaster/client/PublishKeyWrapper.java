@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.8 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.9 2000/07/11 09:26:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -29,7 +29,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p />
  * This is exactly the key how it was published from the data source.
  *
- * @see org.xmlBlaster.util.PublishKeyWrapperBase
+ * @see org.xmlBlaster.client.KeyWrapper
  * <p />
  * see xmlBlaster/src/dtd/PublishKeyWrapper.xml
  * <p />

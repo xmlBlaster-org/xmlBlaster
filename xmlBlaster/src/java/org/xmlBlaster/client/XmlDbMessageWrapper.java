@@ -3,7 +3,7 @@ Name:      XmlDbMessageWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping a SQL request with XML.
-Version:   $Id: XmlDbMessageWrapper.java,v 1.3 2000/07/03 16:40:38 ruff Exp $
+Version:   $Id: XmlDbMessageWrapper.java,v 1.4 2000/07/11 09:26:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.engine.helper.Destination;
  * Wrapping a SQL request with XML, to be used in the 'content' of a message.
  * <p />
  * This helps you to send a SQL request to the xmlBlaster JDBC service from James.
- * @see javaclients.jdbc.XmlDbMessageWrapper
+ * @see org.xmlBlaster.protocol.jdbc.ConnectionDescriptor
  */
 public class XmlDbMessageWrapper
  {

@@ -1,15 +1,10 @@
-/*--- formatted by Jindent 2.1, (www.c-lab.de/~jindent) ---*/
-
-/*
- * ------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
  * Name:      ConnectionDescriptor.java
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.3 2000/07/03 16:39:50 ruff Exp $
- * ------------------------------------------------------------------------------
- */
-
+ * Version:   $Id: ConnectionDescriptor.java,v 1.4 2000/07/11 09:26:24 ruff Exp $
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.Log;
@@ -17,11 +12,8 @@ import com.sun.xml.tree.*;
 import org.w3c.dom.*;
 
 /**
- * Class declaration
- *
- *
- * @author
- * @version %I%, %G%
+ * @author James
+ * @see org.xmlBlaster.client.XmlDbMessageWrapper
  */
 public class ConnectionDescriptor {
 
@@ -40,12 +32,7 @@ public class ConnectionDescriptor {
    private XmlDocument  document = null;
 
    /**
-    * Constructor declaration
-    *
-    *
-    * @param document
-    *
-    * @see
+    * @param document This will be parsed
     */
    public ConnectionDescriptor(XmlDocument document) {
       this.document = document;
@@ -54,10 +41,6 @@ public class ConnectionDescriptor {
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @see
     */
    private void parse() {
       Node        firstNode = document.getFirstChild();
@@ -152,148 +135,74 @@ public class ConnectionDescriptor {
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return The JDBC connection string
     */
    public String getUrl() {
       return url;
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return The database user
     */
    public String getUsername() {
       return username;
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return The database password
     */
    public String getPassword() {
       return password;
    }
 
    /**
-    * Method declaration
-    *
-    *
     * @return
-    *
-    * @see
     */
    public String getInteraction() {
       return interaction;
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return The SQL statement
     */
    public String getCommand() {
       return command;
    }
 
    /**
-    * Method declaration
-    *
-    *
+    * TODO: pass through to PoolManager
     * @return
-    *
-    * @see
-    */
-   public String getConnectionkey() {
-      if (connectionkey.equals("")) {
-         connectionkey = username + "::" + url;
-      }
-
-      return connectionkey;
-   }
-
-   /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
     */
    public long getConnectionlifespan() {
       return connectionlifespan;
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return User wants a return messsage?
     */
    public boolean getConfirmation() {
       return confirmation;
    }
 
    /**
-    * Method declaration
-    *
-    *
     * @return
-    *
-    * @see
     */
    public String getDocumentrootnode() {
       return documentrootnode;
    }
 
    /**
-    * Method declaration
-    *
-    *
     * @return
-    *
-    * @see
     */
    public String getRowrootnode() {
       return rowrootnode;
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @see
+    * @return The max number of returned result sets
     */
    public int getRowlimit() {
       return rowlimit;
    }
-
 }
-
-
-
-
-
-
-
-/*--- formatting done in "xmlBlaster Convention" style on 02-21-2000 ---*/
 
