@@ -1554,7 +1554,7 @@ TODO
       </cc>
 
       <!-- Was only needed for "@version@" and "@build.timestamp@" replacement during compilation -->
-      <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
+      <!-- delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" / --> <!-- Leave it for lookup for debugger -->
 
    </target>  <!-- cpp-lib -->
 
