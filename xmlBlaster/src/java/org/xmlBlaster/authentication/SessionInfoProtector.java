@@ -45,6 +45,10 @@ public class SessionInfoProtector implements I_AdminSession
       return this.sessionInfo.getSubscriptionList();
    }
 
+   public final String getSubscriptionDump() throws XmlBlasterException {
+      return this.sessionInfo.getSubscriptionDump();
+   }
+
    public final String getKillSession() throws XmlBlasterException {
       return this.sessionInfo.getKillSession();
    }
