@@ -56,28 +56,31 @@
    &lt;!-- Force a subscription ID from client side -->
    &lt;subscribe id='_subId:1'/>
 
-   &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions -->
+   &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions (default: false) -->
    &lt;erase forceDestroy='true'/>
    
-   &lt;!-- Don't send me the xmlKey meta data on updates -->
+   &lt;!-- Don't send me the xmlKey meta data on updates (default: true) -->
    &lt;meta>false&lt;/meta>
    
-   &lt;!-- Don't send me the content data on updates (notify only) -->
+   &lt;!-- Don't send me the content data on updates (notify only) (default: true) -->
    &lt;content>false&lt;/content>
    
-   &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+   &lt;!-- Ignore a second subscribe on same oid or XPATH (default: true) -->
+   &lt;multiSubscribe>false&lt;/multiSubscribe>
+
+   &lt;!-- Inhibit the delivery of messages to myself if i have published it (default: true) -->
    &lt;local>false&lt;/local>
    
-   &lt;!-- don't send an initial message after subscribe -->
+   &lt;!-- don't send an initial message after subscribe (default: true) -->
    &lt;initialUpdate>false&lt;/initialUpdate>
    
-   &lt;!-- Suppress erase event to subcribers -->
+   &lt;!-- Suppress erase event to subscribers (default: true) -->
    &lt;notify>false&lt;/notify>
    
    &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
    &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
                                 
-   &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
+   &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all (default: 1) -->
    &lt;history numEntries='20'/>
 &lt;/qos>
       </pre>
@@ -253,6 +256,7 @@
 
    <see type="REQ">interface</see>
    <see type="REQ">engine.qos.subscribe.duplicate</see>
+   <see type="REQ">engine.qos.subscribe.multiSubscribe</see>
    <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
    <see type="REQ">client.subscribe.dispatch</see>
 
@@ -264,7 +268,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
