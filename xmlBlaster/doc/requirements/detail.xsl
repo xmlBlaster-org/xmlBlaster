@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.29 2003/09/26 14:32:54 ruff Exp $
+Version:   $Id: detail.xsl,v 1.30 2003/10/07 20:12:52 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -82,7 +82,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2003/09/26 14:32:54 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2003/10/07 20:12:52 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -124,11 +124,11 @@ Author:    xmlBlaster@marcelruff.info
 
    <table cellpadding="2" cellspacing="4">
       <tr>
-         <td class="reqId">Topic</td>
+         <td class="reqId"><a NAME="topic"></a>Topic</td>
          <td class="topic"><xsl:value-of select="topic"/></td>
       </tr>
       <tr>
-         <td class="reqId">Des<br />cription</td>
+         <td class="reqId"><a NAME="description"></a>Des<br />cription</td>
          <td class="description">
             <!-- xsl:value-of select="description" disable-output-escaping="yes" / -->
             <xsl:copy-of select="description" />
@@ -137,7 +137,7 @@ Author:    xmlBlaster@marcelruff.info
 
       <xsl:for-each select="example">
       <tr>
-         <td class="reqId">Example<br /><i><xsl:value-of select="@lang"/></i></td>
+         <td class="reqId"><a NAME="example"></a>Example<br /><i><xsl:value-of select="@lang"/></i></td>
          <td class="example">
          <xsl:choose>
          <xsl:when test="@type='HTML'">
@@ -153,7 +153,7 @@ Author:    xmlBlaster@marcelruff.info
       </xsl:for-each>
 
       <tr>
-         <td class="reqId">Configure</td>
+         <td class="reqId"><a NAME="configuration"></a>Configure</td>
          <td class="configuration">
             <xsl:copy-of select="configuration" />
             <p class="sideend">
@@ -166,7 +166,7 @@ Author:    xmlBlaster@marcelruff.info
       </tr>
       <xsl:for-each select="todo">
          <tr>
-            <td class="reqId">Todo</td>
+            <td class="reqId"><a NAME="todo"></a>Todo</td>
             <td class="todo">
                <xsl:choose>
                <xsl:when test="@type='HTML'">
@@ -182,7 +182,7 @@ Author:    xmlBlaster@marcelruff.info
 
       <xsl:for-each select="changerequest">
          <tr>
-            <td class="reqId">Change Request</td>
+            <td class="reqId"><a NAME="changerequest"></a>Change Request</td>
             <td class="changerequest"><pre><xsl:value-of select="." /></pre></td>
          </tr>
       </xsl:for-each>
@@ -192,7 +192,7 @@ Author:    xmlBlaster@marcelruff.info
             <xsl:if test="@type='API'">
               <xsl:choose>
                 <xsl:when test="@lang='CPP'">
-                  <td class="reqId">See API</td>
+                  <td class="reqId"><a NAME="API-CPP"></a>See API</td>
                   <td>
                     <xsl:call-template name="tokenize">
                       <xsl:with-param name="pat" select="."/>
@@ -203,7 +203,7 @@ Author:    xmlBlaster@marcelruff.info
                   </td>
                 </xsl:when>
                 <xsl:otherwise>
-                  <td class="reqId">See API</td>
+                  <td class="reqId"><a NAME="API"></a>See API</td>
                   <td>
                   <a>
                      <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
@@ -216,7 +216,7 @@ Author:    xmlBlaster@marcelruff.info
 
 
             <xsl:if test="@type='REQ'">
-               <td class="reqId">See REQ</td>
+               <td class="reqId"><a NAME="REQ"></a>See REQ</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/>.html</xsl:attribute>
@@ -226,12 +226,12 @@ Author:    xmlBlaster@marcelruff.info
             </xsl:if>
 
             <xsl:if test="@type='OTHER'">
-               <td class="reqId">See</td>
+               <td class="reqId"><a NAME="OTHER"></a>See</td>
                <td><xsl:value-of select="."/></td>
             </xsl:if>
 
             <xsl:if test="@type='INTERNET'">
-               <td class="reqId">See</td>
+               <td class="reqId"><a NAME="INTERNET"></a>See</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
@@ -242,7 +242,7 @@ Author:    xmlBlaster@marcelruff.info
             </xsl:if>
 
             <xsl:if test="@type='LOCAL'">
-               <td class="reqId">See</td>
+               <td class="reqId"><a NAME="LOCAL"></a>See</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
@@ -252,7 +252,7 @@ Author:    xmlBlaster@marcelruff.info
             </xsl:if>
 
             <xsl:if test="@type='CODE'">
-               <td class="reqId">See CODE</td>
+               <td class="reqId"><a NAME="CODE"></a>See CODE</td>
                <td>
                  <xsl:if test="@lang='CPP'">
                     <xsl:call-template name="tokenize">
@@ -301,7 +301,7 @@ Author:    xmlBlaster@marcelruff.info
          <xsl:for-each select="test">
             <tr>
                <xsl:if test="@tool='SUITE'">
-                  <td class="reqId">See TEST</td>
+                  <td class="reqId"><a NAME="TEST"></a>See TEST</td>
                     <td>
                      <xsl:if test="@lang='Java'">
                        <a>
@@ -327,7 +327,7 @@ Author:    xmlBlaster@marcelruff.info
                </xsl:if>
 
                <xsl:if test="@tool!='SUITE'">
-                  <td class="reqId">Testcase</td>
+                  <td class="reqId"><a NAME="TESTSUITE"></a>Testcase</td>
                   <td><xsl:value-of select="."/></td>
                </xsl:if>
             </tr>
