@@ -186,12 +186,12 @@
                <queue>
                   <plugin refid='queue:CACHE'/>
                   <maxEntries>200</maxEntries>
-                  <entry id='1046976320144000000' type='publish'>  <!-- client side queued entries -->
+                  <entry id='1046976320188000000' type='publish'>  <!-- client side queued entries -->
                      <key oid='hello' contentMime='text/plain'/>
                      <content>Salute</content>
                      <qos>
                         <persistent/>
-                        <sender>/node/heron/client/jack</sender>
+                        <sender>/node/heron/client/joe</sender>
                         <expiration lifeTime='-1'/>
                      </qos>
                   </entry>
@@ -731,7 +731,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.42 $</revision>
+   <revision>$Revision: 1.43 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
