@@ -51,14 +51,6 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='5' />
       <action do='STOP' onShutdownRunlevel='3' sequence='1'/>   
    </plugin>
-
-<!--
-   <plugin id='NATIVE' className='org.xmlBlaster.protocol.nativ.NativeDriver'>
-      <action do='LOAD' onStartupRunlevel='4' sequence='10' 
-              onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='3' sequence='6'/>   
-   </plugin>
--->
    <!--===============================================-->
 
 
