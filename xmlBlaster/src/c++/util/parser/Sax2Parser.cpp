@@ -28,9 +28,11 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
 
 using namespace std;
 
+static const int ENCODERBUFFERSIZE = 16*1024;
+
 Sax2Parser::Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler) : 
     I_Parser(handler), ME("Sax2Parser"), global_(global), log_(global.getLog("org.xmlBlaster.util.xml")),
-    xmlBlasterTranscoder_(0), encoderBufferSize_(16*1024)
+    xmlBlasterTranscoder_(0)
 {
    if (log_.call()) log_.trace(ME, "Creating new Sax2Parser");
 
@@ -38,7 +40,7 @@ Sax2Parser::Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *ha
    encoding_ = global_.getProperty().getStringProperty("xmlBlaster/encoding", "iso-8859-1");
 
    XMLTransService::Codes resCode;
-   xmlBlasterTranscoder_ = XMLPlatformUtils::fgTransService->makeNewTranscoderFor(encoding_.c_str(), resCode, encoderBufferSize_);
+   xmlBlasterTranscoder_ = XMLPlatformUtils::fgTransService->makeNewTranscoderFor(encoding_.c_str(), resCode, ENCODERBUFFERSIZE);
    if (resCode != 0/*XMLTransService::Codes::Ok*/) {
       log_.error(ME, "Creation of XMLTranscoder with encoding='" + encoding_ + "' failed with error code " + lexical_cast<string>((int)resCode) +
                      ". Please check your SAX parser setting '-xmlBlaster/encoding'");
@@ -350,20 +352,20 @@ XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
    string result;
    unsigned int charsToRead = XMLString::stringLen(value);
    do {
-      char resultXMLString_Encoded[encoderBufferSize_+4];
+      char resultXMLString_Encoded[ENCODERBUFFERSIZE+4];
       *resultXMLString_Encoded = 0;
       charsEatenFromSource = 0;
       int charsPutToTarget = xmlBlasterTranscoder_->transcodeTo(value+counter,
                                     XMLString::stringLen(value)-counter,
                                     (XMLByte*) resultXMLString_Encoded,
-                                    encoderBufferSize_,
+                                    ENCODERBUFFERSIZE,
                                     charsEatenFromSource,
                                     XMLTranscoder::UnRep_Throw );
 
       /*
       log_.info(ME,"TRANSCODE TMP: got '" + result +
                    "' charsToRead= " + lexical_cast<string>(charsToRead) +
-                   "' encoderBufferSize_= " + lexical_cast<string>(encoderBufferSize_) +
+                   "' ENCODERBUFFERSIZE= " + lexical_cast<string>(ENCODERBUFFERSIZE) +
                    " charsEaten=" + lexical_cast<string>(charsEatenFromSource) +
                    " counter=" + lexical_cast<string>(counter) +
                    " charsPutToTarget=" + lexical_cast<string>(charsPutToTarget));
@@ -373,9 +375,9 @@ XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
       result += string(resultXMLString_Encoded, charsPutToTarget);
       counter += charsEatenFromSource;
    }
-   while(charsEatenFromSource < charsToRead); //charsEatenFromSource== encoderBufferSize_ || charsPutToTarget == encoderBufferSize_);
+   while(charsEatenFromSource < charsToRead); //charsEatenFromSource== ENCODERBUFFERSIZE || charsPutToTarget == ENCODERBUFFERSIZE);
 
-   //log_.info(ME,"TRANSCODE DONE: got '" + result + "' encoderBufferSize_= " + lexical_cast<string>(encoderBufferSize_) + " charsEaten=" + lexical_cast<string>(charsEatenFromSource));
+   //log_.info(ME,"TRANSCODE DONE: got '" + result + "' ENCODERBUFFERSIZE= " + lexical_cast<string>(ENCODERBUFFERSIZE) + " charsEaten=" + lexical_cast<string>(charsEatenFromSource));
    return result;
 }
 

@@ -43,7 +43,6 @@ private:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log&    log_;
    XMLTranscoder* xmlBlasterTranscoder_;
-   int encoderBufferSize_;
    std::string encoding_;
 
    // Private copy ctor and assignement
