@@ -124,13 +124,14 @@
       </table>
    </configuration>
 
+   <see type="REQ">engine.runlevel</see>
+   <see type="REQ">protocol.local</see>
    <see type="API">org.xmlBlaster.engine.RunlevelManager</see>
    <see type="API">org.xmlBlaster.engine.I_RunlevelListener</see>
-   <see type="REQ">engine.runlevel</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
