@@ -3,9 +3,10 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.6 2003/02/07 11:49:08 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.7 2003/02/13 18:51:35 ruff Exp $
 ---------------------------------------------------------------------------*/
 
+#include <util/XmlBCfg.h>
 #include "TestSuite.h"
 #include <util/StopWatch.h>
 
