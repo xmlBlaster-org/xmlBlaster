@@ -16,15 +16,26 @@ TODO:
 * Handle QueueProperty.java similar to CbQueueProprty.java in ConnectQos.java
 * Implement cb.burstMode.collectTimeOneway
 * Use XMLunit http://xmlunit.sourceforge.net/ in testsuite.
+* XmlBlaster internal statistic overview with http://www.object-refinery.com/jfreechart/
+* SMS protocol driver with http://www.imail.gr/jsmsengine/index.php
+* Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
 
 BUGS:
 
 
 DONE:
+  - Added support to ping the callback client side server, see
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.recorder.html
+
+  - Rewritten callback handling
+
+  - PtP bugfix if a client disappears silently
+
   - Added invocation recorder plugin framework to queue
     messages on client side on failure:
     1. RamRecorder.java
     2. FileRecorder.java
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.callback.html
 
   - Bugfix for similar XPath subscriptions of many clients
 
