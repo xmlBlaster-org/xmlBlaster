@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+COMMENT:
+   This page contains a frameset, the 'northFrame' recevies the
+   data (system infos from our web server) and draws the
+   'cpuinfo' and 'meminfo' frames. 
+
+   We receive instant callbacks over the persistent http connection.
+
+INVOKE:
+   http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=martin&passwd=secret&callUrl=myApp.html
+
+PRECONDITION:
+   Before invoking any other servlets, the persistent http connection
+   (=top.xmlBlasterWindow.xmlBlasterFrame) must have been opened
+   and made a successful login.
+   This login generates a unique session ID which are reused by the other frames.
+
+AUTHOR:
+   ruff@swand.lake.de
+-->
+
+<html>
+   <head>
+      <title>XmlBlaster Persistent HTTP Demo</title>
+      <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+
+      <script language="Javascript1.2">
+         systemInfoWindow = self;
+
+         /**
+          * Opens a window which holds the persistent http connection
+          */
+         function openCallBack() {
+            winOptions = "height=100,width=350,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
+            xmlBlasterWindow = window.open("/persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
+         }
+         openCallBack();
+
+
+         /**
+          * Callback from callbackFrame that the persistent http connection
+          * is established.
+          * Now we may load our application.
+          */
+         function loginSucceeded(persistentWindow)
+         {
+            Log = xmlBlasterWindow.Log;
+            // Switch debugging on/off
+            Log.INFO = true;
+            Log.TRACE = false;
+
+            Log.trace("Login succeeded, loading application ...");
+            // use absolute name, since this method is called from persistentWindow servlet
+            top.systemInfoWindow.northFrame.location.href = "/systemInfo/northFrame.html";
+            cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
+            meminfoFrame.location.href = "/servlet/SystemInfo?ActionType=meminfo";
+         }
+      </script>
+
+
+      <frameset rows="120,60,60,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+         <frame name="northFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin="0" frameborder="0" framespacing="0">
+         <frame name="cpuinfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         <frame name="meminfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         <!--
+         <frame name="cpuinfoFrame" src="/servlet/SystemInfo?ActionType=cpuinfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         -->
+         <!--
+         <frame name="meminfoFrame" src="/servlet/SystemInfo?ActionType=meminfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         -->
+         <frame name="southFrame" src="/systemInfo/southFrame.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+      </frameset>
+
+   </head>
+
+<!-- onLoad is not fired in framesets (Linux netscape 4.72)?! -->
+<body onLoad:"alert('systemInfo.html loaded');">
+   Waiting on messages ...
+</body>
+</html>
+
