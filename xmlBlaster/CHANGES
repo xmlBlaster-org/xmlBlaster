@@ -6,6 +6,7 @@ Changes for 0.8x [xxx, xx 200x]
 
  o There is new support to publish an administrative message
    to configure a topic with QoS markup <administrative/>
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
 
  o Switched off old style persistency (XIndice, FileDriver)
    Is now handled with new persitence framework based on I_Queue.java and I_Map.java
