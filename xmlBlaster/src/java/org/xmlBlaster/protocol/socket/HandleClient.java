@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.1 2002/02/14 22:53:37 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.2 2002/02/15 14:56:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -107,29 +107,51 @@ public class HandleClient extends Thread
                //iStream = sock.getInputStream();
                receiver.parse(iStream);  // blocks until a message arrive
 
-               Log.info(ME, "Received message '" + receiver.getMethodName() + "'");
+               Log.info(ME, "Receiving message " + receiver.getMethodName() + "()");
                if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
                if (Constants.PUBLISH.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.publish();
+                  MessageUnit[] arr = receiver.getMessageArr();
+                  if (arr == null || arr.length < 1)
+                     throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+                  String[] response = xmlBlasterImpl.publishArr(receiver.getSessionId(), arr);
+                  executeResponse(receiver, response);
                }
                else if (Constants.GET.equals(receiver.getMethodName())) {
-                  //MessageUnit[] arr = xmlBlasterImpl.get();
+                  MessageUnit[] arr = receiver.getMessageArr();
+                  if (arr == null || arr.length != 1)
+                     throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+                  MessageUnit[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+                  executeResponse(receiver, response);
                }
                else if (Constants.PING.equals(receiver.getMethodName())) {
-                  Log.info(ME, "Responding to ping");
+                  executeResponse(receiver, "<qos><state>OK</state></qos>");
                }
                else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.subscribe();
+                  MessageUnit[] arr = receiver.getMessageArr();
+                  if (arr == null || arr.length != 1)
+                     throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+                  String response = xmlBlasterImpl.subscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+                  executeResponse(receiver, response);
                }
                else if (Constants.UNSUBSCRIBE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.unSubscribe();
+                  MessageUnit[] arr = receiver.getMessageArr();
+                  if (arr == null || arr.length != 1)
+                     throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+                  xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+                  // !!! TODO better return value?
+                  executeResponse(receiver, "<qos><state>OK</state></qos>");
                }
                else if (Constants.UPDATE.equals(receiver.getMethodName())) {
+                  throw new XmlBlasterException(ME, "Method " + receiver.getMethodName() + "() is not supported");
                   //String response = xmlBlasterImpl.update();
                }
                else if (Constants.ERASE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.erase();
+                  MessageUnit[] arr = receiver.getMessageArr();
+                  if (arr == null || arr.length != 1)
+                     throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+                  String[] response = xmlBlasterImpl.erase(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+                  executeResponse(receiver, response);
                }
                else if (Constants.CONNECT.equals(receiver.getMethodName())) {
                   
@@ -142,25 +164,16 @@ public class HandleClient extends Thread
                   driver.getSocketMap().put(conQos.getUserId(), this);
 
                   ConnectReturnQos retQos = authenticate.connect(conQos);
+                  this.sessionId = retQos.getSessionId();
+                  receiver.setSessionId(retQos.getSessionId()); // executeResponse needs it
 
                   //driver.getSocketMap().put(retQos.getSessionId(), this); // To late
-                  this.sessionId = retQos.getSessionId();
-                  Parser returner = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
-                                      receiver.getMethodName(), retQos.getSessionId());
-                  returner.addQos(retQos.toXml());
-                  Log.info(ME, "Successful login sending return QoS back to client '" + Parser.toLiteral(returner.createRawMsg()) + "'");
-                  //oStream = sock.getOutputStream();
-                  oStream.write(returner.createRawMsg());
-                  oStream.flush();
-                  Log.info(ME, "Successful sent");
+
+                  executeResponse(receiver, retQos.toXml());
                 }
                else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
                   String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
-                  Parser returner = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
-                                      receiver.getMethodName(), receiver.getSessionId());
-                  returner.addQos(qos);
-                  oStream.write(returner.createRawMsg());
-                  oStream.flush();
+                  executeResponse(receiver, qos);
                   this.sessionId = null;
                   shutdown();
                }
@@ -197,6 +210,27 @@ public class HandleClient extends Thread
          try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
       }
+   }
+
+
+   /**
+    * Send a message back to client
+    */
+   private void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
+      Parser returner = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
+                           receiver.getMethodName(), receiver.getSessionId());
+      if (response instanceof String)
+         returner.addMessage((String)response);
+      else if (response instanceof MessageUnit[])
+         returner.addMessage((MessageUnit[])response);
+      else if (response instanceof MessageUnit)
+         returner.addMessage((MessageUnit)response);
+      else
+         throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
+      if (Log.DUMP) Log.dump(ME, "Successful " + receiver.getMethodName() + "(), sending back to client '" + Parser.toLiteral(returner.createRawMsg()) + "'");
+      oStream.write(returner.createRawMsg());
+      oStream.flush();
+      Log.info(ME, "Successful sent response for " + receiver.getMethodName() + "()");
    }
 }
 

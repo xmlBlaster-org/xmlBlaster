@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.4 2002/02/14 22:53:37 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.5 2002/02/15 14:56:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -88,6 +88,7 @@ public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
     * The key is the unique client loginName, the value is the HandleClient instances belonging to this client.
     * <p />
     * TODO: Change loginName to sessionId when the new callback framework is available
+    * @deprecated Not needed
     */
    private static final Map socketMap = Collections.synchronizedMap(new HashMap());
 

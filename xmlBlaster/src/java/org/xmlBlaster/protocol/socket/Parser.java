@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.10 2002/02/15 12:59:37 ruff Exp $
+Version:   $Id: Parser.java,v 1.11 2002/02/15 14:56:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -265,19 +265,6 @@ public class Parser extends Converter
    }
 
    /**
-    * Use for methods connect, disconnect, ping.
-    * <br />
-    * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
-    * @exception IllegalArgumentException if invoked multiple times
-    */
-   public void addQos(String qos) {
-      if (!msgVec.isEmpty())
-         throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
-      MessageUnit msg = new MessageUnit(null, null, qos);
-      msgVec.add(msg);
-   }
-
-   /**
     * Use for methods get, subscribe, unSubscribe, erase
     * @exception IllegalArgumentException if invoked multiple times
     */
@@ -310,6 +297,36 @@ public class Parser extends Converter
     */
    public void addMessage(MessageUnit msg) {
       msgVec.add(msg);
+   }
+
+   /**
+    * Use for methods update, publish. 
+    * <br />
+    * Use for return value of method get.
+    * <br />
+    * Multiple adds are OK
+    */
+   public void addMessage(MessageUnit[] arr) {
+      for (int ii=0; ii<arr.length; ii++)
+         msgVec.add(arr[ii]);
+   }
+
+   /**
+    * Add a QoS value, use for methods connect, disconnect, ping.
+    * <br />
+    * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
+    * @exception IllegalArgumentException if invoked multiple times
+    */
+   public void addMessage(String qos) {
+      if (!msgVec.isEmpty())
+         throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
+      MessageUnit msg = new MessageUnit(null, null, qos);
+      msgVec.add(msg);
+   }
+
+   /** @see #addMessage(String qos) */
+   public void addQos(String qos) {
+      addMessage(qos);
    }
 
    /**
