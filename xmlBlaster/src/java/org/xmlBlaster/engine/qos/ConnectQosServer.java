@@ -29,6 +29,7 @@ public final class ConnectQosServer
    private final Global glob;
    private final ConnectQosData connectQosData;
    private final boolean internal; // if the connection is generated internally i.e. no need to notify clients 
+   private boolean bypassCredentialCheck = false;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData, boolean internal) {
       this.glob = (glob==null) ? Global.instance() : glob;
@@ -53,6 +54,21 @@ public final class ConnectQosServer
 
    public ConnectQosData getData() {
       return this.connectQosData;
+   }
+
+   /**
+    * Tell authenticate to not check the password.
+    * This is an attribute of ConnectQosServer only, ConnectQosData and its
+    * toXml() never transport this setting.
+    * As the ConnectQosServer facade is only used in the core (inside the protector classes)
+    * this is no security hole.
+    */
+   public void bypassCredentialCheck(boolean bypassCredentialCheck) {
+      this.bypassCredentialCheck = bypassCredentialCheck;
+   }
+
+   public boolean bypassCredentialCheck() {
+      return this.bypassCredentialCheck;
    }
 
    /**
