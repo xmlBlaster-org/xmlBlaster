@@ -19,8 +19,8 @@ my $orb = CORBA::ORB_init();
 
 #--------------- find server object reference IOR -------
 $ARGV[0] or die "Usage: $0 <ior_string>";
-my $super = $orb->string_to_object($ARGV[0]);
-$super = authenticateIdl::AuthServer->_narrow($super);
+my $authServer = $orb->string_to_object($ARGV[0]);
+$authServer = authenticateIdl::AuthServer->_narrow($authServer);
 
 
 #--------------- create my BlasterCallback server ----
@@ -33,7 +33,7 @@ print $callback_ref, "\n\n";
 
 #-------------- login() to AuthServer_obj ---------
 my $loginName = "Perl-Heidi";
-my $xmlBlaster = $super->login($loginName, "secret", $callback, "");
+my $xmlBlaster = $authServer->login($loginName, "secret", $callback, "");
 print "login($loginName) successfull\n\n";
 
 
@@ -49,6 +49,7 @@ print "publish() of xmlKey=\n$xmlKey";
 
 my $content = "Hello xmlBlaster, i'm a C++ client";
 
+#$message = new serverIdl::MessageUnit xmlKey => $xmlKey, content => $content;
 $message = {xmlKey => $xmlKey, content => $content};
 my $qos = "";
 my $publishOid = $xmlBlaster->publish($message, $qos);
