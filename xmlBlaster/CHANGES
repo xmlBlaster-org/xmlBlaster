@@ -13,6 +13,7 @@ TODO:
 * Test (implement?) forceUpdate=false with same content
 * Remove thread save gap in RequestBroker:publish()
 * Test: C++, Perl, HTTP, different protocol drivers ...
+* Test message lifecycle (some implementation is missing)
 
 DONE:
 
