@@ -3,14 +3,17 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.2 2000/02/20 17:38:53 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.3 2000/05/25 13:40:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlToDom;
+import org.xmlBlaster.util.StringHelper;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
+import java.util.*;
 
 /**
  * This class encapsulates the Message meta data and unique identifier.
@@ -55,12 +58,94 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 {
    private String ME = "XmlKey";
 
+   /**
+    * A DOM tree containing exactly one (this) message to allow XPath subscriptions to check if this message matches
+    * <pre>
+    *    &lt;xmlBlaster>
+    *       &lt;key oid='xx'>
+    *           ...
+    *       &lt;/key>
+    *    &lt;/xmlBlaster>
+    * </pre>
+    */
+   private org.w3c.dom.Document xmlKeyDoc = null;// Document with the root node
+
+
+   /**
+    *  We need this query manager to allow checking if an existing XPath subscription matches this new message type.
+    */
+   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
+
+
+   /**
+    * Construct a handler object for this xml message key. 
+    * @param xmlKey_literal The xml based message meta data
+    */
    public XmlKey(String xmlKey_literal) throws XmlBlasterException
    {
       super(xmlKey_literal);
    }
+
+
+   /**
+    * Construct a handler object for this xml message key. 
+    * @param xmlKey_literal The xml based message meta data
+    * @param isPublish Invoked from a client publish()
+    */
    public XmlKey(String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
       super(xmlKey_literal, isPublish);
+   }
+
+
+   /**
+    * We need this to allow checking if an existing XPath subscription matches this new message type.
+    * @param xpath The XPath query, check if it matches to this xmlKey
+    * @return true if this message meta data matches the XPath query
+    */
+   public boolean match(String xpath) throws XmlBlasterException
+   {
+      if (xmlKeyDoc == null) {
+         try {
+            if (Log.TRACE) Log.trace(ME, "Creating tiny DOM tree and a query manager ...");
+            // Add the <xmlBlaster> root element ...
+            String tmp = StringHelper.replace(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>"; 
+            XmlToDom tinyDomHandle = new XmlToDom(tmp);
+            xmlKeyDoc = tinyDomHandle.getXmlDoc();
+            queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
+         } catch (Exception e) {
+            String text = "Problems building tiny key DOM tree\n" + xmlKey_literal + "\n for XPath subscriptions check: " + e.toString();
+            Log.error(ME + ".MergeNodeError", text);
+            e.printStackTrace();
+            throw new XmlBlasterException("MergeNodeError", text);
+         }
+      }
+      try {
+         Enumeration nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xpath);
+         if (nodeIter != null && nodeIter.hasMoreElements()) {
+            Log.info(ME, "XPath subscription '" + xpath + "' matches message '" + getKeyOid() + "'");
+            return true;
+         }
+      }
+      catch (Exception e) {
+         String text = "XPath query on tiny key DOM tree\n" + xmlKey_literal + "\nfailed: " + e.toString();
+         Log.error(ME + ".XPathError", text);
+         e.printStackTrace();
+         throw new XmlBlasterException("XPathError", text);
+      }
+      if (Log.TRACE) Log.trace(ME, "XPath subscription '" + xpath + "' does NOT match message '" + getKeyOid() + "'");
+      return false;
+   }
+
+
+   /**
+    * After the existing XPath subscriptions have queried this message
+    * we should release the DOM tree. 
+    */
+   public void cleanupMatch()
+   {
+      if (Log.TRACE) Log.trace(ME, "Releasing tiny DOM tree");
+      queryMgr = null;
+      xmlKeyDoc = null;
    }
 }

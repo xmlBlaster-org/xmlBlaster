@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.66 2000/05/16 20:57:37 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.67 2000/05/25 13:40:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.66 $
+ * @version $Revision: 1.67 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -719,9 +719,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
    /**
     * This helper method checks for a published message which didn't exist before if
-    * there are any XPath subscriptions pending which match.
+    * there are any XPath subscriptions pending which match. 
     * <p />
-    * PRECOND: The new message is already merged in the big DOM tree
     */
    private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
                                   MessageUnitHandler msgUnitHandler, PublishQoS xmlQoS)
@@ -733,8 +732,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          if (Log.TRACE) Log.trace(ME, "Checking existing query subscriptions if they match with this new one");
 
          Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
-         org.w3c.dom.Document newXmlDoc = xmlKey.getXmlDoc();
-
          Vector matchingSubsVec = new Vector();
          synchronized (set) {
             Iterator iterator = set.iterator();
@@ -743,32 +740,28 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
                SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
                XmlKey queryXmlKey = existingQuerySubscription.getXmlKey();
+               if (!queryXmlKey.isQuery() || queryXmlKey.getQueryType() != XmlKey.XPATH_QUERY) { // query: subscription without a given oid
+                  Log.warning(ME,"Only XPath queries are supported, ignoring subscription.");
+                  continue;
+               }
+               String xpath = queryXmlKey.getQueryString();
 
                // ... check if the new message matches ...
-               if (queryXmlKey.isQuery()) { // query: subscription without a given oid
-
-                  Vector matchVec = bigXmlKeyDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
-
-                  if (matchVec != null && matchVec.size() >= 1 && matchVec.elementAt(0) != null) {
-                     if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
-                     SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription, xmlKey);
-                     matchingSubsVec.addElement(subs);
-                  }
-                  else {
-                     if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " does NOT match the existing query subscription " + queryXmlKey.getUniqueKey());
-                  }
+               if (xmlKey.match(xpath) == true) {
+                  SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription, xmlKey);
+                  matchingSubsVec.addElement(subs);
                }
-               else {
-                  Log.error(ME, "REGEX check for existing query subscriptions is still missing");
-               }
-            }
-
-            // now after closing the synchronized block, me may fire the events
-            // doing it inside the synchronized could cause a deadlock
-            for (int ii=0; ii<matchingSubsVec.size(); ii++) {
-               subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
             }
          }
+
+         // now after closing the synchronized block, me may fire the events
+         // doing it inside the synchronized could cause a deadlock
+         for (int ii=0; ii<matchingSubsVec.size(); ii++) {
+            subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
+         }
+
+         // we don't need this DOM tree anymore ...
+         xmlKey.cleanupMatch();
       }
    }
 
