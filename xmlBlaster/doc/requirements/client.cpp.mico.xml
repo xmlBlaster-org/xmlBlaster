@@ -41,21 +41,6 @@ TestGet -ORBInitRef NameService=`cat /tmp/ns.ior` inet:myHost.org:7608 -trace tr
    </example>
 
    <configuration where="client">
-      <table border="1">
-         <tr>
-            <th>Property</th>
-            <th>Default / Example</th>
-            <th>Description</th>
-            <th>Implemented</th>
-         </tr>
-
-         <tr>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-      </table>
       <p>
          To compile you can use the xmlBlaster/build.xml file.
       </p>
@@ -95,6 +80,21 @@ and some test clients in
      so you need to set LD_LIBRARY_PATH only when you move libraries to
      other locations (try <i>ldd TestGet</i>).
      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>-ORBIIOPAddr</td>
+            <td>inet:[host addr]:[port number]</td>
+            <td>Bind the mico callback server on a specified port</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
    </configuration>
 
    <todo type='HTML'>
@@ -117,7 +117,7 @@ and some test clients in
 
    <date>2003 03 05</date>
 
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
