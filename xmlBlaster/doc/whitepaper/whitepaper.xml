@@ -1,8 +1,16 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <article>
-   <title>White Paper XmlBlaster, a Message-oriented Middleware (MOM)</title>
-
+   <title>
+      <para><graphic fileref="tims_rainbowfish_small.gif"/>
+         White Paper XmlBlaster</para>
+      <para>Message-oriented Middleware (MOM)</para>
+   </title>
    <artheader>
+      
+      <copyright>
+      <year>02/2000</year>
+      <holder>xmlBlaster.org</holder>
+      </copyright>
 
       <authorgroup>
          <author>Marcel Ruff</author>
@@ -12,19 +20,23 @@
 
    </artheader>
 
-<section>Introduction
+<section><title>Introduction</title>
+
+
 <para>
-
-
 Lets introduce our motivation for this open source project with two examples.
+</para>
 
+<para>
 Suppose you want to write a software to control all railway ticket machines in your country. Thousands of
 ticket machines are located on the railway stations across the whole country. How do you want to send
 new ticket prices, new time tables to the ticket machines, update and maintain the software and handle
 errors and failures? What if the ticket machines are from 3 different manufacturers and varying models?
 All the models programmed with different software languages (legacy code), from different software teams.
 XmlBlaster could be the middleware to glue together this horror scenario.
+</para>
 
+<para>
 Suppose again, you are on holiday in one of the beautiful islands and are buying some nice, new shoes,
 and need cash money with your credit card. The cash request is transferred to the data processing
 center of the holiday resort bank, from there over some other gateways finally to your house bank. This
@@ -33,24 +45,26 @@ receive your money. Such a task may involve software written in different progra
 different hardware platforms (mainframe, workstations, embedded devices, etc.).
 An intelligent message oriented middleware like xmlBlaster could perform this task, in an uniform, open
 way at a fraction of costs.
+</para>
 
+<para>
 The examples can be extended to control car manufacturing lines, controlling workstation farms, air traffic
 control systems etc. As you can see, middleware is already every where, and will play an important role in
 the future.
 </para>
 </section>
 
-<section>Context
+<section><title>Context</title>
 <para>
-
-
 Middleware products and markets are evolving rapidly as customers build distributed business
 applications. These increasingly rely upon the independent system software and services provided by
 middleware to share computing resources across heterogeneous technologies. Integrated enterprise
 applications are not replacing the wealth of various applications in organizations. They need to coexist
 and integrate with a variety of best of breed and legacy applications, and middleware - or rather business
 ware - is needed to do the necessary application integration among various vendors' software [IDC].
+</para>
 
+<para>
 Client/server MOM computing is the ultimate open platform. This gives you the freedom to
 mix-and-match components at almost any level. It allows you to put together an incredible variety of
 networked client and server combinations across the entire spectrum of the computer industry.
@@ -60,7 +74,7 @@ According to IDC, the middleware market will grow to approximately $7 billion in
 increase since 1997 (Source: IDC, Middleware: 1998 Worldwide Markets and Trends, May, 1998) [Orfali].
 </para>
 </section>
-<section>Current market situation
+<section><title>Current market situation</title>
 <para>
 The MOM market is ruled by a few big companies. Many of these products are somehow outdated,
 compared to technologies used today. The pricing of these middleware products is at the high end of the
@@ -69,7 +83,7 @@ usual software pricing scale.
 </section>
 
 
-<section>Goals
+<section><title>Goals</title>
 <para>
 <itemizedlist>
 <listitem>Support ease of development </listitem>
@@ -88,25 +102,25 @@ usual software pricing scale.
 </para>
 </section>
 
-<section>Technology
+<section><title>Technology</title>
 <para>
 XmlBlaster MOM will be based on following modern technologies and standards to fulfill the goals.
 
 <itemizedlist>
 <listitem><emphasis>CORBA</emphasis> <ulink URL="http://www.omg.org">(http://www.omg.org)</ulink>
-      Allows multiple programming languages and hardware platforms to be integrated  </listitem>
-<listitem><emphasis>XML</emphasis> <ulink URL="http://www.w3c.org">(http://www.w3c.org)</ulink>
-      Allows to describe problem domains in a new simple but powerful way  </listitem>
-<listitem><emphasis>Java on the server side</emphasis> <ulink URL="http://java.sun.com">(http://java.sun.com)</ulink>
-      To allow easy portable code  </listitem>
+      <para>Allows multiple programming languages and hardware platforms to be integrated</para>  </listitem>
+<listitem><emphasis>XML </emphasis> <ulink URL="http://www.w3c.org">(http://www.w3c.org)</ulink>
+      <para>Allows to describe problem domains in a new simple but powerful way</para></listitem>
+<listitem><emphasis>Java on the server side </emphasis> <ulink URL="http://java.sun.com">(http://java.sun.com)</ulink>
+      <para>To allow easy portable code</para></listitem>
 <listitem><emphasis>MOM paradigms</emphasis>
-      To allow a loose coupling of distributed systems  </listitem>
+      <para>To allow a loose coupling of distributed systems</para></listitem>
 </itemizedlist>
 
 </para>
 </section>
 
-<section>Benefit
+<section><title>Benefit</title>
 <para>
 These new technologies, concentrated in a generic software MOM product,  may be used as a base for
 industrial and intranet/internet projects.
@@ -116,7 +130,7 @@ market.
 </para>
 </section>
 
-<section>Realization
+<section><title>Realization</title>
 <para>
 
 The realization will be done in an open source team, in a concentrated development effort.
@@ -126,4 +140,5 @@ code stability.
 </para>
 </section>
 
+<email>ruff@swand.lake.de</email>
 </article>

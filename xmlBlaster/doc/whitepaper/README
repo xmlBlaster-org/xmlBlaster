@@ -10,6 +10,8 @@ your installation path.
 
 Generate HTML output:
 =====================
+	I added our css into /www/docbook/html/docbook.xsl (how to include it into the xml file?)
+      <link REL="stylesheet" type="text/css" href="xmlBlaster.css"/>
 
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /www/docbook/html/docbook.xsl whitepaper.html
 
