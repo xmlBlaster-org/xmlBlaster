@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.8 2000/06/01 16:46:28 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.9 2000/06/03 12:50:52 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ import java.util.Enumeration;
  * and release() it immediately again. If you
  * want to close connections after peak usage, you could set a idleToEraseTimeout,
  * to erase your JDBC connection after some time not used (reducing the current pool size).<br />
- * Not that in this example the connections are anonymous (all are logged in to the database
+ * Note that in this example the connections are anonymous (all are logged in to the database
  * with the same user name), it is not important which you receive.<br />
  * (See example [1] in this main() method)
  * </p>
@@ -297,7 +297,7 @@ public class PoolManager
 
 
    /**
-    * Release a resource explicitly from 'busy' into the 'idle' pool. 
+    * Release a resource explicitly from 'busy' into the 'idle' pool.
     * @param instanceId The unique resource ID
     * @exception XmlBlasterException
     */
@@ -354,7 +354,7 @@ public class PoolManager
 
 
    /**
-    * Idle - busy swapper. 
+    * Idle - busy swapper.
     */
    private void swap(ResourceWrapper rw, boolean toBusy)
    {
@@ -438,7 +438,7 @@ public class PoolManager
 
 
    /**
-    * Number of resources in the 'busy' list. 
+    * Number of resources in the 'busy' list.
     * @return Number of 'busy' resources
     */
    public int getNumBusy()
@@ -448,7 +448,7 @@ public class PoolManager
 
 
    /**
-    * Number of resources in the 'idle' list. 
+    * Number of resources in the 'idle' list.
     * @return Number of 'idle' resources
     */
    public int getNumIdle()
@@ -567,7 +567,7 @@ public class PoolManager
 
 
    /**
-    * Erase an idle resource after timeout. 
+    * Erase an idle resource after timeout.
     * <p />
     * This method is a callback from ResourceWrapper
     * @parameter userData The ResourceWrapper object
