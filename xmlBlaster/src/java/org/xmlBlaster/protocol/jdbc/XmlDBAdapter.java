@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.19 2002/08/12 13:32:10 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.20 2002/08/13 16:59:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -184,41 +184,55 @@ public class XmlDBAdapter
          conn =  namedPool.reserve(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword()); // using default connection pool properties
          stmt = conn.createStatement();
 
-         String   command = descriptor.getCommand();
+         String command = descriptor.getCommand();
 
-         try {
-            if (descriptor.getInteraction().equalsIgnoreCase("update")) {
-               if (log.TRACE) log.trace(ME, "Trying DB update '" + command + "' ...");
+         if (descriptor.getInteraction().equalsIgnoreCase("update")) {
+            if (log.TRACE) log.trace(ME, "Trying DB update '" + command + "' ...");
 
-               int   rowsAffected = stmt.executeUpdate(command);
+            int rowsAffected = stmt.executeUpdate(command);
 
-               doc = createUpdateDocument(rowsAffected, descriptor);
-            }
-            else {
-               if (log.TRACE) log.trace(ME, "Trying SQL query '" + command + "' ...");
-               rs = stmt.executeQuery(command);
-               doc =
-                  DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
-                                                descriptor.getRowrootnode(),
-                                                descriptor.getRowlimit(), rs);
-            }
-            if (log.TRACE) log.trace(ME, "Query successful done, connection released");
-         } finally {
-            if (rs!=null) rs.close();
-            if (stmt!=null) stmt.close();
-            if (conn!=null) namedPool.release(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
+            doc = createUpdateDocument(rowsAffected, descriptor);
          }
+         else {
+            if (log.TRACE) log.trace(ME, "Trying SQL query '" + command + "' ...");
+            rs = stmt.executeQuery(command);
+            doc =
+               DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
+                                             descriptor.getRowrootnode(),
+                                             descriptor.getRowlimit(), rs);
+         }
+         if (log.TRACE) log.trace(ME, "Query successful done, connection released");
       }
       catch (SQLException e) {
          String str = "SQLException in query '" + descriptor.getCommand() + "' : " + e;
-         log.warn(ME, str);
+         log.warn(ME, str + ": sqlSTATE=" + e.getSQLState() + " we destroy the connection in case it's stale");
+         // If io exception (we lost database server) release connection
+         // But how can we find out if it is a connection problem or an SQL
+         // error of a wrong SQL statement?
+         // Probably sqlState can tell us, but this is not implemented:
+         String sqlState = e.getSQLState(); // DatabaseMetaData method getSQLStateType can be used to discover whether the driver returns the XOPEN type or the SQL 99 type
+         // To be on the save side we always destroy the connection:
+         namedPool.eraseConnection(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
+         conn = null;
          throw new XmlBlasterException(ME, str);
       }
       catch (Throwable e) {
          e.printStackTrace();
-         String str = "Exception in query '" + descriptor.getCommand() + "' : " + e;
-         log.warn(ME, str);
+         String str = "Unexpected exception in query '" + descriptor.getCommand() + "' : " + e;
+         log.error(ME, str + ": We destroy the connection in case it's stale");
+         namedPool.eraseConnection(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
+         conn = null;
          throw new XmlBlasterException(ME, str);
+      }
+      finally {
+         try {
+            if (rs!=null) rs.close();
+            if (stmt!=null) stmt.close();
+         }
+         catch (SQLException e) {
+            log.warn(ME, "Closing of stmt failed: " + e.toString());
+         }
+         if (conn!=null) namedPool.release(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
       }
 
       return doc;
