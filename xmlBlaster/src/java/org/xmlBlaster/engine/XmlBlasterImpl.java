@@ -3,14 +3,14 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.16 2002/05/11 08:08:44 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.17 2002/05/26 20:03:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -40,6 +40,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final RequestBroker requestBroker;
    private final Authenticate authenticate;
    private final Global glob;
+   private final LogChannel log;
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
@@ -51,6 +52,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       this.authenticate = authenticate;
       this.glob = authenticate.getGlobal();
+      this.log = this.glob.getLog("core");
       this.requestBroker = new RequestBroker(authenticate);
    }
 
@@ -62,7 +64,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    public final String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
-         if (Log.CALL) Log.call(ME, "Entering subscribe(" + sessionId + ", key, qos");
+         if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
 
          // authentication and authorization security checks
          MessageUnit msgUnit = new MessageUnit(xmlKey_literal, EMPTY_BYTES, qos_literal);
@@ -80,7 +82,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
@@ -93,7 +95,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering unSubscribe(" + sessionId + ", key, qos)");
+      if (log.CALL) log.call(ME, "Entering unSubscribe(" + sessionId + ", key, qos)");
 
       try {
          // authentication and authorization security checks
@@ -109,7 +111,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
@@ -122,7 +124,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering publish()");
+      if (log.CALL) log.call(ME, "Entering publish()");
 
       try {
          // authentication and authorization security checks
@@ -140,7 +142,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
@@ -153,7 +155,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering publishArr()");
+      if (log.CALL) log.call(ME, "Entering publishArr()");
 
       try {
          // authentication and authorization security checks
@@ -176,7 +178,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
@@ -193,7 +195,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          publishArr(sessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         Log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.toString());
+         log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.toString());
       }
    }
 
@@ -204,7 +206,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String[] erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering erase()");
+      if (log.CALL) log.call(ME, "Entering erase()");
 
       try {
          // authentication and authorization security checks
@@ -225,7 +227,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
@@ -238,7 +240,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final MessageUnit[] get(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering get()");
+      if (log.CALL) log.call(ME, "Entering get()");
 
       try {
          // authentication and authorization security checks
@@ -260,7 +262,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.toString());
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: " + e.toString());
       }
