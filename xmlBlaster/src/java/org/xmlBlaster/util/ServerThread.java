@@ -3,9 +3,9 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.7 2000/06/26 12:59:35 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.1 2000/06/26 13:48:15 ruff Exp $
 ------------------------------------------------------------------------------*/
-package testsuite.org.xmlBlaster;
+package org.xmlBlaster.util;
 
 import org.jutils.log.Log;
 
@@ -46,7 +46,7 @@ public class ServerThread extends Thread
       args[3] = "false";
       ServerThread serverThread = new ServerThread(args);
       serverThread.start();
-      Util.delay(3000L);    // Wait some time
+      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {} // Wait some time
       Log.info(ME, "Server is up!");
       return serverThread;
    }
@@ -70,7 +70,7 @@ public class ServerThread extends Thread
       args2[args.length+1] = "false";
       ServerThread serverThread = new ServerThread(args2);
       serverThread.start();
-      Util.delay(3000L);    // Wait some time
+      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {} // Wait some time
       Log.info(ME, "Server is up!");
       return serverThread;
    }
@@ -83,7 +83,7 @@ public class ServerThread extends Thread
    public static void stopXmlBlaster(ServerThread serverThread)
    {
       serverThread.stopServer = true;
-      Util.delay(500L);    // Wait some time
+      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {} // Wait some time
       Log.info(ME, "Server is down!");
    }
 
