@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o C client: Fixed publishOneway() to be a real 'oneway'
+   Thanks to Michal Masa <xmasam@sgi.felk.cvut.cz> for reporting
+
  o Python client: Added missing return values for remote calls, added publishArr()
 
  o XmlRpc access: Added support for message contents of type 'String' besides 'byte[]'
