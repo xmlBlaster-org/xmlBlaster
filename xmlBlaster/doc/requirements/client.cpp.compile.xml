@@ -105,6 +105,34 @@
      If you want to use TAO please follow the <a href="client.cpp.tao.html">specific TAO requirement</a>
      </p>
 
+     <h2>The compression library zlib</h2>
+     <p>
+        Optionally you can link this xmlBlaster C++ client library to the zlib compression library.
+        You need to download zlib yourself at http://www.gzip.org/zlib/.
+        Please choose version 1.2.1 or newer, the older version 1.1.4 does not seem to work properly in stream mode.
+     </p>
+     <p>The compression rate is impressive, see
+     <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#compress" target="req">protocol.socket</a>
+     and
+     <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html" target="req">client.c.queue</a>
+     </p>
+     <p>You need to adjust in <i>build.properties</i> following settings:
+     </p>
+     <ul>
+       <li>zlib.include.dir is the path to "zlib.h"</li>
+       <li>zlib.lib.dir is on Unix the path to the shared library libz.so and
+           on Windows to zlib.dll and zlib.lib (for compilation)</li>
+     </ul>
+     <p>As many zlib versions may fly around on your PC you can add a zlib name
+     which contains all references for statical linkage (e.g. zlib.lib on Windows), example:</p>
+     <pre>
+XMLBLASTER_ZLIB=1
+zlib.include.dir=/opt/zlib-bin/include
+zlib.lib.dir=/opt/zlib-bin/lib
+# On Windows you have to choose the name, usually 'zlib' or 'zlib1' (defaults to 'z' for UNIX):
+#zlib.lib.name=zlib
+</pre>
+
      <h2>The compilation step</h2>
      <p>
      After adjusting build.properties as described you can compile like this:
