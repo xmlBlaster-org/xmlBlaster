@@ -301,7 +301,7 @@ TODO
       <echo message=""/>
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
-      <echo message="   cpp-tets    --> generates C++ test clients"/>
+      <echo message="   cpp-tests   --> generates C++ test clients"/>
       <echo message="   cpp-demo    --> generates C++ demo clients"/>
       <echo message="   cpp         --> builds cpp-lib, cpp-test and cpp-demo"/>
       <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
@@ -309,6 +309,11 @@ TODO
       <echo message=""/>
       <echo message="   c-lib       --> generates the C client library libxmlBlasterClientC.sl (shared library .so .sl .dll)"/>
       <echo message="                   which uses the SOCKET protocol"/>
+      <echo message="   c-tests     --> generates C test clients"/>
+      <echo message="   c-demo      --> generates C demo clients"/>
+      <echo message="   c           --> builds c-lib, c-test and c-demo"/>
+      <echo message="   c-clean     --> cleans up C generated files (object files etc)"/>
+      <echo message="   c-delete    --> like 'c-clean', but delete shared library and C test clients as well"/>
       <echo message=""/>
       <echo message="   runTests    --> starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="                   you need to compile xmlBlaster before with target 'all'"/>
@@ -1852,7 +1857,7 @@ TODO
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
 
-            <!-- xmlBlasterClient.dll -->
+            <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
@@ -1899,7 +1904,7 @@ TODO
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
 
-            <!-- xmlBlasterClient.dll -->
+            <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
             <linkerarg value="-i"/>
@@ -1948,7 +1953,7 @@ TODO
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}" link="${C_LINK}"
           outfile="${lib.dir}/xmlBlasterClientC" objdir="${build.dir}/obj"
-          multithreaded="true" exceptions="true">
+          multithreaded="true">
          <compiler refid="gcc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
@@ -1960,6 +1965,7 @@ TODO
          <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="TC" value="1" if="windows" /> <!-- Force C compiling -->
            <define name="__linux" value="1" if="linux" />
            <define name="__sunos__" value="1" if="sun" />
            <define name="__sparc__" value="1" if="sun" />
@@ -2017,10 +2023,12 @@ TODO
          <compiler refid="CC"/>
          <fileset dir="${compileCSourcePath}" includes="${exeName}.c"/>
          <includepath location="${src.c.dir}" />
+         <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset>
+           <define name="TC" value="1" if="windows" /> <!-- Force C compiling -->
            <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
@@ -2034,7 +2042,7 @@ TODO
 
          <linker name="gcc"  if="use-gcc">
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          </linker>
@@ -2047,7 +2055,7 @@ TODO
 
          <linker name="CC"> <!-- SunOS -->
             <syslibset dir="/lib" libs="socket,posix4,nsl"/>
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC" /> <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" /> <!-- libxmlBlasterClientC.so -->
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
             <linkerarg value="-R ${lib.dir.absolute}"/> <!-- Burn .so path into executables: -->
