@@ -2,6 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o added javaclients.graphical.GraphicChat as a demo
+
  o added Martin's managed objects in the c++ clients 
 
  o Java client library interface change, removed method

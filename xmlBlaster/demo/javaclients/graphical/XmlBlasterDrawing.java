@@ -55,8 +55,18 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    private ConnectReturnQos connectReturnQos;
 
 
+   public XmlBlasterDrawing() {
+      super();
+      init(Global.instance());
+   }
+
    public XmlBlasterDrawing(Global global) {
       super();
+      init(global);
+   }
+
+
+   public void init(Global global) {
       this.global = global;
       this.log = this.global.getLog("graphical");
       this.doRecord = true;
@@ -75,6 +85,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       this.timeout.addTimeoutListener(this, this.publishDelay, this);
       initConnection();
    }
+
 
    public void initConnection() {
       try {

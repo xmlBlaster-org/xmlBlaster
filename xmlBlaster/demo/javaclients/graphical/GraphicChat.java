@@ -34,7 +34,9 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp {
    }
 
    protected Drawing createDrawing() {
-      return new XmlBlasterDrawing(this.global);
+      XmlBlasterDrawing drawing = new XmlBlasterDrawing(this.global);
+      // drawing.init(this.global);
+      return drawing;
    }
 
    protected void createTools(JToolBar palette) {

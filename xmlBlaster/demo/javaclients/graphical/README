@@ -1,0 +1,25 @@
+
+1) start an xmlBlaster instance:
+java org.xmlBlaster.Main
+
+2) in another terminal start the demo:
+javaclients.graphical.GraphicChat -publishDelay 100
+
+3) in another terminal start a second instance of the demo:
+javaclients.graphical.GraphicChat -publishDelay 100
+
+In both instances choose "new" in the "file" menu. Alternatively you 
+choose 
+  a) "new" in one instance and (the sequence is important) 
+  b) "open" in the other (but only if you have a stored drawing already).
+
+if you want the drawings to update slower (100 ms is default) then you change
+the "publishDelay" flag on the command line.
+
+NOTE: It is a simple demo and as such it is quite limited and not for production
+level. Please feel free to improve it.
+
+Michele
+laghi@swissinfo.org
+
+
