@@ -18,6 +18,8 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
@@ -55,6 +57,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /** Currently always true, needs to be configurable !!! TODO */
    private boolean isAllowed = true;
+
+   /** A unique created session id delivered on callback in update() method */
+   private String cbSessionId = null;
+
+   private long counter = 0L;
 
    /**
     * Create an object holding all informations about a node
@@ -97,7 +104,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * The fail save mode is switched on, you can configure it:
     * <ul>
-    *   <li>client.failSave.retryInterval[heron] defaults to 2000L</li>
+    *   <li>delay[heron] defaults to 2000L</li>
     *   <li>client.failSave.pingInterval[heron] defaults to 10 * 1000L</li>
     *   <li>client.failSave.retries[heron] defaults to -1 == forever</li>
     *   <li>client.failSave.maxInvocations[heron] defaults to 100000</li>
@@ -117,59 +124,32 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          return null;
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
+ 
          // TODO: get the protocol, login properties, callback properties etc. from the __sys__ messages as well:
+         // TODO: new Global(args)
 
+         this.xmlBlasterConnection = new XmlBlasterConnection(glob);
+         this.xmlBlasterConnection.initFailSave(this);
+
+         CallbackAddress callback = nodeInfo.getCbAddress();
+         if (callback.getSessionId().equals(AddressBase.DEFAULT_sessionId))
+            callback.setSessionId(createSessionId());
+         this.cbSessionId = callback.getSessionId();
+
+         ConnectQos qos = new ConnectQos(getId(), glob);
          Address addr = getNodeInfo().getAddress();
-         Log.info(ME, "DUMP ADDRESS=" + addr.toXml());
-         Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" +
-             addr.getAddress() + "' using protocol=" + addr.getType());
-
-         Vector vec = new Vector();
-         vec.addElement("-client.protocol");
-         vec.addElement(addr.getType());
-         vec.addElement("-port");           // For all protocol we may use set an alternate server port
-         vec.addElement(""+addr.getPort()); // glob.getProperty().get("port["+getId()+"]", "3412");
-         vec.addElement("-socket.port");
-         vec.addElement(""+addr.getPort()); // glob.getProperty().get("socket.port["+getId()+"]", "7607");
-         vec.addElement("-rmi.registryPort");
-         vec.addElement(""+addr.getPort()); // glob.getProperty().get("rmi.registryPort["+getId()+"]", "1099");
-         vec.addElement("-xmlrpc.port");
-         vec.addElement(""+addr.getPort()); // glob.getProperty().get("xmlrpc.port["+getId()+"]", "8080");
-         vec.addElement("-server.node.id"); // Set a nice name to which node we want to connect
-         vec.addElement(getId());
-         String[] args = (String[])vec.toArray(new String[0]);
-
-         this.xmlBlasterConnection = new XmlBlasterConnection(args);
-         
-         // Setup fail save handling ...
-         long retryInterval = glob.getProperty().get("client.failSave.retryInterval["+getId()+"]", 2000L);
-         long pingInterval = glob.getProperty().get("client.failSave.pingInterval["+getId()+"]", 10 * 1000L);
-         int retries = glob.getProperty().get("client.failSave.retries["+getId()+"]", -1); // -1 == forever
-         int maxMessages = glob.getProperty().get("client.failSave.maxInvocations["+getId()+"]", 100000);
-         log.warn(ME, "Configuration possibility for cluster connections is not coded yet cool enough.");
-
-         this.xmlBlasterConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
-
-         String type = glob.getProperty().get("security.plugin.type["+getId()+"]", "simple");
-         String version = glob.getProperty().get("security.plugin.version["+getId()+"]", "1.0");
-         String name = glob.getProperty().get("name["+getId()+"]", glob.getId());
-         String passwd = glob.getProperty().get("passwd["+getId()+"]", "secret");
-
-         // !!!! TODO: Set the protocol:
-         String protocol = "IOR";
-         Log.warn(ME, "Setting dynamic protocol is missing, using IOR for callbacks for the time being");
-         CallbackAddress cbProps = new CallbackAddress(glob, protocol, getId());
-         String cbSessionId = glob.getProperty().get("security.cbSessionId["+getId()+"]", glob.getId());
-         cbProps.setSessionId(cbSessionId);
-
-         // new Global(args) !!!!!!!
-         ConnectQos qos = new ConnectQos(glob, type, version, name, passwd);
+         if (addr == null) {
+            Log.error(ME, "Can't connect to node '" + getId() + "', address is null");
+            throw new XmlBlasterException(ME, "Can't connect to node '" + getId() + "', address is null");
+         }
+         qos.setAddress(addr);      // use the configured access properties
+         qos.addCallbackAddress(callback); // we want to receive update()
          qos.setSessionTimeout(0L); // session lasts forever
          qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
-         // Login to other xmlBlaster cluster node, register for updates
          try {
-            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this, cbProps);
+            Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
+            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this);
          }
          catch(XmlBlasterException e) {
             Log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
@@ -341,9 +321,36 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       log.warn(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "'");
+      if (!this.cbSessionId.equals(cbSessionId)) {
+         Log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + glob.getId());
+         throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + glob.getId());
+      }
       return "";
+   }
+
+   /**
+    * Create a more or less unique sessionId. 
+    * <p />
+    * see Authenticate.java createSessionId() for a discussion
+    */
+   private String createSessionId() throws XmlBlasterException {
+      try {
+         String ip = glob.getLocalIP();
+         java.util.Random ran = new java.util.Random();
+         StringBuffer buf = new StringBuffer(512);
+         buf.append(Constants.SESSIONID_PRAEFIX).append(ip).append("-").append(glob.getId()).append("-");
+         buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
+         String sessionId = buf.toString();
+         if (Log.TRACE) Log.trace(ME, "Created sessionId='" + sessionId + "'");
+         return sessionId;
+      }
+      catch (Exception e) {
+         String text = "Can't generate a unique sessionId: " + e.toString();
+         Log.error(ME, text);
+         throw new XmlBlasterException("NoSessionId", text);
+      }
    }
 
    /**
