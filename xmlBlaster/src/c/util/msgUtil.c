@@ -3,8 +3,7 @@ Name:      xmlBlaster/src/c/util/msgUtil.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains helper functions for string and message manipulation
-Compile:   gcc -Wall -g -c msgUtil.c
-           gcc -Wall -g -o msgUtil msgUtil.c -DMSG_UTIL_MAIN
+Compile:   gcc -Wall -g -o msgUtil msgUtil.c -DMSG_UTIL_MAIN -I..
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -26,6 +25,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <unistd.h>         /* sleep(), only used in main */
 #  include <netdb.h>          /* gethostbyname_re() */
 #  include <errno.h>          /* gethostbyname_re() */
+#  include <sys/time.h>       /* sleep with select() */
+#  include <sys/types.h>      /* sleep with select() */
 #endif
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
@@ -120,16 +121,50 @@ char *getStackTrace(int maxNumOfLines)
 }
 
 /**
- * Todo, on UNIX currently it is rounded to seconds
+ * Sleep for given milliseconds, on none real time systems expect ~ 10 millisecs tolerance. 
  */
-void sleepMillis(long millis)
+void sleepMillis(long millisecs)
 {
 #ifdef _WINDOWS
-   Sleep(millis);
+   Sleep(millisecs);
+#elif XMLBLASTER_SLEEP_FALLBACK /* rounded to seconds */
+   if (millisecs < 1000)
+      millisecs = 1000;
+   sleep(millisecs/1000);
+#elif XMLBLASTER_SLEEP_NANO
+   TODO:
+   int nanosleep(const struct timespec *rqtp,  struct  timespec *rmtp);
+   struct timespec
+   {
+            time_t  tv_sec;         /* seconds */
+            long    tv_nsec;        /* nanoseconds */
+   };
+   /*
+   usleep()  deprecated
+   */
+   /*
+   #include <time.h>
+   void Sleep(clock_t wait)
+   {
+          clock_t goal;
+          goal = wait * (CLOCKS_PER_SEC / 1000);
+          while( goal >=  clock())
+                  ;
+   }
+   */   
 #else
-   if (millis < 1000)
-      millis = 1000;
-   sleep(millis/1000);
+   fd_set dummy;
+   struct timeval toWait;
+   int ret;
+
+   FD_ZERO(&dummy);
+   toWait.tv_sec = millisecs / 1000;
+   toWait.tv_usec = (millisecs % 1000) * 1000;
+
+   ret = select(0, &dummy, NULL, NULL, &toWait);
+   if (ret == -1) {
+      printf("[msgUtil.c] ERROR: sleepMillis(%ld) returned errnor %d", millisecs, errno);
+   }
 #endif
 }
 
@@ -751,11 +786,16 @@ _INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL lev
 # ifdef MSG_UTIL_MAIN
 int main()
 {
+   const long millisecs = 500;
    const int currLevel = 3;
-   const char *location = "TEST";
+   const char *location = __FILE__;
    const char *p = "OOOO";
    int i = 3;
    xmlBlasterDefaultLogging(currLevel, LOG_WARN, location, "%s i=%d\n", p, i);
+
+   printf("Sleeping now for %ld millis\n", millisecs);
+   sleepMillis(millisecs);
+   printf("Waiking up after %ld millis\n", millisecs);
    return 0;
 }
 # endif
