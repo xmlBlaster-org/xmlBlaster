@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o C++ clients: QueueFactory and ParserFactory are now stateless (no global nor log)
+
+ o bugfix in c++ client properties: empty spaces are allowed inside strings.
+
  o CorbaDriverFactory and SocketDriverFactory in c++ client keep now
    driver instances with Global* as key instead of instanceName. 
  
