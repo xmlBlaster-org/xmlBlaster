@@ -2,8 +2,8 @@
 Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.8 2002/02/16 11:24:10 ruff Exp $
+Comment:   Handles connection to xmlBlaster with plain sockets
+Version:   $Id: SocketConnection.java,v 1.9 2002/02/16 11:40:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -34,15 +34,11 @@ import org.xmlBlaster.protocol.socket.Parser;
 
 
 /**
- * This is an xmlBlaster proxy. It implements the interface I_XmlBlaster
- * through AbstractCallbackExtended. The client can invoke it as if the
- * xmlBlaster would be on the same VM, making this way the plain socket protocol
- * totally transparent.
- * <p />
  * This driver establishes exactly one connection to xmlBlaster-Server and
  * uses this socket for asynchronous callbacks as well. This way we don't need
  * to setup a callbackserver.
  * <p />
+ * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
@@ -86,12 +82,15 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
    /**
-    * Connect to xmlBlaster using XML-RPC.
+    * Connect to xmlBlaster using plain socket messaging.
     */
    public SocketConnection(java.applet.Applet ap) throws XmlBlasterException
    {
    }
 
+   /**
+    * Get the raw socket handle
+    */
    public Socket getSocket() throws ConnectionException
    {
       if (this.sock == null) {
@@ -380,6 +379,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * Subscribe to messages.
     * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException
    {
@@ -428,6 +428,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Publish a message.
     * The normal publish is handled here like a publishArr
+    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
    {
@@ -564,7 +565,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
    /**
     * Check server.
-    * @see xmlBlaster.idl
+    * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
     */
    public void ping() throws ConnectionException, XmlBlasterException
    {
@@ -587,6 +588,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The update method.
     * <p />
     * Gets invoked from xmlBlaster callback
+    * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
     */
    public String update(MessageUnit[] arr) throws XmlBlasterException
    {
@@ -600,14 +602,16 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
 
-
+   /**
+    * Dump of the state, remove in future.
+    */
    public String toXml() throws XmlBlasterException
    {
       return toXml("");
    }
 
    /**
-    * Dump of the server, remove in future.
+    * Dump of the state, remove in future.
     */
    public String toXml(String extraOffset) throws XmlBlasterException
    {

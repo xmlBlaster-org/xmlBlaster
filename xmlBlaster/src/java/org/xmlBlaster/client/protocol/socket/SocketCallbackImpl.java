@@ -2,8 +2,8 @@
 Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.6 2002/02/16 11:24:10 ruff Exp $
+Comment:   Helper to connect to xmlBlaster using plain socket
+Version:   $Id: SocketCallbackImpl.java,v 1.7 2002/02/16 11:40:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -21,16 +21,15 @@ import java.io.IOException;
 
 
 /**
- * The methods of this callback class are exposed to SOCKET clients,
- * in this case to xmlBlaster when it wants to callback the client.
+ * Used for client to receive xmlBlaster callbacks. 
  * <p />
- * TODO: Do we need a listener garbage collection if a client does not
- * remove itself after a response or on failure?
+ * One instance of this for each client. 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class SocketCallbackImpl extends Executor implements Runnable
 {
    private final String ME;
+   /** The connection manager 'singleton' */
    private final SocketConnection sockCon;
    /** A unique name for this client socket */
    private String callbackAddressStr = null;
@@ -67,10 +66,7 @@ public class SocketCallbackImpl extends Executor implements Runnable
          try {
             receiver.parse(iStream);
             if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-
             receive(receiver);
-
-
          }
          catch(XmlBlasterException e) {
             Log.error(ME, e.toString());
