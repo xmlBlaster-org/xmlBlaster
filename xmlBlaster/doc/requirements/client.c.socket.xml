@@ -902,11 +902,11 @@ Solaris:
        <td>3</td>
        <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
        <td>cc: Forte Developer 7 C 5.4 2002/03/09</td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
        <td>pthread</td>
        <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
        <td>Unparsed access with raw XML strings</td>
-       <td>2003-06-02</td>
+       <td>2004-12-01</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
        </tr>
@@ -974,6 +974,22 @@ Solaris:
        <td>2004-04-02</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build c</i></td>
+       </tr>
+
+       <tr>
+       <td>9</td>
+       <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
+       <td>gcc (GCC) 3.3.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
+       <td>pthread</td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td>Unparsed access with raw XML strings</td>
+       <td>2004-12-01</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><i>build.properties</i>:<br /><code>XMLBLASTER_PERSISTENT_QUEUE=1<br />
+                                  sqlite.include.dir=/opt/sqlite-bin/include<br />
+                                  sqlite.lib.dir=/opt/sqlite-bin/lib</code><br />
+           <i>cd xmlBlaster;  ./build  -Duse-gcc=1 c-delete c</i></td>
        </tr>
 
       </table>
