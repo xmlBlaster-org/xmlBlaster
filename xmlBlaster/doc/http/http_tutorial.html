@@ -19,7 +19,7 @@
 </head>
 <body>
 
-<div class="sideend">Last updated $Date: 2000/03/29 16:35:02 $ $Author:
+<div class="sideend">Last updated $Date: 2000/03/31 14:11:19 $ $Author:
 ruff $</div>
 
 
@@ -30,14 +30,16 @@ ruff $</div>
 <td>
 <div class="celltitel"><a NAME="need"></a>What is this?</div>
 
-<p>When distributing dynamic content over the internet, you usually choose
+<p>When distributing dynamic, event driven content over the internet, you usually choose
 an applet. The applet connects to the server over CORBA (or any other protocol)
 and may receive instant notification from the server.
 <br>But applets produce some well known problems like higher download time,
-firewalls which won't allow TCP/IP connections etc.&nbsp;
+firewalls which won't allow TCP/IP connections, applet-javascript communication problems
+with some Java-VM's etc.&nbsp;
 <p>This framework addresses these issues. It establishes a persistent http
 connection to allow instant callbacks of xmlBlaster messages to the browser.&nbsp;
-<p>Konrad will provide a tutorial how to use this framework in near future.&nbsp;</td>
+<p>Konrad will provide a tutorial how to use this framework in near future.&nbsp;
+</td>
 </tr>
 
 <tr>
@@ -52,14 +54,25 @@ connection to allow instant callbacks of xmlBlaster messages to the browser.&nbs
 <td>
 <div class="celltitel"><a NAME="need"></a>How does it work?</div>
 
-<p>The servlet connects to xmlBlaster using CORBA and to the browser using
-a persistent http connection (using a hidden frame to communicate).&nbsp;
-<p>The messages are directly transferred to the browser, which has a Javascript
+<p>A callback frame in the browser refers to the BlasterHttpProxyServlet. 
+Using the ActionType parameter set to login, the BrowserHttpProxyServlet holds the HTTP connection
+if login to the xmlBlaster via the BlasterHttpProxy succeeds.
+<p>This permanent HTTP connection is held by the HttpPushHandler, which pings each
+40 sec the browser. This functionality ensures that the browser won't close the connection.
+<p>The ProxyConnection connects to xmlBlaster using CORBA &nbsp;.
+<p>The messages from the xmlBlaster are directly (ProxyConnection.update - HttpPushHandler.update) 
+transferred to the browser, which has a Javascript
 based XML parser and notifies the interested browser frames about the callback.
-<br>The contentFrame and controlFrame in the picture are only an example,
+<br>The content frame in the picture are only an example,
 you can provide as many own frames as you wish. This is the work which
 is left for you to design your web layout.
-<br>The hidden callbackFrame is always necessary to handle the communication.&nbsp;
+<p>If you have too many messages in a short time frame, your browser won't process all of this
+message. For this you can use an additional ready frame. Connect this frame also with
+the BlasterHttpProxyServlet using ActionType=browserReady. Each reload of this frame
+indicates youre permanent HTTP connection (HttpPushHandler) that your browser is ready to
+process more messages. HttpPushHandler will send you the whole queue each update.
+<br>The hidden callback frame is always necessary to handle the communication.&nbsp;
+<p>In your parent frame you have to include callback.js, util.js and xparse.js.
 <p>For Servlet and Javascript examples have a look into the following directory
 of the xmlBlaster distribution:<br/>
 <pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
