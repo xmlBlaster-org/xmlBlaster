@@ -964,7 +964,6 @@ Solaris:
 
    <see type="CODE" lang="C">HelloWorld.c</see>
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
-   <see type="CODE" lang="C">xmlBlaster/demo/c/socket/LogRedirect.c</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/c/README</see>
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
@@ -975,6 +974,6 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
 </requirement>
 
