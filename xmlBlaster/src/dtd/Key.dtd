@@ -1,0 +1,10 @@
+<!-- Key for each messageunit -->
+
+<!ELEMENT key (param+)>
+
+<!ELEMENT param (#CDATA)>
+
+<!ATTLIST key oid ID #IMPLIED>
+<!ATTLIST key queryType ( XPATH | REGEX ) "EXACT">
+<!ATTLIST key contentMime (  text/plain | image/gif ) "text/xml">
+

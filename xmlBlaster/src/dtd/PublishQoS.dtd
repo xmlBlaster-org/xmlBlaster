@@ -1,0 +1,33 @@
+<!-- QoS when publishing messageunits -->
+
+<!ELEMENT qos (destination*,
+               expires?,
+               isDurable?,
+               forceUpdate?,
+               readonly?,
+               defaultContent?,
+               check?
+              )>
+
+<!-- Publishing with direct or broatcast -->
+<!ELEMENT destination (forceQueuing?)>
+<!ATTLIST destination queryType (EXACT|XPATH) #REQUIRED>
+
+
+<!ELEMENT forceQueuing EMPTY>  <!-- If the destination client is not logged in, queue the messages  -->
+
+<!ATTLIST forceQueuing timeout CDATA #REQUIRED> <!-- for a maximum of timeout seconds (timeout is not yet supported!) -->
+
+<!-- QoS-Flags PUBLISH -->
+<!ELEMENT expires (#PCDATA)>
+
+<!ELEMENT isDurable EMPTY>
+
+<!ELEMENT forceUpdate EMPTY>
+
+<!ELEMENT readonly EMPTY>
+
+<!ELEMENT defaultContent EMPTY>
+
+<!ELEMENT check (#CDATA)>
+<!ATTLIST check lang (tcl | perl | sh) #IMPLIED>

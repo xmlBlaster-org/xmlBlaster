@@ -1,0 +1,10 @@
+<!-- QoS when subscribing messageunits -->
+
+<!ELEMENT qos (noMeta?,
+               noContent?,
+               noLocal?
+              )>
+
+<!ELEMENT noMeta EMPTY>
+<!ELEMENT noContent EMPTY>
+<!ELEMENT noLocal EMPTY>

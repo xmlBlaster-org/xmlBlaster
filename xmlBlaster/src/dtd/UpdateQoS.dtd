@@ -1,0 +1,13 @@
+<!-- Qos for client updates -->
+
+
+<!ELEMENT qos (state?,
+               sender?,
+               subscriptionId?
+              )>
+
+<!ELEMENT state (#PCDATA)>
+
+<!ELEMENT sender (#PCDATA)>
+
+<!ELEMENT subscriptionId (#PCDATA)>
