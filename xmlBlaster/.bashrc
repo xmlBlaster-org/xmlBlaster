@@ -95,7 +95,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
    #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xerces.jar
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xercesImpl.jar
    # jutils.jar is now included in xmlBlaster.jar
    #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
