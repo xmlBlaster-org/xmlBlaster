@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.63 2000/03/23 20:44:56 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.64 2000/03/25 23:52:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.63 $
+ * @version $Revision: 1.64 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -88,6 +88,24 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /** Flag for performance reasons only */
    private boolean usePersistence = true;
 
+   /** Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login) */
+   private String xmlKeyLoginEvent = null;
+
+   /** QoS for '__sys__Login' login event */
+   private PublishQoS publishQosLoginEvent = null;
+
+   /** The messageUnit for a login event */
+   private MessageUnit msgUnitLoginEvent = null;
+
+   /** Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout) */
+   private String xmlKeyLogoutEvent = null;
+
+   /** QoS for '__sys__Logout' logout event */
+   private PublishQoS publishQosLogoutEvent = null;
+
+   /** The messageUnit for a logout event */
+   private MessageUnit msgUnitLogoutEvent = null;
+
 
    /**
     * One instance of this represent one xmlBlaster server.
@@ -95,6 +113,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
+      this.xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
+      this.publishQosLoginEvent = new PublishQoS("<qos>\n   <ForceUpdate/>\n</qos>");
+      this.msgUnitLoginEvent = new MessageUnit(xmlKeyLoginEvent, new byte[0]);
+
+      this.xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
+      this.publishQosLogoutEvent = new PublishQoS("<qos>\n   <ForceUpdate/>\n</qos>");
+      this.msgUnitLogoutEvent = new MessageUnit(xmlKeyLogoutEvent, new byte[0]);
+
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
@@ -844,22 +870,42 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Event invoked on successful client login (interface ClientListener).
+    * Event invoked on successful client login (interface ClientListener). 
+    * <p />
+    * Publishes a login event for this client with key oid="__sys_Login"
+    * <pre>
+    *    &lt;key oid='__sys__Login'>    &lt;!-- Client name is delivered in the content -->
+    *    &lt;/key>
+    * </pre>
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
       ClientInfo clientInfo = e.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString());
+      synchronized (msgUnitLoginEvent.content) {
+         msgUnitLoginEvent.content = clientInfo.getLoginName().getBytes();
+         publish(clientInfo, msgUnitLoginEvent, publishQosLoginEvent); // publish that this client logged in
+      }
    }
 
 
    /**
     * Event invoked when client does a logout (interface ClientListener).
+    * <p />
+    * Publishes a logout event for this client with key oid="__sys_Logout"
+    * <pre>
+    *    &lt;key oid='__sys__Logout'>    &lt;!-- Client name is delivered in the content -->
+    *    &lt;/key>
+    * </pre>
     */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
       ClientInfo clientInfo = e.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString());
+      synchronized (msgUnitLogoutEvent.content) {
+         msgUnitLogoutEvent.content = clientInfo.getLoginName().getBytes();
+         publish(clientInfo, msgUnitLogoutEvent, publishQosLogoutEvent); // publish that this client logged out
+      }
    }
 
 
