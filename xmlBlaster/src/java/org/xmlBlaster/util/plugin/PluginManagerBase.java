@@ -11,14 +11,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
-import org.xmlBlaster.util.classloader.PluginClassLoader;
 
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.net.URL;
-
+import java.net.URLClassLoader;
 /**
  * Base class to load plugins.
  * <p />
@@ -216,7 +215,7 @@ public class PluginManagerBase implements I_PluginManager {
          if (factory != null) {
             if (log.TRACE) log.trace(ME, "useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
 
-            PluginClassLoader myLoader = factory.getPluginClassLoader(pluginInfo);
+            URLClassLoader myLoader = factory.getPluginClassLoader(pluginInfo);
             if (log.TRACE) log.trace(ME, "Found " + myLoader.getURLs().length + " plugin specific jar files for '" + pluginName + "' preferenced by xmlBlaster classLoader");
 
             plugin = (I_Plugin)myLoader.loadClass(pluginName).newInstance();

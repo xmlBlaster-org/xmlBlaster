@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.12 2003/05/21 20:21:24 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.13 2003/09/10 07:58:51 antman Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -11,9 +11,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.I_Main;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
-import org.xmlBlaster.util.classloader.XmlBlasterClassLoader;
-
 import org.xmlBlaster.client.key.SubscribeKey;
+
+import java.net.URLClassLoader;
 
 
 /**
@@ -188,7 +188,7 @@ public class EmbeddedXmlBlaster
     */
    public void run() {
       ClassLoaderFactory factory = glob.getClassLoaderFactory();
-      XmlBlasterClassLoader cl = null;
+      URLClassLoader cl = null;
 
       try {
          cl = factory.getXmlBlasterClassLoader();
