@@ -12,12 +12,10 @@ Howto run the html examples with persistent http connection:
    servlet.SystemInfo.code=html.systemInfo.SystemInfo
 
 
-3. Use the Makefile or add symbolic links manually:
-   javascript -> ../../src/java/org/xmlBlaster/protocol/http/javascript
-   persistentWindow -> ../../src/java/org/xmlBlaster/protocol/http/persistentWindow
-   xmlBlaster -> ../..
-   xmlBlaster.css -> /home/ruff/xmlBlaster/doc/xmlBlaster.css
-   (or copy the directories under MS$).
+3. Use the 'make all' or 'build.bat deploy_ear' or copy manually:
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
+   cp -r  ../../doc/howto/xmlBlaster.css  xmlBlaster.css
 
 
 4. Start xmlBlaster
@@ -45,3 +43,15 @@ Start it in the background on Linux:
    java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 &
 
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
+
+
+Using tomcat 4.0 serlvet enginge:
+=================================
+
+export CATALINA_HOME=$HOME/jakarta-tomcat-4.0
+export PATH=$CATALINA_HOME/bin:$PATH
+startup.sh   (add "tail -f $CATALINA_HOME/logs/catalina.out" to the end of this script)
+
+For deployment see WEB-INF/web.xml
+
+http://localhost:8080/xmlBlaster/SystemInfo
