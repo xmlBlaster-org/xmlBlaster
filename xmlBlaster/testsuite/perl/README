@@ -24,3 +24,10 @@ This is an example to access xmlBlaster from a Perl client
 
 	 ./client `cat /tmp/NS_Ref`
 
+
+NOTE: Callbacks are not possible in the current COPE Perl library.
+      So the publisher of a message can't be receiver as well.
+		The COPE CORBA library will be extended in the future to support
+		client callbacks.
+		For the time being, you need to have a multi threaded perl client
+		to allow callbacks to oneself.
