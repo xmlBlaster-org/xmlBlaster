@@ -328,7 +328,7 @@ public class CacheQueueTest extends TestCase {
                         assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + totNumOfBytes + " max number of bytes: " + maxNumOfBytes[is], totNumOfBytes <= maxNumOfBytes[is]);
 //                        assertTrue(ME + " Overflow is not allowed " + queue.toXml("") , checkIfPossible(transientNumOfBytes, durableNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
                         assertEquals(ME + " number of returned values differe from input values " + queue.toXml(""), mustEntries, total.size());
-                        log.info(ME, "SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxSize=" + maxNumOfBytes[is] + " .... looks OK");
+                        log.info(ME, "SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxBytes=" + maxNumOfBytes[is] + " .... looks OK");
 
                         int count = 0;
                         for (int j=0; j < 3; j++) {

@@ -162,13 +162,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                this.hasPersistentEntries = true;
 
                // initial fill of RAM queue ...
-               long maxSize = this.transientQueue.getMaxNumOfBytes();
+               long maxBytes = this.transientQueue.getMaxNumOfBytes();
                // this.transientQueue.getMaxNumOfEntries();
                int maxEntries = -1;
 
                ArrayList entries = null;
                try {
-                  entries = this.persistentQueue.peek(maxEntries, maxSize);
+                  entries = this.persistentQueue.peek(maxEntries, maxBytes);
                }
                catch (XmlBlasterException ex) {
                   this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");

@@ -52,7 +52,7 @@ public class ConnectQosTest extends TestCase {
          "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='20' clearSessions='false'>\n" +
          "      <sessionId>anId</sessionId>\n" +
          "   </session>\n" +
-         "   <queue relating='subject' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n" +
+         "   <queue relating='subject' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
          "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
          "         <ptp>true</ptp>\n" +
          "         IOR:00011200070009990000....\n" +
@@ -71,8 +71,8 @@ public class ConnectQosTest extends TestCase {
          "      <ptp>true</ptp>\n" +
          "      http:/www.mars.universe:8080/RPC2\n" +
          "   </callback>\n" +
-         "   <queue relating='session' maxMsg='1600' maxSize='2000'/>\n" +
-         "   <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000'/>\n" +
+         "   <queue relating='session' maxMsg='1600' maxBytes='2000'/>\n" +
+         "   <queue relating='subject' maxMsg='1600' maxBytes='2000' expires='360000000'/>\n" +
          "   <serverRef type='IOR'>\n" +
          "      IOR:00011200070009990000....\n" +
          "   </serverRef>\n" +

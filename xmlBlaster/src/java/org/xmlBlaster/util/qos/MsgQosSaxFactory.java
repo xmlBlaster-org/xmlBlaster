@@ -49,8 +49,8 @@ import org.xml.sax.helpers.*;
  *        &lt;node id='heron'/>
  *     &lt;/route>
  *     &lt;topic readonly='false' destroyDelay='60000'>
- *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'/>
- *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'/>
+ *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
+ *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
  *     &lt;/topic>
  *  &lt;/qos>
  * </pre>

@@ -37,13 +37,13 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
  *    <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
  *    <ptp>true</ptp>
  *    <!-- The client side queue: -->
- *    <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
+ *    <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
  *       <address type='IOR' sessionId='4e56890ghdFzj0'>
  *          IOR:10000010033200000099000010....
  *       </address>
  *    </queue>
  *    <!-- The server side callback queue: -->
- *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
+ *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *       <callback type='IOR' sessionId='4e56890ghdFzj0'>
  *          IOR:10000010033200000099000010....
  *          <burstMode collectTime='400' />

@@ -268,13 +268,13 @@ int main(int args, char* argv[])
        string("   </session>\n") +
        string("   <ptp>true</ptp>\n") +
        string("   <!-- The client side queue: -->\n") +
-       string("   <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>\n") +
+       string("   <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>\n") +
        string("      <address type='IOR' sessionId='4e56890ghdFzj0'>\n") +
        string("         IOR:10000010033200000099000010....\n") +
        string("      </address>\n") +
        string("   </queue>\n") +
        string("   <!-- The server side callback queue: -->\n") +
-       string("   <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n") +
+       string("   <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n") +
        string("      <callback type='IOR' sessionId='4e56890ghdFzj0'>\n") +
        string("         IOR:10000010033200000099000010....\n") +
        string("         <burstMode collectTime='400' />\n") +

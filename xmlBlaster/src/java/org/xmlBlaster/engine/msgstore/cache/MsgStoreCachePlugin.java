@@ -157,14 +157,14 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
             if (this.persistentStore instanceof org.xmlBlaster.util.queue.I_Queue) {
                if (this.persistentStore.getNumOfEntries() > 0) {
                   // initial fill of RAM queue ...
-                  long maxSize = this.transientStore.getMaxNumOfBytes();
-                  log.info(ME, "Prefilling cache with " + maxSize + " entries");
+                  long maxBytes = this.transientStore.getMaxNumOfBytes();
+                  log.info(ME, "Prefilling cache with " + maxBytes + " entries");
                   // this.transientStore.getMaxNumOfEntries();
                   int maxEntries = -1;
 
                   ArrayList entries = null;
                   try {
-                     entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek(maxEntries, maxSize);
+                     entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek(maxEntries, maxBytes);
                   }
                   catch (XmlBlasterException ex) {
                      this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");
