@@ -17,7 +17,6 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 #include <util/msgUtil.h>
 
-#define  MAX_SESSIONID_LEN 256
 #define  MAX_MSG_LEN 1000000000
 
 /* Settings for MSG_FLAG_POS_TYPE */
@@ -71,4 +70,5 @@ extern char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug);
 extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
 extern void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
+extern QosArr *parseQosArr(size_t dataLen, char *data);
 
