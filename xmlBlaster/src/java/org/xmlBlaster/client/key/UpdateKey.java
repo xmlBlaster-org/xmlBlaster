@@ -125,5 +125,9 @@ public class UpdateKey
    public String toXml() {
       return this.msgKeyData.toXml();
    }
+
+   public String toString() {
+      return toXml().trim();
+   }
 }
 
