@@ -459,7 +459,7 @@ public abstract class AddressBase
     * protocol from getType().<br />
     * For XmlRpc it looks typically like <i>http://myServer:8080</i>
     * for CORBA like <i>IOR:00005395....</i> and
-    * for SOCKET like <i>128.56.44.12:7608</i>
+    * for SOCKET like <i>socket://128.56.44.12:7608</i>
     * </p>
     * <p>
     * Setting the address here has precedence over any environment settings
