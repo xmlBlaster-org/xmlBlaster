@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.6 1999/12/14 10:59:07 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.7 1999/12/16 11:49:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,7 +20,7 @@ import test.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style. 
+ * This client tests the PtP (or PtD = point to destination) style.
  * <p>
  * Note that the three clients (client logins) are simulated in this class.<br />
  * Tests performed:<br />
@@ -192,12 +192,11 @@ public class TestPtD extends TestCase implements I_Callback
     * this update is called.
     *
     * @param loginName The name to whom the callback belongs
-    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
@@ -206,14 +205,14 @@ public class TestPtD extends TestCase implements I_Callback
       if (!receiverName.equals(loginName) && !receiver2Name.equals(loginName))
          assert("Wrong receveiver " + receiverName, false);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, keyOid);
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
    }
 
 
    /**
     * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs. 
+    * or returns when the given timeout occurs.
     * <p />
     * @param timeout in milliseconds
     * @param numWait how many messages to wait

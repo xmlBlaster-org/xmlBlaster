@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.4 1999/12/14 12:19:54 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.5 1999/12/16 11:50:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -162,14 +162,13 @@ public class ClientXml implements I_Callback
     * this update is called.
     *
     * @param loginName The name to whom the callback belongs
-    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      Log.info(ME, "Receiving update of message [" + keyOid + "]");
+      Log.info(ME, "Receiving update of message [" + updateKey.getUniqueKey() + "]");
    }
 
 

@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.8 1999/12/13 12:35:49 ruff Exp $
+Version:   $Id: TestSub.java,v 1.9 1999/12/16 11:49:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -187,12 +187,11 @@ public class TestSub extends TestCase implements I_Callback
     * this update is called.
     *
     * @param loginName The name to whom the callback belongs
-    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
@@ -200,7 +199,7 @@ public class TestSub extends TestCase implements I_Callback
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, keyOid);
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
 
       messageArrived = true;
