@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.20 2002/03/13 16:41:38 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.21 2002/03/17 13:15:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -199,7 +199,6 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));

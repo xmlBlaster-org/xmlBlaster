@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.28 2002/03/17 07:31:19 ruff Exp $
+Version:   $Id: TestSub.java,v 1.29 2002/03/17 13:15:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -50,6 +50,7 @@ public class TestSub extends TestCase implements I_Callback
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
    private Timestamp sentTimestamp;
+   private String cbSessionId = "0fxrc83plP";
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
@@ -78,8 +79,10 @@ public class TestSub extends TestCase implements I_Callback
    {
       try {
          senderConnection = new XmlBlasterConnection(); // Find orb
+
          String passwd = "secret";
-         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(null, null, senderName, passwd);
+         senderConnection.connect(qos, this, cbSessionId); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
@@ -123,11 +126,10 @@ public class TestSub extends TestCase implements I_Callback
                       "<key oid='' queryType='XPATH'>\n" +
                       "   //TestSub-AGENT" +
                       "</key>";
-      ConnectQos qos = new ConnectQos(); //    String qos = "<qos></qos>";
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos.toString());
+         subscribeOid = senderConnection.subscribe(xmlKey, null);
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -186,24 +188,17 @@ public class TestSub extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
       numReceived += 1;
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
+      assertEquals("Wrong cbSessionId", this.cbSessionId, sessionId);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());

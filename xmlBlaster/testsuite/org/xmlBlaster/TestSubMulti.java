@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.4 2002/03/13 19:26:09 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.5 2002/03/17 13:15:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -173,24 +173,16 @@ public class TestSubMulti extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
       numReceived += 1;
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Sleep to assure that publish() is returned with publishOid
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());

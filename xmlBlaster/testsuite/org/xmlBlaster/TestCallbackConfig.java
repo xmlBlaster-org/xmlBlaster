@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestCallback.java
+Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.3 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.1 2002/03/17 13:15:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,17 +21,18 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 
 import test.framework.*;
 
 
 /**
- * This client test dead letter generation on callback problems. 
+ * This client does test different callback configuration settings. 
  * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
  */
-public class TestCallback extends TestCase implements I_Callback
+public class TestCallbackConfig extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
 
@@ -41,16 +42,17 @@ public class TestCallback extends TestCase implements I_Callback
 
    private boolean isDeadLetter = false;
    private String subscribeDeadLetterOid = null;
-   private XmlBlasterConnection conAdmin = null;
+   private XmlBlasterConnection con = null;
    private String publishOid = null;
+   private String cbSessionId = "topSecret";
 
    /**
-    * Constructs the TestCallback object.
+    * Constructs the TestCallbackConfig object.
     * <p />
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestCallback(String testName, String name)
+   public TestCallbackConfig(String testName, String name)
    {
        super(testName);
        this.name = name;
@@ -64,12 +66,20 @@ public class TestCallback extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         conAdmin = new XmlBlasterConnection();
+         con = new XmlBlasterConnection();
          ConnectQos qos = new ConnectQos("simple", "1.0", "admin", passwd);
-         conAdmin.connect(qos, this);
+         
+         // We configure detailed how our callback is handled by xmlBlaster
+         // In connect() a default callback server is created and its address is added to cbProps
+         CallbackAddress cbProps = new CallbackAddress();
+         cbProps.setCollectTime(0L); // cb.burstMode.collectTime"
+         cbProps.setSessionId(cbSessionId);
+         cbProps.setPingInterval(10000);
+         cbProps.setRetries(1);
+         cbProps.setDelay(1000);
+         cbProps.setPtpAllowed(true);
 
-         subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null);
-         Log.info(ME, "Success: Subscribe on " + subscribeDeadLetterOid + " done");
+         con.connect(qos, this, cbProps);
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
@@ -85,10 +95,10 @@ public class TestCallback extends TestCase implements I_Callback
    protected void tearDown()
    {
       try {
-         if (conAdmin != null) {
-            String[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
+         if (con != null) {
+            String[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) Log.error(ME, "ERROR: Erased " + strArr.length + " messages");
-            conAdmin.disconnect(new DisconnectQos());
+            con.disconnect(new DisconnectQos());
          }
       }
       catch (Exception e) {
@@ -98,45 +108,26 @@ public class TestCallback extends TestCase implements I_Callback
    }
 
    /**
-    * We expect dead letters after destroying our callback server. 
     */
-   public void testCallbackFailure()
+   public void testCbSessionId()
    {
-      Log.info(ME, "testCallbackFailure() ...");
+      Log.info(ME, "testCbSessionId() ...");
       try {
-         Log.info(ME, "Connecting ...");
-         XmlBlasterConnection con = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
-         con.connect(qos, this); // Login to xmlBlaster
+         con.subscribe("<key oid='testCallbackMsg'/>", null);
 
-         con.shutdownCb(); // Destroy the callback server
+         publishOid = con.publish(new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null));
 
-         String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null);
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
-
-         MessageUnit msgUnit = new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);
-         publishOid = con.publish(msgUnit);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
          waitOnUpdate(2000L, 1);
-         assert("Expected a dead letter", isDeadLetter);
-         isDeadLetter = false;
-
-         try { // this should fail
-            con.subscribe("<key oid='testCallbackMsg'/>", null);
-            assert("Session should be destroyed by xmlBlaster", false);
-            //con.disconnect(null);
-         }
-         catch (Exception e2) {
-            Log.info(ME, "SUCCESS: The session was destroyed by xmlBlaster");
-         }
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
          assert(e.toString(), false);
       }
-      Log.info(ME, "Success in testCallbackFailure()");
+      Log.info(ME, "Success in testCbSessionId()");
    }
+
 
    /**
     * This is the callback method invoked from xmlBlaster
@@ -147,8 +138,9 @@ public class TestCallback extends TestCase implements I_Callback
    {
       Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
-      isDeadLetter = updateKey.isDeadLetter();
+      assertEquals("Invalid cbSessionId", this.cbSessionId, cbSessionId);
    }
+
 
    /**
     * Little helper, waits until the wanted number of messages are arrived
@@ -183,16 +175,16 @@ public class TestCallback extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestCallback("testCallbackFailure", "Tim"));
+       suite.addTest(new TestCallbackConfig("testCbSessionId", "Tim"));
        return suite;
    }
 
    /**
     * Invoke:
     * <pre>
-    *  java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestCallback
+    *  java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestCallbackConfig
     *
-    *  java testsuite.org.xmlBlaster.TestCallback -cb.retries 0 -cb.delay 3000
+    *  java testsuite.org.xmlBlaster.TestCallbackConfig
     * </pre>
     */
    public static void main(String args[])
@@ -202,11 +194,11 @@ public class TestCallback extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      TestCallback testSub = new TestCallback("TestCallback", "Tim");
+      TestCallbackConfig testSub = new TestCallbackConfig("TestCallbackConfig", "Tim");
       testSub.setUp();
-      testSub.testCallbackFailure();
+      testSub.testCbSessionId();
       testSub.tearDown();
-      Log.exit(TestCallback.ME, "Good bye");
+      Log.exit(TestCallbackConfig.ME, "Good bye");
    }
 }
 

@@ -38,6 +38,7 @@ public class TestAll
       suite.addTest(TestSession.suite());
       suite.addTest(TestLogin.suite());
       suite.addTest(TestCallback.suite());
+      suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestLoginLogoutEvent.suite());
       suite.addTest(TestGet.suite());
       suite.addTest(TestSubExact.suite());

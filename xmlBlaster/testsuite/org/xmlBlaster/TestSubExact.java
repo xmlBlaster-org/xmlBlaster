@@ -199,7 +199,6 @@ public class TestSubExact extends TestCase implements I_Callback
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
