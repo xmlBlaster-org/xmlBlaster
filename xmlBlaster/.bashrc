@@ -153,6 +153,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    fi
    if [ -d ${XMLBLASTER_HOME}/testsuite ]; then
       CLASSPATH=${XMLBLASTER_HOME}:${CLASSPATH}
+      CLASSPATH=${XMLBLASTER_HOME}/testsuite/org/xmlBlaster:${CLASSPATH}
    fi
    export CLASSPATH
 
