@@ -39,6 +39,9 @@ public class I_MapTest extends TestCase {
    protected LogChannel log;
    private StopWatch stopWatch = new StopWatch();
 
+   private final boolean IS_DURABLE = true;
+   private final boolean IS_TRANSIENT = false;
+
    private I_Map currMap;
    static I_Map[] IMPL = {
                    new org.xmlBlaster.engine.msgstore.ram.MapPlugin(),
@@ -50,8 +53,8 @@ public class I_MapTest extends TestCase {
       super(name);
       this.currMap = IMPL[currImpl];
       String[] args = { // configure the cache
-         "-msgUnitStore.persistentQueue", "JDBC,1.0",
-         "-msgUnitStore.transientQueue", "RAM,1.0",
+         "-persistence.persistentQueue", "JDBC,1.0",
+         "-persistence.transientQueue", "RAM,1.0",
       };
       this.glob = new Global(args);
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
@@ -350,6 +353,178 @@ public class I_MapTest extends TestCase {
       }
    }
 
+
+
+//------------------------------------
+   public void testGetAllMsgs() {
+
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
+         queueType = this.currMap.toString();
+         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getAllMsgs");
+         this.currMap.initialize(queueId, prop);
+         this.currMap.clear();
+         assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
+         getAllMsgs(this.currMap);
+      }
+      catch (XmlBlasterException ex) {
+         log.error(ME, "Exception when testing getAllMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+      }
+
+   }
+
+   /**
+    * Tests get() and get(int num) and remove()
+    * NOTE: Currently the MapPlugin returns getAll() sorted (it uses a TreeMap)
+    *       But we haven't yet forced this in the I_Map#getAll() Javadoc!
+    *       This test assumes sorting order and needs to be changed if we once
+    *       decide to specify the exact behaviour in I_Map#getAll() javadoc
+    */
+   private void getAllMsgs(I_Map i_map) {
+      ME = "I_MapTest.getAllMsgs(" + i_map.getStorageId() + ")[" + i_map.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      try {
+         //========== Test 1: getAll()
+         {
+            MsgUnitWrapper[] queueEntries = {
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_TRANSIENT), i_map.getStorageId()),
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_DURABLE), i_map.getStorageId()),
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_DURABLE), i_map.getStorageId())
+                                        };
+            for(int i=0; i<queueEntries.length; i++) {
+               i_map.put(queueEntries[i]);
+               log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
+            }
+            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+
+            assertEquals("", 3, i_map.getNumOfEntries());
+            assertEquals("", 2, i_map.getNumOfDurableEntries());
+
+            for (int ii=0; ii<10; ii++) {
+               I_MapEntry[] results = i_map.getAll();
+               assertEquals("Missing entry", queueEntries.length, results.length);
+               assertEquals(ME+": Wrong result", queueEntries[0].getUniqueId(), results[0].getUniqueId());
+               assertEquals(ME+": Wrong result", queueEntries[1].getUniqueId(), results[1].getUniqueId());
+               assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), results[2].getUniqueId());
+            }
+            assertEquals("", 3, i_map.getNumOfEntries());
+            assertEquals("", 2, i_map.getNumOfDurableEntries());
+
+            i_map.clear();
+            log.info(ME, "#1 Success, getAll()");
+         }
+
+         System.out.println("***" + ME + " [SUCCESS]");
+      }
+      catch(XmlBlasterException e) {
+         e.printStackTrace();
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+      finally {
+         try {
+            i_map.clear();
+            i_map.shutdown(true);
+         }
+         catch(XmlBlasterException e) {
+            e.printStackTrace();
+            fail(ME + ": Exception thrown in cleanup: " + e.getMessage());
+         }
+      }
+   }
+
+
+//------------------------------------
+   public void testGetAllSwappedMsgs() {
+
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
+         queueType = this.currMap.toString();
+         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getAllSwappedMsgs");
+         prop.setMaxMsg(10);      // Overall size (RAM or JDBC or CACHE)
+         prop.setMaxMsgCache(2);  // Is only interpreted for cache implementations (-> the size of the RAM map)
+         this.currMap.initialize(queueId, prop);
+         this.currMap.clear();
+         assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
+         getAllSwappedMsgs(this.currMap);
+      }
+      catch (XmlBlasterException ex) {
+         log.error(ME, "Exception when testing getAllSwappedMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+      }
+
+   }
+
+   /**
+    * Tests getAll() and the entries are swapped as the RAM size is only 2
+    * NOTE: see NOTE of getAllMsgs(I_Map)
+    */
+   private void getAllSwappedMsgs(I_Map i_map) {
+      ME = "I_MapTest.getAllSwappedMsgs(" + i_map.getStorageId() + ")[" + i_map.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      
+      QueuePropertyBase prop = (QueuePropertyBase)i_map.getProperties();
+      assertEquals(ME+": Wrong capacity", 10, prop.getMaxMsg());
+      assertEquals(ME+": Wrong cache capacity", 2, prop.getMaxMsgCache());
+      log.info(ME, "Current settings: " + prop.toXml());
+
+      try {
+         //========== Test 1: getAllSwapped()
+         {
+            MsgUnitWrapper[] queueEntries = {
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_TRANSIENT), i_map.getStorageId()),
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_TRANSIENT), i_map.getStorageId()),
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_TRANSIENT), i_map.getStorageId()),
+                         new MsgUnitWrapper(glob, createMsgUnit(IS_TRANSIENT), i_map.getStorageId())
+                                        };
+            for(int i=0; i<queueEntries.length; i++) {
+               i_map.put(queueEntries[i]);
+               log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
+            }
+            //log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            log.info(ME, "storage state=" + i_map.toXml(""));
+
+            assertEquals("", queueEntries.length, i_map.getNumOfEntries());
+
+            for (int ii=0; ii<10; ii++) {
+               I_MapEntry[] results = i_map.getAll();
+               for(int jj=0; jj<results.length; jj++) {
+                  log.info(ME, "#" + jj + ": " + results[jj].getUniqueId());
+               }
+               assertEquals("Missing entry", queueEntries.length, results.length);
+               assertEquals(ME+": Wrong result", queueEntries[0].getUniqueId(), results[0].getUniqueId());
+               assertEquals(ME+": Wrong result", queueEntries[1].getUniqueId(), results[1].getUniqueId());
+               assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), results[2].getUniqueId());
+               assertEquals(ME+": Wrong result", queueEntries[3].getUniqueId(), results[3].getUniqueId());
+            }
+            assertEquals("", 4, i_map.getNumOfEntries());
+            assertEquals("", 0, i_map.getNumOfDurableEntries());
+            log.info(ME, "#1 Success, getAllSwapped()");
+         }
+
+         System.out.println("***" + ME + " [SUCCESS]");
+      }
+      catch(XmlBlasterException e) {
+         e.printStackTrace();
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+      finally {
+         try {
+            i_map.clear();
+            i_map.shutdown(true);
+         }
+         catch(XmlBlasterException e) {
+            e.printStackTrace();
+            fail(ME + ": Exception thrown in cleanup: " + e.getMessage());
+         }
+      }
+   }
+
+
+
+
+
+
    public void testPutEntriesTwice() {
       String queueType = "unknown";
       try {
@@ -384,13 +559,16 @@ public class I_MapTest extends TestCase {
             }
 
             for(int i=0; i<entries.length; i++) {
-               i_map.put(entries[i]);
-               i_map.put(entries[i]);
+               int numPut = i_map.put(entries[i]);
+               assertEquals("Putting first entry should be OK", 1, numPut);
+               numPut = i_map.put(entries[i]);
+               assertEquals("Putting entries twices should fail", 0, numPut);
             }
 
             assertEquals(ME+": Wrong number of entries after putting same entries twice", entries.length, i_map.getNumOfEntries());
+            assertEquals(ME+": Wrong size after putting same entries twice", size, i_map.getNumOfBytes());
             i_map.clear();
-            assertEquals(ME+": Wrong size after cleaning", i_map.getNumOfEntries(), 0);
+            assertEquals(ME+": Wrong num entries after cleaning", i_map.getNumOfEntries(), 0);
          }
          System.out.println("***" + ME + " [SUCCESS]");
       }
@@ -461,6 +639,8 @@ public class I_MapTest extends TestCase {
          suite.addTest(new I_MapTest("testConfig", i));
          suite.addTest(new I_MapTest("testPutMsg", i));
          suite.addTest(new I_MapTest("testGetMsg", i));
+         suite.addTest(new I_MapTest("testGetAllMsgs", i));
+         suite.addTest(new I_MapTest("testGetAllSwappedMsgs", i));
          suite.addTest(new I_MapTest("testPutEntriesTwice", i));
       }
       return suite;
@@ -468,7 +648,7 @@ public class I_MapTest extends TestCase {
 
    /**
     * <pre>
-    *  java org.xmlBlaster.test.classtest.msgstore.I_MapTest
+    *  java -Dtrace=true org.xmlBlaster.test.classtest.msgstore.I_MapTest  > test.log
     * </pre>
     */
    public static void main(String args[]) {
@@ -488,16 +668,22 @@ public class I_MapTest extends TestCase {
          testSub.setUp();
          testSub.testPutMsg();
          testSub.tearDown();
-*/
 
          testSub.setUp();
          testSub.testGetMsg();
          testSub.tearDown();
 
          testSub.setUp();
-         testSub.testPutEntriesTwice();
+         testSub.testGetAllMsgs();
          testSub.tearDown();
 
+         testSub.setUp();
+         testSub.testGetAllSwappedMsgs();
+         testSub.tearDown();
+*/
+         testSub.setUp();
+         testSub.testPutEntriesTwice();
+         testSub.tearDown();
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }
