@@ -2,8 +2,6 @@
 Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.8 2003/04/03 13:13:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -22,6 +20,10 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+
+import org.xmlBlaster.protocol.corba.*;
+import org.omg.CORBA.ORB;
+import org.omg.PortableServer.POA;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -62,6 +64,31 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
        super(testName);
        this.glob = glob;
        this.log = glob.getLog("test");
+   }
+
+   /**
+    * Test ORB and POA creation and orb.shutdown()
+    */
+   public void testJacORB() {
+      Util.gc(2);
+      int threadsBefore = ThreadLister.countThreads();
+      for (int ii=0; ii<20; ii++) {
+         System.out.println("Hit a key for ORB #" + ii + "/20");
+         try { System.in.read(); } catch(java.io.IOException e) {}
+         ORB orb = OrbInstanceFactory.createOrbInstance(glob, new String[0], null, false);
+         try {
+            POA rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            rootPOA.the_POAManager().activate();
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+            System.out.println("ERROR: " + e.toString());
+         }
+         // Without orb.shutdown we use 2 threads for each loop!
+         orb.shutdown(true);
+      }
+      Util.gc(2);
+      assertEquals("JacORB has a thread leak", threadsBefore, ThreadLister.countThreads());
    }
 
    protected void setUp() {
@@ -140,16 +167,18 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          login();
          logout();
          if (ii==0) {
+            Util.gc(2);
             threadsBefore = ThreadLister.countThreads();
             log.info(ME, "Testing thread consume on multiple login/logouts, used threads after first login=" + threadsBefore);
             ThreadLister.listAllThreads(System.out);
          }
       }
+      Util.gc(2);
       ThreadLister.listAllThreads(System.out);
       int threadsAfter = ThreadLister.countThreads();
       log.info(ME, "Currently used threads after 5 login/logout=" + threadsAfter);
-      int allow = threadsBefore + 1; // This 1 thread is temporary
-      assertTrue("We have a thread leak, threadsBefore=" + threadsBefore + " threadsAfter=" + threadsAfter, threadsAfter <= allow);
+      assertEquals("We have a thread leak, threadsBefore=" + threadsBefore +
+                 " threadsAfter=" + threadsAfter, threadsBefore, threadsAfter);
    }
 
 
@@ -201,6 +230,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
       TestCorbaThreads testSub = new TestCorbaThreads(glob, "TestCorbaThreads");
       testSub.setUp();
+      testSub.testJacORB();
       testSub.testThread();
       testSub.tearDown();
    }
