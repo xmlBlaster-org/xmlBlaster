@@ -594,10 +594,10 @@ cluster.node[heron]=\
       </p>
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default / Example</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -736,7 +736,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.35 $</revision>
+   <revision>$Revision: 1.36 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>

@@ -92,10 +92,10 @@ catch (XmlBlasterException e) {
       </p>
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default / Example</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -140,7 +140,7 @@ catch (XmlBlasterException e) {
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

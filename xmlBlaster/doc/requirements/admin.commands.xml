@@ -152,13 +152,13 @@
       </h3>
       <table border="1">
          <tr>
-            <td>Command</td>
-            <td>Description</td>
-            <td>MOM</td>
-            <td>telnet</td>
-            <td>SNMP</td>
-            <td>JMX</td>
-            <td>Impl</td>
+            <th>Command</th>
+            <th>Description</th>
+            <th>MOM</th>
+            <th>telnet</th>
+            <th>SNMP</th>
+            <th>JMX</th>
+            <th>Impl</th>
          </tr>
          <tr>
             <td>GET</td>
@@ -222,9 +222,9 @@
       </p>
       <table border="1">
          <tr>
-            <td>Command</td>
-            <td>Description</td>
-            <td>Impl</td>
+            <th>Command</th>
+            <th>Description</th>
+            <th>Impl</th>
          </tr>
          <tr>
             <td>/node/?numNodes</td>
@@ -351,10 +351,10 @@
       </p>
       <table border="1">
          <tr>
-            <td>Protocol</td>
-            <td>Example</td>
-            <td>Description</td>
-            <td>Impl</td>
+            <th>Protocol</th>
+            <th>Example</th>
+            <th>Description</th>
+            <th>Impl</th>
          </tr>
 
          <tr>
@@ -470,11 +470,11 @@ UserInfo: joe:mypasswd
       </p>
       <table border="1">
          <tr>
-            <td>Command</td>
-            <td>Type</td>
-            <td>Read/Write</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Command</th>
+            <th>Type</th>
+            <th>Read/Write</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -534,7 +534,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.28 $</revision>
+   <revision>$Revision: 1.29 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -111,10 +111,10 @@
       </p>
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -127,6 +127,7 @@
    </configuration>
 
    <see type="INTERNET">http://www.cacas.org/java/gnu/regexp/</see>
+   <see type="INTERNET">http://developer.java.sun.com/developer/technicalArticles/releases/1.4regex/</see>
    <see type="API">org.xmlBlaster.engine.mime.regex.GnuRegexFilter</see>
    <see type="API">org.xmlBlaster.engine.helper.AccessFilterQos</see>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
@@ -136,7 +137,7 @@
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

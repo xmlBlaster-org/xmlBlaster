@@ -20,10 +20,10 @@
    <configuration where="server">
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default / Example</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -52,7 +52,7 @@ org.xmlBlaster.protocol.soap.SoapDriver,\
 
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

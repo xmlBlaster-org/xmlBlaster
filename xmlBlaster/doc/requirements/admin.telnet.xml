@@ -33,9 +33,9 @@
       </p>
       <table border="1">
          <tr>
-            <td>Command</td>
-            <td>Return</td>
-            <td>Description</td>
+            <th>Command</th>
+            <th>Return</th>
+            <th>Description</th>
          </tr>
          <tr>
             <td>get /node/?numNodes</td>
@@ -85,9 +85,9 @@
       </p>
       <table border="1">
          <tr>
-            <td>Command</td>
-            <td>Return</td>
-            <td>Description</td>
+            <th>Command</th>
+            <th>Return</th>
+            <th>Description</th>
          </tr>
          <tr>
             <td>set client/joe/ses17/?cbQueueMaxMsgs=30000</td>
@@ -235,10 +235,10 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    <configuration where="server">
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default / Example</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -277,7 +277,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

@@ -14,10 +14,10 @@
      </p>
       <table border="1">
          <tr>
-            <td>Level</td>
-            <td>No</td>
-            <td>active Services</td>
-            <td>Description</td>
+            <th>Level</th>
+            <th>No</th>
+            <th>active Services</th>
+            <th>Description</th>
          </tr>
          <tr>
             <td>HALTED</td>
@@ -119,10 +119,10 @@ r 3
    <configuration where="server">
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
 
          <tr>
@@ -140,7 +140,7 @@ r 3
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -79,6 +79,12 @@ For an example look at the code of PublishLenChecker.java (link below).
       </p>
       <table border="1">
          <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+         <tr>
             <td>MimePublishPlugin[myPlugin][1.0]</td>
             <td>myPlugin.mycomp.com
             </td>
@@ -100,7 +106,7 @@ For an example look at the code of PublishLenChecker.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

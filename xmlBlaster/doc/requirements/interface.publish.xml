@@ -17,7 +17,7 @@
          
       <table border="1">
          <tr>
-         <td>Parameter</td><td>Type</td><td>Description</td>
+         <th>Parameter</th><th>Type</th><th>Description</th>
          </tr>
          <tr>
          <td>msg</td><td>MessageUnit</td><td>A structure containing an XML key, an XML QoS and the binary message content (see MessageUnit link below)</td>
@@ -133,7 +133,7 @@
  
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>

@@ -177,10 +177,10 @@
       </p>
       <table border="1">
          <tr>
-            <td>Property</td>
-            <td>Default</td>
-            <td>Description</td>
-            <td>Implemented</td>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
          </tr>
          <tr>
             <td>cb.collectTime</td>
@@ -259,7 +259,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>
