@@ -197,6 +197,10 @@ var listenerList = new Array();
  * Object holding necessary variables for a queue.
  * Every registered frame has one such object to handle
  * its private update queue.
+ * <p />
+ * This queue allows smooth frame updates, since only after 100 millis
+ * updates are forwarded to the interested frames. This helps
+ * to avoid a 'flackering' of the screen (too many window refresh).
  */
 function FrameMessageQueue( frameHandle )
 {
