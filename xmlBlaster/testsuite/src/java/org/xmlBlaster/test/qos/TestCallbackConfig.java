@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.6 2003/01/05 23:08:21 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.7 2003/01/06 11:35:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -24,6 +24,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
+import org.xmlBlaster.test.Util;
 import junit.framework.*;
 
 
@@ -69,6 +70,8 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      Util.resetPorts();
+      Util.resetPorts(glob);
       try {
          con = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(null, "admin", passwd);
@@ -87,7 +90,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
          con.connect(qos, this);
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.error(ME, e.toString() + " \n" + glob.getProperty().toXml() + " GLOBAL.INSTANCE:\n" + Global.instance().getProperty().toXml());
          e.printStackTrace();
          assertTrue(e.toString(), false);
       }
