@@ -880,6 +880,11 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          return;
       }
 
+      threadRet = pthread_detach(tid);
+      if (threadRet != 0) {
+         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
+      }
+
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
 
