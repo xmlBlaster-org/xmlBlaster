@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.11 2002/02/25 13:42:39 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.12 2002/02/25 17:04:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -36,7 +36,7 @@ public class SocketCallbackImpl extends Executor implements Runnable
    private String callbackAddressStr = null;
 
    /** Stop the thread */
-   private boolean running = true;
+   boolean running = true;
 
    /**
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
@@ -78,9 +78,12 @@ public class SocketCallbackImpl extends Executor implements Runnable
          }
          catch(Throwable e) {
             if (!(e instanceof IOException)) e.printStackTrace();
-            Log.error(ME, "Closing connection to server: " + e.toString());
-            sockCon.shutdown();
-            throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
+            if (running == true) {
+               Log.error(ME, "Closing connection to server: " + e.toString());
+               sockCon.shutdown();
+               throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
+            }
+            // else a normal disconnect()
          }
       }
    }
