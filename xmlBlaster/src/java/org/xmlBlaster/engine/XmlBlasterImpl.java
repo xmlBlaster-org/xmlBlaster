@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.12 2002/04/19 11:03:32 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.13 2002/04/23 15:08:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -36,9 +36,10 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
  */
 public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 {
-   private String ME = "XmlBlasterImpl";
-   private RequestBroker requestBroker;
-   private Authenticate authenticate;
+   private final String ME = "XmlBlasterImpl";
+   private final RequestBroker requestBroker;
+   private final Authenticate authenticate;
+   private final Global glob;
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
@@ -49,6 +50,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    public XmlBlasterImpl(Authenticate authenticate) throws XmlBlasterException
    {
       this.authenticate = authenticate;
+      this.glob = authenticate.getGlobal();
       this.requestBroker = new RequestBroker(authenticate);
    }
 
@@ -67,7 +69,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.SUBSCRIBE);
 
-         XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey());
+         XmlKey xmlKey = new XmlKey(glob, msgUnit.getXmlKey());
          SubscribeQoS subscribeQoS = new SubscribeQoS(msgUnit.getQos());
 
          String ret = requestBroker.subscribe(sessionInfo, xmlKey, subscribeQoS);
@@ -99,7 +101,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.UNSUBSCRIBE);
 
-         XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey());
+         XmlKey xmlKey = new XmlKey(glob, msgUnit.getXmlKey());
          UnSubscribeQoS unSubscribeQoS = new UnSubscribeQoS(msgUnit.getQos());
          requestBroker.unSubscribe(sessionInfo, xmlKey, unSubscribeQoS);
       }
@@ -127,7 +129,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.PUBLISH);
 
-         XmlKey xmlKey = new XmlKey(msgUnit.xmlKey, true);
+         XmlKey xmlKey = new XmlKey(glob, msgUnit.xmlKey, true);
          PublishQos publishQos = new PublishQos(msgUnit.qos);
 
          String ret = requestBroker.publish(sessionInfo, xmlKey, msgUnit, publishQos);
@@ -162,7 +164,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MessageUnit msgUnit = checkMessage(sessionInfo, msgUnitArr[ii], Constants.PUBLISH);
-            XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+            XmlKey xmlKey = new XmlKey(glob, msgUnit.getXmlKey(), true);
             PublishQos publishQos = new PublishQos(msgUnit.getQos());
             String ret = requestBroker.publish(sessionInfo, xmlKey, msgUnit, publishQos);
             returnArr[ii] = sec.exportMessage(ret);
@@ -210,7 +212,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          MessageUnit msgUnit = new MessageUnit(xmlKey_literal, EMPTY_BYTES, qos_literal);
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.ERASE);
 
-         XmlKey xmlKey = new XmlKey(msgUnit.xmlKey);
+         XmlKey xmlKey = new XmlKey(glob, msgUnit.xmlKey);
          EraseQoS eraseQoS = new EraseQoS(msgUnit.qos);
          String [] retArr = requestBroker.erase(sessionInfo, xmlKey, eraseQoS);
 
@@ -244,7 +246,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          MessageUnit msgUnit = new MessageUnit(xmlKey_literal, EMPTY_BYTES, qos_literal);
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.GET);
 
-         XmlKey xmlKey = new XmlKey(msgUnit.xmlKey);
+         XmlKey xmlKey = new XmlKey(glob, msgUnit.xmlKey);
          GetQoS getQoS = new GetQoS(msgUnit.qos);
          MessageUnit[] msgUnitArr = requestBroker.get(sessionInfo, xmlKey, getQoS);
 
