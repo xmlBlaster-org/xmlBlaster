@@ -55,7 +55,7 @@ import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.mime.PublishPluginManager;
-import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -1304,7 +1304,21 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // cluster support - forward pubSub message to master ...
          if (useCluster) {
             if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
-               if (publishQos.isSubscribeable()) {
+               if (publishQos.isPtp()) {  // is PtP message
+                  Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
+                  for (int ii = 0; ii<destinationArr.length; ii++) {
+                     if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
+                     publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, isClusterUpdate, destinationArr[ii]);
+                     if (publishReturnQos != null) {
+                        // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
+                        publishQos.removeDestination(destinationArr[ii]);
+                     }
+                  }
+                  if (publishQos.getNumDestinations() == 0) { // we are done, all messages where forwarded
+                     return publishReturnQos.toXml();
+                  }
+               }
+               else { // if (publishQos.isSubscribeable()) {
                   try {
                      PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
                      //Thread.currentThread().dumpStack();
@@ -1325,20 +1339,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                         e.printStackTrace();
                         throw e;
                      }
-                  }
-               }
-               else { // is PtP
-                  Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
-                  for (int ii = 0; ii<destinationArr.length; ii++) {
-                     if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
-                     publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, isClusterUpdate, destinationArr[ii]);
-                     if (publishReturnQos != null) {
-                        // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
-                        publishQos.removeDestination(destinationArr[ii]);
-                     }
-                  }
-                  if (publishQos.getNumDestinations() == 0) { // we are done, all messages where forwarded
-                     return publishReturnQos.toXml();
                   }
                }
             }
