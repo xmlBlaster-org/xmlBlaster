@@ -82,9 +82,12 @@
       <![CDATA[
    GetQosWrapper qos = new GetQosWrapper();
 
-   qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", "a*b"));
+   qos.addAccessFilter(new AccessFilterQos(glob,
+            "GnuRegexFilter", "1.0", "a*b"));
 
-   MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", qos.toXml());
+   MessageUnit[] msgUnits = con.get(
+            "<key queryType='XPATH'> //StockData </key>",
+            qos.toXml());
       ]]>
       </pre>
 
@@ -133,7 +136,7 @@
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
