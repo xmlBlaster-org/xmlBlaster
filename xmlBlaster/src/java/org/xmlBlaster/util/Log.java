@@ -3,13 +3,17 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.29 1999/12/22 09:37:09 ruff Exp $
+Version:   $Id: Log.java,v 1.30 1999/12/22 09:39:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 
 /**
- * Logging output
+ * Logging output. 
+ * <p />
+ * Note that the layout of this class is for optimum performance and ease of use.<br />
+ * To increase performance of xmlBlaster you may choose to add final qualifiers<br />
+ * to CALLS/TIME/TRACE/DUMP variables to achieve dead code elimination (see code below).
  */
 public class Log
 {
@@ -191,9 +195,9 @@ public class Log
       setPreLogLevelCheck();
    }
 
-   
+
    /**
-    * Set the boolean values of CALL, TIME, TRACE, DUMP accordingly. 
+    * Set the boolean values of CALL, TIME, TRACE, DUMP accordingly.
     * <p />
     * This allows to use if (Log.TRACE) in your code, so that the following
     * Log.trace(...) is not executed if not needed (performance gain).
