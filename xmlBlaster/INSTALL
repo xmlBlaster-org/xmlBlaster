@@ -30,6 +30,8 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
    - a GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
      For DOS/Windows, e.g. cygwin's make.
      Note that Windows nmake will not work properly with xmlBlaster Makefiles
+	- or -
+	You can use Ant.  See the build.xml file for more details.
 
 
 +--------------------+
