@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      MsgUnitStoreCachePlugin.java
+Name:      PersistenceCachePlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 
 import java.util.ArrayList;
 
@@ -27,13 +27,14 @@ import java.util.ArrayList;
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
-public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
+public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
 {
    private String ME;
    private Global glob;
    private LogChannel log;
 
-   private QueuePropertyBase property;
+   private java.util.Properties pluginProperties; // properties via I_Plugin
+   private QueuePropertyBase property;            // properties via I_Map
    boolean isDown = true;
    private StorageId queueId;
 
@@ -123,17 +124,25 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          }
          if (log.CALL) log.call(ME, "Entering initialize()");
 
-         MsgUnitStorePluginManager pluginManager = glob.getMsgUnitStorePluginManager();
+         StoragePluginManager pluginManager = glob.getStoragePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
          //instantiate and initialize the underlying queues
 
-         String defaultTransient = glob.getProperty().get("msgUnitStore.cache.transientQueue", "RAM,1.0");
+         String defaultTransient = this.pluginProperties.getProperty("transientMap", "RAM,1.0").trim();
+         if (defaultTransient.startsWith(getType())) {
+            log.error(ME,"Cache storage configured with transientMap=CACHE, to prevent recursion we set it to 'RAM,1.0'");
+            defaultTransient = "RAM,1.0";
+         }
          this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
          if (log.TRACE) log.trace(ME, "Created transient part:" + this.transientStore.toXml(""));
          
          try {
-            String defaultPersistent = glob.getProperty().get("msgUnitStore.cache.persistentQueue", "JDBC,1.0");
+            String defaultPersistent = this.pluginProperties.getProperty("persistentMap", "JDBC,1.0").trim();
+            if (defaultPersistent.startsWith(getType())) {
+               log.error(ME,"Cache storage configured with persistentMap=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
+               defaultPersistent = "JDBC,1.0";
+            }
             this.persistentStore = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
 
             this.isConnected = true;
@@ -600,7 +609,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<MsgUnitStoreCachePlugin id='").append(getStorageId().getId());
+      sb.append(offset).append("<PersistenceCachePlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
       sb.append("' numOfEntries='").append(getNumOfEntries());
@@ -609,7 +618,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
       sb.append(this.transientStore.toXml(extraOffset+Constants.INDENT));
       if (this.persistentStore != null)
          sb.append(this.persistentStore.toXml(extraOffset+Constants.INDENT));
-      sb.append(offset).append("</MsgUnitStoreCachePlugin>");
+      sb.append(offset).append("</PersistenceCachePlugin>");
       return sb.toString();
    }
 
@@ -618,7 +627,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+      this.pluginProperties = pluginInfo.getParameters();
    }
 
    /**
