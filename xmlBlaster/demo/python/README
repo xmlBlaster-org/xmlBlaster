@@ -1,3 +1,15 @@
+Howto start the demo:
+
+ - start xmlBlaster
+      java -jar lib/xmlBlaster.jar
+
+ - run the Python demo client
+      python hello.py
+
+Thats it!
+
+
+
 Fredrik Lundh has provided an excellent XML-RPC library for Python.
    http://www.pythonware.com/products/xmlrpc/
 
