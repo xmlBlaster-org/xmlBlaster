@@ -96,7 +96,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    }
 
    /**
-    * The embeddded object for this implementing class is an Object[6] for transient
+    * The embedded object for this implementing class is an Object[6] for transient
     * messages and Object[9] for persistent messages.
     * <p>
     * We need to store the 'meat' for persistent messages as well
