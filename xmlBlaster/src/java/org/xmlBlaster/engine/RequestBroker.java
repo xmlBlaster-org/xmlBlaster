@@ -302,7 +302,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       return  this.bigXmlKeyDOM;
    }
 
-   ClientSubscriptions getClientSubscriptions() {
+   public ClientSubscriptions getClientSubscriptions() {
       return this.clientSubscriptions;
    }
 
@@ -714,6 +714,18 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       try {
          if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
          String returnOid = "";
+
+         if (subscribeQos.getMultiSubscribe() == false) {
+            Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKey.getOid(), false);
+            if (vec != null && vec.size() > 0) {
+               log.warn(ME, "Ignoring duplicate subscription '" + xmlKey.getOid() + "' as you have set multiSubscribe to false");
+               StatusQosData qos = new StatusQosData(glob);
+               SubscriptionInfo i = (SubscriptionInfo)vec.elementAt(0);
+               qos.setState(Constants.STATE_WARN);
+               qos.setSubscriptionId(i.getSubscriptionId());
+               return qos.toXml();
+            }
+         }
 
          SubscriptionInfo subsQuery = null;
          if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
