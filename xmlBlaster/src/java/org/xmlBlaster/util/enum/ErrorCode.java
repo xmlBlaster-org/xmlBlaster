@@ -229,6 +229,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_CLUSTER_CIRCULARLOOP = new ErrorCode("resource.cluster.circularLoop",
+         "A message loops between cluster nodes and can't reach its destination, please check the destination cluster node name.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "cluster PtP requirement", "cluster.PtP"),
+            new ResourceInfo(ResourceInfo.REQ, "cluster requirement", "cluster")
+         }
+      );
+
    public static final ErrorCode COMMUNICATION_NOCONNECTION = new ErrorCode("communication.noConnection",
          "A specific remote connection throws an exception on invocation.",
          new ResourceInfo[] {
