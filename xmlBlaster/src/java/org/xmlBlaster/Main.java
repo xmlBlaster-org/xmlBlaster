@@ -155,8 +155,6 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             System.exit(1);
       }
 
-      if (log.DUMP) { ThreadLister.listAllThreads(System.out); }
-
       boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
       if (!useKeyboard) {
          while (true) {
@@ -179,8 +177,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       }
    }
 
+   /** Same as shutdown() but does additionally an engine.global.shutdown() */
+   public void destroy() {
+      shutdown();
+      if (this.glob != null) {
+         this.glob.shutdown();
+         this.glob = null;
+      }
+   }
+
    /**
-    * Instructs the ORB to shut down, which causes all object adapters to shut down.
+    * Instructs the RunlevelManager to shut down, which causes all object adapters to shut down.
     * <p />
     * The drivers are removed.
     */
@@ -401,7 +408,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
-            if (log.DUMP) ThreadLister.listAllThreads(System.out);
+            this.glob.shutdown();
             log.info(ME, "XmlBlaster halted.");
          }
 
@@ -419,7 +426,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    * @see I_SignalListener#shutdownHook()
    */
    public void shutdownHook() {
-      shutdown();
+      destroy();
    }
 
    /**
