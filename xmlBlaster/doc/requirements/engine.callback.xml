@@ -34,8 +34,8 @@
          Redelivering can be switched off, resulting in immediate <i>dead letters</i> and
          garbage collection of resources.
          <p>
-          Note: The redeliver information is lost on server crash (the redeliver counter
-          is not persistent).
+          Note: The redeliver information is recovered even on server crash for persistent messages
+          (the redeliver counter is persistent for persistent messages).
          </p>
          </li>
          <li>For PtP messages it could be reasonable to inform the sender of the message about
@@ -286,7 +286,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.29 $</revision>
+   <revision>$Revision: 1.30 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

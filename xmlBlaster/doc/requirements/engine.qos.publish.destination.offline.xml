@@ -11,7 +11,11 @@
       XmlBlasterException.
       </p>
       <p>
-      Having <i>forceQueuing=true</i> the behavior is as follows:
+      Having <i>forceQueuing=true</i> the behavior is as follows.
+      <br />
+      Messages for a destination are stored in a queue called <i>subject queue</i>.
+      The subject queue holds a reference only which points the the real message
+      which is stored in the message store:
       </p>
       <table>
       <tr>

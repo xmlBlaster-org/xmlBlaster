@@ -11,7 +11,12 @@
       <p>
       If the <i>forceQueuing</i> attribute is set in the publishing qos,
       the messages are queued by xmlBlaster. As soon as the receiver logs in,
-      all queued messages are flushed to the recevier.
+      all queued messages are flushed to the receiver.
+      </p>
+      <p>
+      Messages for a destination are stored in a queue called <i>subject queue</i>.
+      The subject queue holds a reference only which points the the real message
+      which is stored in the message store.
       </p>
       <p>
       NOTE: The login qos may disallow PtP messages, ForceQueing will be ignored then.
@@ -32,7 +37,7 @@
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
