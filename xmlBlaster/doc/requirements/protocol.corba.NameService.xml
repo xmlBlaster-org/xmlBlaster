@@ -155,8 +155,8 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
          </tr>
 
          <tr>
-            <td>java -DORBInitRef</td>
-            <td>NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root</td>
+            <td>java -DORBInitRef.NameService</td>
+            <td>corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root</td>
             <td>XmlBlaster is configured to automatically lookup a NameService on port 7608 on localhost
                 (see <i>xmlBlaster/config/ jacorb.properties.template</i>), here it is set as JVM property.<br />
                 Note: You can set this property as command line argument as well like <i>-ORBInitRef NameService=file:///tmp/ns.ior</i></td>
@@ -172,7 +172,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>
