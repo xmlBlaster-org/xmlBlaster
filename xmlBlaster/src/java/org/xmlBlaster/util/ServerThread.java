@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.9 2002/05/15 16:53:02 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.10 2002/06/15 16:12:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -159,9 +159,9 @@ public class ServerThread extends Thread
       while(!stopServer) {
          try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
       }
+      log.info(ME, "Stopping the xmlBlaster server instance ...");
       xmlBlasterMain.shutdown();
       stopServer = false;
-      log.info(ME, "Stopping the xmlBlaster server instance ...");
    }
 
 
