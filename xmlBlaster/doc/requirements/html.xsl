@@ -4,36 +4,40 @@
                 xmlns="http://www.w3.org/TR/xhtml1/transitional"
                 exclude-result-prefixes="#default">
 
+
 <xsl:output method="html"/>
 
-<xsl:template match="/">
-	<html>
-	<head>
-	   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-	   <title>xmlBlaster - Requirements</title>
-	</head>
+<!-- Using of document() to merge all the xml files? Who knows? -->
+<!-- xsl:for-each select="document('/home/ruff/xmlBlaster/doc/requirements/util.recorder.xml')" -->
+	<xsl:template match="/">
+		<html>
+		<head>
+		   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		   <title>xmlBlaster - Requirements</title>
+		</head>
 
-	<body>
-	<h1>XmlBlaster Requirements</h1>
-   <TABLE BORDER="1" cellpadding="6">
-      <THEAD>
-         <TR>
-         <TD><b>ID</b></TD>
-         <TD>Status</TD>
-         <TD>Topic</TD>
-         </TR>
-      </THEAD>
-      <xsl:for-each order-by="+ requirement[@id]" select="/requirement">
-         <TR>
-            <TD><xsl:value-of select="@id"/></TD>
-            <TD><xsl:value-of select="fix/@status"/></TD>
-            <TD><xsl:value-of select="topic"/></TD>
-         </TR>
-      </xsl:for-each>
-   </TABLE>
-	</body>
-	</html>
-</xsl:template>
+		<body>
+		<h1>XmlBlaster Requirements</h1>
+	   <TABLE BORDER="1" cellpadding="6">
+	      <THEAD>
+	         <TR>
+	         <TD><b>ID</b></TD>
+	         <TD>Status</TD>
+	         <TD>Topic</TD>
+	         </TR>
+	      </THEAD>
+	      <xsl:for-each order-by="+ requirement[@id]" select="/requirement">
+	         <TR>
+	            <TD><xsl:value-of select="@id"/></TD>
+	            <TD><xsl:value-of select="@status"/></TD>
+	            <TD><xsl:value-of select="topic"/></TD>
+	         </TR>
+	      </xsl:for-each>
+	   </TABLE>
+		</body>
+		</html>
+	</xsl:template>
+<!-- /xsl:for-each -->
 
 
 </xsl:stylesheet>
