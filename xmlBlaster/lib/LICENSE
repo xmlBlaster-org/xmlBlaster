@@ -254,3 +254,11 @@ only the SNMP subagent module jax.jar is GPL only!
 ===============================
    http://www.boost.org (license see: http://www.boost.org/more/lib_guide.htm#License)
    http://omniorb.sourceforge.net/ The license is LGPL
+   For C++ clients only
+
+
+27) C pthreads library
+======================
+   xmlBlaster/src/c/socket/pthreadVC.lib
+   http://sources.redhat.com/pthreads-win32
+   for C SOCKET client on Windows only
