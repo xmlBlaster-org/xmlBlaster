@@ -1,6 +1,10 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xxx, xx xxxx]
+Changes for x.xxx [xxx, xx xxxx]
+================================
+
+
+Changes for 0.79d [Dec, 30 2001]
 ================================
 
   - CORBA/C++ client helper classes now support http IOR download, e.g.:
