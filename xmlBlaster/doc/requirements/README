@@ -1,7 +1,7 @@
 XmlBlaster requirements
 =======================
 
-The requirement document layout is described in requirement.dtd
+The requirement document layout is validated with requirement.dtd
 
 Each requirement is described in an own xml file
 
@@ -14,7 +14,8 @@ with one to many full automatic test cases.
 Every bug is noted here and checked with a testsuite case.
 
 The example tag allows to use the "<", all other tags need to write &lt; instead
-(example uses CDATA section and no 'disable-output-escaping' in XLS)
+(The example tag uses CDATA section, <pre> encapsulation and no
+ 'disable-output-escaping' in XLS)
 
 You can query a closed requirement as follows:
    java DomQueryTest  engine.get.no.xml  "requirement/fix[@status='CLOSED']/.."
@@ -26,6 +27,10 @@ CollectXml.java is a little helper which generates all.xml
 containing all xml requirements.
 all.html is used by the XSL stylesheet to process all xml files into
 one html file
+
+Don't forget to do a 'make javadoc' in testcase/org/xmlBlaster to
+generate html files from java files with syntax highlighting
+(make javadoc in the root directory does this as well)
 
 
 Generate HTML output with Sun XML parser:
