@@ -202,6 +202,19 @@ function __logToWindow__(level, codePos, text)
    alert("Level: "+level+"\ncodePos: "+codePos+"\ntext: "+text);
 }
 
+
+function closeLogWindow()
+{
+   /* Crashes netscape!?
+   if ((typeof logWindow) != "undefined") {
+      if (logWindow.closed == false) {
+         logWindow.close();
+      }
+   }
+   */
+}
+
+
 /**
  * This function logs to a pop up window
  * Every logging output is a colored row in a table.
