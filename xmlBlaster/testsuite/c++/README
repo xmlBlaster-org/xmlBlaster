@@ -21,7 +21,6 @@ To run the clients:
 
 Using BOA (clientBOA.cc):
 
-
 3) Start the xmlBlaster server
 
 	 jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
@@ -32,17 +31,26 @@ Using BOA (clientBOA.cc):
 	 ./clientBOA `cat /tmp/ior.dat`
 
 
-Using POA (clientPOA.cc):
+
+Using POA (clientPOA.cc) with a naming service:
+
+You need to have a running web server and set the DocumentRoot to e.g.
+
+   export DocumentRoot=/usr/local/httpd/html
+
+3) Start the naming service (with a running web server)
+
+	jaco jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
 
 
-3) Start the xmlBlaster server 
+4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
 
 	jaco org.xmlBlaster.Main
 
 
-4) And connect with the C++ client
+5) And connect with the C++ client
 
-	./clientPOA -ORBNamingIOR `cat /tmp/ior.dat`
+	./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`
 
 
 NOTE: change /tmp/ior.dat with the name of the file containing the IOR for the
