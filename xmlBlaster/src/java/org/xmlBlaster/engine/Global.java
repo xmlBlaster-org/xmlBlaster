@@ -106,6 +106,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * If you have a util.Global and need a engine.Global.
     * <p />
     * Note: The cluster node id of utilGlob is overwritten
+    * @param utilGlobal the util.Global to convert to engine.Global
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
       super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
@@ -119,9 +120,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * If you have a util.Global and need a engine.Global.
     * <p />
     * Note: The cluster node id of utilGlob is overwritten
+    * @param utilGlobal the util.Global to convert to engine.Global
     */
    public Global(org.xmlBlaster.util.Global utilGlob, boolean propertyOnly) {
-      super(utilGlob.getProperty().getProperties());
+      super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
       initThis();
       utilGlob.setId(getId()); // Inherit backwards the cluster node id
       //Thread.currentThread().dumpStack();

@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.5 2003/01/19 21:57:26 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.6 2003/01/20 20:13:58 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -208,7 +208,7 @@ public class EmbeddedXmlBlaster
    }
 
    /**
-    * Change the run level to the given newRunlevel. 
+    * Change the run level to the given newRunlevel.
     * <p />
     * See RUNLEVEL_HALTED etc.
     * <p />
