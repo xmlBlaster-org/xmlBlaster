@@ -10,7 +10,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 
 #include <stdlib.h>
 #ifdef _WINDOWS
-#  include <winsock2.h>
+#  include <winsock.h>
 #  define ssize_t signed int
 #else
 #  include <sys/socket.h>

@@ -15,7 +15,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <util/Constants.h>
 #include <sys/types.h>
 #ifdef _WINDOWS
-#  include <winsock2.h>
+#  include <winsock.h>
 #else
 #  include <sys/socket.h>
 #  include <netinet/in.h>
