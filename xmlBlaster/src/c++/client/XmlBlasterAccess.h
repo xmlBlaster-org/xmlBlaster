@@ -73,6 +73,8 @@ private:
    std::string  instanceName_;
    CallbackMapType subscriptionCallbackMap_;
    org::xmlBlaster::util::thread::Mutex updateMutex_;
+   /** this makes sure only one invocation is done at a time on this connection. The update method is not blocked by this mutex. The shutdown is blocked */
+   org::xmlBlaster::util::thread::Mutex invocationMutex_;
 
    /**
     * Private copy constructor, clones are not supported

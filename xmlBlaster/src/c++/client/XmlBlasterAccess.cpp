@@ -32,7 +32,8 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      global_(global), 
      log_(global.getLog("org.xmBlaster.client")),
      subscriptionCallbackMap_(),
-     updateMutex_()
+     updateMutex_(),
+     invocationMutex_()
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -48,7 +49,8 @@ XmlBlasterAccess::~XmlBlasterAccess()
    if (log_.call()) log_.call(ME, "destructor");
    {
       // synchronization
-      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+      org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+      org::xmlBlaster::util::thread::Lock lock1(updateMutex_);
       subscriptionCallbackMap_.clear();
    }
 
@@ -76,6 +78,9 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    ME = string("XmlBlasterAccess-") + qos.getSessionQos().getAbsoluteName();
    if (log_.call()) log_.call(ME, "::connect");
    if (log_.dump()) log_.dump(ME, string("::connect: qos: ") + qos.toXml());
+
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
 
    //global_.setId(loginName + currentTimeMillis()); // Not secure if two clients start simultaneously
 
@@ -157,6 +162,8 @@ XmlBlasterAccess::initSecuritySettings(const string& /*secMechanism*/, const str
 bool
 XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
    bool ret1 = true;
    bool ret3 = true;
    if (log_.call()) {
@@ -238,6 +245,12 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 
 SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos, I_Callback *callback)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::subscribe", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "subscribe");
    if (log_.dump()) {
       log_.dump(ME, string("subscribe. The key:\n") + key.toXml());
@@ -259,6 +272,11 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
 
 vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::get", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "get");
    if (log_.dump()) {
       log_.dump(ME, string("get. The key:\n") + key.toXml());
@@ -270,13 +288,18 @@ vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 vector<UnSubscribeReturnQos>
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::unsSubscribe", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "unSubscribe");
    if (log_.dump()) {
       log_.dump(ME, string("unSubscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("unSubscribe. The Qos:\n") + qos.toXml());
    }
    // synchronization
-   org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+   org::xmlBlaster::util::thread::Lock lock1(updateMutex_);
    vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
    vector<UnSubscribeReturnQos>::iterator iter = ret.begin();
    while (iter != ret.end()) {
@@ -289,6 +312,11 @@ XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& q
 
 PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::publish", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "publish");
    if (log_.dump()) {
       log_.dump(ME, string("publish. The msgUnit:\n") + msgUnit.toXml());
@@ -298,6 +326,11 @@ PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 
 void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::publishOneway", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "publishOneway");
    if (log_.dump()) {
       for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
@@ -309,6 +342,11 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 
 vector<PublishReturnQos> XmlBlasterAccess::publishArr(const vector<MessageUnit> &msgUnitArr)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::publishArr", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "publishArr");
    if (log_.dump()) {
       for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
@@ -320,6 +358,11 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(const vector<MessageUnit> 
 
 vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::erase", "you are not connected to the xmlBlaster");
+   }
    if (log_.call()) log_.call(ME, "erase");
    if (log_.dump()) {
       log_.dump(ME, string("erase. The key:\n") + key.toXml());
@@ -383,6 +426,8 @@ void XmlBlasterAccess::initFailsafe(I_ConnectionProblems* connectionProblems)
 
 string XmlBlasterAccess::ping()
 {
+   // locking until finished 
+   org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
    return connection_->ping("<qos/>");
 }
 
