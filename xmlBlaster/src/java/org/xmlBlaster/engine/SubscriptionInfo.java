@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.29 2001/02/23 00:37:49 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.30 2002/01/30 17:37:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -45,6 +45,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /** A reference to the query subscription (XPATH), which created this subscription
        If the subscription was EXACT, querySub is null */
    private SubscriptionInfo querySub = null;
+
+   private static long uniqueCounter = 1L;
 
    private long creationTime = System.currentTimeMillis();
 
@@ -249,7 +251,23 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
       // !!!  still missing:  buf.append("-").append(xmlQoS.toString()); // !!!hack?
 
+      // Now EVERY subscription id is unique, we can't supress multiple subs on same
+      // message, from same client any more:
+      // Future coding that multi subs from same callback address are supressable?
+      // -> Can't do it - we need to unSubscribe() and need to rebuild the subscription id reproducable
+      // generateCounter(buf);    // Now EVERY subscription id is unique, we can't supress multiple subs on same 
+
       return buf.toString();
+   }
+
+
+   /**
+    * Little helper method, which is synchronized.
+    */
+   synchronized private static void generateCounter(StringBuffer buf)
+   {
+      buf.append("-").append(uniqueCounter);
+      uniqueCounter++;
    }
 
 
