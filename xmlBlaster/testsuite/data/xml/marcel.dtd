@@ -1,0 +1,11 @@
+<!ELEMENT xmlBlaster (key+)>
+<!ELEMENT key (Airport)>
+<!ELEMENT Airport (Runway)>
+<!ELEMENT Runway (WindVeloc)>
+<!ELEMENT WindVeloc (#PCDATA)>
+ 
+<!ATTLIST key oid ID #IMPLIED>
+<!ATTLIST Airport icao ID #IMPLIED>
+<!ATTLIST Runway id ID #IMPLIED> 
+<!ATTLIST WindVeloc w_id ID #IMPLIED> 
+

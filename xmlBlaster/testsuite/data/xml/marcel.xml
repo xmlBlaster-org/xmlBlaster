@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE xmlBlaster SYSTEM "marcel.dtd">
+<!-- So liegen die keys im xmlBlaster DOM Baum -->
+<xmlBlaster>
+   <key oid="Wasschoenes">
+      <Airport icao="EDDI">
+        <Runway id="d1">
+           <WindVeloc w_id="xyz">HALLO</WindVeloc>
+        </Runway>
+      </Airport>
+   </key>
+
+   <key oid="Whoenes">
+      <Airport icao="EDDN">
+        <Runway id="d3">
+           <WindVeloc w_id="_i">HLO</WindVeloc>
+        </Runway>
+      </Airport>
+   </key>
+
+</xmlBlaster>
+
+
