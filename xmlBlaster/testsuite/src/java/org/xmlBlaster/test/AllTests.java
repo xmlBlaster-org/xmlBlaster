@@ -21,6 +21,7 @@ public class AllTests extends junit.framework.TestCase
   public static junit.framework.Test suite() {
     junit.framework.TestSuite suite = new junit.framework.TestSuite("Run all xmlBlaster tests");
     suite.addTest(org.xmlBlaster.test.classtest.AllTests.suite());
+    suite.addTest(org.xmlBlaster.test.admin.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.qos.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.client.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.topic.AllTests.suite());

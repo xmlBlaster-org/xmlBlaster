@@ -139,6 +139,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
             cbAddress.setRetries(-1);
             cbAddress.setPingInterval(-1);
             cbAddress.setDelay(1000L);
+            cbAddress.setSecretCbSessionId("someSecredSessionId");
             connectQos.addCallbackAddress(cbAddress);
          }
 
@@ -352,6 +353,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       this.log.info(ME, "further log for receiving update of a message cbSessionId=" + cbSessionId +
                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
+
       return "OK";
    }
 
