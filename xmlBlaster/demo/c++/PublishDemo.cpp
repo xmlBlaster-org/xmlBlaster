@@ -26,7 +26,7 @@ private:
    string ME;
    Global& global_;
    I_Log& log_;
-   char ptr[1];
+   char ptr[2];
    XmlBlasterAccess connection_;
    bool interactive;
    bool oneway;
@@ -83,9 +83,11 @@ public:
    {
       if (doErase) {
          if (interactive) {
-            log_.info(ME, "Hit a key to erase");
-            std::cin.read(ptr,1);
+            string outStr = "Hit 'e' to erase topic '" + oid + "' ('q' to exit without erase) >> "; 
+            string ret = org::xmlBlaster::util::waitOnKeyboardHit(outStr);
+            if (ret == "q") return;
          }
+         log_.info(ME, "Erasing topic '" + oid + "'");
          EraseKey key(global_);
          key.setOid(oid);
          EraseQos eq(global_);
@@ -195,8 +197,9 @@ void PublishDemo::publish()
    for(int i=0; i<numPublish; i++) {
    
       if (interactive) {
-         log_.info(ME, "Hit a key to publish '" + oid + "' #" + lexical_cast<string>(i+1) + "/" + lexical_cast<string>(numPublish));
+         std::cout << "Hit a key to publish '" + oid + "' #" + lexical_cast<string>(i+1) + "/" + lexical_cast<string>(numPublish) + " ('b' to break) >> ";
          std::cin.read(ptr,1);
+         if (*ptr == 'b') break;
       }
       else {
          if (sleep > 0) {
