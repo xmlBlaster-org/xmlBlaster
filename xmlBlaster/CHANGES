@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Current cvs
 ===========
+ 
+ o c++ Global constructors are now public. The user is responsible for
+   cleaning up additional Global instances.
 
  o Fixed get() mime filter query plugin load bug
    Thanks to jlc.xmlblaster.0504@jambotech.com
