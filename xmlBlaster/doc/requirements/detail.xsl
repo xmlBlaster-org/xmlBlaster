@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.23 2002/10/10 09:03:50 ruff Exp $
+Version:   $Id: detail.xsl,v 1.24 2002/11/19 16:07:23 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -35,7 +35,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/10/10 09:03:50 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/11/19 16:07:23 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -111,7 +111,9 @@ Author:    ruff@swand.lake.de
             <xsl:copy-of select="configuration" />
             <p class="sideend">
                NOTE: Configuration parameters are specified on command line (-someValue 17) or in the
-               xmlBlaster.properties file (someValue=17). See requirement "util.property" for details.
+               xmlBlaster.properties file (someValue=17). See requirement "util.property" for details.<br />
+               Columns named <b>Impl</b> tells you if the feature is implemented.<br />
+               Columns named <b>Hot</b> tells you if the configuration is changeable in hot operation.
             </p>
          </td>
       </tr>
