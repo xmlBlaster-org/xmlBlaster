@@ -59,9 +59,23 @@ You need JDK 2 or better to run xmlBlaster.
 
        /usr/local/JacORB/bin/jaco org.xmlBlaster.Client IOR:....
 
+			or
+
+       /usr/local/JacORB/bin/jaco org.xmlBlaster.Client `cat /tmp/NS_Ref` 
+
        [/usr/local/JacORB/bin/jaco org.xmlBlaster.Client]
 
     Good. You have done it!
+
+-------------------------------------------------------------------------
+For developers
+
+ 1.) If you use the testsuite-goodies you must set the path to the
+     testsuite- bin directory.
+
+    sh, ksh or bash:
+
+     export PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
 
 
 
