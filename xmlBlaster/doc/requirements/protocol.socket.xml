@@ -216,8 +216,22 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
          <td>erase messages</td>
       </tr>
    </table>
+   <br />
+      <h3>NOTE:</h3>
+      <p>
+      The raw SOCKET address transferred in the connect QoS markup is of the form
+      </p>
+      <pre>
+socket://host:port
+      </pre>
+      <p>
+      for example:
+      <pre>
+socket://127.168.1.2:7607
+      </pre>
+      </p>
    </description>
-   <example lang="Java">
+   <example lang="any">
       <![CDATA[
       
 Example of a publish() invocation with qos/key/content
@@ -308,10 +322,6 @@ ConnectQos qos = new ConnectQos(glob);
 
 ...
       </pre>
-      <p>
-      The raw address transferred in the QoS markup is of the form
-      <i>socket://host:port</i>, for example <i>socket://127.168.1.2:7607</i>.
-      </p>
    </example>
 
    <configuration where="server">
@@ -483,7 +493,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.32 $</revision>
+   <revision>$Revision: 1.33 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
