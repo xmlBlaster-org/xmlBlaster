@@ -40,7 +40,13 @@
                or the SOCKET library (the latter is delivered in the xmlBlaster distribution)</li>
            <li>logging library. We provide a simple, colorful default logging and
                additionally the sophisticated log4cplus logging library
-                (both in the xmlBlaster distribution)</li>
+                (both in the xmlBlaster distribution).
+               We are forwarding all xmlBlaster.properties and command line settings to log4cplus,
+              so you could configure everything in xmlBlaster.properties instead of a separate log4cplus.properties
+              (see the example file <tt>xmlBlaster/config/log4cplus.properties</tt>).<br />
+              Log4cplus is extended to do ${xy} variable replacement not only from environment
+              but from itself as well (recursion depth is one).
+                </li>
         </ul>
      </p>
      <p/>
@@ -240,6 +246,6 @@ build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
 </requirement>
 
