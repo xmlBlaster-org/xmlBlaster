@@ -48,6 +48,7 @@
       <client>
          <joe>
             <uptime>10050</uptime>
+
             <cbQueueNumMsgs>247</cbQueueMumMsgs>
             <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
 
@@ -56,6 +57,11 @@
             <sessionList>ses3,ses17</sessionList>
             <ses17>
                <uptime>10050</uptime>
+
+               <numPublished>4</numPublished>
+               <numGets>7</numGets>
+               <numUpdates>614050</numUpdates>
+
                <cbQueueNumMsgs>37</cbQueueNumMsgs>
                <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
                <cbQueueThreshold>80</cbQueueThreshold> <!-- 80% -->
@@ -80,6 +86,8 @@
          <java.io.tmpdir>/tmp</java.io.tmpdir>
          <java.vm.version>1.3.1</java.vm.version>
          <user.language>es</user.language>
+         <Persistence.Path>/home/mom/data</Persistence.Path>
+         ...
       </sysprop>
 
       <numMsgs>7140</numMsgs>
@@ -281,87 +289,16 @@
       or with relative scope <i>client/joe/?uptime</i>. The relative query assumes
       the current xmlBlaster node you are connected to.
       </p>
+
       <h3>
       How does the return value look like?
       </h3>
       <p>
-         Responses of attributes have the key and the value, separated to lines.
-         Messages are returned XML encoded.<br />
-         The following tables shows the return values of get/subscribe/poll/schedule
-         invocations.
+      Responses for telnet clients are described in the requirement <i>admin.telnet</i>.
       </p>
-      <table border="1">
-         <tr>
-            <td>Command</td>
-            <td>Return</td>
-            <td>Description</td>
-         </tr>
-         <tr>
-            <td>/node/?numNodes</td>
-            <td><pre>
-/node/?numNodes=5
-            </pre></td>
-            <td>The separator between the key and the value is '='
-            </td>
-         </tr>
-         <tr>
-            <td>/node/heron/client/*/?uptime</td>
-            <td><pre>
-/node/client/joe/?uptime=345600
-/node/client/jack/?uptime=19500
-/node/client/averell/?uptime=19500
-            </pre></td>
-            <td>The query matched three users, the lines are seperated by cr and lf
-            </td>
-         </tr>
-         <tr>
-            <td>/node/heron/?clientList</td>
-            <td><pre>
-/node/heron/?clientList=joe,jack,
-   averell,william
-            </pre></td>
-            <td>The clientList is one attribute, containing the list of known clients
-            </td>
-         </tr>
-         <tr>
-            <td>/node/heron/msg/?Hello</td>
-            <td>
-               <pre><![CDATA[
-<xmlBlaster>
-  <key oid='Hello' contentMime='text/plain'/>
-  <content>How are you</content>
-  <qos><rcvTimestamp nanos='1291'/></qos>
-</xmlBlaster>
-               ]]></pre>
-            </td>
-            <td>The query returns exactly one message
-            </td>
-         </tr>
-      </table>
-
       <p>
-         The next table shows the return values of set or publish() invocations:
+      Mom clients receive messages with the value in the message content, see requirement <i>admin.momClient</i>.
       </p>
-      <table border="1">
-         <tr>
-            <td>Command</td>
-            <td>Return</td>
-            <td>Description</td>
-         </tr>
-         <tr>
-            <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
-            <td>
-               <pre><![CDATA[
-<qos>
-   <state id='OK' info='Blah'/>
-</qos>
-               ]]></pre>
-            </td>
-            <td>The returned string is XML encoded
-            </td>
-         </tr>
-      </table>
-
 
       <h3>
       How can we use these commands?
@@ -531,13 +468,15 @@ UserInfo: joe:mypasswd
    <see type="API">org.xmlBlaster.engine.admin.I_AdminSession</see>
    <see type="API">org.xmlBlaster.engine.admin.extern.TelnetGateway</see>
    <see type="REQ">admin</see>
+   <see type="REQ">admin.telnet</see>
+   <see type="REQ">admin.momClient</see>
    <see type="REQ">engine.runlevel</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
