@@ -98,6 +98,8 @@ public class Constants
    }
 
 
+   // Status id, on error usually an exception is thrown so we don't need "ERROR":
+
    /** The returned message status if OK */
    public final static String STATE_OK = "OK";
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
