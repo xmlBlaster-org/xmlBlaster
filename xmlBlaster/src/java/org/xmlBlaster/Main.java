@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.62 2000/11/01 21:51:42 ruff Exp $
+Version:   $Id: Main.java,v 1.63 2000/11/03 15:34:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -260,7 +260,8 @@ public class Main
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down xmlBlaster ...");
+      if (protocols.size() > 0)
+         Log.info(ME, "Shutting down xmlBlaster ...");
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          try {
@@ -361,7 +362,7 @@ public class Main
 
 
    /**
-    * Add shutdown hook. 
+    * Add shutdown hook.
     * <p />
     * Catch signals, e.g. Ctrl C to stop xmlBlaster.<br />
     * Uses reflection since only JDK 1.3 supports it.
