@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.15 2002/07/09 18:06:55 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.16 2002/09/04 21:36:38 kkrafft2 Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -73,7 +73,15 @@ public class XmlKeyDom implements I_MergeDomNode
       org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
 
       try {
+         //kkrafft2 (09/04/2002): the DocumentBuilderFactory should be switched by xmlBlaster.properties
+         String factoryBackup = System.getProperty("javax.xml.parsers.DocumentBuilderFactory");
+         String newFactory = requestBroker.getGlobal().getProperty().get("javax.xml.parsers.DocumentBuilderFactory", "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl");
+         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",newFactory);
          DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
+         //restore old factory
+         if( factoryBackup != null )
+            System.setProperty("javax.xml.parsers.DocumentBuilderFactory",factoryBackup);
+
          //dbf.setNamespaceAware(true);
          //dbf.setCoalescing(true);
          //dbf.setValidating(false);
