@@ -3,9 +3,9 @@ Name:      TestJdbcAccess.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestJdbcAccess.java,v 1.1 2002/08/15 17:03:41 ruff Exp $
+Version:   $Id: TestJdbcAccess.java,v 1.2 2002/08/15 17:07:59 ruff Exp $
 ------------------------------------------------------------------------------*/
-package testsuite.org.xmlBlaster.mime;
+package testsuite.org.xmlBlaster.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -33,8 +33,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestJdbcAccess
- *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.mime.TestJdbcAccess
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
  * </pre>
  */
 public class TestJdbcAccess extends TestCase
@@ -184,8 +184,8 @@ public class TestJdbcAccess extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *   java testsuite.org.xmlBlaster.mime.TestJdbcAccess
-    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestJdbcAccess
+    *   java testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
     * <pre>
     */
    public static void main(String args[])
