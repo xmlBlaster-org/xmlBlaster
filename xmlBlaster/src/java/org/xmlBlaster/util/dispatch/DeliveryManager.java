@@ -232,8 +232,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    /** Call by DeliveryConnectionsHandler on state transition */
-   void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
+   public void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
+      if (oldState == ConnectionStateEnum.DEAD) return;
       ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
@@ -244,14 +245,15 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (this.msgInterceptor != null)
          this.msgInterceptor.toDead(this, oldState, ex.getMessage());
 
-      givingUpDelivery(ex);
+      if (oldState != ConnectionStateEnum.UNDEF)
+         givingUpDelivery(ex);
    }
 
    private void givingUpDelivery(XmlBlasterException ex) {
       if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.deliveryConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
-      this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, getQueue(), ex));
+      this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
       shutdown();
    }
    
@@ -267,7 +269,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (xmlBlasterException.isUser()) {
          // Exception from remote client from update(), pass it to error handler and carry on ...
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
+         getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
          return;
       }
       else if (xmlBlasterException.isCommunication()) {
@@ -277,7 +279,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
+                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
                }
             }
             catch (XmlBlasterException xmlBlasterException2) {
@@ -285,7 +287,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
             if (entryList != null && entryList.size() > 0) {
                MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-               this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
+               this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
             }
             return;
          }
@@ -332,7 +334,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          if (ex.isUser()) {
             // Exception from remote client from update(), pass it to error handler and carry on ...
             MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-            getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
+            getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
          }
          else if (ex.isCommunication()) {
 
@@ -341,7 +343,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                   entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                   if (entryList != null && entryList.size() > 0) {
                      MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                     this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
+                     this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, ex));
                   }
                }
                catch (XmlBlasterException ex2) {
@@ -349,7 +351,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                }
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
+                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, ex));
                }
             }
 
