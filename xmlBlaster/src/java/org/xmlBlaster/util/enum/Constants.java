@@ -128,6 +128,7 @@ public class Constants
    /** Prefix to create a sessionId */
    public final static String SESSIONID_PREFIX = "sessionId:";
    public final static String SUBSCRIPTIONID_PREFIX = "__subId:";
+   public final static String SUBSCRIPTIONID_PtP = SUBSCRIPTIONID_PREFIX+"PtP";
    /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
      * see Requirement engine.qos.subscribe.id
      */
