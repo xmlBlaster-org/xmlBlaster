@@ -16,7 +16,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.34 $
+# $Revision: 1.35 $
 #-----------------------------------------------------------
 
 
@@ -53,6 +53,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
    ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
+	##### Uncomment if using Ant to build xmlBlaster
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/demo.jar:${CLASSPATH}
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/testsuite.jar:${CLASSPATH}
+	#####
    CLASSPATH=${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
