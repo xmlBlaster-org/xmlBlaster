@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.20 2001/08/21 10:40:07 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.21 2001/08/21 21:17:15 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -36,6 +36,7 @@ import java.text.DateFormat;
 import java.util.Locale;
 import java.util.Date;
 
+import org.xmlBlaster.client.GetKeyWrapper;
 
 /**
  * This client is a simple chat application using xmlBlaster.
@@ -58,7 +59,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private String logFileName = null;
 
    // UI elements
-   private Button connectButton, actionButton;
+   private Button connectButton, actionButton, whoisThereButton;
    private Panel fPanel;
    private TextArea output;
    private TextField input;
@@ -100,6 +101,43 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    }
 
 
+  protected void publishMessage(String content) {
+    xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                       "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
+                       "</key>";
+    MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+    Log.trace(ME, "Publishing ...");
+    try {
+       String str = xmlBlasterConnection.publish(msgUnit);
+    } catch(XmlBlasterException e) {
+       Log.warn(ME, "XmlBlasterException: " + e.reason);
+    }
+    Log.trace(ME, "Publishing done");
+  }
+
+  protected void getUserList() {
+    if (xmlBlasterConnection == null) {
+      Log.error(ME, "Please log in first");
+      return;
+    }
+
+
+    publishMessage("I am retrieving the connected users list (ignore this)");
+    try {
+      GetKeyWrapper getKeyWrapper = new GetKeyWrapper("__sys__UserList");
+      MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
+      if (msgUnit != null) {
+        for (int i=0; i < msgUnit.length; i++) {
+          appendOutput(new String(msgUnit[i].content) + System.getProperty("line.separator"));
+        }
+        appendOutput(System.getProperty("line.separator"));
+      }
+    }
+    catch (XmlBlasterException ex) {
+      Log.error(ME, "error when getting the list of users");
+    }
+  }
+
    /** initialize UI */
    public void initUI() {
       // MAIN-Frame
@@ -122,6 +160,12 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       actionButton.addActionListener(this);
       fPanel.add("South",actionButton);
 
+      // Button for requesting list of who is connected
+      whoisThereButton = new Button("Who is There ?");
+      whoisThereButton.setActionCommand("whoisThere");
+      whoisThereButton.addActionListener(this);
+      fPanel.add("South", whoisThereButton);
+
       // Textfield for input
       input = new TextField(60);
       input.addActionListener(this);
@@ -137,6 +181,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       String command = ev.getActionCommand();
       Object obj = ev.getSource();
 
+      if ("whoisThere".equals(command)) {
+        getUserList();
+        return;
+      }
+
       if(command.equals("connect")){
          // Connect to xmlBlaster server
          if((connectButton.getLabel()).equals("Connect")){
@@ -150,7 +199,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          }
       }
       // publish new message
-      else if(command.equals("send") ||( (ev.getSource()) instanceof TextField )){
+      else if( command.equals("send") ||
+        ( (ev.getSource()) instanceof TextField )){
 
          if (xmlBlasterConnection == null) {
             Log.error(ME, "Please log in first");
@@ -159,17 +209,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
          //----------- Construct a message and publish it ---------
          String content = input.getText();
-         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                         "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
-                         "</key>";
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         Log.trace(ME, "Publishing ...");
-         try {
-            String str = xmlBlasterConnection.publish(msgUnit);
-         } catch(XmlBlasterException e) {
-            Log.warn(ME, "XmlBlasterException: " + e.reason);
-         }
-         Log.trace(ME, "Publishing done");
+
+         publishMessage(content);
          input.setText("");
      }
    }
