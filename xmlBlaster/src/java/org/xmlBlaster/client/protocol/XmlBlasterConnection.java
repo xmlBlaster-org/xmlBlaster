@@ -27,6 +27,7 @@ import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -115,6 +116,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private I_XmlBlasterConnection driver = null;
    /** The callback server, e.g. Corba/Rmi/XmlRpc */
    private I_CallbackServer cbServer = null;
+
+   /** Holding the current returned QoS from the connect() call */
+   private ConnectReturnQos connectReturnQos = null;
 
    /** queue all the messages, and play them back through interface I_InvocationRecorder */
    private InvocationRecorder recorder = null;
@@ -593,9 +597,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param client    Your client code which implements I_Callback to receive messages via update()
     * @exception       XmlBlasterException if login fails
     */
-   public void connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
-      connect(qos, client, (QueueProperty)null, (CallbackAddress)null, (String)null);
+      return connect(qos, client, (QueueProperty)null, (CallbackAddress)null, (String)null);
    }
 
    /**
@@ -607,9 +611,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   public void connect(ConnectQos qos, I_Callback client, CallbackAddress cbAddr) throws XmlBlasterException
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback client, CallbackAddress cbAddr) throws XmlBlasterException
    {
-      connect(qos, client, (QueueProperty)null, cbAddr, (String)null);
+      return connect(qos, client, (QueueProperty)null, cbAddr, (String)null);
    }
 
    /**
@@ -620,9 +624,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   public void connect(ConnectQos qos, I_Callback client, String cbSessionId) throws XmlBlasterException
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback client, String cbSessionId) throws XmlBlasterException
    {
-      connect(qos, client, (QueueProperty)null, (CallbackAddress)null, cbSessionId);
+      return connect(qos, client, (QueueProperty)null, (CallbackAddress)null, cbSessionId);
    }
 
    /**
@@ -634,16 +638,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   public void connect(ConnectQos qos, I_Callback client, QueueProperty prop) throws XmlBlasterException
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback client, QueueProperty prop) throws XmlBlasterException
    {
-      connect(qos, client, prop, (CallbackAddress)null, (String)null);
+      return connect(qos, client, prop, (CallbackAddress)null, (String)null);
    }
 
    /**
     * Internal connect method, collecting all other connect() variants
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   private void connect(ConnectQos qos, I_Callback client, QueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
+   private ConnectReturnQos connect(ConnectQos qos, I_Callback client, QueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
    {
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".Authentication", "Please add your authentication in your login QoS");
@@ -706,10 +710,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       } // Callback server configured and running
 
       //Log.info(ME, "DUMP of ConnectQos\n"  + qos.toXml());
-
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
-         driver.connect(qos);
+         this.connectReturnQos = driver.connect(qos);
          numLogins++;
       }
       catch(ConnectionException e) {
@@ -722,6 +725,15 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          clientProblemCallback.reConnected();
 
       startPinging();
+      return connectReturnQos;
+   }
+
+   /**
+    * Access the returned connection QoS form xmlBlaster
+    * @return null if not logged in
+    */
+   public ConnectReturnQos getConnectReturnQos() {
+      return this.connectReturnQos;
    }
 
    /**
