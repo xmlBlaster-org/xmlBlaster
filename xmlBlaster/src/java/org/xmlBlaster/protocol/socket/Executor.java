@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.21 2002/08/21 22:30:36 ruff Exp $
+Version:   $Id: Executor.java,v 1.22 2002/09/05 12:08:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -58,8 +58,10 @@ public abstract class Executor implements ExecutorBase
    protected String loginName = "";
    /** How long to block on remote call waiting on response */
    protected long responseWaitTime = 0;
-   /** How long to block the socket on remote call */
+   /** How long to block the socket on input stream read */
    protected long soTimeout = 0;
+   /** How long to block the socket on close with remaining data */
+   protected long soLingerTimeout = 0;
    /** This is the client side */
    protected I_CallbackExtended cbClient = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -101,9 +103,17 @@ public abstract class Executor implements ExecutorBase
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
       //        and with "jacorb.client.pending_reply_timeout"
-      setSoTimeout(glob.getProperty().get("socket.SoTimeout", Constants.MINUTE_IN_MILLIS));
+
+      // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
+      // But we always block on input read() to receive update() messages.
+      setSoTimeout(glob.getProperty().get("socket.SoTimeout", 0L)); // switch off
       this.sock.setSoTimeout((int)this.soTimeout);
-      this.sock.setSoLinger(true, (int)this.soTimeout/2);
+
+      setSoLingerTimeout(glob.getProperty().get("socket.SoLingerTimeout", Constants.MINUTE_IN_MILLIS));
+      if (getSoLingerTimeout() > 0L)
+         this.sock.setSoLinger(true, (int)this.soLingerTimeout);
+      else
+         this.sock.setSoLinger(false, 0);
    }
 
    /**
@@ -119,15 +129,35 @@ public abstract class Executor implements ExecutorBase
    }
 
    /**
-    * Set the given millis to protect against blocking socket
-    * @param millis If <= 0 it is set to one minute
+    * Set the given millis to protect against blocking socket on input stream read() operations
+    * @param millis If <= 0 it is disabled
     */
    public final void setSoTimeout(long millis) {
-      if (millis <= 0L) {
-         log.warn(ME, "socket.SoTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
-         this.soTimeout = Constants.MINUTE_IN_MILLIS;
+      if (millis < 0L) {
+         log.warn(ME, "socket.SoTimeout=" + millis + " is invalid, deactivating timeout");
+         this.soTimeout = 0L;
       }
       this.soTimeout = millis;
+   }
+
+   public final long getSoTimeout() {
+      return this.soTimeout;
+   }
+
+   /**
+    * Set the given millis to timeout socket close if data are lingering
+    * @param millis If < 0 it is set to one minute, 0 disable timeout
+    */
+   public final void setSoLingerTimeout(long millis) {
+      if (millis < 0L) {
+         log.warn(ME, "socket.SoLingerTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
+         this.soLingerTimeout = Constants.MINUTE_IN_MILLIS;
+      }
+      this.soLingerTimeout = millis;
+   }
+
+   public final long getSoLingerTimeout() {
+      return this.soLingerTimeout;
    }
 
    public final void setCbClient(I_CallbackExtended cbClient)
