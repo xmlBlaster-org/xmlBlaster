@@ -1,0 +1,36 @@
+<xmlBlaster>
+
+  <connect></connect>
+
+  <subscribe>
+    <key oid="test"></key>
+    <qos></qos>
+  </subscribe>
+
+  <publish>
+    <key oid="test"></key>
+    <content>This is a simple script test</content>
+    <qos></qos>
+  </publish>
+  <publish>
+    <key oid="test"></key>
+    <content>This is a simple script test 1</content>
+    <qos></qos>
+  </publish>
+  <publish>
+    <key oid="test"></key>
+    <content>This is a simple script test 2</content>
+    <qos></qos>
+  </publish>
+  <publish>
+    <key oid="test"></key>
+    <content>This is a simple script test 3</content>
+    <qos></qos>
+  </publish>
+
+  <disconnect></disconnect>
+
+</xmlBlaster>
+
+
+
