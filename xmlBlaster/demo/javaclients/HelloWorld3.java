@@ -67,7 +67,7 @@ public class HelloWorld3 implements I_Callback
 
          EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld3");
          EraseQosWrapper eq = new EraseQosWrapper();
-         con.erase(ek.toXml(), uq.toXml());
+         con.erase(ek.toXml(), eq.toXml());
 
          DisconnectQos dq = new DisconnectQos();
          con.disconnect(dq);
