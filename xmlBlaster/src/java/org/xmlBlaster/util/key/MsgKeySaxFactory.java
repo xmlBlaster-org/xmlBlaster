@@ -125,8 +125,21 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
          return;
       }
       if (inKey > 0) {
+         String nameSpaceStr = null;
+         if (uri != null && uri.length() > 0) {
+            // Process namespace: <database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'/>
+            //  uri=http://www.xmlBlaster.org/jdbc
+            //  localName=adapter
+            //  name=database:adapter
+            String nameSpace = name.substring(0, name.indexOf(":")); // "database"
+            nameSpaceStr = " xmlns:" + nameSpace + "='" + uri + "'";
+         }
+
          // Collect everything to pass it later to XmlKey for DOM parsing:
          character.append("<").append(name);
+         if (nameSpaceStr != null) {
+            character.append(nameSpaceStr);
+         }
          if (attrs != null) {
             int len = attrs.getLength();
             for (int ii=0; ii<len; ii++) {
@@ -135,13 +148,6 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
          }
          character.append(">");
       }
-
-      /*
-      if( name.toUpperCase().equals("someCdatatag") ) {
-         inSomeCdatatag = true;
-         character.append("<![CDATA[");
-      }
-      */
    }
 
    /**
@@ -161,16 +167,21 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
          character.setLength(0);
       }
 
-      /*
-      if( name.equalsIgnoreCase("SomeCdatatag") ) {
-         inSomeCdatatag = true;
-         character.append("]]>");
-      }
-      */
-
       if (inKey > 0)
          character.append("</"+name+">");
    }
+
+   /* Report the start of a CDATA section. (interface LexicalHandler) */
+   //public void startCDATA() {
+   //   log.info(ME, "startCDATA(str="+character.toString()+")");
+   //   character.append("<![CDATA["); 
+   //}
+
+   /* Report the end of a CDATA section. (interface LexicalHandler) */
+   //public void endCDATA() {
+   //   log.info(ME, "endCDATA()");
+   //   character.append("]]>");
+   //}
 
    /**
     * Dump state of this object into a XML ASCII string.

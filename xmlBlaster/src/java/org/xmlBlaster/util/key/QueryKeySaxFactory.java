@@ -13,6 +13,8 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import java.io.*;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.ArrayList;
 
 import org.xml.sax.*;
@@ -61,6 +63,8 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
 
    private StringBuffer innerTags;
    private boolean inCdata = false;
+
+   private Set nameSpaceSet;
 
    /**
     * Can be used as singleton. 
@@ -138,10 +142,30 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       }
 
       if (inKey > 0) {
+         //log.info(ME, "uri=" + uri + " localName=" + localName + " name=" + name + " attrs=" + attrs.toString());
+         String nameSpaceStr = null;
          if (innerTags == null) innerTags = new StringBuffer();
+
+         if (uri != null && uri.length() > 0) {
+            // Process namespace: <database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'/>
+            //  uri=http://www.xmlBlaster.org/jdbc
+            //  localName=adapter
+            //  name=database:adapter
+            if (this.nameSpaceSet == null) {
+               this.nameSpaceSet = new HashSet();
+            }
+            if (!this.nameSpaceSet.contains(uri)) { // declare namespace only on first occurence
+               this.nameSpaceSet.add(uri);
+               String nameSpace = name.substring(0, name.indexOf(":")); // "database"
+               nameSpaceStr = " xmlns:" + nameSpace + "='" + uri + "'";
+            }
+         }
          
          // Collect all sub tags with their attributes
          innerTags.append("<").append(name);
+         if (nameSpaceStr != null) {
+            innerTags.append(nameSpaceStr);
+         }
          if (attrs != null) {
             int len = attrs.getLength();
             for (int ii=0; ii<len; ii++) {
@@ -214,6 +238,22 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
          innerTags.append("</"+name+">");
       }
    }
+
+   /* Report the start of a CDATA section. (interface LexicalHandler) */
+   //public void startCDATA() {
+   //   inCdata = true;
+   //   innerTags.append(character.toString()); // e.g. "<adapter>\n\n<![CDATA[..." -> get the two "\n\n"
+   //   character.setLength(0);
+   //   innerTags.append("<![CDATA["); 
+   //}
+
+   /* Report the end of a CDATA section. (interface LexicalHandler) */
+   //public void endCDATA() {
+   //   inCdata = false;
+   //   innerTags.append(character.toString());
+   //   character.setLength(0);
+   //   innerTags.append("]]>");
+   //}
 
    /**
     * Dump state of this object into a XML ASCII string.
