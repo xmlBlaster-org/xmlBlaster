@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.28 2003/06/18 12:45:51 ruff Exp $
+Version:   $Id: detail.xsl,v 1.29 2003/09/26 14:32:54 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -82,7 +82,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2003/06/18 12:45:51 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2003/09/26 14:32:54 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -280,6 +280,13 @@ Author:    xmlBlaster@marcelruff.info
                  <xsl:if test="@lang='PYTHON'">
                   <a>
                      <xsl:attribute name="href">../../src/python/<xsl:value-of select="."/>.html</xsl:attribute>
+                     <xsl:value-of select="."/>
+                  </a>
+                 </xsl:if>
+
+                 <xsl:if test="@lang='PERL'">
+                  <a>
+                     <xsl:attribute name="href">../../demo/perl/xmlrpc/<xsl:value-of select="."/>.html</xsl:attribute>
                      <xsl:value-of select="."/>
                   </a>
                  </xsl:if>
