@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = sax dom XMLGenerator org/xmlBlaster/query 
+SUB_DIRS = sax dom XMLGenerator org/xmlBlaster
 
 all: all_SUB_DIRS
 
