@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.10 2001/08/20 06:01:10 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.11 2001/08/23 11:33:45 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -28,6 +28,7 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import java.applet.Applet;
 
 import helma.xmlrpc.XmlRpcClient;
+import helma.xmlrpc.XmlRpc;
 import helma.xmlrpc.XmlRpcException;
 
 
@@ -83,6 +84,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          // default xmlBlaster XML-RPC publishing port is 8080
          int port = XmlBlasterProperty.get("xmlrpc.port", DEFAULT_SERVER_PORT);
          this.url = "http://" + hostname + ":" + port + "/";
+
+         if (XmlBlasterProperty.get("xmlrpc.debug", false) == true)
+            XmlRpc.setDebug(true);
 
          this.xmlRpcClient = new XmlRpcClient(url);
          Log.info(ME, "Created XmlRpc client to " + url);
@@ -639,6 +643,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       text += "                       Default is port "+XmlRpcCallbackServer.DEFAULT_CALLBACK_PORT+", the port 0 switches this feature off.\n";
       text += "   -xmlrpc.hostnameCB  Specify a hostname where the callback web server shall run.\n";
       text += "                       Default is the localhost (useful for multi homed hosts).\n";
+      text += "   -xmlrpc.debug       true switches on detailed XML-RPC debugging [false].\n";
       text += "\n";
       return text;
    }
