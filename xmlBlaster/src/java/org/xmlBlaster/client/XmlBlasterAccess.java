@@ -1011,6 +1011,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append(new org.xmlBlaster.util.qos.storage.ClientQueueProperty(glob,null).usage());
       sb.append(new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());
       sb.append(new org.xmlBlaster.util.qos.storage.CbQueueProperty(glob,null,null).usage());
+      sb.append(new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(glob,null).usage("Control the default size of the history queue for each topic (send with publish calls)"));
       sb.append(org.xmlBlaster.client.protocol.socket.SocketConnection.usage());
       sb.append(org.xmlBlaster.client.protocol.corba.CorbaConnection.usage());
       sb.append(org.xmlBlaster.client.protocol.rmi.RmiConnection.usage());

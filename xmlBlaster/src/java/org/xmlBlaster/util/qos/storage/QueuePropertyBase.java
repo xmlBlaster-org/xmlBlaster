@@ -657,7 +657,7 @@ public abstract class QueuePropertyBase implements Cloneable
    /**
     * Get a usage string for queue configuration (in xmlBlaster.properties or on command line)
     */
-   protected String usage(String headerline) {
+   public String usage(String headerline) {
       String prefix = getPrefix();
       String text = "";
       text += "\n" + headerline + "\n";
