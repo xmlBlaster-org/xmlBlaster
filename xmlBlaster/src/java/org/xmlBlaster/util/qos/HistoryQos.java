@@ -56,7 +56,9 @@ public final class HistoryQos
    }
 
    /**
-    * @param numEntries The number of history entries
+    * @param numEntries The number of history entries, 
+    *                   not more than the current size of the history queue are returned.<br />
+    *            If -1 all entries in history queue are returned
     */
    public void setNumEntries(int numEntries) {
       this.numEntries = (numEntries < -1) ? -1 : numEntries;
