@@ -58,7 +58,6 @@ void XmlHandlerBase::parse(const string &xmlData)
    StopWatch stopWatch;
    I_Parser *parser = NULL;
    try {
-      log_.trace(ME, "parse entrering try/catch block");
       parser = ParserFactory::getFactory(global_).createParser(this);
       Lock lock(invocationMutex_);
       parser->parse(xmlData);

@@ -496,8 +496,9 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
       if (!connectQos_) {
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
-      log_.info(ME, "created a client queue");
+      if (log_.trace()) log_.trace(ME+":queuePublish", "creating a client queue ...");
       queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
+      log_.info(ME+":queuePublish", "created a client queue");
    }
    if (log_.trace()) 
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
