@@ -98,7 +98,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
          String ret = ""+getInvoke(client.substring(1), glob.getRequestBroker(), I_AdminNode.class);
-         log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+         log.info(ME, "Retrieved " + cmd.getCommand());
+         if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
          MsgUnitRaw[] msgs = new MsgUnitRaw[1];
          msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
          return msgs;
