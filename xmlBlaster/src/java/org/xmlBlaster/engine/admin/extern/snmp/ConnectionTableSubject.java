@@ -14,6 +14,7 @@ import java.util.Iterator;
 public class ConnectionTableSubject implements Subject {
 
       public ConnectionEntryImplPeer connectionEntryImplPeer;
+      public NodeTableObserver nodeTableObserver;
       public ArrayList observers = new ArrayList();
       public Integer nodeIndex;
       public int opCode;
@@ -25,6 +26,7 @@ public class ConnectionTableSubject implements Subject {
                          ConnectionEntryImplPeer connectionEntryImplPeer) {
 
 	  this.connectionEntryImplPeer = connectionEntryImplPeer;
+          this.nodeTableObserver = nodeTableObserver;
           nodeIndex = nodeTableObserver.getIndex(nodeName);
           if (nodeIndex != null) {
               opCode = INSERT;

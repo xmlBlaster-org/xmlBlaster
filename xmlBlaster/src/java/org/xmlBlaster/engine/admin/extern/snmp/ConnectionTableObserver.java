@@ -11,7 +11,7 @@ public class ConnectionTableObserver implements Observer {
 
       private ConnectionTableSubject connectionTableSubject;
       private AgentXSession session;
-      private ConnectionEntry connectionEntry;
+      private ConnectionEntryImpl connectionEntryImpl;
       private ConnectionTable connectionTable;
       private Hashtable connectionHashtable;
       private BitSet indexSet;
@@ -42,7 +42,7 @@ public class ConnectionTableObserver implements Observer {
                   }
                   else {
                       System.out.println("Insert connection = " + connectionHost + connectionPort);
-		      // new nodeIndex
+		      // new connectionIndex
                       int connectionIndex = 1;
                       while (connectionIndex <= MAXINDX && !indexSet.get(connectionIndex)) {
 			  connectionIndex++;
@@ -59,10 +59,13 @@ public class ConnectionTableObserver implements Observer {
                           connectionHashtable.put(connectionHost + connectionPort, new Integer(connectionIndex));
   
                           // insert new connectionEntry in connectionTable
-                          connectionEntry = new ConnectionEntryImpl(connectionTableSubject.nodeIndex.intValue(),
+                          connectionEntryImpl = new ConnectionEntryImpl(connectionTableSubject.nodeIndex.intValue(),
                               connectionIndex, 
                               connectionTableSubject.connectionEntryImplPeer);
-                          connectionTable.addEntry(connectionEntry);
+                          connectionTable.addEntry(connectionEntryImpl);
+
+                          // increment node table reference count
+                          connectionTableSubject.nodeTableObserver.increment(connectionTableSubject.nodeIndex);
                       }
                   }
             }
@@ -81,6 +84,9 @@ public class ConnectionTableObserver implements Observer {
       }
 
 }
+
+
+
 
 
 

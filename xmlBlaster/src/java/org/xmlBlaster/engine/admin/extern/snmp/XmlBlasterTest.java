@@ -47,6 +47,8 @@ public class XmlBlasterTest
         NodeEntryImpl nodeEntryImpl;
         NodeEntryImplPeer nodeEntryImplPeer1;
         NodeEntryImplPeer nodeEntryImplPeer2;
+        NodeEntryImplPeer nodeEntryImplPeer3;
+        NodeEntryImplPeer nodeEntryImplPeer4;
         ConnectionEntryImplPeer connectionEntryImplPeer1;
         ConnectionEntryImplPeer connectionEntryImplPeer2;
         NodeTable nodeTable;
@@ -56,7 +58,7 @@ public class XmlBlasterTest
         ConnectionTableObserver connectionTableObserver;
         boolean sleep = true;
 
-        System.setProperty("jax.debug", "true");
+        //System.setProperty("jax.debug", "true");
 
 	if (argv.length >= 1) {
 	    host = argv[0];
@@ -105,6 +107,8 @@ public class XmlBlasterTest
 
         nodeEntryImplPeer1 = new NodeEntryImplPeer("node11", "host11", 111, 1161, 80, "err1.log", 1);
         nodeEntryImplPeer2 = new NodeEntryImplPeer("node22", "host22", 222, 1162, 20, "err2.log", 2);
+        nodeEntryImplPeer3 = new NodeEntryImplPeer("node33", "host33", 333, 3333, 33, "err3.log", 3);
+        nodeEntryImplPeer4 = new NodeEntryImplPeer("node44", "host44", 444, 4444, 44, "err4.log", 4);
 
         connectionEntryImplPeer1 = new ConnectionEntryImplPeer("hostAAA", 4711, "192.47.11", 5);
         connectionEntryImplPeer2 = new ConnectionEntryImplPeer("hostBBB", 2222, "3.3.3.3.3", 335);
@@ -112,8 +116,14 @@ public class XmlBlasterTest
         // add entries to concrete subjects using the observer pattern
         nodeTableSubject.addEntry(nodeEntryImplPeer1);
         nodeTableSubject.addEntry(nodeEntryImplPeer2);
+        nodeTableSubject.addEntry(nodeEntryImplPeer3);
+        nodeTableSubject.addEntry(nodeEntryImplPeer4);
         connectionTableSubject.addEntry(nodeTableObserver, nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
         connectionTableSubject.addEntry(nodeTableObserver, nodeEntryImplPeer2.get_nodeName(), connectionEntryImplPeer2);
+
+        // remove entries
+        nodeTableSubject.removeEntry(nodeEntryImplPeer3);
+        nodeTableSubject.removeEntry(nodeEntryImplPeer1);
 
         if (sleep) {
            try {
