@@ -31,7 +31,7 @@ import org.apache.batik.util.RunnableQueue;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XMLRPC.
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 public class JavascriptCallback implements I_Callback
@@ -149,6 +149,21 @@ public class JavascriptCallback implements I_Callback
                javascriptWindow.callMethod(javascriptWindow, "update", args);
                */
                interpreter.evaluate(script);
+               /*
+               Context cx = Context.enter();
+               Scriptable scope = cx.initStandardObjects(null);
+
+               Object fObj = scope.get("f", scope);
+               if (!(fObj instanceof Function)) {
+                   System.out.println("f is undefined or not a function.");
+               } else {
+                   Object functionArgs[] = { "my arg" };
+                   Function f = (Function)fObj;
+                   Object result = f.call(cx, scope, scope, functionArgs);
+                   String report = "f('my args') = " + Context.toString(result);
+                   System.out.println(report);
+               }
+               */
             }
             catch (Exception e) {
                System.out.println("JavascriptCallback update() failed: content=" + new String(content) + ": " + e.toString());
