@@ -77,7 +77,7 @@ static const char * test_methods()
       }
    }
 
-   xa = getXmlBlasterAccessUnparsed(argc, argv);
+   xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       freeXmlBlasterAccessUnparsed(xa);
       mu_assert("[TEST FAIL] Connection to xmlBlaster failed, please start the server or check your configuration",
@@ -168,6 +168,7 @@ static const char * test_methods()
 
 
    {  /* unSubscribe ... */
+      QosArr* response;
       const char *key = "<key oid='HelloWorld'/>";
       const char *qos = "<qos/>";
       printf("[client] UnSubscribe message 'HelloWorld' ...\n");
@@ -179,10 +180,10 @@ static const char * test_methods()
          mu_assert(errorString, false);
       }
       printf("[client] Unsubscribe success\n");
-      free(response);
+      freeQosArr(response);
    }
 
-   {  /* get synchnronous ... */
+   {  /* get synchronous ... */
       size_t i;
       const char *key = "<key queryType='XPATH'>//key</key>";
       const char *qos = "<qos/>";
@@ -214,6 +215,7 @@ static const char * test_methods()
 
 
    {  /* erase ... */
+      QosArr* response;
       const char *key = "<key oid='HelloWorld'/>";
       const char *qos = "<qos/>";
       printf("[client] Erasing message 'HelloWorld' ...\n");
@@ -225,7 +227,7 @@ static const char * test_methods()
          mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
-      free(response);
+      freeQosArr(response);
    }
 
    retBool = xa->disconnect(xa, 0, &xmlBlasterException);

@@ -64,7 +64,7 @@ static const char * test_stress()
    bool retBool;
    int iPub, iWait, numPublish;
 
-   xa = getXmlBlasterAccessUnparsed(argc, argv);
+   xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       freeXmlBlasterAccessUnparsed(xa);
       mu_fail("[TEST FAIL] Connection to xmlBlaster failed, please start the server or check your configuration");
@@ -165,6 +165,7 @@ static const char * test_stress()
 
 
    {  /* erase ... */
+      QosArr* response;
       const char *key = "<key oid='TestStress'/>";
       const char *qos = "<qos/>";
       printf("[client] Erasing message 'TestStress' ...\n");
@@ -176,7 +177,7 @@ static const char * test_stress()
          mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
-      free(response);
+      freeQosArr(response);
    }
 
    retBool = xa->disconnect(xa, 0, &xmlBlasterException);
