@@ -90,9 +90,10 @@ public class FileDriver implements I_PersistenceDriver
      /**
     * initialises an instance of the filedriver plugin
     * <p />
+    * @param Global Global object holding logging and property informations
     * @param param  aditional parameter for the filedriver plugin
     */
-   public final void init(String[] param) throws XmlBlasterException {
+   public final void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
       if (Log.TRACE) Log.trace(ME, "Not neccessary!");
 
    }

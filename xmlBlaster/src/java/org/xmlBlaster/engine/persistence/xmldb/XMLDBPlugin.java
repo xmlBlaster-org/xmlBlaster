@@ -3,7 +3,7 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.4 2002/03/13 16:41:18 ruff Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.5 2002/04/19 11:00:55 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -73,9 +73,10 @@ public class XMLDBPlugin implements I_PersistenceDriver
      /**
     * initialises an instance of the XMLDB persistence plugin
     * <p />
-    * @param param  aditional parameter for the persistence plugin
+    * @param Global An xmlBlaster instance global object holding logging and property informations
+    * @param param  Aditional parameter for the persistence plugin
     */
-   public void init(String[] param) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
 
       if (Log.CALL) Log.call(ME, "init " + param);
 

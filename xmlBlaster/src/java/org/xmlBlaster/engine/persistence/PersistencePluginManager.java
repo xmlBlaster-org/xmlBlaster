@@ -3,13 +3,14 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.3 2002/03/13 16:41:17 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.4 2002/04/19 11:00:54 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
-import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -21,18 +22,17 @@ import org.xmlBlaster.authentication.Authenticate;
  * Description: Loads persistence plugin
  */
 
-public class PersistencePluginManager extends PluginManagerBase {
+public class PersistencePluginManager extends PluginManagerBase
+{
+   private final Global glob;
 
    private static final String ME = "PersistencePluginManager";
    private static final String defaultPluginName = "org.xmlBlaster.engine.persistence.filestore.FileDriver";
    private static final String pluginPropertyName = "Persistence.Driver";
 
-   private static PersistencePluginManager me = null;
-
-   /** To protect the singleton */
-   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
-
-   public PersistencePluginManager() throws XmlBlasterException {
+   public PersistencePluginManager(Global glob) throws XmlBlasterException {
+      super(glob);
+      this.glob = glob;
 
       try {
          // super.choosePlugin reads pluginName and parameters from porperties
@@ -47,23 +47,6 @@ public class PersistencePluginManager extends PluginManagerBase {
       }
 
    }
-
-
-   /**
-    * Return an instance of this singleton
-    *
-    * @return PersistencePluginManager
-    */
-   public static PersistencePluginManager getInstance() throws XmlBlasterException {
-      if (me == null) { // avoid 'expensive' synchronized
-         synchronized (SYNCHRONIZER) {
-            if (me == null)
-               me = new PersistencePluginManager();
-         }
-      }
-      return me;
-   }
-
 
    /**
     * Return a specific persistence plugin
