@@ -75,16 +75,15 @@
      <tr><td>...</td><td>...</td></tr>
      <tr><td>resource</td><td>Problems with resources on server hardware or configuration</td></tr>
      <tr><td>resource.outOfMemory</td><td>No more memory, increase RAM or <i>java -Xmx</i> option</td></tr>
-     <tr><td>resource.noMoreSpace</td><td>No more space on harddisk</td></tr>
-     <tr><td>resource.configuration.invalid</td><td>Your configuration (e.g. in xmlBlaster.properties) is invalid</td></tr>
+     <tr><td>resource.exhaust</td><td>A resource of your system exhausted</td></tr>
+     <tr><td>resource.configuration.pluginFailed</td><td>Your configuration (e.g. in xmlBlaster.properties) is invalid</td></tr>
      <tr><td>...</td><td>...</td></tr>
      <tr><td>communication</td><td>Problems with client server communication</td></tr>
      <tr><td>communication.noconnection.polling</td><td>We have currently no remote connection but are polling for it</td></tr>
      <tr><td>communication.noconnection.dead</td><td>The remote connection is dead and it is not possible to recover</td></tr>
-     <tr><td>communication.address</td><td>The remote address is illegal, e.g. an invalid URL address</td></tr>
      <tr><td>...</td><td>...</td></tr>
      <tr><td>user</td><td>Errors caused by wrong usage</td></tr>
-     <tr><td>user.security.authentication.accesDenied</td><td>Your login failed</td></tr>
+     <tr><td>user.security.authentication.accessDenied</td><td>Your login failed</td></tr>
      <tr><td>user.security.authorization.notAuthorized</td><td>Your message was not accepted</td></tr>
      <tr><td>user.publish.qos</td><td>Illegal syntax in your QoS</td></tr>
      <tr><td>user.publish.qos.destination</td><td>Message not delivered as destination is illegal</td></tr>
@@ -307,7 +306,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
