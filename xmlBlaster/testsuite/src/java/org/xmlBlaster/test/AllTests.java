@@ -9,7 +9,7 @@ package org.xmlBlaster.test;
 import junit.framework.*;
 
 /**
- * java -Xms18M -Xmx156M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
+ * java -Xms18M -Xmx256M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
  */
 public class AllTests extends junit.framework.TestCase
 {

@@ -5,8 +5,8 @@ import junit.framework.*;
 /**
  * TestSuite that runs all the sample tests. 
  * <pre>
- * java -Djava.compiler= org.xmlBlaster.test.stress.AllTests
- * java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.stress.AllTests
+ * java -Xms18M -Xmx256M -Djava.compiler= org.xmlBlaster.test.stress.AllTests
+ * java -Xms18M -Xmx256M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.stress.AllTests
  * </pre>
  */
 public class AllTests {
