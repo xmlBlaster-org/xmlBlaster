@@ -133,8 +133,7 @@ public abstract class AddressBase
 
    /**
     * Configure property settings. 
-    * "-delay[heron] 20" has precedence over "-delay 10"
-    * @see #Address(String, String)
+    * "-/node/heron/dispatch/clientSide/delay 20" has precedence over "-delay 10"
     */
    protected void initialize()
    {
@@ -210,6 +209,17 @@ public abstract class AddressBase
 
    /**
     * Updates the internal address as well. 
+    * <p>NOTE:</p>
+    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
+    * <p>To set other protocols try e.g.:</p>
+    * <pre>
+    *  String[] args = { "-protocol", "SOCKET",
+    *                    "-socket.hostname", "myHost",
+    *                    "-socket.port", "7666",
+    *                    "-socket.localHostname", "myHost",   // optional
+    *                    "-socket.localPort", "8888" };       // optional
+    *  glob.init(args);
+    * </pre>
     * @param host An IP or DNS
     */
    public final void setHostname(String host) {
@@ -249,6 +259,17 @@ public abstract class AddressBase
    /**
     * Set the bootstrapping port. 
     * Updates the internal address as well. 
+    * <p>NOTE:</p>
+    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
+    * <p>To set other protocols try e.g.:</p>
+    * <pre>
+    *  String[] args = { "-protocol", "SOCKET",
+    *                    "-socket.hostname", "myHost",
+    *                    "-socket.port", "7666",
+    *                    "-socket.localHostname", "myHost",   // optional
+    *                    "-socket.localPort", "8888" };       // optional
+    *  glob.init(args);
+    * </pre>
     */
    public final void setPort(int port) {
       this.port.setValue(port);
@@ -260,7 +281,17 @@ public abstract class AddressBase
 
    /**
     * Set the callback address, it should fit to the protocol-type.
-    *
+    * <p>NOTE:</p>
+    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
+    * <p>To set other protocols try e.g.:</p>
+    * <pre>
+    *  String[] args = { "-protocol", "SOCKET",
+    *                    "-socket.hostname", "myHost",
+    *                    "-socket.port", "7666",
+    *                    "-socket.localHostname", "myHost",   // optional
+    *                    "-socket.localPort", "8888" };       // optional
+    *  glob.init(args);
+    * </pre>
     * @param address The callback address, e.g. "et@mars.univers"
     */
    public final void setAddress(String address) {
