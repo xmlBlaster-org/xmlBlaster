@@ -40,6 +40,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
+import org.xmlBlaster.engine.admin.CommandManager;
 
 import java.util.*;
 import java.io.*;
@@ -200,6 +201,14 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          glob.getClusterManager().postInit();
 
       loadPersistentMessages();
+
+
+      try {
+         CommandManager manager = glob.getCommandManager(this.unsecureSessionInfo);
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, e.toString());
+      }
    }
 
 
