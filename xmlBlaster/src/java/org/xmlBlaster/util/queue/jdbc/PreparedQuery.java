@@ -50,7 +50,7 @@ public class PreparedQuery {
 
       try {
          this.conn = this.pool.getConnection();
-         this.conn.setAutoCommit(isAutoCommit);
+         if (this.conn.getAutoCommit() != isAutoCommit) this.conn.setAutoCommit(isAutoCommit);
          this.st = conn.prepareStatement(request);
          this.st.setQueryTimeout(this.pool.getQueryTimeout());
 
@@ -61,8 +61,10 @@ public class PreparedQuery {
          this.log.trace(ME, "Constructor. Exception: " + ex.getMessage());
          if (this.conn != null) {
             try {
-               if (!this.conn.getAutoCommit()) this.conn.rollback();
-               this.conn.setAutoCommit(true);
+               if (!this.conn.getAutoCommit()) {
+                  this.conn.rollback();
+                  this.conn.setAutoCommit(true);
+               }
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
@@ -78,8 +80,10 @@ public class PreparedQuery {
          this.log.trace(ME, "Constructor. SQLException: " + ex.getMessage());
          if (this.conn != null) {
             try {
-       	       if (!this.conn.getAutoCommit()) this.conn.rollback();
-               this.conn.setAutoCommit(true);
+               if (!this.conn.getAutoCommit()) {
+                  this.conn.rollback();
+                  this.conn.setAutoCommit(true);
+               }
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
@@ -95,8 +99,10 @@ public class PreparedQuery {
          this.log.warn(ME, "Constructor. Throwable: " + ex.toString());
          if (this.conn != null) {
             try {
-       	       if (!this.conn.getAutoCommit()) this.conn.rollback();
-               this.conn.setAutoCommit(true);
+               if (!this.conn.getAutoCommit()) {
+                  this.conn.rollback();
+                  this.conn.setAutoCommit(true);
+               }
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
@@ -122,7 +128,7 @@ public class PreparedQuery {
       try {
          if (this.st != null) this.st.close();  // close the previous statement
          this.st = conn.prepareStatement(request);
-    	 this.st.setQueryTimeout(this.pool.getQueryTimeout());
+         this.st.setQueryTimeout(this.pool.getQueryTimeout());
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);
       }
@@ -168,7 +174,7 @@ public class PreparedQuery {
             this.conn.setAutoCommit(true);
          }
         if (this.st != null) {
-     	   st.close();
+           st.close();
            this.st = null;
         }
      }

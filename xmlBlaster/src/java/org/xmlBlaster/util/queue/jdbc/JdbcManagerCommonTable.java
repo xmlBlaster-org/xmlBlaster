@@ -688,7 +688,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(ME, "modifyEntry: sql exception, the error code: '" + ex.getErrorCode() );
          try {
             preStatement.close();
-            conn.clearWarnings();
          }
          catch (Throwable ex1) {
             this.log.error(ME, "modifyEntry: Exception when closing the statement: " + ex1.toString());
@@ -779,7 +778,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the sql state: '" + ex.getSQLState() );
          if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the error code: '" + ex.getErrorCode() );
          preStatement.close();
-         conn.clearWarnings();
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
          this.log.warn(getLogId(queueName, nodeId, "addEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
@@ -865,7 +863,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       Connection conn = null;
       try {
          conn = this.pool.getConnection();
-         conn.setAutoCommit(false);
+         if (conn.getAutoCommit()) conn.setAutoCommit(false);
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), req);
 
@@ -899,8 +897,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       catch (SQLException ex) {
          int i = 0;
-         if (!conn.getAutoCommit()) conn.rollback(); // rollback the original request ...
-         conn.setAutoCommit(true); // since if an exeption occurs it infects future queries within the same transaction
+         if (!conn.getAutoCommit()) {
+            conn.rollback(); // rollback the original request ...
+            conn.setAutoCommit(true); // since if an exeption occurs it infects future queries within the same transaction
+         }
          this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " + ex.toString());
          if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
@@ -946,7 +946,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          try {
             if (preStatement != null) preStatement.close();
-            if (conn != null) conn.setAutoCommit(true);
+            if (conn != null) {
+               if (!conn.getAutoCommit()) conn.setAutoCommit(true);
+            }
          }
          catch (Throwable ex) {
             this.log.warn(ME, "addEntries: throwable when closing the connection: " + ex.toString());
@@ -1011,7 +1013,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
            String req = "DROP TABLE " + this.entriesTableName;
             if (log.CALL)  log.call(ME, "wipeOutDB " + req + " will be invoked on the DB");
             conn = this.pool.getConnection();
-            conn.setAutoCommit(false);
+            if (conn.getAutoCommit()) conn.setAutoCommit(false);
             this.update(req, conn);
             count++;
          }
@@ -1050,7 +1052,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped. Reason " + ex.toString());
             }
          }
-         conn.commit();
+         if (!conn.getAutoCommit()) conn.commit();
       }
       catch (Exception ex) {
          try {
@@ -1064,7 +1066,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       finally {
          try {
-            if (conn != null) conn.setAutoCommit(true);
+            if (conn != null) {
+               if (!conn.getAutoCommit()) conn.setAutoCommit(true);
+            }
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
@@ -1526,7 +1530,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
 
-         query.conn.commit();
+         if (!query.conn.getAutoCommit()) query.conn.commit();
          return ret;
       }
       catch (SQLException ex) {
@@ -1568,7 +1572,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
 
          conn = pool.getConnection();
-         conn.setAutoCommit(false);
+         if (conn.getAutoCommit()) conn.setAutoCommit(false);
 
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
@@ -1578,7 +1582,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          if (count != uniqueIds.length) conn.rollback();
          else {
-            conn.commit();
+            if (!conn.getAutoCommit()) conn.commit();
             boolean[] ret = new boolean[uniqueIds.length];
             for (int i=0; i < ret.length; i++) ret[i] = true;
             return ret;
@@ -1593,7 +1597,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          if (conn != null) {
             try {
-               conn.setAutoCommit(true);
+               if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             }
             catch (Throwable ex) {
                this.log.error(ME, "error when setting autocommit to 'true'. reason: " + ex.toString());
@@ -1632,7 +1636,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedStatement st = null;
       try {
          conn =  this.pool.getConnection();
-         conn.setAutoCommit(false);
+         if (conn.getAutoCommit()) conn.setAutoCommit(false);
          String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
          st = conn.prepareStatement(req);
 
@@ -1664,7 +1668,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
          }
          if (conn != null) {
-            conn.setAutoCommit(true);
+            if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             this.pool.releaseConnection(conn);
          }
       }
