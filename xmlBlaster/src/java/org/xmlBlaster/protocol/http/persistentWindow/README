@@ -4,4 +4,4 @@ http connection to the web server.
 
 For an example how to use it see
 
-  xmlBlaster/demo/html/systemInfo 
+  xmlBlaster/demo/http/ 

@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.26 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.27 2001/12/16 04:01:35 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -34,11 +34,8 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * If you want to change the servlet default behavior,
- * you need to specify environment variables in the servlet configuration file,<br />
- * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
- * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
+ * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback

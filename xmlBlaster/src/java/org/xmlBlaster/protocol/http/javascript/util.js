@@ -154,12 +154,12 @@ function error_(str)
    else
       alert("ERROR in " + codePos + ": " + str);
 }
-function warning_(str)
+function warn_(str)
 {
    if (Log.WARNING) {
       var codePos = "";
-      if (warning_.caller != null)
-         codePos = warning_.caller.toString().substring(10, warning_.caller.toString().indexOf(")") + 1);
+      if (warn_.caller != null)
+         codePos = warn_.caller.toString().substring(10, warn_.caller.toString().indexOf(")") + 1);
       logToWindow("WARNING", codePos, str);
    }
 }
@@ -412,7 +412,7 @@ function LogHandler()
 {
    this.internal = internal_; // errors from browser are caught
    this.error = error_;       // Log.error() output
-   this.warning = warning_;
+   this.warn = warn_;
    this.info = info_;
    this.trace = trace_;
    this.ERROR = true;         // Set in your code Log.ERROR=false; to switch off

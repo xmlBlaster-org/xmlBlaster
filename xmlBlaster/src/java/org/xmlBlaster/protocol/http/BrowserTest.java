@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.8 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.9 2001/12/16 04:01:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -21,9 +21,9 @@ import org.xmlBlaster.util.Log;
  * Use this class to test the behavior of your browser.
  * <br />
  * <pre>
- * http://localhost/servlets/BrowserTest?mode=multi
- * http://localhost/servlets/BrowserTest?mode=push
- * http://localhost/servlets/BrowserTest?mode=poll
+ * http://localhost/xmlBlaster/BrowserTest?mode=multi
+ * http://localhost/xmlBlaster/BrowserTest?mode=push
+ * http://localhost/xmlBlaster/BrowserTest?mode=poll
  * </pre>
  * @author ruff@swand.lake.de
  */
@@ -181,7 +181,7 @@ public class BrowserTest extends HttpServlet
             out.println("<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>");
             out.println("<meta http-equiv='Pragma' content='no-cache'>");
             // the polling variant every 2 sec:
-            out.println("<meta http-equiv='refresh' content='2;URL=/servlets/BrowserTest?mode=poll'>");
+            out.println("<meta http-equiv='refresh' content='2;URL=/xmlBlaster/BrowserTest?mode=poll'>");
             out.println("<TITLE>Hello World</TITLE>");
             out.println("</HEAD>");
             out.println("<BODY>");
@@ -216,10 +216,17 @@ public class BrowserTest extends HttpServlet
             while (true) {
                out.println("<BIG>Hello World - GET - Simple server push No." + val++ + "</BIG>");
                out.println("<P>"); // This newline forces a refresh everytime!
+               Log.info(ME, "Flushing number " + (val-1) + " ...");
+               out.println("<script language='JavaScript1.2'>");
+               out.println("alert('Hoi Michele');");
+               out.println("</script>");
+
                out.flush();
+               Log.info(ME, "Before sleeping 2 sec ...");
                try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
                if (val > 10)
                   break;
+               Log.info(ME, "After sleeping 2 sec send next ...");
             }
             out.println("</BODY></HTML>");
             out.flush();

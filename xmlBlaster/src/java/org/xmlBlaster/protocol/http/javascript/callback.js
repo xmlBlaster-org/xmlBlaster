@@ -14,7 +14,7 @@ Author:    konrad.krafft@doubleslash.de ruff@swand.lake.de
  */
 function xmlBlasterLogout()
 {
-   top.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=logout";
+   top.location.href = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=logout";
 }
 
 /**
@@ -27,7 +27,16 @@ function publish(message)
 
 function get(key, qos)
 {
-   Log.error("Get implementation to xmlBlaster is missing");
+   Log.error("Invoking get request for " + key.oid + " ...");
+   request("get", new MessageWrapperLiteral(key, "", qos));
+   Log.error("Get request for " + key.oid + " done");
+}
+
+function subscribe(key, qos)
+{
+   Log.error("Invoking subscribe request for " + key.oid + " ...");
+   request("subscribe", new MessageWrapperLiteral(key, "", qos));
+   Log.error("Subscribe request for " + key.oid + " done");
 }
 
 function erase(key, qos)
@@ -36,6 +45,52 @@ function erase(key, qos)
 }
 
 
+/**
+ * Constructor for a XmlKey helper object.
+ * If you have own meta data, add it with the method wrap:
+ * Example: var key = new top.SubscribeKeyWrapper(null, "text/xml", null);
+ *          key.wrap("<Name id='Joe' />");
+ * @param oid:String The unique message identifier, is optional and will be generated if null
+ * @param contentMime:String The MIME type of the content e.g. "text/xml" or "image/gif"
+ * @param contentMimeExtended:String Use it for whatever, e.g. the version number or parser
+ *        infos for your content set to null if not needed
+ */
+function SubscribeKeyWrapper(oid, contentMime, contentMimeExtended)
+{
+   if (oid == null)
+      this.oid = '';
+   else
+      this.oid = oid;
+
+   if (contentMime == null)
+      this.contentMime = "text/plain";
+   else
+      this.contentMime = contentMime;
+
+   this.contentMimeExtended = contentMimeExtended;
+   this.wrap = SubscribeKeyWrapperWrap;
+   this.toXml = SubscribeKeyWrapperToXml;
+}
+function SubscribeKeyWrapperToXml()
+{
+   var str='';
+   str += "<key oid='" + this.oid + "'";
+   str += " contentMime='" + this.contentMime + "'";
+   if (this.contentMimeExtended != null)
+      str += " contentMimeExtended='" + this.contentMimeExtended + "'";
+   str += ">\n";
+   str += this.clientTags;
+   str += "\n</key>";
+   if (Log.INFO) Log.info(str);
+   return str;
+}
+function SubscribeKeyWrapperWrap(tags)
+{
+   if (tags == null)
+      this.tags = '';
+   else
+      this.tags = tags;
+}
 /**
  * Constructor for a XmlKey helper object.
  * If you have own meta data, add it with the method wrap:

@@ -40,7 +40,7 @@
                // Force a reload, is necessary for MSIE5, otherwise its refreshed from the browser cache
                self.frames["pingFrame"].location.reload(true);
                // Sending the state is for debugging and for proxies to let it through (not a similar request)
-               self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
+               self.frames["pingFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
             if ((typeof pingTimeoutHandler) != "undefined")
                window.clearTimeout(pingTimeoutHandler);
@@ -69,7 +69,18 @@
             var date = new Date();
             var millisec = Date.parse(date);
             self.frames["controlFrame"].location.reload(true);
-            self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
+            self.frames["controlFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
+         }
+
+         /**
+          * This allows to notify the servlet that the browser processed the
+          * last request and is ready to receive the next message.
+          */
+         function request(methodName, msgWrapper)
+         {
+            if (Log.TRACE) Log.trace("Sending request " + methodName + " to serlvet");
+            self.frames["requestFrame"].location.reload(true);
+            self.frames["requestFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType="+methodName+"&key.oid=" + msgWrapper.key.oid;
          }
 
          queueing = true;
@@ -77,10 +88,11 @@
    </head>
 
 <!-- frames -->
-<frameset cols="1,1,1,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+<frameset cols="1,1,1,1,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
 <frame name="callbackFrame" src="loginCB.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="controlFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="pingFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+<frame name="requestFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="connectionTextFrame" src="connected.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 </frameset>
 

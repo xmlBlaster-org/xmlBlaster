@@ -281,7 +281,7 @@ public class HttpPushHandler
          Log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
       else
          Log.info(ME, "Checking browser = " + browser + ". We won't use 'multipart requests'");
-      return false;
+      return doesMulti;
    }
 
 

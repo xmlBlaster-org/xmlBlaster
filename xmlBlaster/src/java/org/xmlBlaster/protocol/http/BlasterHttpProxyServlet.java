@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.52 2001/08/31 15:30:49 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.53 2001/12/16 04:01:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.*;
 
 import java.rmi.RemoteException;
 import java.io.*;
@@ -37,7 +38,7 @@ import javax.servlet.http.*;
  * If you use Apache/Jserv, look into /var/log/httpd/jserv.log
  * <p />
  * Invoke for testing:<br />
- *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
+ *    http://localhost/xmlBlaster/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
@@ -69,7 +70,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       //Log.addLogLevel("TRACE"); // Use this to trace the code
       //Log.addLogLevel("CALL");
-      // Log.addLogLevel("TIME");
+      //Log.addLogLevel("TIME");
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
       // outcomment this line:
@@ -103,8 +104,15 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
+      String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr();
 
       String actionType = Util.getParameter(req, "ActionType", "");
+      if (actionType == null) {
+         String str = "Please call servlet with some ActionType";
+         Log.error(ME, str);
+         htmlOutput(str, res);
+         return;
+      }
 
       HttpSession session = req.getSession(true);
       if (actionType.equals("login")) {
@@ -115,7 +123,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       }
       String sessionId = session.getId();
 
-      String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
+      ME += "-" + sessionId;
       if (Log.TRACE) Log.trace(ME, "Processing doGet()");
 
       if (sessionId == null) {
@@ -238,6 +246,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             }
          }
 
+         else if ("subscribe".equalsIgnoreCase(actionType)) {
+            doPost(req, res);
+         }
+
          //------------------ logout ---------------------------------------------------------
          else if (actionType.equals("logout")) {
             Log.info(ME, "Logout arrived ...");
@@ -335,17 +347,18 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          if (actionType.equals("subscribe")) {
             Log.trace(ME, "subscribe arrived ...");
-            String xmlKey =
-                      "<key oid='' queryType='XPATH'>\n" +
-                      "   //key" +
-                      "</key>";
-            String qos = "<qos></qos>";
-            try {
-               String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
-               Log.trace(ME, "Success: Subscribe on " + subscribeOid + " done");
-            } catch(XmlBlasterException e) {
-               Log.warn(ME, "XmlBlasterException: " + e.reason);
+            String oid = Util.getParameter(req, "key.oid", null);
+            if (oid == null) {
+               String str = "Please call servlet with some key.oid when subscribing";
+               Log.error(ME, str);
+               htmlOutput(str, res);
+               return;
             }
+            SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(oid);
+            SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+
+            String ret = xmlBlaster.subscribe(xmlKey.toXml(), xmlQos.toXml());
+            Log.info(ME, "Subscribed to " + oid + ": " + ret);
          }
 
          else if (actionType.equals("unSubscribe")) {
@@ -380,6 +393,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             throw new Exception("Unknown or missing 'ActionType'");
          }
 
+      } catch (XmlBlasterException e) {
+         Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
+         String codedText = URLEncoder.encode( e.reason );
+         pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n",false);
       } catch (Exception e) {
          Log.error(ME, "RemoteException: " + e.getMessage());
          e.printStackTrace();
@@ -449,5 +466,77 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void log(int level, String source, String str)
    {
       getServletContext().log(str);
+   }
+
+
+   /**
+    * Returns a HTML file to the Browser.
+    * @param htmlData the complete HTML page
+    * @param response the servlet response-object
+    * @see HttpServletResponse
+    */
+   public void htmlOutput(String htmlData, HttpServletResponse response) throws ServletException
+   {
+      String ME  = "BlasterHttpProxyServlet";
+      response.setContentType("text/html");
+      try {
+         PrintWriter pw;
+         pw = response.getWriter();
+         pw.println(htmlData);
+         pw.close();
+      }
+      catch(IOException e) {
+         Log.warn(ME, "Could not deliver HTML page to browser:"+e.toString());
+         throw new ServletException(e.toString());
+      }
+   }
+
+
+   /**
+    * Report an error to the browser, which displays it in an alert() message.
+    * @param sessionId The browser
+    * @param error The text to display
+    */
+   public void popupError(HttpServletResponse response, String error)
+   {
+      String ME  = "BlasterHttpProxyServlet";
+      try {
+         response.setContentType("text/html");
+         PrintWriter pw;
+         pw = response.getWriter();
+         pw.println(HttpPushHandler.alert(error));
+         pw.close();
+      }
+      catch(IOException e) {
+         Log.error(ME, "Sending of error failed: " + error + "\n Reason=" + e.toString());
+      }
+   }
+
+
+   /**
+    * Send XML-Data to browser.
+    * The browser needs to handle the data.
+    * @param xmlData XML data
+    * @param response servlet response
+    */
+   public void xmlOutput( String xmlData, HttpServletResponse response ) throws ServletException
+   {
+      String ME  = "BlasterHttpProxyServlet";
+      response.setContentType("text/xml");
+
+      try {
+         PrintWriter pw;
+         pw = response.getWriter();
+         pw.println(xmlData);
+         pw.close();
+      }
+      catch(IOException e) {
+         String text = "Sending XML data to browser failed: " + e.toString();
+         Log.warn(ME, text);
+         PrintWriter pw;
+         try { pw = response.getWriter(); } catch(IOException e2) { Log.error(ME, "2.xml send problem"); return; }
+         pw.println("<html><body>Request Problems" + text + "</body></html>");
+         pw.close();
+      }
    }
 }

@@ -26,10 +26,10 @@
          if (action != "" && loginName != "" && passwd != "") {
             // login infos passed by URL parameters
             top.Log.info("Login request from '" + loginName + "', calling BlasterHttpProxyServlet ...");
-            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&xmlBlaster.loginName=" + loginName + "&xmlBlaster.passwd=" + passwd + "&xmlBlaster.invalidate=" + invalidate;
+            servlet = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=" + action + "&xmlBlaster.loginName=" + loginName + "&xmlBlaster.passwd=" + passwd + "&xmlBlaster.invalidate=" + invalidate;
          } else {
             // login infos passed by session object (cookies or hidden fields)
-            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=login";
+            servlet = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=login";
          }
          top.callbackFrame.location.href=servlet;
       }
