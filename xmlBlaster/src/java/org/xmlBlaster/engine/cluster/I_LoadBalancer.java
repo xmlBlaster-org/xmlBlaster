@@ -3,7 +3,7 @@ Name:      I_LoadBalancer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface top the load balancing implementation
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
@@ -18,7 +18,7 @@ import java.util.Set;
  * Interface to the load balancing implementation. 
  * <p />
  * See http://www.ddj.com/documents/s=921/ddj9804i/9804i.htm
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_LoadBalancer {
    /**

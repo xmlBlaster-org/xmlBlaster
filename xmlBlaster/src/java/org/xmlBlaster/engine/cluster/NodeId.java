@@ -3,14 +3,14 @@ Name:      NodeId.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holds the unique name of a cluster node
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
 
 /**
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @since 0.79e
  * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
  */
