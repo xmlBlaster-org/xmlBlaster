@@ -130,7 +130,7 @@ To suppport server crash recovery and huge message
 amount to be queued (swapping) you need to start a
 database.
 
-Currently Oracle and Postgres are supported.
+Oracle, Postgres and others are supported.
 Expect some 20 minutes to setup Postgres to run
 with xmlBlaster and one to two days if you decide
 to use Oracle.
@@ -397,18 +397,21 @@ You may also use the provided test clients to study the usage of xmlBlaster.
                            C++ - Client
 -------------------------------------------------------------------------
 See xmlBlaster/src/c++/README
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
 -------------------------------------------------------------------------
 
 
                            C - Client
 -------------------------------------------------------------------------
 See xmlBlaster/src/c/README
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 -------------------------------------------------------------------------
 
 
                            Python - Client
 -------------------------------------------------------------------------
 See xmlBlaster/src/python/README
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.python.html
 -------------------------------------------------------------------------
 
 
