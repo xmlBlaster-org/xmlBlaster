@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -21,8 +22,7 @@ import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
 import org.xmlBlaster.client.key.PublishKey;       // for main only
-
-
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 
 
 /**
@@ -45,10 +45,11 @@ import org.xmlBlaster.client.key.PublishKey;       // for main only
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.engine.queuemsg.ServerEntryFactory#main(String[])
  */
-public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
+public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCallback
 {
    private transient final static String ME = "MsgUnitWrapper-";
    private transient final Global glob;
+   private transient final LogChannel log;
    private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
    private transient int referenceCounter;        // total number of references, is swapped to persistence as well
    private transient final long uniqueId;
@@ -80,17 +81,18 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    private boolean stored = false;
 
    /**
-    * Use this constructor if a new message object is fed by method publish(). 
-    * <p />
-    * @param msgUnit The raw data
+    * Testsuite
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache) throws XmlBlasterException {
-      this(glob, msgUnit, ownerCache.getStorageId(), 0, 0, (String)null, -1);
-      this.ownerCache = ownerCache;
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
+      this(glob, msgUnit, (I_Map)null, storageId, 0, 0, (String)null, -1);
    }
 
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, 0, 0, (String)null, -1);
+   /**
+    * Used when message comes from persistence, the owning I_Map is unknown
+    */
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache, int referenceCounter,
+                        int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
+      this(glob, msgUnit, ownerCache, ownerCache.getStorageId(), referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
    }
 
    /**
@@ -98,7 +100,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     */
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
                         int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
+      this(glob, msgUnit, (I_Map)null, storageId, referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
    }
 
    /**
@@ -108,14 +110,16 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     *         ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL Dump object with java.io.Serializable
     * @param sizeInBytes The estimated size of this entry in RAM, if -1 we estimate it for you
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache, StorageId storageId, int referenceCounter,
                          int historyReferenceCounter, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       this.glob = glob;
+      this.log = glob.getLog("core");
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
       }
       this.msgUnit = msgUnit;
-      this.storageId = storageId;
+      this.ownerCache = ownerCache;
+      this.storageId = (storageId!=null) ? storageId : ((this.ownerCache!=null) ? this.ownerCache.getStorageId() : null);
       this.referenceCounter = referenceCounter;
       this.historyReferenceCounter = historyReferenceCounter;
       this.embeddedType = (embeddedType == null) ? ServerEntryFactory.ENTRY_TYPE_MSG_XML : embeddedType;
@@ -140,27 +144,31 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       // 1 MsgUnitWrapper
       this.immutableSizeInBytes = (sizeInBytes >= 0) ? sizeInBytes : (3200 + this.msgUnit.size());
 
+      if (log.TRACE) log.trace(ME+getLogId(), "Created new MsgUnitWrapper instance '" + this + "' " + ((this.ownerCache==null) ? " from persistence store" : ""));
+
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert
-         this.glob.getLog("core").error(ME + getLogId(), "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
+         log.error(ME + getLogId(), "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
       }
    }
 
-   /*
+   /**
+    * Cleanup timer, it is a weak reference on us therefor it is a 'nice to have'. 
+    */
    public void finalize() {
-      this.glob.getLog("core").info(ME, "finalize: " + toXml());
+      if (this.destroyTimer != null && this.timerKey != null) {
+         this.destroyTimer.removeTimeoutListener(this.timerKey);
+      }
    }
-   */
 
-   /*
    private I_Map getOwnerCache() throws XmlBlasterException {
       if (this.ownerCache == null) {
+         if (log.TRACE) log.trace(ME+getLogId(), "Creating ownerCache from topicHandler");
          this.ownerCache = getTopicHandler().getMsgUnitCache();
       }
       return this.ownerCache;
    }
-   */
 
    /**
     * @return The owning TopicHandler, never null
@@ -177,9 +185,9 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * Invoked by ReferenceEntry.java to support reference counting
     * @param storageId
     */
-   public void incrementReferenceCounter(int count, StorageId storageId) {
+   public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       
-      //glob.getLog("core").error(ME, "DEBUG ONLY " + getSizeInBytes() + " \n" + toXml());
+      //log.error(ME, "DEBUG ONLY " + getSizeInBytes() + " \n" + toXml());
 
       boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
       synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
@@ -188,16 +196,42 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          }
          this.referenceCounter += count;
       }
+
       // TODO: Remove the logging
-      if (glob.getLog("core").TRACE && !isInternal()) {
-         // this is just to send the stack trace to the log file (stderr does not go there)
-         glob.getLog("core").trace(ME, "Reference count of '" + getLogId() + "' changed from " +
-         (this.referenceCounter-((isHistoryReference)?2*count:count)) + " to " + this.referenceCounter + 
-         ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "' stack=" + Global.getStackTraceAsString());
+      if (log.TRACE && !isInternal()) {
+         log.trace(ME+getLogId(), "Reference count changed from " +
+             (this.referenceCounter-count) + " to " + this.referenceCounter + 
+             ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
       }
+
       if (this.referenceCounter <= 0L) {
          toDestroyed();
       }
+      else {
+         if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
+            // Update persistence store
+            if (count != 0) {
+               I_MapEntry ret = getOwnerCache().change(this, null);
+               //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
+               if (ret != this) {
+                  log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Callback invoked by I_Map.change inside the synchronization point. 
+    * Enforced by I_ChangeCallback
+    * @param entry the entry to modify.
+    * @return I_MapEntry the modified entry.
+    * @throws XmlBlasterException if something has gone wrong and the change must be rolled back.
+    */                             
+   public I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException {
+      if (log.TRACE) log.trace(ME+getLogId(), "Entring changeEntry(), referecenceCounter=" + this.referenceCounter + 
+                               ", historyReferenceCounter=" + this.historyReferenceCounter );
+      return this;
    }
 
    /**
@@ -544,6 +578,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * </p>
     */
    public static void main(String[] args) {
+   /*
       Global glob = new Global(args);
       String fileName = "MsgUnitWrapper.ser";
       try {
@@ -569,6 +604,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       catch (XmlBlasterException e) {
          System.err.println("ERROR: " + e.getMessage());
       }
+   */
    }
 }
 
