@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.9 2002/02/16 18:33:10 ruff Exp $
+Version:   $Id: Executor.java,v 1.10 2002/02/18 21:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -291,7 +291,7 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Invoking  '" + parser.getType() + "' message " + parser.getMethodName() + "(" + requestId + ")");
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Invoking  '" + parser.getType() + "' message " + parser.getMethodName() + "(" + requestId + ") expectingResponse=" + expectingResponse);
 
       final Object[] response = new Object[3];  // As only final variables are accessable from the inner class, we put changeable variables in this array
       response[0] = response[1] = response[2] = null;
@@ -310,10 +310,10 @@ public abstract class Executor implements ExecutorBase
                   }
                   // If response is faster, we will go into wait() after notify()
                   // In these cases we need to call notify() again (to be shure we awake from wait())
-                  Thread.currentThread().yield();
+                  //Thread.currentThread().yield();
                   if (response[2] == null) {  // not awaken?
-                     if (Log.TRACE) Log.trace(ME, "Retrying notify ...");
-                     try { Thread.currentThread().sleep(1); } catch(Exception e) {}
+                     if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Retrying notify ...");
+                     //try { Thread.currentThread().sleep(1); } catch(Exception e) {}
                   }
                   else
                      break;
@@ -335,18 +335,18 @@ public abstract class Executor implements ExecutorBase
       try {
          synchronized(monitor) {
             monitor.wait(responseWaitTime);
-            response[2] = DUMMY_OBJECT; // marker that we are waked up
-            if (response[1] != null) {
-               if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(" + requestId + ")");
-               if (Log.DUMP) Log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
-               if (response[0] instanceof XmlBlasterException)
-                  throw (XmlBlasterException)response[0];
-               return response[0];
-            }
-            else {
-               String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
-               throw new XmlBlasterException(ME, str);
-            }
+         }
+         response[2] = DUMMY_OBJECT; // marker that we are waked up
+         if (response[1] != null) {
+            if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(" + requestId + ")");
+            if (Log.DUMP) Log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
+            if (response[0] instanceof XmlBlasterException)
+               throw (XmlBlasterException)response[0];
+            return response[0];
+         }
+         else {
+            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
+            throw new XmlBlasterException(ME, str);
          }
       }
       catch (InterruptedException e) {
@@ -396,7 +396,7 @@ public abstract class Executor implements ExecutorBase
          shutdown();
       }
       */
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Successfully sent execption for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
    }
 
    //abstract boolean shutdown();
