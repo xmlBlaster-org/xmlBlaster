@@ -174,7 +174,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * Check if a callback was configured (if client has passed a callback address on connect).
     */
    public final boolean hasCallback() {
-      return this.deliveryManager != null && isShutdown == false;
+      return this.deliveryManager != null && this.isShutdown == false;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
@@ -203,9 +203,13 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSecretSessionId());
    }
 
+   public synchronized boolean isShutdown() {
+      return this.isShutdown;
+   }
+
    public synchronized void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
-      isShutdown = true;
+      this.isShutdown = true;
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
