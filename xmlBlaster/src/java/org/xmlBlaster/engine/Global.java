@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.23 2002/09/09 13:35:44 ruff Exp $
+Version:   $Id: Global.java,v 1.24 2002/09/19 20:56:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -495,6 +495,15 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
             shutdown();
          }
       }
+   }
+
+   /**
+    * If property -xmlBlaster.isEmbedded true is set we return true here
+    * <p />
+    * An embedded server should not do any exit()
+    */
+   public boolean isEmbedded() {
+      return getProperty().get("xmlBlaster.isEmbedded", false);
    }
 
    public String getDump() throws XmlBlasterException {
