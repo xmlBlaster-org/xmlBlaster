@@ -8,26 +8,6 @@ xml version='1.0' encoding='ISO-8859-1' ?>
 
 <demo>
 
-   <!-- QoS of a login -->
-   <connect>
-      <qos>
-         <securityService type="simple" version="1.0">
-            <![CDATA[
-            <user>michele</user>
-            <passwd>secret</passwd>
-            ]]>
-         </securityService>
-         <session timeout='3600000' maxSessions='20'/>
-         <ptp>true</ptp>
-         <callback type='IOR'>
-            IOR:10000010033200000099000010....
-            <burstMode collectTime='400' />
-         </callback>
-      </qos>
-   <connect>
-
-
-
    <!-- QoS when publishing without addressing (clients need to subscribe) -->
    <publish>
       <qos>
@@ -192,7 +172,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
 
 
    <!-- QoS with login or connect -->
-   <client>
+   <connect>
       <qos>
          <securityService type="simple" version="1.0">
            <![CDATA[
@@ -205,7 +185,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
 
          <!-- compress / burstMode / ptp are allowed in all callback types -->
          <!-- Use CORBA to callback messages, on error retry 5 times pausing 60000 millis between retries -->
-         <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
+         <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true' oneway='true'>
             IOR:00011200070009990000....
             <compress type='gzip' minSize='1000' />
                       <!-- compress messages bigger 1000 bytes before sending them to me -->
@@ -236,7 +216,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
             </callback>
          </queue>
       </qos>
-   </client>
+   </connect>
 
 </demo>
 
