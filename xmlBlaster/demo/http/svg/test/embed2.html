@@ -1,17 +1,20 @@
 <html>
 <body>
-   <embed src="test.svg" type="image/svg-xml" name="mySVG" />
+   <embed src="test2.svg" type="image/svg-xml" name="mySVG" />
    <script language="Javascript1.2">
       function check() {
          var embedWindow = document.embeds["mySVG"];
          alert("html: document.embeds['mySVG']=" + embedWindow);
          
-         if ((typeof embedWindow.getSVGDocument) == "undefined")
+         if ((typeof embedWindow.getSVGDocument) == "undefined") {
             alert("html: ERROR svgdoc.getSVGDocument()=undefined");
-         else {
-            var svgdoc = embedWindow.getSVGDocument();
-            alert("html: embedWindow.getSVGDocument()=" + svgdoc);
+            return;
          }
+         var svgdoc = embedWindow.getSVGDocument();
+         alert("html: embedWindow.getSVGDocument()=" + svgdoc);
+
+         objet=svgdoc.getElementById('rectangle');
+         objet.getStyle().setProperty('fill','red')
       }
    </script>
    <form>

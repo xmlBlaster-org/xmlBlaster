@@ -65,4 +65,17 @@ Add xmlBlaster CLASSPATH
 
 For deployment see WEB-INF/web.xml
 
-http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
+
+Run the dynamic HTML demo:
+==========================
+   http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
+
+
+Run the SVG demo:
+=================
+
+   Tested with Linux/mozilla 0.91 and Adobes SVG Viewer plugin (2001-12-15)
+   Download from http://www.adobe.com
+
+   http://127.0.0.1:8080/xmlBlaster/svg/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
+

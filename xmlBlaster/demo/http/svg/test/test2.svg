@@ -22,5 +22,6 @@
             style='text-anchor:left;font-size:12;font-family:Arial;fill:red'>
          Click me for SVG embeded info
       </text>
+      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='50' width='20' height='50' style='fill:blue'/>
    </g>
 </svg>
