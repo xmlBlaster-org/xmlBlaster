@@ -21,6 +21,8 @@
          Log.INFO = false;
          Log.TRACE = false;
 
+         //alert("href=" + location.href + " search=" + location.search + " hash=" + location.hash);
+
          /**
           * The Servlet is pinging the browser to keep connection alive.
           * This method is invoked from the callbackFrame.
@@ -49,6 +51,7 @@
          }
 
          /**
+          * Timeout occurred, lost the server
           */
          function cutConnection() {
             Log.info("Entering cutConnection() ...");
