@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.c.queue' type='NEW' prio='MEDIUM' status='INWORK'>
+   <topic>
+      XmlBlaster provides a persistent queue implementation for ANSI C
+   </topic>
+   <description>
+     <p>
+     We use the relational database SQLite for our queue implementation.
+     </p>
+     <h2>Features</h2>
+     <ul>
+        <li> Support on many OS like Windows, Windows-CE / Pocket PC,
+             UNIX, Linux and the code is easy portable to embedded devices</li>
+
+        <li> Compiles with C or with C++ compiler</li>
+
+        <li> The access library and the callback library is thread safe (no global variables).
+          </li>
+
+        <li> The code is tested on memory leaks with valgrind and partially statically
+             checked with splint.
+          </li>
+
+          <li> Can be used standalone outside of xmlBlaster</li>
+    </ul>
+
+     <h2>Memory footprint</h2>
+     <p>
+     </p>
+
+     <h2>Compilation with ant</h2>
+     <p>
+     </p>
+
+     <h2>Compilation manually</h2>
+     <p>
+     Here are some complete examples how to compile a simple C client 'manually':
+     </p>
+     <pre>
+cd xmlBlaster/src/c/util/queue
+
+Linux C:
+ build c -> creates libxmlBlasterClientC.so
+ 
+ export LD_LIBRARY_PATH=/opt/sqlite-bin/lib:/home/xmlblast/xmlBlaster/lib
+
+ gcc -g -Wall -DQUEUE_MAIN=1 -o SQLiteQueue SQLiteQueue.c
+     -DQUEUE_MAIN=1 -I../../ -I/opt/sqlite-bin/include
+     -L/opt/sqlite-bin/lib -lsqlite
+     -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClientC
+     -lpthread
+
+Linux C++:
+
+Windows:
+
+Solaris:
+     </pre>
+   </description>
+   <example lang="C" type="HTML">
+      <p><a NAME="example"></a></p>
+   </example>
+
+   <configuration where="client">
+      <p><a NAME="config"></a>
+      These configurations are tested:
+      </p>
+      <table border="1">
+       <tr>
+       <th>No.</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xmlBlaster</th>
+       <th>Thread library</th>
+       <th>Protocol library</th>
+       <th>XML library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>Linux 2.4.21</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 3.3.1</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
+       <td>-</td>
+       <td>-</td>
+       <td>2004-04-09</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>-</td>
+       </tr>
+
+      </table>
+
+      <p>
+      These parameters allow to configure the C-client on command line or over the environment (with lower priority):
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/maxEntries</td>
+            <td>2147483647</td>
+            <td>The maximum allowed number of messages</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+
+         <h3>Testing</h3>
+         <p>
+         The testsuite resides in <i>xmlBlaster/testsuite/src/c</i> to compile it
+         use ant:
+         </p>
+         <pre>
+cd xmlBlaster
+build c-test
+         </pre>
+        <p>
+        To run the testsuite invoke
+        </p>
+        <pre>
+build runTests
+build reportShow
+        </pre>
+        <p>
+        And go for a cup of coffee as the complete testsuite will run.
+        </p>
+
+   </configuration>
+
+   <todo type='HTML'>
+      <h2>This release is stable, but we need to:</h2>
+      <p>
+      <ul>
+      <li> Adding mutex to every function call?<br />
+      Currently you can have many
+      connections to xmlBlaster from one client where each connection may
+      be used by a different thread. But running multi threads on one connection
+      instance is currently not synchronized, this design decision is pending.
+      If you have such a case just add your own mutex to the function calls.</li>
+      </ul>
+      </p>
+
+      <h2>C++ remark</h2>
+   </todo>
+
+   <see type="CODE" lang="C">util/queue/I_Queue.h</see>
+   <see type="INTERNET">http://www.sqlite.org/</see>
+   <see type="INTERNET" label="SQLite performance">http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html</see>
+   <see type="REQ">client.c.socket</see>
+   <see type="REQ">client.cpp</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
+   <date>2004 04 09</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE" lang="C">TestQueue</test> <!-- TestQueue.c -->
+   </testcase>
+</requirement>
+
