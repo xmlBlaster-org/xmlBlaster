@@ -71,6 +71,9 @@ public class Global implements Cloneable
    // deprecated
    protected org.xmlBlaster.util.Log log;
 
+   /** The xmlBlaster class loader factory */
+   private ClassLoaderFactory classLoaderFactory = null;
+
    protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
    protected /*final*/ Map objectMap;
@@ -879,6 +882,22 @@ public class Global implements Cloneable
             recorderPluginManager = new RecorderPluginManager(this);
       }
       return recorderPluginManager;
+   }
+
+   /**
+    * Access the xmlBlaster Classloader. 
+    * Every Global instance may have an own factory instance. 
+    * @return null if switched off with "useXmlBlasterClassloader=false"
+    */
+   public ClassLoaderFactory getClassLoaderFactory() {
+      boolean useXmlBlasterClassloader = getProperty().get("useXmlBlasterClassloader", true);
+      if (useXmlBlasterClassloader == false) return null;
+
+      synchronized (ClassLoaderFactory.class) {
+         if (classLoaderFactory == null)
+            classLoaderFactory = new ClassLoaderFactory(this);
+      }
+      return classLoaderFactory;
    }
 
    /**
