@@ -22,12 +22,16 @@ using namespace org::xmlBlaster::util::qos::address;
       relating_ = Constants::RELATING_CLIENT;  // == "connection"
       QueuePropertyBase::initialize(Constants::RELATING_CLIENT); // == "connection"
 
+      /*
+#     ifndef XMLBLASTER_PERSISTENT_QUEUE
       // TODO !!!: Hack: We need to force default to RAM instead of CACHE
       // as we have no C++ CACHE implementation  (see QueueFactory.cpp for the other workaround)
       string envType = global_.getProperty().getStringProperty("queue/connection/type", "");
       if (envType == "") {
          setType("RAM");
       }
+#    endif
+*/
    }
 
    ClientQueueProperty::ClientQueueProperty(const QueuePropertyBase& prop)
@@ -100,9 +104,10 @@ using namespace org::xmlBlaster::util::qos::address;
       text += string("   -queue/connection/maxEntries [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("]\n");
       text += string("                       The maximum allowed number of messages in this queue.\n");
       text += string("                       0 switches recording of invocations off, -1 sets it to unlimited.\n");
-      text += string("   -queue/connection/type [RAM].\n");
+      text += string("   -queue/connection/type [CACHE].\n");
+      text += string("                       The C++ client side queue plugin type, choose 'RAM' for a pure memory based queue.\n");
 #     ifdef XMLBLASTER_PERSISTENT_QUEUE
-      text += string("                       The queue plugin type, choose 'SQLite' for a persistent client side queue.\n");
+      text += string("                       Choose 'SQLite' for a pure persistent client side queue.\n");
 #     else
       text += string("                       Please recompile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined\n");
       text += string("                       to have a persistent client side queue 'SQLite'.\n");
