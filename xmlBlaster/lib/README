@@ -137,6 +137,8 @@ All packages allow free use for both commercial and non-commercial applications.
 
    The file helma/xmlrpc/XmlRpc.java is modified to run with JAXP parsers.
 
+   The file Base64.java is patched to fix a bug for long data length (2001-03-11)
+
 
 11) ant.jar 1.2
 ===============
