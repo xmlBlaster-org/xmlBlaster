@@ -17,6 +17,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -125,8 +126,9 @@ public class I_QueueTest extends TestCase {
          prop1.setMaxMsgCache(max);
          assertEquals(ME+": Wrong capacity", max, prop1.getMaxMsg());
          assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
+         //PluginInfo pluginInfo = new PluginInfo(glob, null, "");
+         //queue.init(glob, pluginInfo);     // Init from pluginloader is first
          StorageId queueId = new StorageId("cb", "SomeQueueId");
-
          queue.initialize(queueId, prop1);
          assertEquals(ME+": Wrong queue ID", queueId, queue.getStorageId());
 
