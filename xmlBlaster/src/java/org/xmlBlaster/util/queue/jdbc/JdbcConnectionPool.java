@@ -483,7 +483,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       catch (Throwable ex) {
          log.error(ME, "could not close connection " + connNumber + " correctly but resource is set to null. reason " + ex.toString());
       }
-      this.initialized = false;
+//      this.initialized = false;
    }
 
    /**
@@ -495,7 +495,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (this.log.CALL) this.log.call(ME, "disconnect invoked");
       for (int i = 0; i < this.capacity; i++) disconnect(i);
       this.currentIndex = -1;
-      this.initialized = false;
+//      this.initialized = false;
    }
 
    public void finalize() {
