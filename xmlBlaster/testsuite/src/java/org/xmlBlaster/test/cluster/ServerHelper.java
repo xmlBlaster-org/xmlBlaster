@@ -31,7 +31,7 @@ import junit.framework.*;
  */
 public class ServerHelper {
    private String ME = "ServerHelper";
-   private Global glob;
+   private Global glob_;
    private LogChannel log;
    public static int heronPort = 7600;
    public static int avalonPort = 7601;
@@ -45,7 +45,7 @@ public class ServerHelper {
 
    public ServerHelper(Global glob, LogChannel log, String name) {
       ME = "ServerHelper-"+name;
-      this.glob = glob;
+      this.glob_ = glob;
       this.log = log;
       setUp();
    }
@@ -88,27 +88,27 @@ public class ServerHelper {
 
    public void initHeron() {
       String[] args = { "-propertyFile", findPropertyFile("heron.properties"), "-info[heron]", "true", "-call[heron]", "true" };
-      heronGlob = glob.getClone(args);
+      heronGlob = this.glob_.getClone(args);
    }
 
    public void initAvalon() {
       String[] args = { "-propertyFile", findPropertyFile("avalon.properties") };
-      avalonGlob = glob.getClone(args);
+      avalonGlob = this.glob_.getClone(args);
    }
 
    public void initGolan() {
       String[] args = { "-propertyFile", findPropertyFile("golan.properties") };
-      golanGlob = glob.getClone(args);
+      golanGlob = this.glob_.getClone(args);
    }
 
    public void initFrodo() {
       String[] args = { "-propertyFile", findPropertyFile("frodo.properties") };
-      frodoGlob = glob.getClone(args);
+      frodoGlob = this.glob_.getClone(args);
    }
 
    public void initBilbo() {
       String[] args = { "-propertyFile", findPropertyFile("bilbo.properties"), "-call[bilbo]", "false" };
-      bilboGlob = glob.getClone(args);
+      bilboGlob = this.glob_.getClone(args);
       if (!"bilbo".equals(bilboGlob.getId())) {
          String tmp = "Invalid cluster node id, check biblo.properties or" +
                    " change to the directory where the property files are!";
