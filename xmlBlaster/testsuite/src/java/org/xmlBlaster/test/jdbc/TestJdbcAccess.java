@@ -113,7 +113,7 @@ public class TestJdbcAccess extends TestCase
 
       wrap = new XmlDbMessageWrapper("joe", "secret", "jdbc:dbfFile:.");
       wrap.initUpdate(true, "DROP TABLE IF EXISTS cars");
-      String result = invokeSyncQuery(wrap);
+      String result = invokeSyncQuery(wrap, 1, null);
    }
 
    /**
@@ -125,7 +125,7 @@ public class TestJdbcAccess extends TestCase
    {
       if (wrap != null) {
          wrap.initUpdate(true, "DROP TABLE IF EXISTS cars");
-         String result = invokeSyncQuery(wrap);
+         String result = invokeSyncQuery(wrap, 1, null);
          wrap = null;
       }
 
@@ -146,16 +146,16 @@ public class TestJdbcAccess extends TestCase
    {
       log.info(ME, "######## Start testQueries()");
       wrap.initUpdate(true, "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))");
-      String result = invokeSyncQuery(wrap);
+      String result = invokeSyncQuery(wrap, 1, null);
    
       String[] brands = { "Fiat", "Audi", "BMW", "Porsche", "Mercedes", "Renault", "Citroen" };
       for (int ii=0; ii<brands.length; ii++) {
          wrap.initUpdate(true, "INSERT INTO cars (name, id) VALUES('" + brands[ii] + "', " + (ii+1) + ")");
-         result = invokeSyncQuery(wrap);
+         result = invokeSyncQuery(wrap, 1, null);
       }
 
       wrap.initQuery(100, true, "SELECT * from cars");
-      result = invokeSyncQuery(wrap);
+      result = invokeSyncQuery(wrap, 1, "BMW");
       log.info(ME, "Successful retrieved cars, dump ommitted to not disturb JUNIT test report generation");
       log.trace(ME, "Retrieved cars:\n" + result);
    }
@@ -163,18 +163,24 @@ public class TestJdbcAccess extends TestCase
    /**
     * get() blocks until the SQL query is finished ...
     */
-   private String invokeSyncQuery(XmlDbMessageWrapper wrap) {
+   private String invokeSyncQuery(XmlDbMessageWrapper wrap, int numResultRowsExpected, String token) {
       try {
          log.info(ME, "Sending command string");
-         log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
+         if (log.TRACE) log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
          GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQosWrapper qos = new GetQosWrapper();
          MessageUnit[] msgUnitArr = con.get(key.toXml(), qos.toXml());
-         if (msgUnitArr.length > 0)
-            log.plain(ME, new String(msgUnitArr[0].content));
-         else
+         if (msgUnitArr.length > 0) {
+            String result = new String(msgUnitArr[0].content);
+            if (log.TRACE) log.trace(ME, result);
+            if (token != null && result.indexOf(token) < 0)
+               fail("Token " + token + " not found in result");
+         }
+         else {
             log.info(ME, "No results for your query");
+         }
+         assertEquals("Wrong number of results", numResultRowsExpected, msgUnitArr.length);
          return new String(msgUnitArr[0].content);
       }
       catch (Exception e) { 
