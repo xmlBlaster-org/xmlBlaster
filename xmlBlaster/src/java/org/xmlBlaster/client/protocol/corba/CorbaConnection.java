@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.10 2000/11/04 20:36:36 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.11 2000/11/04 22:36:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -25,9 +25,9 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
-import org.omg.CosNaming.NamingContext;
+import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContextHelper;
+import org.omg.CosNaming.NamingContextExtHelper;
 
 import java.applet.Applet;
 
@@ -62,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -81,7 +81,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    // orb behavior
    static protected org.omg.CORBA.ORB orb = null;
 
-   protected NamingContext nameService = null;
+   protected NamingContextExt nameService = null;
    protected AuthServer authServer = null;
    protected Server xmlBlaster = null;
    /** Our default implementation for a Corba callback server */
@@ -191,11 +191,11 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Locate the CORBA Name Service.
     * <p />
     * The found name service is cached, for better performance in subsequent calls
-    * @return NamingContext, reference on name service
+    * @return NamingContextExt, reference on name service
     * @exception XmlBlasterException id="NoNameService"
     *                    CORBA error handling if no naming service is found
     */
-   NamingContext getNamingService() throws XmlBlasterException
+   NamingContextExt getNamingService() throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "getNamingService() ...");
       if (nameService != null)
@@ -223,7 +223,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
       try {
-         nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
+         nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
             Log.error(ME + ".NoNameService", "Can't access naming service (narrow problem)");
             throw new XmlBlasterException("NoNameService", "Can't access naming service (narrow problem)");
@@ -317,7 +317,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
          Log.info(ME, "Trying to find a CORBA naming service ...");
          try {
-            NamingContext nc = getNamingService();
+            NamingContextExt nc = getNamingService();
             NameComponent [] name = new NameComponent[1];
             name[0] = new NameComponent();
             name[0].id = "xmlBlaster-Authenticate";
