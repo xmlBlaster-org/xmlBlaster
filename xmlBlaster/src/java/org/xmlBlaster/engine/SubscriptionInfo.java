@@ -336,7 +336,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
             if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
          else {
-            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos).toString();
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos, this.glob.useCluster());
             if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
          }
       }
@@ -375,23 +375,26 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
 
    /**
     * This static method may be used from external objects to get the unique key
-    * of a subscription. The key is only unique for this xmlBlaster instance. 
+    * of a subscription. 
     * <p />
+    * @param clusterWideUnique If false the key is unique for this xmlBlaster instance only
     * @return A unique key for this particular subscription, for example:<br>
-    *         <code>53</code>
+    *         <code>__subId:heron-53</code>
     * @see org.xmlBlaster.util.key.QueryKeyData#generateSubscriptionId(String)
     */
-   private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos) throws XmlBlasterException {
+   private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos, boolean clusterWideUnique) throws XmlBlasterException {
       if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {
          return xmlQos.getSubscriptionId(); // Client forced his own key
       }
       StringBuffer buf = new StringBuffer(126);
       synchronized (SubscriptionInfo.class) {
          uniqueCounter++;
+         buf.append(Constants.SUBSCRIPTIONID_PREFIX);
+         if (clusterWideUnique)
+            buf.append(keyData.getGlobal().getNodeId().getId()).append("-");
          if (keyData.isQuery())
-            buf.append(Constants.SUBSCRIPTIONID_PREFIX).append(keyData.getQueryType()).append(uniqueCounter);
-         else
-            buf.append(Constants.SUBSCRIPTIONID_PREFIX).append(uniqueCounter);
+            buf.append(keyData.getQueryType());
+         buf.append(uniqueCounter);
       }
       return buf.toString();
    }
