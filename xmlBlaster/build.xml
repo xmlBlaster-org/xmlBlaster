@@ -214,6 +214,7 @@ TODO
       <compilerarg value="-Werror-implicit-function-declaration" />
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp -->
+      <compilerarg value="-D${thread.impl}" />
    </compiler>
 
 
