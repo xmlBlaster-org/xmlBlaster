@@ -104,6 +104,7 @@ TODO
    <property name="lib.dir" value="./lib"/>
    <property name="lib.dir.absolute" location="${xmlblaster_absolute_home}/lib"/>
    <property name="req.dir" value="./doc/requirements"/>
+   <property name="docbookReq.dir" value="./doc/docbookReq"/>
    <property name="packages" value="org.xmlBlaster.*"/>
 
    <!-- The document root of the servlet engine (deploy dir for war files): -->
@@ -1283,6 +1284,123 @@ TODO
    </target>
    <target name="requirements-delete" description="Removes html requirements">
       <echo message="Deleting all requirement html pages"/>
+      <delete>
+         <fileset dir="doc/requirements">
+            <patternset>
+               <include name="**/*.html"/>
+               <exclude name="**/package.html"/>
+            </patternset>
+            <patternset>
+               <include name="all.xml"/>
+            </patternset>
+         </fileset>
+      </delete>
+   </target>
+
+
+   <!-- =================================================================== -->
+   <!-- Creates html from new requirements from doc/docbookReq/ XML files       -->
+   <!-- =================================================================== -->
+    <!--
+    <target name="docbookTest" description="just a temporary test">
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/client.c.socket.xml"
+             out="${docbookReq.dir}/test0.html"
+             extension=".xml" 
+	     style="${docbookReq.dir}/../docbook/docbookXmlBlaster.xsl"
+             force="true">		
+       </style>
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/test0.html"
+             out="${docbookReq.dir}/test1.html"
+             extension=".xml" 
+	     style="${docbookReq.dir}/embedSource.xsl"
+             force="true">		
+       </style>
+    </target>
+    -->
+    <target name="docbookReq" description="Creates new html requirements from docbook doc/docbookReq/ XML files">
+
+      <style processor="trax" 
+             basedir="doc/requirements"
+	     destdir="${docbookReq.dir}"
+	     includes="*.xml"
+	     excludes="all.xml"
+             extension=".xml" 
+	     style="${docbookReq.dir}/req2Docbook.xsl"
+             force="true">		
+       </style>
+
+      <!-- Create the errorCode listing requirement first: -->
+<!--
+      <java classname="org.xmlBlaster.util.def.ErrorCode" classpath="lib/xmlBlaster.jar:${cp}"
+            dir="${xmlblaster_absolute_home}" failonerror="false" fork="true">
+         <arg line="${docbookReq.dir}/admin.errorcodes.listing.xml"/>
+      </java>
+-->
+      <!-- create the all.xml file for overview -->
+      <fileset id="docbookReq.files"
+        dir="${docbookReq.dir}"
+        excludes="all.xml"
+        includes="*.xml"/>
+      <property name="url.start" value=" &lt;url>"/>
+      <property name="url.end " value=""/>
+      <pathconvert  targetos="windows" dirsep="/" pathsep="&lt;/url>&lt;url>" property="files" refid="docbookReq.files">
+        <map from="${base.dir}/doc/docbookReq/" to="&lt;url>"/>
+      </pathconvert>
+      <echo file="${docbookReq.dir}/all.xml"><![CDATA[<files><url>${files}</url></files>]]></echo>
+      <!-- Create the overview -->
+      <!--
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/all.xml"
+             out="${docbookReq.dir}/requirement.html"
+             extension=".html" style="${docbookReq.dir}/createOverview.xsl"
+             force="true">		
+	 <xmlcatalog>
+	    <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
+	 </xmlcatalog>    
+       </style>
+       -->
+
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/all.xml"
+             out="${docbookReq.dir}/requirement.xml"
+             extension=".xml" style="${docbookReq.dir}/createOverview.xsl"
+             force="true">		
+       </style>
+<!--
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/requirement.html"
+             out="${docbookReq.dir}/menu.xml"
+             extension=".html" style="${docbookReq.dir}/createMenu.xsl"
+             force="true">		
+       </style>
+
+
+      <style processor="trax" basedir="${docbookReq.dir}"
+             in="${docbookReq.dir}/requirement.html"
+             out="${docbookReq.dir}/menu.xml"
+             extension=".html" style="${docbookReq.dir}/createMenu.xsl"
+             force="true">		
+       </style>
+-->
+      <!-- generate each req -->
+      <!--
+      <style processor="trax" basedir="${docbookReq.dir}"
+             destdir="${docbookReq.dir}"
+             extension=".html" style="doc/docbook/docbookXmlBlaster.xsl"
+             includes="*.xml"
+             excludes= "all.xml"
+             force="true">
+	 <xmlcatalog>
+	    <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
+         </xmlcatalog>    
+       </style>
+      -->
+   </target>
+
+   <target name="docbookReq-delete" description="Removes html docbook requirements">
+      <echo message="Deleting all docbook requirement html pages"/>
       <delete>
          <fileset dir="doc/requirements">
             <patternset>
