@@ -3,7 +3,7 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.4 2002/05/06 12:38:11 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.5 2002/05/09 11:49:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -215,7 +215,10 @@ public class AccessFilterQos
       if (!DEFAULT_version.equals(getVersion()))
           sb.append(" version='").append(getVersion()).append("'");
       sb.append(">");
-      sb.append(offset).append("   <![CDATA[").append(getQuery()).append("]]>");
+      if (getQuery().toString().indexOf("<![CDATA[") >= 0)
+         sb.append(offset).append("   ").append(getQuery());
+      else
+         sb.append(offset).append("   <![CDATA[").append(getQuery()).append("]]>");
       sb.append(offset).append("</filter>");
 
       return sb.toString();
