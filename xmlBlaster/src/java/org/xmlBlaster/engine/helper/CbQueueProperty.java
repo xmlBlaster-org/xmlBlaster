@@ -3,7 +3,7 @@ Name:      CbQueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.java,v 1.3 2002/05/30 16:30:19 ruff Exp $
+Version:   $Id: CbQueueProperty.java,v 1.4 2002/06/15 16:08:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -158,7 +158,8 @@ public class CbQueueProperty extends QueuePropertyBase
       text += "   -cb.queue.maxMsg   The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
     //text += "   -cb.queue.maxSize  The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
     //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-      text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADLETTER + " [" + DEFAULT_onOverflow + "]\n";
+    //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADLETTER + " [" + DEFAULT_onOverflow + "]\n";
+      text += "   -cb.queue.onOverflow What happens if queue is full [" + DEFAULT_onOverflow + "]\n";
       text += "   -cb.queue.onFailure  Error handling when callback failed [" + DEFAULT_onFailure + "]\n";
       return text;
    }
