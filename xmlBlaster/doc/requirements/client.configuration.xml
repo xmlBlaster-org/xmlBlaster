@@ -199,7 +199,8 @@ java HelloWorld2 -help
       </tr>
        <tr>
          <td>-dispatch/callback/retries</td>
-         <td>How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [-1]</td>
+         <td>How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [-1].
+             After the retries have exceeded the clients login session is destroyed.</td>
       </tr>
        <tr>
          <td>-dispatch/callback/delay</td>
