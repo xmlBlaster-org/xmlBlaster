@@ -242,6 +242,11 @@ public:
       assertEquals(log_, me, (size_t)3, ret.size(), "1. number of priority 7 msg peeked must be correct.");
 
       const MsgQueueEntry &entry = *ret[0];
+      // TODO:
+      // [cc] \xmlBlaster\testsuite\src\c++\TestQueue.cpp(245) : warning C4541:
+      // 'dynamic_cast' used on polymorphic type 'org::xmlBlaster::util::queue::MsgQueueEntry' with /GR-;
+      // unpredictable behavior may result
+      //cout << "Trying dynamic cast" << endl;   // On _WINDOWS: /GR  to enable C++ RTTI didn't help (see build.xml)
       const ConnectQueueEntry *connectQueueEntry = dynamic_cast<const ConnectQueueEntry*>(&entry);
       assertEquals(log_, me, 1, connectQueueEntry->getConnectQos().getClientProperty("X", -1), "2. checking the first entry.");
       assertEquals(log_, me, 2, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos().getClientProperty("X", -1), "3. checking the second entry.");
