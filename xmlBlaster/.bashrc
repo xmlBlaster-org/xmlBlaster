@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.95 2002/02/08 00:48:11 goetzger Exp $
+# $Id: .bashrc,v 1.96 2002/02/09 20:11:22 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -96,7 +96,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #jdbc
    #CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.0-1.2.jar:${CLASSPATH}
    #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
-   #CLASSPATH=${XMLBLASTER_HOME}/lib/xerces.jar:${CLASSPATH}
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xerces.jar
    # jutils.jar is now included in xmlBlaster.jar
    #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}

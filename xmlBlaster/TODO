@@ -2,7 +2,7 @@ TODO for release 0.80
 ---------------------
 
 (1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)  [ok]
-(2) Integrate persistence support with mudb                    [--]
+(2) Integrate persistence support with Xindice                 [--]
 (3) Perl support(src/perl) with xmlrpc and not with COPE.      [--]
 (4) Suport for searching in our Maillinglist                   [ok]
 (5) Integrate XmlRpc                                           [ok]
@@ -17,7 +17,7 @@ TODO for release 0.80
 (14) xmlBlaster HP support for all browsers                    [ok]
 (15) New callback framework                                    [--]
 (16) Embed BeanShell or Javascript scripting                   [--]
-
+(17) drop xerces in lib/ant                                    [--]
 
 
 URI based loginName handling:
@@ -55,24 +55,6 @@ Using dynamic Proxies for logging etc. see
   http://java.sun.com/j2se/1.3/docs/guide/reflection/proxy.html
 
 --------------------------- TODO for the future ------------------------
-
-PERSISTENCE
------------
-(1) Mudb Transaction support, based on
-   Java(tm) Transaction Service (JTS) 1.0 Specification.
-   The xmldb should have Isolation Level 0-3.
-
-   Overview on the possible lock modes:
-   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
-   "serializable" to the strongest level (3).
-
-                ANSI    Dirty   Non Repreatable  Phantom Read
-   LOCK                 Read    Read
-   ----------------------------------------------------------
-   UNCOMMITED    0       X           X               X
-   COMMITED      1       -           X               X
-   REPEATABLE    2       -           -               X
-   SERIALIZABLE  3       -           -               -
 
 
 PERFORMANCE
@@ -187,3 +169,13 @@ HOMEPAGE
 TESTSUITE:
 ----------
     Move to newer JUnit http://www.junit.org/
+
+
+BUILD ENVIRONMENT
+-----------------
+
+(1) drop xerces in lib/ant
+    The ant release we're using right now needs xerces, that's hy it is located in lib/ant.
+    xerces.jar is included in the CLASSPATH for the environment in build.sh and build.bat.
+    It will not be included in xmlBlaster.jar and in the CLASSPATH in manifest.xmlBlaster.
+
