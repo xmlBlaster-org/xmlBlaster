@@ -16,6 +16,8 @@ You find examples for XPath (to play with) in the following file:
 
 Examples of Java clients accessing xmlBlaster you find in directory:
 
+  xmlBlaster/demo/javaclients
+ and
   xmlBlaster/testsuite/org/xmlBlaster
 
 
