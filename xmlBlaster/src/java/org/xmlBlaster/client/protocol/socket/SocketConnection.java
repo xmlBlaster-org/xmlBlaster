@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.30 2002/09/07 22:14:36 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.31 2002/09/09 13:37:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -82,6 +82,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected String sessionId = null;
    /** The client login name */
    protected String loginName = "";
+   private I_CallbackExtended cbClient = null;
    int SOCKET_DEBUG=0;
 
    /**
@@ -174,7 +175,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             log.info(ME, "Local parameters are " + localHostname + " on port " + localPort);
          }
          else {
-            if (SOCKET_DEBUG>0 || log.TRACE) log.info(ME, "Trying socket connection to " + hostname + " on port " + port + ", callback address is " + getLocalAddress() + " ...");
+            if (SOCKET_DEBUG>0 || log.TRACE) log.info(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
             this.sock = new Socket(inetAddr, port);
             this.localPort = sock.getLocalPort();
             this.localHostname = sock.getLocalAddress().getHostAddress();
@@ -184,7 +185,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          iStream = this.sock.getInputStream();
 
          // start the socket sender and callback thread here
-         this.cbReceiver = new SocketCallbackImpl(this);
+         if (this.cbReceiver == null) { // only the first time, not on reconnect
+            this.cbReceiver = new SocketCallbackImpl(this);
+            this.cbReceiver.initialize(glob, loginName, this.cbClient);
+         }
       }
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
@@ -218,6 +222,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public String getLocalAddress() {
       if (sock == null) {
          log.error(ME, "Can't determine client address, no socket connection available");
+         Thread.currentThread().dumpStack();
          return null;
       }
       return "" + sock.getLocalAddress().getHostAddress() + ":" + sock.getLocalPort();
@@ -276,6 +281,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       this.loginName = qos.getUserId();
       this.passwd = null;
 
+      initSocketClient();
+
       return loginRaw();
    }
 
@@ -290,7 +297,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
    {
       try {
-         initSocketClient();
 
          if (passwd == null) { // connect() the new schema
             Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
@@ -380,6 +386,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       if (log.CALL) log.call(ME, "Entering shutdown of callback server");
       if (this.cbReceiver != null) {
+         this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
          this.cbReceiver.shutdownCb();
          this.cbReceiver = null;
       }
