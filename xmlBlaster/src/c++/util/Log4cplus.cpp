@@ -54,7 +54,7 @@ namespace util {
          PropertyConfigurator::doConfigure(configFileName);
       }
 
-      Logger logger = Logger::getInstance("client");
+      //Logger logger = Logger::getInstance("client");
       //LOG4CPLUS_WARN(logger, "LOG4CPLUS: Hello, World!");
    }
 
