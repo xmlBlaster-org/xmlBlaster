@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -62,6 +63,13 @@ abstract public class DispatchConnection implements I_Timeout
    protected int retryCounter = 0;
    private final long logEveryMillis; // 60000: every minute a log
    private int logInterval = 10;
+
+   /**
+    * Flag if the remote server is reachable but is not willing to process our requests (standby mode). 
+    * This flag is only evaluated in POLLING state
+    */
+   protected boolean serverAcceptsRequests = false;
+   protected boolean physicalConnectionOk = false;
 
    /**
     * Our loadPlugin() and initialize() needs to be called next. 
@@ -204,7 +212,7 @@ abstract public class DispatchConnection implements I_Timeout
          }
          else {
             handleTransition(true, true, e);
-            throw e;
+            throw e; // forward server side exception to the client
          }
       }
 
@@ -213,38 +221,58 @@ abstract public class DispatchConnection implements I_Timeout
    }
 
    /**
-    * Does the real ping
+    * Does the real ping to the remote server instance. 
+    * @param data QoS, never null
+    * @return ping return QoS, never null
+    * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
    abstract public String doPing(String data) throws XmlBlasterException;
 
-   /** Ping the callback server of the client */
+   /**
+    * Ping the remote server instance (callback of the client or xmlBlaster itself)
+    */
    public final String ping(String data) throws XmlBlasterException {
       return ping(data, true);
    }
 
    /**
-    * Ping the callback server of the client
+    * Ping the xmlBlaster server or callback server of the client. 
+    * Sets serverAcceptsRequests to false if the protocol reaches the remote server but this
+    * is in standby mode.
     * @param byDispatchConnectionsHandler true if invoked by DispatchConnectionsHandler
     *        we can throw exceptions back.
-    *        false: If invoked by our timer/ping thread, we need to callback the situation
+    *        false: If invoked by our timer/ping thread, we need to notify the situation
     */
    private final String ping(String data, boolean byDispatchConnectionsHandler) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "ping()");
+      if (log.CALL) log.call(ME, "ping(" + data + ")");
       if (isDead()) { // assert
-         log.error(ME, "Callback driver is in state DEAD, ping failed");
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Callback driver is in state DEAD, ping failed");
+         log.error(ME, "Protocol driver is in state DEAD, ping failed");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Protocol driver is in state DEAD, ping failed");
       }
       
       data = (data==null)?"":data;
 
       try {
          String returnVal = doPing(data);
+         // Ignore "" returns as this was specified to always return in older xmlBlaster versions
+         if (returnVal.length() > 0 && returnVal.indexOf("OK") == -1) {
+            // Fake a server standby exception: ping() is not specified to transport a remote XmlBlasterException but carries standby information in the state id.
+            StatusQosData qos = glob.getStatusQosFactory().readObject(returnVal);
+            if (!Constants.STATE_OK.equals(qos.getState())) {
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY,
+                           glob.getId(), ME, (String)null,
+                           "Ping result: The server is in run level " + qos.getState() + " and not ready for requests",
+                           (String)null, (Timestamp)null,
+                           (String)null, (String)null, (String)null,
+                           true);  /* We need to set serverSide==true ! */
+            }
+         }
          if (log.TRACE && isAlive()) log.trace(ME, "Success for ping('" + data + "'), return='" + returnVal + "'");
          handleTransition(true, byDispatchConnectionsHandler, null);
          return returnVal;
       }
-      catch (Throwable e) {
-         if (isAlive() && log.TRACE) log.trace(ME, "Exception from callback ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
+      catch (Throwable e) { // the remote ping does not throw any XmlBlasterException, see xmlBlaster.idl
+         if (isAlive() && log.TRACE) log.trace(ME, "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          handleTransition(false, byDispatchConnectionsHandler, e);
          return ""; // Only reached if from timeout
       }
@@ -268,9 +296,11 @@ abstract public class DispatchConnection implements I_Timeout
       this.timerKey = null;
 
       boolean isPing = (userData == null);
+      if (this.physicalConnectionOk && !this.serverAcceptsRequests)
+         isPing = true;
 
       if (isPing) {
-         if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server ...");
+         if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
          try {
             String result = ping("", false);
          }
@@ -286,8 +316,7 @@ abstract public class DispatchConnection implements I_Timeout
       }
       else { // reconnect polling
          try {
-            retryCounter++;
-            if (log.TRACE) log.trace(ME, "timeout -> Going to check #" + retryCounter + " if remote server is available again ...");
+            if (log.TRACE) log.trace(ME, "timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
             reconnect();
             try {
                String result = ping("", false);
@@ -321,8 +350,14 @@ abstract public class DispatchConnection implements I_Timeout
    protected final void handleTransition(boolean toReconnected, boolean byDispatchConnectionsHandler,
                                        Throwable throwable) throws XmlBlasterException {
 
+      XmlBlasterException ex = (throwable == null) ? null : ((throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable : null);
       ConnectionStateEnum oldState = this.state;
-      if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler);
+      this.serverAcceptsRequests = (ex == null) ? true : !ex.isErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY);
+      this.physicalConnectionOk = (ex == null || 
+                                   glob.isServerSide() && !ex.isServerSide() ||
+                                   !glob.isServerSide() && ex.isServerSide()) ? true : false;
+
+      if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler + ": " + ((ex == null) ? "" : ex.toXml()));
 
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
@@ -366,7 +401,7 @@ abstract public class DispatchConnection implements I_Timeout
             timerKey = null;
          }
 
-         if (toReconnected && (isPolling() || isUndef())) {
+         if (toReconnected /*&& this.serverAcceptsRequests*/ && (isPolling() || isUndef())) {
             this.state = ConnectionStateEnum.ALIVE;
             retryCounter = 0; // success
             log.info(ME, "Connection '" + getAddress().getType() + "' transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " connected.");
@@ -381,10 +416,10 @@ abstract public class DispatchConnection implements I_Timeout
             this.state = ConnectionStateEnum.POLLING;
             retryCounter++;
             if (this.address.getDelay() > 0L) { // respan reconnect poller
-               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState);
+               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState + " retryCounter=" + retryCounter);
                timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getDelay(), "poll");
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
-                  resetConnection();
+                  if (!this.physicalConnectionOk) resetConnection();
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
                   //if (throwable != null) throwable.printStackTrace();
                   log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
@@ -414,7 +449,6 @@ abstract public class DispatchConnection implements I_Timeout
       } // synchronized because of timerKey and status transition
 
       // error giving up ...
-      XmlBlasterException ex = null;
       if (throwable == null) {
          ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME,
               "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
