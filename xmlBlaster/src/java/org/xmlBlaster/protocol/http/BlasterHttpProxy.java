@@ -2,8 +2,8 @@
 Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.9 2000/03/19 22:56:05 kkrafft2 Exp $
+Comment:   This class contains some useful, static helper methods.
+Version:   $Id: BlasterHttpProxy.java,v 1.10 2000/05/03 17:08:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -17,34 +17,28 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
- * This servlet doesn't leave the doGet() method after an invocation
- * keeping a permanent http connection.
+ * Contains some useful, static helper methods. It is
+ * a singleton.
  * <p />
- * With the doPost() method you may login/logout to xmlBlaster, and
- * do your work with publish/subscribe etc.<br />
- * With the doGet() method you receive your instant callbacks.
+ * It holds a hashtable with all current browser-xmlBlaster connections.
  * <p />
- * The logging output is redirected to the normal servlet log file.
- * If you use Apache/Jserv, look into /var/log/httpd/jserv.log
- * <p />
- * Invoke for testing:<br />
- *    http://localhost/servlet/CallbackServletDriver?ActionType=login&loginName=martin&passwd=secret
- * <p />
- * TODO:
- *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
- *   default case. How must this code be changed?
- * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.9 $
+ * You can also use this class to handle shared attributes for all servlets.
+ * @author Konrad Krafft
+ * @version $Revision: 1.10 $
  */
 public class BlasterHttpProxy
 {
-   private static final String ME                      = "BlasterHttpProxy";
+   private static final String ME            = "BlasterHttpProxy";
 
-   /** Mapping the sessionId to a ServletConnection instance */
-   private static Hashtable proxyConnections           = new Hashtable();
+   /** Mapping the sessionId to a ProxyConnection instance.
+    * <p />
+    * This ProxyConnections knows how to access xmlBlaster (with CORBA)
+    * and the Browser (with http).
+    */
+   private static Hashtable proxyConnections = new Hashtable();
 
    /** Stores global Attributes for other Servlets */
-   private static Hashtable attributes                 = new Hashtable();
+   private static Hashtable attributes       = new Hashtable();
 
 
    /**
@@ -157,4 +151,19 @@ public class BlasterHttpProxy
    }
 
 
+   /**
+    * gives a corbaConnection by sessionId.
+    * <p />
+    * This CorbaConnection holds the CORBA connection to the XmlBlaster server
+    * @param sessionId
+    */
+   public static CorbaConnection getCorbaConnection(String sessionId) throws XmlBlasterException
+   {
+      ProxyConnection pc = getProxyConnectionBySessionId(sessionId);
+      if( pc == null ) {
+         Log.trace(ME, "getCorbaConnection(" + sessionId + ") returned null");
+         return null;
+      }
+      return pc.getCorbaConnection();
+   }
 }
