@@ -5,8 +5,11 @@ Changes for 0.78 [???     2000]
   - Added generic database access from James to xmlBlaster core.
     The JDBC gateway uses now the native interface to xmlBlaster.
     Added advanced JDBC connection pooling. Every user has
-    its own pool, allowing heavy load server simultaneous 
+    its own pool, allowing heavy load server simultaneous
     database access (thread save).
+    See online requirements for more informations/examples:
+       engine.service.rdbms
+       engine.service.rdbms.jdbcpool
 
   - Michele Laghi added complete C++ client support for MICO and ORBacus.
     He implemented all necessary C++ client helper classes for easy and cool
