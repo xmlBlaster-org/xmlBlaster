@@ -197,7 +197,7 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
    public void testReferenceCount() {
       log.info(ME, "testReferenceCount START");
       log.info(ME, "STEP1: Start xmlBlaster server");
-      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.glob);
 
       log.info(ME, "STEP2: Publish a message twice");
       Client pub = doConnect("publisher", null);
@@ -228,7 +228,7 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
       sub1.con.leaveServer(null);
 
       log.info(ME, "STEP5: Start server and recover message from persistence store");
-      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.glob);
 
       log.info(ME, "STEP6: Start subscriber and expect the last not delivered message to be sent automatically");
       sub1 = doConnect("subscribe/1", null);
