@@ -22,6 +22,9 @@ distclean: clean
 PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
 			org.xmlBlaster.engine.xml2java \
+			org.xmlBlaster.engine.persistence \
+			org.xmlBlaster.engine.persistence.filestore \
+			org.xmlBlaster.engine.persistence.mudb \
 			org.xmlBlaster.engine.xmldb \
 			org.xmlBlaster.engine.xmldb.file \
 			org.xmlBlaster.engine.xmldb.dom \
