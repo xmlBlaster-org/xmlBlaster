@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.23 2002/09/09 13:33:38 ruff Exp $
+Version:   $Id: Executor.java,v 1.24 2002/09/10 18:55:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -401,7 +401,7 @@ public abstract class Executor implements ExecutorBase
          throw new XmlBlasterException(ME, str);
       }
 
-      //if (SOCKET_DEBUG>1) log.info(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
+      if (SOCKET_DEBUG>1) log.info(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
 
       if (!expectingResponse)
          return null;
@@ -427,7 +427,7 @@ public abstract class Executor implements ExecutorBase
    }
 
    /**
-    * Send a one way message back to the other side
+    * Send a one way response message back to the other side
     */
    protected final void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
       Parser returner = new Parser(Parser.RESPONSE_BYTE, receiver.getRequestId(),
