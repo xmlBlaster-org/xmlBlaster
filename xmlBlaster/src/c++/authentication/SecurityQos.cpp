@@ -16,11 +16,13 @@ using namespace org::xmlBlaster::util;
 
 SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
-                         const string& password)
+                         const string& password,
+                         const string& pluginTypeVersion)
    : ME("SecurityQos"), global_(global), log_(global.getLog("org.xmBlaster.authentication"))
 {
 
-   string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", "htpasswd,1.0");
+   string tv = (pluginTypeVersion == "") ? "htpasswd,1.0" : pluginTypeVersion;
+   string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", tv);
 
    StringStripper stripper(",");
    vector<std::string> help1 = stripper.strip(help);
@@ -33,18 +35,18 @@ SecurityQos::SecurityQos(Global& global,
       version_ = "1.0";
    }
 
-   user_ = global_.getProperty().getStringProperty("user", "");
-   if (log_.trace())  log_.trace(ME, string("constructor: 'user' prop is '") + user_ + "'");
-
-   if (user_ == "") {
-      user_ = global_.getProperty().getStringProperty("USER", "unknown");
-      if (log_.trace())  log_.trace(ME, string("constructor: 'USER' prop is '") + user_ + "'");
+   if (loginName != "") {
+      user_ = loginName;
+   }
+   else {
+      SessionName sessionName(global_);
+      user_ = sessionName.getSubjectId();
    }
 
-   if (loginName != "") user_ = loginName;
    passwd_ =  global_.getProperty().getStringProperty("passwd", "");
    if (password != "") passwd_ = password;
-   if (log_.trace())  log_.trace(ME, string("constructor: user is '") + user_ + "'");
+
+   if (log_.trace())  log_.trace(ME, string("constructor: type=" + type_ + " and version=" + version_ + " userId=") + user_);
 }
 
 SecurityQos::SecurityQos(const SecurityQos& securityQos)

@@ -45,9 +45,15 @@ namespace org { namespace xmlBlaster { namespace authentication {
       }
 
    public:
+      /**
+       * @param loginName The authentication user ID
+       * @param passwd  The password (for name/password based credential plugins)
+       * @param pluginTypeVersion The authentication plugin to be used on server side, for example "htpasswd,1.0"
+       */
       SecurityQos(org::xmlBlaster::util::Global& global,
                   const std::string& loginName="",
-                  const std::string& password="");
+                  const std::string& password="",
+                  const std::string& pluginTypeVersion="");
 
       SecurityQos(const SecurityQos& securityQos);
 
