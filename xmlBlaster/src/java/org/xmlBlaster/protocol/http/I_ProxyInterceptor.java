@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      ProxyInterceptor.java
+Name:      I_ProxyInterceptor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: ProxyInterceptor.java,v 1.2 2000/03/16 17:49:56 kkrafft2 Exp $
+Version:   $Id: I_ProxyInterceptor.java,v 1.1 2000/05/03 17:14:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -19,10 +19,10 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * before sended to the Browser.
  * <p>
  *
- * @version $Revision: 1.2 $
- * @author $Author: kkrafft2 $
+ * @version $Revision: 1.1 $
+ * @author $Author: ruff $
  */
-public interface ProxyInterceptor
+public interface I_ProxyInterceptor
 {
    /**
     * This update method manipulate the update content arrives from the xmlBlaster
