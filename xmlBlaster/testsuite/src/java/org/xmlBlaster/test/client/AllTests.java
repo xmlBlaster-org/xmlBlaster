@@ -1,0 +1,30 @@
+/*------------------------------------------------------------------------------
+Name:      AllTests.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Start all tests
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.test.client;
+
+import org.jutils.JUtilsException;
+import junit.framework.*;
+
+
+/**
+ * This test client starts all known tests in directory xmlBlaster/testsuite/src/java/org/xmlBlaster/client
+ * these are remote tests between clients and a running xmlBlaster. 
+ * <p />
+ * Invoke examples:<br />
+ * <pre>
+ *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.client.AllTests
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.AllTests
+ * </pre>
+ */
+public class AllTests
+{
+   public static Test suite() {
+      TestSuite suite= new TestSuite("All xmlBlaster message client side tests");
+      suite.addTest(TestSynchronousCache.suite());
+      return suite;
+   }
+}
