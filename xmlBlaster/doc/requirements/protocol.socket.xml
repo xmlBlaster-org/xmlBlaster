@@ -152,6 +152,15 @@
          </td>
       </tr>
       <tr>
+         <td>updateOneway</td>
+         <td>[QoS{string}, key{string}, content{binary}]*</td>
+         <td>-</td>
+         <td>no</td>
+         <td>This is a callback message to the client, the message unit (QoS, key, content) may be specified multiple times. 
+             There is no return value and no exception which can be thrown for maximum performance.
+         </td>
+      </tr>
+      <tr>
          <td>publish</td>
          <td>[QoS{string}, key{string}, content{binary}]*</td>
          <td>[QoS{string}]*</td>
@@ -159,6 +168,15 @@
          <td>The message unit [QoS, key, content] may be specified multiple times.
              Every message unit has a corresponding return QoS.
              This publish covers the CORBA publish() and the CORBA publishArr().
+         </td>
+      </tr>
+      <tr>
+         <td>publishOneway</td>
+         <td>[QoS{string}, key{string}, content{binary}]*</td>
+         <td>-</td>
+         <td>no</td>
+         <td>The message unit [QoS, key, content] may be specified multiple times.
+             There is no return value and no exception which can be thrown for maximum performance.
          </td>
       </tr>
       <tr>
@@ -263,7 +281,7 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
