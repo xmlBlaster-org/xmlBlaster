@@ -57,6 +57,7 @@ struct XmlBlasterAccessUnparsedStruct {
    XmlBlasterAccessUnparsedIsConnected isConnected;
    bool debug;
    XmlBlasterBlob responseBlob;
+   pthread_t callbackThreadId;
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
    pthread_cond_t responseCond;
 };
