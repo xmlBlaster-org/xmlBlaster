@@ -24,8 +24,7 @@ import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
-import org.xmlBlaster.engine.msgstore.TopicStorePluginManager;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 
@@ -42,8 +41,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 {
    private RunlevelManager runlevelManager;
 
-   private ContextNode contextNode;
-
    /** the authentication service */
    private Authenticate authenticate;
    /** the xmlBlaster core class */
@@ -58,8 +55,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private ProtocolManager protocolManager;
 
-   private MsgUnitStorePluginManager msgStorePluginManager;
-   private TopicStorePluginManager topicStorePluginManager;
+   private StoragePluginManager topicStorePluginManager;
 
    private CommandManager commandManager;
    private boolean useAdminManager = true;
@@ -150,14 +146,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     */
    public final NodeId getNodeId() {
       return this.nodeId;
-   }
-
-   /**
-    * The unique name of this xmlBlaster server instance. 
-    * @return Can be null during startup
-    */
-   public final ContextNode getContextNode() {
-      return contextNode;
    }
 
    /**
@@ -297,21 +285,11 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return this.protocolManager;
    }
 
-   public final MsgUnitStorePluginManager getMsgUnitStorePluginManager() {
-      if (msgStorePluginManager == null) {
-         synchronized (MsgUnitStorePluginManager.class) {
-            if (msgStorePluginManager == null)
-               msgStorePluginManager = new MsgUnitStorePluginManager(this);
-         }
-      }
-      return msgStorePluginManager;
-   }
-
-   public final TopicStorePluginManager getTopicStorePluginManager() {
+   public final StoragePluginManager getStoragePluginManager() {
       if (topicStorePluginManager == null) {
-         synchronized (TopicStorePluginManager.class) {
+         synchronized (StoragePluginManager.class) {
             if (topicStorePluginManager == null)
-               topicStorePluginManager = new TopicStorePluginManager(this);
+               topicStorePluginManager = new StoragePluginManager(this);
          }
       }
       return topicStorePluginManager;
