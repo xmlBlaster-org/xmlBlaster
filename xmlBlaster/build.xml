@@ -794,7 +794,7 @@ TODO
       <echo message="      http://localhost:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
       <echo message=""/>
       <echo message="   Start the persistent HTTP applet demo with:"/>
-      <echo message="      http://localhost:8080/xmlBlaster/BasicApplet.html"/>
+      <echo message="      http://localhost:8080/xmlBlaster/HelloWorld3.html"/>
    </target>
 
    <!-- =================================================================== -->
