@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.44 2000/07/12 12:55:27 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.45 2000/07/13 12:30:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,7 +39,7 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
 {
@@ -52,7 +52,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
-      
+
       if (!propertyRead) {
          propertyRead = true;
          try {
@@ -65,8 +65,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      Log.addLogLevel("TRACE"); // Use this to trace the code
-      Log.addLogLevel("CALLS");
+      // Log.addLogLevel("TRACE"); // Use this to trace the code
+      // Log.addLogLevel("CALLS");
       // Log.addLogLevel("TIME");
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
