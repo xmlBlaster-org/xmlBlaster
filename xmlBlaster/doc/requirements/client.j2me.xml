@@ -89,32 +89,23 @@
    and an application similar to this should appear:<br/>
    <center><img src="j2meDemo.jpg" name="j2meDemo" align="center" border="1"/></center>
    </p>   
-   <p>   
-   NOTE: If you want to deploy it on your own Webserver you need to add the
-   URL which points to the <code>SystemInfo.jar</code> file and to the servlet which
-   forwards the requests to the xmlBlaster server:
-   <pre>
-   build -DJ2ME_HOME=/opt/WTK2.1 
-         -DMIDlet-Jar-URL=http://myServer/j2me/SystemInfo.jar
-         -DMIDlet-servletUrl=http://myServer:8080/xmlBlaster/AppletServlet
-       j2me
-   </pre>
-   and copy the <code>xmlBlaster/demo/j2me/SystemInfo.jar</code> file to be available there.
-   The above URL will be added to the <code>xmlBlaster/demo/j2me/SystemInfo.jad</code> file.<br />
-   The servlet is created with the <code>deploy_war</code> task, see the configuration
-   in <code>xmlBlaster/demo/http/WEB-INF/web.xml</code>.
-   </p>
    </example>
 
    <example type="HTML">
-   <h3>Quick start installation of the server side stuff (if you want the server to be run locally)</h3>
+   <h2>Quick start installation of the server side stuff (if you want the server to be run locally)</h2>
    <p>
    You can try it with tomcat locally (no apache is necessary,
    i had tomcat 3.2.4, 4.1.29 and 5.0.14 to test it, others should work as well):
    </p>
-   <h3>
+   <h2>
    1. Create a war file:
-   </h3>
+   </h2>
+   <p>
+   The <tt>$TOMCAT_HOME/webapps/xmlBlaster.war</tt> file contains all necessary
+   servlets and xmlBlaster client library to forward requests to xmlBlaster.
+   You can have a look at the configuration
+   in <code>xmlBlaster/demo/http/WEB-INF/web.xml</code> before creating the war file.
+   </p>
 <pre>
   cd xmlBlaster
 
@@ -124,22 +115,82 @@
    Set TOMCAT_HOME to point to your installation and the <code>xmlBlaster.war</code>
    will be automatically deployed to <code>$TOMCAT_HOME/webapps/xmlBlaster.war</code>
    </p>
-   <h3>
-   2. Start it (keep port 8080 free for tomcat)
-   </h3>
+
+   <h2>
+   2. Start the xmlBlaster server and a demo publisher (keep port 8080 free for tomcat)
+   </h2>
    <pre>
   java org.xmlBlaster.Main -plugin/xmlrpc/port 8081   
   
   java  http.dhtml.systemInfo.SystemInfoPublisher
+   </pre>
 
- cd $TOMCAT_HOME
+   <h2>
+   3. Start the tomcat web server
+   </h2>
+   <p>
+   The <tt>$TOMCAT_HOME/webapps/xmlBlaster.war</tt> was created and copied already in step 1.
+   </p>
+   <pre>
+ cd $TOMCAT_HOME/bin
  startup.sh
    </pre>
 
-   <h3>Edit your SystemInfo.jad file and change the property 'servletUrl' to:</h3>
+   <h2>
+   4. Create the jar file which is transferred to the mobile device
+   </h2>
    <pre>
-http://localhost:8080/xmlBlaster/AppletServlet
+ build j2me
    </pre>
+   <p>The result is <tt>xmlBlaster/demo/j2me/SystemInfo.jar</tt> and
+      <tt>xmlBlaster/demo/j2me/SystemInfo.jad</tt>.
+   </p>
+
+   <h3>Edit your <tt>SystemInfo.jad</tt> file</h3>
+   You need to add the URL which points to the <code>SystemInfo.jar</code> file and to the
+   servlet <code>AppletServlet</code> to the <tt>SystemInfo.jad</tt> file:
+   <pre>
+MIDlet-1: SystemInfo, SystemInfo.png, SystemInfoMidlet
+MIDlet-Info-URL: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.j2me.html
+MIDlet-Jar-Size: 27299 
+MIDlet-Jar-URL: <font color="red">http://localhost:8080/xmlBlaster/j2me/SystemInfo.jar</font>
+MIDlet-Name: SystemInfo
+MIDlet-Vendor: www.xmlBlaster.org
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-1.0
+servletUrl: <font color="red">http://localhost:8080/xmlBlaster/AppletServlet</font>
+   </pre>
+   <p>
+   <h3>Now copy</h3> the <code>xmlBlaster/demo/j2me/SystemInfo.jar</code> and 
+   <code>xmlBlaster/demo/j2me/SystemInfo.jad</code> file to be available on the web server (tomcat):
+   </p>
+   <pre>
+   mkdir $TOMCAT_HOME/webapps/xmlBlaster/j2me
+   cp xmlBlaster/demo/j2me/SystemInfo.ja? $TOMCAT_HOME/webapps/xmlBlaster/j2me
+   </pre>
+
+   <h2>
+   5. Watch the result with your mobile
+   </h2>
+   <p>
+   Start the emulator or if you have a mobile device somehow connected to you computer run it:
+   </p>
+   <pre>
+   ${J2ME_HOME}/bin/emulator -Xdescriptor ${XMLBLASTER_HOME}/demo/j2me/SystemInfo.jad
+   
+   http://localhost:8080/xmlBlaster/j2me/SystemInfo.jad
+   </pre>
+
+   <h2>Note</h2>
+   <p>For convenience the Urls of <tt>SystemInfo.jad</tt> can be passed to ant and will be replaced as shown above:</p>
+   <pre>
+   build -DJ2ME_HOME=/opt/WTK2.1 
+         -DMIDlet-Jar-URL=http://localhost:8080/xmlBlaster/j2me/SystemInfo.jar
+         -DMIDlet-servletUrl=http://localhost:8080/xmlBlaster/AppletServlet
+       j2me
+   </pre>
+
    </example>
 
    <configuration where="server">
@@ -152,7 +203,7 @@ AddType application/java-archive .jar
       </pre>
       and then restart the apache server. More about "Over The Air" (OTA) Provisioning
       can be found <a href="http://developers.sun.com/techtopics/mobility/allarticles/#ota">here</a>.
-   </configuration>					
+   </configuration>                                     
 
    <see type="API">org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRawBase</see>
    <see type="REQ">interface</see>
@@ -166,7 +217,7 @@ AddType application/java-archive .jar
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 04 01</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
