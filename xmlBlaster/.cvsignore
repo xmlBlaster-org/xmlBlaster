@@ -1,3 +1,4 @@
 build
 xmlBlasterInstall.tar.gz
 dist
+.c_dependency_cache
