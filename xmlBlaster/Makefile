@@ -27,9 +27,9 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.corba.clientIdl \
 			org.xmlBlaster.protocol.corba.authenticateIdl \
 			org.xmlBlaster.protocol.corba.serverIdl \
-			org.xmlBlaster.protocol.corba.email \
-			org.xmlBlaster.protocol.corba.http \
-			org.xmlBlaster.protocol.corba.jdbc \
+			org.xmlBlaster.protocol.email \
+			org.xmlBlaster.protocol.http \
+			org.xmlBlaster.protocol.jdbc \
 			org.xmlBlaster.util \
 			org.xmlBlaster.util.pool.jdbc
 
