@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.12 2001/11/26 09:15:26 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.13 2001/11/26 09:26:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -35,6 +35,7 @@ import javax.mail.internet.*;
  *    EmailDriver.from=xmlblast@localhost
  * </pre>
  * @author $Author: ruff $
+ * @see javaclients.ClientSubEmail
  */
 public class CallbackEmailDriver implements I_CallbackDriver
 {
