@@ -107,7 +107,7 @@ public class MessageUnitHandler
 
    public void finalize()
    {
-      Log.info(ME, "finalize - garbage collect " + uniqueKey);
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
    public RequestBroker getRequestBroker()

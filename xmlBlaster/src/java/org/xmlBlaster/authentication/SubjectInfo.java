@@ -110,7 +110,7 @@ public class SubjectInfo
 
    public void finalize()
    {
-      Log.info(ME, "finalize - garbage collected " + getLoginName());
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + getLoginName());
    }
 
    public boolean isShutdown()

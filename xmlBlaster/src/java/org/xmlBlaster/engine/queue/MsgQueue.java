@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.3 2002/03/13 19:21:14 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.4 2002/03/14 16:30:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -69,7 +69,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          timerKey = null;
       }
 
-      Log.info(ME, "finalize - garbage collected " + this.name);
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + this.name);
    }
 
    public void shutdown()

@@ -101,7 +101,7 @@ public class SessionInfo implements I_Timeout
          timerKey = null;
       }
 
-      Log.info(ME, "finalize - garbage collected " + getSessionId());
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + getSessionId());
    }
 
    public void shutdown()

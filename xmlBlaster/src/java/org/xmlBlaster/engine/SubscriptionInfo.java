@@ -126,7 +126,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    protected void finalize()
    {
-      Log.info(ME, "finalize - garbage collect " + uniqueKey);
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
   
 
