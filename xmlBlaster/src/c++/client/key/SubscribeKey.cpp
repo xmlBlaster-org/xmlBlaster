@@ -18,6 +18,11 @@ SubscribeKey::SubscribeKey(Global& global)
 {
 }
 
+SubscribeKey::SubscribeKey(Global& global, const string& query, const string& queryType) 
+   : UnSubscribeKey(global, query, queryType)
+{
+}
+
 SubscribeKey::SubscribeKey(Global& global, const QueryKeyData& data) 
    : UnSubscribeKey(global, data)
 {

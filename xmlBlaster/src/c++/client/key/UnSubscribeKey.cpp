@@ -18,6 +18,12 @@ UnSubscribeKey::UnSubscribeKey(Global& global)
 {
 }
 
+UnSubscribeKey::UnSubscribeKey(Global& global, const string& query, const string& queryType) 
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")),
+     queryKeyData_(global_, query, queryType)
+{
+}
+
 UnSubscribeKey::UnSubscribeKey(Global& global, const QueryKeyData& data) 
    : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")), queryKeyData_(data)
 {
@@ -47,11 +53,6 @@ string UnSubscribeKey::getOid() const
 string UnSubscribeKey::getQueryType() const
 {
    return queryKeyData_.getQueryType();
-}
-
-void UnSubscribeKey::setQueryType(const string& queryType)
-{
-   queryKeyData_.setQueryType(queryType);
 }
 
 void UnSubscribeKey::setQueryString(const string& tags)

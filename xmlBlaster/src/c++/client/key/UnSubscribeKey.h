@@ -44,6 +44,8 @@ public:
     * Minimal constructor.
     */
    UnSubscribeKey(Global& global);
+
+   UnSubscribeKey(Global& global, const string& query, const string& queryType);
    
    UnSubscribeKey(Global& global, const QueryKeyData& data);
 
@@ -63,9 +65,6 @@ public:
     * @return A queryType string or ""
     */
    string getQueryType() const;
-
-
-   void setQueryType(const string& queryType);
 
    /**
     * Your XPath query string. 

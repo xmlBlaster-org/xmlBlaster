@@ -29,6 +29,8 @@ public:
     * Minimal constructor.
     */
    SubscribeKey(Global& global);
+
+   SubscribeKey(Global& global, const string& query, const string& queryType);
    
    SubscribeKey(Global& global, const QueryKeyData& data);
 
