@@ -607,7 +607,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
     *            id="TryingReconnect" if we are in fail save mode and polling for a connection
     */
-   private synchronized void handleConnectionException(Exception e) throws XmlBlasterException
+   private synchronized void handleConnectionException(ConnectionException e) throws XmlBlasterException
    {
       if (noConnect) {// LoginThread tried already and gave up
          if (isInFailSaveMode())
