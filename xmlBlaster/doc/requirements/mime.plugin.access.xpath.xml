@@ -50,9 +50,9 @@
       functions must implement the <code>org.jaxen.Function</code> interface.
       </p>
    </description>
-   <example lang="Java" type="HTML">
+   <example lang="any" type="HTML">
 
-      <b>This is an example key and QoS of a get() invocation:</b>
+      <h2>Example key and QoS of a <tt>get()</tt> or <tt>subscribe()</tt> invocation:</h2>
 
       <pre>
       <![CDATA[
@@ -67,16 +67,17 @@
       </pre>
 
       <p>
-      All messages of type/key oid=News are first selected.
+      All messages of the topic <tt>oid=News</tt> are first selected.
       Those message are further filtered to contain the attribute type equals sport in the news element.
       </p>
       <p>
       Don't forget to put your query in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
       in your query string.
       </p>
-      <p>
-      This is a code snippet in Java with the get() method:
-      </p>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Code snippet in Java with the <tt>get()</tt> method</h2>
       <pre>
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
@@ -101,6 +102,24 @@
       (in this case the XPath plugin) and the fourth parameter add the query rule for
       the plugin (in this case an XPath expression).
       </p>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Command line example</h2>
+
+      <p>Start the server</p>
+      <tt>java -jar lib/xmlBlaster.jar</tt>
+
+      <p>Start a subscriber</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldSubscribe -oid Hello -filter.type XPathFilter -filter.query "//tomato"</tt>
+
+      <p>Start a publisher with matching content</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldPublish -numPublish 10 -oid Hello -content "&lt;tomato/>"</tt>
+
+      <p>Start a publisher with NO matching content</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldPublish -numPublish 10 -oid Hello -content "&lt;apple/>"</tt>
+
+      <p>Now you can play with the full text filtering feature</p>
    </example>
 
    <configuration where="server">

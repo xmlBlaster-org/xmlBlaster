@@ -47,9 +47,10 @@
       <p>
       </p>
    </description>
-   <example lang="Java" type="HTML">
 
-      <b>This is an example key and QoS of a get() invocation:</b>
+   <example lang="any" type="HTML">
+
+      <h2>Example key and QoS of a <tt>get()</tt> or <tt>subscribe()</tt> invocation:</h2>
 
       <pre>
       <![CDATA[
@@ -75,9 +76,10 @@
       Don't forget to put your query in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
       in your query string.
       </p>
-      <p>
-      This is a code snippet in Java with the get() method:
-      </p>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Code snippet in Java with the <tt>get()</tt> method</h2>
       <pre>
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
@@ -107,6 +109,24 @@
       <pre>
    java RETest "aaa*b" "aab"
       </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Command line example</h2>
+
+      <p>Start the server</p>
+      <tt>java -jar lib/xmlBlaster.jar</tt>
+
+      <p>Start a subscriber</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldSubscribe -oid Hello -filter.type GnuRegexFilter -filter.query ".*A"</tt>
+
+      <p>Start a publisher with matching content</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldPublish -numPublish 100 -oid Hello -content "xxA"</tt>
+
+      <p>Start a publisher with NO matching content</p>
+      <tt>java -cp lib/xmlBlaster.jar javaclients.HelloWorldPublish -numPublish 100 -oid Hello -content "12B"</tt>
+
+      <p>Now you can play with the full text filtering feature</p>
    </example>
 
    <configuration where="server">
