@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.36 2002/08/26 11:04:28 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.37 2002/09/14 23:13:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -172,9 +172,14 @@ public class XmlRpcDriver implements I_Driver
    public synchronized void deActivate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering deActivate");
       if (webServer != null) {
-         webServer.removeHandler("authenticate");
-         webServer.removeHandler("xmlBlaster");
-         webServer.shutdown();
+         try {
+            webServer.removeHandler("authenticate");
+            webServer.removeHandler("xmlBlaster");
+            webServer.shutdown();
+         }
+         catch(Throwable e) {
+            log.warn(ME, "Problems during shutdown of xmlrpc web server: " + e.toString());
+         }
          webServer = null;
          log.info(ME, "XML-RPC driver stopped, handler released.");
       }
