@@ -115,7 +115,7 @@ public class ByteArray extends OutputStream {
      *
      * @param   b   the byte to be written.
      */
-    public void write(int b) {
+    public final void write(int b) {
         int newcount = count + 1;
         if (newcount > buf.length) {
             byte newbuf[] = new byte[Math.max(buf.length << 1, newcount)];
@@ -134,7 +134,7 @@ public class ByteArray extends OutputStream {
      * @param   off   the start offset in the data.
      * @param   len   the number of bytes to write.
      */
-    public void write(byte b[], int off, int len) {
+    public final void write(byte b[], int off, int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
             ((off + len) > b.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
