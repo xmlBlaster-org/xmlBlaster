@@ -112,7 +112,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    {
       this.glob = glob;
       if (orb == null) { // Thread leak !!!
-         CorbaDriver.initializeOrbEnv(glob);
+         CorbaDriver.initializeOrbEnv(glob,true);
          orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
       }
       init();
