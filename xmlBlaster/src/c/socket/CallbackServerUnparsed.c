@@ -26,6 +26,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb);
 static int isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
+static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr);
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
@@ -52,6 +53,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->update = update;
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(char *));
    cb->addResponseListener = addResponseListener;
+   cb->removeResponseListener = removeResponseListener;
    cb->isShutdown = false;
 
    for (iarg=0; iarg < argc-1; iarg++) {
@@ -108,7 +110,7 @@ static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const c
          cb->responseListener[i].userP = userP;
          cb->responseListener[i].requestId = requestId;
          cb->responseListener[i].responseEventFp = responseEventFp;
-         if (cb->debug) printf("[CallbackServerUnparsed] addResponseListener(requestId=%s)\n", requestId);
+         if (cb->debug) printf("[CallbackServerUnparsed] addResponseListener(i=%d, requestId=%s)\n", i, requestId);
          return true;
       }
    }

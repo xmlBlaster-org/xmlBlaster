@@ -205,6 +205,7 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
  * @param msgRequestInfo Contains some informations about the request
  * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
  *         If msgRequestInfo->blob.data was changed and malloc()'d by you, the caller will free() it.
+ *         If you return NULL you need to call removeResponseListener() to avoid a memory leak.
  */
 static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception)
 {
@@ -287,8 +288,9 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
       if (useTimeout == true) {
          int error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
          if (error == ETIMEDOUT) {
+            xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfo->requestIdStr);
             strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
-            sprintf(exception->message, "[XmlBlasterAccessUnparsed] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis\n",
+            sprintf(exception->message, "[XmlBlasterAccessUnparsed] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis",
                                           msgRequestInfo->methodName, msgRequestInfo->requestIdStr, xa->responseTimeout);
             if (xa->debug) { printf(exception->message); printf("\n"); }
             return (MsgRequestInfo *)0;

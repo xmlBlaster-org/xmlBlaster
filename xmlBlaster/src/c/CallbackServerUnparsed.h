@@ -70,6 +70,7 @@ typedef struct ResponseListenerStruct {
 } ResponseListener;
 
 typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
+typedef ResponseListener * ( * RemoveResponseListener)(CallbackServerUnparsed *cb, const char *requestId);
 
 
 /**
@@ -100,6 +101,7 @@ struct CallbackServerUnparsedStruct {
    UseThisSocket useThisSocket;
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
+   RemoveResponseListener removeResponseListener;
    bool isShutdown;
 };
 
