@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.7 2000/07/10 09:19:09 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.8 2000/08/03 13:36:08 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@ import org.jutils.time.Timeout;
 import org.jutils.pool.PoolManager;
 import org.jutils.pool.I_PoolManager;
 import org.jutils.pool.ResourceWrapper;
+import org.jutils.runtime.Sleeper;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -212,7 +213,15 @@ public class NamedConnectionPool
 
 
    /**
-    * Inner class, every user of the Named pool has its own connection pool.
+    * Inner class, every user of the Named pool has its own connection pool. 
+    * <p />
+    * If the resource pool is exhausted, the request will poll for a connection
+    * 5 times, with 1 sec sleeping in between.<br />
+    * This feature is adjustable in xmlBlaster.properties with:<br />
+    * <pre>
+    *   JdbcPool.maxResourceExhaustRetries=5
+    *   JdbcPool.resourceExhaustSleepGap=1000
+    * </pre>
     */
    private class UnnamedConnectionPool implements I_PoolManager, I_Timeout
    {
@@ -223,6 +232,11 @@ public class NamedConnectionPool
       private String dbUser;
       private String dbPasswd;
       private long eraseUnusedPoolTimeout;
+      /** If the pool is exhausted, we poll the given times */
+      private int maxResourceExhaustRetries;
+      /** If the pool is exhausted, we poll every given millis<br />
+          Please note that the current request thread will block for maxResourceExhaustRetries*resourceExhaustSleepGap millis. */
+      private long resourceExhaustSleepGap;
       private Long timeoutHandle = new Long(0L); // initialize for synchronized
 
       private final Object meetingPoint = new Object();
@@ -265,6 +279,9 @@ public class NamedConnectionPool
             busyToIdle = XmlBlasterProperty.get("JdbcPool.busyToIdleTimeout", 0); // How long may a query last
          if (idleToErase == -1)
             idleToErase = XmlBlasterProperty.get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
+
+         maxResourceExhaustRetries = XmlBlasterProperty.get("JdbcPool.maxResourceExhaustRetries", 5);
+         resourceExhaustSleepGap = XmlBlasterProperty.get("JdbcPool.resourceExhaustSleepGap", 1000);   // milli
 
          poolManager = new PoolManager(ME, this, maxInstances, busyToIdle, idleToErase);
          if (eraseUnusedPoolTimeout > 10L)
@@ -318,21 +335,31 @@ public class NamedConnectionPool
       Connection reserve() throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
          if (Log.TRACE) Log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
-         try {
-            synchronized(meetingPoint) {
-               if (eraseUnusedPoolTimeout > 10L) {
-                  synchronized(timeoutHandle) {
-                     timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, eraseUnusedPoolTimeout);
+         int ii=0;
+         while (true) {
+            try {
+               synchronized(meetingPoint) {
+                  if (eraseUnusedPoolTimeout > 10L) {
+                     synchronized(timeoutHandle) {
+                        timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, eraseUnusedPoolTimeout);
+                     }
                   }
+                  ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
+                  Connection con = (Connection)rw.getResource();
+                  return con;
                }
-               ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
-               Connection con = (Connection)rw.getResource();
-               return con;
             }
-         }
-         catch (JUtilsException e) {
-            Log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
-            throw new XmlBlasterException(e);
+            catch (JUtilsException e) {
+               if (e.id.equals("ResourceExhaust") && ii < maxResourceExhaustRetries) {
+                  if (ii == 0) Log.warning(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+                  Sleeper.sleep(resourceExhaustSleepGap);
+                  ii++;
+               }
+               else {
+                  Log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
+                  throw new XmlBlasterException(e);
+               }
+            }
          }
       }
 
