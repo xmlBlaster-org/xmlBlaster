@@ -1121,6 +1121,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          } catch(XmlBlasterException ep) {
             if (Log.TRACE) Log.trace(ME, "Exception in ping! " + ep.reason);
          }
+      } catch(XmlBlasterException e) {
+         Log.error(ME, "ping failed: " + e.toString());
       }
       return ; // never reached, there is always an exception thrown
    }
