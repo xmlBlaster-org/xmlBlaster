@@ -347,6 +347,8 @@ TODO
       <echo message="   c-clean     --> cleans up C generated files (object files etc)"/>
       <echo message="   c-delete    --> like 'c-clean', but delete shared library and C test clients as well"/>
       <echo message=""/>
+      <echo message="   activex     --> Creates a Windows ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
+      <echo message=""/>
       <echo message="   runTests    --> starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="                   you need to compile xmlBlaster before with target 'all'"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
@@ -1462,6 +1464,43 @@ TODO
       <echo message="--------------------------------------------"/>
    </target>
 
+   <!-- =================================================================== -->
+   <!-- Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)      -->
+   <!-- build -DJRE_HOME=C:\PROGRA~1\Java\j2re1.5.0 -DJVM.target=1.4 activex -->
+   <!-- =================================================================== -->
+   <!-- depends="java-delete,all" -->
+   <target name="activex" depends="" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)">
+      <property name="JAVA_HOME" value="${env.JAVA_HOME}" />
+      <property name="JRE_HOME" value="${env.JRE_HOME}" />
+      <property name="CLSID" value="D824B185-AE3C-11D6-ABF5-00B0D07B8581" />
+      <mkdir dir="${JRE_HOME}/axbridge"/>
+      <mkdir dir="${JRE_HOME}/axbridge/lib"/>
+      <mkdir dir="${JRE_HOME}/axbridge/bin"/>
+      
+      <jar destfile="${build.dir}/xmlBlasterActiveX.jar"
+           manifest="${src.java.dir}/org/xmlBlaster/client/activex/manifest.activex"
+           basedir="${build.dest}"
+           includes="org/xmlBlaster/client/activex/*.class"/>
+      <echo message="Created: ${build.dir}/xmlBlasterActiveX.jar" />
+
+      <echo message="Calling: ${JAVA_HOME}\bin\packager.exe -clsid {${CLSID}} -out ${JRE_HOME}\axbridge\bin -reg ${build.dir}/xmlBlasterActiveX.jar org.xmlBlaster.client.activex.XmlScriptAccess" />
+      <exec dir="."
+            executable="${JAVA_HOME}\bin\packager.exe"
+            os="Windows XP"
+            failonerror="true"
+            vmlauncher="false">
+         <env key="CLASSPATH" value="lib/xmlBlaster.jar"/>
+         <arg line="-clsid {${CLSID}} -out ${JRE_HOME}\axbridge\bin -reg ${build.dir}/xmlBlasterActiveX.jar org.xmlBlaster.client.activex.XmlScriptAccess" />
+      </exec>
+
+      <!-- TODO: copy only what needed: -->
+      <copy todir="${JRE_HOME}/axbridge/lib" filtering="false">
+         <fileset dir="lib">
+            <include name="*.jar"/>
+         </fileset>
+      </copy>
+      <echo message="activex done: See results under ${JRE_HOME}\axbridge"/>
+   </target>
 
    <!-- =================================================================== -->
    <!-- Prepares env settings for C++ client library compilation            -->
