@@ -188,7 +188,9 @@ public class MessageUnitHandler
 
       Log.warn(ME, "No subscribed client notification about message erase() yet implemented");
 
-      subscriberMap.clear();
+      synchronized(subscriberMap) {
+         subscriberMap.clear();
+      }
       // subscriberMap = null;    is final, can't assign null
 
       try {
@@ -339,11 +341,12 @@ public class MessageUnitHandler
     * A Set subscriberMap.entrySet() would be enough in most cases
     * but I'm not quite sure how to synchronize it ...
     */
+    /*
    public Map getSubscriberMap()
    {
       return subscriberMap;
    }
-
+     */
    /**
     * Access the raw CORBA msgUnit
     * @return MessageUnit object
@@ -474,10 +477,12 @@ public class MessageUnitHandler
       if (subscriberMap.size() == 0)
          sb.append(offset + "   <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
       else {
-         Iterator iterator = subscriberMap.values().iterator();
-         while (iterator.hasNext()) {
-            SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-            sb.append(subs.toXml(extraOffset + "   "));
+         synchronized(subscriberMap) {
+            Iterator iterator = subscriberMap.values().iterator();
+            while (iterator.hasNext()) {
+               SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
+               sb.append(subs.toXml(extraOffset + "   "));
+            }
          }
       }
 
