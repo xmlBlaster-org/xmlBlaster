@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
+#include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/thread/ThreadImpl.h>
@@ -26,7 +27,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html">The client.c.queue requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-class Dll_Export SQLiteQueuePlugin : public I_Queue
+class Dll_Export SQLiteQueuePlugin : public I_Queue, 
+                                     public virtual org::xmlBlaster::util::plugin::I_Plugin
 {
 private:
    SQLiteQueuePlugin(const SQLiteQueuePlugin& queue);
@@ -36,15 +38,23 @@ protected:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log& log_;
-   org::xmlBlaster::util::qos::storage::ClientQueueProperty property_;
+   org::xmlBlaster::util::qos::storage::QueuePropertyBase property_;
    ::I_Queue *queueP_;
    org::xmlBlaster::util::thread::Mutex accessMutex_;
 
 public:
    SQLiteQueuePlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
    
+   /**
+    * Shutdown the queue, keep existing entries. 
+    */
    virtual ~SQLiteQueuePlugin();
     
+   /**
+    * Access logging framework. 
+    */
+   org::xmlBlaster::util::I_Log& getLog() const { return log_; }
+
    /**
     * puts a new entry into the queue. 
     * Note that this method takes the entry pointed to by the argument 
@@ -71,12 +81,33 @@ public:
    /**
     * Clears (removes all entries) this queue
     */
-    void clear();
+   void clear();
 
-    /**
-     * returns true if the queue is empty, false otherwise
-     */                                  
-     bool empty() const;
+   /**
+    * returns true if the queue is empty, false otherwise
+    */                                  
+   bool empty() const;
+
+   /**
+    * Converts the C ExceptionStruct into our XmlBlasterException class. 
+    */
+   org::xmlBlaster::util::XmlBlasterException convertFromQueueException(const ::ExceptionStruct& ex) const;
+
+   static std::string usage();
+
+   /**
+    * Get the name of the plugin. 
+    * @return "SQLite"
+    * @enforcedBy I_Plugin
+    */
+   std::string getType() { static std::string type = "SQLite"; return type; }
+
+   /**
+    * Get the version of the plugin. 
+    * @return "1.0"
+    * @enforcedBy I_Plugin
+    */
+   std::string getVersion() { static std::string version = "1.0"; return version; }
 };
 
 }}}} // namespace
