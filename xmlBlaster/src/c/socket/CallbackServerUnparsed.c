@@ -157,6 +157,77 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
    return (ResponseListener *)0;
 }
 
+static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDataHolder, XmlBlasterException* xmlBlasterException, bool success) {
+
+   MsgUnitArr *msgUnitArrP;
+
+   if (success == false) { /* EOF */
+      if (!cb->reusingConnectionSocket)
+         cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
+      closeAcceptSocket(cb);
+      return;
+   }
+
+   if (*xmlBlasterException->errorCode != 0) {
+      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
+         "Couldn't read message from xmlBlaster: errorCode=%s message=%s",
+                  xmlBlasterException->errorCode, xmlBlasterException->message);
+      return;
+   }
+
+   if (cb->reusingConnectionSocket &&
+         (socketDataHolder->type == (char)MSG_TYPE_RESPONSE || socketDataHolder->type == (char)MSG_TYPE_EXCEPTION)) {
+      ResponseListener *listener = getResponseListener(cb, socketDataHolder->requestId);
+      if (listener != 0) {
+         /* This is a response for a request (no callback for us) */
+         MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
+         removeResponseListener(cb, socketDataHolder->requestId);
+         listener->responseEventFp(msgRequestInfoP, socketDataHolder);
+         freeBlobHolderContent(&socketDataHolder->blob);
+         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+            "Forwarded message with requestId '%s' to response listener", socketDataHolder->requestId);
+         return;
+      }
+      else {
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
+            "PANIC: Did not expect an INVOCATION '%c'='%d' as a callback",
+                  socketDataHolder->type, (int)socketDataHolder->type);
+      }
+   }
+
+   msgUnitArrP = parseMsgUnitArr(socketDataHolder->blob.dataLen, socketDataHolder->blob.data);
+   freeBlobHolderContent(&(socketDataHolder->blob));
+
+   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+      "Received requestId '%s' callback %s()",
+      socketDataHolder->requestId, socketDataHolder->methodName);
+
+   if (strcmp(socketDataHolder->methodName, XMLBLASTER_PING) == 0) {
+      size_t i;
+      for (i=0; i<msgUnitArrP->len; i++) {
+         msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos/>");
+      }
+   }
+   else if (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE) == 0 ||
+            strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
+      if (cb->updateCb != 0) { /* Client has registered to receive callback messages? */
+         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+            "Calling client %s() for requestId '%s' ...",
+            socketDataHolder->methodName, socketDataHolder->requestId);
+         
+         strcpy(msgUnitArrP->secretSessionId, socketDataHolder->secretSessionId);
+         msgUnitArrP->isOneway = (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
+         cb->updateCb(msgUnitArrP, cb, xmlBlasterException, socketDataHolder);
+      }
+   }
+   else {
+      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
+      "Received unknown callback methodName=%s", socketDataHolder->methodName);
+   }
+
+}
+
+
 /**
  * The run method of the two threads
  */
@@ -168,22 +239,25 @@ static void listenLoop(ListenLoopArgs* ls)
    XmlBlasterException xmlBlasterException;
    SocketDataHolder socketDataHolder;
    bool success;
+
    for(;;) {
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
       /* Here we block until a message arrives, see parseSocketData() */
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Going to block on socket read until a new message arrives ...");
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException, udp);
+      cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__, udp ? "UDP arrived" : "TCP arrived");
+
       rc = pthread_mutex_lock(&cb->listenMutex);
       if (rc != 0) /* EINVAL */
          cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
-      cb->success = success;
-      cb->xmlBlasterException = xmlBlasterException;
-      cb->socketDataHolder = socketDataHolder;
-      rc = pthread_cond_signal(&cb->listenCond); /* rc is always 0 */
+
+      handleMessage(cb, &socketDataHolder, &xmlBlasterException, success);
+
       rc = pthread_mutex_unlock(&cb->listenMutex);
       if (rc != 0) /* EPERM */
          cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock() returned %d.", rc);
+
       if (!success)
          break;
    }
@@ -204,6 +278,10 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    int rc;
    ListenLoopArgs* tcpLoop;
    ListenLoopArgs* udpLoop;
+
+   /* two listening threads: TCP, UDP */
+   pthread_t tcpListenThread, udpListenThread;
+
    bool useUdpForOneway = cb->socketUdp != -1;
 
    cb->isShutdown = false;
@@ -218,112 +296,24 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    }
 
    rc = pthread_mutex_init(&cb->listenMutex, NULL); /* rc is always 0 */
-   rc = pthread_cond_init(&cb->listenCond, NULL); /* rc is always 0 */
 
-   rc = pthread_mutex_lock(&cb->listenMutex);
-   if (rc != 0) { /* EINVAL */
-      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
-      return 1;
-   }
-   
    tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
-   rc = pthread_create(&cb->tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
+   rc = pthread_create(&tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
 
    if (useUdpForOneway) {
       udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
-      rc = pthread_create(&cb->udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
+      rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
    }
 
-   for (;;) {
-      MsgUnitArr *msgUnitArrP;
-      XmlBlasterException xmlBlasterException;
-      SocketDataHolder socketDataHolder;
-      bool success;
-      
-      pthread_cond_wait(&cb->listenCond, &cb->listenMutex);
-      xmlBlasterException = cb->xmlBlasterException;
-      socketDataHolder = cb->socketDataHolder;
-      success = cb->success;
-
-      if (success == false) { /* EOF */
-         if (!cb->reusingConnectionSocket)
-            cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
-         closeAcceptSocket(cb);
-         break;
-      }
-
-      if (*xmlBlasterException.errorCode != 0) {
-         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
-            "Couldn't read message from xmlBlaster: errorCode=%s message=%s",
-                   xmlBlasterException.errorCode, xmlBlasterException.message);
-         continue;
-      }
-
-      if (cb->reusingConnectionSocket &&
-          (socketDataHolder.type == (char)MSG_TYPE_RESPONSE || socketDataHolder.type == (char)MSG_TYPE_EXCEPTION)) {
-         ResponseListener *listener = getResponseListener(cb, socketDataHolder.requestId);
-         if (listener != 0) {
-            /* This is a response for a request (no callback for us) */
-            MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
-            removeResponseListener(cb, socketDataHolder.requestId);
-            listener->responseEventFp(msgRequestInfoP, &socketDataHolder);
-            freeBlobHolderContent(&socketDataHolder.blob);
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-               "Forwarded message with requestId '%s' to response listener", socketDataHolder.requestId);
-            continue;
-         }
-         else {
-            cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
-               "PANIC: Did not expect an INVOCATION '%c'='%d' as a callback",
-                   socketDataHolder.type, (int)socketDataHolder.type);
-         }
-      }
-
-      msgUnitArrP = parseMsgUnitArr(socketDataHolder.blob.dataLen, socketDataHolder.blob.data);
-      freeBlobHolderContent(&(socketDataHolder.blob));
-
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-         "Received requestId '%s' callback %s()",
-         socketDataHolder.requestId, socketDataHolder.methodName);
-
-      if (strcmp(socketDataHolder.methodName, XMLBLASTER_PING) == 0) {
-         size_t i;
-         for (i=0; i<msgUnitArrP->len; i++) {
-            msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos/>");
-         }
-      }
-      else if (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE) == 0 ||
-               strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
-         if (cb->updateCb != 0) { /* Client has registered to receive callback messages? */
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-               "Calling client %s() for requestId '%s' ...",
-               socketDataHolder.methodName, socketDataHolder.requestId);
-            
-            strcpy(msgUnitArrP->secretSessionId, socketDataHolder.secretSessionId);
-            msgUnitArrP->isOneway = (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
-            cb->updateCb(msgUnitArrP, cb, &xmlBlasterException, &socketDataHolder);
-         }
-      }
-      else {
-         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
-         "Received unknown callback methodName=%s", socketDataHolder.methodName);
-      }
-   }
-
-   /* Enable listening threads to terminate */
-   pthread_mutex_unlock(&cb->listenMutex);
-   pthread_join(cb->tcpListenThread, NULL);
+   pthread_join(tcpListenThread, NULL);
    free(tcpLoop);
    if (useUdpForOneway) {
-      pthread_join(cb->udpListenThread, NULL);
+      pthread_join(udpListenThread, NULL);
       free(udpLoop);
    }
    rc = pthread_mutex_destroy(&cb->listenMutex);
    if (rc != 0) /* EBUSY */
       cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
-   rc = pthread_cond_destroy(&cb->listenCond);
-   if (rc != 0) /* EBUSY */
-      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_cond_destroy() returned %d, we ignore it", rc);
 
    cb->isShutdown = true;
    return 0;

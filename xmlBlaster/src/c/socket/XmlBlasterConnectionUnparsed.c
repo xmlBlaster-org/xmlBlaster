@@ -77,7 +77,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
-   xb->useUdpForOneway = false; /* For publishOneway() only */
+   xb->useUdpForOneway = false; /* For publishOneway() AND to start callback UDP server (for updateOneway()) */
    return xb;
 }
 

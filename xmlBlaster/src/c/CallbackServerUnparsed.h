@@ -134,15 +134,7 @@ struct CallbackServerUnparsedStruct {
    CallbackServerUnparsedSendXmlBlasterException sendXmlBlasterException;
    CallbackServerUnparsedDoRespond sendResponseOrException;
 
-   /* two listening threads: TCP, UDP */
-   pthread_t tcpListenThread, udpListenThread;
    pthread_mutex_t listenMutex;
-   pthread_cond_t listenCond;
-
-   /* for passing results between threads */
-   XmlBlasterException xmlBlasterException;
-   SocketDataHolder socketDataHolder;
-   bool success;
 
 };
 
