@@ -1,0 +1,291 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.java.applet' type='NEW' prio='LOW' status='CLOSED'>
+   <topic>
+      XmlBlaster provides a tiny java client library for applets
+   </topic>
+   <description>
+     <p>
+     If you develop applets you can connect with our tiny client java library
+     <code>xmlBlasterAppletLib.jar</code> to xmlBlaster.
+     
+     
+     </p>
+     <h2>Features</h2>
+     <ul>
+        <li> Supports complete xmlBlaster access including <i>real time</i> asynchronous
+             callbacks.</li>
+
+        <li> This client library has a size of only 23 kBytes and the download time
+             over ISDN is about 3 seconds.</li>
+
+        <li> The communication protocol is based on a persistent http connection which is used
+             to push back callback messages</li>
+
+        <li> The connection tunnels internet proxies and firewalls</li>
+        
+        <li> Reports exceptions nicely back to the client</li>
+    </ul>
+
+     <h2>Overview</h2>
+     <p>
+     The following illustration shows a typical use case, an applet running behind
+     internat proxies (like <a href="http://www.squid-cache.org/" target="others">squid</a>) and
+     firewalls. It contacts the Web Server, for example <a href="http://www.apache.org/" target="others">Apache</a>,
+     which directs the call to a servlet engine with xmlBlasters communication servlet.
+     The servlet looks at the applet request and opens a connection to xmlBlaster to
+     delegate the request.
+     </p>
+     <p>Note the two clients, the <i>Browser client</i> is an example which runs without an applet
+     namely with pure Javascript callbacks. This example is described in requirement <i>client.browser</i>
+     </p>
+     <center><img src="persistentHttp.gif" name="persistentHttp" align="center" border="1"/></center>
+     <p>
+     <p>
+     Supported applet methdos are
+     </p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
+     </ul>
+     </p>
+   </description>
+
+   <example lang="Java" type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>
+      This example shows an applet which invokes the full set of supported methods.
+      </p>
+      <pre bgcolor="#ffffff" text="#000000">
+<a name="line1" href="#line1"> 1</a> <font color="0000ff"><strong>package http.applet;</strong></font>
+<a name="line2" href="#line2"> 2</a> 
+<a name="line3" href="#line3"> 3</a> <font color="0000ff"><strong>import org.xmlBlaster.client.protocol.http.applet.I_CallbackRaw;</strong></font>
+<a name="line4" href="#line4"> 4</a> <font color="0000ff"><strong>import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;</strong></font>
+<a name="line5" href="#line5"> 5</a> <font color="0000ff"><strong>import org.xmlBlaster.client.protocol.http.applet.XmlBlasterAccessRaw;</strong></font>
+<a name="line6" href="#line6"> 6</a> <font color="0000ff"><strong>import org.xmlBlaster.client.protocol.http.applet.Msg;</strong></font>
+<a name="line7" href="#line7"> 7</a> <font color="0000ff"><strong>import java.applet.Applet;</strong></font>
+<a name="line8" href="#line8"> 8</a> <font color="0000ff"><strong>import java.awt.Graphics;</strong></font>
+<a name="line9" href="#line9"> 9</a> <font color="0000ff"><strong>import java.awt.TextArea;</strong></font>
+<a name="line10" href="#line10">10</a> <font color="0000ff"><strong>import java.awt.Color;</strong></font>
+<a name="line11" href="#line11">11</a> <font color="0000ff"><strong>import java.util.Map;</strong></font>
+<a name="line12" href="#line12">12</a> 
+<a name="line13" href="#line13">13</a> <font color="#444444"><i>/**
+<a name="line14" href="#line14">14</a>  * An example applet which connects to xmlBlaster using a persistent
+<a name="line15" href="#line15">15</a>  * http tunnel for callbacks. 
+<a name="line16" href="#line16">16</a>  *
+<a name="line17" href="#line17">17</a>  * @author &lt;a href=&quot;mailto:xmlBlaster@marcelruff.info&quot;&gt;Marcel Ruff&lt;/a&gt;
+<a name="line18" href="#line18">18</a>  * @see &lt;a href=&quot;http://www.xmlblaster.org/xmlBlaster/demo/http/index.html&quot;&gt;
+<a name="line19" href="#line19">19</a>  *       http://www.xmlblaster.org/xmlBlaster/demo/http/index.html&lt;/a&gt;
+<a name="line20" href="#line20">20</a>  * @see org.xmlBlaster.util.qos.MsgQosData#toJXPath()
+<a name="line21" href="#line21">21</a>  * @see org.xmlBlaster.util.key.MsgKeyData#toJXPath()
+<a name="line22" href="#line22">22</a>  */</i></font>
+<a name="line23" href="#line23">23</a> <strong>public</strong> <strong>class</strong> <font color="#2040a0">HelloWorld3</font> <strong>extends</strong> <font color="#2040a0">Applet</font> <strong>implements</strong> <font color="#2040a0">I_CallbackRaw</font>
+<a name="line24" href="#line24">24</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line25" href="#line25">25</a>    <font color="#2040a0">I_XmlBlasterAccessRaw</font> <font color="#2040a0">xb</font><font color="4444FF">;</font>
+<a name="line26" href="#line26">26</a>    <font color="#2040a0">TextArea</font> <font color="#2040a0">textArea</font><font color="4444FF">;</font>
+<a name="line27" href="#line27">27</a> 
+<a name="line28" href="#line28">28</a>    <strong>public</strong> <strong>void</strong> <font color="#2040a0">init</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>{</strong></font>
+<a name="line29" href="#line29">29</a>       <font color="#2040a0">System</font>.<font color="#2040a0">out</font>.<font color="#2040a0">println</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;HelloWorld3: Applet.init() called&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line30" href="#line30">30</a>       <strong>try</strong> <font color="4444FF"><strong>{</strong></font>
+<a name="line31" href="#line31">31</a>          <font color="#2040a0">setBackground</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">Color</font>.<font color="#2040a0">white</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line32" href="#line32">32</a>          <font color="#2040a0">setForeground</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">Color</font>.<font color="#2040a0">black</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line33" href="#line33">33</a>          <strong>this</strong>.<font color="#2040a0">textArea</font> <font color="4444FF">=</font> <strong>new</strong> <font color="#2040a0">TextArea</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&quot;</font>, <font color="#FF0000">12</font>, <font color="#FF0000">60</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line34" href="#line34">34</a>          <strong>this</strong>.<font color="#2040a0">textArea</font>.<font color="#2040a0">setBackground</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">Color</font>.<font color="#2040a0">white</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line35" href="#line35">35</a>          <strong>this</strong>.<font color="#2040a0">textArea</font>.<font color="#2040a0">setForeground</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">Color</font>.<font color="#2040a0">black</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line36" href="#line36">36</a>          <font color="#2040a0">add</font><font color="4444FF"><strong>(</strong></font><strong>this</strong>.<font color="#2040a0">textArea</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line37" href="#line37">37</a>          <font color="#2040a0">repaint</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line38" href="#line38">38</a> 
+<a name="line39" href="#line39">39</a>          <strong>this</strong>.<font color="#2040a0">xb</font> <font color="4444FF">=</font> <strong>new</strong> <font color="#2040a0">XmlBlasterAccessRaw</font><font color="4444FF"><strong>(</strong></font><strong>this</strong><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line40" href="#line40">40</a>          <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">connect</font><font color="4444FF"><strong>(</strong></font><strong>null</strong>, <strong>this</strong><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line41" href="#line41">41</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Connected to xmlBlaster&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line42" href="#line42">42</a> 
+<a name="line43" href="#line43">43</a>          <font color="#2040a0">Map</font> <font color="#2040a0">subReturnQos</font> <font color="4444FF">=</font> <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">subscribe</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;key oid='HELLO'/&gt;&quot;</font>, <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line44" href="#line44">44</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Subscribed, id=&quot;</font> <font color="4444FF">+</font> <font color="#2040a0">subReturnQos</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/qos/subscribe/@id&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line45" href="#line45">45</a> 
+<a name="line46" href="#line46">46</a>          <font color="#2040a0">Map</font> <font color="#2040a0">pubReturnQos</font> <font color="4444FF">=</font> <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">publish</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;key oid='HELLO'/&gt;&quot;</font>,
+<a name="line47" href="#line47">47</a>                                  <font color="#008000">&quot;Hello World&quot;</font>.<font color="#2040a0">getBytes</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font>, <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line48" href="#line48">48</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Published 'HELLO', returned status is &quot;</font> <font color="4444FF">+</font>
+<a name="line49" href="#line49">49</a>                      <font color="#2040a0">pubReturnQos</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/qos/state/@id&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line50" href="#line50">50</a> 
+<a name="line51" href="#line51">51</a>          <font color="#2040a0">Map</font><font color="4444FF"><strong>[</strong></font><font color="4444FF"><strong>]</strong></font> <font color="#2040a0">unSubReturnQos</font> <font color="4444FF">=</font> <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">unSubscribe</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;key oid='&quot;</font> <font color="4444FF">+</font>
+<a name="line52" href="#line52">52</a>                    <font color="#2040a0">subReturnQos</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/qos/subscribe/@id&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">+</font><font color="#008000">&quot;'/&gt;&quot;</font>, <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line53" href="#line53">53</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;UnSubscribed &quot;</font> <font color="4444FF">+</font> <font color="#2040a0">unSubReturnQos</font>.<font color="#2040a0">length</font> <font color="4444FF">+</font> <font color="#008000">&quot; topics&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line54" href="#line54">54</a> 
+<a name="line55" href="#line55">55</a>          <font color="#2040a0">Msg</font><font color="4444FF"><strong>[</strong></font><font color="4444FF"><strong>]</strong></font> <font color="#2040a0">msgs</font> <font color="4444FF">=</font> <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;key oid='HELLO'/&gt;&quot;</font>, <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line56" href="#line56">56</a>          <strong>for</strong> <font color="4444FF"><strong>(</strong></font><strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgs</font>.<font color="#2040a0">length</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+<a name="line57" href="#line57">57</a>             <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Get returned key=&quot;</font> <font color="4444FF">+</font> <font color="#2040a0">msgs</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">i</font><font color="4444FF"><strong>]</strong></font>.<font color="#2040a0">getKey</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/key/@oid&quot;</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF">+</font>
+<a name="line58" href="#line58">58</a>                                     <font color="#008000">&quot; content=&quot;</font> <font color="4444FF">+</font> <font color="#2040a0">msgs</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">i</font><font color="4444FF"><strong>]</strong></font>.<font color="#2040a0">getContentStr</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line59" href="#line59">59</a>          <font color="4444FF"><strong>}</strong></font>
+<a name="line60" href="#line60">60</a> 
+<a name="line61" href="#line61">61</a>          <font color="#2040a0">Map</font><font color="4444FF"><strong>[</strong></font><font color="4444FF"><strong>]</strong></font> <font color="#2040a0">eraseReturnQos</font><font color="4444FF">=</font><strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">erase</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;key oid='HELLO'/&gt;&quot;</font>,<font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line62" href="#line62">62</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Erase &quot;</font> <font color="4444FF">+</font> <font color="#2040a0">eraseReturnQos</font>.<font color="#2040a0">length</font> <font color="4444FF">+</font> <font color="#008000">&quot; topics&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line63" href="#line63">63</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line64" href="#line64">64</a>       <strong>catch</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">Exception</font> <font color="#2040a0">e</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+<a name="line65" href="#line65">65</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;No connection to xmlBlaster: &quot;</font> <font color="4444FF">+</font> <font color="#2040a0">e</font>.<font color="#2040a0">toString</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line66" href="#line66">66</a>          <font color="#2040a0">e</font>.<font color="#2040a0">printStackTrace</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line67" href="#line67">67</a>          <font color="#2040a0">showStatus</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;HelloWorld3: No connection to xmlBlaster&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line68" href="#line68">68</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line69" href="#line69">69</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line70" href="#line70">70</a>  
+<a name="line71" href="#line71">71</a>    <strong>private</strong> <strong>void</strong> <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">String</font> <font color="#2040a0">text</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+<a name="line72" href="#line72">72</a>       <strong>this</strong>.<font color="#2040a0">textArea</font>.<font color="#2040a0">append</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;HelloWorld3: &quot;</font> <font color="4444FF">+</font> <font color="#2040a0">text</font> <font color="4444FF">+</font> <font color="#008000">&quot;<font color="#77dd77">\n</font>&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line73" href="#line73">73</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line74" href="#line74">74</a> 
+<a name="line75" href="#line75">75</a>    <strong>public</strong> <strong>void</strong> <font color="#2040a0">destroy</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>{</strong></font>
+<a name="line76" href="#line76">76</a>       <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Applet destroy ...&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line77" href="#line77">77</a>       <strong>if</strong> <font color="4444FF"><strong>(</strong></font><strong>this</strong>.<font color="#2040a0">xb</font> <font color="4444FF">!</font><font color="4444FF">=</font> <strong>null</strong><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+<a name="line78" href="#line78">78</a>          <strong>this</strong>.<font color="#2040a0">xb</font>.<font color="#2040a0">disconnect</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line79" href="#line79">79</a>          <strong>this</strong>.<font color="#2040a0">xb</font> <font color="4444FF">=</font> <strong>null</strong><font color="4444FF">;</font>
+<a name="line80" href="#line80">80</a>          <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;Disconnected from xmlBlaster&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line81" href="#line81">81</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line82" href="#line82">82</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line83" href="#line83">83</a> 
+<a name="line84" href="#line84">84</a>    <font color="#444444"><i>/**
+<a name="line85" href="#line85">85</a>     * Here you receive the callback messages from xmlBlaster. 
+<a name="line86" href="#line86">86</a>     */</i></font>
+<a name="line87" href="#line87">87</a>    <strong>public</strong> <font color="#2040a0">String</font> <font color="#2040a0">update</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">String</font> <font color="#2040a0">cbSessionId</font>, <font color="#2040a0">Map</font> <font color="#2040a0">updateKey</font>, <strong>byte</strong><font color="4444FF"><strong>[</strong></font><font color="4444FF"><strong>]</strong></font> <font color="#2040a0">content</font>,
+<a name="line88" href="#line88">88</a>                         <font color="#2040a0">Map</font> <font color="#2040a0">updateQos</font><font color="4444FF"><strong>)</strong></font> <strong>throws</strong> <font color="#2040a0">Exception</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line89" href="#line89">89</a>       <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;---- START update received -----&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line90" href="#line90">90</a>       <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;key=&quot;</font> <font color="4444FF">+</font> <font color="#2040a0">updateKey</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/key/@oid&quot;</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF">+</font> <font color="#008000">&quot; state=&quot;</font> <font color="4444FF">+</font>
+<a name="line91" href="#line91">91</a>             <font color="#2040a0">updateQos</font>.<font color="#2040a0">get</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/qos/state/@id&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line92" href="#line92">92</a>       <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;update received: content=&quot;</font> <font color="4444FF">+</font> <strong>new</strong> <font color="#2040a0">String</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">content</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line93" href="#line93">93</a>       <font color="#2040a0">print</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;---- END   update received -----&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+<a name="line94" href="#line94">94</a>       <strong>return</strong> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line95" href="#line95">95</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line96" href="#line96">96</a> <font color="4444FF"><strong>}</strong></font>
+</pre>
+   <p>
+   In the <code>init()</code> method we connect to xmlBlaster and subscribe on a message which we later
+   publish. This message is received asynchronous in the <code>update</code> method.
+   </p>
+   <p>
+   When the applet is destroyed we disconnect from xmlBlaster.
+   </p>
+   <p>
+   Finally we need to embed the applet into a html page:
+   </p>
+   <pre bgcolor="#ffffff" text="#000000"><![CDATA[
+<html>
+ <head>
+ </head>
+ <body>
+   <h2>Hello World 3 Applet</h2>
+
+   <applet code="http.applet.HelloWorld3.class"
+       width="700" height="200"
+       name="XmlBlasterAccess"
+       archive="appletDemo.jar,xmlBlasterAppletLib.jar"
+       MAYSCRIPT>
+ 
+     <param name="deliveredParamKeys" 
+            value="protocol,xmlBlaster/logLevels" />
+     <param name="protocol" value="SOCKET" />
+     <param name="xmlBlaster/logLevels" value="ERROR,WARN,INFO" />
+ 
+   </applet>
+ 
+ </body>
+</html>]]>
+   </pre>
+   </example>
+
+   <example type="HTML">
+   <h3>Quick start installation of the above applet</h3>
+<p>
+You can try it with tomcat locally (no apache is necessary,
+i had tomcat 3.2.4, 4.1.29 and 5.0.14 to test it, others should work as well):
+</p>
+<h3>
+1. Create a war file:
+</h3>
+<pre>
+  cd xmlBlaster
+
+  build.sh  -DTOMCAT_HOME=/opt/jakarta_tomcat   deploy_war
+</pre>
+<p>
+Set TOMCAT_HOME to point to your installation and the <code>xmlBlaster.war</code>
+ will be automatically deployed to <code>$TOMCAT_HOME/webapps/xmlBlaster.war</code>
+</p>
+<h3>
+2. Start it (keep port 8080 free for tomcat)
+</h3>
+<pre>
+  java org.xmlBlaster.Main -plugin/xmlrpc/port 8081   
+  
+  java  http.dhtml.systemInfo.SystemInfoPublisher
+
+ cd $TOMCAT_HOME
+ startup.sh
+</pre>
+
+<h3>3. Start your browser and use this URL:</h3>
+<pre>
+http://localhost:8080/xmlBlaster/HelloWorld3.html
+</pre>
+<pre>
+http://localhost:8080/xmlBlaster/SystemInfoApplet.html
+</pre>
+   </example>
+
+   <configuration where="client">
+      <p><a NAME="config"></a>
+      This client applet works without a XML parser to have a very small memory (download) footprint.
+      The returned key and QoS are in a Map, the keys follow the JXPath syntax.
+      </p>
+      <p>
+      The interface I_XmlBlasterAccessRaw has two useful methods: <code>getHtmlProperties()</code>
+      to access the HTML applet PARAM tags and <code>setLogListener()</code> to redirect
+      logging output to your application.
+      </p>
+      <p>
+      The servlet configuration, like logging and setting xmlBlaster-queue or connection parameters is done in
+      <code>xmlBlaster/demo/http/WEB-INF/web.xml</code>.
+      </p>
+   </configuration>
+
+   <todo type='HTML'>
+      <h2>This beta release is considered stable, but we need to:</h2>
+      <p>
+      <ul>
+      <li> Port the connect() return XML string to a JXPath Map</li>
+
+      <li> Passing the getHtmlProperties() properties to the servlet to configure the Global there</li>
+
+      <li> Probably port the remaining URLEncode to Base64</li>
+
+      <li> Check the code POST versus GET</li>
+
+      <li> Verify with other browsers and proxies, currently only mozilla with squid is tested</li>
+      </ul>
+      </p>
+   </todo>
+
+   <see type="API">org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw</see>
+   <see type="REQ">interface</see>
+   <see type="REQ">client.browser</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/http/index.html</see>
+   <see type="INTERNET">http://jakarta.apache.org/tomcat/</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/index.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/HelloWorld3.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/SystemInfoApplet.html</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
+   <date>2003 11 16</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+   </testcase>
+</requirement>
+
