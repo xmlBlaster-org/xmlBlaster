@@ -622,34 +622,31 @@ TODO
    </target>
    <!-- =================================================================== -->
    <!-- Builds the JBoss embeddable XmlBlaster MBean                        -->
+   <!-- The embedded xmlBlaster.jar is striped on its config files          -->
    <!-- =================================================================== -->
    <target name="jboss-sar" depends="xmlBlaster">
       <mkdir dir="${build.dir}/sar"/>
       <copy file="./config/xmlBlaster-jmx.properties.template" tofile="${build.dir}/sar/xmlBlaster.properties" filtering="true"/>
-     <jar destfile="${build.dir}/xmlBlaster.sar">
-       <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
-                   includes="jboss-service.xml"
-                   prefix="META-INF"/>
-       <fileset dir="${build.dir}"
-                includes="xmlBlaster.jar"
+      <copy file="./config/jbossPlugins.xml.template" tofile="${build.dir}/sar/xmlBlasterPlugins.xml" filtering="true"/>
+    <!-- Clean xmlBlaster -->
+    <jar destfile="${build.dir}/sar/xmlBlaster.jar">
+      <zipfileset src="${build.dir}/xmlBlaster.jar"
+	excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
+    </jar>
+    
+    <jar destfile="${build.dir}/xmlBlaster.sar">
+      <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
+	includes="jboss-service.xml"
+	prefix="META-INF"/>
+      <fileset dir="${lib.dir}"
+	includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
         />
-        <fileset dir="${lib.dir}"
-                includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
+      <fileset dir="${build.dir}/sar"
+	includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
         />
-       <fileset dir="${build.dir}/sar"
-                includes="xmlBlaster.properties"
-        />
-     </jar>
-
-     <ear destfile="${build.dir}/xmlBlaster-sar.ear" appxml="${src.java.dir}/org/xmlBlaster/j2ee/jmx/application.xml">
-         <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
-                   includes="jboss-app.xml"
-                   prefix="META-INF"/>
-         <fileset dir="${build.dir}/"
-                includes="xmlBlaster.sar"
-        />
-     </ear>
-     <copy file="${build.dir}/xmlBlaster-sar.ear" tofile="${lib.dir}/xmlBlaster-sar.ear"/>
+    </jar>
+    
+     <copy file="${build.dir}/xmlBlaster.sar" tofile="${lib.dir}/xmlBlaster.sar"/>
      <delete dir="${build.dir}/sar"/>
    </target>
    <!-- =================================================================== -->
@@ -660,15 +657,21 @@ TODO
       <!-- create tmp dir to build it up -->
       <mkdir dir="${build.dir}/ra"/>
       <mkdir dir="${build.dir}/ra/META-INF"/>
-      <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
+
       <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
-<!-- Ad propertyfile to build by uncommenting this
-       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties" toFile="${build.dir}/ra/blasterk2.properties"/>
--->
-      <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
-      <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
-      <delete dir="${build.dir}/ra"/>
+    <!-- Remove propertyfile from build by commenting this  out   -->
+    <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties" toFile="${build.dir}/ra/blasterk2.properties"/>
+
+    <!-- Clean xmlBlaster - uncomment this if you do not run the embedded XmlBlaster in the same server
+    <jar destfile="${build.dir}/ra/xmlBlaster.jar">
+      <zipfileset src="${build.dir}/xmlBlaster.jar"
+	excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
+    </jar>-->
+    
+    <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
+    <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
+    <delete dir="${build.dir}/ra"/>
    </target>
    <!-- =================================================================== -->
    <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
