@@ -63,7 +63,7 @@ ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.Corb
 #plugin/socket/port=7607
 #plugin/xmlrpc/port=1281
 #-DOAPort=7609
-#-Djacorb.verbosity=5
+#-Djacorb.log.default.verbosity=5
 #
 # Set logging
 #

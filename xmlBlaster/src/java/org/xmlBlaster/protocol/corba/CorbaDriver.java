@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.73 2004/02/22 17:28:27 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.74 2004/04/26 08:20:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -633,7 +633,7 @@ public class CorbaDriver implements I_Driver
       text += " For JacORB only:\n";
       text += "   java -DOAIAddr=<ip> Use '-plugin/ior/hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-plugin/ior/port'\n";
-      text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
+      text += "   java -Djacorb.log.default.verbosity=3  Switch CORBA debugging on\n";
       text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";
       return text;
