@@ -145,7 +145,7 @@ TODO
    <!-- =================================================================== -->
    <!-- property name="use-msvc" value="1" /-->  <!-- Better from outside: build.bat -verbose -Duse-msvc=1 cpp -->
    <property name="compiler" value="msvc"/> <!-- "gcc" "VC6" "bcc" "msvc" -->
-   <property name="debug" value="true" />
+   <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
    <property name="src.cpp.dir" value="./src/c++"/>
@@ -1282,7 +1282,7 @@ TODO
          <else>
             <echo message="Generating IDL stubs and skeletons for os=${os.family}" />
             <!-- A typical MICO idl CORBA compile:
-              /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+              /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
             -->
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
@@ -1291,6 +1291,7 @@ TODO
                <env key="PATH" path="${CORBACPP_HOME}/bin" />
                <arg line="--poa"/>
                <arg line="--c++-suffix cpp"/>
+               <arg line="--windows-dll"/>                               <!-- To export from windows DLL -->
                <arg line="../../../${idl.file}"/>
             </exec>
             <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
@@ -1360,7 +1361,7 @@ TODO
 
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
 
-      <cc debug="true" link="shared"
+      <cc debug="${cpp.debug}" link="shared"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
@@ -1409,6 +1410,7 @@ TODO
             <!-- MICO -->
             <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
             <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+            <syslibset libs="ws2_32" if="MICO,windows" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
@@ -1446,14 +1448,15 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
-      <foreach list="TestConnectQos,TestCorbaDriver,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestGet,TestSub,TestSubXPath,TestRam,TestTimeout,TestTimestamp" target="compileCppExe" param="exeName" delimiter="," />
+      <foreach list="TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestGet,TestSub,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver"
+               target="compileCppExe" param="exeName" delimiter="," />
    </target>
 
    <target name="compileCppExe" description="For internal use only (C++ clients build)">
       <echo message="Compiling of C++ test client '${testsuite.dir}/src/c++/bin/${exeName}' ..."/>
       <mkdir dir="${build.dir}/obj"/>
       <mkdir dir="${testsuite.dir}/src/c++/bin"/>
-      <cc debug="true" link="executable"
+      <cc debug="${cpp.debug}" link="executable"
           outfile="${testsuite.dir}/src/c++/bin/${exeName}"
           objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
@@ -1537,7 +1540,7 @@ TODO
       <echo message="Compiling of C++ demo client '${demo.dir}/c++/bin/${exeName}' ..."/>
       <mkdir dir="${build.dir}/obj"/>
       <mkdir dir="${demo.dir}/c++/bin"/>
-      <cc debug="true" link="executable"
+      <cc debug="${cpp.debug}" link="executable"
           outfile="${demo.dir}/c++/bin/${exeName}"
           objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
