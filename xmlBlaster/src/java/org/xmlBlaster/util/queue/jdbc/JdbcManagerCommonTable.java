@@ -285,7 +285,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return true;
       }
       catch (Throwable ex) {
-         this.log.warn(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
+         if (log.TRACE) this.log.trace(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
          return false;
       }
 /*
@@ -858,7 +858,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.error(ME, "error occured when trying to rollback after exception: reason: " + ex1.toString() + " original reason:" + ex.toString());
             ex.printStackTrace(); // original stack trace
          }
-         this.log.warn(getLogId(queueName, "addEntries"), "Could not insert entries: " + ex.toString());
+         if (log.TRACE) this.log.trace(getLogId(queueName, "addEntries"), "Could not insert entries: " + ex.toString());
          if ((!this.supportsBatch || !this.enableBatchMode) ||
             checkIfDBLoss(conn, getLogId(queueName, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
@@ -1002,6 +1002,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    /**
     * returns the amount of bytes currently in the specified queue
+    * TODO: Replace all four selects with one:
+    *  "select count(*), sum(byteSize), durable from XB_ENTRIES WHERE queueName='history_xmlBlaster_192_168_1_4_3412Hello' GROUP BY durable;"
     * @param tableName the name of the table in which to count
     * @return the current amount of bytes used in the table.
     */
@@ -2117,6 +2119,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     * gets the real size of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
+    * <br />
+    * TODO: Replace all four selects with one:
+    *  "select count(*), sum(byteSize), durable from XB_ENTRIES WHERE queueName='history_xmlBlaster_192_168_1_4_3412Hello' GROUP BY durable;"
     */
    public final long getSizeOfPersistents(String queueName)
       throws XmlBlasterException {
