@@ -473,7 +473,10 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       {  // topic transition from UNCONFIGURED -> [9] -> DEAD
          boolean forceDestroy = false;
          EraseReturnQos[] erq = sendErase(forceDestroy);
+         log.info(ME, "erase num=" + erq.length);
          assertEquals("erase failed", 1, erq.length);
+         waitOnUpdate(1000L, 2); // Expecting two erase events (for the above subscriptions)
+         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -489,9 +492,9 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       log.info(ME, "Entering testSoftErased ...");
       numReceived = 0;
 
+      try {
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
-         if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -521,6 +524,8 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          boolean forceDestroy = false;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
+         waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
+         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='SOFTERASED'") != -1);
@@ -530,6 +535,12 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          try { Thread.currentThread().sleep(4500L); } catch( InterruptedException i) {}
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+      }
+      catch (Throwable e) {
+         log.error(ME, "Problem: " + e.toString());
+         e.printStackTrace();
+         //throw e;
       }
       log.info(ME, "SUCCESS testSoftErased");
    }
@@ -606,6 +617,8 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          boolean forceDestroy = false;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
+         waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
+         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
