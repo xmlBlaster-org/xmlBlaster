@@ -3,7 +3,7 @@ Name:      Client.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: Client.java,v 1.14 1999/11/16 18:44:48 ruff Exp $
+Version:   $Id: Client.java,v 1.15 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -34,7 +34,7 @@ public class Client
          else if (args.length > 1) {
             String argv = args[0];
             if (argv.equals("-name")) {
-              ME = args[1];
+               ME = args[1];
             }
          }
 
@@ -83,7 +83,8 @@ public class Client
 
          Log.trace(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
 
-         String xmlKey = "KEY_FOR_SMILEY";
+         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                         "<key oid=\"KEY_FOR_SMILEY\"></key>";
 
          try {
             xmlServer.subscribe(xmlKey, qos);
@@ -100,7 +101,7 @@ public class Client
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
          // Construct a message
-         String str = "Smiley changed";
+         String str = "Yeahh, i'm the new content - Smiley changed";
          MessageUnit[] marr = new MessageUnit[1];
          marr[0] = new MessageUnit(xmlKey, str.getBytes());
          String[] qarr = new String[1];

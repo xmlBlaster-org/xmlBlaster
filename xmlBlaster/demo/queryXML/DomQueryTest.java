@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.3 1999/11/17 10:16:56 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.4 1999/11/17 13:51:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -36,7 +36,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Attr;
 
 import com.fujitsu.xml.omquery.DomQueryMgr;
-import com.fujitsu.xml.omquery.FujitsuXMLProcessorImpl;
 
 class DomQueryTest
 {

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding="ISO-8859-1" ?> 
+<?xml version='1.0' encoding='ISO-8859-1' ?> 
 
 <!-- xmlBlaster.org Demo -->
 <!-- Example of distributed agents controlling a computer network -->
@@ -8,13 +8,13 @@
 <!-- Exapmples how to subscribe to MessageUnits: -->
 
 <!-- Accessing key with oid=2
-        java DomQueryTest Agent.xml xmlBlaster/key[@oid=\"2\"] -->
+        java DomQueryTest Agent.xml xmlBlaster/key[@oid='2'] -->
 
 <!-- Accessing all FileProof drivers
         java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] -->
 
 <!-- Accessing all drivers not named FileProff
-        java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id!=\"FileProof\"] -->
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id!='FileProof'] -->
 
 <!-- Accessing everything from host 192.168.124.10
         java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] -->
@@ -34,27 +34,27 @@
 
 <!-- Selecting all DRIVER which have an AGENT as parent (child:: is optional and default)
         java DomQueryTest Agent.xml "//descendant::AGENT/child::DRIVER" -->
-        
+
 <!-- Selecting all import / export EXECUTABLE
         java DomQueryTest Agent.xml "//DRIVER[EXECUTABLE='import' or EXECUTABLE='export']" -->
 
 <xmlBlaster>
 
-   <key oid="1">
+   <key oid='1'>
       <AGENT id="192.168.124.10" subId="1" type="generic">
          <DRIVER id="FileProof" pollingFreq="10">
          </DRIVER>
       </AGENT>
    </key>
 
-   <key oid="2">
+   <key oid='2'>
       <AGENT id="192.168.124.11" subId="1" type="generic">
          <DRIVER id="FileProof" pollingFreq="10">
          </DRIVER>
       </AGENT>
    </key>
 
-   <key oid="3">
+   <key oid='3'>
       <AGENT id="192.168.124.12" subId="1" type="generic">
          <DRIVER id="FileProof" pollingFreq="10">
          </DRIVER>

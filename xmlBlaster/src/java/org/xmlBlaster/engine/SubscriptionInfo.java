@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.4 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.5 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,7 +27,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    private long creationTime = System.currentTimeMillis();
 
-   public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS)
+   public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
       this.clientInfo = clientInfo;
       this.xmlKey = xmlKey;

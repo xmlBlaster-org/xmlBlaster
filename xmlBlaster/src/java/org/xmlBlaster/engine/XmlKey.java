@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.2 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.3 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,18 +27,12 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
    private String mimeType = "xml";  // hack !!!! needs to be parsed with SAX
 
 
-   public XmlKey(String xmlKey_literal)
+   public XmlKey(String xmlKey_literal) throws XmlBlasterException
    {
       super(xmlKey_literal);
 
       // !!! hack: use SAX parser or generate one !!!
       this.uniqueKey = xmlKey_literal;
-   }
-
-
-   public String getUniqueKey()
-   {
-      return uniqueKey;
    }
 
 

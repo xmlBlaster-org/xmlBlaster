@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.4 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.5 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -93,7 +93,7 @@ public class MessageUnitHandler
     */
    public boolean setContent(byte[] content)
    {
-      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + messageUnit.xmlKey.toString());
+      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + messageUnit.xmlKey.getUniqueKey());
 
       if (content == null)
          content = new byte[0];

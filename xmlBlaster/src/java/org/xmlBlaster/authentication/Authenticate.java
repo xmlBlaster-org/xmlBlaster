@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.8 1999/11/16 18:57:44 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.9 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -20,6 +20,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 import java.util.*;
 
 import org.omg.PortableServer.*;
+import jacorb.poa.util.POAUtil;
 
 
 /**
@@ -213,6 +214,7 @@ public class Authenticate
     */
    public ClientInfo check() throws XmlBlasterException
    {
+      byte[] active_oid;
       String uniqueClientKey;
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try { 
@@ -222,7 +224,7 @@ public class Authenticate
          // org.omg.PortableServer.Current poa_current = xmlBlasterPOA.getORB().orb.getPOACurrent();
          org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
                                                       orb.resolve_initial_references("POACurrent"));
-         byte[] active_oid = poa_current.get_object_id();
+         active_oid = poa_current.get_object_id();
          uniqueClientKey = new String(active_oid);
       } catch (Exception e) {
          Log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
@@ -241,7 +243,9 @@ public class Authenticate
       ClientInfo clientInfo = (ClientInfo)obj;
 
       if (Log.TIME) Log.time(ME, "Elapsed time in check()" + stop.nice());
-      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() + " oid=<" + uniqueClientKey + ">" + stop.nice());
+      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() +
+                      " oid=<" + POAUtil.convert(active_oid, true) + ">" + stop.nice());
+
       return clientInfo;
    }
 }

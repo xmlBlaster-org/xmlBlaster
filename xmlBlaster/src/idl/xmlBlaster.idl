@@ -11,7 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.18 1999/11/16 19:14:33 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.19 1999/11/17 13:51:25 ruff Exp $
 ================================================================================
 */
 
@@ -90,7 +90,8 @@ module clientIdl
        * @param qos         Qualitiy of Service for each MessageUnit
        */
      oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
-                 in serverIdl::XmlTypeArr qosArr);
+                        in serverIdl::XmlTypeArr qosArr)
+                                raises(serverIdl::XmlBlasterException);
    };
 
 }; // org::xmlBlaster::clientIdl

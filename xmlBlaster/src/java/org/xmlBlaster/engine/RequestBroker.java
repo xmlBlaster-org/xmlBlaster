@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.9 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.10 1999/11/17 13:51:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public class RequestBroker
 {
-   final private String ME = "RequestBroker";
+   final private static String ME = "RequestBroker";
 
    private static RequestBroker requestBroker = null; // Singleton pattern
 
@@ -28,8 +28,12 @@ public class RequestBroker
 
    final private ServerImpl serverImpl;
 
+   private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
 
 
+   /**
+    * Access to RequestBroker singleton
+    */
    public static RequestBroker getInstance(ServerImpl serverImpl)
    {
       synchronized (RequestBroker.class)
@@ -42,11 +46,35 @@ public class RequestBroker
 
 
    /**
+    * Access to RequestBroker singleton
+    */
+   public static RequestBroker getInstance()
+   {
+      synchronized (RequestBroker.class)
+      {
+         if (requestBroker == null)
+            Log.panic(ME, "Use other getInstance first");
+      }
+      return requestBroker;
+   }
+
+
+   /**
     * private Constructor for Singleton Pattern
     */
    private RequestBroker(ServerImpl serverImpl)
    {
       this.serverImpl = serverImpl;
+      this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
+   }
+
+
+   /**
+    * Accessing the  XML to DOM parser
+    */
+   public com.jclark.xsl.dom.XMLProcessorImpl getXMLProcessorImpl()
+   {
+      return this.xmlProc;
    }
 
 
