@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.9 2002/06/02 22:39:59 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.10 2002/06/25 17:41:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -92,8 +92,9 @@ module clientIdl
        * @exception On severe problem or on authentication deny
        *            an XmlBlasterException is thrown, all messages
        *            of this array are treated as lost
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.update.html" target="others">the interface.update requirement</a>
        */
-     serverIdl::StringArr update(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr)
+     serverIdl::XmlTypeArr update(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr)
                                 raises(serverIdl::XmlBlasterException);
 
       /**
@@ -205,6 +206,7 @@ module serverIdl
        *
        * @see addListener in Java event model
        * @see addObserver in Java observer pattern
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html" target="others">the interface.subscribe requirement</a>
        */
       XmlType subscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
@@ -219,6 +221,7 @@ module serverIdl
        * @param qos     Quality of Service, flags to control get()<br>
        *                See xmlBlaster/src/dtd/XmlQoS.xml for a description
        * @return Contains a sequence of 0 - n MessageUnit structs with its qos infos
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html" target="others">the interface.get requirement</a>
        */
       MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
@@ -232,6 +235,7 @@ module serverIdl
        *                See xmlBlaster/src/dtd/XmlKey.xml for a description
        * @param qos     Quality of Service, flags to control canceling of a subscription<br>
        *                See xmlBlaster/src/dtd/XmlQoS.xml for a description
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html" target="others">the interface.unSubscribe requirement</a>
        */
       void unSubscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
@@ -249,6 +253,7 @@ module serverIdl
        *         If you let the oid be generated, you need this information
        *         for further publishing to the same MessageUnit<br>
        *         Rejected Messages will contain an empty string ""
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
        */
       XmlType publish(in MessageUnit msgUnit)
                                           raises(XmlBlasterException);
@@ -290,6 +295,7 @@ module serverIdl
       /**
        * Erase a MessageUnit
        * @return String array with the key oid's which are deleted
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html" target="others">the interface.erase requirement</a>
        */
       XmlTypeArr erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
@@ -339,6 +345,7 @@ module authenticateIdl
        * @exception XmlBlasterException if the login fails
        * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
        * @see             ConnectQos.java Javadoc description
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html" target="others">the interface.connect requirement</a>
        */
       serverIdl::XmlType connect(in serverIdl::XmlType qos)
                               raises (serverIdl::XmlBlasterException);
