@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.4 2000/07/08 16:10:34 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.5 2000/07/08 16:14:48 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
- * This is a specialized JDBC connection pool for xmlBlaster. 
+ * This is a specialized JDBC connection pool for xmlBlaster.
  * <p />
  * It allows accessing any number of different databases with
  * arbitrary login users.<br />
@@ -81,7 +81,7 @@ public class NamedConnectionPool
 
 
    /**
-    * Use this method to get a JDBC connection. 
+    * Use this method to get a JDBC connection.
     * <br />
     * The pooling properties are set to default values.
     * @param dbUrl    For example "jdbc:oracle:thin:@localhost:1521:mydb
@@ -167,7 +167,7 @@ public class NamedConnectionPool
 
 
    /**
-    * Destroy the complete named pool of all users. 
+    * Destroy the complete named pool of all users.
     * This object is still valid for further use.
     */
    void destroy()
@@ -276,25 +276,20 @@ public class NamedConnectionPool
 
       /** This callback does nothing (enforced by interface I_PoolManager) */
       public void idleToBusy(Object resource) {
-         if (Log.TRACE) Log.trace(ME, "Entering idleToBusy() ...");
          // Connection con = (Connection)resource;
       }
 
       /** This callback does nothing (enforced by interface I_PoolManager */
       public void busyToIdle(Object resource) {
-         if (Log.TRACE) Log.trace(ME, "Entering busyToIdle() ...");
          // Connection con = (Connection)resource;
       }
 
       /**
-       * Create a new JDBC connection, the driver must be registered already. 
+       * Create a new JDBC connection, the driver must be registered already.
        */
       public Object toCreate(String instanceId) throws JUtilsException {
-         if (Log.TRACE) Log.trace(ME, "Entering toCreate() ...");
          try {
-            synchronized(boss) { // Oracle has problems with multi threaded connection access ...
-               return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
-            }
+            return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
          }
          catch(Exception e) {
             Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
@@ -308,12 +303,9 @@ public class NamedConnectionPool
        * @param The Connection object
        */
       public void toErased(Object resource) {
-         if (Log.TRACE) Log.trace(ME, "Entering toErase() ...");
          Connection con = (Connection)resource;
          try {
-            synchronized(boss) { // Oracle has problems with multi threaded connection access ...
-              con.close();
-            }
+            con.close();
             if (Log.TRACE) Log.trace(ME, "JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
          }
          catch (Exception e) {
