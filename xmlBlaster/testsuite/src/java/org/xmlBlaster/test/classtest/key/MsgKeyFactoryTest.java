@@ -114,7 +114,7 @@ public class MsgKeyFactoryTest extends TestCase {
          String xml = "<key/>";
          MsgKeyData key = factory.readObject(xml);
 
-         assertEquals("", (String)null, key.getOid());
+         assertTrue("", (String)null != key.getOid());
          assertEquals("", false, key.isInternal());
          assertEquals("", false, key.isPluginInternal());
          assertEquals("", false, key.isDeadMessage());
@@ -134,7 +134,7 @@ public class MsgKeyFactoryTest extends TestCase {
       
       try {
          MsgKeyData key = factory.readObject((String)null);
-         assertEquals("", (String)null, key.getOid());
+         assertTrue("", (String)null != key.getOid());  // should be generated
          assertEquals("", (String)null, key.getClientTags());
          assertEquals("", MsgKeyData.CONTENTMIME_DEFAULT, key.getContentMime());
          assertEquals("", (String)null, key.getContentMimeExtended());
