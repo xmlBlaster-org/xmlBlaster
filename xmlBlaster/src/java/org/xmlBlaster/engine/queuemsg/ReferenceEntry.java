@@ -53,6 +53,7 @@ public class ReferenceEntry extends MsgQueueEntry
       this.glob = glob_;
       this.ME = ME;
       setMsgUnitWrapper(msgUnitWrapper);
+      //setSender(msgUnitWrapper.getMsgQosData().getSender());
       setReceiver(receiver);
    }
 
@@ -128,9 +129,10 @@ public class ReferenceEntry extends MsgQueueEntry
       */
       if (msgUnitWrapper != null) {
          msgUnitWrapper.incrementReferenceCounter(-1, storageId);
+         msgUnitWrapper = null;
       }
       else {
-         log.error(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
+         if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
       }
    }
 
@@ -160,11 +162,11 @@ public class ReferenceEntry extends MsgQueueEntry
    }
 
    public MsgUnit getMsgUnit() throws XmlBlasterException {
-      MsgUnitWrapper entry = getMsgUnitWrapper();
-      if (entry == null) {
+      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      if (msgUnitWrapper == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Message " + getUniqueId() + " not found");
       }
-      return entry.getMsgUnit();
+      return msgUnitWrapper.getMsgUnit();
    }
 
    public void setMsgUnitWrapper(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
