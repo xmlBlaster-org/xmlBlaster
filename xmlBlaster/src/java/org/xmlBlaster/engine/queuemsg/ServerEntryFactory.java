@@ -52,10 +52,12 @@ public class ServerEntryFactory implements I_EntryFactory
    private String name = null;
    private LogChannel log = null;
 
-   public static final String ENTRY_TYPE_MSG_SERIAL = "SER-MSG"; // msgUnit was serialized with java.io.Serializable
-   public static final String ENTRY_TYPE_MSG_XML = "XML-MSG"; // msgUnit is dump as XML ASCII string
+   public static final String ENTRY_TYPE_MSG_SERIAL = "MSG_SER"; // msgUnit was serialized with java.io.Serializable
+   public static final String ENTRY_TYPE_MSG_XML = "MSG_XML"; // msgUnit is dump as XML ASCII string
    public static final String ENTRY_TYPE_UPDATE_REF = "UPDATE_REF";
    public static final String ENTRY_TYPE_HISTORY_REF = "HISTORY_REF";
+   public static final String ENTRY_TYPE_TOPIC_SERIAL = "TOPIC_SER";
+   public static final String ENTRY_TYPE_TOPIC_XML = "TOPIC_XML";
    public static final String ENTRY_TYPE_DUMMY = DummyEntry.ENTRY_TYPE;
 
 
@@ -184,6 +186,50 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgUnitWrapper", ex);
          }
       }
+
+      else if (ENTRY_TYPE_TOPIC_XML.equals(type)) {
+         try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+            ObjectInputStream objStream = new ObjectInputStream(bais);
+            Object[] obj = (Object[])objStream.readObject();
+            if (obj.length != 2) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                         "Expected 2 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+            }
+            String qos = (String)obj[0];
+            String key = (String)obj[1];
+            byte[] content = null;
+            PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
+            MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+            MsgUnit msgUnit = new MsgUnit(glob, msgKeyData, content, publishQosServer.getData());
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit);
+            return topicEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_TOPIC_SERIAL.equals(type)) {
+         try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+            ObjectInputStream objStream = new ObjectInputStream(bais);
+            Object[] obj = (Object[])objStream.readObject();
+            if (obj.length != 1) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                         "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+            }
+            MsgUnit msgUnit = (MsgUnit)obj[0];
+            msgUnit.setGlobal(glob);
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit);
+            return topicEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+
+
+
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, isDurable);
          //entry.setUniqueId(timestamp);
