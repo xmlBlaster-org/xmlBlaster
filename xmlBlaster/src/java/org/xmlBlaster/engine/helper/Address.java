@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.7 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: Address.java,v 1.8 2002/05/16 15:35:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -144,6 +144,11 @@ public class Address extends AddressBase
       if (getDelay() > 0)
          buf.append(" delay=").append(getDelay()).append(" retries=").append(getRetries()).append(" maxMsg=").append(getMaxMsg()).append(" pingInterval=").append(getPingInterval());
       return buf.toString();
+   }
+
+   /** @return The literal address as given by getAddress() */
+   public String toString() {
+      return getAddress();
    }
 
    /**
