@@ -49,8 +49,8 @@
          <td>flag</td>
          <td>The flag defaults to zero (all bits are '\0', only version is set to one '1'=49 and 'I'=73 for invoke), possible settings of each byte are:
             <ol>
-               <li>65 (typically 'A') Adler32 checksum is appended (see java.util.zip)</li>
-               <li>90 (typically 'Z') The userData is compressed with gzip (see java.uti.zip)</li>
+               <li>65 (typically 'A') Adler32 checksum is appended (see java.util.zip) [Currently not supported]</li>
+               <li>90 (typically 'Z') The userData is compressed with gzip (see java.uti.zip) [Currently not supported]</li>
                <li>Type of message<ul><li>73 (typically 'I') for invoke request</li><li>82 (typically 'R') for return value</li><li>69 (typically 'E') for exception</li></ul></li>
                <li>null ('\0'), Reserved</li>
                <li>null ('\0'), Reserved</li>
@@ -240,8 +240,8 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <ol>
       <li>
       Currently the server has implemented a one thread/client approach.
-      This doesn't scale very well - probably we should support one thread/request with
-      a thread pools as well.
+      This doesn't scale very well with thousands of clients -
+      probably we should support one thread/request with a thread pools as well.
       </li>
       <li>
       Different encodings on client and server side could be a problem, test with 
@@ -258,7 +258,7 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
