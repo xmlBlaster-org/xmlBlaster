@@ -13,6 +13,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include <sys/types.h>
 #ifdef _WINDOWS
 #else
@@ -20,7 +21,11 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #endif
 #include "callbackServer.h"
 
+# if WIN32
 SOCKET socketToXmlBlaster = -1;
+# else
+int socketToXmlBlaster = -1;
+# endif
 static long requestId = 0;
 #define MAX_SECRETSESSIONID_LEN 256
 static unsigned char secretSessionId[MAX_SECRETSESSIONID_LEN];
@@ -63,20 +68,20 @@ bool initConnection(int argc, char** argv)
 
 # if WIN32
    WORD wVersionRequested;
-	WSADATA wsaData;
-	int err;
-	wVersionRequested = MAKEWORD( 2, 2 );
-	err = WSAStartup( wVersionRequested, &wsaData );
-	if ( err != 0 ) {
+        WSADATA wsaData;
+        int err;
+        wVersionRequested = MAKEWORD( 2, 2 );
+        err = WSAStartup( wVersionRequested, &wsaData );
+        if ( err != 0 ) {
       return 1; // Tell the user that we could not find a usable WinSock DLL
-	}
+        }
  
-	// Confirm that the WinSock DLL supports 2.2.
-	if ( LOBYTE( wsaData.wVersion ) != 2 ||
+        // Confirm that the WinSock DLL supports 2.2.
+        if ( LOBYTE( wsaData.wVersion ) != 2 ||
         HIBYTE( wsaData.wVersion ) != 2 ) {
-	   WSACleanup( );
-	   return 1; 
-	}
+           WSACleanup( );
+           return 1; 
+        }
 # endif
 
    strcpy(serverHostName, "localhost");
@@ -100,14 +105,14 @@ bool initConnection(int argc, char** argv)
    xmlBlasterAddr.sin_family=AF_INET;
 
 # if WIN32_NOT_YET_PORTED // In win  gethostbyname is deprecated
-	const struct addrinfo hints;
+        const struct addrinfo hints;
    struct addrinfo** res;
-	int getaddrinfo(serverHostName, servTcpPort, &hints, res);
-	res->ai_next : ai_family, ai_socktype, and ai_protocol
+        int getaddrinfo(serverHostName, servTcpPort, &hints, res);
+        res->ai_next : ai_family, ai_socktype, and ai_protocol
 
-	...
+        ...
 
-	void freeaddrinfo(*res);
+        void freeaddrinfo(*res);
 # endif
    hostP = gethostbyname(serverHostName);
    //printf("gethostbyname error=%d\n", WSAGetLastError());
@@ -126,17 +131,17 @@ bool initConnection(int argc, char** argv)
          }
          else {
             if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (connect failed) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
-				return 1;
+                                return 1;
          }
       }
       else {
          if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (socket=-1) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
-			return 1;
+                        return 1;
       }
    }
    else {
       if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (hostP=0) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
-		return 1;
+                return 1;
    }
    isInitialized = true;
    return 0;
@@ -185,7 +190,7 @@ bool sendData(const char * const methodName,
    if (data == 0) {
       data = "";
       dataLen = 0;
-	   lenUnzipped = 0;
+           lenUnzipped = 0;
    }
 
    if (exception == 0) {
@@ -222,7 +227,7 @@ bool sendData(const char * const methodName,
    memcpy(rawMsg+currpos, sessionId, strlen(sessionId)+1); // inclusive '\0'
    currpos += strlen(sessionId)+1;
    
-   sprintf(tmp, "%ld", lenUnzipped);
+   sprintf(tmp, "%u", lenUnzipped);
    memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); // inclusive '\0'
    currpos += strlen(tmp)+1;
 
@@ -235,16 +240,16 @@ bool sendData(const char * const methodName,
    
    if (XMLBLASTER_DEBUG) {
       rawMsgStr = toReadableDump(rawMsg, rawMsgLen);
-      printf("xmlBlasterClient: Sending now %ld bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
-		free(rawMsgStr);
+      printf("xmlBlasterClient: Sending now %u bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
+                free(rawMsgStr);
    }
 
    // send the header ...
    numSent = send(socketToXmlBlaster, rawMsg, (int)rawMsgLen, 0);
    if (numSent !=  rawMsgLen) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Sent only %d bytes from %ld\n", numSent, rawMsgLen);
+      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Sent only %d bytes from %ld\n", numSent, rawMsgLen);
+      sprintf(exception->message, "xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       return false;
    }
 
@@ -258,10 +263,10 @@ bool sendData(const char * const methodName,
 
       if (XMLBLASTER_DEBUG) {
          rawMsgStr = toReadableDump(responseHolder->data, responseHolder->dataLen);
-         printf("Received response msgLen=%ld type=%c version=%c requestId=%ld methodName=%s dateLen=%ld data='%.100s ...'\n",
+         printf("Received response msgLen=%u type=%c version=%c requestId=%ld methodName=%s dateLen=%u data='%.100s ...'\n",
                   responseHolder->msgLen, responseHolder->type, responseHolder->version, responseHolder->requestId,
                   responseHolder->methodName, responseHolder->dataLen, rawMsgStr);
-			free(rawMsgStr);
+                        free(rawMsgStr);
       }
    }
 
@@ -283,7 +288,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    char ptr[MSG_LEN_FIELD_LEN+1];
    unsigned char *rawMsg;
    char tmpPtr[256];
-   int numRead;
+   size_t numRead;
    size_t currPos = 0;
 
    // initialize
@@ -295,7 +300,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    // read the first 10 bytes to determine the length
    //numRead = readn(socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN);
    numRead = recv(socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN, 0);
-   printf("readn error=%d\n", WSAGetLastError());
+   //printf("readn error=%d\n", WSAGetLastError());
    if (numRead != MSG_LEN_FIELD_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d header bytes but expected %d", numRead, MSG_LEN_FIELD_LEN);
@@ -304,7 +309,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    }
    strcpy(ptr, msgLenPtr);
    trim(ptr);
-   sscanf(ptr, "%ld", &responseHolder->msgLen);
+   sscanf(ptr, "%u", &responseHolder->msgLen);
 
    // read the complete message
    rawMsg = calloc(responseHolder->msgLen, sizeof(unsigned char));
@@ -312,7 +317,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    numRead = recv(socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
    if (numRead != (responseHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d message bytes but expected %ld", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
+      sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
       if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
       return false;
    }
@@ -350,7 +355,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    strncpy0(tmpPtr, rawMsg+currPos, 256);
    currPos += strlen(tmpPtr)+1;
    trim(tmpPtr);
-   sscanf(tmpPtr, "%ld", &responseHolder->dataLenUncompressed);
+   sscanf(tmpPtr, "%u", &responseHolder->dataLenUncompressed);
 
    // Read the payload
    responseHolder->dataLen = responseHolder->msgLen - currPos;
@@ -361,7 +366,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    rawMsg = 0;
 
    if (responseHolder->type == MSG_TYPE_EXCEPTION) { // convert XmlBlasterException
-	   size_t currpos = 0;
+           size_t currpos = 0;
       strncpy0(exception->errorCode, responseHolder->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       currpos += strlen(exception->errorCode) + 1;
       sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, responseHolder->data+currpos);
@@ -385,10 +390,10 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
  */
 static char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
 {
-	ResponseHolder responseHolder;
+        ResponseHolder responseHolder;
    char *response;
    
-	if (qos == 0 || exception == 0) {
+        if (qos == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterConnect()");
       if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
@@ -406,23 +411,23 @@ static char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exce
 
    // Extract secret session ID from ConnectReturnQos
    *secretSessionId = 0;
-	{
+        {
       const char *pEnd = (const char *)0;
-	   const char *pStart = strstr(response, "sessionId='");
-	   if (pStart) {
-	      pStart += strlen("sessionId='");
-	      pEnd = strstr(pStart, "'");
-	      if (pEnd) {
-	         int len = (int)(pEnd - pStart + 1);
-	         if (len >= MAX_SECRETSESSIONID_LEN) {
-	            strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-	            sprintf(exception->message, "xmlBlasterClient: ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
-	            if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
-	         }
-	         strncpy0(secretSessionId, pStart, len);
-	      }
-	   }
-	}
+           const char *pStart = strstr(response, "sessionId='");
+           if (pStart) {
+              pStart += strlen("sessionId='");
+              pEnd = strstr(pStart, "'");
+              if (pEnd) {
+                 int len = (int)(pEnd - pStart + 1);
+                 if (len >= MAX_SECRETSESSIONID_LEN) {
+                    strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                    sprintf(exception->message, "xmlBlasterClient: ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
+                    if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+                 }
+                 strncpy0(secretSessionId, pStart, len);
+              }
+           }
+        }
 
    if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s)", secretSessionId);
 
@@ -710,6 +715,7 @@ int main(int argc, char** argv)
 
 #  ifndef _WINDOWS
    if (startCallback) {
+      int ret;
       ret = pthread_create(&tid, 0, (cbFp)initCallbackServer, &cbArgs);
    }
 #  endif
@@ -932,9 +938,9 @@ void trim(unsigned char *s)
  */
 unsigned char *toReadableDump(unsigned char *data, size_t len)
 {
-	unsigned char *readable;
+        unsigned char *readable;
    size_t i;
-	readable = malloc((len+1) * sizeof(unsigned char));
+        readable = malloc((len+1) * sizeof(unsigned char));
    for (i=0; i<len; i++) {
       if (data[i] == 0)
          readable[i] = '*';
@@ -942,6 +948,6 @@ unsigned char *toReadableDump(unsigned char *data, size_t len)
          readable[i] = data[i];
    }
    readable[len] = 0;
-	return readable;
+        return readable;
 }
 

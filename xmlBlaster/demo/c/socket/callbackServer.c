@@ -12,7 +12,11 @@ Compile:   gcc -Wall -DUSE_MAIN -o callbackServer callbackServer.c
 
 #define NSTRS       3           /* no. of strings  */
 
+# if WIN32
 static SOCKET sock_fd = -1;
+# else
+static int sock_fd = -1;
+# endif
 
 /**
  * Read the given amount of bytes
@@ -23,11 +27,11 @@ int readn(int fd, char *ptr, int nbytes)
    int nleft, nread;
    nleft = nbytes;
    while(nleft > 0) {
-#		ifdef WIN32
-		nread = recv(fd, ptr, nleft, 0);
-#		else
+#     ifdef WIN32
+      nread = recv(fd, ptr, nleft, 0);
+#     else
       nread = read(fd, ptr, nleft);
-#		endif
+#     endif
       if (nread < 0)
          return nread; /* error, return < 0 */
       else if (nread == 0)
@@ -44,8 +48,12 @@ int readn(int fd, char *ptr, int nbytes)
  */
 void initCallbackServer(callbackData *cbArgs)
 {
+#  if WIN32
    SOCKET ns;
-	int keyLen, qosLen;
+#  else
+   int ns;
+#  endif
+   int keyLen, qosLen;
    int cli_len;
    char *pp;
    char *rawData = NULL;
@@ -115,7 +123,7 @@ void initCallbackServer(callbackData *cbArgs)
        * Then we read callback messages ...
        * The first 10 bytes are the message length (as a string)
        */
-#	   ifdef WIN32
+#          ifdef WIN32
       numRead = recv(ns, msgLengthP, MSG_LEN_FIELD_LEN, 0);
 #     else
       numRead = readn(ns, msgLengthP, MSG_LEN_FIELD_LEN);
@@ -129,8 +137,8 @@ void initCallbackServer(callbackData *cbArgs)
       if (XMLBLASTER_DEBUG) printf("callbackServer: Callback data from xmlBlaster arrived, message length %d bytes\n", msgLength);
 
       /* ignore flag bits (pos 10-13) */
-#	   ifdef WIN32
-		numRead = recv(ns, msgFlagP, MSG_FLAG_FIELD_LEN, 0);
+#          ifdef WIN32
+                numRead = recv(ns, msgFlagP, MSG_FLAG_FIELD_LEN, 0);
 #     else
       numRead = readn(ns, msgFlagP, MSG_FLAG_FIELD_LEN);
 #     endif
@@ -141,8 +149,8 @@ void initCallbackServer(callbackData *cbArgs)
 
       /* read the message itself ... */
       rawData = (char *)malloc((msgLength+1)*sizeof(char));
-#	   ifdef WIN32
-		numRead = recv(ns, rawData, msgLength, 0);
+#          ifdef WIN32
+                numRead = recv(ns, rawData, msgLength, 0);
 #     else
       numRead = readn(ns, rawData, msgLength);
 #     endif
@@ -194,12 +202,12 @@ int isListening()
 void shutdownCallbackServer()
 {
    if (isListening()) {
-#	   ifdef WIN32
-		   closesocket(sock_fd);
-#		else
-	      close(sock_fd);
-#		endif
-	}
+#          ifdef WIN32
+                   closesocket(sock_fd);
+#               else
+              close(sock_fd);
+#               endif
+        }
 }
 
 /**
