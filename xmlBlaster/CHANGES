@@ -37,11 +37,13 @@ DONE:
        The update() is changed to return a String[].
 
 
-
-  - The update() method changed incompatible!
-    The first argument now returns the callback sessionId.
-    This is the id you passed on registering your callback server
-    and allows you to authenticate the callback invoker.
+  - Java client helper classes:
+    The update() method changed incompatible !!
+    * The first argument now returns the callback sessionId.
+      This is the id you passed on registering your callback server
+      and allows you to authenticate the callback invoker.
+    * You need to return a QoS string in this version.
+      For the time being just return an empty String "" (not null).
 
   - Changes to Java client library. We now support separate
     instantiation of callback protocol drivers and client drivers.
