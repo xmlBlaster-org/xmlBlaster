@@ -22,7 +22,6 @@ import org.xmlBlaster.engine.admin.I_AdminNode;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
 
 

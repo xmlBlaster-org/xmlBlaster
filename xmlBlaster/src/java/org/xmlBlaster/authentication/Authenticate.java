@@ -151,10 +151,13 @@ final public class Authenticate implements I_RunlevelListener
          // strip the pubSessionId and create a subjectInfo ...
          SessionName subjectName = new SessionName(glob, sessionName.getNodeId(), sessionName.getLoginName());
          subjectInfo = new SubjectInfo(getGlobal(), this, subjectName);
+         synchronized(this.loginNameSubjectInfoMap) {
+            this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
+         }
          subjectInfo.toAlive(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
       else {
-         subjectInfo = getOrCreateSubjectInfoByName(sessionName);
+         subjectInfo = getOrCreateSubjectInfoByName(sessionName, false, subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
 
       SessionInfo sessionInfo = subjectInfo.getSession(sessionName);
@@ -316,6 +319,7 @@ final public class Authenticate implements I_RunlevelListener
       if (log.TRACE) log.trace(ME, "Checking if user is known ...");
       SubjectInfo subjectInfo = null;
       try {
+      /*
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
          SessionName subjectName = new SessionName(glob, connectQos.getSessionName(), 0L); // Force to be of type subject (no public session ID)
@@ -326,17 +330,30 @@ final public class Authenticate implements I_RunlevelListener
             //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
             if (subjectInfo == null) {
                subjectInfo = new SubjectInfo(getGlobal(), this, subjectName);
+               this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo); // Protect against two simultaneous logins
             }
 
             subjectIsAlive = subjectInfo.isAlive();
-            if (!subjectInfo.isAlive()) {
-               // registers itself in loginNameSubjectInfoMap
-               subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
-            }
          } // synchronized(this.loginNameSubjectInfoMap)
 
-         synchronized(subjectInfo) {
-            if (subjectIsAlive) {
+         if (!subjectInfo.isAlive()) {
+            try {
+               subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
+            }
+            catch(Throwable e) {
+               synchronized(this.loginNameSubjectInfoMap) {
+                  this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
+               }
+               throw e;
+            }
+         }
+         */
+
+         boolean returnLocked = true;
+         subjectInfo = getOrCreateSubjectInfoByName(connectQos.getSessionName(),
+                                   returnLocked, sessionCtx.getSubject(), connectQos.getSubjectQueueProperty());
+         try { // subjectInfo.getLock().release())
+            if (subjectInfo.isAlive()) {
                if (connectQos.getData().hasSubjectQueueProperty()) 
                   subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
@@ -383,7 +400,10 @@ final public class Authenticate implements I_RunlevelListener
             connectQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
             subjectInfo.notifyAboutLogin(sessionInfo);
             fireClientEvent(sessionInfo, true);
-         } // synchronized(subjectInfo)
+         }
+         finally {
+            if (subjectInfo != null) subjectInfo.getLock().release();
+         }
 
          // --- compose an answer -----------------------------------------------
          ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, connectQos.getData());
@@ -499,49 +519,56 @@ final public class Authenticate implements I_RunlevelListener
     * Access a subjectInfo with the unique login name.
     * <p />
     * If the client is yet unknown, there will be instantiated a dummy SubjectInfo object
-    * @return the SubjectInfo object
+    * @param returnLocked true: The SubjectInfo is locked
+    * @param prop Can be null
+    * @return the SubjectInfo object, is never null
+    * @exception the SubjectInfo object is never locked in such a case
     */
-   public final SubjectInfo getOrCreateSubjectInfoByName(SessionName subjectName) throws XmlBlasterException
+   public final SubjectInfo getOrCreateSubjectInfoByName(SessionName subjectName, boolean returnLocked, I_Subject subjectCtx, CbQueueProperty prop) throws XmlBlasterException
    {
       if (subjectName == null || subjectName.getLoginName().length() < 2) {
          log.warn(ME + ".InvalidClientName", "Given loginName is null");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".InvalidClientName", "Your given loginName is null or shorter 2 chars, loginName rejected");
       }
 
-      SubjectInfo subjectInfo = getSubjectInfoByName(subjectName);
-      if (subjectInfo == null) {
-         // strip nodeId, strip pubSessionId
-         SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getLoginName());
-         subjectInfo = new SubjectInfo(getGlobal(), this, name);
-         subjectInfo.toAlive(null, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
+      SubjectInfo subjectInfo = null;
+      boolean isNew = false;
+      synchronized(this.loginNameSubjectInfoMap) {
+         subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
+         if (subjectInfo == null) {
+            SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getLoginName()); // strip nodeId, strip pubSessionId
+            //log.error(ME, "DEBUG ONLY: Stripped name=" + name.toString());
+            subjectInfo = new SubjectInfo(getGlobal(), this, name);
+            this.loginNameSubjectInfoMap.put(subjectName.getLoginName(), subjectInfo);
+            isNew = true;
+         }
+      }
+
+      if (isNew) {
+         if (returnLocked) subjectInfo.getLock().lock();
+         try {
+            //log.error(ME, "DEBUG ONLY: REMOVE AGAIN");
+            //if (subjectName.getLoginName().equals("subscriber")) {
+            //   log.error(ME, "DEBUG ONLY: sleepig 20 sec for toAlive(): " + subjectName.toString());
+            //   try { Thread.currentThread().sleep(20*1000L); } catch( InterruptedException i) {}
+            //}
+            subjectInfo.toAlive(subjectCtx, (prop != null) ? prop : new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
+         }
+         catch(Throwable e) {
+            synchronized(this.loginNameSubjectInfoMap) {
+               this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
+            }
+            if (returnLocked) subjectInfo.getLock().release();
+            throw XmlBlasterException.convert(getGlobal(), ErrorCode.INTERNAL_UNKNOWN, ME, e.toString(), e);
+         }
+      }
+      else {
+         subjectInfo.waitUntilAlive(returnLocked);
+         if (subjectCtx != null && subjectInfo.getSecurityCtx() == null)
+            subjectInfo.setSecurityCtx(subjectCtx); // If SubjectInfo was created by a PtP message the securityCtx is missing, add it here
       }
 
       return subjectInfo;
-   }
-
-   /**
-    * Add a new SubjectInfo instance. 
-    */
-   void addLoginName(SubjectInfo subjectInfo) {
-      Object oldInstance = null;
-      synchronized(this.loginNameSubjectInfoMap) {
-         oldInstance = this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
-      }
-
-      if (oldInstance != null) {
-         SubjectInfo old = (SubjectInfo)oldInstance;
-         if (old != subjectInfo) {
-            log.error(ME, "Internal problem: didn't expect two different SubjectInfo old=" + old.toXml() + " new=" + subjectInfo.toXml());
-         }
-         return;
-      }
-
-      try {
-         glob.getRequestBroker().updateInternalUserList();
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Publishing internal user list failed: " + e.getMessage());
-      }
    }
 
    /**

@@ -638,7 +638,9 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
    */
 
    /**
-    * Forward PtP messages
+    * Forward PtP messages. 
+    * TODO: On exception continue to other destinations and return the
+    *       successful/not-successful destinations in PublishReturnQos!!!
     */
    private void forwardToDestinations(SessionInfo publisherSessionInfo,
       MsgUnitWrapper cacheEntry, PublishQosServer publishQos)
@@ -653,120 +655,114 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
 
          if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destination.getDestination() + "]");
 
-         SessionInfo receiverSessionInfo = null;
          SessionName destinationSessionName = destination.getDestination();
          boolean destinationIsSession = destinationSessionName.isSession();
-         boolean sessionExists = false;
          boolean forceQueing = destination.forceQueuing();
-         boolean wantsPtP = true; // TODO if destination never has looged in spam would be possible!  
+         boolean wantsPtP = true; // TODO if destination never has logged in spam would be possible!
 
-         synchronized (authenticate.getSessionInfoMap()) {
-            SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
-            boolean subjectExists = destinationClient != null;
-            // boolean cbQueueOverflow = false;
-            // boolean severeError = false;
+         SubjectInfo destinationClient = null;
 
-            if (destinationIsSession) {
-               receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
-               sessionExists = receiverSessionInfo != null;
+         // Handle PtP to subject in a thread safe manner
+         if (!destinationIsSession) { // -> subject
+            // 3 + 6 (force queing ignored since same reaction for both)
+            destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
+            if (!forceQueing && destinationClient==null) {
+               String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
+               log.warn(ME, tmp);
+               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
+                   " Client is not logged in and <destination forceQueuing='true'> is not set");
+            }
+            if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for subject destination [" + destination.getDestination() + "], forceQueing="+forceQueing);
 
-               if (sessionExists) {
-                  wantsPtP = receiverSessionInfo.getConnectQos().isPtpAllowed();
-                  subjectExists = true;
+            // We are responsible to call destinationClient.getLock().release()
+            final boolean returnLocked = true;
+            destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination(), returnLocked, null, null);
+            try {
+               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
+                        destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
+                        Constants.SUBSCRIPTIONID_PtP);
+               destinationClient.queueMessage(msgEntrySubject);
+               continue;
+            }
+            finally {
+               destinationClient.getLock().release();
+            }
+         }
+
+         // Handle PtP to session in a thread safe manner
+         SessionInfo receiverSessionInfo = null;
+         try {
+            receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
+            if (receiverSessionInfo != null) {
+               receiverSessionInfo.getLock().lock();
+               //receiverSessionInfo.waitUntilAlive();
+               if (receiverSessionInfo.isAlive()) {
+                  if (!receiverSessionInfo.getConnectQos().isPtpAllowed()) { // no spam, case 2
+                     if (log.TRACE) log.trace(ME, "Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
+                     throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
+                           receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
+                           "' is rejected");
+                  }
+               }
+               else {
+                  receiverSessionInfo.getLock().release();
+                  receiverSessionInfo = null;
                }
             }
 
-            // case 2
-            if (!wantsPtP) { // no spam
-               if (log.TRACE) log.trace(ME, "Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
-               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
-                   receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
-                   "' is rejected");
+            if (receiverSessionInfo == null && !forceQueing) {
+               String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
+               log.warn(ME, tmp);
+               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
+                     " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
 
             // Row 1 in table 
-            if (forceQueing && destinationIsSession && !sessionExists) {
-               /*
-               destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-
-               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
-                       cacheEntry,
-                       destinationClient.getSubjectQueue().getStorageId(),
-                       destination.getDestination(),
-                       Constants.SUBSCRIPTIONID_PtP);
-               destinationClient.queueMessage(msgEntrySubject);
-               */
-               // We create a faked session without password check
+            if (receiverSessionInfo == null) { // We create a faked session without password check
                if (log.TRACE) log.trace(ME, "Working on PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "] which does not exist, forceQueuing=true, we create a dummy session");
                ConnectQos connectQos = new ConnectQos(glob);
                connectQos.setSessionName(destinationSessionName);
                connectQos.setUserId(destinationSessionName.getLoginName());
                ConnectQosServer connectQosServer = new ConnectQosServer(glob, connectQos.getData());
                connectQosServer.bypassCredentialCheck(true);
-               ConnectReturnQosServer q = authenticate.connect(connectQosServer);
-               receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
-               sessionExists = receiverSessionInfo != null;
+               long sessionTimeout = glob.getProperty().get("session.ptp.defaultTimeout", -1L);
+               connectQosServer.getSessionQos().setSessionTimeout(sessionTimeout);  // Or use message timeout?
+               for (int i=0; ; i++) {
+                  if (i>=20) {
+                     String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the message is rejected.";
+                     String status = "destinationIsSession='" + destinationIsSession + "'" +
+                                     " forceQueing='" + forceQueing + "' wantsPtP='" + wantsPtP +"'";  
+                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
+                        "the combination '" + status + "' is not handled");
+                  }
+                  if (i>0) { try { Thread.currentThread().sleep(1L); } catch( InterruptedException i) {}}
+                  ConnectReturnQosServer q = authenticate.connect(connectQosServer);
+                  receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
+                  if (receiverSessionInfo == null) continue;
+                  receiverSessionInfo.getLock().lock();
+                  if (!receiverSessionInfo.isAlive()) {
+                     receiverSessionInfo.getLock().release();
+                     receiverSessionInfo = null;
+                     continue;
+                  }
+                  break;
+               }
             } 
 
-            if (forceQueing && destinationIsSession && sessionExists) {
-               if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "]");
-               MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
-                       cacheEntry,
-                       receiverSessionInfo.getSessionQueue().getStorageId(),
-                       destination.getDestination(),
-                       Constants.SUBSCRIPTIONID_PtP);
-
-               // try {
-                  receiverSessionInfo.queueMessage(msgEntry);
-               /*
-               }      
-               catch (XmlBlasterException ex) {
-                  if (ex.getErrorCodeStr().startsWith("resource.overflow")) {
-                     destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-
-                     MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
-                             cacheEntry, destinationClient.getSubjectQueue().getStorageId(),
-                             destination.getDestination(), Constants.SUBSCRIPTIONID_PtP);
-                     destinationClient.queueMessage(msgEntrySubject);
-                  } 
-                  else throw ex;
-               }
-               */
-            }
-            // 3 + 6 (force queing ignored since same reaction for both)
-            else if (!destinationIsSession && (forceQueing || !forceQueing && subjectExists)) {
-               if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for subject destination [" + destination.getDestination() + "], forceQueing="+forceQueing);
-               destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-
-               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
-                       destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                       Constants.SUBSCRIPTIONID_PtP);
-               destinationClient.queueMessage(msgEntrySubject);
-            }
-            // case 5 (no handling in case session does not exist)
-            else if (!forceQueing && destinationIsSession && sessionExists) {
-               if (log.TRACE) log.trace(ME, "Working on PtP message '" + cacheEntry.getLogId() + "' for existing session destination [" + destination.getDestination() + "]");
-               MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
-                       receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
-                       Constants.SUBSCRIPTIONID_PtP);
-               receiverSessionInfo.queueMessage(msgEntry);
-            }
-            // case 7 + 5 (for session does not exist)
-            else if (!forceQueing &&  ( (!subjectExists && !destinationIsSession)||(!sessionExists && destinationIsSession)) ) {
-               String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
-               log.warn(ME, tmp);
-               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
-                   " Client is not logged in and <destination forceQueuing='true'> is not set");
-            }
-            else {
-               String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the message is rejected.";
-               String status = "destinationIsSession='" + destinationIsSession + "'" +
-                               " sessionExists='" + sessionExists + "' forceQueing='" + forceQueing + "' wantsPtP='" + wantsPtP +"'";  
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
-                "the combination '" + status + "' is not handled");
-            }
+            if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "]");
+            MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
+                     cacheEntry,
+                     receiverSessionInfo.getSessionQueue().getStorageId(),
+                     destination.getDestination(),
+                     Constants.SUBSCRIPTIONID_PtP);
+            receiverSessionInfo.queueMessage(msgEntry);
+            continue;
          }
-      }
+         finally {
+            if (receiverSessionInfo != null)
+               receiverSessionInfo.getLock().release();
+         }
+      } // for destinationArr.length
    }
    
    /**

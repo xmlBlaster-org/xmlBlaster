@@ -43,6 +43,9 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 
+//import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
+import org.xmlBlaster.util.ReentrantLock;
+
 
 /**
  * SubjectInfo stores all known data about a client.
@@ -100,6 +103,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    public final int DEAD = 1;
    private int state = UNDEF;
 
+   private ReentrantLock lock = new ReentrantLock();
+
 
    /**
     * All MsgUnit which can't be delivered to the client (if he is not logged in)
@@ -142,6 +147,51 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
 
+   /**
+    * if state==UNDEF we block until we are ALIVE (or DEAD)
+    * @exception If we are DEAD or on one minute timeout, subjectInfo is never locked in such a case
+    */
+   public void waitUntilAlive(boolean returnLocked) throws XmlBlasterException {
+      if (this.state == ALIVE) {
+         if (returnLocked) this.lock.lock();
+         return;
+      }
+      if (this.state == DEAD)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".waitUntilAlive()", "Did not expect state DEAD, please try again.");
+
+      if (log.TRACE) log.trace(ME, "waitUntilAlive() is going to wait max. one minute");
+      //log.error(ME, "DEBUG ONLY: waitUntilAlive() is going to wait max. one minute");
+      long msecs = 1000 * 60;
+      while (true) {
+         synchronized (this) {
+            try {
+               //log.error(ME, "DEBUG ONLY: Entering wait()");
+               this.wait(msecs);
+               break;
+            }
+            catch (InterruptedException e) {
+               log.error(ME, "waitUntilAlive() Ignoring unexpected exception: " + e.toString());
+            }
+         }
+      }
+
+      if (returnLocked) this.lock.lock();
+      if (this.state != ALIVE) {
+         if (returnLocked) this.lock.release();
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".waitUntilAlive()", "ALIVE not reached, state=" + this.state);
+      }
+
+      //log.error(ME, "DEBUG ONLY: Leaving waitUntilAlive()");
+      return;
+   }
+
+   /**
+    * Access the synchronization object of this SubjectInfo instance. 
+    */
+   public ReentrantLock getLock() {
+      return this.lock;
+   }
+
    SubjectInfoProtector getSubjectInfoProtector() {
       return this.subjectInfoProtector;
    }
@@ -151,31 +201,50 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * @param securityCtx Can be null for PtP message with implicit SubjectInfo creation
     * @param prop The property to configure the PtP message queue
     */
-   public synchronized void toAlive(I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
+   public void toAlive(I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
       if (isAlive()) {
          return;
       }
-      //if (isDead()) {
-      //   log.error(ME, "State transition from DEAD -> ALIVE is not implemented");
-      //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "State transition from DEAD -> ALIVE is not implemented");
-      //}
-      if (securityCtx != null) {
-         this.securityCtx = securityCtx;
+
+      this.lock.lock();
+      try {
+
+         //if (isDead()) {
+         //   log.error(ME, "State transition from DEAD -> ALIVE is not implemented");
+         //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "State transition from DEAD -> ALIVE is not implemented");
+         //}
+         if (securityCtx != null) {
+            this.securityCtx = securityCtx;
+         }
+
+         this.uptime = System.currentTimeMillis();
+
+         this.maxSessions = glob.getProperty().get("session.maxSessions", SessionQos.DEFAULT_maxSessions);
+         if (glob.getId() != null)
+            this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
+
+         this.subjectQueue = createSubjectQueue(prop);
+
+         this.state = ALIVE;
+
+         synchronized (this) {
+            this.notifyAll();    // notify waitUntilAlive()
+         }
+
+         // done externally to avoid dead locks
+         //this.authenticate.addLoginName(this); // register myself -> enters synchronized(this.loginNameSubjectInfoMap)
+         try { // Keep this code in the sync block, in case a disconnect() arrives immediately
+            glob.getRequestBroker().updateInternalUserList();
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Publishing internal user list failed: " + e.getMessage());
+         }
+
+         if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
       }
-
-      this.uptime = System.currentTimeMillis();
-
-      this.maxSessions = glob.getProperty().get("session.maxSessions", SessionQos.DEFAULT_maxSessions);
-      if (glob.getId() != null)
-         this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
-
-      this.subjectQueue = createSubjectQueue(prop);
-
-      this.state = ALIVE;
-
-      this.authenticate.addLoginName(this); // register myself
-
-      if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
+      finally {
+         this.lock.release();
+      }
    }
 
    private I_Queue createSubjectQueue(CbQueueProperty prop) throws XmlBlasterException {
@@ -196,56 +265,66 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
     * @param forceIfEntries Shutdown even if there are messages in the queue
     */
-   public synchronized void shutdown(boolean clearQueue, boolean forceIfEntries) {
+   public void shutdown(boolean clearQueue, boolean forceIfEntries) {
       if (log.CALL) log.call(ME, "shutdown(clearQueue=" + clearQueue + ", forceIfEntries=" + forceIfEntries + ") of subject " + getLoginName());
 
-      if (!this.isAlive()) {
-         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as we are in state " + getStateStr());
-         return;
-      }
+      this.lock.lock();
+      try {
 
-      if (isLoggedIn()) {
-         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still login sessions");
-         return;
-      }
+         if (!this.isAlive()) {
+            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as we are in state " + getStateStr());
+            return;
+         }
 
-      if (!forceIfEntries && !clearQueue && getSubjectQueue().getNumOfEntries() > 0) {
-         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still messages in the subject queue");
-         return;
-      }
+         if (isLoggedIn()) {
+            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still login sessions");
+            return;
+         }
 
-      if (getSubjectQueue().getNumOfEntries() < 1)
-         log.info(ME, "Destroying SubjectInfo " + getSubjectName() + ". Nobody is logged in and no queue entries available");
-      else {
+         if (!forceIfEntries && !clearQueue && getSubjectQueue().getNumOfEntries() > 0) {
+            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still messages in the subject queue");
+            return;
+         }
+
+         if (getSubjectQueue().getNumOfEntries() < 1)
+            log.info(ME, "Destroying SubjectInfo " + getSubjectName() + ". Nobody is logged in and no queue entries available");
+         else {
+            if (clearQueue)
+               log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + ". Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
+            else
+               log.warn(ME, "Destroying SubjectInfo " + getSubjectName() +
+                            ". The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
+                            getSubjectQueue().getNumOfPersistentEntries() + " persistent messages remain on disk, the transients are lost");
+         }
+
+         this.authenticate.removeLoginName(this);  // deregister
+
+         this.state = DEAD;
+
          if (clearQueue)
-            log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + ". Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
-         else
-            log.warn(ME, "Destroying SubjectInfo " + getSubjectName() +
-                         ". The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
-                         getSubjectQueue().getNumOfPersistentEntries() + " persistent messages remain on disk, the transients are lost");
+            this.subjectQueue.clear();
+
+         if (getSessions().length > 0) {
+            log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
+         }
+         synchronized (this.sessionMap) {
+            this.sessionArrCache = null;
+            this.sessionMap.clear();
+            this.callbackAddressCache = null;
+         }
+
+         if (this.msgErrorHandler != null)
+            this.msgErrorHandler.shutdown();
+
+         synchronized (this) {
+            this.notifyAll();    // notify waitUntilAlive()
+         }
+         // Not possible to allow toAlive()
+         //this.securityCtx = null;
       }
-
-      this.authenticate.removeLoginName(this);  // deregister
-
-      this.state = DEAD;
-
-      if (clearQueue)
-         this.subjectQueue.clear();
-
-      if (getSessions().length > 0) {
-         log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
+      finally {
+         this.lock.release();
       }
-      synchronized (this.sessionMap) {
-         this.sessionArrCache = null;
-         this.sessionMap.clear();
-         this.callbackAddressCache = null;
-      }
-
-      if (this.msgErrorHandler != null)
-         this.msgErrorHandler.shutdown();
-
-      // Not possible to allow toAlive()
-      //this.securityCtx = null;
    }
 
    /**
@@ -330,7 +409,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
 
-      synchronized(this) {
+      this.lock.lock();
+      try {
          if (prop.getTypeVersion().equals(origProp.getTypeVersion())) {
             this.subjectQueue.setProperties(prop);
             return;
@@ -389,6 +469,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
             }
          }
       } // synchronized
+      finally {
+         this.lock.release();
+      }
 
       log.error(ME+".setSubjectQueueProperty()", "Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
       return;
@@ -405,9 +488,14 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
    /**
     * Subject specific informations from the security framework
+    * @return null if created without login (for example with a PtP message)
     */
    public I_Subject getSecurityCtx() {
       return this.securityCtx;
+   }
+
+   public void setSecurityCtx(I_Subject securityCtx) {
+      this.securityCtx = securityCtx;
    }
 
    /**
@@ -453,7 +541,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * we return 0 without doing anything.
     * @return number of messages taken from queue and forwarded
     */
-    /*synchronized*/ public final long forwardToSessionQueue() {
+   public final long forwardToSessionQueue() {
       if (getSessions().length < 1 || this.subjectQueue.getNumOfEntries() < 1) return 0;
 
       long numMsgs = 0;
@@ -569,11 +657,15 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
       if (this.msgErrorHandler == null) {
-         synchronized(this) {
+         this.lock.lock();
+         try {
             if (this.msgErrorHandler == null) {
                log.error(ME, "INTERNAL: Support for MsgErrorHandler is not implemented");
                this.msgErrorHandler = new MsgErrorHandler(glob, null);
             }
+         }
+         finally {
+            this.lock.release();
          }
       }
       return this.msgErrorHandler;
@@ -782,14 +874,6 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     */
    public final String getLoginName() {
       return this.subjectName.getLoginName();
-   }
-
-   public I_Subject getSecuritySubject() {
-      return this.securityCtx;
-   }
-
-   public void setSecuritySubject(I_Subject ctx) {
-      this.securityCtx = ctx;
    }
 
    /**

@@ -35,6 +35,8 @@ import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.engine.MsgErrorHandler;
 
+//import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
+import org.xmlBlaster.util.ReentrantLock;
 
 
 /**
@@ -58,7 +60,7 @@ import org.xmlBlaster.engine.MsgErrorHandler;
  * </ol>
  * @author Marcel Ruff
  */
-public class SessionInfo implements I_Timeout, I_QueueSizeListener
+public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
@@ -97,6 +99,8 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    /** uniqueId used to store this in queue */
    private long persistenceId = -1L; 
+
+   private ReentrantLock lock = new ReentrantLock();
 
    /**
     * Create this instance when a client did a login.
@@ -165,6 +169,19 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
    }
 
+   public final boolean isAlive() {
+      return !this.isShutdown;
+   }
+
+   /**
+    * if state==UNDEF we block until we are ALIVE (or DEAD)
+   public void waitUntilAlive() {
+      //!!!
+      log.error(ME, "Implemenation of waitUntilAlive() is missing");
+      return;
+   }
+   */
+
    /**
     * The protector prevents direct access to this sessionInfo instance. 
     */
@@ -181,6 +198,13 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
     */
    public final long getInstanceId() {
       return this.instanceId;
+   }
+
+   /**
+    * Access the synchronization object of this SessionInfo instance. 
+    */
+   public ReentrantLock getLock() {
+      return this.lock;
    }
 
    /**
@@ -216,29 +240,41 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSecretSessionId());
    }
 
-   public synchronized boolean isShutdown() {
-      return this.isShutdown;
+   public boolean isShutdown() {
+      this.lock.lock();
+      try {
+         return this.isShutdown; // sync'd because of TimeoutListener?
+      }
+      finally {
+         this.lock.release();
+      }
    }
 
-   public synchronized void shutdown() {
+   public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
-      this.isShutdown = true;
-      if (timerKey != null) {
-         this.expiryTimer.removeTimeoutListener(timerKey);
-         timerKey = null;
+      this.lock.lock();
+      try {
+         this.isShutdown = true;
+         if (timerKey != null) {
+            this.expiryTimer.removeTimeoutListener(timerKey);
+            timerKey = null;
+         }
+         if (this.sessionQueue != null) {
+            this.sessionQueue.shutdown();
+            //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
+         }
+         if (this.msgErrorHandler != null)
+            this.msgErrorHandler.shutdown();
+         if (this.dispatchManager != null)
+            this.dispatchManager.shutdown();
+         this.subjectInfo = null;
+         // this.securityCtx = null; We need it in finalize() getSecretSessionId()
+         // this.connectQos = null;
+         this.expiryTimer = null;
       }
-      if (this.sessionQueue != null) {
-         this.sessionQueue.shutdown();
-         //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
+      finally {
+         this.lock.release();
       }
-      if (this.msgErrorHandler != null)
-         this.msgErrorHandler.shutdown();
-      if (this.dispatchManager != null)
-         this.dispatchManager.shutdown();
-      this.subjectInfo = null;
-      // this.securityCtx = null; We need it in finalize() getSecretSessionId()
-      // this.connectQos = null;
-      this.expiryTimer = null;
    }
 
    /**
@@ -265,7 +301,8 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
     *                 with Timeout.addTimeoutListener()
     */
    public final void timeout(Object userData) {
-      synchronized (this) {
+      this.lock.lock();
+      try {
          timerKey = null;
          log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
          DisconnectQosServer qos = new DisconnectQosServer(glob);
@@ -275,6 +312,9 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
          } catch (XmlBlasterException e) {
             log.error(ME, "Internal problem with disconnect: " + e.toString());
          }
+      }
+      finally {
+         this.lock.release();
       }
    }
 

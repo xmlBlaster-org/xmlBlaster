@@ -53,6 +53,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode INTERNAL_INTERRUPTED = new ErrorCode("internal.interrupted",
+         "An unexpected InterruptedException for a thread occurred, please post it to the mailing list.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode INTERNAL_NOTIMPLEMENTED = new ErrorCode("internal.notImplemented",
          "The feature is not implemented yet.",
          new ResourceInfo[] {
