@@ -193,6 +193,111 @@ public class FileIOTest extends TestCase {
       }
    }
 
+   public void testKilledFileOnWrite() {
+      String testName = "testKilledFileOnWrite";
+      System.out.println("***** Test " + testName);
+
+      fileName = testName + ".txt";
+      I_UserDataHandler userDataHandler = new UserDataHandler();
+      long num = 20;
+      long numKill = 5;
+
+      try {
+         FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+         for (int ii=0; ii<num; ii++) {
+            if (ii == numKill) {
+               File ff = new File(fileName);
+               ff.delete();
+            }
+            try {
+               fileIO.writeNext("World-" + ii);
+            }
+            catch (XmlBlasterException e) {
+               if (e.id.indexOf("FileLost") == -1)
+                  fail("Wrong exception thrown: " + e.toString());
+               else
+                  System.out.println(e.reason);
+                  
+            }
+         }
+
+         assertEquals("NumUnread", num-numKill, fileIO.getNumUnread());
+
+         int count = 0;
+         while (true) {
+            String data = fileIO.readNext(true);
+            if (data == null)
+               break;
+            count++;
+         }
+
+         assertEquals("num after kill", num-numKill, count);
+         assertEquals("NumUnread", 0L, fileIO.getNumUnread());
+         assertEquals("NumKillLost", numKill, fileIO.getNumFileDeleteLost());
+         assertEquals("NumLost", 0L, fileIO.getNumLost());
+      }
+      catch(IOException e) {
+         fail(testName + " failed: " + e.toString());
+      }
+      catch(XmlBlasterException e) {
+         fail(testName + " failed: " + e.toString());
+      }
+   }
+
+   public void testKilledFileOnRead() {
+      String testName = "testKilledFileOnRead";
+      System.out.println("***** Test " + testName);
+
+      fileName = testName + ".txt";
+      I_UserDataHandler userDataHandler = new UserDataHandler();
+      long num = 20;
+      long numKill = 5;
+
+      try {
+         FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+         for (int ii=0; ii<num; ii++) {
+            fileIO.writeNext("World-" + ii);
+         }
+
+         assertEquals("NumUnread", num, fileIO.getNumUnread());
+
+         int count = 0;
+         while (true) {
+            if (count == numKill) {
+               File ff = new File(fileName);
+               ff.delete();
+            }
+
+            try {
+               String data = fileIO.readNext(true);
+               if (data == null)
+                  break;
+               count++;
+            }
+            catch (XmlBlasterException e) {
+               if (e.id.indexOf("FileLost") == -1)
+                  fail("Wrong exception thrown: " + e.toString());
+               else {
+                  System.out.println(e.reason);
+                  break; // no more data to read
+               }
+                  
+            }
+         }
+
+         assertEquals("num after kill", numKill, count);
+         assertEquals("NumUnread", 0L, fileIO.getNumUnread());
+         assertEquals("NumKillLost", num-numKill, fileIO.getNumFileDeleteLost());
+         assertEquals("NumLost", 0L, fileIO.getNumLost());
+      }
+      catch(IOException e) {
+         fail(testName + " failed: " + e.toString());
+      }
+      catch(XmlBlasterException e) {
+         fail(testName + " failed: " + e.toString());
+      }
+   }
+
    public void testRestart() {
       String testName = "testRestart";
       System.out.println("***** Test " + testName);
