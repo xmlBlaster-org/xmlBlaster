@@ -1,0 +1,5 @@
+xmlBlaster 0.79a
+================
+
+1.  Changing the qos a the identical message from
+    isDurable to 'not is durable' has no affect.
