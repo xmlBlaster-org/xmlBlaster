@@ -73,7 +73,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public void shutdown() {
       super.shutdown();
-      log.info(ME, "Destroying global handle");
+      if (log.TRACE) log.trace(ME, "Destroying engine.Global handle");
       if (sessionTimer != null) {
          sessionTimer.shutdown();
          sessionTimer = null;
@@ -608,6 +608,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
       //sb.append(" ='").append(get()).append("'");
       sb.append(">");
+      sb.append(getProperty().toXml());
       sb.append(offset).append(" <ThreadDump><![CDATA[");
       sb.append(org.jutils.runtime.ThreadLister.listAllThreads());
       sb.append(offset).append(" ]]></ThreadDump>");
