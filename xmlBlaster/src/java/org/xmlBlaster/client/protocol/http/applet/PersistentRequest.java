@@ -1,9 +1,10 @@
 package org.xmlBlaster.client.protocol.http.applet;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
 import java.net.URLConnection;
 import java.net.URL;
-import java.io.*;
-import java.util.*;
+import java.util.Hashtable;
 import org.apache.commons.codec.binary.Base64;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -18,7 +19,7 @@ public class PersistentRequest extends Thread {
 
    private String xmlBlasterServletUrl;
    //private String request;
-   private XmlBlasterAccessRaw xmlBlasterAccess;
+   private XmlBlasterAccessRawBase xmlBlasterAccess;
    private String connectReturnQos;
    private String loginName;
    private String passwd;
@@ -34,7 +35,7 @@ public class PersistentRequest extends Thread {
    * @param loginName
    * @param passwd
    */
-   PersistentRequest(XmlBlasterAccessRaw xmlBlasterAccess, String xmlBlasterServletUrl, String loginName, String passwd) {
+   PersistentRequest(XmlBlasterAccessRawBase xmlBlasterAccess, String xmlBlasterServletUrl, String loginName, String passwd) {
       this(xmlBlasterAccess, xmlBlasterServletUrl,
          "<qos>" +
             "<securityService type='htpasswd' version='1.0'>" +
@@ -55,11 +56,10 @@ public class PersistentRequest extends Thread {
    * @param connectQos It must at least contain the "securityService" settings to be evaluated!
    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
    */
-   PersistentRequest(XmlBlasterAccessRaw xmlBlasterAccess, String xmlBlasterServletUrl, String connectQos) {
+   PersistentRequest(XmlBlasterAccessRawBase xmlBlasterAccess, String xmlBlasterServletUrl, String connectQos) {
+      super("PersistentRequest");
       this.xmlBlasterAccess = xmlBlasterAccess;
       this.xmlBlasterServletUrl = this.xmlBlasterAccess.getXmlBlasterServletUrl();
-      this.loginName = loginName;
-      this.passwd = passwd;
       this.connectQos = connectQos;
    }
 
@@ -93,11 +93,12 @@ public class PersistentRequest extends Thread {
          */
 
          String request = "?ActionType="+MethodName.CONNECT.toString() +
-                          "&xmlBlaster.connectQos=" + XmlBlasterAccessRaw.encode(this.connectQos, "UTF-8");
+                          "&xmlBlaster.connectQos=" + this.xmlBlasterAccess.encode(this.connectQos, "UTF-8");
          URL url = new URL(xmlBlasterServletUrl+request);  // This works fine but is more a GET variant
          //URL url = new URL(xmlBlasterServletUrl);
          
          URLConnection conn = url.openConnection();
+         this.xmlBlasterAccess.writeCookie(conn);
          conn.setDoInput(true);
          conn.setDoOutput(true);
          conn.setUseCaches(false);
@@ -112,21 +113,24 @@ public class PersistentRequest extends Thread {
          dataOutput.close();
 
          log("DEBUG", "Creating now a persistent connection to '" + url.toString() + "'");
+
          conn.connect();
-         BufferedReader dataInput = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+         
+         this.xmlBlasterAccess.readCookie(conn);
+         BufferedInputStreamMicro dataInput = new BufferedInputStreamMicro(conn.getInputStream());
          String line;
          while ((line = dataInput.readLine()) != null) {
-            //log("DEBUG", "Receiving Base64: <" + line + ">");
+            log("DEBUG", "Receiving Base64: <" + line + "> with length " + line.length());
             if (line == null || line.length() < 1)
                continue;
             if (line.indexOf("--End") != -1) { // base64 may not contain "--"
                continue;
             }
             byte[] serial = Base64.decodeBase64(line.getBytes());
-            //log("DEBUG", "Parsing now: <" + new String(serial) + ">");
+            log("DEBUG", "Parsing now: <" + new String(serial) + "> with length " + serial.length);
 
             ByteArrayInputStream in = new ByteArrayInputStream(serial);
-            ObjectInputStream ois = new ObjectInputStream(in);
+            ObjectInputStreamMicro ois = new ObjectInputStreamMicro(in);
 
             String method = (String)ois.readObject(); // e.g. "update"
 
@@ -150,8 +154,8 @@ public class PersistentRequest extends Thread {
             }
             else if (MethodName.UPDATE.toString().equals(method)) { // "update"
                String cbSessionId = (String)ois.readObject();
-               Map qosMap = (Map)ois.readObject();
-               Map keyMap = (Map)ois.readObject();
+               Hashtable qosMap = (Hashtable)ois.readObject();
+               Hashtable keyMap = (Hashtable)ois.readObject();
                String contentBase64 = (String)ois.readObject();
                byte[] content = Base64.decodeBase64(contentBase64.getBytes());
                log("DEBUG", "Received update keyOid='" + keyMap.get("/key/@oid") + "' stateId=" + qosMap.get("/qos/state/@id"));

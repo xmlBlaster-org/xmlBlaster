@@ -6,7 +6,7 @@ Comment:   Helper to easy get the callback messages
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.http.applet;
 
-import java.util.Map;
+import java.util.Hashtable;
 
 /**
  * Here you receive callbacks from xmlBlaster in your applet. 
@@ -43,6 +43,6 @@ public interface I_CallbackRaw
     * @see org.xmlBlaster.util.key.MsgKeyData#toJXPath
     * @see org.xmlBlaster.util.qos.MsgQosData#toJXPath
     */
-   public String update(String cbSessionId, Map updateKey, byte[] content, Map updateQos) throws Exception;
+   public String update(String cbSessionId, Hashtable updateKey, byte[] content, Hashtable updateQos) throws Exception;
 }
 

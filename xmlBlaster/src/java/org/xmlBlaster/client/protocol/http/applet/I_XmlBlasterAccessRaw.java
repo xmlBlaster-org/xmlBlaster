@@ -5,13 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.http.applet;
 
-import java.util.Map;
-import java.util.Properties;
+import java.util.Hashtable;
 
 /**
  * Interface for XmlBlaster, the supported methods on applet client side.
  * <p>
- * All returned parameters are hold in Maps, to access the different key/QoS elements use JXPath syntax,
+ * All returned parameters are hold in Hashtables, to access the different key/QoS elements use JXPath syntax,
  * see the API references below for more details.
  * </p>
  * @see org.xmlBlaster.util.qos.MsgQosData#toJXPath()
@@ -22,20 +21,35 @@ import java.util.Properties;
  */
 public interface I_XmlBlasterAccessRaw
 {
+   public final static String CONNECT_NAME = "connect";
+   public final static String PUBLISH_NAME = "publish";
+   public final static String GET_NAME = "get";
+   public final static String SUBSCRIBE_NAME = "subscribe";
+   public final static String UNSUBSCRIBE_NAME = "unSubscribe";
+   public final static String ERASE_NAME = "erase";
+   public final static String DISCONNECT_NAME = "disconnect";
+   public final static String EXCEPTION_NAME = "exception";
+   public final static String CREATE_SESSIONID_NAME = "dummyToCreateASessionId";
+   public final static String PONG_NAME = "pong";
+   public final static String PING_NAME = "ping";
+   public final static String UPDATE_NAME = "update";
+
+   
+
    /**
     * Connect to xmlBlaster. 
     * @param qos If your qos is null the APPLET PARAMs will be checked for"xmlBlaster/loginName" and "xmlBlaster/passwd"<br />
     *            If your qos is "<qos/>" the servlet will choose its configured connectQoS (take care on security issues!)<br />
     *            If qos is not null and pre-filled with authentication informations it will be used to authenticate at xmlBlaster<br />
     *             
-    * @return never null TODO!!!: return JXPath Map for easier parameter access
+    * @return never null TODO!!!: return JXPath Hashtable for easier parameter access
     */
    public String connect(String qos, I_CallbackRaw callback) throws Exception;
 
    /**
     * @return never null, contains QoS in XJPath format
     */
-   public Map subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
    /**
     * @return never null, contains keys and QoS in XJPath format
@@ -45,17 +59,17 @@ public interface I_XmlBlasterAccessRaw
    /**
     * @return never null, contains QoS in XJPath format
     */
-   public Map[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   public Hashtable[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
    /**
     * @return never null, contains QoS in XJPath format
     */
-   public Map publish(java.lang.String xmlKey, byte[] content, java.lang.String qos) throws Exception;
+   public Hashtable publish(java.lang.String xmlKey, byte[] content, java.lang.String qos) throws Exception;
 
    /**
     * @return never null, contains QoS in XJPath format
     */
-   public Map[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   public Hashtable[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
    public void disconnect(String qos);
 
@@ -88,5 +102,5 @@ public interface I_XmlBlasterAccessRaw
     * </pre>
     * @return The found parameters
     */
-   public Properties getHtmlProperties();
+   public Hashtable getHtmlProperties();
 }

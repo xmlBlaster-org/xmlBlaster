@@ -5,21 +5,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.http.applet;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Hashtable;
 
 /**
  * Encapsulates the xmlKey, content and qos. 
  */
-public final class Msg implements java.io.Serializable
+public final class Msg
 {
-   private transient static final Map EMPTY_MAP = new TreeMap();
+   private transient static final Hashtable EMPTY_MAP = new Hashtable();
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
-   private final Map qos;
-   private final Map key;
+   private final Hashtable qos;
+   private final Hashtable key;
    private final byte[] content;
 
-   public Msg(Map key, byte[] content, Map qos) {
+   public Msg(Hashtable key, byte[] content, Hashtable qos) {
       this.qos = (qos == null) ? EMPTY_MAP : qos;
       this.key = (key == null) ? EMPTY_MAP : key;
       this.content = (content == null) ? EMPTY_BYTEARR : content;
@@ -28,7 +27,7 @@ public final class Msg implements java.io.Serializable
    /**
     * The message key, never null
     */
-   public Map getKey() {
+   public Hashtable getKey() {
       return this.key;
    }
 
@@ -49,7 +48,7 @@ public final class Msg implements java.io.Serializable
    /**
     * The message QoS, never null
     */
-   public Map getQos() {
+   public Hashtable getQos() {
       return this.qos;
    }
 }
