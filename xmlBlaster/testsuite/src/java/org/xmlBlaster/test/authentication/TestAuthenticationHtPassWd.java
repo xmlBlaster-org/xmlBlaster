@@ -48,7 +48,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   {
   }
 
-  private void testCaseSetup(int testcase)
+  private void setupTestCase(int testcase)
   { 
     String[] ports = Util.getOtherServerPorts(serverPort);
     String[] args = new String[4+ports.length];
@@ -90,7 +90,7 @@ public class TestAuthenticationHtPassWd extends TestCase
 
   public void testAuthHtPassWordCase1()
   { log.info(ME,"Testcase1");
-    testCaseSetup(1);
+    setupTestCase(1);
     boolean isValue=true;
     try
     { con = new XmlBlasterConnection(glob);
@@ -115,7 +115,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   
   public void testAuthHtPassWordCase2()
   { log.info(ME,"Testcase2");
-    testCaseSetup(2);
+    setupTestCase(2);
     boolean isValue = true;
     try
     { con = new XmlBlasterConnection(glob);
@@ -139,7 +139,7 @@ public class TestAuthenticationHtPassWd extends TestCase
 
   public void testAuthHtPassWordCaseWrongPassword()
   { log.info(ME,"Testcase3");
-    testCaseSetup(3);
+    setupTestCase(3);
     boolean isValue = false;
     try
     { con = new XmlBlasterConnection(glob);
@@ -161,7 +161,7 @@ public class TestAuthenticationHtPassWd extends TestCase
 
   public void testAuthHtPassWordCase3()
   { log.info(ME,"Testcase4");
-    testCaseSetup(4);
+    setupTestCase(4);
     boolean isValue = true;
     try
     { con = new XmlBlasterConnection(glob);
