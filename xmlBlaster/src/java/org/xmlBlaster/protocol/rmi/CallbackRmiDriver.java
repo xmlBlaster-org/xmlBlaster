@@ -3,7 +3,7 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.10 2001/11/24 23:15:02 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.11 2002/01/22 17:21:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -35,7 +35,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -108,16 +108,16 @@ public class CallbackRmiDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException
+   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update() to " + clientInfo.toString());
       if (msgUnitArr.length < 1) {
          Log.warn(ME, "xmlBlaster.update() to " + clientInfo.toString() + " invoked without a message to send");
-         return;
+         return "<qos><state>ERROR</state></qos>";
       }
 
       try {
-         getCb().update(msgUnitArr);
+         return getCb().update(msgUnitArr);
       } catch (RemoteException e) {
          String msg;
          if (msgUnitArr.length > 1)

@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.13 2001/11/26 09:26:19 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.14 2002/01/22 17:21:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -61,7 +61,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * This sends the update to the client.
     */
-   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException
+   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getUniqueKey() + ") to " + clientInfo.toString());
       try {
@@ -89,6 +89,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
          if (Log.DUMP) Log.dump(ME + ".sendUpdate", "\n"+text);
          // Send message
          Transport.send(message);
+         return "<qos><state>OK</state></qos>";
       } catch (Exception e) {
          String str = "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress() + ": " + e.toString();
          Log.warn(ME + ".EmailSendError", str);

@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.7 2001/02/14 00:46:47 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.8 2002/01/22 17:21:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -204,10 +204,11 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
     * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
     * @see xmlBlaster.idl
     */
-   public void update(MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
+   public String update(MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
-      if (msgUnitArr == null) return;
-      boss.update(loginName, msgUnitArr);
+      if (msgUnitArr == null) return "<qos><state>ERROR</state></qos>";;
+      boss.update(loginName, msgUnitArr); // !!! TODO: add String as return type
+      return "<qos><state>OK</state></qos>";
    }
 
 } // class RmiCallbackServer

@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackImpl.java,v 1.4 2001/12/30 10:41:14 ruff Exp $
+Version:   $Id: XmlRpcCallbackImpl.java,v 1.5 2002/01/22 17:21:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -54,7 +54,7 @@ public class XmlRpcCallbackImpl
    {
       if (Log.CALL) Log.call(ME, "Entering update() loginName=" + loginName);
       server.update(loginName, updateKey, content, updateQoS);
-      return "";
+      return "<qos><state>OK</state></qos>";
    }
 } // class XmlRpcCallbackImpl
 

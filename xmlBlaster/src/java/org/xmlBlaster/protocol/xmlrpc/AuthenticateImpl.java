@@ -84,8 +84,9 @@ public class AuthenticateImpl
     */
    public String logout(String sessionId) throws XmlBlasterException
    {
+   if (Log.CALL) Log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
       authenticate.disconnect(sessionId, (new DisconnectQos()).toXml());
-      return "";
+      return "<qos><state>OK</state></qos>";
    }
 
    /**
@@ -126,7 +127,7 @@ public class AuthenticateImpl
       if (Log.CALL) Log.call(ME, "Entering logout()");
       authenticate.disconnect(sessionId, qos_literal);
       if (Log.CALL) Log.call(ME, "Exiting logout()");
-      return "";
+      return "<qos><state>OK</state></qos>";
    }
 
    /**

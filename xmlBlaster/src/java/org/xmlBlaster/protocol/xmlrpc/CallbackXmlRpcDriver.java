@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.10 2001/12/30 10:40:45 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.11 2002/01/22 17:21:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -71,9 +71,19 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * This sends the update to the client.
     * <p />
     * This method is enforced by interface I_CallbackDriver and is called by
+    * @return Clients should return a qos as follows.
+    *         An empty qos string "" is valid as well and
+    *         interpreted as OK
+    * <pre>
+    *  &lt;qos>
+    *     &lt;state>       &lt;!-- Client processing state -->
+    *        OK            &lt;!-- OK | ERROR -->
+    *     &lt;/state>
+    *  &lt;/qos>
+    * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper,
+   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper,
                                 org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
       throws XmlBlasterException
    {
@@ -86,12 +96,14 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             args.addElement(msgUnitArr[i].getXmlKey());
             args.addElement(msgUnitArr[i].getContent());
             args.addElement(msgUnitArr[i].getQos());
-            // send an update to the client
+          
+            if (Log.TRACE) Log.trace(ME, "Send an update to the client ...");
 
-            xmlRpcClient.execute("update", args);
-            if (Log.TRACE) Log.trace(ME, "Received message update '" +
+            String retVal = (String)xmlRpcClient.execute("update", args);
+            if (Log.TRACE) Log.trace(ME, "Successfully sent message update '" +
                             new String(msgUnitArr[i].content) + "' from sender '"
-                            + clientInfo.toString() + "'");
+                            + clientInfo.toString() + "', retVal=" + retVal);
+            return retVal;
          }
       }
       catch (XmlRpcException ex) {
@@ -101,9 +113,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
       catch (IOException ex1) {
          if (Log.TRACE) Log.trace(ME + ".sendUpdate", "I/O exception: " + ex1.toString());
+         ex1.printStackTrace();
          throw new XmlBlasterException("CallbackFailed", "I/O exception: " + ex1.toString());
       }
-
+      return "<qos><state>ERROR</state></qos>";
    }
 
 
