@@ -7,7 +7,7 @@ import junit.framework.*;
  * <pre>
  * java clustertest.AllTests
  * java -Djava.compiler= clustertest.AllTests
- * java -Djava.compiler= junit.swingui.TestRunner -noloading clustertest.AllTests
+ * java -Djava.compiler= junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.jdbc.AllTests
  * </pre>
  */
 public class AllTests {
