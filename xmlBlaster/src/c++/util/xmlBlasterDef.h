@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      xmlBlaster.h
+Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.14 2003/01/16 21:36:25 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.15 2003/02/07 21:19:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
