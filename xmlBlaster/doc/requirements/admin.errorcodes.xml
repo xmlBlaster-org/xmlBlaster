@@ -96,6 +96,7 @@
       <li><b>node</b>:       Cluster node location (e.g. /node/heron)</li>
       <li><b>errorCode</b>:  The hierarchical error code (e.g. "security.notauthenticated")</li>
       <li><b>location</b>:   Logical location in the code (e.g. client/joe/3-SubscriptionInfo)</li>
+      <li><b>lang</b>:       Choose language - lowercase two-letter ISO-639 code, choose country - uppercase two-letter ISO-3166 code (e.g. "fr" "FR" or "fr_FR" or "de_DE")</li>
       <li><b>reason</b>:     The human readable error text (e.g. "Authorization denied for message oid 'accountRetrieval'")</li>
       <li><b>stackTrace</b>:      The stack trace (optional, for debugging)</li>
       <li><b>embeddedText</b>:    The original exception message (optional, if another exception is rethrown)</li>
@@ -208,7 +209,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
