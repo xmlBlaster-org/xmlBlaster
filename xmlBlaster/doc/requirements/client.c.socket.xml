@@ -919,9 +919,9 @@ Solaris:
          -->
 
          <tr>
-            <td>-debug</td>
-            <td>false</td>
-            <td>true switches logging output on</td>
+            <td>-logLevel</td>
+            <td>WARN</td>
+            <td>Supported levels are ERROR, WARN, INFO and TRACE</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
@@ -975,6 +975,6 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
 </requirement>
 
