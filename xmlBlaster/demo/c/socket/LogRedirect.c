@@ -179,7 +179,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
              xml);
-      free(xml);
+      xmlBlasterFree(xml);
       msgUnitArr->msgUnitArr[i].responseQos =
              strcpyAlloc("<qos><state id='OK'/></qos>");
       /* Return QoS: Everything is OK */

@@ -115,7 +115,7 @@ static const char * test_methods()
          freeXmlBlasterAccessUnparsed(xa);
          mu_assert(errorString, false);
       }
-      free(response);
+      xmlBlasterFree(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
    }
 
@@ -123,7 +123,7 @@ static const char * test_methods()
    mu_assert("Pinging a connected server failed", response != (char *)0);
    mu_assert("Pinging a connected server failed", *xmlBlasterException.errorCode == 0);
    printf("[client] Pinging a connected server, response=%s\n", response);
-   free(response);
+   xmlBlasterFree(response);
 
    { /* subscribe ... */
       const char *key = "<key oid='HelloWorld'/>";
@@ -140,7 +140,7 @@ static const char * test_methods()
       mu_assert("Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
       mu_assert("Subscribe response is invalid", strstr(response, "WARNING")==0);
       mu_assert("Subscribe response is invalid", strstr(response, "ERROR")==0);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    {  /* publish ... */
@@ -160,13 +160,13 @@ static const char * test_methods()
       }
       printf("[client] Publish success");
       mu_assert("Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    sleepMillis(1000);
    mu_assert("No update arrived", updateContent != 0);
    mu_assert("Received wrong message in update()", strcmp(CONTENT, updateContent) == 0);
-   free(updateContent);
+   xmlBlasterFree(updateContent);
    updateContent = 0;
 
    mu_assert("UserData from update() is invalid", updateUserData == xa);
@@ -213,7 +213,7 @@ static const char * test_methods()
          char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
                                           msgUnitArr->msgUnitArr[i].contentLen);
          printf("[client] Received message#%lu/%lu\n", (unsigned long)(i+1), (unsigned long)msgUnitArr->len);
-         free(contentStr);
+         xmlBlasterFree(contentStr);
       }
       freeMsgUnitArr(msgUnitArr);
    }
@@ -247,7 +247,7 @@ static const char * test_methods()
    mu_assert("disconnect() returned false", retBool == true);
 
    if (updateContent != 0) { /* The erase event is sent as update as well */
-      free(updateContent);
+      xmlBlasterFree(updateContent);
       updateContent = 0;
    }
 

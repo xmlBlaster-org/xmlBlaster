@@ -47,7 +47,7 @@ static const char * test_illegalSubscribe()
          printf("[client] Subscribe response==NULL is OK, we provided illegal arguments\n");
       }
       else {
-         free(response);
+         xmlBlasterFree(response);
          mu_fail("[TEST FAIL] Subscribe response was not expected, we provided illegal arguments");
       }
    }
@@ -59,7 +59,7 @@ static const char * test_illegalSubscribe()
          printf("[client] Subscribe response==NULL is OK, we provided illegal arguments\n");
       }
       else {
-         free(response);
+         xmlBlasterFree(response);
          mu_fail("[TEST FAIL] Subscribe response was not expected, we provided illegal arguments");
       }
    }
@@ -72,7 +72,7 @@ static const char * test_illegalSubscribe()
                   xmlBlasterException.errorCode, xmlBlasterException.message);
       }
       else {
-         free(response);
+         xmlBlasterFree(response);
          mu_fail("[TEST FAIL] Subscribe response was not expected, we provided illegal arguments\n");
       }
    }
@@ -87,7 +87,7 @@ static const char * test_illegalSubscribe()
                   xmlBlasterException.errorCode, xmlBlasterException.message);
       }
       else {
-         free(response);
+         xmlBlasterFree(response);
          mu_fail("[TEST FAIL] Subscribe response was not expected, we are not connected");
       }
    }
@@ -121,7 +121,7 @@ static const char * test_illegalDisconnect()
                   xmlBlasterException.errorCode, xmlBlasterException.message);
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] disconnect true was not expected, we are not connected");
    }
 
@@ -130,7 +130,7 @@ static const char * test_illegalDisconnect()
                   xmlBlasterException.errorCode, xmlBlasterException.message);
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] disconnect true was not expected, we are not connected");
    }
 
@@ -161,7 +161,7 @@ static const char * test_illegalConnect()
                   xmlBlasterException.errorCode, xmlBlasterException.message);
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] initialize true was not expected, we are not connected");
    }
 
@@ -170,7 +170,7 @@ static const char * test_illegalConnect()
    }
    else {
       printf("[client] Initialize with updateP is NULL is OK, the default handler is used.");
-      free(response);
+      xmlBlasterFree(response);
    }
 
    printf("[client] Testing connect() behavior\n");
@@ -179,7 +179,7 @@ static const char * test_illegalConnect()
       printf("[client] connect() return NULL is OK with NULL args\n");
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] connect() return was not expected, we are not connected");
    }
 
@@ -188,7 +188,7 @@ static const char * test_illegalConnect()
       printf("[client] connect() return NULL is OK with NULL exception\n");
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] connect() return was not expected, we are not connected");
    }
 
@@ -198,7 +198,7 @@ static const char * test_illegalConnect()
                xmlBlasterException.errorCode, xmlBlasterException.message);
    }
    else {
-      free(response);
+      xmlBlasterFree(response);
       mu_fail("[TEST FAIL] connect() return was not expected for ConnectQos==NULL");
    }
 

@@ -99,7 +99,7 @@ static const char * test_stress()
          freeXmlBlasterAccessUnparsed(xa);
          mu_assert(errorString, false);
       }
-      free(response);
+      xmlBlasterFree(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
    }
 
@@ -118,7 +118,7 @@ static const char * test_stress()
       mu_assert("Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
       mu_assert("Subscribe response is invalid", strstr(response, "WARNING")==0);
       mu_assert("Subscribe response is invalid", strstr(response, "ERROR")==0);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    printf("[client] Publishing %d messages 'TestStress' ...\n", numPublish);
@@ -141,7 +141,7 @@ static const char * test_stress()
       if (xa->logLevel>=LOG_TRACE)
          xa->log(0, xa->logLevel, LOG_TRACE, __FILE__, "Publish #%d messages success\n", iPub); 
       mu_assert("Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    for (iWait=0; iWait<10; iWait++) {
