@@ -108,14 +108,15 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (log.CALL) log.call(ME, "get(" + key + ")");
       synchronized (this.storage) {
          I_MapEntry entry = (I_MapEntry)this.storage.get(key);
-	 touch(entry);
+         touch(entry);
          return entry;
       }
    }
 
    private void touch(I_MapEntry entry) {
       if (entry == null) return;
-      this.lruSet.remove(entry);
+      if (entry.getSortTimestamp() != null) // assert: All entries in the set must have a sortTimestamp else the Comparator fails
+         this.lruSet.remove(entry);
       entry.setSortTimestamp(new Timestamp());
       this.lruSet.add(entry);
    }
@@ -159,7 +160,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
          if (old != null) { // I_Map#put(I_MapEntry) spec says that the old entry is not updated!
             this.storage.put(key, old);
-	    touch((I_MapEntry)old);
+            touch((I_MapEntry)old);
             return 0;
             /*
             this.sizeInBytes -= old.getSizeInBytes();
@@ -186,7 +187,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (mapEntry == null) return 0;
       if (log.CALL) log.call(ME, "remove(" + mapEntry.getLogId() + ")");
       synchronized (this.storage) {
-         this.lruSet.remove(mapEntry);
+         if (mapEntry.getSortTimestamp() != null)
+            this.lruSet.remove(mapEntry);
          I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
          if (entry == null)
             return 0;
@@ -435,6 +437,10 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       public final int compare(Object o1, Object o2) {
          I_MapEntry id1 = (I_MapEntry)o1;
          I_MapEntry id2 = (I_MapEntry)o2;
+
+         if (id1.getSortTimestamp() == null) id1.setSortTimestamp(new Timestamp()); // assert != null
+         if (id2.getSortTimestamp() == null) id2.setSortTimestamp(new Timestamp()); // assert != null
+         
          if (id1.getSortTimestamp().getTimestamp() > id2.getSortTimestamp().getTimestamp()) {
             return 1;
          }
