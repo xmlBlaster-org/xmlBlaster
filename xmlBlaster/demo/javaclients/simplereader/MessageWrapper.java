@@ -11,19 +11,19 @@ import org.xmlBlaster.client.qos.UpdateQos;
 
 
 public class MessageWrapper {
-   private String loginName;
+   private String secretCallbackSessionId;
    private UpdateKey updateKey;
    private byte[] content;
    private UpdateQos updateQoS;
 
-   public MessageWrapper(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQoS) {
-      this.loginName = loginName;
+   public MessageWrapper(String secretCallbackSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQoS) {
+      this.secretCallbackSessionId = secretCallbackSessionId;
       this.updateKey = updateKey;
       this.content = content;
       this.updateQoS = updateQoS;
    }
-   public String getLoginName() {
-      return (this.loginName);
+   public String getSecretCallbackSessionId() {
+      return (this.secretCallbackSessionId);
    }
    public UpdateKey getUpdateKey() {
       return (this.updateKey);

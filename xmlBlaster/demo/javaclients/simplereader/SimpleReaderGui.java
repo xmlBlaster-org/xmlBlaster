@@ -98,9 +98,9 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       }
    }
 
-   public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
+   public String update(String secretCallbackSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
-      MessageWrapper messageWrapper = new MessageWrapper(loginName, updateKey, content, updateQos);
+      MessageWrapper messageWrapper = new MessageWrapper(secretCallbackSessionId, updateKey, content, updateQos);
       listModel.addElement(messageWrapper);
       System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
       return ("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
@@ -128,15 +128,15 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
             JList source = (JList) evt.getSource();
             MessageWrapper selection = (MessageWrapper) source.getSelectedValue();
             if (selection != null) {
-               String loginName = selection.getLoginName();
+               String secretCallbackSessionId = selection.getSecretCallbackSessionId();
                UpdateKey updateKey = selection.getUpdateKey();
                byte[] content = selection.getContent();
                UpdateQos updateQos = selection.getUpdateQos();
 
                String text = (
                   new StringBuffer()
-                     .append(" - - - loginName: - - -\n")
-                     .append(loginName)
+                     .append(" - - - secretCallbackSessionId: - - -\n")
+                     .append(secretCallbackSessionId)
                      .append("\n - - - updateKey: - - -")
                      .append(updateKey.toXml())
                      .append("\n - - - content: - - -\n")
@@ -162,7 +162,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       jScrollPane2.setPreferredSize(new Dimension(300, 26));
       jSplitPane1.setMinimumSize(new Dimension(234, 400));
       jSplitPane1.setPreferredSize(new Dimension(512, 400));
-      jTextField1.setText("//");
+      jTextField1.setText("//key");
       jPanel3.setLayout(borderLayout4);
       jPanel3.setMaximumSize(new Dimension(120, 40));
       jPanel3.setMinimumSize(new Dimension(120, 40));
