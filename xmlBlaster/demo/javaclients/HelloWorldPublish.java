@@ -67,6 +67,10 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  * <p>
  * If erase=false the message is not erase at the end, if disconnect=false we don't logout at the end.
  * </p>
+ * <p>
+ * You can add '%counter' to the clientTags or the content string, each occurence will be replaced
+ * by the current message number.
+ * </p>
  * @see javaclients.HelloWorldSubscribe
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
@@ -85,8 +89,8 @@ public class HelloWorldPublish
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");
-         String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo/></org.xmlBlaster>");
-         byte[] content = glob.getProperty().get("content", "Hi").getBytes();
+         String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
+         String contentStr = glob.getProperty().get("content", "Hi-%counter");
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
@@ -122,8 +126,8 @@ public class HelloWorldPublish
             log.info(ME, "   -contentSize    " + contentSize);
          }
          else {
-            log.info(ME, "   -content        " + new String(content));
-            log.info(ME, "   -contentSize    " + content.length);
+            log.info(ME, "   -content        " + contentStr);
+            log.info(ME, "   -contentSize    " + contentStr.length());
          }
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
@@ -193,7 +197,7 @@ public class HelloWorldPublish
             }
 
             PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
-            pk.setClientTags(clientTags);
+            pk.setClientTags(org.jutils.text.StringHelper.replaceAll(clientTags, "%counter", ""+(i+1)));
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
             pq.setPersistent(persistent);
@@ -221,10 +225,14 @@ public class HelloWorldPublish
                pq.addDestination(dest);
             }
 
+            byte[] content;
             if (contentSize >= 0) {
                content = new byte[contentSize];
                for (int j=0; j<content.length; j++)
                   content[j] = (byte)(j % 255);
+            }
+            else {
+               content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
             }
 
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
