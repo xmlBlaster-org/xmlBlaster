@@ -15,76 +15,76 @@ import java.util.Map;
  */
 public class NodeInfo {
    public NodeId getId(){
-         return id;
-      }
+     return id;
+   }
 
    public void setId(NodeId id){
-         this.id = id;
-      }
+      this.id = id;
+   }
 
    public Address getAddress(){
-         return address;
-      }
+      return address;
+   }
 
    public void setAddress(Address address){
-         this.address = address;
-      }
+      this.address = address;
+   }
 
    public Address[] getAddresses(){
-         return addresses;
-      }
+      return addresses;
+   }
 
    public void setAddresses(Address[] addresses){
-         this.addresses = addresses;
-      }
+      this.addresses = addresses;
+   }
 
    public Address[] getCbAddresses(){
-         return cbAddresses;
-      }
+      return cbAddresses;
+   }
 
    public void setCbAddresses(Address[] cbAddresses){
-         this.cbAddresses = cbAddresses;
-      }
+      this.cbAddresses = cbAddresses;
+   }
 
    public boolean isNameService(){
-         return nameService;
-      }
+      return nameService;
+   }
 
    public void setNameService(boolean nameService){
-         this.nameService = nameService;
-      }
+      this.nameService = nameService;
+   }
 
    public NodeId[] getBackupIds(){
-         return backupIds;
-      }
+      return backupIds;
+   }
 
    public void setBackupIds(NodeId[] backupIds){
-         this.backupIds = backupIds;
-      }
+      this.backupIds = backupIds;
+   }
 
    public NodeStateInfo getState(){
-         return state;
-      }
+      return state;
+   }
 
    public void setState(NodeStateInfo state){
-         this.state = state;
-      }
+      this.state = state;
+   }
 
    public Map getMasterMap(){
-         return masterMap;
-      }
+      return masterMap;
+   }
 
    public void setMasterMap(Map masterMap){
-         this.masterMap = masterMap;
-      }
+      this.masterMap = masterMap;
+   }
 
    public boolean isAvailable(){
-         return available;
-      }
+      return available;
+   }
 
    public void setAvailable(boolean available){
-         this.available = available;
-      }
+      this.available = available;
+   }
 
    private NodeId id;
    private Address address;

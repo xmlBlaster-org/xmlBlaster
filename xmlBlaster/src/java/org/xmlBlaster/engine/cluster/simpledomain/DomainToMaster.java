@@ -82,6 +82,24 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    }
 
    /**
+    * Get the content MIME type for which this plugin applies
+    * @return "*" This plugin handles all mime types
+    */
+   public String[] getMimeTypes() {
+      String[] mimeTypes = { "*" };
+      return mimeTypes;
+   }
+
+   /**
+    * Get the content MIME version number for which this plugin applies
+    * @return "1.0" (this is the default version number)
+    */
+   public String[] getMimeExtended() {
+      String[] mimeExtended = { org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended }; // "1.0"
+      return mimeExtended;
+   }
+
+   /**
     * Get a human readable name of this filter implementation
     * @return "SimpleDomainToMasterMapper"
     */

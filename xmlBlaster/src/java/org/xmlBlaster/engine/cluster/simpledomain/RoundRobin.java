@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      SimpleBalancer.java
+Name:      RoundRobin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Simple demo implementation for clustering
@@ -17,14 +17,13 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 
 /**
- * Implements dummy load balancing for xmlBlaster
- * cluster setup
+ * Implements dummy load balancing for xmlBlaster using round robin approach. 
  * @author ruff@swand.lake.de 
  * @since 0.79e
  */
-final public class SimpleBalancer implements I_LoadBalancer, I_Plugin {
+final public class RoundRobin implements I_LoadBalancer, I_Plugin {
 
-   private final String ME = "SimpleBalancer";
+   private final String ME = "RoundRobin";
    private Global glob;
    private Log log;
 
@@ -35,7 +34,7 @@ final public class SimpleBalancer implements I_LoadBalancer, I_Plugin {
    public void initialize(Global glob) {
       this.glob = glob;
       this.log = glob.getLog();
-      log.info(ME, "Simple load balancer is initialized");
+      log.info(ME, "Round robin load balancer is initialized");
    }
 
    /**
@@ -43,7 +42,7 @@ final public class SimpleBalancer implements I_LoadBalancer, I_Plugin {
     * <p />
     * This xmlBlaster.properties entry example
     * <pre>
-    *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200
+    *   LoadBalancerPlugin[RoundRobin][1.0]=org.xmlBlaster.engine.cluster.simpledomain.RoundRobin,DEFAULT_MAX_LEN=200
     * </pre>
     * passes 
     * <pre>
@@ -65,10 +64,10 @@ final public class SimpleBalancer implements I_LoadBalancer, I_Plugin {
 
    /**
     * Return plugin type for Plugin loader
-    * @return "SimpleLoadBalancer"
+    * @return "RoundRobin"
     */
    public String getType() {
-      return "SimpleLoadBalancer";
+      return "RoundRobin";
    }
 
    /**
@@ -81,10 +80,10 @@ final public class SimpleBalancer implements I_LoadBalancer, I_Plugin {
 
    /**
     * Get a human readable name of this filter implementation
-    * @return "SimpleLoadBalancer"
+    * @return "RoundRobin"
     */
    public String getName() {
-      return "SimpleLoadBalancer";
+      return "RoundRobin";
    }
 
    public XmlBlasterConnection getConnection(NodeInfo[] nodeInfoArr) throws XmlBlasterException {
