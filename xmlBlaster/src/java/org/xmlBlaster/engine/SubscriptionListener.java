@@ -3,8 +3,8 @@ Name:      SubscriptionListener.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Listens on subscriptionRemove and subscriptionAdded events
-Version:   $Id: SubscriptionListener.java,v 1.4 2000/06/13 13:04:00 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: SubscriptionListener.java,v 1.5 2002/12/18 11:20:55 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -14,7 +14,7 @@ package org.xmlBlaster.engine;
  * <p>
  * The events are fired by the Authenticate object.
  *
- * @version $Id: SubscriptionListener.java,v 1.4 2000/06/13 13:04:00 ruff Exp $
+ * @version $Id: SubscriptionListener.java,v 1.5 2002/12/18 11:20:55 ruff Exp $
  * @author Marcel Ruff
  */
 public interface SubscriptionListener extends java.util.EventListener {
