@@ -8,7 +8,18 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 /**
  * This client connects to xmlBlaster and invokes all available methods. 
  * <p />
+ * We use java client helper classes to generate the raw xml strings, e.g.:
+ * <pre>
+ *   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld3", "text/xml");
+ * 
+ * generates:
+ *
+ *   &lt;key oid='HelloWorld3' contentMime='text/xml'/>
+ * </pre>
+ *
  * Invoke: java HelloWorld3
+ * <p />
+ * Invoke: java HelloWorld3 -name joe -passwd secret
  */
 public class HelloWorld3 implements I_Callback
 {
@@ -46,7 +57,7 @@ public class HelloWorld3 implements I_Callback
 
 
          try { Thread.currentThread().sleep(1000); } 
-         catch( InterruptedException i) {} // wait a second
+         catch( InterruptedException i) {} // wait a second to receive update()
 
 
          UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper("HelloWorld3");
