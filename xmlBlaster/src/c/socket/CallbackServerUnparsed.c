@@ -608,9 +608,10 @@ static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, So
  */
 static void closeAcceptSocket(CallbackServerUnparsed *cb)
 {
-   // We close even if cb->reusingConnectionSocket is set
-   // to react instantly on EOF from server side.
-   // Otherwise the client thread would block until socket response timeout happens (one minute)
+   /* We close even if cb->reusingConnectionSocket is set
+     to react instantly on EOF from server side.
+     Otherwise the client thread would block until socket response timeout happens (one minute)
+   */
    if (cb->acceptSocket != -1) {
       closeSocket(cb->acceptSocket);
       cb->acceptSocket = -1;
