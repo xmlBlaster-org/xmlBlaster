@@ -98,6 +98,10 @@ public class TestC extends TestCase
       Execute e = new Execute(glob, commandArr, envArr);
       e.run();
 
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
       if (e.getErrorText() != null) {
          fail(e.getErrorText());
       }
@@ -109,7 +113,8 @@ public class TestC extends TestCase
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_MethodInvocations('" + commandArr[0] + "'): " + e.getStdout());
+      log.info(ME, "######## SUCCESS test_C_MethodInvocations('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
    }
 
    /**
@@ -128,6 +133,10 @@ public class TestC extends TestCase
       Execute e = new Execute(glob, commandArr, envArr);
       e.run();
 
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
       if (e.getErrorText() != null) {
          fail(e.getErrorText());
       }
@@ -139,7 +148,8 @@ public class TestC extends TestCase
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_IllegalArguments('" + commandArr[0] + "'): " + e.getStdout());
+      log.info(ME, "######## SUCCESS test_C_IllegalArguments('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
    }
 
    /**
@@ -158,6 +168,10 @@ public class TestC extends TestCase
       Execute e = new Execute(glob, commandArr, envArr);
       e.run();
 
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
       if (e.getErrorText() != null) {
          fail(e.getErrorText());
       }
@@ -169,7 +183,8 @@ public class TestC extends TestCase
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_Stress('" + commandArr[0] + "'): " + e.getStdout());
+      log.info(ME, "######## SUCCESS test_C_Stress('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
    }
 
    /**
