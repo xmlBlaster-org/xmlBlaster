@@ -8,6 +8,8 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.enum.Constants;
 
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -101,6 +103,8 @@ public class ConnectQosTest extends TestCase {
          "   <serverRef type='XMLRPC'>\n" +
          "      http:/www.mars.universe:8080/RPC2\n" +
          "   </serverRef>\n" +
+         "   <clientProperty name='intKey' type='int'>123</clientProperty>\n" +
+         "   <clientProperty name='StringKey' type='String' encoding='" + Constants.ENCODING_BASE64 + "'>QmxhQmxhQmxh</clientProperty>\n" +
          "</qos>\n";
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
@@ -154,6 +158,18 @@ public class ConnectQosTest extends TestCase {
          {
             CbQueueProperty prop = qos.getSessionCbQueueProperty();
             assertEquals("", 1600L, prop.getMaxEntries());
+         }
+
+         assertEquals("Wrong number of clientProperties", 2, qos.getClientProperties().size());
+         {
+            String prop = qos.getClientProperty("StringKey", (String)null);
+            assertTrue("Missing client property", prop != null);
+            assertEquals("Wrong base64 decoding", "BlaBlaBla", prop); // Base64: QmxhQmxhQmxh -> BlaBlaBla
+         }
+
+         {
+            int prop = qos.getClientProperty("intKey", -1);
+            assertEquals("Wrong value", 123, prop);
          }
 
          //System.out.println(qos.toXml());
