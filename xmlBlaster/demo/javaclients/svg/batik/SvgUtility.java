@@ -3,7 +3,7 @@ Name:      SvgUtility.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: SvgUtility.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id: SvgUtility.java,v 1.2 2003/08/31 21:52:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -18,7 +18,7 @@ import org.apache.batik.dom.svg.SVGOMDocument;
 
 
 /**
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 
 public class SvgUtility
@@ -34,7 +34,7 @@ public class SvgUtility
       throws IOException
    {
       SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(PARSER_CLASSNAME);
-      return factory.createDocument(dummyURI, reader);
+      return (org.apache.batik.dom.svg.SVGOMDocument)factory.createDocument(dummyURI, reader);
    }
 
 
@@ -42,7 +42,7 @@ public class SvgUtility
       throws IOException
    {
       SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(PARSER_CLASSNAME);
-      return factory.createDocument(dummyURI, inputStream);
+      return (org.apache.batik.dom.svg.SVGOMDocument)factory.createDocument(dummyURI, inputStream);
    }
 
 
