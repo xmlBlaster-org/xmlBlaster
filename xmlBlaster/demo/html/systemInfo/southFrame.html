@@ -22,15 +22,15 @@ COMMENT:
          // appVersion=4.70 (Win16;I)
          // appName=Netscape
          isOpera = (navigator.appName.indexOf("Netscape") != -1) && (navigator.appVersion.indexOf("(Win16;") != -1);
-         
+
          isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
 
          if (!isOpera && !isExplorer) {
             // appVersion=4.72 [en] (X11; I; Linux 2.2.14 i686)
             // appName=Netscape
-            isNetscape = (navigator.appName.indexOf("Netscape") != -1) && (vers == 4); 
-            
-            // appVersion=5.0 [de-DE] (Linux; I) 
+            isNetscape = (navigator.appName.indexOf("Netscape") != -1) && (vers == 4);
+
+            // appVersion=5.0 [de-DE] (Linux; I)
             // appName=Netscape
             isMozilla = ((navigator.appName.indexOf("Netscape") != -1) && (vers >= 5));
          }
@@ -85,7 +85,7 @@ COMMENT:
       A little component publishes the data to xmlBlaster (currently random values).
       <p />
       See directory 'xmlBlaster/demo/html/systemInfo' in the xmlBlaster distribution to
-      find out how it works.
+      find out how it works, and read the requirement <a href="/xmlBlaster/doc/requirement/client.browser.html">client.browser</a>
       <hr />
       Tested with<br />
       <table border>

@@ -3,10 +3,10 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.4 2000/05/06 16:53:34 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.5 2000/05/06 20:15:05 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
-package demo.html.systemInfo;
+package html.systemInfo;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
@@ -26,7 +26,7 @@ import java.io.*;
  * from the browser
  * <p />
  * With Apache/Jserv add this line to zone.properties:
- *   <code>servlet.SystemInfo.code=demo.html.systemInfo.SystemInfo</code>
+ *   <code>servlet.SystemInfo.code=html.systemInfo.SystemInfo</code>
  *
  * jaco org.xmlBlaster.client.feeder.PublishFile -content 56 -xmlKey "<key oid=\"cpuinfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
  * java org.xmlBlaster.client.feeder.PublishFile -content 44 -xmlKey "<key oid=\"meminfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
@@ -51,7 +51,7 @@ public class SystemInfo extends HttpServlet
 
 
    /**
-    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'. 
+    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'.
     * <p />
     * The message updates are received asynchronous over the callbackFrame.
     * <br />

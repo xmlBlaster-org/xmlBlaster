@@ -3,9 +3,9 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.2 2000/05/04 20:14:53 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.3 2000/05/06 20:15:05 ruff Exp $
 ------------------------------------------------------------------------------*/
-package demo.html.systemInfo;
+package html.systemInfo;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -29,7 +29,7 @@ import java.util.Random;
  * <br />
  * Invoke examples:<br />
  * <pre>
- *    jaco demo.html.systemInfo.SystemInfoPublisher
+ *    jaco html.systemInfo.SystemInfoPublisher
  * </pre>
  */
 public class SystemInfoPublisher
@@ -89,7 +89,7 @@ public class SystemInfoPublisher
 
 
    /**
-    * The Linux way ... 
+    * The Linux way ...
     * <p />
     * For now it is a random hack
     */
@@ -102,7 +102,7 @@ public class SystemInfoPublisher
 
 
    /**
-    * The Linux way ... 
+    * The Linux way ...
     * <p />
     * For now it is a random hack
     */
@@ -172,7 +172,7 @@ public class SystemInfoPublisher
    private void usage()
    {
       Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "jaco demo.html.systemInfo.SystemInfoPublisher <options>");
+      Log.plain(ME, "jaco html.systemInfo.SystemInfoPublisher <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Options:");
       Log.plain(ME, "   -?                  Print this message.");
@@ -187,7 +187,7 @@ public class SystemInfoPublisher
 
 
    /**
-    * jaco demo.html.systemInfo.SystemInfoPublisher
+    * jaco html.systemInfo.SystemInfoPublisher
     */
    public static void main(String args[])
    {

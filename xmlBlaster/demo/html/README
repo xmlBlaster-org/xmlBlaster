@@ -9,7 +9,7 @@ Howto run the html examples with persistent http connection:
 
 2. Add the servlet to you servlet env, with jserv in zone.properties:
 
-   servlet.SystemInfo.code=demo.html.systemInfo.SystemInfo
+   servlet.SystemInfo.code=html.systemInfo.SystemInfo
     
 
 3. Use the Makefile or do it manually:
@@ -24,7 +24,7 @@ Howto run the html examples with persistent http connection:
 
 5. Start a publisher, so that we have some dynamic data:
 	
-	java demo.html.systemInfo.SystemInfoPublisher
+	java html.systemInfo.SystemInfoPublisher
 
 
 6. Start you browser
@@ -41,4 +41,4 @@ Start it in the background on Linux:
 	CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
    java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 & 
 
-   java demo.html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
+   java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
