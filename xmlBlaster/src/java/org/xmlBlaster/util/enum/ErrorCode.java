@@ -491,6 +491,21 @@ public final class ErrorCode implements java.io.Serializable
    }
 
    /**
+    * Returns the description of the errorCode including the online link with further explanations. 
+    * @return never null
+    */
+   public String getLongDescription() {
+      return this.description + " -> " + getUrl();
+   }
+
+   /**
+    * The link to find more information about this problem
+    */
+   public String getUrl() {
+      return "http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#" + getErrorCode();
+   }
+
+   /**
     * Return resource info object telling us where to find more information
     * on this errorCode
     */
@@ -610,7 +625,7 @@ public final class ErrorCode implements java.io.Serializable
       offset += extraOffset;
 
       sb.append(offset).append("<errorCode id='").append(getErrorCode()).append("'>");
-      sb.append(offset).append(" <description>").append(getDescription()).append("</description>");
+      sb.append(offset).append(" <description>").append(getLongDescription()).append("</description>");
       for (int i=0; i<resourceInfos.length; i++)
          sb.append(resourceInfos[i].toXml(extraOffset+" "));
       sb.append(offset).append("</errorCode>");
