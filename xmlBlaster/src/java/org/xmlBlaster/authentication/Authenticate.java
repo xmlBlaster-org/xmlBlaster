@@ -35,9 +35,6 @@ final public class Authenticate implements I_Authenticate
 {
    final private String ME;
 
-   public static final String DEFAULT_SECURITYPLUGIN_TYPE = "simple";
-   public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
-
    private final PluginManager plgnLdr;
 
 //   private Hashtable sessions = new Hashtable();
