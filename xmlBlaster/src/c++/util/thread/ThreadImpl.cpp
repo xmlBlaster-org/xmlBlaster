@@ -28,18 +28,18 @@ typedef boost::condition          ConditionImpl;
 namespace org { namespace xmlBlaster { namespace util { namespace thread {
 
 class ThreadImpl : public boost::thread {
-	public:
+        public:
    explicit ThreadImpl(const boost::function0<void>& threadfunc) : boost::thread(threadfunc) {}
 };
 class MutexImpl : public boost::mutex {
-	public:
+        public:
 };
 class LockImpl : public boost::mutex::scoped_lock {
    public:
    LockImpl(boost::mutex& mutex) : boost::mutex::scoped_lock(mutex) {}
 };
 class ConditionImpl : public boost::condition {
-	public:
+        public:
 };
 
 }}}}
@@ -134,9 +134,10 @@ MutexClass::~MutexClass()
 
 // ----------------------------- Lock ------------------------------------
 
-Lock::Lock(const MutexClass& mutex)
+Lock::Lock(const MutexClass& mutex, bool ignore)
 {
-   lock_ = new LockImpl(*(mutex.mutex_));
+   if (ignore) lock_ = new LockImpl(*(mutex.mutex_));
+   else lock_ = NULL;
 }
 
 Lock::~Lock() 

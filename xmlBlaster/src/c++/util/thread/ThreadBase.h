@@ -127,7 +127,7 @@ private:
    LockImpl* lock_;
 
 public:
-   Lock(const MutexClass& mutex);
+   Lock(const MutexClass& mutex, bool ignore=false);
    
    ~Lock();
 };
