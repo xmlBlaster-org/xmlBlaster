@@ -49,6 +49,8 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
@@ -65,6 +67,7 @@ import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_AdminNode;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 import java.util.*;
 import java.io.*;
@@ -378,8 +381,14 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                continue;
             }
             MsgUnit origMsgUnit = null;
-            if (entry instanceof ReferenceEntry)
+            if (entry instanceof ReferenceEntry) {
+               ReferenceEntry referenceEntry = (ReferenceEntry)entry;
+               if (referenceEntry.isDestroyed()) {
+                  if (log.TRACE) log.trace(ME, "Ignoring dead message for destroyed callback queue entry " + referenceEntry.getLogId());
+                  continue;
+               }
                origMsgUnit = ((ReferenceEntry)entry).getMsgUnit();
+            }
             else if (entry instanceof MsgQueuePublishEntry)
                origMsgUnit = ((ReferenceEntry)entry).getMsgUnit();
             else {
@@ -417,8 +426,40 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          return retArr;
       }
       catch (Throwable e) {
-         e.printStackTrace();
-         log.error(ME, "PANIC: " + entries.length + " dead letters are lost, no recovery possible - dumping to file code is missing:" + e.toString());
+         log.error(ME, "PANIC: " + entries.length + " dead letters are lost, no recovery possible:" + e.getMessage());
+         for (int ii=0; ii<entries.length; ii++) {
+            MsgQueueEntry entry = entries[ii];
+            try {
+               if (entry == null) {
+                  continue;
+               }
+               /*
+               else if (entry instanceof MsgUnitWrapper) {
+                  MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)entry;
+                  String fileName = glob.getMsgFileDumper().store(msgUnitWrapper);
+                  log.warn(ME, "Dumped lost message to file " + fileName);
+               }
+               */
+               else if (entry instanceof MsgQueueHistoryEntry) {
+                  log.warn(ME, "History entry is lost: " + entry.toXml());
+               }
+               else if (entry instanceof MsgQueueUpdateEntry) {
+                  ReferenceEntry referenceEntry = (ReferenceEntry)entry;
+                  if (referenceEntry.isDestroyed()) {
+                     if (log.TRACE) log.trace(ME, "Ignoring detroyed callback message " + entry.getLogId());
+                  }
+                  else {
+                     log.warn(ME, "Callback of message failed unrecoverably: " + entry.toXml());
+                  }
+               }
+               else {
+                  log.error(ME, "PANIC: Unrecoverable lost message " + entry.toXml());
+               }
+            }
+            catch (Throwable th) {
+               log.error(ME, "PANIC: Unrecoverable lost message " + entry.toXml() + ": " + th.getMessage());
+            }
+         }
       }
 
       return new String[0];
@@ -864,7 +905,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                }
             }
          }
-         return new KeyData[strippedList.size()];
+         return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
       }
 
       else if (queryKeyData.isExact()) { // subscription with a given oid
@@ -874,6 +915,46 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             return new KeyData[] { (KeyData)null }; // add arr[0]=null as a place holder
          }
          return new KeyData[] { topicHandler.getMsgKeyData() };
+      }
+
+      else {
+         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
+         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
+      }
+   }
+
+   /**
+    * This method does the query (queryType = "XPATH" | "EXACT").
+    *
+    * @param clientName is only needed for nicer logging output
+    * @return Array of matching XmlKey objects (may contain null elements), the array is never null
+    *
+    * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
+    * @return The array is never null, but it may contain a null element at index 0 if the oid is yet unknown
+    */
+   private TopicHandler[] queryMatchingTopics(SessionInfo sessionInfo, QueryKeyData queryKeyData, QueryQosData qos)  throws XmlBlasterException
+   {
+      String clientName = sessionInfo.toString();
+
+      if (queryKeyData.isQuery()) { // query: subscription without a given oid
+         ArrayList oidList = bigXmlKeyDOM.parseKeyOid(sessionInfo, queryKeyData.getQueryString(), qos);
+         ArrayList strippedList = new ArrayList();
+         for(int i=0; i<oidList.size(); i++) {
+            TopicHandler topicHandler = getMessageHandlerFromOid((String)oidList.get(i));
+            if (topicHandler != null) {
+               strippedList.add(topicHandler);
+            }
+         }
+         return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
+      }
+
+      else if (queryKeyData.isExact()) { // subscription with a given oid
+         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
+         TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
+         if (topicHandler == null) {
+            return new TopicHandler[] { (TopicHandler)null }; // add arr[0]=null as a place holder
+         }
+         return new TopicHandler[] { topicHandler };
       }
 
       else {
@@ -926,6 +1007,24 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    public final TopicHandler addTopicHandler(TopicHandler topicHandler) {
       synchronized(messageContainerMap) {
          return (TopicHandler)messageContainerMap.put(topicHandler.getUniqueKey(), topicHandler);
+      }
+   }
+
+   /**
+    * Event invoked on message erase() invocation.
+    */
+   public void messageErase(TopicHandler topicHandler) throws XmlBlasterException {
+      if (topicHandler.hasExactSubscribers()) {
+         log.warn(ME, "Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
+      }
+      String uniqueKey = topicHandler.getUniqueKey();
+      if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
+      synchronized(messageContainerMap) {
+         Object obj = messageContainerMap.remove(uniqueKey);
+         if (obj == null) {
+            log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+            throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
+         }
       }
    }
 
@@ -1491,11 +1590,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                 "erase(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                 "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
 
-         KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, eraseQos.getData());
-         Set oidSet = new HashSet(keyDataArr.length);  // for return values (TODO: change to TreeSet to maintain order)
+         TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
+         Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
 
-         for (int ii=0; ii<keyDataArr.length; ii++) {
-            KeyData xmlKeyExact = keyDataArr[ii];
+         for (int ii=0; ii<topicHandlerArr.length; ii++) {
+            TopicHandler topicHandler = topicHandlerArr[ii];
 
             if (useCluster && !isClusterUpdate) { // cluster support - forward erase to master
                try {
@@ -1514,18 +1613,14 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                }
             }
 
-            if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
-               log.warn(ME, "Erase on unknown message [" + xmlKey.getOid() + "] is ignored");
+            if (topicHandler == null) { // unSubscribe on a unknown message ...
+               log.warn(ME, "Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
                // !!! how to delete XPath subscriptions, still MISSING ???
                continue;
             }
 
-            if (log.TRACE) log.trace(ME, "erase oid='" + xmlKeyExact.getOid() + "' of total " + keyDataArr.length + " ...");
+            if (log.TRACE) log.trace(ME, "erase oid='" + topicHandler.getUniqueKey() + "' of total " + topicHandlerArr.length + " ...");
 
-            TopicHandler topicHandler = getMessageHandlerFromOid(xmlKeyExact.getOid());
-            if (topicHandler == null) {
-               continue;    // can happen as not synchronized
-            }
             //log.info(ME, "Erasing " + topicHandler.toXml());
 
             oidSet.add(topicHandler.getUniqueKey());
@@ -1558,30 +1653,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_ERASE.toString(), e);
       }
    }
-
-
-   /**
-    * Event invoked on message erase() invocation.
-    */
-   public void messageErase(TopicHandler topicHandler) throws XmlBlasterException
-   {
-      if (topicHandler.hasExactSubscribers()) {
-         if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + topicHandler.getUniqueKey() + ", not removing topicHandler skeleton since " + topicHandler.numSubscribers() + " subscribers exist ...");
-         // TopicHandler will call
-      }
-      else {
-         String uniqueKey = topicHandler.getUniqueKey();
-         if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
-         synchronized(messageContainerMap) {
-            Object obj = messageContainerMap.remove(uniqueKey);
-            if (obj == null) {
-               log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
-               throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
-            }
-         }
-      }
-   }
-
 
    /**
     * Event invoked on successful client login (interface I_ClientListener).
