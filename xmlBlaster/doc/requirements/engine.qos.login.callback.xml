@@ -15,7 +15,7 @@
       <p>
       The default callback protocol is "IOR" which stands for a CORBA callback.
       The client must supply a Corba callback interface with the
-      method update(), see xmlBlaster.idl. This method is called by xmlBlaster for callbacks.
+      method update() and ping(), see xmlBlaster.idl. This method is called by xmlBlaster for callbacks.
       </p>
       <p>
       Other supported protocols are "RMI" and "XML-RPC", scheduled protocols are "EMAIL" and "SOAP".<br />
@@ -53,139 +53,20 @@
    but synchronous access with get() runs fine.
    </p>
 
-   <![CDATA[
-   <qos> <!-- a full example -->
-
-      <securityService type='simple' version='1.0'>
-         <!-- Use the simple security plugin for authentication and authorization -->
-         <user>aUser</user>
-         <passwd>theUsersPwd</passwd>
-      </securityService>
-
-      <ptp>true</ptp> <!-- Receiving PtP is generally allowed, a callback may suppress it -->
-
-      <session timeout='3600000' maxSessions='20'>
-         <!-- The login session will be destroyed after 1 hour (3600000 ms) -->
-         <!-- This user wishes have max. 20 logins in parallel -->
-         <!-- maxSessions='1' is the single login variant -->
-         <sessionId>049630238-445422</sessionId>
-      </session>
-
-      <callbacks retrials='2' delay='10000' ptp='false'>
-            <!-- set ptp attribute to false (default='true') if you don't want any
-            point to point messages (prevent spaming ...).
-            retrials is the number of times the message has to be sent in case
-            of failure.  It defaults to 0.
-            delay is the waiting time in ms between these retries.
-            it defaults to '10000'.-->
-
-         <callback type='IOR' timeout='10000'>
-              <!-- Use CORBA to deliver messages
-               If the update callback does not return within 10 s (10000 ms)
-               the connection is shut down. -->
-            IOR:00011200070009990000....
-             <compress type='zip' minSize='1000' />
-                <!-- compress messages bigger than 1000 bytes before sending them to me -->
-         </callback>
-
-         <callback type='EMAIL'>
-            <!-- You get new updates sent with email (not yet implemented) -->
-            et@mars.universe
-         </callback>
-
-         <callback type='XML-RPC' timeout='40000'>
-               <!-- You must have the xml-rpc driver
-               running (see xmlBlaster.properties) to receive the updates -->
-               http:/www.mars.universe:8080/RPC2
-            <burstmode collecttime='400'/>
-               <!-- collect messages for 400 ms and update them in 1 callback. -->
-         </callback>
-
-      </callbacks>
-   </qos>
-   ]]>
-
-   <p>
-   If the collecttime in 'burstmode' exceeds the delay in callbacks, it is set to the delay value and
-   a warning is written in the server log file.
-   </p>
-
    <p>
    Delegated subscribes: it is possible to subscribe for somebody else to certain messages. This can
    be handled by logging in again with the callback addresses of that delegated client (kind of gift)
    </p>
 
-   <p>
-   All resources are controlled by 'timeout' values (similar to 'leases' in Jini)
-   so that no resource leaks can occur with 'miss behaving' clients.
-   </p>
    </changerequest>
-
-
 
    <example lang="Java">
       <![CDATA[
-      <!-- QoS examples of a login method, this raw string is delivered to xmlBlaster -->
-      <qos>
-         <callback type='IOR'>     <!-- Use CORBA to deliver messages -->
-            IOR:00011200070009990000....
-         </callback>
+      For detailed QoS examples see requirement "engine.callback"
 
-         <callback type='EMAIL'>   <!-- You get new updates sent with email -->
-            et@mars.universe
-         </callback>
-
-         <callback type='XML-RPC'> <!-- You must have a xml-rpc server running
-                                        to receive the updates -->
-            http:/www.mars.universe:8080/RPC2
-         </callback>
-
-         <!-- A full blown example: -->
-         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='block' onFailure='deadLetter'>
-            <callback type='XML-RPC' sessionId='4e56890ghdFzj0' pingInterval='60000' useForSubjectQueue='true'>
-               http:/www.mars.universe:8080/RPC2
-               <ptp>true</ptp>
-               <compress type='gzip' minSize='1000'/>
-               <burstMode collectTime='400'/>
-            </callback>
-         </queue>
-         <!-- 
-          The callback queue is set up with the given attributes (max 4000 kBytes or
-          max 1000 messages are stored).
-          If the queue is full a dead letter is published containing the lost messages.
-          This callback collects messages for 400 milliseconds, compresses the
-          message array if it is bigger 1000 bytes and accepts PtP messages.
-          The callback server is pinged every 60000 millis (1 minute)
-          and the callback update() method is invoked with the noted sessionId 
-          so that the client can trust the update.
-          The callback address of this session is used for subject queue messages as
-          well (which is the default).
-         -->
-      </qos>
-
-
-      // Java clients usually use some helper classes which generate the above
-      // xml string for them.
-
-      //--------------------------------------------------
-      // Simplest login using the builtin callback server:
-      // (see e.g. testsuite/org/xmlBlaster/TestSub.java)
-      //import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-      XmlBlasterConnection connection;
-      try {
-         connection = new XmlBlasterConnection(); // Find orb
-         String passwd = "secret";
-         String qos = null;                       // default qos is used
-         connection.login(senderName, passwd, qos, this); // Login to xmlBlaster
-      }
-      catch (Exception e) {
-          System.error.println(e.toString());
-      }
-
-      //--------------------------------------
-      // For examples using raw Corba, see
-      // demo/javaclients/corba/ClientRaw.java
-      // testsuite/c++/clientPOA.cc
+      For examples using raw Corba, see
+        demo/javaclients/corba/ClientRaw.java
+        testsuite/c++/clientPOA.cc
       ]]>
    </example>
    <see type="REQ">protocol</see>
@@ -196,7 +77,7 @@
    <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

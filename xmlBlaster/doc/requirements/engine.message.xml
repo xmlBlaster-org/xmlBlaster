@@ -71,9 +71,8 @@
          </li>
          <li>Messages have a span of life<br />
          A message can be erased explicitly by a call with erase() or
-         is discarded on expire timeout. A lease can be renewed actively by
-         a client. A limited span of live is necessary for managing limited
-         server resources.
+         is discarded on expire timeout. 
+         The message life cycle defaults to forever.
          </li>
          <li>Messages are atomic entities<br />
          A message is a small unit of data. The publisher decides what he puts
@@ -102,15 +101,61 @@
    </description>
    <example lang="Java">
       <![CDATA[
+         See link to Javadoc API of PublishQos below.
       ]]>
    </example>
-   <see type="REQ">engine.queue</see>
-   <see type="REQ">engine.callback</see>
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the xmlBlaster server default behavior.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>message.maxRemainingLife</td>
+            <td>0</td>
+            <td>A message lease lasts forever if not otherwise specified. Specifies the maximum lifetime in milliseconds in the server, 0 is forever.</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+   <configuration where="client">
+      <hr />
+      <p>
+      These parameters can be specified on client side with java clients (see ConnectQos API).
+      </p>
+      <p>
+      Other programming languages need to supply these setting with a raw XML string (see example section above).
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>message.remainingLife</td>
+            <td>0</td>
+            <td>A message lease lasts forever if not otherwise specified.
+                Specifies the lifetime in milliseconds for a specific message on publish(), 0 is forever.</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
    <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
+   <see type="API">org.xmlBlaster.engine.xml2java.PublishQos</see>
+   <see type="REQ">engine.queue</see>
+   <see type="REQ">engine.callback</see>
+   <see type="REQ">util.property</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
