@@ -4,6 +4,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Tested on IBM s390: Linux 2.4.19-4 SMP s390
+   Java client/server, C++ and C compiles and runs fine
+
  o C++ client library:
    - Fixed memory leak of 8 bytes in SocketDriver wrapper class
    - Fixed string bug in lexical_cast.h
