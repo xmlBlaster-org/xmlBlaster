@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.5 2002/02/14 22:56:57 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.6 2002/02/15 19:08:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -62,7 +62,7 @@ public class CbInfo
             }
 
             // Hack to pass the native callback driver:
-            if (cbDriverNative != null && "org.xmlBlaster.protocol.socket.CallbackSocketDriver".equalsIgnoreCase(obj.toString())) {
+            if (cbDriverNative != null && obj.toString().indexOf("org.xmlBlaster.protocol.socket.CallbackSocketDriver") >= 0) {
                callbackDrivers[ii] = cbDriverNative;
                callbackDrivers[ii].init(cbArr[ii]);
                if (Log.TRACE) Log.trace(ME, "Created native callback driver for protocol '" + cbArr[ii].getType() + "'");
