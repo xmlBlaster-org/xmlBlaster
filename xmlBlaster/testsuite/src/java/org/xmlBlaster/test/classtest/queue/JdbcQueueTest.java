@@ -73,6 +73,7 @@ public class JdbcQueueTest extends TestCase {
    public static String[] PLUGIN_TYPES = { new String("JDBC") };
    public int count = 0;
    boolean suppressTest = false;
+   boolean doExecute = true;
 
    /** Constructor for junit not possible since we need to run it 3 times
    public JdbcQueueTest(String name) {
@@ -82,8 +83,9 @@ public class JdbcQueueTest extends TestCase {
    }
    */
 
-   public JdbcQueueTest(Global glob, String name, int currImpl) {
+   public JdbcQueueTest(Global glob, String name, int currImpl, boolean doExecute) {
       super(name);
+      this.doExecute = doExecute;
       initialize(glob, name, currImpl);
    }
 
@@ -158,7 +160,11 @@ public class JdbcQueueTest extends TestCase {
          return;
       }
       try {
-         putWithBreak();
+         if (this.doExecute) putWithBreak();
+         else {
+            this.log.warn(ME, "test desactivated since needs to be run manually");
+            this.log.warn(ME, "please invoke it as 'java org.xmlBlaster.test.classtest.queue.JdbcQueueTest'");
+         }
       }
       catch (XmlBlasterException ex) {
          fail("Exception when testing PutWithBreak probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );
@@ -293,8 +299,8 @@ public class JdbcQueueTest extends TestCase {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
-         suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i));
-         suite.addTest(new JdbcQueueTest(glob, "testInitialEntries", i));
+         suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i, false));
+         suite.addTest(new JdbcQueueTest(glob, "testInitialEntries", i, true));
       }
       return suite;
    }
@@ -308,7 +314,7 @@ public class JdbcQueueTest extends TestCase {
       Global glob = new Global(args);
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
-         JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i);
+         JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i, true);
          testSub.setUp();
          testSub.testInitialEntries();
          testSub.tearDown();
