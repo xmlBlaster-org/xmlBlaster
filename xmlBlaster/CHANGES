@@ -3,6 +3,14 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.79 [?, ? 2000]
 ==============================
+  - Bugfix for CORBA client/server running on multi homed hosts:
+       java -DOAIAddr=198.197.24.129 javaclients.chat.SimpleChat
+    for example forces the chat corba-callback server to use
+    the given ip address.
+       java -DOAIAddr=198.197.24.129 org.xmlBlaster.Main
+    forces xmlBlaster to use the given address.
+    xmlBlaster/lib/jacorb.jar is patched (see lib/README).
+
   - NOTE: CorbaConnection.java removed, please use
     XmlBlasterConnection.java instead.
     This allows to switch the used protocol (IOR,RMI,XML-RPC)
@@ -13,7 +21,7 @@ Changes for 0.79 [?, ? 2000]
       jaco javaclients.ClientSub -client.protocol IOR
       jaco javaclients.ClientSub -client.protocol RMI
       jaco javaclients.ClientSub -client.protocol XML-RPC
-    
+
   - NOTE: You need to use the new xmlBlaster.properties file.
     Remove your old in your HOME directory and use the
     new template from xmlBlaster/config as a base.
