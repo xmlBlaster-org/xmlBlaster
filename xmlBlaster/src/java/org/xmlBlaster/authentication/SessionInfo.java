@@ -89,7 +89,7 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
     * Node objects = MsgQueueEntry
     */
    private I_Queue sessionQueue;
-   private long lastNumEntries = 0L;
+   private long lastNumEntries = -1L;
 
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
@@ -422,19 +422,16 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
    public void changed(I_Queue queue, long numEntries, long numBytes) {
       if (lastNumEntries != numEntries) {
          long max = getSessionQueue().getMaxNumOfEntries();
-         /*
-         if (lastNumEntries >= max && numEntries < max) {
+         if (lastNumEntries < 0L || lastNumEntries >= max && numEntries < max) {
             if (log.TRACE) log.trace(ME, "SessionQueue has emptied from " + lastNumEntries +
                            " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
             lastNumEntries = numEntries; // to avoid recursion
             //queue.removeQueueSizeListener(this);
             //subjectInfo.forwardToSessionQueue();
             //queue.addQueueSizeListener(this);
-            
+            this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
+            lastNumEntries = numEntries;
          }
-         */
-         this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
-         lastNumEntries = numEntries;
       }
    }
 
