@@ -75,7 +75,19 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 /**
- * Global variables to avoid singleton.
+ * Global variables to avoid singleton. 
+ * <p>
+ * Each Global instance holds all configuration and helper objects for
+ * exactly one XmlBlasterAccess client instance. It is like a local
+ * stack for a connection.
+ * </p>
+ * <p>
+ * Use one instance of this for each XmlBlasterAccess client connection to xmlBlaster.
+ * </p>
+ * <p>
+ * A Global instance is still usable after a call to its shutdown() method,
+ * it can be used again in another XmlBlasterAccess instance.
+ * </p>
  *
  * @see org.xmlBlaster.test.classtest.GlobalTest
  */
