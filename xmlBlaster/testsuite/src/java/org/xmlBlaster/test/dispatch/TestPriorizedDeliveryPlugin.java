@@ -180,7 +180,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " returned state=" + rq.getState());
+         log.info(ME, "SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " content=" + content + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
@@ -221,6 +221,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
             for (int priority=0; priority<expectedActions[i].length; priority++) {
                String action = expectedActions[i][priority];
                text = "state=" + states[i] + " action=" + action;
+               log.info(ME, "Doing " + text + " queueCounter=" + queueCounter);
 
                boolean expectsNotify = false;
                if (action.indexOf("notifySender") >= 0) {
@@ -265,8 +266,8 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                }
 
                this.update.clear();
-            }
-         } // for
+            } // for prio
+         } // for states
 
          text = "Checking ascending sequence of flushed " + queueCounter + " messages which where hold back";
          this.update.clear();
@@ -376,7 +377,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' returned state=" + rq.getState());
+         log.info(ME, "SUCCESS publish new configuration '" + oid + "' returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
@@ -483,9 +484,9 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       }
       TestPriorizedDeliveryPlugin testSub = new TestPriorizedDeliveryPlugin(glob, "TestPriorizedDeliveryPlugin", "TestPriorizedDeliveryPlugin");
       testSub.setUp();
-      //testSub.testPriorizedDeliveryPlugin();
+      testSub.testPriorizedDeliveryPlugin();
       //testSub.testPriorizedDeliveryPluginReconfigure();
-      testSub.testPriorizedDeliveryPluginOne();
+      //testSub.testPriorizedDeliveryPluginOne();
       testSub.tearDown();
    }
 }
