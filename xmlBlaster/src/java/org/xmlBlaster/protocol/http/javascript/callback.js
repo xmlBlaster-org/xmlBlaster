@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.5 2000/03/17 17:57:55 kkrafft2 Exp $
+Version:   $Id: callback.js,v 1.6 2000/03/19 22:56:06 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -204,17 +204,22 @@ function MessageWrapperDom(key, content, qos)
 
 
 
+var listenerList = new Array();
 //----------------------------------------------------------------------------------------------
 // add Callback Listener
 // every frame/window can register itself to receive the callbacks
 //----------------------------------------------------------------------------------------------
-var listenerList = new Array();
-function addUpdateListener(listenerFrame)
-{
-   if (listenerFrame.update == null) {
-      Log.error("Frame has no method update()");
+function addUpdateListener( listenerFrame ) {
+   if(listenerFrame.update==null) {
       return;
    }
+
+   for( i = 0; i < listenerList.length; i++) {
+      if( listenerList[i].name == listenerFrame.name ) {
+         return;
+      }
+   }
+
    listenerList[listenerList.length] = listenerFrame;
    return;
 }
@@ -223,73 +228,77 @@ function addUpdateListener(listenerFrame)
 // remove Callback Listener
 // every frame/window can register itself to receive the callbacks
 //----------------------------------------------------------------------------------------------
-function removeUpdateListener(listenerFrame)
-{
+function removeUpdateListener( listenerFrame ) {
    var i;
    var found = false;
-   for(i=0;i<listenerList.length;i++){
-      if(listenerList[i].name==listenerFrame.name) {
+   for( i = 0; i < listenerList.length; i++) {
+      if( listenerList[i].name == listenerFrame.name ) {
          break;
-         found=true;
+         found = true;
       }
    }
-
-   if(!found)
+   
+   if( !found )
       return;
-
+      
    removeUpdateListenerAtPos( i );
-
-   return;
+   
+   return;   
+      
 }
 
 //---------------------------------------------------------------------------------------------
 // This is
 //
 //---------------------------------------------------------------------------------------------
-function removeUpdateListenerAtPos(index)
-{
+function removeUpdateListenerAtPos( index ) {
    if(index >= listenerList.length)
       return;
 
-   if(listenerList.length==1 && index == 0) {
+   if(listenerList.length==1 && index==0) {
       listenerList.length=0;
       return;
    }
-
-   for(var j = index; j < listenerList.length-1; j++) {
+   
+   for( var j = index; j < listenerList.length-1; j++ ) {
       listenerList[j] = listenerList[j+1];
    }
-
+   
+   listenerList.length -= 1;
+   
    return;
 }
 
+function showListener()
+{
+   var str = "Listener:\n\n";
+   for( var i = 0; i < listenerList.length; i++ ) {
+      str += "-" + listenerList[i].name + "\n";
+   }
+   alert( str );
+}
 
 
 //---------------------------------------------------------------------------------------------
 // This is
 //
 //---------------------------------------------------------------------------------------------
-function fireMessageUpdateEvent(message)
+function fireMessageUpdateEvent( message )
 {
-   for (var ii=0; ii < listenerList.length; ii++) {
-      if(listenerList[ii] == null ||
-         listenerList[ii].update == null) {
-         removeUpdateListenerAtPos( ii );
+   for( var i = 0; i < listenerList.length;  ) {
+      if (listenerList[i].closed || 
+            listenerList[i].update == null) {
+         removeUpdateListenerAtPos( i );
          continue;
       }
+      i++;
    }
-
-   for (var ii=0; ii < listenerList.length; ii++) {
-      if(listenerList[ii] == null ||
-         listenerList[ii].update == null) {
-         removeUpdateListenerAtPos( ii );
-         continue;
-      }
-      listenerList[ii].update(message);
+   //showListener();
+   for( var i = 0; i < listenerList.length; i++ ) {
+      listenerList[i].update( message );
    }
-
-
 }
+
 
 
 //---------------------------------------------------------------------------------------------
@@ -297,7 +306,7 @@ function fireMessageUpdateEvent(message)
 //
 //---------------------------------------------------------------------------------------------
 function update( updateKey, content, updateQoS)
-{
+{													  
     var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
     var content_d = unescape( content.replace(/\+/g, " ") );
     var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
@@ -307,8 +316,13 @@ function update( updateKey, content, updateQoS)
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);
 
-   var message = new MessageWrapperDom( key, content, qos );
-   fireMessageUpdateEvent(message);
+   if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {
+      alert("Exception:\n\n"+content_d );
+   }
+   else {
+      var message = new MessageWrapperDom( key, content, qos );
+      fireMessageUpdateEvent(message);
+   }
 
 }
 

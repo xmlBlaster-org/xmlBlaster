@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.7 2000/03/17 17:57:55 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.8 2000/03/19 22:56:06 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -30,9 +30,12 @@ import org.xmlBlaster.util.*;
  */
 public class HttpPushHandler
 {
+
    private final String ME = "HttpPushHandler";
+   private final long PING_INTERVAL		= 30000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
+   private boolean closed = false;
    private ServletOutputStream outMulti;
    private PrintWriter outPlain;
    /** The header of the HTML page */
@@ -69,12 +72,13 @@ public class HttpPushHandler
     */
    public HttpPushHandler(HttpServletRequest req, HttpServletResponse res) throws IOException
    {
+      this.closed = false;
       this.req = req;
       this.res = res;
       initialize(null, null);
 
       Log.info(ME,"Creating PingThread ...");
-      pingThread = new HttpPingThread( this, 45000L );
+      pingThread = new HttpPingThread( this, PING_INTERVAL );
       pingThread.start();
    }
 
@@ -123,6 +127,41 @@ public class HttpPushHandler
          outMulti.println();
          outMulti.println("--End");
       }
+   }
+
+      /**
+    */
+   public void deinitialize()
+   {
+      try {
+         if (handlesMultipart)
+            outMulti.close();
+         else
+            outPlain.close();
+
+         //pingThread should die in one millisecond
+         pingThread.join(1);
+      }
+      catch(Exception e) {
+         Log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
+      }
+
+
+   }
+
+
+   /**
+    * check's whether the HTTP connection is closed or not
+    */
+   public boolean closed()
+   {
+      return closed;
+   }
+   /**
+    */
+   public void setClosed(boolean closed)
+   {
+      this.closed = closed;
    }
 
 
@@ -219,7 +258,7 @@ public class HttpPushHandler
    {
       try {
          String codedKey               = URLEncoder.encode( updateKey );
-         String codedContent                            = URLEncoder.encode( content );
+         String codedContent           = URLEncoder.encode( content );
          String codedQos               = URLEncoder.encode( updateQos );
 
          String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
@@ -252,7 +291,7 @@ public class HttpPushHandler
     */
    public void ping() throws ServletException, IOException
    {
-                push("if (parent.ping != null) parent.ping();\n");
+      push("if (parent.ping != null) parent.ping();\n");
    }
 
 
@@ -285,7 +324,9 @@ public class HttpPushHandler
                pushHandler.ping();
             } catch(Exception e) {
                //error handling: browser closed connection.
-               Log.warning(ME,"You tried to ping a browser who is not interested.");
+               Log.warning(ME,"You tried to ping a browser who is not interested. Close HttpPushHandler.");
+               pushHandler.setClosed( true );
+               pingRunning = false;
             }
          }
       }
