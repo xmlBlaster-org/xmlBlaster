@@ -3,11 +3,12 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.27 2002/06/11 14:20:22 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.28 2002/06/20 21:25:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlQoSBase;
@@ -22,19 +23,20 @@ import java.io.*;
 
 
 /**
- * Handling subscriptions, collected for each Client. 
+ * Handling subscriptions, collected for each session of each client. 
  * <p />
  * There exists exactly one instance of this class for each xmlBlaster server,
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.27 2002/06/11 14:20:22 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.28 2002/06/20 21:25:25 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
 {
-   final private static String ME = "ClientSubscriptions";
+   private final String ME;
 
+   private final Global glob;
    private final RequestBroker requestBroker;
    private final LogChannel log;
 
@@ -77,9 +79,11 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param requestBroker my master (singleton)
     * @param authenticate another master
     */
-   ClientSubscriptions(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   ClientSubscriptions(Global glob, RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
+      this.glob = glob;
       this.requestBroker = requestBroker;
+      this.ME = "ClientSubscriptions" + this.glob.getLogPraefixDashed();
       this.log = requestBroker.getGlobal().getLog("core");
       requestBroker.addSubscriptionListener(this);
       requestBroker.addMessageEraseListener(this);
@@ -122,6 +126,53 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       return subs;
    }
 
+
+   /*
+    * If you have the key oid of a message, you may access the
+    * SubscriptionInfo object here.
+    * <p />
+    * You can access only EXACT subscription objects through this method.
+    * <p />
+    * Note that MessageUnitHandler.findSubscriber() will not return a SubscriptionInfo
+    * if never a message arrived for such a subscription, so prefer this method.
+    *
+    * @param sessionInfo All infos about the client
+    * @param keyOid The unique message oid
+    * @return Vector containing corresponding subscriptionInfo objects<br />
+    *         is > 1 if this session has subscribed multiple times on the
+    *         same message, or null if this session has not subscribed it
+    */
+   public Vector getSubscriptionByOid(SessionInfo sessionInfo, String keyOid) throws XmlBlasterException {
+      Object obj;
+      Map subMap;
+      synchronized(clientSubscriptionMap) {
+         obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
+         if (obj == null)
+            return null;
+         subMap = (Map)obj;
+      }
+
+      //if (log.TRACE) log.trace(ME, "Found subscription map with " + subMap.size() + " entries for '" + sessionInfo.getId() + "'");
+
+      // Slow linear search of all subscribes of a session
+      // Don't use for performance critical tasks
+      Vector vec = null;
+      synchronized (subMap) {
+         Iterator iterator = subMap.values().iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            if (isAQuery(sub.getXmlKey()))
+               continue;
+            if (sub.getXmlKey().getUniqueKey().equals(keyOid)) {
+               if (log.TRACE) log.trace(ME, "Found subscription " + sub.getUniqueKey() +
+                      " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
+               if (vec == null) vec = new Vector();
+               vec.addElement(sub);
+            }
+         }
+      }
+      return vec;
+   }
 
    /**
     * Invoked on successful client login (interface I_ClientListener)
@@ -193,8 +244,12 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException
    {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
+      if (subscriptionInfo.getSubscribeCounter() > 1) {
+         if (log.TRACE) log.trace(ME, "Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
+         return;
+      }
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
-      if (log.TRACE) log.trace(ME, "Subscription add event for client " + sessionInfo.toString());
+      if (log.TRACE) log.trace(ME, "Subscription add event for client " + sessionInfo.getId());
       XmlKey xmlKey = subscriptionInfo.getXmlKey();
       String uniqueKey = sessionInfo.getUniqueKey();
 
@@ -231,7 +286,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    private boolean isAQuery(XmlKey xmlKey) throws XmlBlasterException
    {
-      if (xmlKey == null || xmlKey.getQueryType() != XmlKey.PUBLISH && xmlKey.getQueryType() != XmlKey.EXACT_QUERY)
+      if (xmlKey == null || xmlKey.getQueryType() != XmlKey.PUBLISH && xmlKey.isQuery())
          return true;
       return false;
    }
@@ -246,8 +301,14 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException
    {
-      String subscriptionInfoUniqueKey = e.getSubscriptionInfo().getUniqueKey();
-      SessionInfo sessionInfo = e.getSubscriptionInfo().getSessionInfo();
+      SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
+      if (subscriptionInfo.getSubscribeCounter() > 1) {
+         if (log.TRACE) log.trace(ME, "Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
+         return;
+      }
+
+      String subscriptionInfoUniqueKey = subscriptionInfo.getUniqueKey();
+      SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
 
       if (log.TRACE) log.trace(ME, "Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
 
