@@ -103,7 +103,7 @@ public class HtPasswd {
             if ( useFullUsername == 2 ) {
               pws.addElement((String)htpasswd.get(userName));
             }
-            else {       
+            else { 
               for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
                 key = (String)e.nextElement();
                 if ( key.startsWith(userName) ) {

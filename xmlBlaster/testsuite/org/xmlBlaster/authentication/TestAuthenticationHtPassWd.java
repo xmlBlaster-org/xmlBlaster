@@ -3,6 +3,7 @@ package authentication;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.jutils.io.FileUtil;
 
 
 import junit.framework.*;
@@ -27,34 +28,39 @@ public class TestAuthenticationHtPassWd extends TestCase
   { super(name);
     this.glob = new Global();
     this.userhome = glob.getProperty().get("${user.home}","/home/astelzl")+glob.getProperty().get("${file.separator}","/");
-  }
+    try
+    { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
+      FileUtil.writeFile(userhome+"test.htpasswd1","*");
+    }
+    catch(Exception ex)
+    { assertTrue("Could not create password files. Tests won't work!",false);
+    }
+  }                                     
 
   protected void setUp()
   {
-    this.glob = new Global();
-    this.userhome = glob.getProperty().get("${user.home}","/home/astelzl")+glob.getProperty().get("${file.separator}","/");
   }
 
   private void testCaseSetup(int testcase)
   { String[] args = new String[4];
     switch (testcase)
-    { case 1: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";
-              args[1] = userhome+"xmlBlaster.htpasswd";
+    { case 1: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";      
+              args[1] = userhome+"test.htpasswd";
               args[2] = "-Security.Server.Plugin.htpasswd.allowPartialUsername";
               args[3] = "true";
               break;
       case 2: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";
-              args[1] = userhome+"xmlBlaster.htpasswd";
+              args[1] = userhome+"test.htpasswd";
               args[2] = "-Security.Server.Plugin.htpasswd.allowPartialUsername";
               args[3] = "false";
               break;  
       case 3: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";
-              args[1] = userhome+"xmlBlaster.htpasswd";
+              args[1] = userhome+"test.htpasswd";
               args[2] = "-Security.Server.Plugin.htpasswd.allowPartialUsername";
               args[3] = "false";
               break;  
       case 4: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";
-              args[1] = userhome+"xmlBlaster.htpasswd1";
+              args[1] = userhome+"test.htpasswd1";
               args[2] = "-Security.Server.Plugin.htpasswd.allowPartialUsername";
               args[3] = "false";
               break;  
@@ -71,7 +77,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCase1()
-  { Log.error(ME,"Testcase1");
+  { Log.info(ME,"Testcase1");
     testCaseSetup(1);
     boolean isValue=true;
     try
@@ -97,7 +103,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
   
   public void testAuthHtPassWordCase2()
-  { Log.error(ME,"Testcase2");
+  { Log.info(ME,"Testcase2");
     testCaseSetup(2);
     boolean isValue = true;
     try
@@ -121,7 +127,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCaseWrongPassword()
-  { Log.error(ME,"Testcase3");
+  { Log.info(ME,"Testcase3");
     testCaseSetup(3);
     boolean isValue = false;
     try
@@ -143,7 +149,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCase3()
-  { Log.error(ME,"Testcase4");
+  { Log.info(ME,"Testcase4");
     testCaseSetup(4);
     boolean isValue = true;
     try
@@ -159,7 +165,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     }
     catch(Exception ex)
     { Log.info(ME,"Could not connect");
-      isValue = true;
+      isValue = false;
     }
     assertTrue("Could not connect although it should have been possible as any username and password is authenticated",isValue);
   }
