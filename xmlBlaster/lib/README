@@ -85,7 +85,7 @@ All packages allow free use for both commercial and non-commercial applications.
    Patch for multihomed hosts (ippp0 or eth0:0) in JacORB 1.2.1:
     cd /www/JacORB-1_2_1/src
     vi jacorb/orb/BasicAdaptor.java:352
-       remove 17 lines (the ip check code forOAIAddr) and add: 
+       remove 17 lines (the ip check code forOAIAddr) and add:
          java.net.InetAddress target_addr = java.net.InetAddress.getByName(ip_addr);
          System.out.println("[ Listener: Trying ip addr " + target_addr.toString() +" ]");
    javac jacorb/orb/BasicAdapter.java
@@ -135,7 +135,7 @@ All packages allow free use for both commercial and non-commercial applications.
    modifications, provided that the modifications are prominently documented.
 
 
-11) ant.jar 1.1
+11) ant.jar 1.2
 ===============
   Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
   (needs parser.jar)
