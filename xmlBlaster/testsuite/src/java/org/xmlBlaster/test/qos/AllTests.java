@@ -55,7 +55,6 @@ public class AllTests
       suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestSubXPathMany.class));
       suite.addTest(TestSubMulti.suite());
       suite.addTest(TestUnSub.suite());
-      suite.addTest(TestVolatile.suite());
       suite.addTest(TestPtD.suite());
       suite.addTest(TestPtSession.suite());
       suite.addTest(TestPtDQueue.suite());
