@@ -35,7 +35,7 @@ import java.util.*;
  * <pre>
  * public class MyClass implements I_Timeout {
  *   ...
- *   Timeout timeout = Timeout.getInstance();
+ *   Timeout timeout = new Timeout("TestTimer");
  *   Timestamp timeoutHandle = timeout.addTimeoutListener(this, 4000L, "myTimeout");
  *   ...
  *   public void timeout(Object userData) {
