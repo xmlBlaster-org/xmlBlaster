@@ -2,6 +2,8 @@ Please respect the third party licenses.
 
 All packages allow free use for both commercial and non-commercial applications.
 
+!Please add new packages to the manifest.xmlBlaster Class-Path section!
+
 
 1) omquery.jar
 ==============
