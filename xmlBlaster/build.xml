@@ -320,6 +320,8 @@ Else add it manually.
             deprecation="${deprecation}"
             target="${JVM.target}" />
 
+      <javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${classpath}" />
+
       <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
       <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
       <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
@@ -327,7 +329,7 @@ Else add it manually.
       <!-- include content of jutils.jar in xmlBlaster.jar -->
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
-      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
@@ -363,7 +365,7 @@ Else add it manually.
       <delete file="${lib.dir}/demo.jar"/>
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
-      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*,doc/requirements/*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
  
