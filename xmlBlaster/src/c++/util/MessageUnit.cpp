@@ -67,6 +67,20 @@ MessageUnit::MessageUnit(const string &xmlKey,
   //}
 }
 
+
+/**
+ * Constructs a MessageUnit with a string and a PublishQos object
+ */
+MessageUnit::MessageUnit(const string &xmlKey,
+                         const string &content,
+                         PublishQos& publishQos)
+   : key_(xmlKey), len_(content.size()), qos_(publishQos.toXml())
+{
+  content_ = new unsigned char[len_];
+  memcpy(content_, content.c_str(), len_);
+}
+
+
 /**
  * Constructs the message unit. 
  */
@@ -80,6 +94,24 @@ MessageUnit::MessageUnit(const string &xmlKey,
     content_[ii] = contentVec[ii];
   }
 }
+
+
+/**
+ * Constructs the message unit by taking a PublishQos object.
+ */
+MessageUnit::MessageUnit(const string &xmlKey,
+            const vector<unsigned char> &contentVec,
+            PublishQos& publishQos)
+   : key_(xmlKey), len_(contentVec.size()), qos_(publishQos.toXml())
+{
+  content_ = new unsigned char[len_];
+  for (unsigned int ii=0; ii<len_; ii++) {
+    content_[ii] = contentVec[ii];
+  }
+}
+
+
+
 
 /**
  * Copy constructor

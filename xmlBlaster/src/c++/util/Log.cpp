@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.9 2002/08/27 13:14:05 johnson Exp $
+Version:   $Id: Log.cpp,v 1.10 2002/12/19 18:55:21 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -16,20 +16,20 @@ using namespace boost;
 namespace org { namespace xmlBlaster {
 namespace util {
 
-char* const Log::ESC          = "\033[0m";
-char* const Log::BOLD         = "\033[1m";
-char* const Log::RED_BLACK    = "\033[31;40m";
-char* const Log::GREEN_BLACK  = "\033[32;40m";
-char* const Log::YELLOW_BLACK = "\033[33;40m";
-char* const Log::BLUE_BLACK   = "\033[34;40m";
-char* const Log::PINK_BLACK   = "\033[35;40m";
-char* const Log::LTGREEN_BLACK= "\033[36;40m";
-char* const Log::WHITE_BLACK  = "\033[37;40m";
-char* const Log::WHITE_RED    = "\033[37;41m";
-char* const Log::BLACK_RED    = "\033[30;41m";
-char* const Log::BLACK_GREEN  = "\033[40;42m";
-char* const Log::BLACK_PINK   = "\033[40;45m";
-char* const Log::BLACK_LTGREEN= "\033[40;46m";
+const char* const Log::ESC          = "\033[0m";
+const char* const Log::BOLD         = "\033[1m";
+const char* const Log::RED_BLACK    = "\033[31;40m";
+const char* const Log::GREEN_BLACK  = "\033[32;40m";
+const char* const Log::YELLOW_BLACK = "\033[33;40m";
+const char* const Log::BLUE_BLACK   = "\033[34;40m";
+const char* const Log::PINK_BLACK   = "\033[35;40m";
+const char* const Log::LTGREEN_BLACK= "\033[36;40m";
+const char* const Log::WHITE_BLACK  = "\033[37;40m";
+const char* const Log::WHITE_RED    = "\033[37;41m";
+const char* const Log::BLACK_RED    = "\033[30;41m";
+const char* const Log::BLACK_GREEN  = "\033[40;42m";
+const char* const Log::BLACK_PINK   = "\033[40;45m";
+const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
 
 

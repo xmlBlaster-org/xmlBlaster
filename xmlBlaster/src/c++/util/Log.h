@@ -73,20 +73,20 @@ namespace util {
       /**
        * colors foreground/background
        */
-      static char* const ESC          ;
-      static char* const BOLD         ;
-      static char* const RED_BLACK    ;
-      static char* const GREEN_BLACK  ;
-      static char* const YELLOW_BLACK ;
-      static char* const BLUE_BLACK   ;
-      static char* const PINK_BLACK   ;
-      static char* const LTGREEN_BLACK;
-      static char* const WHITE_BLACK  ;
-      static char* const WHITE_RED    ;
-      static char* const BLACK_RED    ;
-      static char* const BLACK_GREEN  ;
-      static char* const BLACK_PINK   ;
-      static char* const BLACK_LTGREEN;
+      static const char* const ESC          ;
+      static const char* const BOLD         ;
+      static const char* const RED_BLACK    ;
+      static const char* const GREEN_BLACK  ;
+      static const char* const YELLOW_BLACK ;
+      static const char* const BLUE_BLACK   ;
+      static const char* const PINK_BLACK   ;
+      static const char* const LTGREEN_BLACK;
+      static const char* const WHITE_BLACK  ;
+      static const char* const WHITE_RED    ;
+      static const char* const BLACK_RED    ;
+      static const char* const BLACK_GREEN  ;
+      static const char* const BLACK_PINK   ;
+      static const char* const BLACK_LTGREEN;
 
       static Property *properties_;
       static int      logLevel_;

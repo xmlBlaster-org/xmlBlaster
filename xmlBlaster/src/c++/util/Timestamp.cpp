@@ -3,7 +3,7 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.6 2002/12/19 12:12:07 laghi Exp $
+Version:   $Id: Timestamp.cpp,v 1.7 2002/12/19 18:55:21 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
@@ -71,7 +71,6 @@ namespace org { namespace xmlBlaster { namespace util {
 
    void TimestampFactory::sleep(Timestamp nanoSecondDelay)
    {
-      cout << "sleep: " << nanoSecondDelay << endl;
       boost::xtime xt;
       boost::xtime_get(&xt, boost::TIME_UTC);
 
@@ -84,15 +83,12 @@ namespace org { namespace xmlBlaster { namespace util {
 
    void TimestampFactory::sleepMillis(long millis)
    {
-      cout << "sleepMillis: " << millis << endl;
       Timestamp nanos = Constants::MILLION * millis;
-      cout << "sleepMillis (nanos): " << nanos << endl;
       TimestampFactory::sleep(nanos);
    }
 
    void TimestampFactory::sleepSecs(long secs)
    {
-      cout << "sleepSecs: " << secs << endl;
       TimestampFactory::sleepMillis(secs * 1000l);
    }
 
@@ -125,7 +121,6 @@ namespace org { namespace xmlBlaster { namespace util {
 
        string ret = string(ptr) + "." + lexical_cast<string>(nanos);
        delete ptr;
-//       delete help;
        return ret;
    }
 

@@ -12,6 +12,8 @@
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
 
+#include <util/qos/PublishQos.h>
+
 /**
  * This client connects to xmlBlaster and subscribes to a message.
  * <p />
@@ -29,10 +31,16 @@ using namespace org::xmlBlaster;
 class HelloWorld2 :public I_Callback
 {
 private:
+   string  ME;
    Global& global_;
+   Log&    log_;
 
 public:
-   HelloWorld2(Global& glob) : global_(glob)
+   HelloWorld2(Global& glob) : ME("HelloWorld2"), global_(glob), log_(glob.getLog())
+   {
+   }
+
+   virtual ~HelloWorld2()
    {
    }
 
@@ -40,20 +48,25 @@ public:
    {
       try {
          XmlBlasterAccess con(global_);
+         log_.info(ME, "connecting to xmlBlaster");
+
          ConnectQos qos(global_, "joe", "secret");
          ConnectReturnQos retQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
-         cout << "connect return qos: " << endl << retQos.toXml() << endl;
-
+         log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
+         log_.info(ME, "subscribing to xmlBlaster");
          con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");
+         log_.info(ME, "successfully subscribed to xmlBlaster");
 
+         PublishQos publishQos(global_);
          MessageUnit msgUnit(string("<key oid='HelloWorld2'/>"),
                                      string("Hi"),
-                                     string("<qos/>"));
+                                     publishQos);
 
+         log_.info(ME, "publishing to xmlBlaster");
          con.publish(msgUnit);
+         log_.info(ME, "successfully published to xmlBlaster");
          try {
-            Timestamp delay = 1000000000ll; // 1 seconds
-            TimestampFactory::getInstance().sleep(delay);
+            TimestampFactory::sleepSecs(1);
          }
          catch(XmlBlasterException e) {
             cout << e.toXml() << endl;
@@ -67,16 +80,13 @@ public:
       }
    }
 
-
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
-      cout << "\nHelloWorld: Received asynchronous message '";
-      cout << updateKey.getUniqueKey() << "' state=" << updateQos.getState();
-      cout << updateQos.toXml() << endl;
-      cout << " from xmlBlaster" << endl;
+      log_.info(ME, "update: unique Key: " + updateKey.getUniqueKey());
+      log_.info(ME, "update: state     : " + updateQos.getState());
+      log_.info(ME, "update: updateQos : " + updateQos.toXml());
       return "";
    }
-
 
 };
 

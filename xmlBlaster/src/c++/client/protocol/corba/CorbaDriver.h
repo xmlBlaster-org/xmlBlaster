@@ -21,6 +21,7 @@ Comment:   The client driver for the corba protocol
 
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util::qos;
 using namespace std;
 
 namespace org {
