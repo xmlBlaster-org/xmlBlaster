@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.service.rdbms.jdbcpool' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      XmlBlaster provides a 'named' JDBC connection pool for optimized performance of database access.
+   </topic>
+   <description>
+      <![CDATA[
+      <p>
+      The JDBC pool allows accessing any number of different databases with
+      arbitrary login users.<br />
+      Every database user is separately pooled for maximum performance.<br />
+      </p>
+      <p>
+      Every DB request needs to pass the DB-url, login name and password,
+      since the clients are not permanently connected.<br />
+      </p>
+      <p>
+      Unused connection pools are freed after some time, 
+      the timeout parameters and pool size is adjustable (see example below).
+      </p>
+      <p>
+      The connections are established on demand (lazy allocation).<br />
+      Pre-allocation is currently not implemented.<br />
+      The first SQL request (for example with Oracle) consumes about
+      1 second to establish the connection, the following requests
+      get this connection from the pool, which is below 1 millisecond.<br />
+      If many SQL requests are done simultaneously, the pool
+      increases the number of parallel connections until 'maxInstances' is reached.<br />
+      Further parallel connections would throw an exception.
+      </p>
+      ]]>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      Following parameters are adjustable in xmlBlaster.properties:
+      <pre>
+         # If a user disappears for one hour, delete his pool (msec):
+         JdbcPool.eraseUnusedPoolTimeout=60*60*1000L
+         # Max. number of simultaneous connections per user:
+         JdbcPool.maxInstances=20
+         # An unused connection is shutdown after 10 min, freeing resources after peak usage:
+         JdbcPool.idleToEraseTimeout=10*60*1000L
+      </pre>
+      ]]>
+   </example>
+   <todo>
+   </todo>
+   <see type="REQ">engine.service.rdbms</see>
+   <see type="API">org.xmlBlaster.protocol.jdbc.NamedConnectionPool</see>
+   <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
+   <effort>2</effort>
+   <date>2000 07 07</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="DONE">
+      <name>-</name>
+      <comment>The test is included in NamedConnectionPool.java main()</comment>
+      <test tool="MANUAL">java org.xmlBlaster.protocol.jdbc.NamedConnectionPool</test>
+   </testcase>
+</requirement>
+

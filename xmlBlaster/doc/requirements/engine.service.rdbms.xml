@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.service.rdbms' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      XmlBlaster provides a framework to send SQL statements to arbitrary databases simultaneously
+      and receive query results xml encoded.
+   </topic>
+   <description>
+      <![CDATA[
+      <p>
+      XmlBlaster has a native service allowing querying relational databases (RDBMS).
+      Every xmlBlaster client can address this service with any valid SQL statement.
+      If the SQL statement was a 'SELECT' the result set is delivered xml encoded.
+      </p>
+      You need to setup the xmlBlaster JDBC driver in xmlBlaster.properties to use the RDBMS service.<br />
+      First the xmlBlaster driver has to be activated (which is default):
+      <pre>
+      Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+                       JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+
+      Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+                       JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+      </pre>
+      Second, you have to activate the JDBC driver of your databases:<br />
+      <pre>
+      JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
+      </pre>
+      <p>
+      JdbcDriver.drivers is a comma delimited list of database drivers.
+      Use as many as you like.
+      The appropriate driver class files(jar) must be in your classpath.
+      (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
+      It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)<br />
+      Now you can start up the server: <code>jaco org.xmlBlaster.Main</code>
+      </p>
+      <p>
+      To test it we have provided a command line based demo client XmlDBClient
+      in the directory xmlBlaster/demo/javaclients/jdbc<br />
+      See the example below how to use it.
+      </p>
+      <p>
+      Most exceptions are caught and returned in the appropriate xml message.
+      </p>
+      <p>
+      To invoke the client, try something similar to the following:
+      </p>
+      <pre>
+      jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:postgresql://24.3.47.214/postgres" \
+        -user postgres \
+        -pass secret \
+        -type query \
+        -query "select * from foo_table" \
+        -limit 50 \
+        -confirm true
+      </pre>
+      or to invoke an update:
+      <pre>
+      jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
+        -user marcel \
+        -pass secret \
+        -type update \
+        -query "INSERT INTO myTable VALUES( '1', to_date('0816', 'hh24mi'), 'james', 'START')"
+      </pre>
+      Options:
+      <pre>
+      -url (any valid JDBC url)
+      -user (valid DB username)
+      -pass (valid DB password)
+      -query (any valid SQL syntax)
+      -type (query|update) query by default - determines the interaction with db
+      -confirm (true|false) true by default - when set to true, you get an answer
+      -limit (any integer) 50 by default - used to limit the number of rows returned
+      </pre>
+      NOTE:
+      <pre>
+      If you are querying, set your -type to 'query'.<br />
+      If you are updating (insert, update, delete) set -type to 'update'.<br />
+      If you are updating and don't want a confirmation, set -confirm to 'false'.<br />
+      </pre>
+      <p>
+      More examples are in xmlBlaster/demo/javaclients/jdbc
+      </p>
+      ]]>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+We demonstrate RDBMS access with a simple command line example,
+creating, inserting and querying a table 'person' with Oracle:
+
+   jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+        -query "CREATE TABLE person (name VARCHAR(32), age NUMBER)"
+
+   jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+        -query "INSERT INTO person VALUES( 'Ben', '6' )"
+
+   jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+        -query "INSERT INTO person VALUES( 'Tim', '8' )"
+
+   jaco javaclients.jdbc.XmlDBClient \
+        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf \
+        -query "SELECT * FROM person"
+
+The result looks like this:
+
+   <?xml version="1.0" encoding="UTF-8"?>
+   <dbadapterresults>
+     <desc>
+       <numcolumns>2</numcolumns>
+       <columnnames>
+         <column>NAME</column>
+         <column>AGE</column>
+       </columnnames>
+       <rownum>2</rownum>
+     </desc>
+     <results>
+       <row>
+         <NAME>
+           Ben
+         </NAME>
+         <AGE>
+           6
+         </AGE>
+       </row>
+       <row>
+         <NAME>
+           Tim
+         </NAME>
+         <AGE>
+           8
+         </AGE>
+       </row>
+     </results>
+   </dbadapterresults>
+
+Note that the result values are encapsulated by CDATA sections.
+      ]]>
+   </example>
+   <todo>
+   INSERT and UPDATE are currently literally given, there should
+   be a xml encoded variant allowing to use the Prepared statement.
+   Binary data containing the CDATA end-token are not supported.
+   </todo>
+   <see type="REQ">engine.service.rdbms.jdbcpool</see>
+   <see type="API">org.xmlBlaster.protocol.jdbc.JdbcDriver</see>
+   <see type="API">org.xmlBlaster.protocol.jdbc.XmlDBAdapterWorker</see>
+   <see type="OTHER">xmlBlaster/demo/javaclients/jdbc/README</see>
+   <author>James Birchfield</author>
+   <hacker>jmbirchfield@proteus-technologies.com</hacker>
+   <effort></effort>
+   <date>2000 05 06</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="INWORK">
+      <name>-</name>
+      <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>
+      <test tool="MANUAL">Use it with your database.</test>
+   </testcase>
+</requirement>
+
