@@ -7,9 +7,11 @@ It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
 
 Features:
 
-  o Support on many OS and easy portable
+  o Support on many OS (Win, Win-CE, UNIX, Linux) and easy portable
 
-  o Object size only ~20 KBytes
+  o Compiles with C or with C++ compiler
+
+  o Object size only ~25 KBytes
   
   o Supports synchronous xmlBlaster access with
     connect(), disconnect(), get(), publish(), erase(), ping()
