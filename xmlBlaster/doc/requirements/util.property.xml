@@ -30,14 +30,14 @@
    <see type="API">org.jutils.init.Property</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
       The property file is used everywhere in the xmlBlaster code.
       The modules test their property variables in their own test cases.
       </comment>
-      <test tool="SUITE">org.xmlBlaster.test.qos.TestAll</test>
+      <test tool="SUITE">org.xmlBlaster.test.AllTests</test>
    </testcase>
 </requirement>
 

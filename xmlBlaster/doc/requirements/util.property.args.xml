@@ -24,14 +24,14 @@
    <see type="API">org.jutils.init.Property</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 14</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
       The testsuite itself uses this feature frequently.
       </comment>
-      <test tool="SUITE">org.xmlBlaster.test.qos.TestAll</test>
+      <test tool="SUITE">org.xmlBlaster.test.AllTests</test>
    </testcase>
 </requirement>
 

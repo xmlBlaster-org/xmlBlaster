@@ -111,11 +111,11 @@ CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativ
    <hacker>ruff@swand.lake.de</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
-      <test tool="SUITE">org.xmlBlaster.test.qos.TestAll</test>
+      <test tool="SUITE">org.xmlBlaster.test.AllTests</test>
    </testcase>
 </requirement>
 

@@ -13,14 +13,14 @@
    </todo>
    <author>michele.laghi@attglobal.net</author>
    <date>2000 05 09</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>The testsuite does not start automatically. Once the client
                application has started you must manually input
-               <code>org.xmlBlaster.test.qos.TestAll</code>
+               <code>org.xmlBlaster.test.AllTests</code>
       </comment>
-      <test tool="SUITE">org.xmlBlaster.test.qos.TestAll</test>
+      <test tool="SUITE">org.xmlBlaster.test.AllTests</test>
    </testcase>
 </requirement>
 
