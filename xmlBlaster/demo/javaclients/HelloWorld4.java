@@ -19,20 +19,28 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class HelloWorld4
 {
    private final String ME = "HelloWorld4";
+   private XmlBlasterConnection con = null;
 
    public HelloWorld4(final Global glob) {
       
       final LogChannel log = glob.getLog(null);
-      
-      XmlBlasterConnection con = null;
 
       try {
          con = new XmlBlasterConnection(glob);
 
          con.initFailSave(new I_ConnectionProblems() {
+               
                public void reConnected() {
                   log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+                  //initClient();    // initialize subscription etc. again
+                  try {
+                     con.flushQueue();    // send all tailback messages
+                     // con.resetQueue(); // or discard them (it is our choice)
+                  } catch (XmlBlasterException e) {
+                     log.error(ME, "Exception during reconnection recovery: " + e.reason);
+                  }
                }
+
                public void lostConnection() {
                   log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
                }
@@ -41,18 +49,28 @@ public class HelloWorld4
          ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME, "Reveiving asynchronous message in default handler '" + updateKey.getOid() + "'");
+               if (!updateKey.getOid().equals("HelloWorld4"))
+                  log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+               else
+                  log.error(ME, "Reveiving unexpected asynchronous message '" + updateKey.getOid() + "' in default handler");
                return "";
             }
          });  // Login to xmlBlaster, default handler for updates
 
          log.info(ME, "Connected to xmlBlaster.");
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld4");
+         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("SomeOtherMessage");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         String subId1 = con.subscribe(sk.toXml(), sq.toXml());
+
+         sk = new SubscribeKeyWrapper("HelloWorld4");
+         sq = new SubscribeQosWrapper();
+         String subId2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME, "Reveiving asynchronous message in HelloWorld4 handler '" + updateKey.getOid() + "'");
+               if (updateKey.getOid().equals("HelloWorld4"))
+                  log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in HelloWorld4 handler");
+               else
+                  log.error(ME, "Reveiving unexpected asynchronous message '" + updateKey.getOid() + "' in HelloWorld4 handler");
                return "";
             }
          });  // subscribe with our specific update handler
@@ -74,14 +92,13 @@ public class HelloWorld4
          log.error(ME, "Houston, we have a problem: " + e.toString());
       }
       finally {
-         if (con != null) {
-            con.disconnect(null);
-         }
+         // Wait a second for messages to arrive before we logout
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         log.info(ME, "Success, hit a key to exit");
+         try { System.in.read(); } catch(java.io.IOException e) {}
+         
+         if (con != null) { con.disconnect(null); }
       }
-
-      log.info(ME, "Success, hit a key to exit");
-      char c;
-      try { System.in.read(); } catch(java.io.IOException e) {}
    }
 
    /**
