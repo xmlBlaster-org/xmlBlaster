@@ -48,7 +48,7 @@
       not reachable, a queue is created to hold messages addressed for this destination.
       Two message queue types are created on login.
       <ol>
-         <li>SessionQueue (<i>session:</i>)<br />
+         <li>SessionQueue (<i>callback:</i>)<br />
          The life cycle of this queue is bound to the login session life cycle, usually it
          is created on login and destroyed on logout (see requirement engine.login.qos.session).
          It can be used as the ReplyTo address for sent messages.
@@ -96,7 +96,7 @@ These are example QoS of a connect() invocation:
 <qos>
    ...
    <!-- SessionQueue callback: Use CORBA to send messages back -->
-   <queue relating='session' maxMsg='1600' expires='360000000'
+   <queue relating='callback' maxMsg='1600' expires='360000000'
             onOverflow='deadMessage' onFailure='deadMessage'>
       
       <callback type='IOR' sessionId='sd3lXjs9Fdlggh'
@@ -146,7 +146,7 @@ These are example QoS of subscribe() invocations:
 
 <!-- Same as above -->
 <qos>
-   <queue relating='session'/>
+   <queue relating='callback'/>
 </qos>
 
 Any other queue overwrites session delivery:
@@ -257,7 +257,7 @@ This is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.8 2003/01/16 18:03:56 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.9 2003/01/17 13:07:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -88,7 +88,7 @@ protected:
 
 
    /** The unique protocol relating, e.g. "IOR" */
-   string relating_; //  = Constants.RELATING_SESSION;
+   string relating_; //  = Constants.RELATING_CALLBACK;
    /** Span of life of this queue in milliseconds */
    Timestamp expires_; // = DEFAULT_expires;
    /** The max. capacity of the queue in number of entries */
@@ -198,13 +198,13 @@ public:
    virtual ~QueuePropertyBase();
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
+    * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
     */
    void setRelating(const string& relating);
 
    /**
     * Returns the queue type.
-    * @return relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @return relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
    string getRelating() const;
 

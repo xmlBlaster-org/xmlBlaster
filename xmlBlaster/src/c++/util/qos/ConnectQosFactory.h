@@ -29,7 +29,7 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
  *       </address>
  *    </queue>
  *    <!-- The server side callback queue: -->
- *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *    <queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *       <callback type='IOR' sessionId='4e56890ghdFzj0'>
  *          IOR:10000010033200000099000010....
  *          <burstMode collectTime='400' />

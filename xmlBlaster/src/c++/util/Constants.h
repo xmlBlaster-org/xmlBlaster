@@ -129,7 +129,7 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * INFO_QUEUED;
 
    /** Type of a message queue */
-   extern Dll_Export const char * RELATING_SESSION;
+   extern Dll_Export const char * RELATING_CALLBACK;
    /** Type of a message queue */
    extern Dll_Export const char * RELATING_SUBJECT;
    /** Type of a message queue */

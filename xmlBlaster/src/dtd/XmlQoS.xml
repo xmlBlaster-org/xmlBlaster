@@ -217,7 +217,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
             192.168.1.2:33301
          </callback>
 
-         <queue relating='session' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
+         <queue relating='callback' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
             <!-- Qualifies the session based queue, with a maximum of 1000 messages
                  or 4000 KBytes of capacity, whichever is reached first.
                  If exceeded a dead letter is published -->

@@ -43,7 +43,7 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
  *       </address>
  *    </queue>
  *    <!-- The server side callback queue: -->
- *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *    <queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *       <callback type='IOR' sessionId='secretTokenForUpdateCheckOnClientSide'>
  *          IOR:10000010033200000099000010....
  *          <burstMode collectTime='400' />
@@ -138,7 +138,7 @@ public:
 
    void addCbQueueProperty(const CbQueueProperty& prop);
    void setCbQueueProperty(const CbQueueProperty& prop);
-   CbQueueProperty getCbQueueProperty() const;
+   CbQueueProperty getSessionCbQueueProperty() const;
 
 };
 

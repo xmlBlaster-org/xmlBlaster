@@ -36,7 +36,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
-   CbQueueProperty prop = connectQos_.getCbQueueProperty(); // Creates a default property for us if none is available
+   CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
    CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
    global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
    if (connection_) connection_->shutdown();
@@ -80,7 +80,7 @@ void XmlBlasterAccess::createDefaultCbServer()
 {
    log_.call(ME, "::createDefaultCbServer");
 
-   CbQueueProperty prop = connectQos_.getCbQueueProperty(); // Creates a default property for us if none is available
+   CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
    CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
    cbServer_ = initCbServer(getLoginName(), addr.getType(), addr.getVersion());
 

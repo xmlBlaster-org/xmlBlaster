@@ -56,7 +56,7 @@
                clearSessions='false'
                sessionId='4e56890ghdFzj0'/>
 
-   &lt;queue relating='session' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'>
+   &lt;queue relating='callback' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'>
       &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
          IOR:10000010033200000099000010....
          &lt;burstMode collectTime='400' />
@@ -131,7 +131,7 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>This uses the Disconnect but does not test it yet</comment>

@@ -172,7 +172,7 @@ public:
           string("      http://127.0.0.2:3412\n") +
           string("   </address>\n") +
           string("  </queue>\n") +
-          string("  <queue relating='session' type='CACHE' version='1.0' maxMsg='10000000' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
+          string("  <queue relating='callback' type='CACHE' version='1.0' maxMsg='10000000' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
           string("   <callback type='IOR' hostname='127.0.0.1' dispatchPlugin='undef'>\n") +
           string("      IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e300002000000000000002f000000010100000c0000006c696e75782e6c6f63616c00a6820000130000002f353936372f313034323232363530392f5f30000100000024000000010000000100000001000000140000000100000001000100000000000901010000000000\n") +
           string("   </callback>\n") +

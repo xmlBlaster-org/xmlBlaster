@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.3 2003/01/16 10:11:53 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.4 2003/01/17 13:07:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -92,7 +92,7 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
       string relating;
       if (getStringAttr(attrs, RELATING, relating)) {
          if (log_.TRACE) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
-         if (relating == "session") prop_.initialize("cb");
+         if (relating == "callback") prop_.initialize("callback");
          else prop_.initialize("");
          prop_.setRelating(relating);
          if (log_.TRACE) log_.trace(ME, string("the queue is relating to ") + relating);

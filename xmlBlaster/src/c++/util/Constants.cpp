@@ -29,7 +29,7 @@ Dll_Export const char * STATE_FORWARD_ERROR = "FORWARD_ERROR";
 
 Dll_Export const char * INFO_QUEUED = "QUEUED";
 
-Dll_Export const char * RELATING_SESSION    = "session";
+Dll_Export const char * RELATING_CALLBACK   = "callback";
 Dll_Export const char * RELATING_SUBJECT    = "subject";
 Dll_Export const char * RELATING_UNRELATED  = "unrelated";
 Dll_Export const char * RELATING_CLIENT     = "client";

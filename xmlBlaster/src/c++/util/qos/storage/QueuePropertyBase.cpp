@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.9 2003/01/16 10:11:53 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.10 2003/01/17 13:07:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -50,7 +50,7 @@ Dll_Export long DEFAULT_expires;
 
 /**
  * Configure property settings, add your own defaults in the derived class
- * @param propertyPrefix e.g. "history" or "cb" or ""
+ * @param propertyPrefix e.g. "history" or "callback" or ""
  */
 void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
@@ -168,12 +168,12 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    }
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
+    * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
     */
    void QueuePropertyBase::setRelating(const string& relating)
    {
-      if (Constants::RELATING_SESSION == relating)
-         relating_ = Constants::RELATING_SESSION;
+      if (Constants::RELATING_CALLBACK == relating)
+         relating_ = Constants::RELATING_CALLBACK;
       else if (Constants::RELATING_SUBJECT == relating)
          relating_ = Constants::RELATING_SUBJECT;
       else if (Constants::RELATING_CLIENT == relating)
@@ -191,7 +191,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
    /**
     * Returns the queue type.
-    * @return relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @return relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
    string QueuePropertyBase::getRelating() const
    {

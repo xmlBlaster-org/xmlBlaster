@@ -207,10 +207,10 @@ void ConnectQosData::setCbQueueProperty(const CbQueueProperty& prop)
    cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
 }
 
-CbQueueProperty ConnectQosData::getCbQueueProperty() const
+CbQueueProperty ConnectQosData::getSessionCbQueueProperty() const
 {
    if (cbQueueProperties_.empty())
-      return CbQueueProperty(global_, "", "");
+      return CbQueueProperty(global_, Constants::RELATING_CALLBACK, "");
    return *(cbQueueProperties_.begin());
 }
 

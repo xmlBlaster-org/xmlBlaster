@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.4 2003/01/16 10:11:53 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.5 2003/01/17 13:07:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -26,7 +26,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 
    inline void CbQueueProperty::initialize()
    {
-      QueuePropertyBase::initialize("cb");
+      QueuePropertyBase::initialize("callback");
 
       // Set the queue properties
 /*
@@ -107,24 +107,24 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    }
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
    void CbQueueProperty::setRelating(const string& relating)
    {
       if (relating == "") {
-         relating_ = Constants::RELATING_SESSION;
+         relating_ = Constants::RELATING_CALLBACK;
          return;
       }
       string help = relating;
       help = toLowerCase(help);
 
-      if (Constants::RELATING_SESSION == help)
-         relating_ = Constants::RELATING_SESSION;
+      if (Constants::RELATING_CALLBACK == help)
+         relating_ = Constants::RELATING_CALLBACK;
       else if (Constants::RELATING_SUBJECT == help)
          relating_ = Constants::RELATING_SUBJECT;
       else {
          log_.warn(ME, string("The queue relating attribute is invalid '") + relating + string("', setting to session scope"));
-         relating_ = Constants::RELATING_SESSION;
+         relating_ = Constants::RELATING_CALLBACK;
       }
    }
 
@@ -135,7 +135,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 
    bool CbQueueProperty::isSessionRelated()
    {
-      return Constants::RELATING_SESSION == getRelating();
+      return Constants::RELATING_CALLBACK == getRelating();
    }
 
    bool CbQueueProperty::onOverflowDeadMessage()
