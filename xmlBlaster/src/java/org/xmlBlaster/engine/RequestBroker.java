@@ -73,6 +73,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
 
 import java.util.*;
 import java.io.*;
@@ -244,9 +245,17 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       authenticate.addClientListener(this);
 
       // register into the jmx server ...
-      this.log.info(ME, "registering the RequestBroker into the jmx server");
-      this.glob.getJmxWrapper().register(this, this.glob.getStrippedId());
-      // don't forget to unregister from the jmx server (currently not done)
+      try {
+         JmxWrapper wr = this.glob.getJmxWrapper();
+         if (wr != null) {
+            this.log.info(ME, "Registering the RequestBroker into the jmx server");
+            wr.register(this, this.glob.getStrippedId());
+            // unregister from the jmx server is done in Global
+         }
+      }
+      catch(XmlBlasterException e) { // javax.management.InstanceAlreadyExistsException
+         log.warn(ME, "Loading of JMX support failed: " + e.getMessage());
+      }
 
       this.state = ALIVE;
    }
