@@ -19,11 +19,6 @@
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
     <description>Persistent HTTP connection demo servlet</description>
     <servlet-class>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</servlet-class>
-    <!--init-param>
-      <param-name>hostname</param-name>
-      <param-value>192.168.2.5</param-value>
-      <description>Find the host where xmlBlaster runs (set it if not running on tomcats host)</description>
-    </init-param -->
     <init-param>
       <param-name>info</param-name>
       <param-value>true</param-value>
@@ -54,7 +49,7 @@
     <!-- init-param>
       <param-name>hostname</param-name>
       <param-value>192.168.1.5</param-value>
-      <description>IP where xmlBlaster is running (for CORBA protocol only)</description>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for CORBA protocol)</description>
     </init-param -->
 
     <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
