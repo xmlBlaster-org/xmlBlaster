@@ -171,13 +171,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    public final void refreshSession() throws XmlBlasterException
    {
       if (connectQos.getSessionTimeout() > 0L) {
-         if (timerKey == null) {
-            timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
-         }
-         else {
-            //log.info(ME, "Refreshing expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
-            timerKey = this.expiryTimer.refreshTimeoutListener(timerKey, connectQos.getSessionTimeout());
-         }
+         timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, timerKey);
       }
    }
 
