@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<article>
+
+<title>White Paper XmlBlaster, a Message-oriented Middleware (MOM)</title>
+<author>Marcel Ruff</author>
+<date>February 15th, 2000</date>
+
+
+<sect>Introduction
+<p>
+
+
+Lets introduce our motivation for this open source project with two examples. 
+
+Suppose you want to write a software to control all railway ticket machines in your country. Thousands of
+ticket machines are located on the railway stations across the whole country. How do you want to send
+new ticket prices, new time tables to the ticket machines, update and maintain the software and handle
+errors and failures? What if the ticket machines are from 3 different manufacturers and varying models?
+All the models programmed with different software languages (legacy code), from different software teams. 
+XmlBlaster could be the middleware to glue together this horror scenario. 
+
+Suppose again, you are on holiday in one of the beautiful islands and are buying some nice, new shoes,
+and need cash money with your credit card. The cash request is transferred to the data processing
+center of the holiday resort bank, from there over some other gateways finally to your house bank. This
+involves different banking software to communicate secure and reliable with each other, before you
+receive your money. Such a task may involve software written in different programing languages on
+different hardware platforms (mainframe, workstations, embedded devices, etc.). 
+An intelligent message oriented middleware like xmlBlaster could perform this task, in an uniform, open
+way at a fraction of costs. 
+
+The examples can be extended to control car manufacturing lines, controlling workstation farms, air traffic
+control systems etc. As you can see, middleware is already every where, and will play an important role in
+the future. 
+</p>
+</sect>
+
+<sect>Context
+<p>
+
+
+Middleware products and markets are evolving rapidly as customers build distributed business
+applications. These increasingly rely upon the independent system software and services provided by
+middleware to share computing resources across heterogeneous technologies. Integrated enterprise
+applications are not replacing the wealth of various applications in organizations. They need to coexist
+and integrate with a variety of best of breed and legacy applications, and middleware - or rather business
+ware - is needed to do the necessary application integration among various vendors' software [IDC]. 
+  
+Client/server MOM computing is the ultimate open platform. This gives you the freedom to
+mix-and-match components at almost any level. It allows you to put together an incredible variety of
+networked client and server combinations across the entire spectrum of the computer industry. 
+Intergalactic client/server will allow enterprises (B2B) to thrive in a quickly changing business climate -
+where they are driven by demands that must be fulfilled in "Internet years". 
+According to IDC, the middleware market will grow to approximately $7 billion in year 2002 - a 408%
+increase since 1997 (Source: IDC, Middleware: 1998 Worldwide Markets and Trends, May, 1998) [Orfali].
+</p>
+</sect>
+<sect>Current market situation
+<p>
+The MOM market is ruled by a few big companies. Many of these products are somehow outdated,
+compared to technologies used today. The pricing of these middleware products is at the high end of the
+usual software pricing scale. 
+</p>
+</sect>
+
+
+<sect>Goals
+<p>
+<itemize>
+<item>Support ease of development </item>
+<item>Extensible architecture for future enhancements </item> 
+<item>Server-to-server infrastructure </item> 
+<item>Legacy application integration </item> 
+<item>Internet support </item> 
+<item>Heterogeneous database support </item> 
+<item>Heterogeneous programming language support  </item>
+<item>Heterogeneous hardware support  </item>
+<item>Rich communication support  </item>
+<item>High availability </item> 
+<item>High performing </item> 
+</itemize>
+
+</p>
+</sect>
+
+<sect>Technology
+<p>
+XmlBlaster MOM will be based on following modern technologies and standards to fulfill the goals. 
+
+<itemize>
+<item><bf>CORBA</bf> <tt>(http://www.omg.org)</tt> 
+      Allows multiple programming languages and hardware platforms to be integrated  </item>
+<item><bf>XML</bf> <tt>(http://www.w3c.org)</tt> 
+      Allows to describe problem domains in a new simple but powerful way  </item>
+<item><bf>Java on the server side</bf> <tt>(http://java.sun.com)</tt> 
+      To allow easy portable code  </item>
+<item><bf>MOM paradigms</bf> 
+      To allow a loose coupling of distributed systems  </item>
+</itemize>
+
+</p>
+</sect>
+
+<sect>Benefit
+<p>
+These new technologies, concentrated in a generic software MOM product,  may be used as a base for
+industrial and intranet/internet projects. 
+Having this technology at the finger tips, gives a major technological head start, opening a huge new
+market. 
+  
+</p>
+</sect>
+
+<sect>Realization
+<p>
+
+The realization will be done in an open source team, in a concentrated development effort. 
+The license of xmlBlaster is an Open Source license (LGPL, http://www.gnu.org/copyleft/lgpl.html), free for
+educational, private or commercial use, to allow widespread use, accepted interfaces and a maximum of
+code stability. 
+</p>
+</sect>
+
+</article>
