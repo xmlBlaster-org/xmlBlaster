@@ -505,12 +505,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler'.
+    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler' on server side.
     * In util.Global we return the client side implementation 'ClientDeliveryConnectionsHandler'
     * @return A new instance of CbDeliveryConnectionsHandler
     */
-   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
-      return new CbDeliveryConnectionsHandler(this, deliveryManager, addrArr);
+   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager) throws XmlBlasterException {
+      return new CbDeliveryConnectionsHandler(this, deliveryManager);
    }
 
    /**
