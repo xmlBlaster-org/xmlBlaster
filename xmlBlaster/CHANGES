@@ -2,6 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.903 [2004-05-13]
 ==============================
+ o Added Sql92Selectors (with a mime plugin which queries the ClientProperties of the qos
+   the same way as jms MessageSelector do
 
  o Fixed telnet access bug which was introduced in 0.902
 

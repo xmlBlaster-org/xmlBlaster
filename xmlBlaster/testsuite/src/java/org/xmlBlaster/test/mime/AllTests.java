@@ -16,6 +16,7 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster mime plugin tests");
       suite.addTest(TestGetRegexFilter.suite());
+      suite.addTest(TestGetSql92Filter.suite());
       suite.addTest(TestGetFilter.suite());
       suite.addTest(TestSubscribeFilter.suite());
       suite.addTest(TestXPathSubscribeFilter.suite());
@@ -24,7 +25,8 @@ public class AllTests {
    }
    // To force compilation:
    public void dummy() {
-      new TestGetRegexFilter(null,null,null); 
+      new TestGetRegexFilter(null,null,null);
+      new TestGetSql92Filter(null,null,null);
       new TestGetFilter(null,null,null); 
       new TestSubscribeFilter(null,null,null); 
       new TestXPathSubscribeFilter(null,null,null); 
