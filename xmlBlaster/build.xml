@@ -117,6 +117,7 @@ TODO
    <property name="dist-classes.dir" value="./dist-classes"/>
    <property name="dist-client.dir" value="./dist-client"/>
  
+   <property name="report.dir" value="./doc/test/report"/> <!-- junit HTML report -->
  
    <property name="xmlblaster_home" value="."/>
 
@@ -564,6 +565,77 @@ TODO
       <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
    </target>
  
+   <!-- =================================================================== -->
+   <!-- starts xmlBlaster and blocks                                        -->
+   <!-- =================================================================== -->
+   <target name="startXmlBlasterServer" description="Start xmlBlaster">
+      <java classname="org.xmlBlaster.Main" classpath="lib/xmlBlaster.jar" dir="." failonerror="true" fork="true">
+         <sysproperty key="java.compiler" value="NONE"/>
+         <arg line="-info true"/>
+         <arg line="-useKeyboard false"/>
+      </java>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- run junit test testcases                                            -->
+   <!-- =================================================================== -->
+   <target name="runJunit" description="Run all JUnit tests">
+      <delete dir="${report.dir}"/>
+      <delete dir="${report.dir}/html"/>
+      <mkdir dir="${report.dir}"/>
+      <mkdir dir="${report.dir}/html"/>
+      <echo message="Executing the testsuite"/>
+      <echo message="  hint: if the script halts here you've most probably not added junit.jar to your ant/lib"/>
+      <junit dir="testsuite/src/java/org/xmlBlaster/test"
+             printsummary="on" haltonfailure="off"
+             haltonerror="off" showoutput="on" fork="yes">
+         <formatter type="xml"/>
+         <jvmarg value="-Djava.compiler=NONE"/>
+         <classpath>
+            <pathelement path="lib/xmlBlaster.jar:${cp}"/>
+         </classpath>
+         <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/>
+         <!-- test name="org.xmlBlaster.test.AllTests" fork="yes" todir="${report.dir}"/ -->
+      </junit>
+      <echo message="See ${report.dir} for results"/>
+      <echo message="Invoke target 'report' for HTML report generation"/>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- starts xmlBlaster and the junit tests                               -->
+   <!-- =================================================================== -->
+   <target name="run_all">
+      <parallel>
+         <antcall target="startXmlBlasterServer"/>  <!-- blocks -->
+         <sequential>
+            <sleep seconds="5"/>                    <!-- wait 5 sec for xmlBlaster startup -->
+            <antcall target="runJunit"/>            <!-- run Junit tests -->
+         </sequential>
+      </parallel>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Creates a test report with junit                                    -->
+   <!-- =================================================================== -->
+   <target name="report"
+      description="Creates a HTML test report with junit">
+      <property name="report.dir" value="./doc/test/report"/>
+      <echo message="Creating report to ${report.dir} ..."/>
+      <echo message="NOTE: If the report generation halts here you've probably not added xalan.jar to your classpath"/>
+      <junitreport todir="${report.dir}">
+         <fileset dir="${report.dir}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="noframes" todir="${report.dir}/html"/>
+      </junitreport>
+      <echo message="Viewing the report ..."/>
+      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
+      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows XP" vmlauncher="false"/>
+      <exec dir="${report.dir}/html" executable="netscape" os="Linux" vmlauncher="false">
+         <arg line="junit-noframes.html"/>
+      </exec>
+   </target>
+
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
