@@ -56,10 +56,11 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    private int filterMessageContentBiggerAs = 10;
 
    private HashMap subscriberTable = new HashMap();
-   private int[] subRec = new int[3];
+   private int[] subRec = new int[4];
    String subscribeOid;
    String subscribeOid2;
    String subscribeOid3;
+   String subscribeOid4;
    /**
     * Constructs the TestXPathSubscribeFilter object.
     * <p />
@@ -78,7 +79,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     * Sets up the fixture.
     * <p />
     * We start an own xmlBlaster server in a separate thread,
-    * it has configured to load our simple demo MIME filter plugin.
+    * it has configured to load our XPath MIME filter plugin with extensions.
     * <p />
     * Then we connect as a client
     */
@@ -94,13 +95,16 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          "-plugin/xmlrpc/port",
          "" + (serverPort-3),
          "-MimeAccessPlugin[XPathFilter][1.0]",
-         "org.xmlBlaster.engine.mime.xpath.XPathFilter",
+         "org.xmlBlaster.engine.mime.xpath.XPathFilter,engine.mime.xpath.extension_functions=:contains-ignore-case:org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction",
          //,classpath=xpath/jaxen-core.jar:xpath/jaxen-dom.jar:xpath/saxpath.jar
          "-admin.remoteconsole.port",
-         "0",
+         "0"
+      };
+      /*
+,
          "-trace",
          "false"
-      };
+      */
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
@@ -142,6 +146,15 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          subscribeOid3 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
          subscriberTable.put(subscribeOid3, new Integer(2));
          log.info(ME, "Success: Subscribe subscription-id3=" + subscribeOid3 + " done");
+
+         // Ad with extention functions
+         qos = new SubscribeQos(glob);
+         qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[ contains-ignore-case( recursive-text(body), 'needle')]"));
+         
+         
+         subscribeOid4 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
+         subscriberTable.put(subscribeOid4, new Integer(3));
+         log.info(ME, "Success: Subscribe subscription-id4=" + subscribeOid4 + " done");
          
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -166,7 +179,8 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
                           "<qos/>");
          con.unSubscribe("<key oid='"+subscribeOid3+"'/>",
                           "<qos/>");
-
+         con.unSubscribe("<key oid='"+subscribeOid4+"'/>",
+                          "<qos/>");
          EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
          assertEquals("Erase", 1, arr.length);
          arr = con.erase("<key oid='AnotherMsG'/>", "<qos/>");
@@ -220,6 +234,14 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       }
       waitOnUpdate(subscribeOid3,4000L, 1);
       
+      log.info(ME, "TEST 4: Testing extention functions");
+      try {
+         con.publish(new MsgUnit("<key oid='AnotherMsG' contentMime='text/xml'/>", "<news><body><p>A little message</p><p>With a Needle in second paragraph wich normal XPath string function would not see</p></body></news>".getBytes(), null));
+      } catch(XmlBlasterException e) {
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
+      }
+      waitOnUpdate(subscribeOid4,4000L, 1);
       /* See TestSubscribeFilter.java for this test
       log.info(ME, "TEST 4: Test what happens if the plugin throws an exception");
       try {   
@@ -242,6 +264,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    {
       log.info(ME, "Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
       int ii = ((Integer)subscriberTable.get(updateQos.getSubscriptionId())).intValue();
+      log.trace(ME,"Got message " + new String(content));
       subRec[ii]++;
       numReceived++;
       return "";
