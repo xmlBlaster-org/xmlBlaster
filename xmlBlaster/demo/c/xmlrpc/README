@@ -60,7 +60,11 @@ Start xmlBlaster server
 
 Start this client:
 
-   testLogin  -xmlrpc.serverUrl http://MY_HOST:8080/
+   testLogin -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/ -name ben -passwd secret -dest gesa -msgFile xy.xml
 
+It will login as user 'ben', and send to user 'gesa' a PtP message
+(Probably you should start a Java client to receive the message like:
+ java org.xmlBlaster.client.reader.SubscribeMessage  -name gesa  -passwd secret  -oid __sys__TotalMem
+) 
 
 01/2002 marcel
