@@ -3,16 +3,20 @@ How to install and compile xmlBlaster
 
 You need JDK 1.2 or better to run xmlBlaster.
 
+
+Quick setup of xmlBlaster:
+--------------------------
+
 If you use sh, ksh or bash, you may chose to source
 the xmlBlaster/.bashrc into your environment, for example
 write this into your .profile file:
 
    export JDK_HOME=/usr/local/jdk
-	export JacORB_HOME=/usr/local/JacORB
-	export XMLBLASTER_HOME=${HOME}/xmlBlaster
-	export MICO_HOME=/usr/local/mico           (optional)
-	export JIKES_HOME=/usr/local/jikes         (optional)
-	. xmlBlaster/.bashrc
+   export JacORB_HOME=/usr/local/JacORB
+   export XMLBLASTER_HOME=${HOME}/xmlBlaster
+   export MICO_HOME=/usr/local/mico           (optional)
+   export JIKES_HOME=/usr/local/jikes         (optional)
+   . xmlBlaster/.bashrc
 
 and after a new login type 'make all' in the XMLBLASTER_HOME directory.
 See step 5.) below how to start xmlBlaster.
@@ -75,7 +79,7 @@ Manual setup of xmlBlaster:
 
 
    Variant using a name service and a local web server to publish the name service
-	(edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
+   (edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
        rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
        ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main
        ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml
@@ -92,9 +96,16 @@ For developers
 
      export PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
 
+
  2.) To generate the javadoc API of xmlBlaster type in the xmlBlaster home directory:
 
     make javadoc
+
+
+ 3.) To generate a xmlBlaster.jar file type in the xmlBlaster home directory:
+
+    make jar
+
 
 --------- C++ -----------------------------------------------------------
 C++ clients with MICO 2.3.0 (http://www.mico.org)
@@ -146,8 +157,8 @@ There are two ways for Tcl clients to access xmlBlaster:
 a) Using Tcl clients with TclMico http://www.mico.org/
    tclmico-0.5c.tar.gz
 
-	 See directory ${XMLBLASTER_HOME}/testsuite/tcl
-	 for a demo client written in TCL and accessing the xmlBlaster server
+    See directory ${XMLBLASTER_HOME}/testsuite/tcl
+    for a demo client written in TCL and accessing the xmlBlaster server
 
 b) Using tcljava (TclBlend/JACL) with an ordinary Java client
    This allows scripting of Java with Tcl, and embedding the
@@ -175,25 +186,25 @@ b) Using tcljava (TclBlend/JACL) with an ordinary Java client
     cd /www/tcl/lib; ln -s /www/tk/lib/tk8.2 tk8.2
 
     tclmico-0.5c:
-		export TCLMICO_HOME=/www/tclmico-0.5c
+      export TCLMICO_HOME=/www/tclmico-0.5c
     cd ${TCLMICO_HOME}
     ./configure --enable-shared --with-tcl=/www/tcl
-		make
-		tclsh
-		   % load ./libtclmico[info sharedlibextension]
-			 % package require tclmico
-			 % corba::init -ORBIIOPAddr inet:localhost:4242
+      make
+      tclsh
+         % load ./libtclmico[info sharedlibextension]
+          % package require tclmico
+          % corba::init -ORBIIOPAddr inet:localhost:4242
 
-	  cd /usr/local/lib
-		ln -s libmico2.3.0.a libmico.a
-		ln -s libmico2.3.0.so libmico.so
+     cd /usr/local/lib
+      ln -s libmico2.3.0.a libmico.a
+      ln -s libmico2.3.0.so libmico.so
 
     cd ${TCLMICO_HOME}/demo/hello-1
     make all
-		export PATH=$PATH:${TCLMICO_HOME}
-		export LD_LIBRARY_PATH=${TCLMICO_HOME}:$LD_LIBRARY_PATH
+      export PATH=$PATH:${TCLMICO_HOME}
+      export LD_LIBRARY_PATH=${TCLMICO_HOME}:$LD_LIBRARY_PATH
       ./server -ORBIIOPAddr inet:localhost:8123
-			./client.tcl -ORBBindAddr inet:localhost:8123
+         ./client.tcl -ORBBindAddr inet:localhost:8123
 
 Here a description to setup TclJava (b):
     cvs -z9 checkout tcljava
