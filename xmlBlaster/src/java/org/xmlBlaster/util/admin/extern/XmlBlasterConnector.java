@@ -167,7 +167,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
 
   //extract MethodInvocation from received Message
   MethodInvocation mi = null;
-  log.info(ME,"Server vorhanden? - " + server.getDefaultDomain() );
+  log.info(ME,"Is the Server available ? - " + server.getDefaultDomain() );
   try {
     mi = (MethodInvocation) serHelp.deserializeObject(content);
     log.info(ME,"Called Method: " + mi.getMethodName());
@@ -211,7 +211,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
     //re-set ID
     mi.setId(ID);
 
-    log.info(ME,"Status der MethodInvocation? " + mi.getStatus());
+    log.info(ME,"Status of the MethodInvocation ? " + mi.getStatus());
 
 
     //re-publish new MethodInvocation Object
