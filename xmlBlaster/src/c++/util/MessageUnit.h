@@ -47,6 +47,9 @@ namespace org { namespace xmlBlaster { namespace util {
 //      std::string qos_;
       org::xmlBlaster::util::qos::MsgQosData qos_;
 
+      /** Remembers the size of this message, needed e.g. for persistent storage calculation */
+      mutable size_t immutableSizeInBytes_;
+
    public:
       /**
        * Constructs with a 'char *' and its length 'len'. 
@@ -142,6 +145,11 @@ namespace org { namespace xmlBlaster { namespace util {
       const org::xmlBlaster::util::qos::MsgQosData& getQos() const {
          return qos_;
       }
+
+      /**
+       * Get the immutable size of this message. 
+       */
+      size_t getSizeInBytes() const;
 
       /**
        * Dump state of this object into a XML ASCII std::string.

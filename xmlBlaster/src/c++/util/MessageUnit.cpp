@@ -42,7 +42,7 @@ MessageUnit::MessageUnit(const MsgKeyData &key,
                          unsigned long len,
                          const unsigned char * content, 
                          const MsgQosData &qos)
-:key_(key), len_(len), qos_(qos) 
+:key_(key), len_(len), qos_(qos), immutableSizeInBytes_(0)
 {
    
   content_ = new unsigned char[len_];
@@ -60,7 +60,7 @@ MessageUnit::MessageUnit(const MsgKeyData &key,
 MessageUnit::MessageUnit(const MsgKeyData &key,
                          const string &content, 
                          const MsgQosData &qos)
-:key_(key), len_(content.size()), qos_(qos) 
+:key_(key), len_(content.size()), qos_(qos), immutableSizeInBytes_(0)
 {
    
   content_ = new unsigned char[len_];
@@ -79,7 +79,7 @@ MessageUnit::MessageUnit(const MsgKeyData &key,
 MessageUnit::MessageUnit(const PublishKey& xmlKey,
                          const string &content, 
                          PublishQos& publishQos)
-   : key_(xmlKey.getData()), len_(content.size()), qos_(publishQos.getData())
+   : key_(xmlKey.getData()), len_(content.size()), qos_(publishQos.getData()), immutableSizeInBytes_(0)
 {
   content_ = new unsigned char[len_];
   memcpy(content_, content.c_str(), len_);
@@ -92,7 +92,7 @@ MessageUnit::MessageUnit(const PublishKey& xmlKey,
 MessageUnit::MessageUnit(const MsgKeyData &xmlKey,
                          const vector<unsigned char> &contentVec, 
                          const MsgQosData &qos)
-:key_(xmlKey), /*contentVec_(contentVec),*/ len_(contentVec.size()), qos_(qos) 
+:key_(xmlKey), /*contentVec_(contentVec),*/ len_(contentVec.size()), qos_(qos), immutableSizeInBytes_(0)
 {
   content_ = new unsigned char[len_];
   for (unsigned int ii=0; ii<len_; ii++) {
@@ -107,7 +107,7 @@ MessageUnit::MessageUnit(const MsgKeyData &xmlKey,
 MessageUnit::MessageUnit(const PublishKey &xmlKey,
                          const vector<unsigned char> &contentVec, 
                          PublishQos& publishQos)
-   : key_(xmlKey.getData()), len_(contentVec.size()), qos_(publishQos.getData())
+   : key_(xmlKey.getData()), len_(contentVec.size()), qos_(publishQos.getData()), immutableSizeInBytes_(0)
 {
   content_ = new unsigned char[len_];
   for (unsigned int ii=0; ii<len_; ii++) {
@@ -119,7 +119,7 @@ MessageUnit::MessageUnit(const PublishKey &xmlKey,
  * Copy constructor
  */
 MessageUnit::MessageUnit(const MessageUnit& rhs) 
-   : key_(rhs.getKey()), qos_(rhs.getQos())
+   : key_(rhs.getKey()), qos_(rhs.getQos()), immutableSizeInBytes_(rhs.getSizeInBytes())
 {
   //contentVec = rhs.getContentVec();
   len_ = rhs.getContentLen();
@@ -140,6 +140,7 @@ MessageUnit::operator=(const MessageUnit& rhs)
     content_ = new unsigned char[len_];
     memcpy(content_, rhs.getContent(), len_);
     qos_ = rhs.getQos();
+    immutableSizeInBytes_ = rhs.getSizeInBytes();
   }
   return *this;
 }
@@ -158,8 +159,7 @@ MessageUnit::~MessageUnit()
  *         This is created for each invocation so 
  *         use it sparingly
  */
-vector<unsigned char> 
-MessageUnit::getContentVec() const 
+vector<unsigned char> MessageUnit::getContentVec() const 
 {
   //return contentVec_;
   vector<unsigned char> vec;
@@ -168,6 +168,14 @@ MessageUnit::getContentVec() const
     vec.push_back(content_[ii]);
   }
   return vec;
+}
+
+size_t MessageUnit::getSizeInBytes() const
+{
+   if (immutableSizeInBytes_ > 0) return immutableSizeInBytes_;
+   // See org.xmlBlaster.engine.MsgUnitWrapper.java
+   immutableSizeInBytes_ = 306 + len_ + key_.toXml().size() + qos_.toXml().size();
+   return immutableSizeInBytes_;
 }
 
 /**
