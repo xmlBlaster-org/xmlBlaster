@@ -435,7 +435,7 @@ TODO
          </case>
          <default>
             <property name="JVM.target" value="1.1" />
-            <property name="JVM.source" value="1.1" />
+            <property name="JVM.source" value="1.2" />
          </default>
       </switch>
 
