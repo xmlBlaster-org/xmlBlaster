@@ -3,9 +3,17 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o XPath mime plugin extension
+   It is now configurable for which mime types the XPath plugin takes affect, see
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
+   Thanks to Robert Leftwich <robert@leftwich.info>
+
  o SOCKET bugfix: java client did not return callback ping which resulted in a client disconnect
  
  o added missing logkit and avalon framework to distribution- and client distribution build
+
+ o C client library: Extended multi threading to support calling methods
+   like publish() and subscribe() from within the update() callback thread.
  
  o C++ Clients: requests are now threadsafe: mutual block on requests (update thread is
    not blocked). For example a publish can not be done simultaneously as a publish on the
