@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.27 2001/01/30 14:27:12 freidlin Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.28 2001/11/24 23:16:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -33,7 +33,7 @@ public class MessageUnitWrapper
    /** The broker which manages me */
    private RequestBroker requestBroker;
 
-   /** The CORBA MessageUnit (raw struct) */
+   /** The MessageUnit with key/content/qos (raw struct) */
    private MessageUnit msgUnit;
 
    /** the meta data describing this message */
