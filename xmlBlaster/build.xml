@@ -437,8 +437,8 @@ Else add it manually.
                version="true"
                use="true"
                windowtitle="xmlBlaster ${version} API"
-               doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
-               bottom="Copyright &#169; ${year} The xmlBlaster.org contributers."
+               doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
+               bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
    </target>
  
    <!-- =================================================================== -->
