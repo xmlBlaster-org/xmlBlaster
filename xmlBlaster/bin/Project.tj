@@ -1,0 +1,12 @@
+# Native compilation with TowerJ
+# see xmlBlaster/.bashrc for setup and invocation
+root=org.xmlBlaster.Main
+
+b-jdk=2
+
+
+#invisible=javax.naming.* \
+#   javax.activation.* \
+#   javax.mail.*
+
+
