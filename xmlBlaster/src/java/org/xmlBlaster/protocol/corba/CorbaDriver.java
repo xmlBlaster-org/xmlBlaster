@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.10 2000/10/23 22:04:46 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.11 2000/11/04 20:22:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -61,6 +61,25 @@ public class CorbaDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
+      /*
+      # orb.properties file for JacORB, copy to JAVA_HOME/lib
+      #
+      # Switches off the default CORBA in JDK (which is outdated),
+      # and replaces it with JacORB implementation
+      #
+      # JDK 1.2 checks following places to replace the builtin Orb:
+      #  1. check in Applet parameter or application string array, if any
+      #  2. check in properties parameter, if any
+      #  3. check in the System properties
+      #  4. check in the orb.properties file located in the java.home/lib directory
+      #  5. fall back on a hardcoded default behavior (use the Java IDL implementation)
+      */    
+      // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
+      if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
+         System.setProperty("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
+         System.setProperty("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
+      }
+      
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
