@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.4 1999/12/10 16:44:45 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.5 1999/12/10 18:22:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.clientIdl.*;
 
 
 /**
- * This client tests the PtP style, Manuel sends to Ulrike a love letter. 
+ * This client tests the PtP style, Manuel sends to Ulrike a love letter.
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
  * Manuel is the 'sender' and Ulrike the 'receiver'
@@ -75,10 +75,8 @@ public class ClientPubDestination
          receiverConnection = new CorbaConnection(args);
 
          //---------- Building a Callback server ----------------------
-         org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(receiverConnection.getOrb().resolve_initial_references("RootPOA"));
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new PubDestinationCallback(loginName, this));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-         Log.trace(loginName, "Exported Callback Server interface");
+         BlasterCallback callback = receiverConnection.createCallbackServer(new PubDestinationCallback(loginName, this));
+         Log.trace(loginName, "Exported BlasterCallback Server interface");
 
          String passwd = "some";
          receiverXmlBlaster = receiverConnection.login(loginName, passwd, callback, "<qos></qos>");
@@ -105,11 +103,8 @@ public class ClientPubDestination
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //---------- Building a Callback server ----------------------
-         org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new PubDestinationCallback(loginName, this));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-         Log.trace(loginName, "Exported Callback Server interface");
-
+         BlasterCallback callback = corbaConnection.createCallbackServer(new PubDestinationCallback(loginName, this));
+         Log.trace(loginName, "Exported BlasterCallback Server interface");
 
          String passwd = "some";
          xmlBlaster = corbaConnection.login(loginName, passwd, callback, "<qos></qos>");

@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.8 1999/12/10 09:20:22 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.9 1999/12/10 18:22:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -50,9 +50,7 @@ public class ClientSub
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //---------- Building a Callback server ----------------------
-         org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new SubCallback(ME, this));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference(callbackTie));
+         BlasterCallback callback = corbaConnection.createCallbackServer(new SubCallback(ME, this));
 
          //----------- Login to xmlBlaster -----------------------
          String qos = "<qos></qos>";
