@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.1 2000/06/04 21:12:09 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.2 2000/06/05 11:40:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -15,7 +15,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 
 /**
- * This is the native interface to xmlBlaster. 
+ * This is the native interface to xmlBlaster.
  * <p />
  * All protocol drivers access xmlBlaster through these methods.
  * @see xmlBlaster.idl
@@ -24,13 +24,13 @@ import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 public interface I_XmlBlaster
 {
    /**
-    * Subscribe to messages. 
+    * Subscribe to messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String subscribe(String sessionId, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException;
    /**
-    * Subscribe to messages. 
+    * Subscribe to messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
@@ -38,7 +38,7 @@ public interface I_XmlBlaster
 
 
    /**
-    * Unsubscribe from messages. 
+    * Unsubscribe from messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
@@ -52,13 +52,13 @@ public interface I_XmlBlaster
 
 
    /**
-    * Publish a message. 
+    * Publish a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String publish(String sessionId, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
    /**
-    * Publish a message. 
+    * Publish a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
@@ -72,9 +72,8 @@ public interface I_XmlBlaster
 
 
    /**
-    * Publish messages. 
+    * Publish messages.
     * <p />
-    * !!! change to object arguments?
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr, PublishQoS[] publishQosArr) throws XmlBlasterException;
@@ -87,7 +86,7 @@ public interface I_XmlBlaster
 
 
    /**
-    * Delete messages. 
+    * Delete messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
@@ -101,7 +100,7 @@ public interface I_XmlBlaster
 
 
    /**
-    * Synchronous access a message. 
+    * Synchronous access a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
