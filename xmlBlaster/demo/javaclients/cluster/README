@@ -14,6 +14,11 @@ NOTE 2: You can switch on specific logging to get a better idea what
    happens, typically this is a good choice:
    -call[core] true -call[cluster] true -trace[cluster] true -trace[client] true -call[client] true
 
+NOTE 3: The demo below has following setup.
+   'avalon' is a slave to 'heron' for 'RUGBY_NEWS' messages.
+   The publisher publishes to the slave and the subscriber
+   subscribes from the master.
+
 
 2. Start avalon (the xmlBlaster slave node):
 ============================================
