@@ -24,8 +24,15 @@
       <p>
       <i>getCached()</i> requests where the GetKey contains an EXACT oid are automatically
       removed from cache when the topic with this oid is erased.
-      XPATH queries are removed from cache
-      when the last topic oid which matched the XPATH disappears.
+      XPATH queries are removed from cache on disconnect. You can explicitly 
+      remove XPATH cache entries with 
+<pre>
+  GetKey getKey = new GetKey(glob, "//key[starts-with(@oid,'foo-')]", Constants.XPATH);
+  ...
+  SynchronousCache cache = xmlBlasterAccess.createSynchronousCache(100);
+  ...
+  cache.removeEntryByQueryString(cache.getQueryString(getKey));
+</pre>
       </p>
       <p>
       Note that this is a pure client behavior, and for the moment the only reference implementation
@@ -65,7 +72,7 @@
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
