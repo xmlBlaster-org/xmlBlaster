@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o Fixed C demo clients to use xmlBlasterFree() instead of free() directly
+   Thanks to Martin Johnson <mjohnson@quickcut.com.au>
+
  o Fixed topic lifecycle: XPATH subscriptions don't
    prevent a topic from going to dead anymore
    Thanks to David Kerry <xml@navahonetworks.com>
