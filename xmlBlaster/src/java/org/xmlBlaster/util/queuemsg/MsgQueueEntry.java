@@ -411,7 +411,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
          sb.append("/").append(priority);
          //sb.append("/").append(priority.toString());
          sb.append("/").append(getUniqueId());
-         //sb.append("/").append(getKeyOid());
+         sb.append("/").append(getKeyOid());
          this.logId = sb.toString();
       }
       return this.logId;
