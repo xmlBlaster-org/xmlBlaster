@@ -286,7 +286,10 @@
          <tr>
             <td>disconnect</td>
             <td>MIN</td>
-            <td>A disconnect can be queued as it returns void</td>
+            <td>A disconnect can be queued as it returns void.
+            Note that disconnect messages are never persistent to avoid
+            an unexpected disconnect if a client restarts (with same public session ID)
+            and there is a persistent disconnect in the client side tail back queue.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
@@ -514,7 +517,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -d
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
