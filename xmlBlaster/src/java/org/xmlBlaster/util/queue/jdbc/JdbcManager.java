@@ -41,6 +41,10 @@ import java.util.Iterator;
 /**
  * Delegate class which takes care of SQL specific stuff for the JdbcQueuePlugin
  * class.
+ * <p>
+ * One instance of this is created by Global for each StorageId prefix,
+ * so one instance for 'history', one for 'cb' etc.
+ * </p>
  *
  *  to define:
  *             Postgres
@@ -167,24 +171,24 @@ public class JdbcManager implements I_ConnectionListener {
       if (this.log.DUMP) this.log.dump(ME, "Constructor: num of error codes: "  + nmax);
    }
 
-
-
   /**
    * Adds (registers) a listener for connection/disconnection events.
    */
    public void registerListener(I_ConnectionListener entry) {
-      this.listener.add(entry);
+      synchronized (this) {
+         this.listener.add(entry);
+      }
    }
-
 
   /**
    * Adds (registers) a listener for connection/disconnection events.
    * @return boolean true if the entry was successfully removed.
    */
    public boolean unregisterListener(I_ConnectionListener entry) {
-      return this.listener.remove(entry);
+      synchronized (this) {
+         return this.listener.remove(entry);
+      }
    }
-
 
    /**
     * @see I_ConnectionListener#disconnected()
@@ -192,10 +196,10 @@ public class JdbcManager implements I_ConnectionListener {
    public void disconnected() {
       this.log.call(ME, "disconnected invoked");
       this.isConnected = false;
-      Iterator iter = this.listener.iterator();
-      while (iter.hasNext()) {
+      I_ConnectionListener[] listenerArr = getConnectionListenerArr();
+      for(int i=0; i<listenerArr.length; i++) {
          if (this.isConnected == true) break;
-         I_ConnectionListener singleListener = (I_ConnectionListener)iter.next();
+         I_ConnectionListener singleListener = listenerArr[i];
          singleListener.disconnected();
       }
    }
@@ -206,14 +210,23 @@ public class JdbcManager implements I_ConnectionListener {
    public void reconnected() {
       this.log.call(ME, "reconnected invoked");
       this.isConnected = true;
-      Iterator iter = this.listener.iterator();
-      while (iter.hasNext()) {
+      I_ConnectionListener[] listenerArr = getConnectionListenerArr();
+      for(int i=0; i<listenerArr.length; i++) {
          if (this.isConnected == false) break;
-         I_ConnectionListener singleListener = (I_ConnectionListener)iter.next();
+         I_ConnectionListener singleListener = listenerArr[i];
          singleListener.reconnected();
       }
    }
 
+   /**
+    * @return A current snapshot of the connection listeners where we can work on (unsynchronized) and remove
+    * listeners without danger
+    */
+   public I_ConnectionListener[] getConnectionListenerArr() {
+      synchronized (this) {
+         return (I_ConnectionListener[])this.listener.toArray(new I_ConnectionListener[this.listener.size()]);
+      }
+   }
 
    /**
     * @see #handleSQLException(String, SQLException, String)
@@ -1487,6 +1500,7 @@ public class JdbcManager implements I_ConnectionListener {
       if (this.log.TRACE) this.log.trace(ME, "cleanUp: disconnecting the pool");
       this.pool.disconnect();
       this.dbInitialized = false;
+      //this.listener.clear(); // ?
       return 0;
    }
 
