@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.38 2003/01/09 14:56:08 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.39 2003/01/13 20:21:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -146,6 +146,8 @@ public class ClientSub implements I_Callback
             log.error(ME, numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
          numReceived = 0;
 
+         log.info(ME, "Hit a key to exit");
+         try { System.in.read(); } catch(java.io.IOException e) {}
 
          //----------- cleaning up .... unSubscribe() the previous message OID -------
          {
