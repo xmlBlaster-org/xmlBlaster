@@ -8,3 +8,5 @@ http
 xmlBlaster.policy
 jacorb.properties
 html
+classtest
+clustertest
