@@ -3,7 +3,7 @@ Name:      SubscribePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: SubscribePluginManager.java,v 1.1 2002/03/14 18:48:32 ruff Exp $
+Version:   $Id: SubscribePluginManager.java,v 1.2 2002/03/14 19:18:32 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -14,10 +14,12 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Title: PluginManager
- * Description: Loads persistence plugin
+ * Loads subscribe filter plugin depending on message MIME type. 
+ * Please register your plugins in xmlBlaster.properties, for example:
+ * <pre>
+ * MimeSubscribePlugin[text/xml][1.0]=com.mycompany.MyFilter
+ * </pre>
  */
-
 public class SubscribePluginManager extends PluginManagerBase {
 
    private static final String ME = "SubscribePluginManager";
