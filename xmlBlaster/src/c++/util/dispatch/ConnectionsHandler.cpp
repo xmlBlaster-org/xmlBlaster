@@ -98,6 +98,9 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       connectQos_ = 0;
    }
    connectQos_ = new ConnectQos(qos);
+
+   global_.setId(connectQos_->getSessionQos().getAbsoluteName()); // temporary
+
    retries_ = connectQos_->getAddress().getRetries();
    long pingInterval = connectQos_->getAddress().getPingInterval();
    if (log_.trace()) {
@@ -117,6 +120,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    try {
       connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+      global_.setId(connectReturnQos_->getSessionQos().getAbsoluteName());
    }
    catch (XmlBlasterException &ex) {
       if (log_.trace()) log_.trace(ME, "exception occured when connecting");
@@ -139,6 +143,9 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
    if (log_.dump()) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
+
+   flushQueue();
+
    return *connectReturnQos_;
 }
 
@@ -505,7 +512,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
    PublishReturnQos retQos(global_);
    retQos.setKeyOid(msgUnit.getKey().getOid());
    retQos.setState("QUEUED");
-   PublishQueueEntry entry(global_, msgUnit);
+   PublishQueueEntry entry(global_, msgUnit, msgUnit.getQos().getPriority());
    queue_->put(entry);
    return retQos;
 }
@@ -551,7 +558,23 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 long ConnectionsHandler::flushQueue()
 {
    if (log_.call()) log_.call(ME, "flushQueue");
-//   Lock lock(connectionMutex_);
+   //   Lock lock(connectionMutex_);
+
+   if (!queue_) {
+      if (!connectQos_) {
+         log_.error(ME+".flusgQueue", "need to create a queue but the connectQos is NULL (probably never connected)");
+      }
+      if (log_.trace()) log_.trace(ME+".flushQueue", "creating the client queue ...");
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
+      if (queue_->getNumOfEntries() < 1) {
+         if (log_.trace()) log_.trace(ME+".flushQueue", "Created queue [" + queue_->getType() + "][" + queue_->getVersion() +
+                                                        "], it is empty, nothing to do.");
+         return 0;
+      }
+      log_.info(ME, "Created queue [" + queue_->getType() + "][" + queue_->getVersion() + "] which contains " +
+                    lexical_cast<string>(queue_->getNumOfEntries()) + " entries, we send them to the server");
+   }
+
    return flushQueueUnlocked(queue_, true);
 }  
 
