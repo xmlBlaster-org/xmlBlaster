@@ -35,9 +35,9 @@
       <port>3412</port>
 
       <!-- runLevel=0 HALTED -->
-      <!-- runLevel=1 ADMIN -->
-      <!-- runLevel=2 CLEANUP -->
-      <!-- runLevel=3 RUNNING -->
+      <!-- runLevel=3 ADMIN -->
+      <!-- runLevel=6 CLEANUP -->
+      <!-- runLevel=9 RUNNING -->
 
       <plugin id='protocol:SOCKET:admin' className='org.xmlBlaster.protocol.socket.SocketDriver'>
          <port>69000</port>
@@ -121,7 +121,7 @@
          <killClient/>
 
          <queue id='subject'> <!-- PtP queue -->
-            <plugin refid='${QueuePluginCache}'/>
+            <plugin refid='queue:CACHE'/>
             <numEntries>247</numEntries>
             <numBytes>467900</numBytes>
             <maxEntries>1000</maxEntries>
@@ -141,7 +141,7 @@
             <numGets>7</numGets>
             <numUpdates>614050</numUpdates>
             <queue id='callback'>
-               <plugin refid='${QueuePluginCache}'/>
+               <plugin refid='queue:CACHE'/>
                <numEntries>7</numEntries>
                <numBytes>90023</numBytes>
                <maxEntries>1000</maxEntries>
@@ -660,7 +660,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.39 $</revision>
+   <revision>$Revision: 1.40 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
