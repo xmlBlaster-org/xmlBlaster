@@ -51,7 +51,6 @@
                </li>
             </ul>
          </li>
->>>>>>> .r13028
 
          <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
              specific file, or if an IO exception occurs when reading a file or trying to delete or move
