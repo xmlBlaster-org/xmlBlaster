@@ -73,7 +73,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
 }
 
 
-ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
+ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientCb)
 {
    ME = string("XmlBlasterAccess-") + qos.getSessionQos().getAbsoluteName();
    if (log_.call()) log_.call(ME, "::connect");
@@ -91,9 +91,9 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    string typeVersion = global_.getProperty().getStringProperty("queue/defaultPlugin", "CACHE,1.0");
    typeVersion = global_.getProperty().getStringProperty("queue/connection/defaultPlugin", "typeVersion");
    //string queueId = string("connection:") + getId();
-   updateClient_ = clientAddr;
+   updateClient_ = clientCb;
    //if (!cbServer_) createDefaultCbServer();
-   createDefaultCbServer();
+   if (updateClient_) createDefaultCbServer();
 
    if (log_.trace()) log_.trace(ME, string("::connect. CbServer done"));
    // currently the simple version will do it ...
@@ -400,7 +400,12 @@ XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, const un
 
    if (updateClient_)
       return updateClient_->update(sessionId, updateKey, content, contentSize, updateQos);
-   return "<qos><state id='OK'/></qos>";
+   else {
+      // See similar behavior in XmlBlasterAccess.java
+      log_.error(ME, string("Ignoring unexpected update message as client has not registered a callback: ") + updateKey.toXml() + "" + updateQos.toXml());
+   }
+
+   return Constants::RET_OK; // "<qos><state id='OK'/></qos>";
 }
 
 std::string XmlBlasterAccess::usage()
