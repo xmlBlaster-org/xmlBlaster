@@ -136,7 +136,7 @@ public:
 
    void testWithOnePublishEntry()
    {
-      string me = ME + "::testWithOneEntry";
+      string me = ME + "::testWithOnePublishEntry";
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
       ClientQueueProperty prop(global_, "");
@@ -156,8 +156,8 @@ public:
       vector<EntryType> ret = queue_->peekWithSamePriority();
       assertEquals(log_, me, (size_t)1, ret.size(), " 3. the number of entries peeked after one put must be 1");
 
-      //assertEquals(log_, me, (long)1, queue_->randomRemove(ret.begin(), ret.end()), " 4. randomRemove must return 1 entry deleted");
-      //assertEquals(log_, me, true, queue_->empty(), " 5. after removing all entries (it was only 1 entry) the queue  must be empty");
+      assertEquals(log_, me, (long)1, queue_->randomRemove(ret.begin(), ret.end()), " 4. randomRemove must return 1 entry deleted");
+      assertEquals(log_, me, true, queue_->empty(), " 5. after removing all entries (it was only 1 entry) the queue  must be empty");
       log_.info(me, "ends here. Test was successful.");
    }
 
