@@ -3,9 +3,9 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.6 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.1 2002/06/08 19:59:45 ruff Exp $
 ------------------------------------------------------------------------------*/
-package testsuite.org.xmlBlaster;
+package testsuite.org.xmlBlaster.mime;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
@@ -18,6 +18,7 @@ import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
+import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
 
@@ -35,8 +36,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetRegexFilter
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestGetRegexFilter
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
  * </pre>
  */
 public class TestGetRegexFilter extends TestCase
@@ -196,8 +197,8 @@ public class TestGetRegexFilter extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *   java testsuite.org.xmlBlaster.TestGetRegexFilter
-    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetRegexFilter
+    *   java testsuite.org.xmlBlaster.mime.TestGetRegexFilter
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
     * <pre>
     */
    public static void main(String args[])

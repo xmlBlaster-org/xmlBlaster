@@ -3,9 +3,9 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.11 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.1 2002/06/08 19:59:45 ruff Exp $
 ------------------------------------------------------------------------------*/
-package testsuite.org.xmlBlaster;
+package testsuite.org.xmlBlaster.mime;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
@@ -18,6 +18,7 @@ import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
+import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
 
@@ -32,8 +33,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestGetFilter
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.mime.TestGetFilter
  * </pre>
  */
 public class TestGetFilter extends TestCase
@@ -216,8 +217,8 @@ public class TestGetFilter extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *   java testsuite.org.xmlBlaster.TestGetFilter
-    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+    *   java testsuite.org.xmlBlaster.mime.TestGetFilter
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestGetFilter
     * <pre>
     */
    public static void main(String args[])
