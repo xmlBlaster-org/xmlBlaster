@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.17 2000/05/05 16:57:22 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.18 2000/05/06 16:38:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -138,14 +138,12 @@ public class HttpPushHandler
    }
 
    /**
+    * Don't forget to call this method when you want to close the connection.
     */
    public void deinitialize()
    {
       try {
-         if (handlesMultipart)
-            outMulti.close();
-         else
-            outPlain.close();
+         cleanup();
 
          //pingThread should die in one millisecond
          pingThread.join(1);
@@ -154,6 +152,17 @@ public class HttpPushHandler
          Log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
       }
    }
+
+   private void cleanup() throws IOException
+   {
+      if (handlesMultipart) {
+         outMulti.close();
+      }
+      else {
+         outPlain.close();
+      }
+   }
+
 
    public void startPing() throws ServletException, IOException
    {
@@ -195,20 +204,6 @@ public class HttpPushHandler
       }
       catch(Exception e) {
          Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
-      }
-   }
-
-
-   /**
-    * Don't forget to call this method when you want to close the connection.
-    */
-   public void cleanup() throws IOException
-   {
-      if (handlesMultipart) {
-         outMulti.close();
-      }
-      else {
-         outPlain.close();
       }
    }
 
@@ -267,6 +262,9 @@ public class HttpPushHandler
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
                2. Resizing the browser window doesn't resize the content.
+               We help us by displaying a specialized little 'Connection-Window'
+               which holds the connection, the other application windows are
+               running fine then.
             */
             synchronized(outMulti) {
                outMulti.println("Content-Type: text/html");
@@ -344,7 +342,7 @@ public class HttpPushHandler
          String codedQos               = URLEncoder.encode( updateQos );
 
 
-         Log.trace(ME,"**********Update:"+updateKey.substring(0,40));
+         Log.trace(ME,"**********Update:"+updateKey.substring(0,40)+" ...");
          /*
          Log.plain(ME,"Key:"+updateKey);
          Log.plain(ME,"\nContent:"+content);
