@@ -108,76 +108,111 @@ public final class CbDispatchConnection extends DispatchConnection
     */
    public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
    {
-      // Convert to UpdateEntry
-      MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr_.length];
+      MsgUnitRaw[] oneways = null;
+      MsgUnitRaw[] responders = null;
 
-      // The update QoS is completed ...
-      for (int i=0; i<msgUnitRawArr.length; i++) {
-         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
+      {
+         // Convert to UpdateEntry
+         MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr_.length];
 
-         // TODO: REQ engine.qos.update.queue states that the queue size is passed and not the curr msgArr.length
-         MsgUnit mu = entry.getMsgUnit();
-         MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
-         msgQosData.setTopicProperty(null);
-         msgQosData.setState(entry.getState());
-         msgQosData.setSubscriptionId(entry.getSubscriptionId());
-         msgQosData.setQueueIndex(i);
-         msgQosData.setQueueSize(msgUnitRawArr.length);
-         if (msgQosData.getNumRouteNodes() == 1) {
-            msgQosData.clearRoutes();
+         // The update QoS is completed ...
+         int onewayCount = 0;
+         for (int i=0; i<msgArr_.length; i++) {
+            MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
+
+            if (address.oneway() || entry.updateOneway())
+               onewayCount++;
+
+            MsgUnit mu = entry.getMsgUnit();
+            MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
+            msgQosData.setTopicProperty(null);
+            msgQosData.setState(entry.getState());
+            msgQosData.setSubscriptionId(entry.getSubscriptionId());
+            msgQosData.setQueueIndex(i);
+            msgQosData.setQueueSize(connectionsHandler.getDispatchManager().getQueue().getNumOfEntries());
+            if (msgQosData.getNumRouteNodes() == 1) {
+               msgQosData.clearRoutes();
+            }
+            mu = new MsgUnit(mu, null, null, msgQosData);
+            msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
          }
-         mu = new MsgUnit(mu, null, null, msgQosData);
-         msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
+
+         if (onewayCount == 0) // normal case
+            responders = msgUnitRawArr;
+         else if (onewayCount == msgArr_.length) // more seldom case
+            oneways = msgUnitRawArr;
+         else { // mix: very seldom case (worst performing)
+            responders = new MsgUnitRaw[msgArr_.length-onewayCount];
+            int iResponders = 0;
+            oneways = new MsgUnitRaw[onewayCount];
+            int iOneways = 0;
+            for (int i=0; i<msgArr_.length; i++) {
+               MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
+               if (address.oneway() || entry.updateOneway()) {
+                  oneways[iOneways++] = msgUnitRawArr[i];
+               }
+               else {
+                  responders[iResponders] = msgUnitRawArr[i];
+               }
+            }
+         }
       }
 
       // We export/encrypt the message (call the interceptor)
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
-         for (int i=0; i<msgUnitRawArr.length; i++) {
-            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgUnitRawArr[i], MethodName.UNKNOWN);
-         }
-         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgUnitRawArr.length + " messages.");
-      }
-      else {
-         log.warn(ME+".accessDenied", "No session security context, sending " + msgUnitRawArr.length + " messages without encryption");
-      }
-
-      String[] rawReturnVal = null;
-      if (address.oneway()) {
-         cbDriver.sendUpdateOneway(msgUnitRawArr);
-         if (log.TRACE) log.trace(ME, "Success, sent " + msgUnitRawArr.length + " oneway messages.");
-      }
-      else {
-         if (log.TRACE) log.trace(ME, "Before update " + msgUnitRawArr.length + " acknowledged messages ...");
-         rawReturnVal = cbDriver.sendUpdate(msgUnitRawArr);
-         if (log.TRACE) log.trace(ME, "Success, sent " + msgUnitRawArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
-      }
-
-      connectionsHandler.getDispatchStatistic().incrNumUpdate(rawReturnVal.length);
-
-      if (rawReturnVal != null) {
-         for (int i=0; i<rawReturnVal.length; i++) {
-            if (!msgArr_[i].wantReturnObj())
-               continue;
-
-            if (securityInterceptor != null) {
-               // decrypt ...
-               rawReturnVal[i] = securityInterceptor.importMessage(rawReturnVal[i]);
-            }
-
-            // create object
-            try {
-               msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
-            }
-            catch (Throwable e) {
-               log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
-               //e.printStackTrace();
-               UpdateReturnQosServer updateRetQos = new UpdateReturnQosServer(glob, "<qos/>");
-               updateRetQos.setException(e);
-               msgArr_[i].setReturnObj(updateRetQos);
+         if (responders != null) {
+            for (int i=0; i<responders.length; i++) {
+               responders[i] = securityInterceptor.exportMessage(responders[i], MethodName.UPDATE);
             }
          }
-         if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
+         if (oneways != null) {
+            for (int i=0; i<oneways.length; i++) {
+               oneways[i] = securityInterceptor.exportMessage(oneways[i], MethodName.UPDATE_ONEWAY);
+            }
+         }
+         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr_.length + " messages.");
+      }
+      else {
+         log.warn(ME+".accessDenied", "No session security context, sending " + msgArr_.length + " messages without encryption");
+      }
+
+      if (oneways != null) {
+         cbDriver.sendUpdateOneway(oneways);
+         connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.length);
+         if (log.TRACE) log.trace(ME, "Success, sent " + oneways.length + " oneway messages.");
+      }
+
+      if (responders != null) {
+         if (log.TRACE) log.trace(ME, "Before update " + responders.length + " acknowledged messages ...");
+         String[] rawReturnVal = cbDriver.sendUpdate(responders);
+         connectionsHandler.getDispatchStatistic().incrNumUpdate(responders.length);
+         if (log.TRACE) log.trace(ME, "Success, sent " + responders.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
+
+         if (rawReturnVal != null) {
+            for (int i=0; i<rawReturnVal.length; i++) {
+               if (!msgArr_[i].wantReturnObj())
+                  continue;
+
+               if (securityInterceptor != null) {
+                  // decrypt ...
+                  rawReturnVal[i] = securityInterceptor.importMessage(rawReturnVal[i]);
+               }
+
+               // create object
+               try {
+                  msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
+               }
+               catch (Throwable e) {
+                  log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
+                  //e.printStackTrace();
+                  UpdateReturnQosServer updateRetQos = new UpdateReturnQosServer(glob, "<qos/>");
+                  updateRetQos.setException(e);
+                  msgArr_[i].setReturnObj(updateRetQos);
+               }
+            }
+            if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
+         }
       }
    }
 
