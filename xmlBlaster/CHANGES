@@ -2,6 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Removed complete Xindice support as the persistence layer changed.
+   To add Xindice again it needs to implement the persistent queue framework, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
+
+ o Removed outdated and UNIX only jacorb.sh java_orbacus.sh  mico.sh orbacus.sh
+   They where mainly used for Makefiles
+
  o Removed all Makefiles, please use now 'ant' and 'build.xml'
    NOTE: xmlBlaster/config/xmlBlaster-autoconf.tar.gz still exists
          but probably needs a face lift.

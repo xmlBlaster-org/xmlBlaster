@@ -15,11 +15,11 @@ To run this demo do the following:
 
 - Start xmlBlaster:
 
-     ${JAVA_WRAP} org.xmlBlaster.MainGUI
+     java org.xmlBlaster.MainGUI
 
   or
 
-     ${JAVA_WRAP} org.xmlBlaster.Main
+     java org.xmlBlaster.Main
 
 
 - Start the xml-rpc client from this directory

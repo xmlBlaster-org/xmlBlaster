@@ -38,10 +38,6 @@ public class PersistencePluginManager extends PluginManagerBase
          // so read property file, if it's not there, write it to the properties
          glob.getProperty().set(pluginPropertyName + "[filestore][1.0]",
             glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
-
-         glob.getProperty().set(pluginPropertyName + "[xmldb][xindice]",
-            glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin") );
-            //glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
       } catch (org.jutils.JUtilsException e) {
          throw new XmlBlasterException( e.id, e.getMessage() );
       }
@@ -77,8 +73,7 @@ public class PersistencePluginManager extends PluginManagerBase
 
 
    /**
-   * @return The name of the property in xmlBlaster.property, e.g. "Persistence.Driver"
-   * for "Persistence.Driver[xindice][1.0]"
+   * @return The name of the property in xmlBlaster.property, e.g. "Persistence.Driver[][]"
    */
    protected String getPluginPropertyName() {
       return pluginPropertyName;

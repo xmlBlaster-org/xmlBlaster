@@ -10,8 +10,6 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar
  jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
  jndi-jdk1_3_1.jar jutils.jar mail.jar activation.jar 
  batik/batik.jar js.jar 
- Xindice/xindice.jar Xindice/xalan-2.0.1.jar 
- Xindice/xmldb.jar 
  xpath/jaxen-core.jar xpath/jaxen-dom.jar 
  xpath/saxpath.jar 
  jdbc7.2dev-1.2.jar 

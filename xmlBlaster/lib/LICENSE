@@ -201,36 +201,6 @@ only the SNMP subagent module jax.jar is GPL only!
   See http://xml.apache.org/
 
 
-17) xindice.jar
-===============
-   Xindice is an open source Native XML Database. It stores and indexes
-   compressed XML documents in order to provide that data to a client
-   application with very little server-side processing overhead.
-   See http://www.apache.org/
-
-
-18) xalan-2.0.1.jar
-===================
-   Is used by Xindice.
-   Xalan-Java (named after a rare musical instrument) fully implements the
-   W3C Recommendation XSL Transformations (XSLT) Version 1.0 and the
-   XML Path Language (XPath) Version 1.0.
-   See http://www.apache.org/
-
-
-19) xmldb.jar
-=============
-   Is used by Xindice.
-   XML:DB (the XML Database Initiative) is a non-profit industry initiative that
-   provides interested companies and organization a community for collaborative
-   development of specifications for XML databases and data manipulation technologies.
-   The initiative's mission is the development of standardized technologies,
-   the contribution of reference implementations of those technologies under an 
-   Open Source License and the evangelism of XML database products and technologies
-   to raise the visibility of XML databases in the marketplace.
-   See http://www.xmldb.org/
-
-
 20) jutils.jar
 ==============
    Is under LGPL, see www.jutils.org, snapshot from Feb, 20 2003

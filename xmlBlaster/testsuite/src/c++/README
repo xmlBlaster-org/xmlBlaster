@@ -86,9 +86,6 @@ HOW TO BUILD THE CLIENT CLASSES:
     Currently not supported (sorry Michele):
     CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
  
-  NOTE:
-   The Makefiles are only tested on Linux and are deprecated!
-
   The recommended way to compile C++ is using ant.
   Go to xmlBlaster root directory and type:
 

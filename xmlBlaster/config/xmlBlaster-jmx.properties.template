@@ -185,62 +185,7 @@ LogFormat.Time=MEDIUM
 #------------------------------------------------------------------------------
 
 
-#------------------- Global setting for the persistence -----------------------
-#
-# supported and implemented tpyes and versions of persistence plugins:
-#
-#         || Type                |
-#         || filestore | xmldb   |
-# ========++===========+=========+
-# Version || 1.0       | xindice |
-#         ||           |         |
-#         ||           |         |
-#
-
-# Lazy recover (not at server startup but on demand) is not yet supported.
-Persistence.LazyRecovery=true
-
-Persistence.Driver.Type=filestore
-Persistence.Driver.Version=1.0
-Persistence.Path=${user.home}${file.separator}tmp
-
-# Persistence.Driver.Type=xmldb
-# Persistence.Driver.Version=xindice
-# Persistence.Driver.Version=eXist
-# Persistence.Path=xmldb:xindice:///db/xmlBlaster
-
-#-------------------  Xindice database ------------------------------------------
-# see $XMLBLASTER_HOME/README or list-archive on http://www.xmlBlaster.org for
-# more details
-# This persistence Layer needs Xindice from http://www.dbXML.org installed and running
-#
-# developed with release 'Xindice 1.0rc1 (DarkHorse)'
-#
-# Collection needs to be created manually by:
-# xindiceadmin ac -c /db -n xmlBlaster
-# see http://www.dbXML.org for more details
-# see http://xml.apache.org/xindice for more details ???
-#
-#       Setting up your desired CollectionPath
-#       default is xmldb:xindice:///db
-#Persistence.Path=xmldb:xindice:///db
-#       Setting up your desired CollectionName
-#       default is xmlBlaster
-#Persistence.Collection=xmlBlaster
-#
-#       Sets the Driver of the Xindice Database Implementation
-#       default is org.apache.xindice.client.xmldb.DatabaseImpl
-#       !! Leave it, as long as you don't know what you're doing !!
-#Persistence.xindiceDriver=org.apache.xindice.client.xmldb.DatabaseImpl
-#       Sets the xindiceFilterClasss of the Xindice Database Implementation
-#       default is org.apache.xindice.core.filer.BTreeFiler
-#       !! Leave it, as long as you don't know what you're doing !!
-#Persistence.xindiceFilterClass=org.apache.xindice.core.filer.BTreeFiler
-#
-#-------------------  Filestore database --------------------------------------
-# at the moment 'nothing'.
 #------------------------------------------------------------------------------
-
 #
 # JAXP parsers. Currently only crimson is actually possible to use. 
 #

@@ -37,16 +37,13 @@ Test the driver:
 
    java org.xmlBlaster.Main
 
-   java javaclients.ClientSub -dispatch/connection/protocol XMLRPC
-
-   The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on
-   which CORBA implementation you are using (it points to jaco for JacORB and to
-   $XMLBLASTER_HOME/config/java_orbacus.sh for ORBACUS).
+   java javaclients.ClientSub -dispatch/connection/protocol XMLRPC -dispatch/callback/protocol XMLRPC
 
    If you allways want to use XMLRPC instead of CORBA put this line
    into xmlBlaster.properties:
 
-      client.protocol=XMLRPC
+       dispatch/connection/protocol=XMLRPC
+       dispatch/callback/protocol=XMLRPC
 
 
 To further Test the driver:
