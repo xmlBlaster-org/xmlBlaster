@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13125 added autocommit and rollback to DbPool
+
  o #13121 added publish to the php xmlrpc demo library
 
  o #13110 Added DbWatcher framework to poll for changes on databases
