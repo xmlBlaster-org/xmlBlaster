@@ -178,15 +178,15 @@ MessageUnit::getContentVec() const
  */
 string MessageUnit::toXml(const string &extraOffset) const
 {
-   string ret    = "\n   ";
-   string offset = extraOffset;
+   string ret;
+   string offset = Constants::OFFSET + extraOffset;
 
    ret += offset + "<MessageUnit>";
 //   ret += offset + "  <key>" + getKey() + "</key>";
-   ret += offset + getKey().toXml(extraOffset);
-   ret += offset + "  <content>" + getContentStr() + "</content>";
+   ret += getKey().toXml(Constants::INDENT+extraOffset);
+   ret += offset + " <content>" + getContentStr() + "</content>";
 //   ret += offset + "  <qos>" + getQos() + "</qos>";
-   ret += offset + getQos().toXml(extraOffset);
+   ret += getQos().toXml(Constants::INDENT+extraOffset);
    ret += offset + "</MessageUnit>";
    return ret;
 }
