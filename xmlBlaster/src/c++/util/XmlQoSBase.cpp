@@ -10,6 +10,7 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 #include <util/XmlQoSBase.h>
 #include <string>
 #include <util/Global.h>
+#include <util/StringTrim.h>
 
 using namespace std;
 
@@ -23,9 +24,9 @@ XmlQoSBase::XmlQoSBase(Global& global) : SaxHandlerBase(global)
 
 bool XmlQoSBase::isEmpty(const string &qos) 
 {
-   if (qos == "") return true;
-   char *trimHelper  = charTrimmer_.trim(qos.c_str());
-   if (XMLString::stringLen(trimHelper) < 11) return true;
+   if (qos.empty()) return true;
+   string trimHelper  = StringTrim::trim(qos.c_str());
+   if (trimHelper.size() < 11) return true;
    
    string middle;
    middle.assign(qos, 5, qos.length()-6); // or minus 11 ???
