@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.38 $
+# $Revision: 1.39 $
 #-----------------------------------------------------------
 
 
@@ -88,6 +88,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
    alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxt='cd $XMLBLASTER_HOME/testsuite'
+   alias cdxr='cd $XMLBLASTER_HOME/doc/requirements'
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
 
    if [ ! -f ${HOME}/xmlBlaster.properties ]; then
