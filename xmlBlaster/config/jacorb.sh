@@ -40,7 +40,7 @@ if [ -d ${JacORB_HOME} ] ; then
    ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
    if [ ! -f ${HOME}/jacorb.properties ]; then
-      cp ${JacORB_HOME}/jacorb.properties.template ${HOME}/jacorb.properties
+      cp ${JacORB_HOME}/config/jacorb.properties.template ${HOME}/jacorb.properties
       ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/jacorb.properties   $ESC"
    fi
 else

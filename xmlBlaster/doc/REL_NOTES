@@ -12,6 +12,10 @@ Changes for 0.79 [?, ? 2000]
 
   - Using now JAVA_HOME instead of JDK_HOME
 
+  - Moved xmlBlaster.properties.template to config directory
+
+  - Moved jacorb.properties.template to config directory
+
 Changes for 0.78 [Jul, 14 2000]
 ==============================
   - Added generic database access from James to xmlBlaster core.

@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.72 $
+# $Revision: 1.73 $
 #-----------------------------------------------------------
 
 
@@ -124,7 +124,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
 
    if [ ! -f ${HOME}/xmlBlaster.properties ]; then
-      cp ${XMLBLASTER_HOME}/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
+      cp ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
       ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
    fi
 else

@@ -103,11 +103,11 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
    (They are copied automatically if you use the .bashrc from step 1a)
 
    a) $HOME/xmlBlaster.properties
-      There is a template xmlBlaster/xmlBlaster.properties.template
+      There is a template xmlBlaster/config/xmlBlaster.properties.template
       to use as a base.
 
    b) $HOME/jacorb.properties
-      There is a template xmlBlaster/jacorb.properties.template
+      There is a template xmlBlaster/config/jacorb.properties.template
       to use as a base.
 
    Note: With 'java -Duser.home=yourHome ...' you could set another

@@ -95,11 +95,11 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 3. There are two property files which you need to copy.
 
    a) %HOME%/xmlBlaster.properties
-	   There is a template %XMLBLASTER_HOME%/xmlBlaster.properties.template
+	   There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
 		to use as a base.
 
 	b) %HOME%/jacorb.properties
-	   There is a template %XMLBLASTER_HOME%/jacorb.properties.template
+	   There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
 		to use as a base.
 
 
