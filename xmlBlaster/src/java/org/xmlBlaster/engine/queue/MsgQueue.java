@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.14 2002/05/26 16:30:11 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.15 2002/05/26 20:16:17 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -131,8 +131,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       if (msgs == null || msgs.length < 1)
          return;
       for (int ii=0; ii<msgs.length; ii++) {
-         //msgs[ii].getMessageUnitWrapper().addEnqueueCounter(-1);
-         if (log.TRACE) log.trace(ME, "oid=" + msgs[ii].getMessageUnitWrapper().getUniqueKey() + " EnqueueCounter=" + msgs[ii].getMessageUnitWrapper().getEnqueueCounter() + " isVolatile=" + msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile());
+         //if (log.TRACE) log.trace(ME, "oid=" + msgs[ii].getMessageUnitWrapper().getUniqueKey() + " EnqueueCounter=" + msgs[ii].getMessageUnitWrapper().getEnqueueCounter() + " isVolatile=" + msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile());
          if (msgs[ii].getMessageUnitWrapper().getEnqueueCounter() == 0 &&
                msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile()) {
             if (this instanceof SessionMsgQueue) {
