@@ -16,6 +16,8 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.xml2java.SubscribeQoS;
+import org.xmlBlaster.engine.xml2java.GetQoS;
+import org.xmlBlaster.engine.xml2java.EraseQoS;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -265,6 +267,66 @@ public final class ClusterManager
       catch (XmlBlasterException e) {
          if (e.id.equals("TryingReconnect"))
             return Constants.RET_FORWARD_WARNING; // "<qos><state id='FORWARD_WARNING'/></qos>"
+         throw e;
+      }
+   }
+
+   /**
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         msgUnit.length==0 if message is
+    *         tailed back because cluster node is temporary not available. The command will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal get return value of the remote cluster node.  
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    */
+   public MessageUnit[] forwardGet(SessionInfo publisherSession, XmlKey xmlKey, GetQoS getQos) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardGet(" + xmlKey.getUniqueKey() + ")");
+
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+                                      new MessageUnit(xmlKey.literal(), new byte[0], getQos.toXml()),
+                                      /*!!! getQos.toXml()*/ new PublishQos(glob, ""));
+      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      if (con == null) {
+         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         return null;
+      }
+
+      try {
+         return con.get(xmlKey.literal(), getQos.toXml());
+      }
+      catch (XmlBlasterException e) {
+         if (e.id.equals("TryingReconnect"))
+            return new MessageUnit[0];
+         throw e;
+      }
+   }
+
+   /**
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         tailed back because cluster node is temporary not available. The command will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal erase return value of the remote cluster node.  
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    */
+   public String[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardErase(" + xmlKey.getUniqueKey() + ")");
+
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+                                      new MessageUnit(xmlKey.literal(), new byte[0], eraseQos.toXml()),
+                                      /*!!! eraseQos.toXml()*/ new PublishQos(glob, ""));
+      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      if (con == null) {
+         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         return null;
+      }
+
+      try {
+         return con.erase(xmlKey.literal(), eraseQos.toXml());
+      }
+      catch (XmlBlasterException e) {
+         if (e.id.equals("TryingReconnect"))
+            return new String[0];
          throw e;
       }
    }
