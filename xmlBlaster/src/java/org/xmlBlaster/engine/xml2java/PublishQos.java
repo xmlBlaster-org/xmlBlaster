@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.10 2002/05/20 13:30:49 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.11 2002/06/09 20:31:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -65,11 +65,12 @@ import java.io.*;
  *     &lt;/sender>
  *     &lt;priority>7&lt;/priority>
  *     &lt;route>
- *        &lt;node id='bilbo' stratum='2' timestamp='34460239640'/>
+ *        &lt;node id='bilbo' stratum='2' timestamp='34460239640' dirtyRead='true'/>
  *     &lt;/route>
  *  &lt;/qos>
  * </pre>
  * Note that receiveTimestamp is in nanoseconds, whereas all other time values are milliseconds
+ * @see classtest.PublishQosTest
  */
 public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
@@ -168,7 +169,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       touchRcvTimestamp();
       setRemainingLife(getMaxRemainingLife());
       parseQos(xmlQoS_literal);
-      size = xmlQoS_literal.length();
+      if (xmlQoS_literal != null)
+         size = xmlQoS_literal.length();
    }
 
 
@@ -187,7 +189,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       this.fromPersistenceStore = fromPersistenceStore;
       parseQos(xmlQoS_literal);
-      size = xmlQoS_literal.length();
+      if (xmlQoS_literal != null)
+         size = xmlQoS_literal.length();
       if (fromPersistenceStore && !rcvTimestampFound) {
          Log.error(ME, "Message from persistent store is missing rcvTimestamp");
       }
@@ -220,7 +223,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (!isEmpty(xmlQoS_literal)) // if possible avoid expensive SAX parsing
          init(xmlQoS_literal);  // use SAX parser to parse it (is slow)
       else xmlLiteral = "<qos></qos>";
-      size = xmlQoS_literal.length();
+
+      if (xmlQoS_literal != null)
+         size = xmlQoS_literal.length();
    }
 
 
@@ -415,15 +420,6 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public final void setFromPersistenceStore(boolean fromPersistenceStore)
    {
       this.fromPersistenceStore = fromPersistenceStore;
-   }
-
-   /**
-    * Shall we queue PtP messages if destination is not online?
-    * @see org.xmlBlaster.engine.helper.Destination
-    */
-   public final boolean forceQueuing()
-   {
-      return this.destination.forceQueuing();
    }
 
    /**
@@ -652,9 +648,17 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                timestamp = new Timestamp(0L);
             }
 
+            String tmpDirty = attrs.getValue("dirtyRead");
+            boolean dirtyRead = org.xmlBlaster.engine.cluster.NodeDomainInfo.DEFAULT_dirtyRead;
+            if (tmpDirty != null) {
+               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { Log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
+            }
+
             if (Log.TRACE) Log.trace(ME, "Found node tag");
 
             routeInfo = new RouteInfo(nodeId, stratum, timestamp);
+            if (tmpDirty != null)
+               routeInfo.setDirtyRead(dirtyRead);
          }
          return;
       }
@@ -887,72 +891,5 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
       sb.append(offset).append("</qos>");
       return sb.toString();
-   }
-
-
-   /** For testing: java org.xmlBlaster.engine.xml2java.PublishQos */
-   public static void main(String[] args)
-   {
-      try {
-         Global glob = new Global(args);
-         String xml =
-            "<qos>\n" +
-            "   <destination queryType='EXACT' forceQueuing='true'>\n" +
-            "      Tim\n" +
-            "   </destination>\n" +
-            "   <destination queryType='EXACT'>\n" +
-            "      Ben\n" +
-            "   </destination>\n" +
-            "   <destination queryType='XPATH'>\n" +
-            "      //[GROUP='Manager']\n" +
-            "   </destination>\n" +
-            "   <destination queryType='XPATH'>\n" +
-            "      //ROLE/[@id='Developer']\n" +
-            "   </destination>\n" +
-            "   <sender>\n" +
-            "      Gesa\n" +
-            "   </sender>\n" +
-            "   <priority>7</priority>\n" +
-            "   <rcvTimestamp nanos='1007771081626000000'/>\n" + // if from persistent store
-            "   <expiration remainingLife='12000'/>\n" +            // if from persistent store
-            "   <isVolatile>false</isVolatile>\n" +
-            "   <isDurable/>\n" +
-            "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
-            /*
-            "   <defaultContent>\n" +
-            "      Empty\n" +
-            "   </defaultContent>\n" +
-            */
-            "   <route>\n" +
-            "      <node id='bilbo' stratum='2' timestamp='9408630500'/>\n" +
-            "      <node id='frodo' stratum='1' timestamp='9408630538'/>\n" +
-            "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
-            "   </route>\n" +
-            "</qos>\n";
-
-         {
-            System.out.println("\nFull Message from client ...");
-            PublishQos qos = new PublishQos(glob, xml);
-            qos.addRouteInfo(new RouteInfo(new NodeId("master"), 0, new Timestamp(9408630587L)));
-            System.out.println(qos.toXml());
-         }
- 
-         {
-            System.out.println("\nFrom persistent store ...");
-            PublishQos qos = new PublishQos(glob, xml, true);
-            System.out.println(qos.toXml());
-         }
-         
-         xml = "<qos></qos>";
-         {
-            System.out.println("\nEmpty message from client ...");
-            PublishQos qos = new PublishQos(glob, xml);
-            System.out.println(qos.toXml());
-         }
-      }
-      catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
-      }
    }
 }
