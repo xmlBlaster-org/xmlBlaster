@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client/protocol
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = xmlrpc corba
+SUB_DIRS = xmlrpc corba rmi
 LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
