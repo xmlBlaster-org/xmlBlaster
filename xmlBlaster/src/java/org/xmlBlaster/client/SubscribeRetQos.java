@@ -22,7 +22,7 @@ import org.xmlBlaster.engine.helper.Constants;
  * <pre>
  *   &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='yourMessageOid'/>
+ *     &lt;subscribe id='__subId:1'/>
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.test.classtest.SubscribeRetQosTest

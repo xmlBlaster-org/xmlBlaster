@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.17 2002/08/26 09:10:48 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.18 2002/09/30 10:02:29 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -164,7 +164,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
    /**
     * Invoked on new subscription or get() invocation, loads plugin. 
     * You have to check yourself if it is loaded already
-    * @return true if loaded
+    * @return true if initially loaded, and false if was loaded already or on error
     */
    public final boolean addAccessFilterPlugin(String type, String version)
    {
@@ -172,7 +172,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       key.append(type).append(version);
       Object obj = accessFilterMap.get(key.toString());
       if (obj != null) {
-         log.warn(ME, "Access filter '" + key.toString() + "' is loaded already");
+         if (log.TRACE) log.trace(ME, "Access filter '" + key.toString() + "' is loaded already");
          return false;
       }
 
