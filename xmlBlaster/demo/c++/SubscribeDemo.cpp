@@ -60,6 +60,7 @@ private:
    bool initialUpdate;
    bool wantContent;
    int historyNumUpdates;
+   bool historyNewestFirst;
    string filterType;
    string filterVersion;
    string filterQuery;
@@ -88,9 +89,21 @@ public:
       subscribe();
       
       log_.info(ME, "Please use PublishDemo to publish a message 'Hello', i'm waiting for updates ...");
-      log_.plain(ME, "");
-      while (doContinue_) {
-         org::xmlBlaster::util::thread::Thread::sleepSecs(2);
+
+      if (interactive) {
+         org::xmlBlaster::util::thread::Thread::sleepSecs(1);
+         bool stop = false;
+         while (!stop) {
+            std::cout << "(Enter 'q' to exit) >> ";
+            std::cin.read(ptr,1);
+            if (*ptr == 'q') stop = true;
+         }
+      }
+      else {
+         log_.plain(ME, "I will exit when the publisher destroys the topic ...");
+         while (doContinue_) {
+            org::xmlBlaster::util::thread::Thread::sleepSecs(2);
+         }
       }
       
       unSubscribe_();
@@ -117,6 +130,7 @@ public:
       initialUpdate = global_.getProperty().get("initialUpdate", true);
       wantContent = global_.getProperty().get("wantContent", true);
       historyNumUpdates = global_.getProperty().get("historyNumUpdates", 1);
+      historyNewestFirst = global_.getProperty().get("historyNewestFirst", true);
       filterType = global_.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
       filterVersion = global_.getProperty().get("filter.version", "1.0");
       filterQuery = global_.getProperty().get("filter.query", "");
@@ -155,6 +169,7 @@ public:
       log_.info(ME, "   -local               " + lexical_cast<string>(local));
       log_.info(ME, "   -initialUpdate       " + lexical_cast<string>(initialUpdate));
       log_.info(ME, "   -historyNumUpdates   " + lexical_cast<string>(historyNumUpdates));
+      log_.info(ME, "   -historyNewestFirst  " + lexical_cast<string>(historyNewestFirst));
       log_.info(ME, "   -wantContent         " + lexical_cast<string>(wantContent));
       log_.info(ME, "   -unSubscribe         " + lexical_cast<string>(unSubscribe));
       log_.info(ME, "   -disconnect          " + lexical_cast<string>(disconnect));
@@ -201,6 +216,7 @@ public:
          
          HistoryQos historyQos(global_);
          historyQos.setNumEntries(historyNumUpdates);
+         historyQos.setNewestFirst(historyNewestFirst);
          sq.setHistoryQos(historyQos);
 
          if (filterQuery.length() > 0) {
