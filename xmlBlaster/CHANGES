@@ -14,6 +14,9 @@ Changes for 0.x [] (cvs main branch)
    - Bugfix reading of xmlBlaster.properties: Line extensions are now recognized
    - Extended Property class to preset ${user.home}, ${user.name},
      ${file.separator} and ${path.separator} to support replacement in xmlBlaster.properties
+   - Bugfix of failsafe mode when a publish noticed connection loss before ping thread
+   - Changed to activate failsafe mode even without a connectionProblem listener
+     if -dispatch/connection/delay is > 0
 
 Changes for 0.901 [2004-04-27]
 ==============================
