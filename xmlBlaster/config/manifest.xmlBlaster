@@ -5,7 +5,7 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar
  concurrent.jar 
  gnu-regexp.jar 
  remotecons.jar 
- demo.jar testsuite.jar 
+ demo.jar testsuite.jar xmlunit.jar 
  tinySQL.jar jhotdraw.jar 
  jax.jar 
  jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
