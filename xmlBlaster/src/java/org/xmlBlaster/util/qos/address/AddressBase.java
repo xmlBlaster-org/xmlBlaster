@@ -95,6 +95,12 @@ public abstract class AddressBase
    /** Messages bigger this size in bytes are compressed */
    public static final long DEFAULT_minSize = 0L;
    protected PropLong minSize = new PropLong(DEFAULT_minSize);
+
+   public static final int DEFAULT_burstModeMaxEntries = -1;
+   protected PropInt burstModeMaxEntries = new PropInt(DEFAULT_burstModeMaxEntries);
+
+   public static final long DEFAULT_burstModeMaxBytes = -1L;
+   protected PropLong burstModeMaxBytes = new PropLong(DEFAULT_burstModeMaxBytes);
    
    /** PtP messages wanted? Defaults to true, false prevents spamming */
    public static final boolean DEFAULT_ptpAllowed = true;
@@ -164,6 +170,8 @@ public abstract class AddressBase
       //log.error(ME, "DEBUG ONLY: Checking " + this.instanceName + ": " + envPrefix+"port to result=" + this.bootstrapPort.getValue() );
 
       // These are protocol unspecific values
+      this.burstModeMaxEntries.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/maxEntries");
+      this.burstModeMaxBytes.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/maxBytes");
       this.collectTime.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTime");
       this.pingInterval.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "pingInterval");
       this.retries.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "retries");
@@ -533,6 +541,40 @@ public abstract class AddressBase
    }
 
    /**
+    * How many messages maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    */
+   public int getBurstModeMaxEntries() {
+      return this.burstModeMaxEntries.getValue();
+   }
+
+   public void setBurstModeMaxEntries(int burstModeMaxEntries) {
+      if (burstModeMaxEntries == 0)
+         log.warn(ME, "<burstMode maxEntries=" + burstModeMaxEntries + " is not supported and may cause strange behavior");
+      else if (burstModeMaxEntries < -1)
+         burstModeMaxEntries = -1;
+      
+      this.burstModeMaxEntries.setValue(burstModeMaxEntries);
+   }
+
+   /**
+    * How many bytes maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    */
+   public long getBurstModeMaxBytes() {
+      return this.burstModeMaxBytes.getValue();
+   }
+
+   public void setBurstModeMaxBytes(long burstModeMaxBytes) {
+      if (burstModeMaxBytes == 0)
+         log.warn(ME, "<burstMode maxBytes=" + burstModeMaxBytes + " is not supported and may cause strange behavior");
+      else if (burstModeMaxBytes < -1L)
+         burstModeMaxBytes = -1L;
+
+      this.burstModeMaxBytes.setValue(burstModeMaxBytes);
+   }
+
+   /**
     * How long to wait between pings to the callback server. 
     * @return The pause time between pings in millis
     */
@@ -803,6 +845,22 @@ public abstract class AddressBase
                      log.error(ME, "Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
                   }
                }
+               else if( attrs.getQName(ii).equalsIgnoreCase("maxEntries") ) {
+                  String ll = attrs.getValue(ii).trim();
+                  try {
+                     setBurstModeMaxEntries(new Integer(ll).intValue());
+                  } catch (NumberFormatException e) {
+                     log.error(ME, "Wrong format of <burstMode maxEntries='" + ll + "'>, expected an integer number.");
+                  }
+               }
+               else if( attrs.getQName(ii).equalsIgnoreCase("maxBytes") ) {
+                  String ll = attrs.getValue(ii).trim();
+                  try {
+                     setBurstModeMaxBytes(new Long(ll).longValue());
+                  } catch (NumberFormatException e) {
+                     log.error(ME, "Wrong format of <burstMode maxBytes='" + ll + "'>, expected a long in bytes.");
+                  }
+               }
             }
          }
          else {
@@ -914,10 +972,14 @@ public abstract class AddressBase
           sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
       sb.append(">");
       sb.append(offset).append(" ").append(getRawAddress());
-      if (this.collectTime.isModified() || this.collectTime.isModified()) {
+      if (this.collectTime.isModified() || this.burstModeMaxEntries.isModified() || this.burstModeMaxBytes.isModified()) {
          sb.append(offset).append(" ").append("<burstMode");
          if (this.collectTime.isModified())
             sb.append(" collectTime='").append(getCollectTime()).append("'");
+         if (this.burstModeMaxEntries.isModified())
+            sb.append(" maxEntries='").append(getBurstModeMaxEntries()).append("'");
+         if (this.burstModeMaxBytes.isModified())
+            sb.append(" maxBytes='").append(getBurstModeMaxBytes()).append("'");
          sb.append("/>");
       }
       if (this.compressType.isModified())
@@ -954,6 +1016,7 @@ public abstract class AddressBase
       text += "   -dispatch/" + this.instanceName + "/delay\n";
       text += "                       Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
+      // other settings like burstMode are in the derived classes
       return text;
    }
 }
