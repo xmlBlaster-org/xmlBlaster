@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = util protocol engine authentication client j2ee/k2
+SUB_DIRS = protocol util engine authentication client j2ee/k2
 
 # Without J2EE connector:
 #SUB_DIRS = util protocol engine authentication client
