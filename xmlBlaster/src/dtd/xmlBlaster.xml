@@ -44,6 +44,7 @@
             <param>SW</param>
             <content queryType="XQL">/person/firstname=Marcel</content>
             <content queryType="SQL">SELECT firstname where WHERE firstname='Marcel'</content>
+            <content queryType="LDAP">OU='xmlBlaster'&DN='Marcel'</content>
             <orders>
                <key/>
                <content/>
