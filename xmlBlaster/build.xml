@@ -230,6 +230,7 @@ TODO
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support [false]"/>
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
+      <echo message="         -DADD_TINYSQL=true    add tinySQL JDBC dBase driver support [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
@@ -572,6 +573,7 @@ TODO
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
       <property name="ADD_SNMP" value="false"/>
+      <property name="ADD_TINYSQL" value="false"/>
       <property name="ADD_XML_PARSER" value="true"/>
       <property name="ADD_PROP" value="default"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties (to configure MoM) -->
       <property name="ADD_POLICY" value="default"/> <!-- e.g. -DADD_POLICY=myclient/xmlBlaster.policy (for RMI security) -->
@@ -638,6 +640,15 @@ TODO
          </case>
          <default>
             <echo message="ADD_SNMP=${ADD_SNMP}: No SNMP support added." />
+         </default>
+      </switch>
+      <switch value="${ADD_TINYSQL}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/tinySQL.jar for JDBC-dBase support" />
+            <unjar src="${lib.dir}/tinySQL.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+            <echo message="ADD_TINYSQL=${ADD_TINYSQL}: No JDBC-dBase support added." />
          </default>
       </switch>
       <switch value="${ADD_XML_PARSER}">
