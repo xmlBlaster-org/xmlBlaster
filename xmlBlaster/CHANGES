@@ -14,7 +14,7 @@ Changes cvs
    Thanks to Balázs Póka bpoka@axelero.hu
 
  o SOCKET SSL support for Java server and clients added, the usage is simple, see
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL
    Thanks to Balázs Póka bpoka@axelero.hu
    
  o SOCKET incompatible change:
