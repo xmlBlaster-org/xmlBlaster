@@ -11,6 +11,7 @@ Changes for 0.x [200x-xx-xx]
    - Fixed passing callback settings from command line
    - Extended Property.cpp to replace ${...} variables from xmlBlaster.properties
    - Fixed duplicate holding of CallbackAddress
+   - Fixed SAX parsing of literal priority in QoS
 
  o Fixed rare possible dead lock for PtP messages auto-creating subjectInfo
    and simultaneous login of this subject
