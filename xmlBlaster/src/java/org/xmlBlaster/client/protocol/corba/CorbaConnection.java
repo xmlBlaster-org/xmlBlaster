@@ -330,7 +330,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
       String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                   " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
-                  " - try to specify '-host <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
+                  " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
                   " - or start a naming service";
 
       // 3) asking Name Service CORBA compliant
@@ -703,11 +703,11 @@ public class CorbaConnection implements I_XmlBlasterConnection
       text += "   -hostname <host>    The host where to find xmlBlaster internal HTTP IOR download [localhost]\n";
       text += "   -port <port>        The port where xmlBlaster publishes its IOR [" + Constants.XMLBLASTER_PORT + "]\n";
       text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]\n";
-      text += "   -ior.hostname       Allows to set the callback-server's IP address for multi-homed hosts.\n";
-      text += "   -ior.port           Allows to set the callback-server's port number.\n";
+      text += "   -ior.hostnameCB     Allows to set the callback-server's IP address for multi-homed hosts.\n";
+      text += "   -ior.portCB         Allows to set the callback-server's port number.\n";
       text += " For JacORB only:\n";
-      text += "   java -DOAIAddr=<ip> Use '-ior.hostname'\n";
-      text += "   java -DOAPort=<nr>  Use '-ior.port'\n";
+      text += "   java -DOAIAddr=<ip> Use '-ior.hostnameCB'\n";
+      text += "   java -DOAPort=<nr>  Use '-ior.portCB'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "\n";
       return text;

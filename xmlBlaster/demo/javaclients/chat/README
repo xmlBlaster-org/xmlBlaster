@@ -9,10 +9,10 @@ Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
 
 To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
-   java javaclients.chat.SimpleChat -loginName Ben -hostname 62.132.140.7 -ior.hostname 198.197.24.129 
+   java javaclients.chat.SimpleChat -loginName Ben -hostname 62.132.140.7 -ior.hostnameCB 198.197.24.129 
 
    -hostname is the xmlBlaster server,
-   -ior.hostname is the IP address for our internal chat CORBA callback server.
+   -ior.hostnameCB is the IP address for our internal chat CORBA callback server.
 
 
 To chat from you multi homed host the another server running xmlBlaster (XML-RPC):

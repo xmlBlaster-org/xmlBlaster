@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.33 2002/05/17 09:54:48 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.34 2002/05/19 09:44:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -271,16 +271,16 @@ public class CorbaDriver implements I_Driver
 
          JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", glob.getProperty().get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
          
-         String hostname = glob.getProperty().get("ior.hostname", (String)null);
-         if (hostname != null) {
-            JdkCompatible.setSystemProperty("OAIAddr", hostname);
-            if (log.TRACE) log.trace(ME, "Using ior.hostname=" + System.getProperty("OAIAddr"));
+         String hostnameCB = glob.getProperty().get("ior.hostnameCB", (String)null);
+         if (hostnameCB != null) {
+            JdkCompatible.setSystemProperty("OAIAddr", hostnameCB);
+            if (log.TRACE) log.trace(ME, "Using ior.hostnameCB=" + System.getProperty("OAIAddr"));
          }
          
-         int port = glob.getProperty().get("ior.port", 0);
+         int port = glob.getProperty().get("ior.portCB", 0);
          if (port > 0) {
             JdkCompatible.setSystemProperty("OAPort", ""+port);
-            if (log.TRACE) log.trace(ME, "Using ior.port=" + System.getProperty("OAPort"));
+            if (log.TRACE) log.trace(ME, "Using ior.portCB=" + System.getProperty("OAPort"));
          }
 
          int verbose = glob.getProperty().get("jacorb.verbosity", -1);
@@ -489,11 +489,11 @@ public class CorbaDriver implements I_Driver
       text += "                       Default is port "+Constants.XMLBLASTER_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
       text += "                       Default is to publish the IOR to a naming service.\n";
-      text += "   -ior.hostname       Allows to set the corba server IP address for multi-homed hosts.\n";
-      text += "   -ior.port           Allows to set the corba server port number.\n";
+      text += "   -ior.hostnameCB     Allows to set the corba server IP address for multi-homed hosts.\n";
+      text += "   -ior.portCB         Allows to set the corba server port number.\n";
       text += " For JacORB only:\n";
-      text += "   java -DOAIAddr=<ip> Use '-ior.hostname'\n";
-      text += "   java -DOAPort=<nr>  Use '-ior.port'\n";
+      text += "   java -DOAIAddr=<ip> Use '-ior.hostnameCB'\n";
+      text += "   java -DOAPort=<nr>  Use '-ior.portCB'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "\n";
       return text;
