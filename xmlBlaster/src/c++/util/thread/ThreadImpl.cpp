@@ -27,15 +27,19 @@ typedef boost::condition          ConditionImpl;
 
 namespace org { namespace xmlBlaster { namespace util { namespace thread {
 
-struct ThreadImpl : public boost::thread {
+class ThreadImpl : public boost::thread {
+	public:
    explicit ThreadImpl(const boost::function0<void>& threadfunc) : boost::thread(threadfunc) {}
 };
-struct MutexImpl : public boost::mutex {
+class MutexImpl : public boost::mutex {
+	public:
 };
-struct LockImpl : public boost::mutex::scoped_lock {
+class LockImpl : public boost::mutex::scoped_lock {
+   public:
    LockImpl(boost::mutex& mutex) : boost::mutex::scoped_lock(mutex) {}
 };
-struct ConditionImpl : public boost::condition {
+class ConditionImpl : public boost::condition {
+	public:
 };
 
 }}}}
@@ -82,8 +86,8 @@ void Thread::sleepNanos(Timestamp nanoSecondDelay)
    boost::xtime xt;
    boost::xtime_get(&xt, boost::TIME_UTC);
 
-   long secDelay  = nanoSecondDelay / Constants::BILLION;
-   long nanoDelay = nanoSecondDelay % Constants::BILLION;
+   long secDelay  = static_cast<long>(nanoSecondDelay / Constants::BILLION);
+   long nanoDelay = static_cast<long>(nanoSecondDelay % Constants::BILLION);
    xt.sec        += secDelay;
    xt.nsec       += nanoDelay;
    boost::thread::sleep(xt);
