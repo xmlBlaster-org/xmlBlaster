@@ -45,7 +45,7 @@ Note, that if you do further development, compilation time is reduced
 since Ant is able to detect which files have changed an to recompile
 them at need.
 
-If you use xmlBlaster/.bashrc login again to include xmlBlaster.jar into
+If you use 'xmlBlaster/.bashrc', login again to include xmlBlaster.jar into
 your CLASSPATH.
 Else add it manually.
 
