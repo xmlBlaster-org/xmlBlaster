@@ -43,7 +43,7 @@ public class SimpleJmsDemo implements MessageListener {
    public void prepare() throws JMSException {
       try {
          // create a factory (normally retreived by naming service)
-         TopicConnectionFactory factory = new XBConnectionFactory(this.cmdLine);
+         TopicConnectionFactory factory = new XBConnectionFactory(null, this.cmdLine, false);
          // should be retreived via jndi
          Topic topic = new XBTopic("jms-test");
       
