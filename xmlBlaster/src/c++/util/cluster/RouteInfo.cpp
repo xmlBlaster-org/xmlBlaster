@@ -67,7 +67,7 @@ bool RouteInfo::getDirtyRead() const
    return dirtyRead_;
 }
 
-string RouteInfo::toXml(const string& extraOffset="")
+string RouteInfo::toXml(const string& extraOffset) const
 {
    string ret;
    string offset = "\n ";

@@ -208,10 +208,10 @@ Dll_Export const bool DEFAULT_forceUpdate = true;
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   bool QosData::dirtyRead(NodeId nodeId)
+   bool QosData::dirtyRead(NodeId nodeId) const
    {
       if (routeNodeList_.empty()) return false;
-      vector<RouteInfo>::iterator iter = routeNodeList_.begin();
+      vector<RouteInfo>::const_iterator iter = routeNodeList_.begin();
       while (iter != routeNodeList_.end()) {
          if ((*iter).getNodeId() == nodeId) return (*iter).getDirtyRead();
       }
@@ -249,7 +249,7 @@ Dll_Export const bool DEFAULT_forceUpdate = true;
    /**
     * @return never null, but may have length==0
     */
-   RouteVector QosData::getRouteNodes()
+   RouteVector QosData::getRouteNodes() const
    {
       return routeNodeList_;
    }
@@ -259,7 +259,7 @@ Dll_Export const bool DEFAULT_forceUpdate = true;
       routeNodeList_.erase(routeNodeList_.begin(), routeNodeList_.end());
    }
 
-   int QosData::size()
+   int QosData::size() const
    {
       return toXml().size();
    }

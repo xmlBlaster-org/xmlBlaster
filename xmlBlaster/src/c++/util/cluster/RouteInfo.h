@@ -89,7 +89,7 @@ public:
     * Dump state of this object into a XML ASCII string. 
     * @param extraOffset indenting of tags for nice output
     */
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 };
 
 }}}}

@@ -122,7 +122,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return The Destination as a XML ASCII string
     */
-   string toXml(const string &extraOffset="");
+   string toXml(const string &extraOffset="") const;
 };
 
 }}} // namespace

@@ -66,7 +66,7 @@ class Dll_Export MsgQosData : public QosData
 {
 private:
 
-   bool isExpired_; // = false; // cache the expired state for performance reasons
+   mutable bool isExpired_; // = false; // cache the expired state for performance reasons
 
    TopicProperty* topicProperty_;
 
@@ -164,7 +164,7 @@ public:
     * @return true if addressing of the destination is used
     *         false if Publish/Subscribe style is used
     */
-   bool isPtp();
+   bool isPtp() const;
 
    /**
     * @param volatile true/false
@@ -232,7 +232,7 @@ public:
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
-   SessionQos getSender();
+   SessionQos getSender() const;
 
    /**
     * Access sender name.
@@ -318,7 +318,7 @@ public:
     * @return Milliseconds until message expiration (from now) or -1L if forever
     *         if 0L the message is expired
     */
-   long getRemainingLife();
+   long getRemainingLife() const;
 
    /**
     * This is the value delivered in the QoS (as it was calculated by the server on sending)
@@ -335,7 +335,7 @@ public:
    /**
     * Calculates if we are expired
     */
-   bool isExpired();
+   bool isExpired() const;
 
    /**
     * The server default for max. span of life,
@@ -378,7 +378,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII string
     */
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 
    void setTopicProperty(const TopicProperty& prop);
 

@@ -220,7 +220,7 @@ void QueryQosData::setSubscriptionId(const string& subscriptionId)
  * @param extraOffset indenting of tags for nice output
  * @return internal state of the query as a XML ASCII string
  */
-string QueryQosData::toXml(const string& extraOffset="") const
+string QueryQosData::toXml(const string& extraOffset) const
 {
    string ret;
    string offset = Constants::OFFSET + extraOffset;

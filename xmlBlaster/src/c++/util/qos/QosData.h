@@ -160,7 +160,7 @@ public:
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   bool dirtyRead(NodeId nodeId);
+   bool dirtyRead(NodeId nodeId) const;
 
    /**
     * The approximate receive timestamp (UTC time),
@@ -187,14 +187,14 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII string
     */
-   virtual string toXml(const string& extraOffset="") = 0;
+   virtual string toXml(const string& extraOffset="") const = 0;
 
     // the following where not present before ...
-   RouteVector getRouteNodes();
+   RouteVector getRouteNodes() const;
 
    void clearRoutes();
 
-   int size();
+   int size() const;
 
    // copy constructor plus assignment operator ...
 

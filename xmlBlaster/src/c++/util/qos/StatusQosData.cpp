@@ -124,7 +124,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
       return toXml().length();
    }
 
-   string StatusQosData::toXml(const string& extraOffset="") const
+   string StatusQosData::toXml(const string& extraOffset) const
    {
       string ret;
       string offset = Constants::OFFSET + extraOffset;
