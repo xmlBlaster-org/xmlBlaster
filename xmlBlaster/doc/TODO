@@ -1,26 +1,40 @@
-- Performance: ev. XtOmQuery implementerien (oid zugriff)
+- Performance: 
+ 
+  * Implementing of  XtOmQuery for oid access (minimal data in DOM tree)
+    This is nonsense, the minimal DOM tree couldn't be parsed by XPath
+  * Normalizing the DOM tree
 
 - dtd support
 
 - get for OID request
 
 - xmlBlaster.idl
-  * declare oneway for nonblocking Callback (Method update())
-	* rename AuthServer to AuthenticationService
-	* rename Server to xmlBlaster
+  * rename AuthServer to AuthenticationService
+  * rename Server to xmlBlaster
+
+- reliability of update() callback
+  The update() method is declared oneway, so the xmlBlaster
+  can't guarantee if the update is delivered.
+
+  Perhaps there should be 2 update variants,
+  one blocking (no keyword oneway) and one none-blocking (with keyword oneway).
+  
+  In the blocking mode, xmlBlaster would need a timeout
+  or an extra thread per update client, so that not
+  one client can block the whole update sequence.
 
 Clients
 -------
-- Perl (ORB für Perl www.lunatech.com/research/corba/cope)
+- Perl (ORB for Perl www.lunatech.com/research/corba/cope)
 - C++ (mico)  OK
 - Tcl/Tk
 - Java
 - Phyton
 
-(alle freie Orb-Impl.......)
+(all free CORBA implementation .......)
 
-Proteritäre Protokolle-Plugins (nicht CORBA)
----------------------- 
-- Protokoll-Plugins (www.webdav.com)
-- zutandslose Protokolle
+proprietary Protocol plugins (not CORBA)
+----------------------------------------
+- Protocol plugins (www.webdav.com)
+- state less protocols (email, http, webDav)
 
