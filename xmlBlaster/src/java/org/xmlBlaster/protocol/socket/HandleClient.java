@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.5 2002/02/15 23:41:18 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.6 2002/02/16 11:23:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -14,13 +14,9 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.protocol.ConnectionException;
 
@@ -30,9 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedOutputStream;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 
 /**
@@ -63,7 +56,6 @@ public class HandleClient extends Executor implements Runnable
     */
    public void shutdown() {
       Log.info(ME, "Schutdown connection ...");
-      driver.getSocketMap().remove(this.loginName);
       if (sessionId != null) {
          try {
             authenticate.disconnect(sessionId, "<qos/>");
@@ -94,7 +86,7 @@ public class HandleClient extends Executor implements Runnable
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = execute(parser, loginName, true);
+         Object response = execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got update response " + response.toString());
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // Hack until every update uses arrays (one qos for each message
@@ -126,18 +118,14 @@ public class HandleClient extends Executor implements Runnable
                if (receive(receiver) == false) {
                   if (Constants.CONNECT.equals(receiver.getMethodName())) {
                      ConnectQos conQos = new ConnectQos(receiver.getQos());
-                     this.loginName = conQos.getUserId();
+                     setLoginName(conQos.getUserId());
                      this.ME += "-" + this.loginName;
                      callback = new CallbackSocketDriver(this.loginName, this);
                      conQos.setCallbackDriver(callback);  // tell that we are the callback driver as well (see hack in CbInfo.java)
 
-                     driver.getSocketMap().put(conQos.getUserId(), this);
-
                      ConnectReturnQos retQos = authenticate.connect(conQos);
                      this.sessionId = retQos.getSessionId();
                      receiver.setSessionId(retQos.getSessionId()); // executeResponse needs it
-
-                     //driver.getSocketMap().put(retQos.getSessionId(), this); // To late
 
                      executeResponse(receiver, retQos.toXml());
                    }

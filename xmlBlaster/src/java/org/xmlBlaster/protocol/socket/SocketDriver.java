@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.6 2002/02/15 19:06:54 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.7 2002/02/16 11:23:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -11,27 +11,15 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.Constants;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 
 /**
@@ -60,7 +48,7 @@ import java.util.Collections;
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @see org.xmlBlaster.protocol.socket.Parser
  */
-public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
+public class SocketDriver extends Thread implements I_Driver
 {
    private static final String ME = "SocketDriver";
    /** The singleton handle for this authentication server */
@@ -84,16 +72,6 @@ public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
 
 
    /**
-    * This static map is a hack!. We need this to map asynchronous update() to the correct socket
-    * The key is the unique client loginName, the value is the HandleClient instances belonging to this client.
-    * <p />
-    * TODO: Change loginName to sessionId when the new callback framework is available
-    * @deprecated Not needed
-    */
-   private static final Map socketMap = Collections.synchronizedMap(new HashMap());
-
-
-   /**
     * Note: getName() is enforced by interface I_Driver, but is already defined in Thread class
     */
    public SocketDriver()
@@ -108,11 +86,6 @@ public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
    I_XmlBlaster getXmlBlaster() {
       return this.xmlBlasterImpl;
    }
-
-   Map getSocketMap() {
-      return this.socketMap;
-   }
-
 
    /**
     * Start xmlBlaster SOCKET access.
@@ -199,48 +172,6 @@ public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
 
 
    /**
-    * Intialize the driver.
-    * <p />
-    * Enforced by I_CallbackDriver
-    * @param  callbackAddress Contains the callback address,
-    *         e.g. the stringified CORBA callback handle of the client or his email address.
-    */
-    /*
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException {
-      Log.warn(ME, "Implement init()");
-   }
-      */
-
-   /**
-    * Send the message update to the client.
-    * <p />
-    * The protocol for sending is implemented in the derived class
-    * <p />
-    * Enforced by I_CallbackDriver
-    *
-    * @param clientInfo Data about a specific client
-    * @param msgUnitWrapper For Logoutput only (deprecated?)
-    * @param messageUnitArr Array of all messages to send
-    * @return Clients should return a qos as follows.
-    *         An empty qos string "" is valid as well and
-    *         interpreted as OK
-    * <pre>
-    *  &lt;qos>
-    *     &lt;state>       &lt;!-- Client processing state -->
-    *        OK            &lt;!-- OK | ERROR -->
-    *     &lt;/state>
-    *  &lt;/qos>
-    * </pre>
-    * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",
-    *            the message will queued until the client logs in again
-    */
-   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException {
-      Log.error(ME, "Implement sendUpdate()");
-      return "";
-   }
-
-
-   /**
     * Close the listener port
     */
    public void shutdown()// throws IOException
@@ -272,8 +203,6 @@ public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
       } catch (java.io.IOException e) {
          Log.warn(ME, "shutdown problem: " + e.toString());
       }
-
-      socketMap.clear();
 
       Log.info(ME, "Socket driver stopped, all resources released.");
    }

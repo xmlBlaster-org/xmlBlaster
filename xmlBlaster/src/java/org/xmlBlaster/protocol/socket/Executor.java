@@ -2,8 +2,8 @@
 Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Executor class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: Executor.java,v 1.3 2002/02/15 23:41:18 ruff Exp $
+Comment:   Send/receive messages over outStream and inStream. 
+Version:   $Id: Executor.java,v 1.4 2002/02/16 11:23:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -11,26 +11,17 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.protocol.ConnectionException; // Move java file to server package!
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -43,18 +34,16 @@ import java.util.Collections;
  * Allows to block during a request and deliver the return message
  * to the waiting thread.
  */
-public abstract class Executor
+public abstract class Executor implements ExecutorBase
 {
    private String ME = "ExecutorRequest";
-   /** Default port of xmlBlaster socket server is 7607 */
-   public static final int DEFAULT_SERVER_PORT = 7607;
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
    protected InputStream iStream;
    /** Writing to socket */
    protected OutputStream oStream;
-   /** Praefix for requestId */
+   /** The praefix to create a unique requestId namspace (is set to the loginName) */
    protected String praefix = null;
    /** The unique client sessionId */
    protected String sessionId = null;
@@ -73,12 +62,6 @@ public abstract class Executor
     */
    protected final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
 
-   /**
-    * Constructor for SocketConnection, which is only interested in
-    * execute() method and common attributes
-    */
-   protected Executor() {
-   }
 
    /**
     * Used by SocketCallbackImpl on client side, uses I_CallbackExtended to invoke client classes
@@ -120,6 +103,17 @@ public abstract class Executor
          throw new ConnectionException(ME+".init", "No plain socket connection available.");
       }
       return this.sock;
+   }
+
+   /**
+    * Sets the loginName and automatically the requestId as well
+    */
+   protected void setLoginName(String loginName) {
+      this.loginName = loginName;
+      if (loginName != null && loginName.length() > 0)
+         this.praefix = this.loginName + ":";
+      else
+         this.praefix = null;
    }
 
    /**
@@ -257,10 +251,10 @@ public abstract class Executor
     * We simulate RPC (remote procedure call) here.
     * This should be thread save and may be invoked by many
     * client threads in parallel (though i have not tested it).
-    * @param praefix The praefix to create a unique requestId namspace (just pass the loginName)
+    * @param expectingResponse WAIT_ON_RESPONSE=true or ONEWAY=false
     * @return the response object of the request, of type String(QoS), MessageUnit[] or XmlBlasterException
     */
-   public Object execute(Parser parser, String praefix, boolean expectingResponse) throws XmlBlasterException, IOException {
+   public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
       final Object[] response = new Object[2];  // As only final variables are accessable from the inner class, we put changeable variables in this array
