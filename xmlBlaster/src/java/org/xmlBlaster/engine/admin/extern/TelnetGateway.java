@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -60,6 +61,10 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    private String lastCommand = "";
 
+   /**
+    * Default port to access xmlBlaster with telnet for administration (2702). 
+    */
+   public static final int TELNET_PORT = 2702;
 
 
    /**
@@ -145,14 +150,14 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    private boolean initListener() throws XmlBlasterException { 
-      port = glob.getProperty().get("admin.remoteconsole.port", 2702); // 0 == off
+      port = glob.getProperty().get("admin.remoteconsole.port", TELNET_PORT); // 0 == off
       port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", port);
       if (port > 1000) {
          createRemoteConsole(port);
          log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
          return true;
       }
-      if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port 2702' if you want one");
+      if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
       return false;
    }
 
@@ -176,8 +181,8 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
            rs.initialize(ll);
          } catch (IOException e) {
            e.printStackTrace();
-           log.error(ME, "Initializing of remote console failed:" + e.toString());
-           throw new XmlBlasterException(ME, "Initializing of remote telnet console failed:" + e.toString());
+           if (log.TRACE) log.trace(ME, "Initializing of remote console on port=" + port + " failed:" + e.toString());
+           throw new XmlBlasterException(ME, "Initializing of remote telnet console on port=" + port + " failed:" + e.toString());
          }
       }
    }
