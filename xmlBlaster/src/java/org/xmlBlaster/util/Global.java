@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.16 2002/05/15 16:52:33 ruff Exp $
+Version:   $Id: Global.java,v 1.17 2002/05/16 19:57:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -610,22 +610,39 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a usage string. 
+    * Command line usage.
+    * <p />
+    * These variables may be set in your property file as well.
+    * Don't use the "-" prefix there.
     * <p />
     * Set the verbosity when loading properties (outputs with System.out).
     * <p />
     * 0=nothing, 1=info, 2=trace, configure with
     * <pre>
-    * java -Dproperty.verbose 2
+    * java -Dproperty.verbose 2 ...
     *
-    * java MyApp -property.verbose 2
+    * java org.xmlBlaster.Main -property.verbose 2
     * </pre>
     */
-   public static final String usage()
+   public static String usage()
    {
-      String text = "";
-      text += "Logging of Properties:\n";
-      text += "   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup[" + Property.DEFAULT_VERBOSE + "].\n";
-      return text;
+      StringBuffer sb = new StringBuffer(512);
+      sb.append("Logging options:\n");
+      sb.append("   -info  false        Supress info output.\n");
+      sb.append("   -trace true         Show code trace.\n");
+      sb.append("   -dump  true         Dump internal state.\n");
+      sb.append("   -call  true         Show important method entries\n");
+      sb.append("   -time true          Display some performance data.\n");
+      sb.append("   -logFile <fileName> Log to given file.\n");
+      sb.append("   -logConsole false   Supress logging to console.\n");
+      sb.append("\n");
+      sb.append("  There are fine grained logging possibilities like:\n");
+      sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
+      sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
+      sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
+      sb.append("\n");
+      sb.append("  Control logging of properties framework:\n");
+      sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup[" + Property.DEFAULT_VERBOSE + "].\n");
+      return sb.toString();
    }
 }
