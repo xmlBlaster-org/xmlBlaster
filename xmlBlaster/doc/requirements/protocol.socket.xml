@@ -10,6 +10,9 @@
       is behind a firewall or if the client may not establish a listen socket.
       Reusing a socket for callbacks solves this problem.
       </p>
+      <p>
+      Further this protocol can be used for simple access from other programming languages like <i>C</i>.
+      </p>
       <h3>
       Protocol specification
       </h3>
@@ -495,13 +498,14 @@ ConnectQos qos = new ConnectQos(glob);
    </ol>
    </todo>
    <see type="REQ">protocol</see>
+   <see type="REQ">client.c.socket</see>
    <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
-   <see type="CODE" lang="C">xmlBlaster/src/c/socket/xmlBlasterAccessUnparsed.c</see>
+   <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.36 $</revision>
+   <revision>$Revision: 1.37 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
