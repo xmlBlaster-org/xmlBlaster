@@ -1826,6 +1826,10 @@ public class Global implements Cloneable
    
    /**
     * It searches for the given property. 
+    * The replacement for '${...}' is supported. Note that the assignment of a '$'
+    * variable can only be done in global scope, that is in the xmlBlaster.properties or command line,
+    * and JVM properties but not in the xmlBlasterPlugins.xml.
+    * 
     * It first looks into the map (the hardcoded properties). If one is found it is returned.
     * Then it looks into the global. If one is found it is returned. If none is found it is 
     * searched in the plugin
