@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Moved to JacORB 2.0 beta 2 + (cvs) from 2003-09-14 15:00
+   You can check out this version with:
+    cvs -d :pserver:anonymous@www.jacorb.org/cvsroot/jacorb checkout -D '2003-09-14 15:00' JacORB
+   idl.jar is patched to contain JacORB/lib/logkit.jar
+
  o Updated XPathFilter to support Jaxen XPath extension functions, also added the functions RecursiveTextFunction and ContainsIgnoreCaseFunction.
 
  o Updated j2ee components to the latest API changes. Also fixed property handling so that xmlBlaster.properties is not loaded by default. xmlBlaster.properties and xmlBlasterPlugins.xml is removed from the xmlBlaster.jar to not upset the propertyloading.
