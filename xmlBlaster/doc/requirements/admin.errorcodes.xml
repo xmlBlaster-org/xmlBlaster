@@ -93,14 +93,14 @@
     An XmlBlasterException contains a set of attributes describing an exception, all of type String:
     </p>
     <ol>
-      <li><b>node</b>:       Cluster node location (e.g. /node/heron)</li>
-      <li><b>errorCode</b>:  The hierarchical error code (e.g. "security.notauthenticated")</li>
-      <li><b>location</b>:   Logical location in the code (e.g. client/joe/3-SubscriptionInfo)</li>
-      <li><b>lang</b>:       Choose language - lowercase two-letter ISO-639 code, choose country - uppercase two-letter ISO-3166 code (e.g. "fr" "FR" or "fr_FR" or "de_DE")</li>
-      <li><b>reason</b>:     The human readable error text (e.g. "Authorization denied for message oid 'accountRetrieval'")</li>
-      <li><b>versionInfo</b>:     Information like xmlBlaster version, OS name, Java version etc.:<br />
-                  e.g. <i>"version=0.81,os.name=Linux,java.version=1.4.1-rc,build.java.vendor=IBM,build.java.version=1.3.1,build.timestamp=06/17/2002 01:59 PM"</i></li>
-      <li><b>timestamp</b>:       Timestamp when exception was thrown</li>
+      <li><b>node</b>:       Cluster node location (e.g. <i>/node/heron</i>)</li>
+      <li><b>errorCode</b>:  The hierarchical error code (e.g. <i>"security.notauthenticated"</i>)</li>
+      <li><b>location</b>:   Logical location in the code (e.g. <i>client/joe/3-SubscriptionInfo</i>)</li>
+      <li><b>lang</b>:       Choose language - lowercase two-letter ISO-639 code, choose country - uppercase two-letter ISO-3166 code (e.g. <i>"fr"</i> <i>"FR"</i> or <i>"fr_FR"</i> or <i>"de_DE"</i>)</li>
+      <li><b>reason</b>:     The human readable error text (e.g. <i>"Authorization denied for message oid 'accountRetrieval'"</i>)</li>
+      <li><b>versionInfo</b>:     Information like xmlBlaster version, OS name, Java version etc.<br />
+                  (e.g. <i>"version=0.81,os.name=Linux,java.version=1.4.1-rc, build.java.vendor=IBM,build.java.version=1.3.1, build.timestamp=06/17/2002 01:59 PM"</i>)</li>
+      <li><b>timestamp</b>:       Timestamp when exception was thrown (e.g. <i>2002-02-10 11:57:51.804000001</i>)</li>
       <li><b>stackTrace</b>:      The stack trace (optional, for debugging)</li>
       <li><b>embeddedText</b>:    The original exception message (optional, if another exception is rethrown)</li>
       <li><b>transactionInfo</b>: Transaction information</li>
@@ -212,7 +212,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
