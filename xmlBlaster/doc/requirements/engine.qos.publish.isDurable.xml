@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.publish.IsDurable' type='NEW' prio='LOW' status="CLOSED">
+<requirement id='engine.qos.publish.isDurable' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster allows store messages in a persistent store</topic>
    <description>
-      Using the QOS flag &lt;IsDurable/&gt; allows to mark a published message
+      Using the QOS flag &lt;isDurable/&gt; allows to mark a published message
       as durable. It will be stored into the persistence store as specified in
       xmlBlaster.properties file. Default is a primitive file-system based driver org.xmlBlaster.engine.persistence.FileDriver.
       You may plug in other drivers to store the message into your own database.
@@ -12,7 +12,7 @@
    <example lang="Java">
       <![CDATA[
       <qos>
-         <IsDurable /> <!-- Message is saved to disk -->
+         <isDurable /> <!-- Message is saved to disk -->
                        <!-- Default is transient (messages are lost after xmlBlaster restart) -->
       </qos>
       ]]>
@@ -20,7 +20,7 @@
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 25</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
