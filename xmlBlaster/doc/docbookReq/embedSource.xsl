@@ -22,16 +22,17 @@ Author:    laghi@swissinfo.org
     </xsl:copy>
   </xsl:template>
 
-   <xsl:template match="html:a[@class='source'] | a[@class='source']">
+   <xsl:template match="html:a[@class = 'embed'] | a[@class = 'embed']">
+      <xsl:message terminate="no">EMBED <xsl:value-of select="@href"/></xsl:message>
       <img class="embed" src="embedded.gif"></img><br/>
       <xsl:apply-templates select="document(concat($offset, @href))/html:html//html:pre"/>
    </xsl:template>
-
+   
    <!-- this is to remove the links inside the 'pre' tag since they are wrong anyway -->      
-   <xsl:template match="html:pre//html:a">
+   <xsl:template match="html:pre//html:a[@class != 'embed']">
       <xsl:apply-templates />
    </xsl:template>   
-      
+         
 </xsl:stylesheet>
 
 

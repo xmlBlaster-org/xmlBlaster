@@ -357,10 +357,10 @@ Author:    laghi@swissinfo.org
 
 <xsl:template match="pre[@class = 'embed']"> 
 	<ulink role="embed">
-		<!-- the 'userlevel' is either 'API' or 'CODE' and
-             the 'type' is the programming language as defined in 'see' attributes -->
-		<xsl:attribute name="userlevel"><xsl:value-of select="substring-before(@style,'.')"/></xsl:attribute>
-		<xsl:attribute name="type"><xsl:value-of select="substring-after(@style,'.')"/></xsl:attribute>
+		<!-- the 'type' is either 'API' or 'CODE' and
+             the 'userlevel' is the programming language as defined in 'see' attributes -->
+		<xsl:attribute name="type"><xsl:value-of select="substring-before(@style,'.')"/></xsl:attribute>
+		<xsl:attribute name="userlevel"><xsl:value-of select="substring-after(@style,'.')"/></xsl:attribute>
 		<xsl:attribute name="url"><xsl:value-of select="@title"/></xsl:attribute>
 		<!-- all content for this type of element is ignored (since it will be added dynamically
              from the link when converting from docbook to html -->
