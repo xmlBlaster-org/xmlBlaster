@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.28 2003/03/27 16:04:42 laghi Exp $
+Version:   $Id: AuthServerImpl.java,v 1.29 2003/03/27 17:10:08 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,6 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.qos.address.ServerRef;
+import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
 
 import org.omg.PortableServer.*;
 
@@ -47,15 +48,15 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    /** The root POA */
    private org.omg.PortableServer.POA rootPOA;
    // USING TIE:
-   // private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
+   private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
    // NOT TIE
    /** extends org.omg.PortableServer.Servant */
-   private ServerImpl xmlBlasterServant;
+   //private ServerImpl xmlBlasterServant;
 
    /**
     * One instance implements a server.
     *
-    * Authenticate creates a single instance of the xmlBlaster.Server.
+    * Authenticate creates a singlorg.xmlBlaster.SimpleRunLevelTeste instance of the xmlBlaster.Server.
     * Clients need first to do a login, from where they get
     * an IOR which serves them, one thread for each request.<p>
     *
@@ -99,9 +100,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          // This single servant handles all requests (with the policies from above)
 
          // USING TIE:
-         // xmlBlasterServant = new ServerPOATie(new ServerImpl(glob, orb, this));
+         xmlBlasterServant = new ServerPOATie(new ServerImpl(glob, orb, blaster));
          // NOT TIE:
-         xmlBlasterServant = new ServerImpl(glob, orb, blaster);
+         //xmlBlasterServant = new ServerImpl(glob, orb, blaster);
 
          xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
          poaMgr.activate();
@@ -293,26 +294,37 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    }
 
    public void shutdown() {
-      this.log.error(ME, "shutdown has been invoked");
+      if (log.TRACE) this.log.trace(ME, "shutdown has been invoked");
       if (this.xmlBlasterPOA != null) {
-         this.log.error(ME, "shutdown has been invoked and servant is not null");
+         if (log.TRACE) this.log.trace(ME, "shutdown has been invoked and servant is not null");
 //         xmlBlasterPOA.deactivate_object(xmlBlasterPOA.reference_to_id(xmlBlasterServant));
          // deserialize object, wait for competion
 
          try {
+            this.rootPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
             this.xmlBlasterPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.getMessage());
+            this.log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.toString());
          }
 
          try {
             xmlBlasterPOA.the_POAManager().deactivate(true, true);
-            this.xmlBlasterPOA._release();
-            this.xmlBlasterPOA = null;
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured: " + ex.getMessage());
+            this.log.warn(ME, "shutdown:exception occured deactivate(): " + ex.toString());
+         }
+         try {
+            this.xmlBlasterPOA._release();
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured _release(): " + ex.toString());
+         }
+         try {
+            this.xmlBlasterPOA.destroy(true, true);
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured destroy(): " + ex.toString());
          }
       }
    }
