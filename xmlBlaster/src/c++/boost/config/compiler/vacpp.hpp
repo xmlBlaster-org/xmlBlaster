@@ -8,7 +8,8 @@
 //  Visual Age (IBM) C++ compiler setup:
 
 #define BOOST_NO_MEMBER_TEMPLATE_FRIENDS
-
+#define BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+#define BOOST_NO_MEMBER_FUNCTION_SPECIALIZATIONS
 //
 // On AIX thread support seems to be indicated by _THREAD_SAFE:
 //

@@ -15,17 +15,29 @@
 #endif
 
 #if (__EDG_VERSION__ <= 238)
-#   define BOOST_NO_VOID_RETURNS
 #   define BOOST_NO_INTEGRAL_INT64_T
+#endif
+
+#if (__EDG_VERSION__ <= 240)
+#   define BOOST_NO_VOID_RETURNS
 #endif
 
 #if (__EDG_VERSION__ <= 241) && !defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
 #   define BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
 #endif
 
+# if !defined(__EXCEPTIONS)
+#     define BOOST_NO_EXCEPTIONS
+# endif
+
+# if !defined(__NO_LONG_LONG)
+#     define BOOST_HAS_LONG_LONG
+# endif
+
 #ifdef c_plusplus
 // EDG has "long long" in non-strict mode
 // However, some libraries have insufficient "long long" support
 // #define BOOST_HAS_LONG_LONG
 #endif
+
 

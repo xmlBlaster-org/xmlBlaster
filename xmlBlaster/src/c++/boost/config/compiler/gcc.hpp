@@ -8,7 +8,7 @@
 //  GNU C++ compiler setup:
 
 #   if __GNUC__ == 2 && __GNUC_MINOR__ == 91
-       // egcs 1.1 won't parse smart_ptr.hpp without this:
+       // egcs 1.1 won't parse shared_ptr.hpp without this:
 #      define BOOST_NO_AUTO_PTR
 #   endif
 #   if __GNUC__ == 2 && __GNUC_MINOR__ < 95
@@ -49,8 +49,8 @@
 #  error "Compiler not configured - please reconfigure"
 #endif
 //
-// last known and checked version is 3.0:
-#if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ > 0))
+// last known and checked version is 3.2:
+#if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ > 2))
 #  if defined(BOOST_ASSERT_CONFIG)
 #     error "Unknown compiler version - please run the configure tests and report the results"
 #  else

@@ -26,6 +26,20 @@
 #endif
 
 //
+// como on linux doesn't have std:: c functions:
+//
+#ifdef __COMO__
+#  define BOOST_NO_STDC_NAMESPACE
+#endif
+
+//
+// Intel on linux doesn't have swprintf in std::
+//
+#ifdef  __ICC
+#  define BOOST_NO_STDC_NAMESPACE
+#endif
+
+//
 // If glibc is past version 2 then we definitely have
 // gettimeofday, earlier versions may or may not have it:
 //

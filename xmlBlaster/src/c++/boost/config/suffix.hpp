@@ -28,10 +28,22 @@
 // no namespace issues from this.
 //
 #include <limits.h>
-# if !defined(BOOST_MSVC) && !defined(__BORLANDC__) \
+# if !defined(BOOST_HAS_LONG_LONG)                                              \
+   && !(defined(BOOST_MSVC) && BOOST_MSVC <=1300) && !defined(__BORLANDC__)     \
    && (defined(ULLONG_MAX) || defined(ULONG_LONG_MAX) || defined(ULONGLONG_MAX))
 #  define BOOST_HAS_LONG_LONG
 #endif
+#if !defined(BOOST_HAS_LONG_LONG) && !defined(BOOST_NO_INTEGRAL_INT64_T)
+#  define BOOST_NO_INTEGRAL_INT64_T
+#endif
+
+// GCC 3.x will clean up all of those nasty macro definitions that
+// BOOST_NO_CTYPE_FUNCTIONS is intended to help work around, so undefine
+// it under GCC 3.x.
+#if defined(__GNUC__) && (__GNUC__ >= 3) && defined(BOOST_NO_CTYPE_FUNCTIONS)
+#  undef BOOST_NO_CTYPE_FUNCTIONS
+#endif
+
 
 //
 // Assume any extensions are in namespace std:: unless stated otherwise:
@@ -55,7 +67,25 @@
 #  if defined(BOOST_NO_LIMITS) \
       && !defined(BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS)
 #     define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS
+#     define BOOST_NO_MS_INT64_NUMERIC_LIMITS
+#     define BOOST_NO_LONG_LONG_NUMERIC_LIMITS
 #  endif
+
+//
+// if there is no long long then there is no specialisation
+// for numeric_limits<long long> either:
+//
+#if !defined(BOOST_HAS_LONG_LONG) && !defined(BOOST_NO_LONG_LONG_NUMERIC_LIMITS)
+#  define BOOST_NO_LONG_LONG_NUMERIC_LIMITS
+#endif
+
+//
+// if there is no __int64 then there is no specialisation
+// for numeric_limits<__int64> either:
+//
+#if !defined(BOOST_HAS_MS_INT64) && !defined(BOOST_NO_MS_INT64_NUMERIC_LIMITS)
+#  define BOOST_NO_MS_INT64_NUMERIC_LIMITS
+#endif
 
 //
 // if member templates are supported then so is the
@@ -64,6 +94,14 @@
 #  if !defined(BOOST_NO_MEMBER_TEMPLATES) \
        && !defined(BOOST_MSVC6_MEMBER_TEMPLATES)
 #     define BOOST_MSVC6_MEMBER_TEMPLATES
+#  endif
+
+//
+// Without partial specialization, can't test for partial specialisation bugs:
+//
+#  if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) \
+      && !defined(BOOST_BCB_PARTIAL_SPECIALIZATION_BUG)
+#     define BOOST_BCB_PARTIAL_SPECIALIZATION_BUG
 #  endif
 
 //
@@ -95,6 +133,13 @@
 #  endif
 
 //
+// If we have a standard allocator, then we have a partial one as well:
+//
+#if !defined(BOOST_NO_STD_ALLOCATOR)
+#  define BOOST_HAS_PARTIAL_STD_ALLOCATOR
+#endif
+
+//
 // We can't have a working std::use_facet if there is no std::locale:
 //
 #  if defined(BOOST_NO_STD_LOCALE) && !defined(BOOST_NO_STD_USE_FACET)
@@ -106,6 +151,13 @@
 //
 #  if defined(BOOST_NO_STD_LOCALE) && !defined(BOOST_NO_STD_MESSAGES)
 #     define BOOST_NO_STD_MESSAGES
+#  endif
+
+//
+// We can't have a working std::wstreambuf if there is no std::locale:
+//
+#  if defined(BOOST_NO_STD_LOCALE) && !defined(BOOST_NO_STD_WSTREAMBUF)
+#     define BOOST_NO_STD_WSTREAMBUF
 #  endif
 
 //
@@ -121,6 +173,16 @@
 #  if defined(BOOST_NO_CWCHAR) && !defined(BOOST_NO_SWPRINTF)
 #     define BOOST_NO_SWPRINTF
 #  endif
+
+//
+// If Win32 support is turned off, then we must turn off
+// threading support also, unless there is some other
+// thread API enabled:
+//
+#if defined(BOOST_DISABLE_WIN32) && defined(_WIN32) \
+   && !defined(BOOST_DISABLE_THREADS) && !defined(BOOST_HAS_PTHREADS)
+#  define BOOST_DISABLE_THREADS
+#endif
 
 //
 // Turn on threading support if the compiler thinks that it's in
@@ -144,7 +206,8 @@
 // Turn threading support off if we don't recognise the threading API:
 //
 #if defined(BOOST_HAS_THREADS) && !defined(BOOST_HAS_PTHREADS)\
-      && !defined(BOOST_HAS_WINTHREADS) && !defined(BOOST_HAS_BETHREADS)
+      && !defined(BOOST_HAS_WINTHREADS) && !defined(BOOST_HAS_BETHREADS)\
+      && !defined(BOOST_HAS_MPTASKS)
 #  undef BOOST_HAS_THREADS
 #endif
 
@@ -195,14 +258,6 @@ namespace std {
   inline const _Tp& max(const _Tp& __a, const _Tp& __b) {
     return  __a < __b ? __b : __a;
   }
-#     ifdef BOOST_MSVC
-  inline long min(long __a, long __b) {
-    return __b < __a ? __b : __a;
-  }
-  inline long max(long __a, long __b) {
-    return  __a < __b ? __b : __a;
-  }
-#     endif
 }
 
 #  endif
@@ -300,4 +355,5 @@ namespace std {
 #  endif
 
 #endif
+
 

@@ -49,10 +49,10 @@
 // If the streams are not native, and we have a "using ::x" compiler bug
 // then the io stream facets are not available in namespace std::
 //
-#if !defined(_STLP_OWN_IOSTREAMS) && defined(_STLP_USE_NAMESPACES) && defined(BOOST_NO_USING_TEMPLATE)
+#if !defined(_STLP_OWN_IOSTREAMS) && defined(_STLP_USE_NAMESPACES) && defined(BOOST_NO_USING_TEMPLATE) && !defined(__BORLANDC__)
 #  define BOOST_NO_STD_LOCALE
 #endif
-#if !defined(__SGI_STL_OWN_IOSTREAMS) && defined(__STL_USE_NAMESPACES) && defined(BOOST_NO_USING_TEMPLATE)
+#if !defined(__SGI_STL_OWN_IOSTREAMS) && defined(__STL_USE_NAMESPACES) && defined(BOOST_NO_USING_TEMPLATE) && !defined(__BORLANDC__)
 #  define BOOST_NO_STD_LOCALE
 #endif
 
@@ -64,6 +64,10 @@
 #  define BOOST_NO_TEMPLATED_ITERATOR_CONSTRUCTORS
 #  define BOOST_NO_STD_ALLOCATOR
 #endif
+//
+// however we always have at least a partial allocator:
+//
+#define BOOST_HAS_PARTIAL_STD_ALLOCATOR
 
 #if !defined(_STLP_MEMBER_TEMPLATE_CLASSES)
 #  define BOOST_NO_STD_ALLOCATOR
@@ -80,18 +84,42 @@
 // but doesn't always get them all, define BOOST_NO_STDC_NAMESPACE, since our
 // workaround does not conflict with STLports:
 //
-#if defined(__STL_IMPORT_VENDOR_CSTD) || defined(__STL_USE_OWN_NAMESPACE) || defined(_STLP_IMPORT_VENDOR_CSTD) || defined(_STLP_USE_OWN_NAMESPACE)
-#  define BOOST_NO_STDC_NAMESPACE
+//
+// Harold Howe says:
+// Borland switched to STLport in BCB6. Defining BOOST_NO_STDC_NAMESPACE with
+// BCB6 does cause problems. If we detect C++ Builder, then don't define 
+// BOOST_NO_STDC_NAMESPACE
+//
+#if !defined(__BORLANDC__)
+//
+// If STLport is using it's own namespace, and the real names are in
+// the global namespace, then we duplicate STLport's using declarations
+// (by defining BOOST_NO_STDC_NAMESPACE), we do this because STLport doesn't
+// necessarily import all the names we need into namespace std::
+// 
+#  if (defined(__STL_IMPORT_VENDOR_CSTD) \
+         || defined(__STL_USE_OWN_NAMESPACE) \
+         || defined(_STLP_IMPORT_VENDOR_CSTD) \
+         || defined(_STLP_USE_OWN_NAMESPACE)) \
+      && (defined(__STL_VENDOR_GLOBAL_CSTD) || defined (_STLP_VENDOR_GLOBAL_CSTD))
+#     define BOOST_NO_STDC_NAMESPACE
+#     define BOOST_NO_EXCEPTION_STD_NAMESPACE
+#  endif
+#elif __BORLANDC__ < 0x560
+// STLport doesn't import std::abs correctly:
+#include <stdlib.h>
+namespace std { using ::abs; }
+// and strcmp/strcpy don't get imported either ('cos they are macros)
+#include <string.h>
+#ifdef strcpy
+#  undef strcpy
 #endif
-
-//
-// std::reverse_iterate behaves like VC6's under some circumstances:
-//
-#if defined (_STLP_USE_OLD_HP_ITERATOR_QUERIES)  || defined (__STL_USE_OLD_HP_ITERATOR_QUERIES)\
- || (!defined ( _STLP_CLASS_PARTIAL_SPECIALIZATION ) && !defined ( __STL_CLASS_PARTIAL_SPECIALIZATION ))
-// disable this for now, it causes too many problems, we need a better
-// fix for broken reverse iterators:
-// #  define BOOST_MSVC_STD_ITERATOR
+#ifdef strcmp
+#  undef strcmp
+#endif
+#ifdef _STLP_VENDOR_CSTD
+namespace std{ using _STLP_VENDOR_CSTD::strcmp; using _STLP_VENDOR_CSTD::strcpy; }
+#endif
 #endif
 
 //
@@ -112,8 +140,20 @@
 #  define BOOST_NO_CWTYPE
 #endif
 
+//
+// Borland ships a version of STLport with C++ Builder 6 that lacks
+// hashtables and the like:
+//
+#if defined(__BORLANDC__) && (__BORLANDC__ == 0x560)
+#  undef BOOST_HAS_HASH
+#endif
+
 
 #define BOOST_STDLIB "STLPort standard library version " BOOST_STRINGIZE(__SGI_STL_PORT)
+
+
+
+
 
 
 
