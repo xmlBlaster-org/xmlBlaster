@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.23 2002/03/18 00:31:14 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.24 2002/03/20 13:26:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -30,8 +30,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
  * </pre>
  */
 public class LoadTestSub extends TestCase implements I_Callback
@@ -302,15 +302,15 @@ public class LoadTestSub extends TestCase implements I_Callback
    }
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.LoadTestSub
+    * Invoke: java testsuite.org.xmlBlaster.LoadTestSub
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * You can use the command line option -numPublish 5000 to change the number of messages sent.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub</pre>
     */
    public static void main(String args[])
    {
