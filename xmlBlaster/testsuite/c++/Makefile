@@ -28,36 +28,36 @@ test: all
 bin:
 	$(MKDIR) bin
 
-$(BIN_DIR)/TestGet: TestGet.o
+$(BIN_DIR)/TestGet: $(LIB_DIR)/$(SHARED_LIB_NAME) TestGet.o
 ifeq ($(USE_CPP),true) 
-	$(CL) TestGet.o  -o$(BIN_DIR)/TestGet $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
+	$(CL) TestGet.o -o$(BIN_DIR)/TestGet $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 endif
 
-$(BIN_DIR)/TestSub: TestSub.o
+$(BIN_DIR)/TestSub: $(LIB_DIR)/$(SHARED_LIB_NAME) TestSub.o
 ifeq ($(USE_CPP),true) 
-	$(CL) TestSub.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/TestSub $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+	$(CL) TestSub.o -o$(BIN_DIR)/TestSub $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 endif
 
-$(BIN_DIR)/RamTest: RamTest.o
+$(BIN_DIR)/RamTest: $(LIB_DIR)/$(SHARED_LIB_NAME) RamTest.o
 ifeq ($(USE_CPP),true) 
-	$(CL) RamTest.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/RamTest $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+	$(CL) RamTest.o -o$(BIN_DIR)/RamTest $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 endif
 
-$(BIN_DIR)/TestLogin: TestLogin.o
+$(BIN_DIR)/TestLogin: $(LIB_DIR)/$(SHARED_LIB_NAME) TestLogin.o
 ifeq ($(USE_CPP),true) 
-	$(CL) TestLogin.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/TestLogin $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+	$(CL) TestLogin.o -o$(BIN_DIR)/TestLogin $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 endif
 
-$(BIN_DIR)/clientPOA: clientPOA.o
+$(BIN_DIR)/clientPOA: $(LIB_DIR)/$(SHARED_LIB_NAME) clientPOA.o
 ifeq ($(USE_CPP),true) 
-	$(CL) clientPOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientPOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+	$(CL) clientPOA.o -o$(BIN_DIR)/clientPOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 endif
 
 # Does not compile ruff@swand.lake.de 2001-09-03
-#$(BIN_DIR)/clientBOA: clientBOA.o
+#$(BIN_DIR)/clientBOA: $(LIB_DIR)/$(SHARED_LIB_NAME) clientBOA.o
 #ifeq ($(USE_CPP),true) 
 #ifeq ($(CORBA_CPP),mico)
-#	$(CL) clientBOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientBOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+#	$(CL) clientBOA.o $(CLIENT_OBJ) -o$(BIN_DIR)/clientBOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -L$(LIB_DIR) -l$(SHARED_LIB) -lstdc++
 #endif
 #endif
 

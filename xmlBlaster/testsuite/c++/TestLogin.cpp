@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -28,8 +28,7 @@ Version:   $Id: TestLogin.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
 //#include <unistd.h>
 #include <util/StopWatch.h>
 
-using namespace org::xmlBlaster;
-
+using namespace std;
 namespace org { namespace xmlBlaster {
 
 class TestLogin : public virtual I_Callback {
@@ -108,6 +107,12 @@ public:
     */
 
    void setUp(int args, char *argc[]) {
+      for (int ii=0; ii<args; ii++) {
+         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
+            usage();
+            exit(0);
+         }
+      }
       try {
          if (!log_) log_   = new util::Log(args, argc);
          if (senderConnection_) delete senderConnection_;
@@ -139,6 +144,7 @@ public:
       catch (CORBA::Exception &e) {
          log_->error(me(), to_string(e));
          cerr << to_string(e);
+         usage();
       }
    }
 
@@ -397,6 +403,18 @@ private:
          assert(0);
       }
       numReceived_ = 0;
+   }
+   void usage()
+   {
+      util::Log log_;
+      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
+      log_.plain(me(), "Usage:");
+      CorbaConnection::usage();
+      log_.usage();
+      log_.plain(me(), "Example:");
+      log_.plain(me(), "   TestLogin -iorFile /tmp/ior.dat -trace true");
+      log_.plain(me(), "----------------------------------------------------------");
    }
 };
 

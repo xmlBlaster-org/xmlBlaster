@@ -22,6 +22,7 @@
 #include <fstream.h>
 #include <string>
 
+using namespace std;
 using namespace authenticateIdl;
 using namespace serverIdl;
 

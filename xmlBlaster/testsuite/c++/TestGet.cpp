@@ -3,7 +3,7 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <strstream.h>
@@ -12,6 +12,8 @@ Version:   $Id: TestGet.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
 #include <client/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <client/PublishQosWrapper.h>
+
+using namespace std;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -67,21 +69,30 @@ public:
     * Connect to xmlBlaster and login
     */
    void setUp(int args=0, char *argc[]=0) {
+      for (int ii=0; ii<args; ii++) {
+         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
+            usage();
+            log_.exit(me(), "Good bye");
+         }
+      }
+
       try {
-         cerr << "BEFORE CONSTRUCTOR" << endl;
          corbaConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         cerr << "BEFORE LOGIN" << endl;
          corbaConnection_->login(loginName_, passwd, qos);
-         cerr << "AFTER LOGIN" << endl;
+         log_.info(me(), "Successful login");
       }
       catch (serverIdl::XmlBlasterException &ex) {
          log_.error(me(), string(ex.reason));
+         usage();
+         assert(0);
       }
       catch (CORBA::Exception &e) {
-          log_.error(me(), to_string(e));
-//          e.printStackTrace();
+         log_.error(me(), to_string(e));
+         usage();
+         // e.printStackTrace();
+         assert(0);
       }
    }
 
@@ -123,20 +134,19 @@ public:
     * The returned content is checked
     */
    void testGet() {
-      if (log_.TRACE) log_.trace(me(), "1. Get a not existing message ...");
+      if (log_.TRACE) log_.trace(me(), "1. Get a not existing message " + publishOid_ + " ...");
       try {
          string xmlKey = string("<key oid='") + publishOid_
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
-         serverIdl::MessageUnitArr*
-            msgArr = corbaConnection_->get(xmlKey, qos);
-         cerr << "get of not existing message is not possible" << endl;
+         serverIdl::MessageUnitArr* msgArr = corbaConnection_->get(xmlKey, qos);
+         log_.error(me(), "get of not existing message " + publishOid_);
          delete msgArr;
+         usage();
          assert(0);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.info(me(), string("Success, got XmlBlasterException for ") +
-                   "trying to get unknown message: " + string(e.reason));
+         log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
       }
 
       if (log_.TRACE) log_.trace(me(), "2. Publish a message ...");
@@ -158,7 +168,8 @@ public:
          log_.info(me(), "Success, published a message");
       }
       catch(serverIdl::XmlBlasterException &e) {
-         cerr << "publish - XmlBlasterException: " + string(e.reason) << endl;
+         log_.error(me(), "publish - XmlBlasterException: " + string(e.reason));
+         usage();
          assert(0);
       }
 
@@ -172,8 +183,9 @@ public:
          log_.info(me(), "Success, got the message");
          string str = (char*)&(*msgArr)[0].content[0];
          if (senderContent_ != str) {
-            cerr << "Corrupted content" << endl;
+            log_.error(me(), "Corrupted content");
             delete msgArr;
+            usage();
             assert(0);
          }
          delete msgArr;
@@ -181,7 +193,7 @@ public:
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException for trying to get ")
                     + "a message: " + string(e.reason));
-         cerr << "Couldn't get() an existing message" << endl;
+         usage();
          assert(0);
       }
    }
@@ -203,16 +215,28 @@ public:
          try {
             serverIdl::MessageUnitArr* msgArr =
                corbaConnection_->get(xmlKey, qos);
-            cerr << "get of not existing message is not possible" << endl;
+            log_.error(me(), "Got a not existing message message");
             delete msgArr;
             assert(0);
          }
          catch(serverIdl::XmlBlasterException &e) {
-            // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
+            log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
          }
       }
       string txt = string(buffer) + " not existing messages done";
       log_.info(me(), txt);
+   }
+
+   void usage()
+   {
+      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with a synchronous get()");
+      log_.plain(me(), "Usage:");
+      CorbaConnection::usage();
+      log_.usage();
+      log_.plain(me(), "Example:");
+      log_.plain(me(), "   TestGet -iorHost serverHost.myCompany.com");
+      log_.plain(me(), "----------------------------------------------------------");
    }
 };
 
@@ -227,7 +251,7 @@ int main(int args, char *argc[]) {
    testSub->testGet();
    testSub->testGetMany();
    testSub->tearDown();
-//   Log.exit(TestGet.ME, "Good bye");
+//   log_.exit(TestGet.me(), "Good bye");
    return 0;
 }
 

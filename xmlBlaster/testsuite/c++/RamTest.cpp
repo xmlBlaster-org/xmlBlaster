@@ -3,13 +3,15 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
 #include <strstream.h>
 #include <client/CorbaConnection.h>
 #include <util/StopWatch.h>
+
+using namespace std;
 
 /**
  * This client publishes 1000 different messages to measure RAM
@@ -70,6 +72,12 @@ public:
     * Connect to xmlBlaster and login
     */
    void setUp(int args=0, char *argc[]=0) {
+      for (int ii=0; ii<args; ii++) {
+         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
+            usage();
+            log_.exit(me(), "Good bye");
+         }
+      }
       try {
          senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
@@ -78,6 +86,7 @@ public:
       }
       catch (CORBA::Exception &e) {
           log_.error(me(), to_string(e));
+          usage();
       }
    }
 
@@ -101,11 +110,11 @@ public:
          try {
             strArr = senderConnection_->erase(xmlKey, qos);
             if (!strArr) {
-               cerr << "returned erased oid array == null" << endl;
+               log_.error(me(), "returned erased oid array == null");
                assert(0);
             }
             if (strArr->length() != 1) {
-               cerr << "num erased messages is wrong" << endl;
+               log_.error(me(), "num erased messages is wrong");
                assert(0);
             }
          }
@@ -167,22 +176,22 @@ public:
          serverIdl::MessageUnitArr_var
             msgArr = senderConnection_->get(xmlKey, qos);
          if (!msgArr) {
-            cerr << "returned msgArr == null" << endl;
+            log_.error(me(), "returned msgArr == null");
             assert(0);
          }
          if (msgArr->length() != 1) {
-            cerr << "msgArr.length!=1" << endl;
+            log_.error(me(), "msgArr.length!=1");
             assert(0);
          }
          serverIdl::MessageUnit msgUnit = (*msgArr)[0];
 
 
 //       if (msgUnitCont.size() == 0) {
-//          cerr << "returned msgArr[0].msgUnit == null" << endl;
+//          log_.error(me(),  "returned msgArr[0].msgUnit == null");
 //          assert(0);
 //       }
          if (msgUnit.content.length() == 0) {
-            cerr << "returned msgArr[0].msgUnit.content.length == 0" << endl;
+            log_.error(me(), "returned msgArr[0].msgUnit.content.length == 0");
             assert(0);
          }
 
@@ -210,12 +219,12 @@ public:
          out << " messages sent, average messages/second = " << avg << (char)0;
          log_.info(me(), buffer);
          if (!publishOidArr) {
-            cerr << "returned publishOidArr == null" << endl;
+            log_.error(me(), "returned publishOidArr == null");
             assert(0);
          }
 
          if (publishOidArr->length() != NUM_PUBLISH) {
-            cerr << "numPublished is wrong" << endl;
+            log_.error(me(), "numPublished is wrong");
             assert(0);
          }
 
@@ -245,6 +254,18 @@ public:
     */
    void testManyPublish() {
       testPublish();
+   }
+
+   void usage()
+   {
+      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
+      log_.plain(me(), "Usage:");
+      CorbaConnection::usage();
+      log_.usage();
+      log_.plain(me(), "Example:");
+      log_.plain(me(), "   RamTest -iorHost myHostName");
+      log_.plain(me(), "----------------------------------------------------------");
    }
 };
 

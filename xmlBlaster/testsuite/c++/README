@@ -21,22 +21,41 @@ These are examples on how to access xmlBlaster from a C++ client
 
 
 
-To run the clients:
+To run the clients, change to the 'bin' directory:
+
+   TestGet -h
+
+displays usage informations.
 
 
-Using POA:
+Using POA, passing IOR with internal http download:
+---------------------------------------------------
 
-3) Start the xmlBlaster server
+a) Start the xmlBlaster server
+
+   java org.xmlBlaster.Main
+
+
+b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
+
+   TestGet -iorHost <HostWhereXmlBlasterRuns>
+
+
+Using POA, passing IOR by file:
+-------------------------------
+
+a) Start the xmlBlaster server
 
    java org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
-4) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
+b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
 
-   ./TestGet  -ior `cat /tmp/ior.dat`
+   TestGet -iorFile /tmp/ior.dat
 
 
 Using POA (clientPOA.cpp) with a naming service:
+------------------------------------------------
 
 You need to have a running web server and set the DocumentRoot to e.g.
 

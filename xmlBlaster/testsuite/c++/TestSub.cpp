@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
@@ -19,6 +19,7 @@ Version:   $Id: TestSub.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
  * <p>
  */
 
+using namespace std;
 namespace org { namespace xmlBlaster {
 
 class TestSub: public I_Callback {
@@ -67,6 +68,12 @@ private:
     * Connect to xmlBlaster and login
     */
    void setUp(int args=0, char *argc[]=0) {
+      for (int ii=0; ii<args; ii++) {
+         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
+            usage();
+            log_.exit(me(), "Good bye");
+         }
+      }
       try {
          senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
@@ -75,6 +82,7 @@ private:
       }
       catch (CORBA::Exception &e) {
          log_.error(me(), string("Login failed: ") + to_string(e));
+         usage();
          assert(0);
       }
    }
@@ -250,6 +258,7 @@ private:
          assert(0);
       }
       messageArrived_ = true;
+      log_.exit(me(), "Good bye");
    }
 
 
@@ -272,6 +281,17 @@ private:
       ostrstream out(buffer, 255);
       out << "Timeout of " << timeout << " milliseconds occured" << (char)0;
       log_.warn(me(), buffer);
+   }
+   void usage()
+   {
+      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with subscribe()");
+      log_.plain(me(), "Usage:");
+      CorbaConnection::usage();
+      log_.usage();
+      log_.plain(me(), "Example:");
+      log_.plain(me(), "   TestSub -iorHost myHost.myCompany.com -iorPort 7609 -trace true");
+      log_.plain(me(), "----------------------------------------------------------");
    }
 };
 

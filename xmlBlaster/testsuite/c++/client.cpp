@@ -2,6 +2,7 @@
 #include <CORBA-SMALL.h>
 #include "xmlBlaster.h"    // xmlBlaster.h generated from 'xmlBlaster.idl'
 
+using namespace std;
 using namespace authenticateIdl;
 using namespace serverIdl;
 
