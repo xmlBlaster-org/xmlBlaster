@@ -97,6 +97,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /** this I_XmlBlasterAccess is valid until a 'leaveServer' invocation is done.*/
    private boolean isValid = true;
 
+   private boolean firstWarn = true;
+
    /**
     * Create an xmlBlaster accessor. 
     * Please don't create directly but use the factory instead:
@@ -731,7 +733,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publishArr");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
-      log.warn(ME, "Publishing arrays is not atomic implemented - TODO");
+      if (this.firstWarn) {
+         log.warn(ME, "Publishing arrays is not atomic implemented - TODO");
+         this.firstWarn = false;
+      }
       PublishReturnQos[] retQos = new PublishReturnQos[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MsgQueuePublishEntry entry  = new MsgQueuePublishEntry(glob, msgUnitArr[ii],
