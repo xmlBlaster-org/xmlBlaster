@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.replication' type='NEW' prio='LOW' status="OPEN">
+   <topic>XmlBlaster provides a replication mechanism following the master/slave ticket paradigm</topic>
+   <description>
+      If multiple xmlBlaster servers are running, every message is assigned to exactly one
+      master server. The different xmlBlaster servers login to each other like other clients
+      and act as slave to messages which they are not master from.
+      This login is done in 'lazy' mode. As soon as a client requests a message
+      for which the local server is not master, this server does a login to the master
+      and subscribes the message from there. The message is than cached locally and further
+      local requests from clients are handled locally.
+      An adjustable expire date clears the cached message.
+      If a message is published from a data source to a slave server, the message is routed directly
+      to the master server. If the master server is currently offline, it is queued
+      for this 'client' until it logs in.
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 04 03</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
