@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.4 1999/12/12 16:48:02 ruff Exp $
+Version:   $Id: TestSub.java,v 1.5 1999/12/12 17:39:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,6 +37,7 @@ public class TestSub extends TestCase
    private Server xmlBlaster = null;
    private static String ME = "Tim";
    private String[] args;
+   private boolean messageArrived = false;
 
    private String subscribeOid;
    private String publishOid = "";
@@ -46,10 +47,10 @@ public class TestSub extends TestCase
    private int numReceived = 0;         // error checking
 
    /**
-    * Constructs the TestSub object. 
+    * Constructs the TestSub object.
     * <p />
     * @param testName  The name used in the test suite
-    * @param loginName The name to login for the xmlBlaster
+    * @param loginName The name to login to the xmlBlaster
     * @param args      Array of command line start parameters
     */
    public TestSub(String testName, String loginName, String[] args)
@@ -171,22 +172,23 @@ public class TestSub extends TestCase
    public void testPublishAfterSubscribeXPath()
    {
       testSubscribeXPath();
-      Util.delay(1000);                                             // Wait some time for callback to arrive ...
+      Util.delay(1000L);                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       testPublish();
-      Util.delay(1000);                                             // Wait some time for callback to arrive ...
+      waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
    }
 
-
+   
    /**
     * Method is used by TestRunner to load these tests
     */
-   public static Test suite() {
+   public static Test suite()
+   {
        TestSuite suite= new TestSuite();
 
-       String[] args = new String[0];  // !!! dummy?
+       String[] args = new String[0];  // dummy
        String loginName = "Tim";
 
        suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName, args));
@@ -200,8 +202,7 @@ public class TestSub extends TestCase
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
-      Log.info(ME, "Receiving update of " + messageUnitArr.length + " message ...");
-      if (Log.TRACE) Log.trace(ME, "Receiving update of " + messageUnitArr.length + " message ...");
+      if (Log.CALLS) Log.calls(ME, "Receiving update of " + messageUnitArr.length + " message ...");
 
       if (messageUnitArr.length != 0)
          numReceived += messageUnitArr.length;
@@ -227,6 +228,34 @@ public class TestSub extends TestCase
          Log.plain("UpdateQoS", updateQoS.printOn().toString());
          Log.info(ME, "Received message from publisher " + updateQoS.getSender());
       }
+
+      messageArrived = true;
+   }
+
+
+   /**
+    * Little helper, waits until the variable 'messageArrive' is set
+    * to true, or returns when the given timeout occurs. 
+    * @param timeout in milliseconds
+    */
+   private void waitOnUpdate(final long timeout)
+   {
+      long pollingInterval = 50L;  // check every 0.05 seconds
+      if (timeout < 50)  pollingInterval = timeout / 10L;
+      long sum = 0L;
+      while (!messageArrived) { 
+         try {
+            Thread.currentThread().sleep(pollingInterval);
+         }
+         catch( InterruptedException i)
+         {}
+         sum += pollingInterval;
+         if (sum > timeout) {
+            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            break;
+         }
+      }
+      messageArrived = false;
    }
 
 
