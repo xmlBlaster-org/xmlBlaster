@@ -121,6 +121,11 @@ using namespace org::xmlBlaster::util::qos::address;
       text += string("                       The queue plugin type.\n");
       text += string("   -queue/connection/maxBytes [" + lexical_cast<std::string>(DEFAULT_bytesDefault) + "].\n");
       text += string("                       The maximum size in bytes of this queue.\n");
+#     ifdef XMLBLASTER_PERSISTENT_QUEUE
+      text += string("SQLite specific setting:\n");
+      text += string("   -queue/connection/url [xmlBlasterClientCpp.db].\n");
+      text += string("                       The location and file name of the database.\n");
+#     endif
     //text += string("   -queue/connection/expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += string("   -queue/connection/onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += string("   -queue/connection/onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
