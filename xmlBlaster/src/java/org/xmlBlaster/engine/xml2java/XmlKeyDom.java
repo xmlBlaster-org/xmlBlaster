@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.10 2000/12/26 14:56:41 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.11 2001/01/30 14:02:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -256,9 +256,31 @@ public class XmlKeyDom implements I_MergeDomNode
       offset += extraOffset;
 
       sb.append(offset + "<XmlKeyDom>");
+      /*
+      // import java.io.IOException;
+      // import java.io.StringWriter;
+      // import org.apache.xalan.xpath.xml.FormatterToXML;
+      // import org.apache.xml.serialize.OutputFormat;
+      try
+      {
+         StringWriter stringWriter = new StringWriter();
+         FormatterToXML serializer = new FormatterToXML(stringWriter);
+         OutputFormat xmlOutputFormat = new OutputFormat();
+         xmlOutputFormat.setOmitXMLDeclaration(true);
+         xmlOutputFormat.setIndent(true);
+         xmlOutputFormat.setIndentAmount(2);
+         serializer.setOutputFormat(xmlOutputFormat);
+         serializer.serialize(xmlKeyDoc);
+      }
+      catch (IOException ioException)
+      {
+         ioException.printStackTrace();
+         // handle exception
+      }
+      */
       try {
          java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).write(out/*, encoding*/); // !!!
+         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).write(out); //, encoding); // !!!
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + "   " + st.nextToken());
