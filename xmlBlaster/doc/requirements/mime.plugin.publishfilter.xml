@@ -28,18 +28,23 @@
       Filter Features:
       </p>
       <ul>
+
       <li>MIME based plugin selection<br />
       The plugin you code has to supply MIME types which it can handle. Only messages of this
       mime type are directed to the plugin. The mime type "*" registers the plugin for
       all message MIME types.
       </li>
+
       <li>The filter intercepts published messages<br />
       When a client invokes publish() to send a message to xmlBlaster, the message
       calls the appropriate plugin when it arrives in the server.<br />
       This happens before xmlBlaster checks if it needs to be sent to another cluster node
       and before xmlBlaster stores or processes it.<br />
-      Publish/Subscribe and PtP messages are equally checked.
+      Publish/Subscribe and PtP messages are equally checked.<br />
+      Internal messages are send to the filter as well, usually you should just ignore
+      them (see example in PublishLenFilter).
       </li>
+
       <li>Allowed actions with a message<br />
       You may do following actions with the new message:
       <ol>
@@ -56,12 +61,18 @@
             as the problems which may ocure are not analyzed yet.</li>
       </ol>
       </li>
+
       <li>Multiple filters per subscription<br />
       Multiple filter plugins can be specified for each published message.
       They are sequentially executed and if
       one filter rejects (the intercept() method returns no "" or "OK") the message
       is not accepted. The filters are logically AND connected.
       </li>
+
+      <li>Filter in cluster environment<br />
+      The filter is applied before the message is forwarded from a slave
+      node to its master node. So you can suppress cluster messages in the slave
+      already.
       </ul>
       <p>
       </p>
@@ -103,7 +114,7 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
