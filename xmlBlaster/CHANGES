@@ -91,6 +91,8 @@ Changes for 0.79dev [xxx, xx 200x]
     scripts and replace to the new syntax.
     
   - Updated to JacORB_1_4_1
+    -> NO: moved back to 1.3.30, the new version blocked
+	 in some cases.
 
   - Some minor, incompatible changes to the C++ xmlBlaster client lib
     * There is now a CORBA independend util::MessageUnit
