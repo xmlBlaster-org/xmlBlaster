@@ -388,6 +388,7 @@ print "\nLogout done, bye.\n";
       <comment>Tests the publish method invocation</comment>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPub</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPtD</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestPtPSubscribeable</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.PublishTest</test>
       <test tool="SUITE">org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest</test>
       <test tool="SUITE">org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest</test>
