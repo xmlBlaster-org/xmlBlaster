@@ -20,6 +20,8 @@ static const char *subscribeToken = 0;
 static char *queryType;
 static int message_counter = 1;
 static long updateSleep = 0l;
+static int64_t startTimestamp = 0ll; /* In nano sec */
+static bool verbose = true;
 
 /**
  * Here we receive the callback messages from xmlBlaster
@@ -32,12 +34,30 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    if (xa != 0) ;  /* Supress compiler warning */
 
+   if (startTimestamp == 0ll)
+      startTimestamp = getTimestamp();
+
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
-   
-      printf("\n[client] CALLBACK update(): Asynchronous message [%d] update arrived:%s\n",
-             message_counter++, xml);
-      /*printf("arrived message :%d\n",message_counter++);*/
+
+      const int modulo = 100;
+      if ((message_counter % modulo) == 0) {
+         int64_t endTimestamp = getTimestamp();
+         int rate = (int)(((int64_t)message_counter*1000*1000*1000)/(endTimestamp-startTimestamp));
+         const char *persistent = (strstr(xml, "<persistent>true</persistent>")!=NULL||strstr(xml, "<persistent/>")!=NULL) ? "persistent" : "transient";
+         xa->log(xa->logUserP, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_INFO, __FILE__,
+             "Asynchronous %s message [%d] update arrived: average %d messages/second\n",
+             persistent, message_counter, rate);
+      }
+
+      if (verbose) {
+         printf("\n[client] CALLBACK update(): Asynchronous message [%d] update arrived:%s\n",
+                message_counter, xml);
+      }
+
+      message_counter++;
+
+      /*printf("arrived message :%d\n",message_counter);*/
       xmlBlasterFree(xml);
       msgUnitArr->msgUnitArr[i].responseQos = 
                   strcpyAlloc("<qos><state id='OK'/></qos>");
@@ -99,6 +119,7 @@ int main(int argc, char** argv)
       exit(EXIT_FAILURE);
    }
 
+   verbose = xa->props->getBool(xa->props, "verbose", verbose);
    updateSleep = xa->props->getLong(xa->props, "updateSleep", 0L);
    updateExceptionErrorCode = xa->props->getString(xa->props, "updateException.errorCode", 0); /* "user.clientCode" */
    updateExceptionMessage = xa->props->getString(xa->props, "updateException.message", 0);  /* "I don't want these messages" */
