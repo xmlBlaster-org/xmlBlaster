@@ -136,7 +136,7 @@ public class SubjectInfo implements I_AdminSubject
       this.glob = glob;
       this.log = this.glob.getLog("auth");
       String prae = glob.getLogPrefix();
-      this.subjectName = new SessionName(glob, glob.getAdminId(), loginName);
+      this.subjectName = new SessionName(glob, glob.getNodeId(), loginName);
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.uptime = System.currentTimeMillis();
       this.securityCtx = securityCtx;
