@@ -9,6 +9,13 @@ fi
 
 CLASSPATH=lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPATH
 
+CLASSPATH=lib/connector.jar:$CLASSPATH
+CLASSPATH=lib/jaas.jar:$CLASSPATH
+CLASSPATH=lib/jta-spec1_0_1.jar:$CLASSPATH
+CLASSPATH=lib/jms.jar:$CLASSPATH
+CLASSPATH=lib/ejb2.0.jar:$CLASSPATH
+CLASSPATH=lib/jndi-jdk1_3_1.jar:$CLASSPATH
+
 CLASSPATH=lib/parser.jar:lib/jaxp.jar:$CLASSPATH
 CLASSPATH=lib/idl.jar:lib/jacorb.jar:$CLASSPATH
 CLASSPATH=lib/concurrent.jar:$CLASSPATH
