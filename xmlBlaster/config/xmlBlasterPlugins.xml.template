@@ -38,8 +38,8 @@
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
 
    <plugin id='protocol:JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='5' />
-      <action do='STOP' onShutdownRunlevel='2' sequence='1'/>   
+      <action do='LOAD' onStartupRunlevel='4' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='1'/>   
    </plugin>
 
    <!-- ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,
