@@ -500,13 +500,11 @@ Else add it manually.
   <target name="compileCppExe">
      <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
 
-     <!-- Access with <libset refid="libs"/> does not work yet: -->
-     <!-- libset id="libs"> 
+     <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
         <libpath location="${CORBACPP_HOME}/lib"/>
-        <fileset dir="${CORBACPP_HOME}/lib" includes="*mico${CORBACPP_VER}.*,*micocoss${CORBACPP_VER}.*" />
-        <fileset dir="${XMLCPP_HOME}/lib" includes="*xerces-c${XMLCPP_VER}.*" />
-        <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*" />
-     </libset -->
+        <libpath location="${XMLCPP_HOME}/lib"/>
+        <libpath location="${lib.dir}"/>
+     </libset>
 
      <cc debug="true" link="executable"
          outfile="${testsuite.dir}/c++/bin/${exeName}"
@@ -519,11 +517,7 @@ Else add it manually.
         <includepath location="${src.cpp.dir}" />
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-           <libpath location="${CORBACPP_HOME}/lib"/>
-           <libpath location="${XMLCPP_HOME}/lib"/>
-           <libpath location="${lib.dir}"/>
-        </libset>
+        <libset refid="libs"/>
         <defineset>
            <define name="MICO" value="1" />
         </defineset>
