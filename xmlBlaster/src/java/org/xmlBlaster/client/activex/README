@@ -1,0 +1,50 @@
+Access bean for Windows ActiveX components, 2004-03-09
+
+This is a first step, the code is not functional yet!
+
+With this control you can access xmlBlaster from C#
+or VisualBasic which calls a client side java bean
+which again connects to the xmlBlaster server.
+All invocations are done with Micheles xml scripting
+client, see
+
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+  http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html
+
+PRECOND:
+
+ It seems to work only with the ActiveX bridge from JDK 1.5 or higher.
+ JDK 1.4 failed on my Windows XP.
+
+INSTALL:
+
+ First you need to create a dll and register it:
+
+   build -DJRE_HOME=C:\PROGRA~1\Java\j2re1.5.0 -DJVM.target=1.4 activex
+
+ Now you find all generated files under
+
+   C:\PROGRA~1\Java\j2re1.5.0\activex
+
+ and the control is registered
+
+   regedit -> HKEY_CLASSES_ROOT
+           -> CLSID
+           -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
+           -> XmlScriptAccess Bean Control
+
+DEMO:
+
+  A C# demo client is under xmlBlaster\demo\activex 
+
+
+TODO:
+
+- Finish the work
+
+- Change Class-Path in manifest.activex
+  and add the jar files
+
+- Implement callback events
+
+Marcel Ruff

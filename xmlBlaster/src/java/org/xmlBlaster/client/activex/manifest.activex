@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: org.xmlBlaster.client.activex.XmlScriptAccess
+Name: org.xmlBlaster.client.activex.XmlScriptAccess.class
+Class-Path: C:\Marcel\xmlBlaster\lib\xmlBlaster.jar
+Java-Bean: True
