@@ -86,6 +86,10 @@ Thread::Thread()
 
 Thread::~Thread() 
 {
+delete thread_;
+delete runner_;
+runner_ = NULL;
+
    // runner_.shutdown(); // set the owner to NULL
 /*
    delete thread_;
