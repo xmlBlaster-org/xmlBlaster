@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.25 2000/02/28 18:39:49 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.26 2000/03/31 11:24:49 roth Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -20,6 +20,7 @@ import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
 import jacorb.poa.gui.beans.FillLevelBar;
+import java.lang.*;
 
 
 /**
@@ -98,6 +99,21 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    public MainGUI(String[] args)
    {
+      // set the application icon
+      java.net.URL 	oUrl;
+      oUrl = this.getClass().getResource("AppIcon.gif");
+      Image img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
+      if(img != null)
+      {
+        this.setIconImage(img);
+        System.out.println(img.toString());
+      }
+      else
+      {
+        System.out.println("AppIcon.gif not found");
+      }
+
+
       setTitle("XmlBlaster Control Panel");
       this.args = args;
       init();
