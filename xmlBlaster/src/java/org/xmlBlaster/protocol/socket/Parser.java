@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.21 2002/03/31 13:21:26 ruff Exp $
+Version:   $Id: Parser.java,v 1.22 2002/03/31 20:36:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -471,10 +471,10 @@ public class Parser
       }
 
       if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
-      if (msgLength < NUM_FIELD_LEN)
-         throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
-      else if (msgLength == NUM_FIELD_LEN)
+      if (msgLength == NUM_FIELD_LEN)
          return null; // An empty message only contains the header 10 bytes
+      else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
+         throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
 
 
       // Now we know the msgLength, lets extract the complete message ...
