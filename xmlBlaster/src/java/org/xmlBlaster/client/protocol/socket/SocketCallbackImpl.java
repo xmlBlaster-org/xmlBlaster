@@ -194,7 +194,14 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public synchronized void shutdown() {
       this.running = false;
-      try { iStream.close(); } catch(IOException e) { log.warn(ME, e.toString()); }
+      if (this.iStream != null) {
+         try {
+            this.iStream.close();
+            this.iStream = null;
+         } catch(IOException e) {
+            log.warn(ME, e.toString());
+         }
+      }
       try {
          if (responseListenerMap.size() > 0) {
             java .util.Iterator iterator = responseListenerMap.keySet().iterator();
