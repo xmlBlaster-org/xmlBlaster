@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xx, xxx 2003]
+================================
+
+ o Fixed memory leak in JDBC layer (clear SQLWarnings)
+   Has impact on persistent messages only
+
 Changes for 0.846 [26, Apr 2003]
 ================================
 
