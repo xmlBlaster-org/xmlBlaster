@@ -35,7 +35,7 @@
          <joe>
             <uptime>10050</uptime>
             <cbQueueNumMsgs>247</cbQueueMumMsgs>
-            <cbQueueMaxMsg>1000</cbQueueMaxMsg>
+            <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
 
             <numSessions>2</numSessions>
             <maxSessions>10</maxSessions>
@@ -43,7 +43,7 @@
             <ses17>
                <uptime>10050</uptime>
                <cbQueueNumMsgs>37</cbQueueNumMsgs>
-               <cbQueueMaxMsg>1000</cbQueueMaxMsg>
+               <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
                <cbQueueThreshold>80</cbQueueThreshold> <!-- 80% -->
                <cbQueueThresholdOverflow>numMsg=199,
                  maxMsg=203</cbQueueThresholdOverflow> <!-- a trap -->
@@ -214,7 +214,7 @@
             <td>The uptime of all users (in seconds)</td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cbQueueMaxMsg=30000</td>
+            <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
             <td>Change to max. callback queue size of joe-session-ID 17 to 30 thousand messages</td>
          </tr>
          <tr>
@@ -331,7 +331,7 @@
             <td>Description</td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cbQueueMaxMsg=30000</td>
+            <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
             <td>
                <pre><![CDATA[
 <qos>
@@ -497,7 +497,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
