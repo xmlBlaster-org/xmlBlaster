@@ -364,7 +364,7 @@ namespace client { namespace protocol { namespace corba {
  * Returns the naming service reference
  */
          CosNaming::NamingContext_ptr getNamingService() {
-            return CosNaming::NamingContext::_duplicate(static_cast<CosNaming::NamingContext_ptr>(namingContext_));
+            return CosNaming::NamingContext::_duplicate(static_cast<CosNaming::NamingContext_ptr>(namingContext_.in()));
          }
 
 
