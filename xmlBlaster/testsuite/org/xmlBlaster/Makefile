@@ -27,6 +27,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestSub.class \
     $(CLASS_DIR)/TestGet.class \
     $(CLASS_DIR)/TestUnSub.class \
+    $(CLASS_DIR)/TestInvocationRecorder.class \
     $(CLASS_DIR)/TestAll.class
 #------------------------------------------------------------------------------
 
