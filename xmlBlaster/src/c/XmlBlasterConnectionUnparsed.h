@@ -45,7 +45,7 @@ typedef void  ( * XmlBlasterConnectionUnparsedLogging)(XMLBLASTER_LOG_LEVEL curr
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
  */
-struct XmlBlasterConnectionUnparsedStruct {
+struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    int argc;
    char **argv;
    Properties *props;
@@ -76,17 +76,17 @@ struct XmlBlasterConnectionUnparsedStruct {
  * Get an instance of this to get xmlBlaster access. 
  * NOTE: Every call creates a new and independent client access instance to xmlBlaster
  */
-extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv);
+Dll_Export extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv);
 
 /**
  * Free your instance after accessing xmlBlaster. 
  */
-extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xmlBlasterAccess);
+Dll_Export extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xmlBlasterAccess);
 
 /**
  * Help usage
  */
-extern const char *xmlBlasterConnectionUnparsedUsage();
+Dll_Export extern const char *xmlBlasterConnectionUnparsedUsage();
 
 
 #ifdef __cplusplus
