@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.17 2002/03/13 19:46:18 ruff Exp $
+Version:   $Id: Parser.java,v 1.18 2002/03/19 21:32:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -25,7 +25,7 @@ import java.util.Vector;
  * This class creates and parses raw byte[] messages which can be used
  * to transfer over a socket connection.
  * <br />
- * Parser instances may be reused, but are not reentrant (Convert::index is currently a 'global' variable)
+ * Parser instances may be reused, but are NOT reentrant (there are many 'global' variables)
  * <br />
  * Please read the requirement specification
  * <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirement/protocol.socket.html">protocol.socket</a>
@@ -80,6 +80,7 @@ public class Parser
    public static final int NUM_FIELD_LEN = 10;
    public static final int FLAG_FIELD_LEN = 6;
    public static final int MAX_STRING_LEN = Integer.MAX_VALUE;
+   public static final String EMPTY_STRING = "";
 
    public static final byte CHECKSUM_ADLER_BYTE = (byte)65; // 'A'
    public static final byte COMPRESSED_GZIP_BYTE = (byte)90; // 'Z'
@@ -87,10 +88,10 @@ public class Parser
    public static final byte RESPONSE_BYTE = (byte)82; // RESPONSE_TYPE = "R";
    public static final byte EXCEPTION_BYTE = (byte)69; // EXCEPTION_TYPE = "E";
    public static final byte VERSION_1_BYTE = (byte)49;  // '1'
-   private static final byte[] EMPTY10 = new String("          ").getBytes();;
+   private static final byte[] EMPTY10 = new String("          ").getBytes();
    private static final byte NULL_BYTE = (byte)0;
 
-   private long msgLength;
+   //private int msgLength;
 
    /** flag field number one */
    private boolean checksum;
@@ -123,7 +124,9 @@ public class Parser
    protected long index = 0L;
 
    // create only once, for low level parsing
-   private ByteArray byteArray = new ByteArray(126);
+   //private ByteArray byteArray = new ByteArray(256);
+   private Buf buf = new Buf();
+   private byte[] first10 = new byte[NUM_FIELD_LEN];
 
 
    /**
@@ -159,7 +162,7 @@ public class Parser
     */
    public void initialize() {
       index = 0L;
-      msgLength = -1L;
+      //msgLength = -1;
       checksum = false;
       compressed = false;
       type = INVOKE_BYTE; // request
@@ -172,6 +175,11 @@ public class Parser
       lenUnzipped = -1L;
       checkSumResult = -1L;
       msgVec.clear();
+   }
+
+   public int getNumMessages()
+   {
+      return msgVec.size();
    }
 
    /**
@@ -429,6 +437,71 @@ public class Parser
    }
 
    /**
+    * Blocks on socket until a complete message is read. 
+    * @return A complete message in a byte[].
+    *         NOTE: The first 10 bytes are not initialized.<br />
+    *         null: An empty message which only contains the header 10 bytes
+    */
+   public final Buf readOneMsg(InputStream in) throws IOException
+   {
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Entering readOneMsg(), waiting on inputStream");
+
+      // First we extract the first 10 bytes to get the msgLength ...
+      int remainLength = NUM_FIELD_LEN;
+      int lenRead;
+      {
+         int off = 0;
+         while ((lenRead = in.read(first10, off, remainLength)) != -1) {
+            remainLength -= lenRead;
+            if (remainLength == 0) break;
+            off += lenRead;
+            //Log.info(ME, "Receive: lenRead=" + lenRead + " off=" + off + " remainLength=" + remainLength);
+         }
+      }
+
+      int msgLength = 0;
+      if (lenRead == -1)
+         throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
+
+      try {
+         msgLength = Integer.parseInt((new String(first10, 0, NUM_FIELD_LEN)).trim());
+      }
+      catch (NumberFormatException e) {
+         throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
+      }
+
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+      if (msgLength < NUM_FIELD_LEN)
+         throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
+      else if (msgLength == NUM_FIELD_LEN)
+         return null; // An empty message only contains the header 10 bytes
+
+
+      // Now we know the msgLength, lets extract the complete message ...
+      if (buf.buf == null || buf.buf.length != msgLength) {
+         buf.buf = null;
+         buf.buf = new byte[msgLength];
+         buf.offset = 0;
+      }
+      buf.offset = NUM_FIELD_LEN;
+      remainLength = msgLength - buf.offset;
+      while ((lenRead = in.read(buf.buf, buf.offset, remainLength)) != -1) {
+         remainLength -= lenRead;
+         if (remainLength == 0) break;
+         buf.offset += lenRead;
+         //Log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
+      }
+
+      if (lenRead == -1)
+         throw new IOException("Can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
+
+      if (remainLength != 0) // assert
+         throw new IOException("Internal error, can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
+
+      return buf;
+   }
+
+   /**
     * This parses the raw message from an InputStream (typically from a socket).
     * Use the get...() methods to access the data.
     */
@@ -436,70 +509,67 @@ public class Parser
 
       initialize();
 
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Entering wait on inputStream");
-      msgLength = toLong(in);
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+      Buf buf = readOneMsg(in); // blocks until one message is read
 
-      if (msgLength == 10) {
+      if (buf == null) {
          setMethodName(Constants.PING);
          return; // The shortest ping ever
       }
 
-      index++;
-      checksum = (in.read() > 0);
+      checksum = (buf.buf[NUM_FIELD_LEN] > 0);
+      if (checksum) {
+         Log.warn(ME, "Ignoring checksum flag");
+      }
+      compressed = (buf.buf[NUM_FIELD_LEN+1] > 0);
+      if (compressed) {
+         Log.warn(ME, "Ignoring compress flag");
+      }
+      type = buf.buf[NUM_FIELD_LEN+2];
+      byte4 = buf.buf[NUM_FIELD_LEN+3];
+      byte5 = buf.buf[NUM_FIELD_LEN+4];
+      version = (int)buf.buf[NUM_FIELD_LEN+5] - 48;
+      if (version != 1) {
+         Log.warn(ME, "Ignoring version=" + version + " on 1 is supported");
+      }
 
-      index++;
-      compressed = (in.read() > 0);
+      buf.offset = NUM_FIELD_LEN+FLAG_FIELD_LEN;
 
-      index++;
-      type = (byte)in.read();
+      requestId = toString(buf);
+      methodName = toString(buf);
+      sessionId = toString(buf);
 
-      index++;
-      byte4 = (byte)in.read();
-
-      index++;
-      byte5 = (byte)in.read();
-
-      index++;
-      version = in.read() - 48;
-
-      // !!!! TODO Performance:
-      // byte[] buf = new byte[msgLen];
-      // while ((len=read(buf, msgLen) != -1) ...
-      
-      requestId = toString(in);
-      methodName = toString(in);
-      sessionId = toString(in);
-
-      lenUnzipped = toLong0(in, -1);
+      lenUnzipped = toInt0(buf, -1);
+      if (lenUnzipped != -1) {
+         Log.warn(ME, "Ignoring given unzipped message length");
+      }
 
       String qos = null;
       String xmlKey = null;
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
-         qos = toString(in);
+         qos = toString(buf);
          MessageUnit msgUnit = new MessageUnit(null, null, qos);
          addMessage(msgUnit);
-         if (index >= msgLength) break;
+         if (buf.offset >= buf.buf.length) break;
 
-         msgUnit.setKey(toString(in));
-         if (index >= msgLength) break;
+         msgUnit.setKey(toString(buf));
+         if (buf.offset >= buf.buf.length) break;
 
          if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit content index=" + index);
-         msgUnit.setContent(toByte(in));
-         if (index >= msgLength) break;
+         msgUnit.setContent(toByte(buf));
+         if (buf.offset >= buf.buf.length) break;
       }
 
       if (checksum)
-         checkSumResult = toLong0(in, -1);
+         checkSumResult = toLong0(buf, -1);
 
-      if (index != msgLength) {
-         String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength + " we need to disconnect the client, can't recover.";
+      if (buf.offset != buf.buf.length) {
+         String str = "Format mismatch, read index=" + buf.offset + " expected message length=" + buf.buf.length + " we need to disconnect the client, can't recover.";
          throw new IOException(str);
       }
+
       if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "messageUnit OK index=" + index);
    }
-
 
    /**
     * Calculates the length of user data including null bytes and len field
@@ -621,8 +691,7 @@ public class Parser
          }
 
          // Finally we know the overall length, write it to the header:
-         msgLength = out.size();
-         byte[] msgLengthB = new String(""+msgLength).getBytes();
+         byte[] msgLengthB = new String(""+out.size()).getBytes();
          out.insert(EMPTY10.length - msgLengthB.length, msgLengthB);
          return out.toByteArray();
       }
@@ -634,83 +703,87 @@ public class Parser
    }
 
    /**
-    * Converts max. 10 bytes from InputStream to a long. 
-    * <br />
-    * If a null is read before
-    * 10 bytes are read, parsing is stopped there.
-    */
-   public final long toLong(InputStream in) throws IOException {
-      byteArray.reset();
-      for (int ii=0; ii<NUM_FIELD_LEN; ii++) {
-         index++;
-         int val = in.read();
-         if (val == 0)
-            break; // Field is terminated by null
-         if (val == -1)
-            throw new IOException("Can't read expected " + NUM_FIELD_LEN + " bytes from socket, only " + ii + " received");
-         byteArray.write(val);
-      }
-      try {
-         return Long.parseLong(byteArray.toString().trim());
-      }
-      catch (NumberFormatException e) {
-         throw new IOException("Format is corrupted '" + byteArray.toString() + "', expected integral value");
-      }
-   }
-
-   /**
     * Reads the binary content of a message. First we parse the long value which
     * holds the content length, than we retrieve the binary content. 
     */
-   public final byte[] toByte(InputStream in) throws IOException {
-      byteArray.reset();
-      long len = toLong0(in, 0L);
-      if (len >= Integer.MAX_VALUE) throw new IllegalArgumentException("Length of data is bigger " + Integer.MAX_VALUE + " bytes");
+   public final byte[] toByte(Buf buf) throws IOException {
+      int len = toInt0(buf, 0);
       byte[] b = new byte[(int)len];
       if (len == 0L)
          return b;
-      {
-         in.read(b, 0, (int)len);
-         index += len;
-      }
+      
+      System.arraycopy(buf.buf, buf.offset, b, 0, len);
+      buf.offset += len;
       return b;
    }
 
    /**
-    * Converts bytes from InputStream until \0 to a long
+    * Converts bytes from byte[] until \0 to a long
     */
-   public final long toLong0(InputStream in, long defaultVal) throws IOException {
-      String tmp = toString(in);
+   public final long toLong0(Buf buf, long defaultVal) throws IOException {
+      String tmp = toString(buf).trim();
       if (tmp == null || tmp.length() < 1)
          return defaultVal;
       try {
-         return Long.parseLong(tmp.trim());
+         return Long.parseLong(tmp);
       }
       catch (NumberFormatException e) {
-         throw new IOException("Format is corrupted '" + byteArray.toString() + "', expected integral value");
+         e.printStackTrace();
+         Log.error(ME, "toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         throw new IOException("Format is corrupted '" + dump() + "', expected long integral value");
       }
+   }
+
+   /**
+    * Converts bytes from byte[] until \0 to an int
+    */
+   private final int toInt0(Buf buf, int defaultVal) throws IOException {
+      String tmp = toString(buf).trim();
+      if (tmp == null || tmp.length() < 1)
+         return defaultVal;
+      try {
+         return Integer.parseInt(tmp.trim());
+      }
+      catch (NumberFormatException e) {
+         e.printStackTrace();
+         Log.error(ME, "toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         throw new IOException("Format is corrupted '" + dump() + "', expected integral value");
+      }
+   }
+
+   private String niceAndShort(String tmp)
+   {
+      if (tmp == null)
+         return "null";
+      if (tmp.length() > 50)
+         return tmp.substring(0,50) + " ...";
+      return tmp;
    }
 
    /**
     * Extracts string until next null byte '\0'
     */
-   public final String toString(InputStream in) throws IOException {
-      byteArray.reset();
-      for (int ii=0; ii<MAX_STRING_LEN; ii++) {
-         index++;
-         int val = in.read();
-         if (val == 0)
-            break; // end of string
-         if (val == -1)
-            throw new IOException("Can't read expected string '" + byteArray.toString()+ "' to its end");
-         byteArray.write(val);
+   private final String toString(Buf buf) throws IOException {
+      int startOffset = buf.offset;
+      for (; buf.offset<buf.buf.length; buf.offset++) {
+         if (buf.buf[buf.offset] == 0) {
+            if (startOffset == buf.offset) {
+               buf.offset++;  // overread the 0
+               return EMPTY_STRING;
+            }
+            buf.offset++;  // overread the 0
+            return new String(buf.buf, startOffset, buf.offset-startOffset-1);
+         }
       }
-      return byteArray.toString();
+      if (buf.offset == buf.buf.length)
+         return EMPTY_STRING;
+
+      return new String(buf.buf, startOffset, buf.offset-startOffset);
    }
 
    private String dump() {
       StringBuffer buffer = new StringBuffer(256);
-      buffer.append("msgLength=" + msgLength);
+      buffer.append("msgLength=" + buf.buf.length);
       buffer.append(", checksum=" + checksum);
       buffer.append(", compressed=" + compressed);
       buffer.append(", type=" + type);
@@ -742,6 +815,49 @@ public class Parser
          }
       }
       return buffer.toString();
+   }
+
+   private class Buf {
+      byte[] buf; // Holding one message
+      int offset; // Current position of reading
+
+      public String toString() {
+         if (buf == null) return "null";
+         byte[] tmp = new byte[buf.length];
+         for (int ii=0; ii<buf.length; ii++) {
+            if (buf[ii] == 0)
+               tmp [ii] = '*';
+            else
+               tmp[ii] = buf[ii];
+         }
+         return new String(tmp);
+      }
+
+      /**
+       * Get the current section of buf as a string -20 to + 100 bytes
+       * @return The stringified message, null bytes are replaced by '*'
+       */
+      public String toLiteral() {
+         StringBuffer buffer = new StringBuffer(200);
+         int start = 0;
+         if (offset > 20)
+            start = offset-20;
+         buffer.append("Dumping from offset=" + start + ", problemOffset=" + offset + " msgLen=" + buf.length + ": '");
+         byte[] dummy = new byte[1];
+         int ii=start;
+         for (; ii<offset+100 && ii<buf.length; ii++) {
+            if (buf[ii] == 0)
+               buffer.append("*");
+            else {
+               dummy[0] = buf[ii];
+               buffer.append(new String(dummy));
+            }
+         }
+         buffer.append("'");
+         if (ii < buf.length)
+            buffer.append(" ...");
+         return buffer.toString();
+      }
    }
 
 
@@ -1021,3 +1137,21 @@ public class Parser
       }
    }
 }
+/*
+[19.03.2002 21:40:08 INFO  Tim] Success: Update #4000 received: 'Yeahh, i'm the new content number 3801', average messages/second = 363
+java.lang.Exception: Stack trace
+        at java.lang.Thread.dumpStack(Thread.java:993)
+        at org.xmlBlaster.protocol.socket.Parser.toInt0(Parser.java:899)
+        at org.xmlBlaster.protocol.socket.Parser.toByte(Parser.java:861)
+        at org.xmlBlaster.protocol.socket.Parser.parse(Parser.java:559)
+        at org.xmlBlaster.client.protocol.socket.SocketCallbackImpl.run(SocketCallbackImpl.java:102)
+        at java.lang.Thread.run(Thread.java:484)
+Exception found location=Parser.java:900
+[19.03.2002 21:40:10 ERROR Parser.java:900-Parser] toInt0(Yeahh, i'm the new content number 5001
+<qos>
+ <sen ...) Dumping from offset=150752, problemOffset=150762 msgLen=179929: '/>
+</qos>*<key oid='LoadTestSub' contentMime='text/plain' contentMimeExtended='1.0'>
+   <LoadTestSub-AGENT id=' ...
+Exception found location=SocketCallbackImpl.java:112
+[19.03.2002 21:40:10 ERROR SocketCallbackImpl.java:112-SocketCallbackImpl-] Closing connection to server: java.io.IOException: Format is corrupted 'msgLength=179929, checksum=false, compressed=false, type=73, byte4=0, byte5=0, version=1, requestId=Tim:17, methodName=update, sessionId=unknown, lenUnzipped=-1, checkSumResult=-1, index=0', expected integral value
+*/
