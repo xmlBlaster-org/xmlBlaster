@@ -25,6 +25,7 @@ import java.util.ArrayList;
 /**
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
+ * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
 public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
 {
@@ -61,7 +62,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
     */
    public void reconnected() {
       this.log.call(ME, "reconnected");
-     /* remove all obsolete messages from the persitence. Obsolete are the
+     /* remove all obsolete entries from the persistence. Obsolete are the
       * entries which are lower (lower priority and older) than the lowest
       * entry in the transient storage.
       */
@@ -73,7 +74,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          /*
          // TODO: Implement an arraylist to remember the sent messages and destroy them
          // Happens for durable messages and swapped messages (if JDBC connection lost)
-         // For swapped messages the callback thread could block (poll) until the swap is available again.
+         // For swapped entries the callback thread could block (poll) until the swap is available again.
          synchronized(this.deleteDeliveredMonitor) {
             I_MapEntry limitEntry = this.transientStore.peek();
             ArrayList list = this.persistentStore.peekWithLimitEntry(limitEntry);
@@ -114,6 +115,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          this.log = glob.getLog("queue");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.queueId = uniqueQueueId;
+         if (log.CALL) log.call(ME, "Entering initialize()");
 
          MsgUnitStorePluginManager pluginManager = glob.getMsgUnitStorePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
@@ -122,7 +124,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
 
          String defaultTransient = glob.getProperty().get("msgUnitStore.cache.transientQueue", "RAM,1.0");
          this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
-         //log.error(ME, "Debug only: " + this.transientStore.toXml(""));
+         if (log.TRACE) log.trace(ME, "Created transient part:" + this.transientStore.toXml(""));
          
          try {
             String defaultPersistent = glob.getProperty().get("msgUnitStore.cache.persistentQueue", "JDBC,1.0");
@@ -131,6 +133,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
             this.isConnected = true;
             // to be notified about reconnections / disconnections
             this.glob.getJdbcQueueManager(this.queueId).registerListener(this);
+            if (log.TRACE) log.trace(ME, "Created persistent part:" + this.persistentStore.toXml(""));
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ? Is the DB up and running ?" + ex.getMessage());
@@ -142,6 +145,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          // the persistent queue
          if (this.persistentStore != null) {
             try {
+               if (log.TRACE) log.trace(ME, "Initialize: Removing swapped entries from persistent store, numEntries=" + this.persistentStore.getNumOfEntries() + " numDurableEntries=" + this.persistentStore.getNumOfDurableEntries());
                this.persistentStore.removeTransient();
             }
             catch (XmlBlasterException ex) {
@@ -152,10 +156,10 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
 
             // prefill cache (hack: works only for our JDBC queue which implements I_Queue as well)
             if (this.persistentStore instanceof org.xmlBlaster.util.queue.I_Queue) {
+               if (log.TRACE) log.trace(ME, "Initialize: Prefilling cache storage with entries");
                if (this.persistentStore.getNumOfEntries() > 0) {
                   // initial fill of RAM queue ...
                   long maxBytes = this.transientStore.getMaxNumOfBytes();
-                  log.info(ME, "Prefilling cache with " + maxBytes + " entries");
                   // this.transientStore.getMaxNumOfEntries();
                   int maxEntries = -1;
 
@@ -167,6 +171,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
                      this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");
                   }
                   int n = entries.size();
+                  log.info(ME, "Prefilling cache with " + n + " entries");
                   synchronized(this) {
                      for(int i=0; i<n; i++) {
                         I_MapEntry cleanEntry = (I_MapEntry)entries.get(i);
@@ -178,7 +183,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
 
          }
          this.isDown = false;
-         if (log.TRACE) log.trace(ME, "Successful initialized");
+         if (log.TRACE) log.trace(ME, "Successful initialized: " + toXml(""));
       } // isDown?
    }
 
@@ -226,10 +231,10 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
    }
 
    /**
-    * All entries are stored into the transient queue. All durable messages are
+    * All entries are stored into the transient queue. All durable entries are
     * stored also in the persistent queue. The exceeding size in the transient
     * queue is calculated. If it is positive it means we need to swap. The
-    * overflowing messages are taken from the ram queue. The volatile between
+    * overflowing entries are taken from the ram queue. The volatile between
     * them are stored in the persistent storage (since the durable ones have
     * been previously stored).
     * @see I_Map#put(I_MapEntry)
@@ -240,31 +245,35 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
 
       if (log.CALL) this.log.call(ME, "put mapEntry " + mapEntry.getLogId());
       XmlBlasterException e = null;
+      int numDurablePut = 0;
+      int numTransientPut = 0;
 
       String errorText = spaceLeft(mapEntry, this);
       if (errorText != null) {
          if (log.TRACE) log.trace(ME, errorText);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, errorText);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES,
+                   ME+"-put("+mapEntry.getLogId()+")", errorText);
       }
 
       synchronized(this) {
 
-         // separate durable from transient messages and store the durables in persistence
+         // separate durable from transient entries and store the durables in persistence
          if (this.persistentStore != null && this.isConnected) {
             if (mapEntry.isDurable()) {
                long spaceLeft = this.persistentStore.getMaxNumOfBytes() - this.persistentStore.getNumOfBytes();
                if (spaceLeft < mapEntry.getSizeInBytes()) {
                   String reason = "Durable queue overflow, " + this.getNumOfBytes() +
-                                  " bytes are in queue, try increasing '" + 
-                                  this.property.getPropName("maxBytes") + "' on client login.";
-                  this.log.warn(ME, reason + this.toXml(""));
-                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
+                                  " bytes are in queue, try increasing property '" + 
+                                  this.property.getPropName("maxBytes") + "'.";
+                  this.log.warn(ME+"-put("+mapEntry.getLogId()+")", reason + this.toXml(""));
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES,
+                            ME+"-put("+mapEntry.getLogId()+")", reason);
                }
                try {
-                  this.persistentStore.put(mapEntry);
+                  numDurablePut = this.persistentStore.put(mapEntry);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue, the durable message " + mapEntry.getLogId() +
+                  this.log.error(ME, "put: an error occured when writing to the persistent queue, the durable entry " + mapEntry.getLogId() +
                                 " will temporarly be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
                   // should an exception be rethrown here ?
                }
@@ -272,36 +281,42 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          }
 
          if (spaceLeft(mapEntry, this.transientStore) == null) {
-            this.transientStore.put(mapEntry);
+            numTransientPut = this.transientStore.put(mapEntry);
          }
-         else {
+         else if (numDurablePut == 0) {  // if entry is marked as persistent it is already in persistentStore (see code above)
             // handle swapping (if any)
-            if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size state: " + toXml(""));
+            if (this.log.TRACE) this.log.trace(ME+"-put("+mapEntry.getLogId()+")", "Swapping. Exceeding size state: " + toXml(""));
             if (this.persistentStore == null)
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: no durable queue configured, needed for swapping, message " + mapEntry.getLogId() + " not handled");
+                     "put: no durable queue configured, needed for swapping, entry " + mapEntry.getLogId() + " not handled");
             if (!this.isConnected)
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: The DB is currently disconnected, message " + mapEntry.getLogId() + " not handled");
+                     "put: The DB is currently disconnected, entry " + mapEntry.getLogId() + " not handled");
 
             if (spaceLeft(mapEntry, this.persistentStore) == null) {
                try {
-                  this.persistentStore.put(mapEntry);
+                  numDurablePut = this.persistentStore.put(mapEntry);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue, transient message " +  mapEntry.getLogId() + 
+                  this.log.error(ME, "put: an error occured when writing to the persistent queue, transient entry " +  mapEntry.getLogId() + 
                        " is not swapped and will be lost. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
                   e = ex; // should an exception be rethrown here ?
                }
             }
             else
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
-                         "put: maximum size in bytes for the durable queue exceeded when swapping, message " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
+                         "put: maximum size in bytes for the durable queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
          }
       } // sync(this)
 
       if (e != null) throw e;
-      return 1;
+      if (numDurablePut>0 || numTransientPut>0) {
+         return 1;
+      }
+      // NOTE: It is possible that a durable entry is not put to durable storage
+      // e.g. because of 'duplicate key' (entry existed already) and same with RAM queue
+      // In this case the caller does get a 0
+      return 0;
    }
 
    /**
@@ -311,13 +326,15 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
    private String spaceLeft(I_MapEntry mapEntry, I_Map map) {
        if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
          return "Queue overflow (number of entries), " + getNumOfEntries() +
-                " messages are in queue, try increasing '" +
-                this.property.getPropName("maxMsg") + "' on client login.";
+                " entries are in queue, try increasing property '" +
+                this.property.getPropName("maxMsg") + "' and '" +
+                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
 
        if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
          return "Queue overflow, " + getMaxNumOfBytes() +
-                " bytes are in queue, try increasing '" + 
-                this.property.getPropName("maxBytes") + "' on client login.";
+                " bytes are in queue, try increasing property '" + 
+                this.property.getPropName("maxBytes") + "' and '" +
+                this.property.getPropName("maxBytesCache") + "', current settings are" + toXml("");
       return null;
    }
 
@@ -341,6 +358,7 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          return null;
       }
 
+      // Ok, we need to swap transient entry back from persistence store
       synchronized(this) {
          if (!mapEntry.isDurable()) {
             this.persistentStore.remove(mapEntry);
@@ -353,6 +371,36 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          }
       }
       return mapEntry;
+   }
+
+   /**
+    * @see I_Map[]#getAll()
+    */
+   public I_MapEntry[] getAll() throws XmlBlasterException {
+      synchronized (this) {
+         //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
+         //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
+         if (numSwapped() > 0) {
+            java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
+
+            I_MapEntry[] ramEntries = this.transientStore.getAll();
+            for(int i=0; i<ramEntries.length; i++) {
+               map.put(new Long(ramEntries[i].getUniqueId()), ramEntries[i]);
+            }
+            //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
+
+            I_MapEntry[] persistEntries = this.persistentStore.getAll();
+            for(int i=0; i<persistEntries.length; i++) {
+               map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+            }
+            //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
+
+            return (I_MapEntry[])map.values().toArray(new I_MapEntry[map.size()]);
+         }
+         else {
+            return this.transientStore.getAll();
+         }
+      }
    }
 
    /**
