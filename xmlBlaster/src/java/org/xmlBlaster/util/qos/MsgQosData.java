@@ -108,9 +108,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    public transient final static boolean DEFAULT_forceDestroy = false;
    private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
 
-   /** the sender (publisher) of this message (unique loginName) */
-   private SessionName sender;
-
    /** The priority of the message */
    private PriorityEnum priority = PriorityEnum.NORM_PRIORITY;
    private boolean priorityIsModified = false;
@@ -270,41 +267,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     */
    public boolean isReadonly() {
       return getTopicProperty().isReadonly();
-   }
-
-   /**
-    * Access sender login name.
-    * @return loginName of sender or null if not known
-   public String getSender() {
-      return (sender == null) ? (String)null : sender.getLoginName();
-   }
-    */
-
-   /**
-    * Access sender unified naming object.
-    * @return sessionName of sender or null if not known
-    */
-   public SessionName getSender() {
-      return sender;
-   }
-
-   /**
-    * Set the sender name. 
-    * <p>
-    * Prefer setSender(SessionName)
-    * </p>
-    * @param loginName, relative name or absolute name of the sender
-   public void setSender(String sender) {
-      this.sender = new SessionName(glob, sender);
-   }
-    */
-
-   /**
-    * Access sender name.
-    * @param loginName of sender
-    */
-   public void setSender(SessionName senderSessionName) {
-      this.sender = senderSessionName;
    }
 
    /**
