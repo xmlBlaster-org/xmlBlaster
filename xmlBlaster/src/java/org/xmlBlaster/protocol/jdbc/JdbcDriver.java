@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.17 2002/03/17 07:29:04 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.18 2002/04/08 17:09:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -63,6 +63,25 @@ public class JdbcDriver implements I_Driver, I_Publish
    public String getName()
    {
       return ME;
+   }
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "JDBC"
+    */
+   public String getProtocolId()
+   {
+      return "JDBC";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return null
+    */
+   public String getRawAddress()
+   {
+      Log.error(ME+".getRawAddress()", "No external access address available");
+      return null;
    }
 
    /**

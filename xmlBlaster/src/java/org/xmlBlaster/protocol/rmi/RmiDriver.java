@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.18 2002/03/17 07:29:04 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.19 2002/04/08 17:09:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -108,6 +108,23 @@ public class RmiDriver implements I_Driver
       return ME;
    }
 
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "RMI"
+    */
+   public String getProtocolId()
+   {
+      return "RMI";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "rmi://www.mars.universe:1099/I_AuthServer"
+    */
+   public String getRawAddress()
+   {
+      return authBindName;
+   }
 
    /**
     * Start xmlBlaster RMI access.
@@ -143,7 +160,10 @@ public class RmiDriver implements I_Driver
       if (Log.TRACE) Log.trace(ME, "Shutting down RMI driver ...");
 
       try {
-         if (authBindName != null) Naming.unbind(authBindName);
+         if (authBindName != null) {
+            Naming.unbind(authBindName);
+            authBindName = null;
+         }
          // force shutdown, even if we still have calls in progress:
          java.rmi.server.UnicastRemoteObject.unexportObject(authRmiServer, true);
       } catch (Exception e) {

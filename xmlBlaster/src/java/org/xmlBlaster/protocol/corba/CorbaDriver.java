@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.24 2002/03/17 07:29:04 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.25 2002/04/08 17:09:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -55,6 +55,26 @@ public class CorbaDriver implements I_Driver
    public String getName()
    {
       return ME;
+   }
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "IOR"
+    */
+   public String getProtocolId()
+   {
+      return "IOR";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "IOR:00034500350..."
+    */
+   public String getRawAddress()
+   {
+      if (orb == null || authRef == null)
+         return null;
+      return orb.object_to_string(authRef);
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.13 2002/03/17 07:29:05 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.14 2002/04/08 17:09:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -69,7 +69,7 @@ public class SocketDriver extends Thread implements I_Driver
    private int socketPort = DEFAULT_SERVER_PORT;
    /** The socket server */
    private ServerSocket listen = null;
-   /** The URL which clients need to use to access this server */
+   /** The URL which clients need to use to access this server, e.g. "server.mars.univers:6701" */
    private String serverUrl = null;
    /** The string representation like "192.168.1.1", useful if multihomed computer */
    private String hostname = null;
@@ -88,6 +88,24 @@ public class SocketDriver extends Thread implements I_Driver
    {
       super(ME);
       SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
+   }
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "SOCKET"
+    */
+   public String getProtocolId()
+   {
+      return "SOCKET";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "server.mars.univers:6701"
+    */
+   public String getRawAddress()
+   {
+      return serverUrl; // hostname + ":" + socketPort;
    }
 
    /**
@@ -160,6 +178,7 @@ public class SocketDriver extends Thread implements I_Driver
          int backlog = XmlBlasterProperty.get("socket.backlog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(socketPort, backlog, inetAddr);
          Log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
+         serverUrl = hostname + ":" + socketPort;
          while (running) {
             Socket accept = listen.accept();
             //Log.trace(ME, "New incoming request on port=" + socketPort + " ...");
@@ -224,6 +243,7 @@ public class SocketDriver extends Thread implements I_Driver
          Log.warn(ME, "shutdown problem: " + e.toString());
       }
 
+      serverUrl = null;
       Log.info(ME, "Socket driver stopped, all resources released.");
    }
 

@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.9 2002/03/17 07:29:04 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.10 2002/04/08 17:09:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -63,6 +63,25 @@ public class NativeDriver implements I_Driver
       return ME;
    }
 
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "NativeDemo"
+    */
+   public String getProtocolId()
+   {
+      return "NativeDemo";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return null
+    */
+   public String getRawAddress()
+   {
+      Log.error(ME+".getRawAddress()", "No external access address available");
+      return null;
+   }
 
    /**
     * Start xmlBlaster native access.
