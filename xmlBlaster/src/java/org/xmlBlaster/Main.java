@@ -3,8 +3,8 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.2 $
-           $Date: 1999/11/08 14:32:54 $
+           $Revision: 1.3 $
+           $Date: 1999/11/08 22:40:59 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -27,7 +27,7 @@ public class Main
          org.omg.PortableServer.POA poa = 
          org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
-         org.omg.CORBA.Object o = poa.servant_to_reference(new ServerPOATie(new ServerImpl()) );
+         org.omg.CORBA.Object o = poa.servant_to_reference(new ServerPOATie(new ServerImpl(orb)) );
          // org.omg.CORBA.Object o = poa.servant_to_reference(new ServerImpl(orb));
 
          if( args.length == 1 ) 

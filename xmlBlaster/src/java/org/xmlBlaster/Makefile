@@ -21,7 +21,9 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/BlasterCallbackImpl.class \
 			$(CLASS_DIR)/Client.class \
 			$(CLASS_DIR)/ClientInfo.class \
-			$(CLASS_DIR)/RequestBroker.class
+			$(CLASS_DIR)/RequestBroker.class \
+			$(CLASS_DIR)/XmlKey.class \
+			$(CLASS_DIR)/XmlQoS.class
 #------------------------------------------------------------------------------
 
 

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.1 $  $Date: 1999/11/08 14:32:54 $
+           $Revision: 1.2 $  $Date: 1999/11/08 22:40:59 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -16,34 +16,34 @@ import org.xmlBlaster.util.*;
 public class ClientInfo
 {
    private String ME = "ClientInfo";
-   private String uniqueKey;
-   private String callbackIOR;
+   private XmlKey xmlKey;
+   private XmlQoS xmlQoS;
    private BlasterCallback callback=null;
    private RequestBroker requestBroker;
 
-   public ClientInfo(RequestBroker requestBroker, String uniqueKey, String callbackIOR)
+   public ClientInfo(RequestBroker requestBroker, XmlKey xmlKey, XmlQoS xmlQoS)
    {
-      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + uniqueKey);
       this.requestBroker = requestBroker;
-      this.uniqueKey = uniqueKey;
-      this.callbackIOR = callbackIOR;
+      this.xmlKey = xmlKey;
+      this.xmlQoS = xmlQoS;
+      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + xmlKey.getUniqueKey());
    }
 
-   public final BlasterCallback getCB()
+   public final BlasterCallback getCB() throws XmlBlasterException
    {
       if (this.callback == null)
-         callback = requestBroker.getBlasterCallback(callbackIOR);
+         callback = requestBroker.getBlasterCallback(getCallbackIOR());
       return callback;
    }
 
-   String getUniqueKey()
+   public String getUniqueKey()
    {
-      return uniqueKey;
+      return xmlKey.getUniqueKey();
    }
 
 
-   String getCallbackIOR()
+   public String getCallbackIOR() throws XmlBlasterException
    {
-      return callbackIOR;
+      return xmlQoS.getCallbackIOR();
    }
 }

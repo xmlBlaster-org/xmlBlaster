@@ -1,4 +1,7 @@
 package org.xmlBlaster;
+
+import org.xmlBlaster.util.*;
+import java.util.*;
 /**
 <p>
 <ul>
@@ -57,19 +60,30 @@ package org.xmlBlaster;
 */
 //public class ServerImpl extends ServerPOA {
 public class ServerImpl implements ServerOperations {
-  private String name;
-  private org.omg.CORBA.ORB orb;
-  private RequestBroker broker;
 
-  /** Construct a persistently named object. */
+  private final String ME = "ServerImpl";
+  private org.omg.CORBA.ORB orb;
+  private RequestBroker requestBroker;
+
+
+  /** Construct a persistently named object.
+   */
   public ServerImpl(org.omg.CORBA.ORB orb) {
+    if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
     this.orb = orb;
-    this.broker = RequestBroker.getInstance(this);
+    this.requestBroker = RequestBroker.getInstance(this);
   }
-  /** Construct a transient object. */
+
+
+  /** Construct a transient object.
+   */
   public ServerImpl() {
     super();
+    if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
+    this.requestBroker = RequestBroker.getInstance(this);
   }
+
+
   /**
   <p>
   Operation: <b>::org::xmlBlaster::Server::initCallback</b>.
@@ -86,6 +100,8 @@ public class ServerImpl implements ServerOperations {
   ) {
     // IMPLEMENT: Operation
   }
+
+
   /**
   <p>
   Operation: <b>::org::xmlBlaster::Server::subscribe</b>.
@@ -101,14 +117,14 @@ public class ServerImpl implements ServerOperations {
   </pre>
   </p>
   */
-  public void subscribe(
-    java.lang.String xmlKey,
-    java.lang.String qos
-  ) throws
-    org.xmlBlaster.XmlBlasterException {
-    System.out.println("Got subscribe request: xmlKey=" + xmlKey + ", qos=" + qos);
-    // IMPLEMENT: Operation
+  public void subscribe(String xmlKey, String qos) throws org.xmlBlaster.XmlBlasterException {
+    if (Log.CALLS) Log.trace(ME, "Got subscribe request: xmlKey=" + xmlKey + ", qos=" + qos);
+    XmlKey keyObj = new XmlKey(xmlKey);
+    XmlQoS qosObj = new XmlQoS(qos);
+    requestBroker.subscribe(keyObj, qosObj);
   }
+
+
   /**
   <p>
   Operation: <b>::org::xmlBlaster::Server::unSubscribe</b>.
@@ -131,6 +147,8 @@ public class ServerImpl implements ServerOperations {
     org.xmlBlaster.XmlBlasterException {
     // IMPLEMENT: Operation
   }
+
+
   /**
   <p>
   Operation: <b>::org::xmlBlaster::Server::set</b>.
@@ -146,14 +164,14 @@ public class ServerImpl implements ServerOperations {
   </pre>
   </p>
   */
-  public int set(
-    java.lang.String xmlKey,
-    byte[] content
-  ) throws
-    org.xmlBlaster.XmlBlasterException {
-    // IMPLEMENT: Operation
-    return 0;
+  public int set(String xmlKey_literal, byte[] content) throws org.xmlBlaster.XmlBlasterException {
+
+    XmlKey xmlKey = new XmlKey(xmlKey_literal);
+    if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
+    return requestBroker.set(xmlKey, content);
   }
+
+
   /**
   <p>
   Operation: <b>::org::xmlBlaster::Server::setQos</b>.

@@ -1,4 +1,6 @@
 package org.xmlBlaster;
+
+import org.xmlBlaster.util.*;
 /**
 <p>
 <ul>
@@ -20,33 +22,43 @@ package org.xmlBlaster;
 </pre>
 </p>
 */
-public class BlasterCallbackImpl extends BlasterCallbackPOA {
-  String name;
+//public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach
+public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approsch
+   final String ME;
 
-  /** Construct a persistently named object. */
-  public BlasterCallbackImpl(java.lang.String name) {
-    this.name = name;
-  }
-  /** Construct a transient object. */
-  public BlasterCallbackImpl() {
-    super();
-  }
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::BlasterCallback::update</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/BlasterCallback"
-    void update(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::ContentType content
-    );
-  </pre>
-  </p>
-  */
-  public void update(
-    java.lang.String xmlKey,
-    byte[] content
-  ) {
-    // IMPLEMENT: Operation
-  }
+   /**
+    * Construct a persistently named object.
+    */
+   public BlasterCallbackImpl(java.lang.String name) {
+      this.ME = "BlasterCallbackImpl-" + name;
+      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+   }
+
+
+   /**
+    * Construct a transient object.
+    */
+   public BlasterCallbackImpl() {
+      super();
+      this.ME = "BlasterCallbackImpl";
+      if (Log.CALLS) Log.trace(ME, "Entering constructor without argument");
+   }
+
+
+   /**
+    * <p>
+    * Operation: <b>::org::xmlBlaster::BlasterCallback::update</b>.
+    * <pre>
+    *   #pragma prefix "org/xmlBlaster/BlasterCallback"
+    *   void update(
+    *     in ::org::xmlBlaster::XmlType xmlKey,
+    *     in ::org::xmlBlaster::ContentType content
+    *   );
+    * </pre>
+    * </p>
+    */
+   public void update(String xmlKey_literal, byte[] content) {
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      if (Log.CALLS) Log.trace(ME, "Callback invoked for " + xmlKey.getUniqueKey() + " content length = " + content.length);
+   }
 }
