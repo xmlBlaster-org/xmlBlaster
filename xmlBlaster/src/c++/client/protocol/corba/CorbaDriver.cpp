@@ -44,13 +44,44 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
       freeResources(deleteConnection, deleteCallback);                \
       throw convertFromCorbaException(ex);                            \
    }                                                                  \
-   catch(CORBA::Exception &ex) {                                      \
+   catch(const CosNaming::NamingContext::CannotProceed &ex) {         \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "", to_string(ex));          \
+   }                                                                  \
+   catch(const CosNaming::NamingContext::InvalidName &ex) {           \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "", to_string(ex));          \
+   }                                                                  \
+   catch(const CosNaming::NamingContext::AlreadyBound &ex) {          \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "", to_string(ex));          \
+   }                                                                  \
+   catch(const CosNaming::NamingContext::NotEmpty &ex) {              \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "", to_string(ex));          \
+   }                                                                  \
+   catch(const CosNaming::NamingContext::NotFound &ex) {              \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "", to_string(ex));          \
+   }                                                                  \
+   catch(const CORBA::Exception &ex) {                                \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
                        "unknown node", ME + string(methodName), "en", \
                        "client-c++", "", "", to_string(ex));          \
    }                                                                  \
    catch(XmlBlasterException &ex) {                                   \
+      freeResources(deleteConnection, deleteCallback);                \
       throw ex;                                                       \
    }                                                                  \
    catch (...) {                                                      \
