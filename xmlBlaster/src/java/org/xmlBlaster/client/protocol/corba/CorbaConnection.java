@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.9 2000/11/04 20:22:08 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.10 2000/11/04 20:36:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -62,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -146,10 +146,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
       String orbClassName = "jacorb.orb.ORB";
       String orbSingleton = "jacorb.orb.ORBSingleton";
       java.util.Properties props = new java.util.Properties();
-      if (props.get("org.omg.CORBA.ORBClass") == null) {
-         props.put("org.omg.CORBA.ORBClass", orbClassName);
-         props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
-      }
+      props.put("org.omg.CORBA.ORBClass", orbClassName);
+      props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
 
       Log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
 
