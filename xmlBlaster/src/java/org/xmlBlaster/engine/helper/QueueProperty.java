@@ -25,7 +25,7 @@ public class QueueProperty extends QueuePropertyBase
     */
    public QueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
-      relating = Constants.RELATING_CLIENT;
+      setRelating(Constants.RELATING_CLIENT);
       initialize();
    }
 
@@ -44,26 +44,7 @@ public class QueueProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-
-      super.initialize();
-
-      // Set the queue properties
-      setMaxMsg(glob.getProperty().get("queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxSize(glob.getProperty().get("queue.maxSize", DEFAULT_sizeDefault));
-      setExpires(glob.getProperty().get("queue.expires", DEFAULT_maxExpires));
-      setOnOverflow(glob.getProperty().get("queue.onOverflow", DEFAULT_onOverflow));
-      setOnFailure(glob.getProperty().get("queue.onFailure", DEFAULT_onFailure));
-      setType(glob.getProperty().get("queue.type", DEFAULT_type));
-      setVersion(glob.getProperty().get("queue.version", DEFAULT_version));
-      if (nodeId != null) {
-         setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
-         setMaxSize(glob.getProperty().get("queue.maxSize["+nodeId+"]", getMaxSize()));
-         setExpires(glob.getProperty().get("queue.expires["+nodeId+"]", getExpires()));
-         setOnOverflow(glob.getProperty().get("queue.onOverflow["+nodeId+"]", getOnOverflow()));
-         setOnFailure(glob.getProperty().get("queue.onFailure["+nodeId+"]", getOnFailure()));
-         setType(glob.getProperty().get("queue.type["+nodeId+"]", getType()));
-         setVersion(glob.getProperty().get("queue.version["+nodeId+"]", getVersion()));
-      }
+      super.initialize(""); // todo: change to "client" (all REQs and docu as well)
    }
 
    /**
@@ -113,7 +94,7 @@ public class QueueProperty extends QueuePropertyBase
       text += "   -recorder.fn        The file name (without path) for the file for FileRecorder [<is generated unique>]\n";
       text += "   -recorder.rate      The playback rate in msg/sec on reconnect e.g. 200 is 200 msg/sec, -1 is as fast as possible [-1]\n";
       text += "   -recorder.mode      The on-overflow mode: " + Constants.ONOVERFLOW_EXCEPTION + " | " + Constants.ONOVERFLOW_DISCARD + " | " + Constants.ONOVERFLOW_DISCARDOLDEST + " [" + Constants.ONOVERFLOW_EXCEPTION + "]\n";
-    //text += "   -queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
+    //text += "   -queue.maxBytes      The maximum size in bytes of this queue [" + DEFAULT_bytesDefault + "].\n";
     //text += "   -queue.expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += "   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += "   -queue.onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";

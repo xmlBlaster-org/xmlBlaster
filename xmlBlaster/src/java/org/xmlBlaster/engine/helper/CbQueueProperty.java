@@ -3,7 +3,7 @@ Name:      CbQueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.java,v 1.5 2002/11/26 12:38:45 ruff Exp $
+Version:   $Id: CbQueueProperty.java,v 1.6 2002/12/18 10:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -49,32 +49,7 @@ public class CbQueueProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-
-      super.initialize();
-
-      // Set the queue properties
-      setMaxMsg(glob.getProperty().get("cb.queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxSize(glob.getProperty().get("cb.queue.maxSize", DEFAULT_sizeDefault));
-      setMaxMsgCache(glob.getProperty().get("cb.queue.maxMsgCache", DEFAULT_maxMsgCacheDefault));
-      setMaxSizeCache(glob.getProperty().get("cb.queue.maxSizeCache", DEFAULT_sizeCacheDefault));
-      setStoreSwapLevel(glob.getProperty().get("cb.queue.storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxSizeCache)));
-      setStoreSwapSize(glob.getProperty().get("cb.queue.storeSwapSize", (long)(DEFAULT_storeSwapSizeRatio*this.maxSizeCache)));
-      setReloadSwapLevel(glob.getProperty().get("cb.queue.reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxSizeCache)));
-      setReloadSwapSize(glob.getProperty().get("cb.queue.reloadSwapSize", (long)(DEFAULT_reloadSwapSizeRatio*this.maxSizeCache)));
-      setExpires(glob.getProperty().get("cb.queue.expires", DEFAULT_maxExpires));
-      setOnOverflow(glob.getProperty().get("cb.queue.onOverflow", DEFAULT_onOverflow));
-      setOnFailure(glob.getProperty().get("cb.queue.onFailure", DEFAULT_onFailure));
-      setType(glob.getProperty().get("cb.queue.type", DEFAULT_type));
-      setVersion(glob.getProperty().get("cb.queue.version", DEFAULT_version));
-      if (nodeId != null) {
-         setMaxMsg(glob.getProperty().get("cb.queue.maxMsg["+nodeId+"]", getMaxMsg()));
-         setMaxSize(glob.getProperty().get("cb.queue.maxSize["+nodeId+"]", getMaxSize()));
-         setExpires(glob.getProperty().get("cb.queue.expires["+nodeId+"]", getExpires()));
-         setOnOverflow(glob.getProperty().get("cb.queue.onOverflow["+nodeId+"]", getOnOverflow()));
-         setOnFailure(glob.getProperty().get("cb.queue.onFailure["+nodeId+"]", getOnFailure()));
-         setType(glob.getProperty().get("cb.queue.type["+nodeId+"]", getType()));
-         setVersion(glob.getProperty().get("cb.queue.version["+nodeId+"]", getVersion()));
-      }
+      super.initialize("cb");
    }
 
    /**
@@ -144,25 +119,6 @@ public class CbQueueProperty extends QueuePropertyBase
       if (this.addressArr.length > 0)
          return (CallbackAddress)this.addressArr[0];
       return null;
-   }
-
-   /**
-    * Get a usage string for the connection parameters
-    */
-   public final String usage() {
-      String text = "";
-      text += "Control the callback queue properties:\n";
-      text += "   -cb.queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
-      text += "   -cb.queue.maxMsgCache  The maximum allowed number of messages in the cache of this queue [" + DEFAULT_maxMsgDefault + "].\n";
-      text += "   -cb.queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
-      text += "   -cb.queue.maxSizeCache The maximum size in kBytes in the cache of this queue [" + DEFAULT_sizeDefault + "].\n";
-    //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
-      text += "   -cb.queue.onOverflow What happens if queue is full [" + DEFAULT_onOverflow + "]\n";
-      text += "   -cb.queue.onFailure  Error handling when callback failed [" + DEFAULT_onFailure + "]\n";
-      text += "   -cb.queue.type       The plugin type [" + DEFAULT_type + "]\n";
-      text += "   -cb.queue.version    The plugin version [" + DEFAULT_version + "]\n";
-      return text;
    }
 
    /** For testing: java org.xmlBlaster.engine.helper.CbQueueProperty */
