@@ -69,8 +69,8 @@ All packages allow free use for both commercial and non-commercial applications.
 5) collections.jar
 ==================
    Corresponds to Collections of Java2 API, for use in JDK 1.1x
-   This jar is not yet used, but may be included if a JDK 1.1x version
-   of xmlBlaster is necessary for some special environments
+   This jar is not used, but should be included for JDK 1.1x based
+   Java clients.
 
    Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
@@ -80,7 +80,7 @@ All packages allow free use for both commercial and non-commercial applications.
    This is the JacORB 1.3.30 CORBA library, on which xmlBlaster is based.
    It us under LGPL.
 
-   Download http://www.inf.fu-berlin.de/~brose/jacorb
+   Download http://www.jacorb.org
 
    jacorb.jar is stripped with:
       org.omg.CosCollection
