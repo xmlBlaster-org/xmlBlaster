@@ -35,8 +35,5 @@ o Add valgrind memory leak tests for exception cases
 o TestQueue: this test shows memory leaks with valgrind,
   we need to investigate further
 
-o The client side queue is RAM based only.
-  We could embed http://www.sqlite.org/ for persistence
-
 o Add subscribe specific 'update()' similar to the Java
   client library approach
