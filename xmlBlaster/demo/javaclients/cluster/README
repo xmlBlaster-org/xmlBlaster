@@ -21,6 +21,10 @@ first.
 
    java javaclients.cluster.PublishToSlave -port 7601
 
+  or
+
+   java javaclients.cluster.PublishToSlave -port 7604 -numPublish 5 -interactivePublish true
+
  The port is the same as specified for avalon in avalon.properties
 
 
@@ -31,6 +35,12 @@ first.
 
  Heron should be contacted by avalon and receive the
  tailed back message sent by PublishToSlave
+
+
+5. Add a subscriber:
+====================
+
+   java javaclients.cluster.Subscribe -port 7601
 
 
 Example configuration:
