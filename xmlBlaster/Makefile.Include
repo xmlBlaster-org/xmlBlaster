@@ -1,0 +1,90 @@
+#------------------------------------------------------------------------------
+#Name:     Makefile.Include
+#Project:  xmlBlaster
+#Comment:  General include Makefile
+#          You should set XMLBLASTER_HOME in your environment, for example:
+#          export XMLBLASTER_HOME=$HOME/xmlBlaster
+#------------------------------------------------------------------------------
+
+.SUFFIXES: .class .java
+
+
+#------------------------------------------------------------------------------
+MAKE_DIR=$(XMLBLASTER_HOME)/make
+SRC_DOCS_DIR=$(XMLBLASTER_HOME)/doc
+JAVADOC_DIR=$(XMLBLASTER_HOME)/javadoc
+JAR_DIR=$(XMLBLASTER_HOME)/bin
+CLASS_TOP_DIR=$(XMLBLASTER_HOME)/classes
+
+ROOT_PACKAGE=$(XMLBLASTER_HOME_PACKAGE)
+ROOT_PACKAGE_DIR=$(XMLBLASTER_HOME_PATH)
+THIS_PACKAGE=$(ROOT_PACKAGE)
+THIS_PACKAGE_DIR=org/xmlBlaster
+
+SRC_DIR=$(XMLBLASTER_HOME)/src
+SRC_JAVA_TOP_DIR=$(XMLBLASTER_HOME)/src/java
+SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+IDL2JAVA=/usr/local/JacORB/bin/idl
+#IDL2JAVA=/usr/local/vbroker/bin/idl2java
+
+#JAVAC_FLAGS=
+JAVAC_FLAGS= -deprecation -g
+
+JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+#JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH):../..:.:/usr/local/jdk/jre/lib/rt.jar -sourcepath ../.. -d $(CLASS_TOP_DIR)
+
+#RMIC=  rmic -d $(CLASS_TOP_DIR) -classpath $(CLASSPATH):../../
+RMIC=  rmic -d $(CLASS_TOP_DIR)
+
+JAVA=  java
+JAVADOC= javadoc -author -version -J-ms39m -J-mx40m
+
+MAKE=make
+
+MKDIR= mkdir -m 775
+MKDIR_RECURSIVE= mkdir -p -m 775
+
+CHMOD= chmod 664
+CHMOD_EXE= chmod 775
+CHMOD_RECURSIVE= chmod -R 775
+
+RM= rm -f
+RM_RECURSIVE= rm -rf
+
+CP= cp -f
+CP_RECURSIVE= cp -Rf
+
+JAR= jar
+#------------------------------------------------------------------------------
+
+
+help:
+	@echo "xmlBlaster generation utility"
+	@echo "--> Usage: "
+	@echo "   make all   --> makes everything new"
+	@echo "   make clean --> deletes all classes/doc etc."
+
+#	@echo "   make doc   --> makes javadoc docus into directory $(JAVADOC_DIR)"  
+#	@echo "   make demo  --> makes everything new and starts a demo"
+#	@echo "   make test  --> makes everything new and starts a test scenario"
+#	@echo "   make jar   --> makes jar files of all packages into directory $(JAR_DIR)"
+
+all_SUB_DIRS:
+	@for i in $(SUB_DIRS) ; do \
+	   cd $$i; \
+	   echo "Making $$i" ; \
+	   $(MAKE) all; \
+	   cd ..; \
+	done
+
+clean_SUB_DIRS:
+	@for i in $(SUB_DIRS) ; do \
+	   cd $$i; \
+	   echo "Cleaning $$i" ; \
+	   $(MAKE) clean; \
+	   cd ..; \
+	done
+
