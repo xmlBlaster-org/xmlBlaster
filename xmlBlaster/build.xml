@@ -68,6 +68,9 @@ TODO
 
    <taskdef resource="net/sf/antcontrib/antcontrib.properties" />  <!-- if foreach osfamily switch if -->
 
+   <property name="xmlblaster_home" value="."/>
+   <property name="xmlblaster_absolute_home" value="${user.dir}"/>
+
    <!-- Allow any user specific values to override the defaults -->
    <property file="${user.home}/build.properties" />
 
@@ -122,8 +125,8 @@ TODO
 
    <property name="test.class" value="org.xmlBlaster.test.AllTests"/>
    <property name="report.dir" value="./doc/test/report"/> <!-- junit HTML report -->
-
-   <property name="xmlblaster_home" value="."/>
+   <property name="report.absolutdir" value="${xmlblaster_absolute_home}/doc/test/report/html"/>
+   <property name="report.htmlfile" value="${report.absolutdir}/junit-noframes.html"/>
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
    <property name="cp.xml" value="lib/parser.jar:lib/jaxp.jar:lib/omquery.jar:lib/xtdash.jar"/>
@@ -763,10 +766,8 @@ TODO
          <classpath>
             <pathelement path="lib/xmlBlaster.jar:${cp}"/>
          </classpath>
-         <!-- test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/
-         <test name="org.xmlBlaster.test.AllTests" fork="yes" todir="${report.dir}"/>
- -->
-          <test name="${test.class}" fork="yes" todir="${report.dir}"/>
+         <!-- build.sh -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
+         <test name="${test.class}" fork="yes" todir="${report.dir}"/>
       </junit>
       <echo message="See ${report.dir} for results"/>
       <echo message="Invoke target 'report' for HTML report generation"/>
@@ -808,12 +809,19 @@ TODO
          </fileset>
          <report format="noframes" todir="${report.dir}/html"/>
       </junitreport>
-      <!-- echo message="Viewing the report ..."/>
-      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows XP" vmlauncher="false"/>
-      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
-      <exec dir="${report.dir}/html" executable="mozilla" os="Linux" vmlauncher="false">
-         <arg line="${report.dir}/html/junit-noframes.html"/>
-      </exec -->
+      <echo message="Test results written to '${report.htmlfile}'"/>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Creates a test report with junit and shows it directly in a browser -->
+   <!-- =================================================================== -->
+   <target name="reportShow" depends="report" description="Creates a HTML test report with junit and shows it directly in a browser">
+      <echo message="Viewing the report '${report.htmlfile}' ..."/>
+      <exec dir="${report.absolutdir}" executable="junit-noframes.html" os="Windows XP" vmlauncher="false"/>
+      <exec dir="${report.absolutdir}" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
+      <exec dir="${report.absolutdir}" executable="mozilla" os="Linux" vmlauncher="false">
+         <arg line="file://${report.htmlfile}"/>
+      </exec>
    </target>
 
    <!-- =================================================================== -->
