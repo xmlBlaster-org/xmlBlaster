@@ -35,9 +35,13 @@ Start the test suite manually:
 
       java org.xmlBlaster.Main
 
-   Start the test suite with GUI support:
+   Start the test suite with SWING GUI support:
 
-      java -Xms18M -Xmx64M -Djava.compiler= junit.ui.TestRunner -noloading AllTests
+      java -Xms18M -Xmx128M -Djava.compiler= junit.swingui.TestRunner -noloading AllTests
+
+   Start the test suite with AWT GUI support:
+
+      java -Xms18M -Xmx64M -Djava.compiler= junit.awtui.TestRunner -noloading AllTests
 
    For command line output invoke:
 
@@ -50,11 +54,11 @@ Start the test suite manually:
 
    Test RMI:
 
-      java -Djava.compiler= -Dclient.protocol=RMI junit.ui.TestRunner -noloading AllTests
+      java -Djava.compiler= -Dclient.protocol=RMI junit.swingui.TestRunner -noloading AllTests
 
    Test XML-RPC:
 
-      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.ui.TestRunner -noloading AllTests
+      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.swingui.TestRunner -noloading AllTests
 
 
 Building html files with syntax highlighting from java source
