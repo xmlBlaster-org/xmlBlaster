@@ -123,9 +123,10 @@ Else add it manually.
     <echo message="   javadocs    --> generates the javadoc documentation"/>
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
     <echo message="   clean       --> cleans up the directory"/>
-    <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat)"/>
-    <echo message="   k2  --> create the J2EE connector"/>
-    <echo message="   jms-adapter  --> create the J2EE connector example bean"/>
+    <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
+    <echo message="                   demonstrates persistent http callbacks"/>
+    <echo message="   k2          --> create the J2EE connector"/>
+    <echo message="   jms-adapter --> create the J2EE connector example bean"/>
     <echo message=""/>
     <echo message=" See the comments inside the build.xml file for more details."/>
     <echo message="-------------------------------------------------------------"/>
@@ -485,7 +486,7 @@ Else add it manually.
       <delete dir="${build.dir}"/>
       <delete>
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-         <fileset dir="${req.dir}" includes="*.class"/>
+         <!-- fileset dir="${req.dir}" includes="*.class"/ -->
          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
       </delete>
    </target>
