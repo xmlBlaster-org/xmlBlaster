@@ -73,7 +73,7 @@ JAVA=  java
 #                                                  -group  "engine" "org.xmlBlaster.engine" \
 #                                                  -J-ms39m -J-mx40m
 #JAVADOC= javadoc -J-ms39m -J-mx40m -author -version -private 
-JAVADOC= javadoc -J-ms39m -J-mx40m -author -version 
+JAVADOC= javadoc -J-ms39m -J-mx40m -author -version -package
 #------------------------------------------------------------------------------
 
 

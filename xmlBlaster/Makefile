@@ -37,8 +37,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.rmi \
 			org.xmlBlaster.protocol.xmlrpc \
 			org.xmlBlaster.protocol.nativ \
-			org.xmlBlaster.util \
-			org.xmlBlaster.util.pool.jdbc
+			org.xmlBlaster.util
 
 JUTILS_PACKGS = org.jutils \
 			org.jutils.collection \
