@@ -121,6 +121,12 @@ class Dll_Export I_Log {
        */
       virtual void time(const std::string &instance, const std::string &text) { trace(instance, text); }
 
+      /**
+       * My current log level setting in human readable notation. 
+       * @return for example "ERROR|WARN|TRACE"
+       */
+      virtual std::string getLogLevelStr() const { return ""; }
+
       virtual std::string usage() const { return "No logging usage available, please check the logging documentation"; }
    }; // end of class I_Log
 
