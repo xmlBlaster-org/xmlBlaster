@@ -48,8 +48,8 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #elif defined(_WINDOWS)
   typedef __int64 int64_t;
   /*typedef long long int64_t;*/
-  typedef int int32_t;
-  typedef short int16_t;
+  typedef __int32 int32_t;
+  typedef __int16 int16_t;
 #else
 # include<stdint.h>  /*-> C99:  uint64_t etc. */
 #endif
