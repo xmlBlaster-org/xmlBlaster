@@ -25,10 +25,10 @@ static char * const int64Str = int64Str_;   /* to make the pointer address const
 static char int64StrX_[32];
 static char * const int64StrX = int64StrX_;   /* a second one */
 
-#define mu_assert_checkException(file, line, message, exception) \
+#define mu_assert_checkException(message, exception) \
       do {\
          if (*exception.errorCode != 0) {\
-            sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %s: Caught exception: '%s'", file, line, message, getExceptionStr(errorString, ERRORSTR_LEN, &exception));\
+            sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %s: Caught exception: '%s'", __FILE__, __LINE__, message, getExceptionStr(errorString, ERRORSTR_LEN, &exception));\
             return MU_ASSERT_TEXT;\
          }\
       } while (0)
@@ -62,17 +62,17 @@ static const char * test_queue()
    if (argc || argv) {} /* to avoid compiler warning */
 
    queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
-   mu_assert(__FILE__, __LINE__, "create()", queueP != 0);
-   mu_assert(__FILE__, __LINE__, "create() QueueProperty", queueP->getProperties(queueP) != 0);
-   mu_assert(__FILE__, __LINE__, "create() userObject", queueP->userObject == 0);
-   mu_assertEqualsBool(__FILE__, __LINE__, "create() isInitialized", true, queueP->isInitialized);
-   mu_assertEqualsString(__FILE__, __LINE__, "create() dbName", queueProperties.dbName, queueP->getProperties(queueP)->dbName);
-   mu_assertEqualsString(__FILE__, __LINE__, "create() nodeId", queueProperties.nodeId, queueP->getProperties(queueP)->nodeId);
-   mu_assertEqualsString(__FILE__, __LINE__, "create() tablePrefix", queueProperties.tablePrefix, queueP->getProperties(queueP)->tablePrefix);
-   mu_assertEqualsString(__FILE__, __LINE__, "create() queueName", queueProperties.queueName, queueP->getProperties(queueP)->queueName);
-   mu_assertEqualsLong(__FILE__, __LINE__, "create() maxNumOfEntries", 10000000L, (long)queueP->getMaxNumOfEntries(queueP));
-   mu_assertEqualsString(__FILE__, __LINE__, "create() maxNumOfBytes", int64ToStr(int64Str, 1000000000LL), int64ToStr(int64StrX, queueP->getMaxNumOfBytes(queueP)));
-   mu_assertEqualsBool(__FILE__, __LINE__, "put() empty", true, queueP->empty(queueP));
+   mu_assert("create()", queueP != 0);
+   mu_assert("create() QueueProperty", queueP->getProperties(queueP) != 0);
+   mu_assert("create() userObject", queueP->userObject == 0);
+   mu_assertEqualsBool("create() isInitialized", true, queueP->isInitialized);
+   mu_assertEqualsString("create() dbName", queueProperties.dbName, queueP->getProperties(queueP)->dbName);
+   mu_assertEqualsString("create() nodeId", queueProperties.nodeId, queueP->getProperties(queueP)->nodeId);
+   mu_assertEqualsString("create() tablePrefix", queueProperties.tablePrefix, queueP->getProperties(queueP)->tablePrefix);
+   mu_assertEqualsString("create() queueName", queueProperties.queueName, queueP->getProperties(queueP)->queueName);
+   mu_assertEqualsLong("create() maxNumOfEntries", 10000000L, (long)queueP->getMaxNumOfEntries(queueP));
+   mu_assertEqualsString("create() maxNumOfBytes", int64ToStr(int64Str, 1000000000LL), int64ToStr(int64StrX, queueP->getMaxNumOfBytes(queueP)));
+   mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
 
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
 
@@ -95,49 +95,49 @@ static const char * test_queue()
          len += strlen(queueEntry.embeddedBlob.data);
 
          queueP->put(queueP, &queueEntry, &exception);
-         mu_assert_checkException(__FILE__, __LINE__, "put()", exception);
+         mu_assert_checkException("put()", exception);
       }
-      mu_assertEqualsInt(__FILE__, __LINE__, "put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
-      mu_assertEqualsInt(__FILE__, __LINE__, "put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
-      mu_assertEqualsBool(__FILE__, __LINE__, "put() empty", false, queueP->empty(queueP));
+      mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
 
       printf("-----------------------------------------\n");
       printf("Testing shutdown and restart ...\n");
       queueP->shutdown(queueP, &exception);
-      mu_assertEqualsBool(__FILE__, __LINE__, "create() isInitialized", false, queueP->isInitialized);
-      mu_assert(__FILE__, __LINE__, "create() userObject", queueP->userObject == 0);
+      mu_assertEqualsBool("create() isInitialized", false, queueP->isInitialized);
+      mu_assert("create() userObject", queueP->userObject == 0);
 
       entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
-      mu_assertEqualsString(__FILE__, __LINE__, "create() isShutdown", "resource.db.unavailable", exception.errorCode);
+      mu_assertEqualsString("create() isShutdown", "resource.db.unavailable", exception.errorCode);
       freeQueue(queueP);
 
       queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
-      mu_assertEqualsInt(__FILE__, __LINE__, "put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
-      mu_assertEqualsInt(__FILE__, __LINE__, "put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
-      mu_assertEqualsBool(__FILE__, __LINE__, "put() empty", false, queueP->empty(queueP));
+      mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfBytes", len, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
       printf("-----------------------------------------\n");
    }
 
    
    entries = queueP->peekWithSamePriority(queueP, 0, 0, &exception);
-   mu_assert_checkException(__FILE__, __LINE__, "peekWithSamePriority()", exception);
-   mu_assert(__FILE__, __LINE__, " peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt(__FILE__, __LINE__, "peekWithSamePriority() numOfEntries", 1, entries->len);
+   mu_assert_checkException("peekWithSamePriority()", exception);
+   mu_assert(" peekWithSamePriority()", queueP != 0);
+   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
 
    entries = queueP->peekWithSamePriority(queueP, 1, -1, &exception);
-   mu_assert_checkException(__FILE__, __LINE__, "peekWithSamePriority()", exception);
-   mu_assert(__FILE__, __LINE__, " peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt(__FILE__, __LINE__, "peekWithSamePriority() numOfEntries", 1, entries->len);
+   mu_assert_checkException("peekWithSamePriority()", exception);
+   mu_assert(" peekWithSamePriority()", queueP != 0);
+   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
 
    entries = queueP->peekWithSamePriority(queueP, -1, 3, &exception);
-   mu_assert_checkException(__FILE__, __LINE__, "peekWithSamePriority()", exception);
-   mu_assert(__FILE__, __LINE__, " peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt(__FILE__, __LINE__, "peekWithSamePriority() numOfEntries", 1, entries->len);
+   mu_assert_checkException("peekWithSamePriority()", exception);
+   mu_assert(" peekWithSamePriority()", queueP != 0);
+   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
 
    entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
-   mu_assert_checkException(__FILE__, __LINE__, "peekWithSamePriority()", exception);
-   mu_assert(__FILE__, __LINE__, " peekWithSamePriority()", queueP != 0);
-   mu_assertEqualsInt(__FILE__, __LINE__, "peekWithSamePriority() numOfEntries", 2, entries->len);
+   mu_assert_checkException("peekWithSamePriority()", exception);
+   mu_assert(" peekWithSamePriority()", queueP != 0);
+   mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 2, entries->len);
    if (entries != 0) {
       size_t i;
       printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
@@ -151,7 +151,7 @@ static const char * test_queue()
 
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
    queueP->randomRemove(queueP, entries, &exception);
-   mu_assert_checkException(__FILE__, __LINE__, "randomRemove()", exception);
+   mu_assert_checkException("randomRemove()", exception);
 
    freeQueueEntryArr(entries);
    printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");

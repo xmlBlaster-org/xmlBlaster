@@ -81,7 +81,7 @@ static const char * test_methods()
       freeXmlBlasterAccessUnparsed(xa);
       xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__,
          "Connection to xmlBlaster failed, please start the server or check your configuration");
-      mu_assert(__FILE__, __LINE__, "Connection to xmlBlaster failed, please start the server or check your configuration",
+      mu_assert("Connection to xmlBlaster failed, please start the server or check your configuration",
                 false);
    }
 
@@ -113,15 +113,15 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "Caught exception during connect errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       free(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
    }
 
    response = xa->ping(xa, 0, &xmlBlasterException);
-   mu_assert(__FILE__, __LINE__, "Pinging a connected server failed", response != (char *)0);
-   mu_assert(__FILE__, __LINE__, "Pinging a connected server failed", *xmlBlasterException.errorCode == 0);
+   mu_assert("Pinging a connected server failed", response != (char *)0);
+   mu_assert("Pinging a connected server failed", *xmlBlasterException.errorCode == 0);
    printf("[client] Pinging a connected server, response=%s\n", response);
    free(response);
 
@@ -134,12 +134,12 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in subscribe errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Subscribe success\n");
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "WARNING")==0);
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "ERROR")==0);
+      mu_assert("Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
+      mu_assert("Subscribe response is invalid", strstr(response, "WARNING")==0);
+      mu_assert("Subscribe response is invalid", strstr(response, "ERROR")==0);
       free(response);
    }
 
@@ -156,20 +156,20 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in publish errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Publish success");
-      mu_assert(__FILE__, __LINE__, "Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
+      mu_assert("Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
       free(response);
    }
 
    sleepMillis(1000);
-   mu_assert(__FILE__, __LINE__, "No update arrived", updateContent != 0);
-   mu_assert(__FILE__, __LINE__, "Received wrong message in update()", strcmp(CONTENT, updateContent) == 0);
+   mu_assert("No update arrived", updateContent != 0);
+   mu_assert("Received wrong message in update()", strcmp(CONTENT, updateContent) == 0);
    free(updateContent);
    updateContent = 0;
 
-   mu_assert(__FILE__, __LINE__, "UserData from update() is invalid", updateUserData == xa);
+   mu_assert("UserData from update() is invalid", updateUserData == xa);
 
 
    {  /* unSubscribe ... */
@@ -182,7 +182,7 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in unSubscribe errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Unsubscribe success\n");
       freeQosArr(response);
@@ -206,9 +206,9 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in get() errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
-      mu_assert(__FILE__, __LINE__, "Empty get() return", msgUnitArr != (MsgUnitArr *)0);
+      mu_assert("Empty get() return", msgUnitArr != (MsgUnitArr *)0);
       for (i=0; i<msgUnitArr->len; i++) {
          char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
                                           msgUnitArr->msgUnitArr[i].contentLen);
@@ -229,7 +229,7 @@ static const char * test_methods()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
       freeQosArr(response);
@@ -242,9 +242,9 @@ static const char * test_methods()
       SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                xmlBlasterException.errorCode, xmlBlasterException.message);
       freeXmlBlasterAccessUnparsed(xa);
-      mu_assert(__FILE__, __LINE__, errorString, false);
+      mu_assert(errorString, false);
    }
-   mu_assert(__FILE__, __LINE__, "disconnect() returned false", retBool == true);
+   mu_assert("disconnect() returned false", retBool == true);
 
    if (updateContent != 0) { /* The erase event is sent as update as well */
       free(updateContent);

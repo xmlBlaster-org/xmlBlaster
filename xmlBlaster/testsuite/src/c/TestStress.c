@@ -97,7 +97,7 @@ static const char * test_stress()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception during connect errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       free(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
@@ -112,12 +112,12 @@ static const char * test_stress()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in subscribe errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Subscribe success\n");
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "WARNING")==0);
-      mu_assert(__FILE__, __LINE__, "Subscribe response is invalid", strstr(response, "ERROR")==0);
+      mu_assert("Subscribe response is invalid", strstr(response, "subscribe id=")!=0);
+      mu_assert("Subscribe response is invalid", strstr(response, "WARNING")==0);
+      mu_assert("Subscribe response is invalid", strstr(response, "ERROR")==0);
       free(response);
    }
 
@@ -136,11 +136,11 @@ static const char * test_stress()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in publish #%d errorCode=%s, message=%s\n",
                   iPub, xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       if (xa->logLevel>=LOG_TRACE)
          xa->log(0, xa->logLevel, LOG_TRACE, __FILE__, "Publish #%d messages success\n", iPub); 
-      mu_assert(__FILE__, __LINE__, "Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
+      mu_assert("Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
       free(response);
    }
 
@@ -151,16 +151,16 @@ static const char * test_stress()
       sleepMillis(500);
    }
 
-   mu_assert(__FILE__, __LINE__, "No update arrived", *updateContent != '\0');
+   mu_assert("No update arrived", *updateContent != '\0');
    if (updateCounter != numPublish ) {
       freeXmlBlasterAccessUnparsed(xa);
-      mu_assert(__FILE__, __LINE__, "Missing updates", updateCounter == numPublish);
+      mu_assert("Missing updates", updateCounter == numPublish);
    }
    printf("[client] updateContent = %s, CONTENT = %s\n", updateContent, CONTENT);
-   mu_assert(__FILE__, __LINE__, "Received wrong message in update()", strstr(updateContent, CONTENT) != 0);
+   mu_assert("Received wrong message in update()", strstr(updateContent, CONTENT) != 0);
    *updateContent = '\0';
 
-   mu_assert(__FILE__, __LINE__, "UserData from update() is invalid", updateUserData == xa);
+   mu_assert("UserData from update() is invalid", updateUserData == xa);
 
 
    {  /* erase ... */
@@ -173,7 +173,7 @@ static const char * test_stress()
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
-         mu_assert(__FILE__, __LINE__, errorString, false);
+         mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
       freeQosArr(response);
@@ -184,9 +184,9 @@ static const char * test_stress()
       SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                xmlBlasterException.errorCode, xmlBlasterException.message);
       freeXmlBlasterAccessUnparsed(xa);
-      mu_assert(__FILE__, __LINE__, errorString, false);
+      mu_assert(errorString, false);
    }
-   mu_assert(__FILE__, __LINE__, "disconnect() returned false", retBool == true);
+   mu_assert("disconnect() returned false", retBool == true);
 
    if (*updateContent != '\0') { /* The erase event is sent as update as well */
       *updateContent = '\0';
