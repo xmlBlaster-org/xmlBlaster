@@ -5,16 +5,15 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.7 2000/06/19 15:48:38 ruff Exp $
  * ------------------------------------------------------------------------------
  */
-
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.Log;
-import org.jutils.init.Property;
 
 import org.xmlBlaster.util.pool.jdbc.*;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -50,7 +49,13 @@ public class XmlDBAdapter implements I_Callback {
     */
    public XmlDBAdapter(String args[]) {
       this.args = args;
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       initDrivers();
       initBlaster();
@@ -130,7 +135,7 @@ public class XmlDBAdapter implements I_Callback {
     * @see
     */
    private void initDrivers() {
-      String            drivers = Property.getProperty("JDBCDrivers", "");
+      String            drivers = XmlBlasterProperty.get("JDBCDrivers", "");
       StringTokenizer   st = new StringTokenizer(drivers, ",");
       int               numDrivers = st.countTokens();
 

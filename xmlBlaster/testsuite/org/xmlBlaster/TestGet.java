@@ -3,17 +3,20 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.9 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: TestGet.java,v 1.10 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
+
+import org.jutils.log.Log;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+
 import test.framework.*;
 
 
@@ -186,7 +189,12 @@ public class TestGet extends TestCase
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestGet testSub = new TestGet("TestGet", "Tim");
       testSub.setUp();
       testSub.testGet();

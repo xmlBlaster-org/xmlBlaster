@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.6 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.7 2000/06/19 15:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -13,6 +13,7 @@ import org.jutils.io.FileUtil;
 import org.jutils.time.StopWatch;
 import org.jutils.JUtilsException;
 
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
@@ -51,11 +52,16 @@ public class SystemInfoPublisher
     */
    public SystemInfoPublisher(String[] args) throws JUtilsException
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
          return;
       }
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       loginName = Args.getArg(args, "-name", ME);
       passwd = Args.getArg(args, "-passwd", "secret");

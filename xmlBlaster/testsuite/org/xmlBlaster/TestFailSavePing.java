@@ -3,16 +3,19 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.7 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.8 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
 import org.jutils.log.Log;
 import org.jutils.init.Property;
+
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.client.*;
+
 import test.framework.*;
 
 
@@ -125,7 +128,11 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       String[] args = new String[2];
       args[0] = "-iorPort";
       args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
-      Property.addArgs2Props(Property.getProps(), args);
+      try {
+         XmlBlasterProperty.addArgs2Props(args);
+      } catch(org.jutils.JUtilsException e) {
+         assert(e.toString(), false);
+      }
    }
 
 
@@ -315,7 +322,12 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
       TestFailSavePing testSub = new TestFailSavePing("TestFailSavePing", "Tim");
       testSub.setUp();
       testSub.testFailSave();

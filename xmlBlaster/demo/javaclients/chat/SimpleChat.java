@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.8 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.9 2000/06/19 15:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -12,6 +12,7 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -58,7 +59,12 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
    public SimpleChat(String title, String args[]){
       super(title);
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       this.addWindowListener(
          new WindowAdapter() {

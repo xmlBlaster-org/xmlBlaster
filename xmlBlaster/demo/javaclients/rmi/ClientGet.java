@@ -3,16 +3,16 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.2 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.3 2000/06/19 15:48:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
 import org.jutils.log.Log;
 import org.jutils.init.Args;
-import org.jutils.init.Property;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
@@ -60,7 +60,12 @@ public class ClientGet
 
    public ClientGet(String args[])
    {
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       try {
          try {
             // check if parameter -name <userName> is given at startup of client
@@ -209,16 +214,16 @@ public class ClientGet
          Log.warning(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = Property.getProperty("rmi.hostname", hostname);
+      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = Property.getProperty("rmi.RegistryPort",
+      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort",
                          org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 
 
       String authServerUrl = prefix + "I_AuthServer";
-      String addr = Property.getProperty("rmi.AuthServer.url", authServerUrl);
+      String addr = XmlBlasterProperty.get("rmi.AuthServer.url", authServerUrl);
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          authServer = (I_AuthServer)rem;
@@ -230,7 +235,7 @@ public class ClientGet
 
 
       String xmlBlasterUrl = prefix + "I_XmlBlaster";
-      addr = Property.getProperty("rmi.XmlBlaster.url", xmlBlasterUrl);
+      addr = XmlBlasterProperty.get("rmi.XmlBlaster.url", xmlBlasterUrl);
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          blasterServer = (I_XmlBlaster)rem;

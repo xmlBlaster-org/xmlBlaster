@@ -3,19 +3,22 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.19 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: TestSub.java,v 1.20 2000/06/19 15:48:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
+
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.jutils.log.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
+
 import test.framework.*;
 
 
@@ -258,7 +261,12 @@ public class TestSub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestSub testSub = new TestSub("TestSub", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();

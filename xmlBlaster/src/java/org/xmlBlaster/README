@@ -7,7 +7,7 @@ Howto start the xmlBlaster server:
 
    This example switches on some debugging on the console:
 
-      jaco org.xmlBlaster.Main +trace +dump +calls +time
+      jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true
 
    Optionally you can also start the server with
 
@@ -27,7 +27,7 @@ Howto start the xmlBlaster server:
 
 2. xmlBlaster/demo/javaclients/ClientSub.java may be used as a first test client:
 
-     jaco javaclients.ClientSub +trace
+     jaco javaclients.ClientSub -trace true
 
 
 

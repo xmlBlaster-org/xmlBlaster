@@ -10,7 +10,7 @@
 
    To get some more logging infos try:
 
-      jaco javaclients.ClientSub +trace
+      jaco javaclients.ClientSub -trace true
 
 
    This displays the usage:
@@ -21,5 +21,5 @@
    Query xmlBlaster:
 
       jaco javaclients.ClientQuery -queryXpath "/xmlBlaster/key"
-      
+
       jaco javaclients.ClientQuery -queryXpath "//AGENT/DRIVER"

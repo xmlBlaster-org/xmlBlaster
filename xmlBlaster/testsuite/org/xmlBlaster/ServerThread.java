@@ -3,12 +3,14 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.4 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.5 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
 import org.jutils.log.Log;
+
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -115,7 +117,12 @@ public class ServerThread extends Thread
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       ServerThread xmlBlaster = ServerThread.startXmlBlaster(7604);
       ServerThread.stopXmlBlaster(xmlBlaster);
       Log.exit(ServerThread.ME, "Good bye");

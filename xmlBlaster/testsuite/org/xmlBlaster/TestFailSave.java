@@ -3,14 +3,15 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.18 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.19 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
 import org.jutils.log.Log;
-import org.jutils.init.Property;
+
+import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import test.framework.*;
@@ -77,7 +78,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          corbaConnection = new CorbaConnection(args); // Find orb
 
          // Setup fail save handling ...
-         long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
+         long retryInterval = 4000L; // XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
          int retries = -1;           // -1 == forever
          int maxMessages = 1000;
          long pingInterval = 0L;     // switched off
@@ -125,7 +126,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       String[] args = new String[2];
       args[0] = "-iorPort";
       args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
-      Property.addArgs2Props(Property.getProps(), args);
+      try {
+         XmlBlasterProperty.addArgs2Props(args);
+      } catch(org.jutils.JUtilsException e) {
+         assert(e.toString(), false);
+      }
    }
 
 
@@ -319,7 +324,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
       TestFailSave testSub = new TestFailSave("TestFailSave", "Tim");
       testSub.setUp();
       testSub.testFailSave();

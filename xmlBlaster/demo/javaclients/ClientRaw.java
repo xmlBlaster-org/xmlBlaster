@@ -3,15 +3,17 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.12 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.13 2000/06/19 15:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
+
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -47,6 +49,12 @@ public class ClientRaw
 
    public ClientRaw(String args[])
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
@@ -214,7 +222,6 @@ public class ClientRaw
 
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
       new ClientRaw(args);
       Log.exit(ClientRaw.ME, "Good bye");
    }

@@ -2,6 +2,9 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - The "+" for command line options (e.g. +trace) is not supported
+    any more, use for example '-trace true' instead.
+
   - There is now RMI support for xmlBlaster available.
     The Servers are in
        xmlBlaster/src/java/org/xmlBlaster/protocol/rmi

@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.4 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.5 2000/06/19 15:48:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -39,7 +39,6 @@ class XtOmQueryTest
 
    public XtOmQueryTest(String argv[])
    {
-
       if (argv.length < 2)
          Log.panic(ME, "Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
 

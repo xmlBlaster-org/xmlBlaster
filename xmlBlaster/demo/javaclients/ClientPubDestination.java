@@ -3,18 +3,20 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.10 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.11 2000/06/19 15:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
+
+import org.jutils.log.Log;
+import org.jutils.init.Args;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.jutils.log.Log;
-import org.jutils.init.Args;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
@@ -53,6 +55,12 @@ public class ClientPubDestination
    public ClientPubDestination(String args[])
    {
       this.args = args;
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
    }
 
 
@@ -218,7 +226,6 @@ public class ClientPubDestination
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
       ClientPubDestination cl = new ClientPubDestination(args);
 
       if (cl.testScenario() == true)

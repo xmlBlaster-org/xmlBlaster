@@ -3,19 +3,21 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.13 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.14 2000/06/19 15:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
+
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.jutils.log.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
@@ -53,6 +55,12 @@ public class ClientSub
     */
    public ClientSub(String args[])
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       StopWatch stop = new StopWatch();
       try {
          // check if parameter -name <userName> is given at startup of client
@@ -183,7 +191,6 @@ public class ClientSub
 
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
       new ClientSub(args);
       Log.exit(ClientSub.ME, "Good bye");
    }

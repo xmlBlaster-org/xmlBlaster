@@ -3,14 +3,14 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.4 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.5 2000/06/19 15:48:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.Log;
-import org.jutils.init.Property;
 import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -79,7 +79,7 @@ public class CorbaDriver implements I_Driver
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
 
          // 1) Write IOR to given file
-         String iorFile = Property.getProperty("iorFile", (String)null);
+         String iorFile = XmlBlasterProperty.get("iorFile", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
@@ -88,14 +88,14 @@ public class CorbaDriver implements I_Driver
          }
 
          // 2) Publish IOR on given port (switch off this feature with '-iorPort 0'
-         int iorPort = Property.getProperty("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
+         int iorPort = XmlBlasterProperty.get("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
             httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
             Log.info(ME, "Published AuthServer IOR on port " + iorPort);
          }
 
          // 3) Publish IOR to a naming service
-         boolean useNameService = Property.getProperty("ns", true);  // default is to publish myself to the naming service
+         boolean useNameService = XmlBlasterProperty.get("ns", true);  // default is to publish myself to the naming service
          if (useNameService) {
             try {
                nc = getNamingService();

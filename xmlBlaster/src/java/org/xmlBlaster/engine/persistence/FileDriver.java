@@ -3,17 +3,17 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.8 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.9 2000/06/19 15:48:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
 import org.jutils.log.Log;
-import org.jutils.init.Property;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -60,7 +60,7 @@ public class FileDriver implements I_PersistenceDriver
     */
    public FileDriver() throws XmlBlasterException
    {
-      path = Property.getProperty("Persistence.Path", (String)null);
+      path = XmlBlasterProperty.get("Persistence.Path", (String)null);
       if (path == null) {
          throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
       }

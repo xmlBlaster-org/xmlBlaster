@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.10 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.11 2000/06/19 15:48:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
@@ -57,11 +58,16 @@ public class PublishFile
     */
    public PublishFile(String[] args) throws JUtilsException
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
          return;
       }
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       loginName = Args.getArg(args, "-name", ME);
       passwd = Args.getArg(args, "-passwd", "secret");

@@ -3,24 +3,26 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.8 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.9 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
+
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.jutils.log.Log;
-import org.jutils.init.Args;
-import org.jutils.init.Property;
-import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+
 import test.framework.*;
 
 
@@ -152,13 +154,13 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    void checkContent(boolean checkContent)
    {
-      String driverClass = Property.getProperty("Persistence.Driver", (String)null);
+      String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
       if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.FileDriver")) {
          Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
-      String path = Property.getProperty("Persistence.Path", (String)null);
+      String path = XmlBlasterProperty.get("Persistence.Path", (String)null);
       if (path == null) {
          Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
          return;
@@ -254,6 +256,12 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       Log.setLogLevel(args);
       TestPersistence testSub = new TestPersistence("TestPersistence");
       testSub.setUp();

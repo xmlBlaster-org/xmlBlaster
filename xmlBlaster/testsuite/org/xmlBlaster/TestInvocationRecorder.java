@@ -3,9 +3,11 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.7 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.8 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
+
+import org.jutils.log.Log;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
@@ -13,13 +15,14 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.jutils.log.Log;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+
 import test.framework.*;
 
 
@@ -266,11 +269,16 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestInvocationRecorder +calls
+    * Invoke: jaco testsuite.org.xmlBlaster.TestInvocationRecorder -calls true
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestInvocationRecorder testSub = new TestInvocationRecorder("test");
       testSub.setUp();
       testSub.test();

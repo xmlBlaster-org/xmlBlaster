@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.3 2000/06/18 15:22:02 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.4 2000/06/19 15:48:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package testsuite.org.xmlBlaster.query;
@@ -46,13 +46,13 @@ class DomQueryTest
    final String ME = "DomQueryTester";
    final boolean testAgentNavigation = true;  // only to be true with Agent.xml or AgentBig.xml
 
-   public DomQueryTest(String argv[])
+   public DomQueryTest(String args[])
    {
-      if (argv.length < 2)
+      if (args.length < 2)
          Log.panic(ME, "Usage:\n\n   java DomQueryTest <XML-file> <Query-String>\n\nExample:\n   java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
 
       boolean dumpIt = false;
-      if (argv.length == 2) dumpIt = true;
+      if (args.length == 2) dumpIt = true;
 
       try
       {
@@ -66,7 +66,7 @@ class DomQueryTest
          // Time 2: For 600 <key> blocks on 266 MHz AMD Linux, JDK 1.2
 
          StopWatch inputTime = new StopWatch();
-         InputSource input = new InputSource(createURL(argv[0]));       // [ 20 millis ]
+         InputSource input = new InputSource(createURL(args[0]));       // [ 20 millis ]
          Log.info(ME, "Read file" + inputTime.nice());
 
          StopWatch xmlprocTime = new StopWatch();
@@ -82,38 +82,38 @@ class DomQueryTest
             query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 240 millis ] [ 204 millis ]
 
-            if (argv.length > 1) {
+            if (args.length > 1) {
                StopWatch queryTime = new StopWatch();
-               iter = query_mgr.getNodesByXPath(doc, argv[1]);          // [ 2 sec 630 millis ] [ 2 sec 516 millis ]
+               iter = query_mgr.getNodesByXPath(doc, args[1]);          // [ 2 sec 630 millis ] [ 2 sec 516 millis ]
                Log.info(ME, "Query time" + queryTime.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + args[1] + "\"");
             }
 
             if (dumpIt) {
                StopWatch queryTime = new StopWatch();
-               iter = query_mgr.getNodesByXPath(doc, argv[1]);
+               iter = query_mgr.getNodesByXPath(doc, args[1]);
                Log.info(ME, "Query a second time encreases performance to" + queryTime.nice());
                Log.exit(ME, "Good bye");
             }
 
-            if (argv.length > 2) {
+            if (args.length > 2) {
                StopWatch queryTime2 = new StopWatch();
-               iter = query_mgr.getNodesByXPath(doc, argv[2]);          // [ 2 millis ] [ 2 millis ]
+               iter = query_mgr.getNodesByXPath(doc, args[2]);          // [ 2 millis ] [ 2 millis ]
                Log.info(ME, "Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + args[2] + "\"");
             }
 
-            if (argv.length > 3) {
+            if (args.length > 3) {
                StopWatch queryTime2 = new StopWatch();
-               iter = query_mgr.getNodesByXPath(doc, argv[3]);          // [ 1 millis ] [ 1 millis ]
+               iter = query_mgr.getNodesByXPath(doc, args[3]);          // [ 1 millis ] [ 1 millis ]
                Log.info(ME, "Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + args[3] + "\"");
             }
          }
 
@@ -126,13 +126,13 @@ class DomQueryTest
             query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 1 millis ] [ 1 millis ]
 
-            if (argv.length > 1) {
+            if (args.length > 1) {
                StopWatch queryTime = new StopWatch();
-               iter = query_mgr.getNodesByXPath(doc, argv[1]);          // [ 1 millis ] [ 1 millis ]
+               iter = query_mgr.getNodesByXPath(doc, args[1]);          // [ 1 millis ] [ 1 millis ]
                Log.info(ME, "Query time" + queryTime.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + args[1] + "\"");
             }
          }
       }
@@ -247,8 +247,8 @@ class DomQueryTest
       return uri;
    }
 
-   public static void main(String argv[])
+   public static void main(String args[])
    {
-      new DomQueryTest(argv);
+      new DomQueryTest(args);
    }
 }

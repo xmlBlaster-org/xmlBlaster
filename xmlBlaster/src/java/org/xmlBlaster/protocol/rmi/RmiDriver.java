@@ -3,14 +3,14 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.4 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.5 2000/06/19 15:48:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.jutils.log.Log;
-import org.jutils.init.Property;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
@@ -151,7 +151,7 @@ public class RmiDriver implements I_Driver
    private void bindToRegistry() throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "bindToRegistry() ...");
-      int registryPort = Property.getProperty("rmi.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
+      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
       try {
          if (registryPort > 0) {
             // Start a 'rmiregistry' if desired

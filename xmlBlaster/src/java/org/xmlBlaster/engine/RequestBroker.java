@@ -3,17 +3,17 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.73 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.74 2000/06/19 15:48:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.jutils.log.Log;
-import org.jutils.init.Property;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.Destination;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
@@ -33,7 +33,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.73 $
+ * @version $Revision: 1.74 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -146,7 +146,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (persistenceDriver == null) return;
       try {
-         boolean lazyRecovery = Property.getProperty("Persistence.LazyRecovery", false);
+         boolean lazyRecovery = XmlBlasterProperty.get("Persistence.LazyRecovery", false);
          if (!lazyRecovery)
             persistenceDriver.recover(unsecureClientInfo, this); // recover all messages now
       }
@@ -169,7 +169,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (usePersistence == false) return (I_PersistenceDriver)null;
 
       if (persistenceDriver == null) {
-         String driverClass = Property.getProperty("Persistence.Driver", (String)null);
+         String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
          if (driverClass == null) {
             Log.warning(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
             usePersistence = false;

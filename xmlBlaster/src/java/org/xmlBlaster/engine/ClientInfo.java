@@ -3,19 +3,21 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.35 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.36 2000/06/19 15:48:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
-import org.jutils.log.Log;
-import org.jutils.init.Property;
 import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 
 import java.util.*;
 
@@ -32,7 +34,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -98,7 +100,7 @@ public class ClientInfo
          return;
 
       protocols = new Hashtable();
-      String drivers = Property.getProperty("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver");
+      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver");
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

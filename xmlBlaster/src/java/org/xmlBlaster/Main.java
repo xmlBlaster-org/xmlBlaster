@@ -3,19 +3,19 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.43 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: Main.java,v 1.44 2000/06/19 15:48:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.jutils.JUtilsException;
 import org.jutils.log.Log;
 import org.jutils.init.Args;
-import org.jutils.init.Property;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
@@ -40,9 +40,9 @@ import java.util.*;
  * </ul>
  * Please invoke with "-?" to get a more complete list of the supported parameters.
  * <br />
- * Every parameter may be set in the xmlBlaster.property file or at the command line,
- * but the command line is stronger. The leading "-" or "+" from the command line key
- * parameters are stripped (see org.jutils.init.Property.java).
+ * Every parameter may be set in the xmlBlaster.property file as a system property or at the command line,
+ * the command line is strongest, xmlBlaster.properties weakest. The leading "-" from the command line key
+ * parameters are stripped (see org.jutils.init.XmlBlasterProperty.java).
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
@@ -50,7 +50,7 @@ import java.util.*;
  * <p />
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
- * <code>   jaco org.xmlBlaster.Main +trace +dump +calls +time</code>
+ * <code>   jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true</code>
  */
 public class Main
 {
@@ -88,12 +88,18 @@ public class Main
 
    private void init(String args[])
    {
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         usage();
+         Log.panic(ME, e.toString());
+      }
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          loadDrivers();
          usage();
          return;
       }
-      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
+      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
 
       try {
          authenticate = new Authenticate();
@@ -127,14 +133,14 @@ public class Main
          Log.panic(ME, e.toString());
       }
 
-      boolean useKeyboard = Property.getProperty("useKeyboard", true);
+      boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {
          try { Thread.currentThread().wait();
          } catch(InterruptedException e) { Log.warning(ME, "Caught exception: " + e.toString()); }
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
-      boolean doBlocking = Property.getProperty("doBlocking", true);
+      boolean doBlocking = XmlBlasterProperty.get("doBlocking", true);
 
       if (doBlocking) {
          checkForKeyboardInput();
@@ -150,7 +156,7 @@ public class Main
     */
    private void loadDrivers()
    {
-      String drivers = Property.getProperty("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver");
+      String drivers = XmlBlasterProperty.get("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver");
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {
@@ -313,7 +319,7 @@ public class Main
       Log.plain(ME, "Example:");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main +trace +dump +calls +time");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true");
       Log.plain(ME, "");
    }
 

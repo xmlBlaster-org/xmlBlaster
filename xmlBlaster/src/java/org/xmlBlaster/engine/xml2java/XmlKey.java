@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.5 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.6 2000/06/19 15:48:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -109,7 +109,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
          try {
             if (Log.TRACE) Log.trace(ME, "Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
-            String tmp = StringHelper.replace(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
+            String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
             XmlToDom tinyDomHandle = new XmlToDom(tmp);
             xmlKeyDoc = tinyDomHandle.getXmlDoc();
             queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);

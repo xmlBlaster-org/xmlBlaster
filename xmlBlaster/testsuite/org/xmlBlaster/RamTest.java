@@ -3,16 +3,19 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.8 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: RamTest.java,v 1.9 2000/06/19 15:48:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.CorbaConnection;
 import org.jutils.log.Log;
 import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
+
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
+
 import test.framework.*;
 
 
@@ -212,7 +215,12 @@ public class RamTest extends TestCase
     */
    public static void main(String args[])
    {
-      Log.setLogLevel(args);
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
+      Log.setLogLevel(XmlBlasterProperty.getProperty());
       RamTest testSub = new RamTest("RamTest", "Tim");
       testSub.setUp();
       testSub.testManyPublish();

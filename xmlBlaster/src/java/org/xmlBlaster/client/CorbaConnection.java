@@ -3,18 +3,18 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.56 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.57 2000/06/19 15:48:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.jutils.log.Log;
 import org.jutils.time.StopWatch;
-import org.jutils.init.Property;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.CallbackAddress;
@@ -76,7 +76,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.56 $
+ * @version $Revision: 1.57 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -169,7 +169,12 @@ public class CorbaConnection implements I_InvocationRecorder
    public CorbaConnection(String[] arg)
    {
       args = arg;
-      Property.addArgs2Props(Property.getProps(), args); // enforce that the args are added to the xmlBlaster.properties hash table
+      try {
+         XmlBlasterProperty.addArgs2Props(args); // enforce that the args are added to the xmlBlaster.properties hash table
+      }
+      catch (JUtilsException e) {
+         Log.warning(ME, e.toString());
+      }
       if (orb == null) // Thread leak !!!
          orb = org.omg.CORBA.ORB.init(args, null);
    }
@@ -381,7 +386,7 @@ public class CorbaConnection implements I_InvocationRecorder
 
 
       // 1) check if argument -IOR at program startup is given
-      String authServerIOR = Property.getProperty("ior", (String)null);  // -ior IOR string is directly given
+      String authServerIOR = XmlBlasterProperty.get("ior", (String)null);  // -ior IOR string is directly given
       if (authServerIOR != null) {
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
          Log.info(ME, "Accessing xmlBlaster using your given IOR string");
@@ -389,7 +394,7 @@ public class CorbaConnection implements I_InvocationRecorder
       }
       if (Log.TRACE) Log.trace(ME, "No -ior ...");
 
-      String authServerIORFile = Property.getProperty("iorFile", (String)null);  // -iorFile IOR string is given through a file
+      String authServerIORFile = XmlBlasterProperty.get("iorFile", (String)null);  // -iorFile IOR string is given through a file
       if (authServerIORFile != null) {
          try {
             authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
@@ -404,8 +409,8 @@ public class CorbaConnection implements I_InvocationRecorder
 
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
-      String iorHost = Property.getProperty("iorHost", "localhost");
-      int iorPort = Property.getProperty("iorPort", org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT); // 7609
+      String iorHost = XmlBlasterProperty.get("iorHost", "localhost");
+      int iorPort = XmlBlasterProperty.get("iorPort", org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
             authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
@@ -426,7 +431,7 @@ public class CorbaConnection implements I_InvocationRecorder
                   " - or contact your system administrator to start a naming service";
 
       // 3) asking Name Service CORBA compliant
-      boolean useNameService = Property.getProperty("ns", true);  // -ns default is to ask the naming service
+      boolean useNameService = XmlBlasterProperty.get("ns", true);  // -ns default is to ask the naming service
       if (useNameService) {
 
          try {
@@ -1015,7 +1020,7 @@ public class CorbaConnection implements I_InvocationRecorder
    {
       private final String ME = "LoginThread";
       private CorbaConnection corbaConnection;
-      private final long RETRY_INTERVAL; // would this be smarter? Property.getProperty("Failsave.retryInterval", 4000L);
+      private final long RETRY_INTERVAL; // would this be smarter? XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
       private final int RETRIES;         // -1 = forever
 
 

@@ -6,6 +6,7 @@ import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.jdbc.*;
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -51,6 +52,11 @@ public class XmlDBClient implements I_Callback
    public XmlDBClient(String args[]) throws JUtilsException
     {
       this.args = args;
+      try {
+         XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
 
       initBlaster();
       query();
