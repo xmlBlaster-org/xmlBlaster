@@ -23,6 +23,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
      which rounded to only 6 digits
    - Added Base64 support for ClientProperty
    - Bugfix: SAX parsers are now thread safe
+   - Renamed msgQosData.getForceDestroy() to isForceDestroy()
    - Other minor changes
 
  o C-client library:
@@ -55,6 +56,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
  o manifest.xmlBlaster: Added missing jhotdraw.jar, demo.jar and testsuite.jar
 
  o C-client: changed include in pthread.h for simpler compilation
+
+ o Corrected spelling from <subscribeable> to <subscribable>
 
  o Fixed update problem when content is empty
 
@@ -186,7 +189,7 @@ Changes for 0.85c (beta) [2003-10-05]
  o Bugfix for queueing PtP messages when there are session which have
    set isPtpAllowed==false
 
- o Fixed to not put none subscribeable PtP messages to the history queue
+ o Fixed to not put none subscribable PtP messages to the history queue
 
  o Added limited support to reconfigure a subject queue
    from CACHE to RAM during operation.
@@ -835,10 +838,10 @@ Changes for 0.84 [Jan, 22 2003]
 
  o <readonly/> is now an attribute of the qos-topic tag.
 
- o PtP messages are now subscribeable as well.
+ o PtP messages are now subscribable as well.
    So take care which keyOid you choose for PtP messages.
    In past releases PtP messages were completely invisible for subscribes.
-   Use <subscribeable>false</subscribeable> to make PtP messages invisible for subscribers.
+   Use <subscribable>false</subscribable> to make PtP messages invisible for subscribers.
 
  o Renamed
       org.xmlBlaster.engine.helper.MessageUnit
