@@ -17,7 +17,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.MsgUnit;
@@ -594,14 +594,14 @@ public class SubjectInfo implements I_AdminSubject
     * Get the SessionInfo with its public session identifier e.g. "5"
     * @return null if not found
     */
-   public final SessionInfo getSessionByPublicId(String publicSessionId) {
-      if (publicSessionId == null) {
+   public final SessionInfo getSessionByPublicId(long publicSessionId) {
+      if (publicSessionId == 0L) {
          return null;
       }
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         if (sessionInfo.getPublicSessionId().equals(publicSessionId))
+         if (sessionInfo.getPublicSessionId() == publicSessionId)
             return sessionInfo;
       }
       return null;
