@@ -3,22 +3,19 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.31 2000/06/04 23:44:45 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.32 2000/06/05 10:46:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.protocol.corba.CallbackCorbaDriver;
-import org.xmlBlaster.protocol.email.CallbackEmailDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Property;
 import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 
 import java.util.*;
 
@@ -35,7 +32,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -66,7 +63,6 @@ public class ClientInfo
     */
    public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
    {
-      loadDrivers();
       instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
@@ -81,7 +77,6 @@ public class ClientInfo
     */
    public ClientInfo(String loginName)
    {
-      loadDrivers();
       instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
@@ -90,7 +85,7 @@ public class ClientInfo
 
 
    /**
-    * Load the callback drivers from xmlBlaster.properties. 
+    * Load the callback drivers from xmlBlaster.properties.
     * <p />
     * Accessing the CallbackDriver for this client, supporting the
     * desired protocol (CORBA, EMAIL, HTTP).
@@ -237,8 +232,9 @@ public class ClientInfo
 
       if (Log.TRACE) Log.trace(ME, "notifyAboutLogin()");
 
-      // Get the appropriate callback protocol driver (Future: add driver by reflection with xmlBlaster.properties)
+      // Get the appropriate callback protocol driver, add driver by reflection with xmlBlaster.properties
       // How to protect the misuse of other email addresses??
+      loadDrivers();
       CallbackAddress[] cbArr = authInfo.getCallbackAddresses();
       if (cbArr == null) {
          callbackDrivers = new I_CallbackDriver[0];
@@ -429,10 +425,7 @@ public class ClientInfo
          sb.append(offset + "   <noCallbackDriver />");
       else {
          for (int ii=0; ii<callbackDrivers.length; ii++) {
-            if (callbackDrivers[ii] instanceof CallbackCorbaDriver)
-               sb.append(offset + "   <CallbackCorbaDriver />");
-            else if (callbackDrivers[ii] instanceof CallbackEmailDriver)
-               sb.append(offset + "   <CallbackEmailDriver />");
+            sb.append(offset + "   <" + callbackDrivers[ii].getName() + " />");
          }
       }
       sb.append(offset + "</ClientInfo>\n");

@@ -3,7 +3,7 @@ Name:      I_CallbackDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_CallbackDriver.java,v 1.5 2000/06/04 23:44:46 ruff Exp $
+Version:   $Id: I_CallbackDriver.java,v 1.6 2000/06/05 10:46:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.CallbackAddress;
  * This interface hides the real protocol used to send a client a callback message
  * <p>
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public interface I_CallbackDriver
@@ -28,14 +28,15 @@ public interface I_CallbackDriver
 
 
    /**
-    * Get callback reference here.
-    * @param  callbackAddress Contains the stringified CORBA callback handle of the client
+    * Intialize the driver. 
+    * @param  callbackAddress Contains the callback address,
+    *         e.g. the stringified CORBA callback handle of the client or his email address.
     */
    public void init(CallbackAddress callbackAddress) throws XmlBlasterException;
 
 
    /**
-    * This method sends the message update to the client.
+    * Send the message update to the client.
     * <p />
     * The protocol for sending is implemented in the derived class
     *
@@ -46,7 +47,7 @@ public interface I_CallbackDriver
 
 
    /**
-    * This method shuts down the driver. 
+    * Shut down the driver. 
     * <p />
     */
    public void shutdown();
