@@ -12,7 +12,7 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar test.jar omquery.jar
  batik/batik-transcoder.jar batik/batik-util.jar 
  batik/batik-xml.jar 
  Xindice/xindice.jar Xindice/xalan-2.0.1.jar 
- Xindice/xmldb.jar
+ Xindice/xmldb.jar 
 
 
 
