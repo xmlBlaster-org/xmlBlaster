@@ -7,7 +7,7 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
 import org.jutils.text.StringHelper;
-import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.util.cluster.NodeId;
 
 /**
  * Handles unified naming convention of login names and user sessions. 
@@ -28,7 +28,7 @@ public final class SessionName implements java.io.Serializable
    private NodeId nodeId;
    private String relativeName;
    private final String subjectId;
-   private String pubSessionId;
+   private long pubSessionId;
 
    /**
     * Create and parse a unified name. 
@@ -85,6 +85,10 @@ public final class SessionName implements java.io.Serializable
       if (nodeId != null) {
          this.nodeId = nodeId;
       }
+      //else {
+      //   if (glob.getNodeId() != null)
+      //      this.nodeId = glob.getStrippedId(); // getNodeId();
+      //}
 
       // parse relative part
       if (relative.length() < 1) {
@@ -110,13 +114,15 @@ public final class SessionName implements java.io.Serializable
       else {
          throw new IllegalArgumentException(ME+": '" + name + "': No relative information found.");
       }
-      if (arr.length > ii) this.pubSessionId = arr[ii++];
+      if (arr.length > ii) {
+         this.pubSessionId = Long.parseLong(arr[ii++]);
+      }
    }
 
    /**
     * Create a new instance based on the given sessionName but with added/changed pubSessionId
     */
-   public SessionName(Global glob, SessionName sessionName, String pubSessionId) {
+   public SessionName(Global glob, SessionName sessionName, long pubSessionId) {
       this(glob, sessionName.getAbsoluteName());
       this.pubSessionId = pubSessionId;
    }
@@ -148,7 +154,7 @@ public final class SessionName implements java.io.Serializable
       if (this.relativeName == null) {
          StringBuffer buf = new StringBuffer(126);
          buf.append("client/").append(subjectId);
-         if (pubSessionId != null) buf.append("/").append(pubSessionId);
+         if (isSession()) buf.append("/").append(""+this.pubSessionId);
          this.relativeName = buf.toString();
       }
       return this.relativeName;
@@ -178,7 +184,7 @@ public final class SessionName implements java.io.Serializable
    /**
     * @return The public session identifier e.g. "2" or null if in subject context
     */
-   public String getPubSessionId() {
+   public long getPublicSessionId() {
       return this.pubSessionId;
    }
 
@@ -186,7 +192,17 @@ public final class SessionName implements java.io.Serializable
     * Check if we hold a session or a subject
     */
    public boolean isSession() {
-      return this.pubSessionId != null;
+      return this.pubSessionId != 0L;
+   }
+
+   /** @return true it publicSessionId is given by xmlBlaster server (if < 0) */
+   public boolean isPubSessionIdInternal() {
+      return this.pubSessionId < 0L;
+   }
+
+   /** @return true it publicSessionId is given by user/client (if > 0) */
+   public boolean isPubSessionIdUser() {
+      return this.pubSessionId > 0L;
    }
 
    /**
