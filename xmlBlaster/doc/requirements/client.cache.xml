@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.cache' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      Allows Java clients to poll synchronously for messages with the get() method,
+      and access the up to date message high performing from a local cache.
+   </topic>
+   <description>
+      <![CDATA[
+      The Java CorbaConnection class has a built in cache. If you activate this
+      cache with the initCache() method, the corbaConnection.get() method accesses 
+      a message on the first call synchronously and returns it to you.<br />
+      Behind the scenes, a subscribe() is done as well, and incoming updates
+      of this messages are put into the cache.<br />
+      Following get() invocations for the same message, are retrieved from
+      the local cache.
+      <p />
+      Note that this is a pure client behavior, and for the moment the only reference implementation
+      is in Java.
+      ]]>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      try {
+         corbaConnection = new CorbaConnection(); // Hides Corba stuff
+
+         // Setup cache ...
+         corbaConnection.initCache(10);
+
+         // and do the login ...
+         String loginName = "Gesa";
+         String passwd = "secret";
+         String qos = "<qos></qos>";
+         corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+
+         // This get() is only on the first call a write through to xmlBlaster
+         // Following calls retrieve the up to date data from the local cache:
+         MessageUnitContainer[] msgUnitArr = 
+               corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
+      }
+      catch (XmlBlasterException e) {
+          System.out.println("ERROR, ID=" + e.id + " REASON=" + e.reason);
+      }
+      ]]>
+   </example>
+   <todo>Rename corbaConnection.get() to getCached()</todo>
+   <todo>Add a test case to the testsuite</todo>
+   <see>org.xmlBlaster.client.CorbaConnection</see>
+   <see>org.xmlBlaster.client.BlasterCache</see>
+   <author>Konrad.Krafft@doubleSlash.de</author>
+   <hacker>Konrad.Krafft@doubleSlash.de</hacker>
+   <date>2000 04 15</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
