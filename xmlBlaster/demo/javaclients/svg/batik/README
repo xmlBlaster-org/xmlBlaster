@@ -1,9 +1,13 @@
+###################################################################
+Please read+use ../rhino/README if you want to play internet chess
+as this example is outdated (too complicated)!
+###################################################################
+
 This is a demo on how to use xmlBlaster together with svg clients. It makes 
 use of the batik package (see http://xml.apache.org).
 
 The demo is a chess board where you can move around the pieces. 
 
-Please read+use ../rhino/README if you want to play internet chess.
 
 To run the demo do the following:
 
