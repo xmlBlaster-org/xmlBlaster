@@ -1,0 +1,10 @@
+<xmlBlaster>
+	<node name="heron">
+		<component name="Info" class="org.xmlBlaster.jmxgui.plugins.infoPlugin.NodeInfoPanel">
+                        <param name="name">Info</param>
+                </component>
+		<component name="Log" class="org.xmlBlaster.jmxgui.plugins.logPlugin.LogPlugin">
+                <param name="name">Log</param>
+                </component>
+	</node>
+</xmlBlaster>
