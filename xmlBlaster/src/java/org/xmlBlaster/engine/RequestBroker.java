@@ -31,6 +31,7 @@ import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.mime.PublishPluginManager;
 import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -1020,7 +1021,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' from client '" + sessionInfo.getLoginName() + "' ...");
          if (log.DUMP) log.dump(ME, "Receiving " + (isClusterUpdate?"cluster update ":"") + " message in publish()\n" + xmlKey.literal() + "\n" + publishQos.toXml());
 
-         String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
+         PublishRetQos retVal = null;
 
          if (! publishQos.isFromPersistenceStore()) {
 
@@ -1090,9 +1091,14 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                            msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
                         // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
                         try {
-                           PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                           PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
                            //Thread.currentThread().dumpStack();
-                           if (ret != null) return ret.toXml();
+                           if (ret != null) { // Message was forwarded to master cluster
+                              retVal = ret.getPublishRetQos();
+                              if (ret.getNodeDomainInfo().getDirtyRead() == false)
+                                 return retVal.toXml();
+                              // else we publish it locally as well (dirty read!)
+                           }
                         }
                         catch (XmlBlasterException e) {
                            if (e.id.equals("ClusterManager.PluginFailed")) {
@@ -1185,7 +1191,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   receiverSessionInfo.queueMessage(new MsgQueueEntry(glob, receiverSessionInfo, msgUnitWrapper));
                }
                else {
-                  if (publishQos.forceQueuing()) {
+                  if (destination.forceQueuing()) {
                      SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
                      destinationClient.queueMessage(new MsgQueueEntry(glob, destinationClient, msgUnitWrapper));
                   }
@@ -1205,9 +1211,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             log.warn(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
             throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
          }
+         
+         if (retVal != null)
+            return retVal.toXml(); // Use the return value of the cluster master node
 
          StringBuffer buf = new StringBuffer(160);
-         buf.append("<qos><state id='").append(Constants.STATE_OK).append("'/><key oid='").append(retVal).append("'/></qos>");
+         buf.append("<qos><state id='").append(Constants.STATE_OK).append("'/><key oid='").append(xmlKey.getUniqueKey()).append("'/></qos>");
          return buf.toString();
       }
       catch (XmlBlasterException e) {
