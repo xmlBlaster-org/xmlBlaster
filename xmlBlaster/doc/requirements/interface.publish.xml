@@ -61,6 +61,33 @@
    </td></tr></table>
    </example>
 
+   <example lang="XML" type="HTML">
+      <p>
+      Here is a full QoS:
+      </p>
+<pre>
+  &lt;qos> &lt;
+     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
+     &lt;sender>Tim&lt;/sender>
+     &lt;priority>5&lt;/priority>
+     &lt;subscriptionId>subId:1&lt;/subscriptionId> <!-- Only for updates -->
+     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
+           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
+     &lt;/rcvTimestamp>
+     &lt;topic>&lt;expiration lifeTime='129595811'/>&lt;/topic> <!-- MsgUnitHandler lifecycle -->
+     &lt;expiration lifeTime='129595811'/> <!-- Only for persistence layer -->
+     &lt;isVolatile>false&lt;/isVolatile>
+     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
+     &lt;isDurable/>
+     &lt;readonly/>
+     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
+     &lt;route>
+        &lt;node id='heron'/>
+     &lt;/route>
+  &lt;/qos>
+</pre>
+   </example>
+
    <example lang="XmlRpc" type="HTML">
       <p>
       This is the XmlRpc server interface variant:
@@ -133,7 +160,7 @@
  
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>

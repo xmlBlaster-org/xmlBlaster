@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.message.lifecycle' type='NEW' prio='HIGH' status='INWORK'>
+   <topic>State charts and configuration of message and topic lifecycles</topic>
+   <description>
+      <p>
+      In xmlBlaster we define a topic as a single key oid whereas
+      a message instances are the single messages published (probably with identical oid).
+      The message instances build a history queue of a topic.
+      </p>
+      <p>
+      Lets have a look at the states of a topic:
+      </p>
+      <br />
+      <img src="TopicLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster topic" alt="Lifecycle of an xmlBlaster topic" />
+      <br />
+      <p>
+      Lets have a look at the states of a message instance:
+      </p>
+      <br />
+      <img src="MessageInstanceLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster message instance" alt="Lifecycle of an xmlBlaster message instance" />
+      <br />
+   </description>
+   <configuration where="server">
+
+      <p>
+      The configuration of topics and messages are done by publishing a message and
+      setting certain publish QoS tags:
+      </p>
+      <br />
+      <img src="PublishQosOverview.gif" border="0" title="Topic and message scope of a publish QoS" alt="Topic and message scope of a publish QoS" />
+      <br />
+   </configuration>
+   <see type="API">org.xmlBlaster.util.qos.MsgQosSaxFactory</see>
+   <see type="REQ">engine.message</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 11 17</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="INWORK">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
