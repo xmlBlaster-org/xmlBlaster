@@ -47,8 +47,11 @@ public:
      global_(glob), 
      log_(glob.getLog("demo"))        // all logs written in this class are written to the
    {                                  // log channel called 'demo'. To see the traces of this
-   }                                  // channel invoke -trace[demo] true on the command line,
+                                      // channel invoke -trace[demo] true on the command line,
                                       // then it will only switch on the traces for the demo channel
+      log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getVersion() +
+                    " from " + Global::getBuildTimestamp());
+   }
 
    virtual ~HelloWorld2()             // the constructor does nothing for the moment
    {

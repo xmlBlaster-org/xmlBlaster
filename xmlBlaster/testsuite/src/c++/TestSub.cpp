@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.19 2003/02/18 21:24:27 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.20 2003/02/21 11:43:04 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -77,6 +77,7 @@ private:
     */
    void setUp() 
    {
+      log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getVersion() + " from " + Global::getBuildTimestamp());
       TestSuite::setUp();
       try {
          string passwd = "secret";

@@ -63,6 +63,7 @@ public:
     */
    void setUp() 
    {
+      log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getVersion() + " from " + Global::getBuildTimestamp());
       TestSuite::setUp();
       try {
          string passwd = "secret";
