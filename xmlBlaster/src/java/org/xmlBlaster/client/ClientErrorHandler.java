@@ -32,11 +32,11 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
    private final String ME;
    private final Global glob;
    private final LogChannel log;
-   private final XmlBlasterAccess xmlBlasterAccess;
+   private final I_XmlBlasterAccess xmlBlasterAccess;
 
    /**
     */
-   public ClientErrorHandler(Global glob, XmlBlasterAccess xmlBlasterAccess) {
+   public ClientErrorHandler(Global glob, I_XmlBlasterAccess xmlBlasterAccess) {
       this.ME = "ClientErrorHandler-" + xmlBlasterAccess.getId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
@@ -55,6 +55,8 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
          log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" + entries[i].getEmbeddedType() + "' '" +
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
       }
+      Thread.currentThread().dumpStack();
+      xmlBlasterAccess.getQueue().clear();
    }
 
    /**
