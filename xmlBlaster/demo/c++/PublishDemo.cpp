@@ -10,11 +10,6 @@ Comment:   Little demo to show how a publish is done
 #include <util/PlatformUtils.hpp>
 #include <util/lexical_cast.h>
 
-
-/**
- *
- */
-
 using namespace std;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
@@ -83,7 +78,7 @@ void PublishDemo::publish(const string& oid, const string&, const string& conten
    log_.trace(ME, string("publish return qos: ") + tmp.toXml());
 }
 
-void usage(Log& log) 
+static void usage(Log& log) 
 {
    log.info("PublishDemo", "usage: all typical xmlBlaster command line arguments");
    log.info("PublishDemo", "plus the following additional command line arguments:");

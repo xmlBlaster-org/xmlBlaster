@@ -75,13 +75,6 @@ public:
    }
 };
 
-void usage(Log& log) 
-{
-   log.info("SubscribeDemo", "usage: all typical xmlBlaster command line arguments");
-   log.info("SubscribeDemo", "plus the following additional command line arguments:");
-   exit(0);
-}
-
 /**
  * Try
  * <pre>

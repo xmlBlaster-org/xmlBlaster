@@ -1,3 +1,4 @@
+#ifdef COMPILE_CORBA_PLUGIN
 
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
@@ -194,3 +195,13 @@ int main(int args, char ** argv)
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
+
+#else // COMPILE_CORBA_PLUGIN
+#include <iostream>
+int main(int args, char ** argv)
+{
+   ::std::cout << "ExternOrb: COMPILE_CORBA_PLUGIN is not defined, nothing to do" << ::std::endl;
+   return 0;
+}
+#endif // COMPILE_CORBA_PLUGIN
+
