@@ -87,6 +87,7 @@ ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnect
 ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
 ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
 ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
+ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
 #ClientProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapConnection
 
 # Register the client side callback server plugins:
@@ -94,6 +95,7 @@ ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.Corb
 ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
 ClientCbServerProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiCallbackServer
 ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
+ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
 #------------------------------------------------------------------------------
 
