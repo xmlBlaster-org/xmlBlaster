@@ -151,6 +151,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    if [ -d ${XMLBLASTER_HOME}/demo ]; then
       CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
    fi
+   if [ -d ${XMLBLASTER_HOME}/testsuite ]; then
+      CLASSPATH=${XMLBLASTER_HOME}:${CLASSPATH}
+   fi
    export CLASSPATH
 
    PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
