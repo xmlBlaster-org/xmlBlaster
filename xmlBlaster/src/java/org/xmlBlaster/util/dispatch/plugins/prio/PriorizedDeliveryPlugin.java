@@ -160,7 +160,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             this.parser = new ConfigurationParser(this.glob, newConfig);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.toString());
+            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.getMessage());
             return;
          }
 
@@ -173,13 +173,13 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             log.info(ME, "Reconfigured priorized delivery plugin with '" + ev.getKey() + "', currMsgStatus=" + this.currMsgStatus);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.toString());
+            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.getMessage());
             // rollback ...
             this.parser = oldParser;
             this.currMsgStatusConfiguration = oldConf;
             this.hasDefaultActionOnly = oldDef;
             if (this.parser != null) {
-               try { subscribeStatusMessages(); } catch (XmlBlasterException e2) { log.error(ME, "Rollback to old configuration failed: "+ e2.toString()); }
+               try { subscribeStatusMessages(); } catch (XmlBlasterException e2) { log.error(ME, "Rollback to old configuration failed: "+ e2.getMessage()); }
                statusChanged(this.currMsgStatus);
             }
          }
@@ -358,7 +358,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                if (log.TRACE) log.trace(ME, "Callback queue size is now " + deliveryManager.getQueue().getNumOfEntries());
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.toString());
+               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.getMessage());
                e.printStackTrace();
             }
          }
@@ -367,7 +367,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                deliveryManager.getQueue().removeRandom(entry);
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.toString());
+               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.getMessage());
                e.printStackTrace();
             }
          }
@@ -432,7 +432,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                   lastSize = (int)holdbackQueue.getNumOfEntries();
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Can't flush holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.toString());
+                  log.error(ME, "PANIC: Can't flush holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.getMessage());
                   e.printStackTrace();
                   continue;
                }
@@ -443,7 +443,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                   deliveryManager.getQueue().put(queueEntries, false);
                }
                catch (XmlBlasterException e) {
-                  log.warn(ME, "flushHoldbackQueue() failed: " + e.toString());
+                  log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
                   // errorCode == "ONOVERFLOW"
                   deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, e));
                }
@@ -455,7 +455,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.toString());
+                  log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
                }
             }
 
@@ -534,7 +534,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          if (de.getHoldbackQueue() != null) {
             // org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback throws an exception if
             // we activate the following line -> we need to investigate this issue
-            //try { de.getHoldbackQueue().destroy(); } catch (XmlBlasterException e) { log.error(ME, "Problems on shutdown of holdback queue: " + e.toString()); }
+            //try { de.getHoldbackQueue().destroy(); } catch (XmlBlasterException e) { log.error(ME, "Problems on shutdown of holdback queue: " + e.getMessage()); }
             de.getHoldbackQueue().shutdown();
          }
       }
