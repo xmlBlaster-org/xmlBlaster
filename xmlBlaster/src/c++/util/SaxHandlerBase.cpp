@@ -419,7 +419,7 @@ bool SaxHandlerBase::getBoolValue(const XMLCh* const value) const
 void SaxHandlerBase::releaseXMLCh(XMLCh** data)
 {
 #if XERCES_VERSION_MAJOR > 1 && XERCES_VERSION_MINOR > 1
-   XMLString::releaseXMLCh(data);
+   XMLString::release(data);
 #else
    delete [] *data;
    *data = 0;
@@ -429,7 +429,7 @@ void SaxHandlerBase::releaseXMLCh(XMLCh** data)
 void SaxHandlerBase::releaseXMLCh(char** data)
 {
 #if XERCES_VERSION_MAJOR > 1 && XERCES_VERSION_MINOR > 1
-   XMLString::releaseXMLCh(data);
+   XMLString::release(data);
 #else
    delete [] *data;
    *data = 0;
