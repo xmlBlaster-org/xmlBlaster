@@ -110,7 +110,7 @@ public:
             const T_VALUE& value,
             const std::string& type="",
             const std::string& encoding="") {
-      data.addClientProperty(name, value, type, encoding);
+      data_.addClientProperty(name, value, type, encoding);
    }
 
 };

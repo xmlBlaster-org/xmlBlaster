@@ -57,7 +57,7 @@ public:
             const T_VALUE& value,
             const std::string& type="",
             const std::string& encoding="") {
-      msgQosData_.addClientProperty(name, value, type, encoding);
+      data_.addClientProperty(name, value, type, encoding);
    }
 
    /**
@@ -66,7 +66,7 @@ public:
    template <typename T_VALUE> T_VALUE getClientProperty(
             const std::string& name,
             const T_VALUE& defaultValue) {
-      return msgQosData_.getClientProperty(name, defaultValue);
+      return data_.getClientProperty(name, defaultValue);
    }
 
    bool hasClientProperty(const std::string& name) const {
