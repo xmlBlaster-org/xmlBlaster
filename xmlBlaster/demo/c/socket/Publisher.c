@@ -60,6 +60,7 @@ int main(int argc, char** argv)
    {  /* connect */
       char *response = (char *)0;
       const char * const sessionName = xa->props->getString(xa->props, "session.name", "Publisher");
+      int maxSessions = xa->props->getInt(xa->props, "session.maxSessions", 10);
       const bool persistent = xa->props->getBool(xa->props, "persistentConnection", false);
       char connectQos[4096];
       char callbackQos[1024];
@@ -78,10 +79,10 @@ int main(int argc, char** argv)
                "   <passwd>publisher</passwd>"
                "  ]]>"
                " </securityService>"
-               " <session name='%.80s' timeout='3600000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>"
+               " <session name='%.80s' timeout='3600000' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
                " %.20s"
                "%.1024s"
-               "</qos>", sessionName, sessionName, persistent?"<persistent/>":"", callbackQos);
+               "</qos>", sessionName, sessionName, maxSessions, persistent?"<persistent/>":"", callbackQos);
 
       response = xa->connect(xa, connectQos, 0, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
