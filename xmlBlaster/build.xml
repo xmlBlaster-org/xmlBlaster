@@ -416,14 +416,43 @@ TODO
    <target name="demo" depends="xmlBlaster" description="Compile the xmlBlaster demo clients">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.dir}">
-         <exclude name="**/README*"/>
-         <exclude name="**/Makefile"/>
-         <exclude name="c/**"/>
-         <exclude name="**/XmlRpcHttpClient.java"/>
+            <exclude name="**/README*"/>
+            <exclude name="**/Makefile"/>
+            <exclude name="c/**"/>
+            <exclude name="c++/**"/>
+            <exclude name="perl/**"/>
+            <exclude name="php/**"/>
+            <exclude name="python/**"/>
+            <exclude name="**/*.html"/>
+            <exclude name="**/*.php"/>
+            <exclude name="**/*.inc"/>
+            <exclude name="**/*.ldif"/>
+            <exclude name="**/*.pl"/>
+            <exclude name="**/*.py"/>
+            <exclude name="**/XmlRpcHttpClient.java"/>
+            <exclude name="javaclients/Hello*.java"/>
+            <exclude name="javaclients/Latency.java"/>
+            <exclude name="javaclients/PtpReceive.java"/>
+            <exclude name="javaclients/PtpSend.java"/>
          </fileset>
       </copy>
-      <copy file="${demo.java.dir}/simplereader/blue.gif" tofile="${build.dest}/javaclients/simplereader/blue.gif"/>
-      <copy file="${demo.java.dir}/simplereader/red.gif" tofile="${build.dest}/javaclients/simplereader/red.gif"/>
+
+      <!-- This is because of the files do not have any package declaration in it. -->
+      <!-- See the exclude in the copy statement above. -->
+      <!-- Ant compiles all classes, even if they are up to date, if they are not -->
+      <!-- residing in the path where they belong to regarding to their packet instruction. -->
+      <copy todir="${build.src}/demo">
+         <fileset dir="${demo.java.dir}">
+            <include name="Hello*.java"/>
+            <include name="Latency.java"/>
+            <include name="PtpReceive.java"/>
+            <include name="PtpSend.java"/>
+         </fileset>
+      </copy>
+
+
+      <copy file="${demo.java.dir}/simplereader/blue.gif" todir="${build.dest}/javaclients/simplereader"/>
+      <copy file="${demo.java.dir}/simplereader/red.gif" todir="${build.dest}/javaclients/simplereader"/>
 
       <javac srcdir="${build.src}/demo"
             destdir="${build.dest}"
