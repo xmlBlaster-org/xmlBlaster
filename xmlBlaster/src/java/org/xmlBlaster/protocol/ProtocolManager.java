@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.4 2002/06/19 10:27:40 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.5 2002/07/21 16:37:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -161,6 +161,10 @@ public class ProtocolManager implements I_RunlevelListener
          } catch (XmlBlasterException e) {
             log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
             //throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+         }
+         catch(Throwable e) {
+            log.error(ME, "Ignoring problems on loading protocol driver: " + e.toString());
+            e.printStackTrace();
          }
       }
    }
