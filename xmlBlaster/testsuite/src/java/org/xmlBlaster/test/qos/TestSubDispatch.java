@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.5 2003/01/10 12:15:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -131,7 +131,11 @@ public class TestSubDispatch extends TestCase implements I_Callback
       try {
          subscribeRetQos = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(ME, "Receiving message with specialized update() ...");
+                  log.info(ME, "Receiving message with specialized update(" + updateKey.getOid() + ") ... " + updateQos.toXml());
+
+                  if (updateQos.isErased()) {
+                     return "";
+                  }
                   numReceived += 1;
 
                   assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
@@ -210,6 +214,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
+      if (updateQos.isErased()) {
+         return "";
+      }
       assertInUpdate = "Receiving update of message oid=" + updateKey.getOid() + " state=" + updateQos.getState() + " in default update handler ...";
       log.error(ME, "Receiving update of message oid=" + updateKey.getOid() + " state=" + updateQos.getState() + " in default update handler ...");
       return "";
