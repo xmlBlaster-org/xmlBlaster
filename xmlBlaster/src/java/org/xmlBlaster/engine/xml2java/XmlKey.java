@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.24 2002/06/27 11:07:42 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.25 2002/07/09 20:18:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -737,7 +737,9 @@ public final class XmlKey
     */
    private final String generateKeyOid() {
       StringBuffer oid = new StringBuffer(80);
-      oid.append(glob.getBootstrapAddress()).append("-").append(System.currentTimeMillis()).append("-").append(uniqueCounter);
+
+      // Windows does not like ":" and Unix does not like "/" when written to harddisk with FileDriver
+      oid.append(glob.getStrippedId()).append("-").append(System.currentTimeMillis()).append("-").append(uniqueCounter);
       synchronized (XmlKey.class) {
          uniqueCounter++;
       }
