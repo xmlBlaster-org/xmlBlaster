@@ -184,6 +184,10 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    private long numUpdates = 0L;
    private int maxSessions;
 
+   /** State during construction */
+   private static final int UNDEF = -1;
+   private static final int ALIVE = 0;
+   private int state = UNDEF;
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -207,6 +211,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       //this.burstModeTimer = new Timeout("BurstmodeTimer");
 
       myselfLoginName = new SessionName(glob, glob.getNodeId(), internalLoginNamePrefix + "[" + glob.getId() + "]");
+
+      initHelperQos();
+
       this.unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
 
       try {
@@ -230,51 +237,56 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       this.clientSubscriptions = new ClientSubscriptions(glob, this, authenticate);
 
-      {// Put this code in a generic internal message producer class (future release)
-
-         // Create properties with infinite life time, forceUpdate and historySize=1
-         org.xmlBlaster.client.qos.PublishQos publishQos = new org.xmlBlaster.client.qos.PublishQos(glob);
-         publishQos.setLifeTime(-1L);
-         publishQos.setForceUpdate(true);
-
-         TopicProperty topicProperty = new TopicProperty(glob);
-         HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
-         historyQueueProperty.setMaxMsgCache(2);
-         historyQueueProperty.setMaxMsg(2);
-         topicProperty.setHistoryQueueProperty(historyQueueProperty);
-         publishQos.setTopicProperty(topicProperty);
-         this.publishQosForEvents = publishQos;
-
-         // Should we configure historyQueue and msgUnitStore to be RAM based only?
-
-         this.publishLoginEvent = glob.getProperty().get("loginEvent", true);
-         if (this.publishLoginEvent) {
-            // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
-            org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Login", "text/plain");
-            this.xmlKeyLoginEvent = publishKey.getData();
-            this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false); // take copy
-         }
-
-         this.publishLogoutEvent = glob.getProperty().get("logoutEvent", true);
-         if (this.publishLogoutEvent) {
-            // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
-            org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Logout", "text/plain");
-            this.xmlKeyLogoutEvent = publishKey.getData();
-            this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
-         }
-
-         this.publishUserList = glob.getProperty().get("userListEvent", true);
-         if (this.publishUserList) {
-            // Key '__sys__UserList' for login/logout event
-            org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__UserList", "text/plain");
-            publishKey.setClientTags("<__sys__internal/>");
-            this.xmlKeyUserListEvent = publishKey.getData();
-         }
-      }
-
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
       authenticate.addClientListener(this);
+
+      this.state = ALIVE;
+   }
+
+   /**
+    * Put this code in a generic internal message producer class (future release)
+    */
+   private void initHelperQos() throws XmlBlasterException {
+
+      // Create properties with infinite life time, forceUpdate and historySize=1
+      org.xmlBlaster.client.qos.PublishQos publishQos = new org.xmlBlaster.client.qos.PublishQos(glob);
+      publishQos.setLifeTime(-1L);
+      publishQos.setForceUpdate(true);
+
+      TopicProperty topicProperty = new TopicProperty(glob);
+      HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
+      historyQueueProperty.setMaxMsgCache(2);
+      historyQueueProperty.setMaxMsg(2);
+      topicProperty.setHistoryQueueProperty(historyQueueProperty);
+      publishQos.setTopicProperty(topicProperty);
+      this.publishQosForEvents = publishQos;
+
+      // Should we configure historyQueue and msgUnitStore to be RAM based only?
+
+      this.publishLoginEvent = glob.getProperty().get("loginEvent", true);
+      if (this.publishLoginEvent) {
+         // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Login", "text/plain");
+         this.xmlKeyLoginEvent = publishKey.getData();
+         this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false); // take copy
+      }
+
+      this.publishLogoutEvent = glob.getProperty().get("logoutEvent", true);
+      if (this.publishLogoutEvent) {
+         // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Logout", "text/plain");
+         this.xmlKeyLogoutEvent = publishKey.getData();
+         this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
+      }
+
+      this.publishUserList = glob.getProperty().get("userListEvent", true);
+      if (this.publishUserList) {
+         // Key '__sys__UserList' for login/logout event
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__UserList", "text/plain");
+         publishKey.setClientTags("<__sys__internal/>");
+         this.xmlKeyUserListEvent = publishKey.getData();
+      }
    }
 
    /**
@@ -921,7 +933,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
    public void updateInternalUserList() throws XmlBlasterException {
       // "__sys__UserList";
-      if (this.publishUserList) {
+      if (this.publishUserList && this.state == ALIVE) {
          // Create QoS with new timestamp
          PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
          //publishQosUserListEvent.clearRoutes();
