@@ -3,10 +3,12 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.42 2000/04/27 18:31:40 ruff Exp $
+Version:   $Id: Log.java,v 1.43 2000/04/29 23:09:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
+import java.text.MessageFormat;
+import java.util.Locale;
 
 
 /**
@@ -62,15 +64,17 @@ public class Log
    private static final int L_TIME  = 0x20;  // Show elapsed milliseconds
    private static final int L_TRACE = 0x40;  // Trace application flow
    private static final int L_DUMP  = 0x80;  // Dump internal state
+   private static final int L_EXIT  = 0x100; // Do a normal exit
+   private static final int L_PLAIN = 0x200; // Marker for plain output
 
    /** Default log level is  L_PANIC | L_ERROR | L_WARN | L_INFO */
    private static int LOGLEVEL = (L_PANIC | L_ERROR | L_WARN | L_INFO);
    /**
     * Adjust here your local look and feel
     */
-   private static final int lookAndFeelDate = java.text.DateFormat.MEDIUM;
-   private static final int lookAndFeelTime = java.text.DateFormat.MEDIUM;
-   private static final java.util.Locale country = java.util.Locale.US;
+   private static int lookAndFeelDate = java.text.DateFormat.MEDIUM;
+   private static int lookAndFeelTime = java.text.DateFormat.MEDIUM;
+   private static Locale country = Locale.getDefault(); // java.util.Locale.US;
 
    /**
     * Counter for occurred warnings/errors
@@ -102,33 +106,38 @@ public class Log
    /**
     * Output text for different logging levels
     */
-   private static final StringBuffer INSTANCE_SEPERATOR = new StringBuffer(":  ");
-   private static final StringBuffer timeX  = new StringBuffer("TIME  ");
-   private static final StringBuffer callsX = new StringBuffer("CALL  ");
-   private static final StringBuffer traceX = new StringBuffer("TRACE ");
-   private static final StringBuffer plainX = new StringBuffer("      ");
-   private static final StringBuffer infoX  = new StringBuffer("INFO  ");
-   private static final StringBuffer warnX  = new StringBuffer("WARN  ");
-   private static final StringBuffer errorX = new StringBuffer("ERROR ");
-   private static final StringBuffer panicX = new StringBuffer("PANIC ");
-   private static final StringBuffer exitX  = new StringBuffer("EXIT  ");
+   private static final String timeX  = new String("TIME ");
+   private static final String callsX = new String("CALL ");
+   private static final String traceX = new String("TRACE");
+   private static final String plainX = new String("     ");
+   private static final String infoX  = new String("INFO ");
+   private static final String warnX  = new String("WARN ");
+   private static final String errorX = new String("ERROR");
+   private static final String panicX = new String("PANIC");
+   private static final String exitX  = new String("EXIT ");
 
    /**
     * Colored output to xterm
     */
    private       static boolean withXtermEscapeColor = false;
-   private static final StringBuffer INSTANCE_SEPERATOR_E = new StringBuffer(BOLD + ":" + ESC + "  "); // bold
 
-   private static final StringBuffer timeE  = new StringBuffer(LTGREEN_BLACK+ "TIME " + ESC + ": ");
-   private static final StringBuffer callsE = new StringBuffer(BLACK_LTGREEN+ "CALL " + ESC + ": ");
-   private static final StringBuffer traceE = new StringBuffer(WHITE_BLACK  + "TRACE" + ESC + ": ");
-   private static final StringBuffer plainE = new StringBuffer(WHITE_BLACK  + "     " + ESC + ": ");
-   private static final StringBuffer infoE  = new StringBuffer(GREEN_BLACK  + "INFO " + ESC + ": ");
-   private static final StringBuffer warnE  = new StringBuffer(YELLOW_BLACK + "WARN " + ESC + ": ");
-   private static final StringBuffer errorE = new StringBuffer(RED_BLACK    + "ERROR" + ESC + ": ");
-   private static final StringBuffer panicE = new StringBuffer(BLACK_RED    + "PANIC" + ESC + ": ");
-   private static final StringBuffer exitE  = new StringBuffer(GREEN_BLACK  + "EXIT " + ESC + ": ");
+   private static final String timeE  = new String(LTGREEN_BLACK+ "TIME " + ESC);
+   private static final String callsE = new String(BLACK_LTGREEN+ "CALL " + ESC);
+   private static final String traceE = new String(WHITE_BLACK  + "TRACE" + ESC);
+   private static final String plainE = new String(WHITE_BLACK  + "     " + ESC);
+   private static final String infoE  = new String(GREEN_BLACK  + "INFO " + ESC);
+   private static final String warnE  = new String(YELLOW_BLACK + "WARN " + ESC);
+   private static final String errorE = new String(RED_BLACK    + "ERROR" + ESC);
+   private static final String panicE = new String(BLACK_RED    + "PANIC" + ESC);
+   private static final String exitE  = new String(GREEN_BLACK  + "EXIT " + ESC);
 
+
+   /** format: <timestamp>:<levelStr>:<instance>:<text> */
+   // public final static String completeLog = "{0}:{1}:{2}:{3}";
+   // public final static String simpleLog = "{0}:{1}:{3}";       //without instanceName
+   // public final static String plainLog = "{3}";
+   private static String currentLogFormat = "{0} {1} {2}: {3}";
+   private static boolean logFormatPropertyRead = false;
 
    static
    {
@@ -194,12 +203,25 @@ public class Log
     */
    public static final void setLogLevel(String[] args)
    {
-      Property.loadProps(args);  // HACK: initialize Property object here
+      Property.loadProps(args);  // Initialize Property object here with args array
 
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
          return;
       }
+
+      initialize();
+   }
+
+
+   /**
+    * Force setting logging properties from xmlBlaster.properties
+    * <p />
+    * Called from Property after reading xmlBlaster.properties
+    */
+   static void initialize()
+   {
+      logFormatPropertyRead = true;
 
       // Note: "+" parameters are a bad idea, we should change to -calls true/false
       if (Property.getProperty("+info", false)) Log.addLogLevel("INFO");
@@ -218,6 +240,26 @@ public class Log
       if (Property.getProperty("time", false)) Log.removeLogLevel("TIME");
       if (Property.getProperty("trace", false)) Log.removeLogLevel("TRACE");
       if (Property.getProperty("dump", false)) Log.removeLogLevel("DUMP");
+
+
+      // format: {0}:{1}:{2}:{3}    <timestamp>:<levelStr>:<instance>:<text>
+      currentLogFormat = Property.getProperty("LogFormat", currentLogFormat);
+
+      String tmp = Property.getProperty("LogFormat.Date", "MEDIUM").trim();
+      if (tmp.equals("SHORT")) lookAndFeelDate = java.text.DateFormat.SHORT;
+      else if (tmp.equals("MEDIUM")) lookAndFeelDate = java.text.DateFormat.MEDIUM;
+      else if (tmp.equals("LONG")) lookAndFeelDate = java.text.DateFormat.LONG;
+      else if (tmp.equals("FULL")) lookAndFeelDate = java.text.DateFormat.FULL;
+
+      tmp = Property.getProperty("LogFormat.Time", "MEDIUM").trim();
+      if (tmp.equals("SHORT")) lookAndFeelTime = java.text.DateFormat.SHORT;
+      else if (tmp.equals("MEDIUM")) lookAndFeelTime = java.text.DateFormat.MEDIUM;
+      else if (tmp.equals("LONG")) lookAndFeelTime = java.text.DateFormat.LONG;
+      else if (tmp.equals("FULL")) lookAndFeelTime = java.text.DateFormat.FULL;
+
+      String la = Property.getProperty("LogFormat.Language", (String)null);
+      String co = Property.getProperty("LogFormat.Country", (String)null);
+      if (la != null && co != null) country = new Locale(la, co);
 
       String fileName = Property.getProperty("logFile", (String)null);
       if (fileName != null)
@@ -252,7 +294,7 @@ public class Log
    /**
     * Set the boolean values of CALL, TIME, TRACE, DUMP accordingly.
     * <p />
-    * This allows to use if (Log.TRACE) in your code, so that the following
+    * This allows to use 'if (Log.TRACE)' in your code, so that the following
     * Log.trace(...) is not executed if not needed (performance gain).
     */
    private static final void setPreLogLevelCheck()
@@ -354,24 +396,9 @@ public class Log
    }
 
 
-   /**
-    * Create the Date/Time informations.
-    *
-    * @return example: 1999-11-01 10:41:03 INFO
-    */
-   public static final StringBuffer logHeader(StringBuffer levelStr)
+   public static final void setLogFormat(String format)
    {
-      if (levelStr == null) return new StringBuffer("");
-
-      java.util.Date currentDate = new java.util.Date();
-
-      java.text.DateFormat df = java.text.DateFormat.getDateTimeInstance(lookAndFeelDate, lookAndFeelTime, country);
-
-      String timeStr = df.format(currentDate);
-
-      StringBuffer time = new StringBuffer(timeStr.length() + 4 + levelStr.length());
-
-      return time.append(timeStr).append(" ").append(levelStr);
+      currentLogFormat = format;
    }
 
 
@@ -379,20 +406,45 @@ public class Log
     * Log example:
     * <p />
     * Feb 11, 2000 3:44:48 PM INFO :  [Main]  xmlBlaster is ready for requests
+    *
+    * @param levelStr e.g. "WARNING" or "INFO" or null
+    * @param level    for performance reasons, an int for the levelStr
+    * @param instance e.g. "RequestBroker" or "Authentication"
+    * @param text     e.g. "Login denied"
     */
-   public static final void log(final StringBuffer levelStr, String instance, String text)
+   public static final void log(final String levelStr, final int level, final String instance, final String text)
    {
-      StringBuffer strBuf;
-      if (instance == null)
-         strBuf = logHeader(levelStr).append(" ").append(text);
+      if (logFormatPropertyRead == false) {
+         initialize();
+      }
+
+      String logFormat;
+      if((level & L_DUMP) != 0)
+         logFormat = "{3}";
       else
-         strBuf = logHeader(levelStr).append(" [").append(instance).append("]  ").append(text);
+         logFormat = currentLogFormat;
+
+      java.util.Date currentDate = new java.util.Date();
+      java.text.DateFormat df = java.text.DateFormat.getDateTimeInstance(lookAndFeelDate, lookAndFeelTime, country);
+      String timeStr = df.format(currentDate);
+
+      Object[] arguments = {
+         timeStr,
+         levelStr,
+         instance,
+         text
+      };
+
+      String logEntry = MessageFormat.format( logFormat, arguments );
 
       if (logListener != null) {
-         logListener.log(strBuf.toString());
+         logListener.log(logEntry);
       }
       else {
-         System.out.println(strBuf);
+         if ((level & L_ERROR) != 0 || (level & L_WARN) != 0 || (level & L_PANIC) != 0)
+            System.err.println(logEntry);
+         else
+            System.out.println(logEntry);
       }
    }
 
@@ -416,7 +468,7 @@ public class Log
    {
       if((LOGLEVEL & L_PANIC) != 0)
       {
-         log((withXtermEscapeColor) ? panicE : panicX, instance, text);
+         log((withXtermEscapeColor) ? panicE : panicX, L_PANIC, instance, text);
          System.out.println(text);
          numErrorInvocations++;
          // displayStatistics();
@@ -430,7 +482,7 @@ public class Log
     */
    public static final void exit(String instance, String text)
    {
-      log((withXtermEscapeColor) ? exitE : exitX, instance, text);
+      log((withXtermEscapeColor) ? exitE : exitX, L_EXIT, instance, text);
       displayStatistics();
       exitLow(0);
    }
@@ -443,7 +495,7 @@ public class Log
    {
       if((LOGLEVEL & L_INFO) != 0)
       {
-         log((withXtermEscapeColor) ? infoE : infoX, instance, text);
+         log((withXtermEscapeColor) ? infoE : infoX, L_INFO, instance, text);
       }
    }
 
@@ -457,7 +509,7 @@ public class Log
       if((LOGLEVEL & L_WARN) != 0)
       {
          numWarnInvocations++;
-         log((withXtermEscapeColor) ? warnE : warnX, instance, text);
+         log((withXtermEscapeColor) ? warnE : warnX, L_WARN, instance, text);
       }
    }
    /*
@@ -476,7 +528,7 @@ public class Log
       if((LOGLEVEL & L_PANIC) != 0)
       {
          numErrorInvocations++;
-         log((withXtermEscapeColor) ? errorE : errorX, instance, text);
+         log((withXtermEscapeColor) ? errorE : errorX, L_ERROR, instance, text);
       }
    }
    /*
@@ -494,7 +546,7 @@ public class Log
     */
    public static final void plain(String instance, String text)
    {
-      log(null, null, text);
+      log(null, L_PLAIN, null, text);
    }
 
    /*
@@ -503,8 +555,8 @@ public class Log
    public static final void dump(String instance, String text)
    {
       if((LOGLEVEL & L_DUMP) != 0) {
-         log(null, instance, text);
-         log(null, instance, Memory.getStatistic());
+         log("", L_DUMP, instance, text);
+         log("", L_DUMP, instance, Memory.getStatistic());
       }
    }
 
@@ -514,7 +566,7 @@ public class Log
    public static final void trace(String instance, String text)
    {
       if((LOGLEVEL & L_TRACE) != 0)
-         log((withXtermEscapeColor) ? traceE : traceX, instance, text);
+         log((withXtermEscapeColor) ? traceE : traceX, L_TRACE, instance, text);
    }
 
    /**
@@ -523,7 +575,7 @@ public class Log
    public static final void calls(String instance, String text)
    {
       if((LOGLEVEL & L_CALLS) != 0)
-         log((withXtermEscapeColor) ? callsE : callsX, instance, text);
+         log((withXtermEscapeColor) ? callsE : callsX, L_CALLS, instance, text);
    }
 
    /**
@@ -532,7 +584,7 @@ public class Log
    public static final void time(String instance, String text)
    {
       if((LOGLEVEL & L_TIME) != 0)
-         log((withXtermEscapeColor) ? timeE : timeX, instance, text);
+         log((withXtermEscapeColor) ? timeE : timeX, L_TIME, instance, text);
    }
 
 
@@ -661,7 +713,7 @@ class LogFile implements LogListener
       String tmp = new String("\n");
       newLine = tmp.getBytes();
       maxLogFileLines = Integer.parseInt(Property.getProperty("Log.maxFileLines", "" + maxLogFileLines));   // in lines per file
-      Log.info("LogFile", "Logging output is sent to " + fileName);
+      Log.info("LogFile", "Logging output is sent to '" + fileName + "' with maxFileLines=" + maxLogFileLines);
       newFile();
    }
 

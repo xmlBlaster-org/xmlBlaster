@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.9 2000/04/26 11:18:48 ruff Exp $
+Version:   $Id: Property.java,v 1.10 2000/04/29 23:09:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -43,6 +43,8 @@ public class Property
    public final static String javaHome = System.getProperty("java.home");
 
    private static Properties xmlBlasterProperties = null;
+   private static final Properties dummyProperties = new Properties();
+   private static boolean veryFirst = true;
 
 
    /**
@@ -139,12 +141,12 @@ public class Property
     */
    public final static Object removeProperty(String key)
    {
-      return xmlBlasterProperties.remove(key);
+      return getProps().remove(key);
    }
 
 
    /**
-    * Returns the xmlBlaster.properties properties from the cache.
+    * Returns the xmlBlaster.properties properties from the cache. 
     * <p />
     * If xmlBlaster.properties is not parsed yet, it will be initialized
     * automatically. Note that you should prefer loadProps() to initialize
@@ -153,28 +155,46 @@ public class Property
     */
    public static final Properties getProps()
    {
-      if (xmlBlasterProperties != null) return xmlBlasterProperties;
-      return loadProps((String[]) null);
+      if (veryFirst && xmlBlasterProperties == null)
+         loadProps((String[]) null);
+
+      if (xmlBlasterProperties == null)
+         return dummyProperties;
+
+      return xmlBlasterProperties;
    }
 
 
    /**
-    * This loads xmlBlaster.properties file.
+    * This loads xmlBlaster.properties file. 
+    * <p />
     * Use this method only the first time to initialize everything.
     * @args This key/value parameter array is added to the poperties object (see addArgs2Props()).
     * @return the initialized Properties
     */
-   synchronized public static final Properties loadProps(String[] args)
+   public static final Properties loadProps(String[] args)
    {
+      veryFirst = false;
+      if (xmlBlasterProperties != null && args != null) {
+         return xmlBlasterProperties;
+      }
+      else if (xmlBlasterProperties != null) {
+         Log.info(ME, "Reloading Property file ... args=" + args);
+      }
+
+      // set default, the Log class calls getProperty, and this class uses Log
+      // this leads for a missing xmlBlaster.properties to a never ending loop
+      xmlBlasterProperties = new Properties();
+
       String fileName = findFile("xmlBlaster.properties");
       if (fileName == null) {
-         Log.error(ME, "Couldn't find file xmlBlaster.properties");
-         Log.panic(ME, "Please copy xmlBlaster.properties to your home directory, there is a template in the xmlBlaster distribution");
+         // Log.error(ME, "Couldn't find file xmlBlaster.properties");
+         Log.warning(ME, "Please copy xmlBlaster.properties to your home directory, there is a template in the xmlBlaster distribution. We continue with default settings!");
+         return xmlBlasterProperties;
       }
       File file = new File(fileName);
 
       try {
-         xmlBlasterProperties = new Properties();
          FileInputStream fis = new FileInputStream(file);
          xmlBlasterProperties.load(fis);
          fis.close();
@@ -209,8 +229,12 @@ public class Property
          }
 
          addArgs2Props(xmlBlasterProperties, args);
+
+         // hack: Who is first: the Log output in this class or the Log which needs Properties?
+         Log.initialize();
       }
       catch (Exception e) {
+         e.printStackTrace();
          Log.error(ME, "Unable to initilize xmlBlaster.properties: " + e);
          Log.panic(ME, "Good bye");
       }
@@ -287,7 +311,7 @@ public class Property
          return userHome;
       }
       else
-         Log.info(ME, "File '" + fileName + "' is not in directory " + userHome);
+         Log.info(ME, "File '" + fileName + "' is not in user.home directory " + userHome);
 
 
       if (xmlBlasterPath == null) {
@@ -302,7 +326,7 @@ public class Property
             return xmlBlasterPath;
          }
          else
-            Log.info(ME, "File '" + fileName + "' is not in directory " + xmlBlasterPath );
+            Log.info(ME, "File '" + fileName + "' is not in directory XMLBLASTER_HOME=" + xmlBlasterPath );
       }
 
 
@@ -311,7 +335,7 @@ public class Property
          return currentPath;
       }
       else
-         Log.info(ME, "File '" + fileName + "' is not in directory " + currentPath);
+         Log.info(ME, "File '" + fileName + "' is not in current directory " + currentPath);
 
 
       f = new File(javaHome, fileName);
@@ -319,7 +343,7 @@ public class Property
          return javaHome;
       }
       else
-         Log.info(ME, "File '" + fileName + "' is not in directory " + javaHome);
+         Log.info(ME, "File '" + fileName + "' is not in java.home directory " + javaHome);
 
 
       String guess;
@@ -332,7 +356,7 @@ public class Property
          return guess;
       }
       else
-         Log.error(ME, "File '" + fileName + "' is not in directory " + guess );
+         Log.info(ME, "File '" + fileName + "' is not in directory " + guess );
 
       return null;
    }
@@ -350,7 +374,7 @@ public class Property
    {
       String path = findPath(fileName);
       if (path == null) {
-         Log.error(ME, "File '" + fileName + "' not found");
+         Log.warning(ME, "File '" + fileName + "' not found");
          return null;
       }
 
