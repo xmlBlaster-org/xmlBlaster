@@ -73,6 +73,10 @@ void Timeout::start()
    isRunning_ = true;
    log_.trace(ME, " before creating the running thread");
    Thread::start();
+   while (!isReady_) {
+      Thread::sleep(5);
+   }
+
    log_.trace(ME, " start: running thread created");
 }
 
@@ -242,11 +246,10 @@ void Timeout::run()
 
          Lock waitForTimeoutLock(waitForTimeoutMutex_);
          if (getTimeoutMapSize() == oldSize) {
+            isReady_ = true;
             waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
             log_.trace(ME, "waking up ... ");
          }
-         isReady_ = true;
-
       }
    }
    log_.trace(ME, "the running thread is exiting");
