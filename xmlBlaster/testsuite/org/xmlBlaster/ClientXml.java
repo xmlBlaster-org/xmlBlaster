@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.3 1999/11/19 17:21:33 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.4 1999/11/19 17:22:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -217,6 +217,7 @@ public class ClientXml
 
    /**
     * To avoid the name service, one can access the Auhtenticate IOR directly
+    * using a http connection
     */
    public String getAuthenticationServiceIOR(String host, int port)
    {
