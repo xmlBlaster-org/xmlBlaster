@@ -3,6 +3,8 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.xx [xx, xx 2001]
 ==============================
 
+ - Fixed C++ testclients in xmlBlaster/testsuite/c++
+
 
 Changes for 0.79b [March, 11 2001]
 ==================================
