@@ -1596,13 +1596,27 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                         if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
                         publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
                         if (publishReturnQos != null) {
+                           if (destinationArr.length > 1) {
+                              // TODO: cluster forwarding with multiple destinations:
+                              String txt = "Messages with more than one destinations in a cluster environment is not implemented, only destination '" + destinationArr[ii].toXml() + "' of '" + msgUnit.getLogId() + "' was delivered";
+                              log.warn(ME, txt);
+                              throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, txt);
+                           }
+                           return publishReturnQos.toXml();
+                        }
+                        /*
+                        if (publishReturnQos != null) {
                            // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
+                           BUGGY: We need to take a clone to not remove the destination of the sent message
                            publishQos.removeDestination(destinationArr[ii]);
                         }
+                        */
                      }
+                     /*
                      if (publishQos.getNumDestinations() == 0) { // we are done, all messages where forwarded
                         return publishReturnQos.toXml();
                      }
+                     */
                   }
                   else { // if (publishQos.isSubscribable()) {
                      try {
