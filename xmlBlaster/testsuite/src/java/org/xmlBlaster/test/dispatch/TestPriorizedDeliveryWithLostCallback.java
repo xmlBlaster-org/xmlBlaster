@@ -66,8 +66,8 @@ import junit.framework.*;
 public class TestPriorizedDeliveryWithLostCallback extends TestCase
 {
    private static String ME = "TestPriorizedDeliveryWithLostCallback";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private ConnectQos connectQos;
    private ConnectReturnQos connectReturnQos;
@@ -366,7 +366,15 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       this.serverThread = null;
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      Util.resetPorts(glob);
+      this.glob = null;
+      this.log = null;
+      this.connectQos = null;
+      this.connectReturnQos = null;
+      this.con = null;
+      this.updateInterceptor = null;
+      this.updateMsgs = null;
+      Global.instance().shutdown();
    }
 
    /**

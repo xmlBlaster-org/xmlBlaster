@@ -54,8 +54,8 @@ import junit.framework.*;
 public class TestPriorizedDeliveryPlugin extends TestCase
 {
    private static String ME = "TestPriorizedDeliveryPlugin";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -439,8 +439,8 @@ public class TestPriorizedDeliveryPlugin extends TestCase
    protected void tearDown() {
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
-      con.disconnect(null);
-      con = null;
+      this.con.disconnect(null);
+      this.con = null;
 
       if (this.startEmbedded) {
          try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
@@ -449,7 +449,12 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       }
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      Util.resetPorts(glob);
+      this.glob = null;
+      this.log = null;
+      this.con = null;
+      this.update = null;
+      Global.instance().shutdown();
    }
 
    /**

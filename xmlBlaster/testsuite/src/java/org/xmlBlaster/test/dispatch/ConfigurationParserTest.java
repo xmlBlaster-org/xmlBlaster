@@ -38,6 +38,12 @@ public class ConfigurationParserTest extends TestCase {
       this.log = glob.getLog(null);
    }
 
+   protected void tearDown() {
+      this.glob = null;
+      this.log = null;
+      Global.instance().shutdown();
+   }
+
    /** Test a valid configuration */
    public void testParse() {
       System.out.println("***ConfigurationParserTest: testParse ...");
@@ -265,7 +271,7 @@ public class ConfigurationParserTest extends TestCase {
          testSub.testDefault();
          testSub.testParse();
          testSub.testInvalidParse();
-         //testSub.tearDown();
+         testSub.tearDown();
       }
       catch (Throwable e) {
          e.printStackTrace();

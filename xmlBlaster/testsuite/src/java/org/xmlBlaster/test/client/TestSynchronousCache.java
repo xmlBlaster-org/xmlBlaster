@@ -54,8 +54,8 @@ import junit.framework.*;
  */
 public class TestSynchronousCache extends TestCase {
    private String ME = "TestSynchronousCache";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private I_XmlBlasterAccess con = null;
    private MsgInterceptor updateInterceptor;
@@ -127,8 +127,8 @@ public class TestSynchronousCache extends TestCase {
          //}
       }
 
-      con.disconnect(null);
-      con = null;
+      this.con.disconnect(null);
+      this.con = null;
 
       if (this.startEmbedded) {
          try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
@@ -137,7 +137,12 @@ public class TestSynchronousCache extends TestCase {
       }
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      Util.resetPorts(glob);
+
+      this.glob = null;
+      this.log = null;
+      this.updateInterceptor = null;
+      this.synchronousCache = null;
    }
 
    public EraseReturnQos[] sendErase(String publishOid) {
