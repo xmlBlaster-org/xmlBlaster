@@ -3,11 +3,11 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.12 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.13 2002/09/10 19:00:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
@@ -36,6 +36,7 @@ public class TestCallback extends TestCase implements I_Callback
 {
    private static String ME = "TestCallback";
    private final Global glob;
+   private final LogChannel log;
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -44,6 +45,8 @@ public class TestCallback extends TestCase implements I_Callback
    private String subscribeDeadLetterOid = null;
    private XmlBlasterConnection conAdmin = null;
    private String publishOid = null;
+
+   private boolean isSocket = false;
 
    /**
     * Constructs the TestCallback object.
@@ -55,6 +58,7 @@ public class TestCallback extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
+       this.log = glob.getLog("test");
        this.name = name;
    }
 
@@ -65,16 +69,25 @@ public class TestCallback extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      String driverType = glob.getProperty().get("client.protocol", "dummy");
+      if (driverType.equalsIgnoreCase("SOCKET"))
+         isSocket = true;
+
+      if (isSocket) {
+         log.warn(ME, "callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
+         return;
+      }
+
       try {
          conAdmin = new XmlBlasterConnection();
          ConnectQos qos = new ConnectQos(glob, "admin", passwd);
          conAdmin.connect(qos, this);
 
          subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeDeadLetterOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeDeadLetterOid + " done");
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
    }
@@ -86,15 +99,16 @@ public class TestCallback extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
+      if (isSocket) return;
       try {
          if (conAdmin != null) {
             EraseRetQos[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
-            if (strArr.length != 1) Log.error(ME, "ERROR: Erased " + strArr.length + " messages");
+            if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
             conAdmin.disconnect(new DisconnectQos());
          }
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
    }
@@ -104,9 +118,10 @@ public class TestCallback extends TestCase implements I_Callback
     */
    public void testCallbackFailure()
    {
-      Log.info(ME, "testCallbackFailure() ...");
+      if (isSocket) return;
+      log.info(ME, "testCallbackFailure() ...");
       try {
-         Log.info(ME, "Connecting ...");
+         log.info(ME, "Connecting ...");
          XmlBlasterConnection con = new XmlBlasterConnection();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
@@ -114,11 +129,11 @@ public class TestCallback extends TestCase implements I_Callback
          con.shutdownCb(); // Destroy the callback server
 
          String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
 
          MessageUnit msgUnit = new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);
          publishOid = con.publish(msgUnit).getOid();
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
          waitOnUpdate(2000L, 1);
          assertTrue("Expected a dead letter", isDeadLetter);
@@ -130,14 +145,14 @@ public class TestCallback extends TestCase implements I_Callback
             //con.disconnect(null);
          }
          catch (Exception e2) {
-            Log.info(ME, "SUCCESS: The session was destroyed by xmlBlaster");
+            log.info(ME, "SUCCESS: The session was destroyed by xmlBlaster");
          }
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
-      Log.info(ME, "Success in testCallbackFailure()");
+      log.info(ME, "Success in testCallbackFailure()");
    }
 
    /**
@@ -147,7 +162,7 @@ public class TestCallback extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
       isDeadLetter = updateKey.isDeadLetter();
       return "";
@@ -204,7 +219,6 @@ public class TestCallback extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testCallbackFailure();
       testSub.tearDown();
-      Log.exit(TestCallback.ME, "Good bye");
    }
 }
 

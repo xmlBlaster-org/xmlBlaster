@@ -3,11 +3,11 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.28 2002/06/27 12:56:46 ruff Exp $
+Version:   $Id: TestGet.java,v 1.29 2002/09/10 19:00:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -36,6 +36,7 @@ public class TestGet extends TestCase
 {
    private static String ME = "TestGet";
    private final Global glob;
+   private final LogChannel log;
 
    private String publishOid = "TestGet";
    private XmlBlasterConnection connection;
@@ -56,6 +57,7 @@ public class TestGet extends TestCase
    {
       super(testName);
       this.glob = glob;
+      this.log = glob.getLog("test");
       this.loginName = loginName;
    }
 
@@ -75,7 +77,7 @@ public class TestGet extends TestCase
          connection.login(loginName, passwd, qos);
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -94,14 +96,14 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       try {
          EraseRetQos[] arr = connection.erase(xmlKey, qos);
-         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
-         Log.info(ME, "Success, erased a message");
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
+         log.info(ME, "Success, erased a message");
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
 
       connection.logout();
       // Give the server some millis to finish the iiop handshake ...
       try { Thread.currentThread().sleep(200); } catch (InterruptedException e) {}
-      Log.info(ME, "Success, logged out");
+      log.info(ME, "Success, logged out");
    }
 
 
@@ -112,50 +114,55 @@ public class TestGet extends TestCase
     */
    public void testGet()
    {
-      if (Log.TRACE) Log.trace(ME, "1. Get a not existing message ...");
+      if (log.TRACE) log.trace(ME, "1. Get a not existing message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
-         if (msgArr.length > 0)
+         if (msgArr.length > 0) {
+            log.error(ME, "Received " + msgArr.length + " unexpected messages");
+            for (int i=0; i<msgArr.length; i++) {
+               log.error(ME, "Wrong message is " + msgArr[i].toXml());
+            }
             assertTrue("get of not existing message is not possible", false);
+         }
          else
-            Log.info(ME, "Success, got zero messages when trying to get unknown message");
+            log.info(ME, "Success, got zero messages when trying to get unknown message");
       } catch(XmlBlasterException e) {
-         Log.error(ME, "get of not existing message should not throw an exception");
+         log.error(ME, "get of not existing message should not throw an exception");
          System.exit(1);
          assertTrue("get of not existing message should not throw an exception", false);
-         //Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
+         //log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
       }
 
-      if (Log.TRACE) Log.trace(ME, "2. Publish a message ...");
+      if (log.TRACE) log.trace(ME, "2. Publish a message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
          PublishQosWrapper qosWrapper = new PublishQosWrapper(); // the same as "<qos></qos>"
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
          connection.publish(msgUnit);
-         Log.info(ME, "Success, published a message");
+         log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      if (Log.TRACE) Log.trace(ME, "3. Get an existing message ...");
+      if (log.TRACE) log.trace(ME, "3. Get an existing message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
          
-         Log.info(ME, "Success, got the message");
+         log.info(ME, "Success, got the message");
          assertEquals("Got wrong number of messages", 1, msgArr.length);
-         if (Log.DUMP) Log.dump(ME, msgArr[0].toXml());
+         if (log.DUMP) log.dump(ME, msgArr[0].toXml());
 
          GetQos getQos = new GetQos(msgArr[0].qos);
          assertEquals("Sender is corrupted", loginName, getQos.getSender());
-         Log.info(ME, "Get success from sender " + getQos.getSender());
+         log.info(ME, "Get success from sender " + getQos.getSender());
          
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].content));
       } catch(XmlBlasterException e) {
-         Log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
+         log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
          assertTrue("Couldn't get() an existing message", false);
       }
    }
@@ -167,7 +174,7 @@ public class TestGet extends TestCase
    public void testGetMany()
    {
       int num = glob.getProperty().get("numTries", 5);
-      Log.info(ME, "Get " + num + " not existing messages ...");
+      log.info(ME, "Get " + num + " not existing messages ...");
       String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
@@ -177,10 +184,10 @@ public class TestGet extends TestCase
                assertTrue("get() of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
             assertTrue("get() of not existing message should not throw an Exception: " + e.toString(), false);
-            // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
+            // log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
          }
       }
-      Log.info(ME, "Get " + num + " not existing messages done");
+      log.info(ME, "Get " + num + " not existing messages done");
    }
 
 
@@ -211,14 +218,14 @@ public class TestGet extends TestCase
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.out.println(ME + " Init failed");
+         System.exit(1);
       }
       TestGet testSub = new TestGet(glob, "TestGet", "Tim");
       testSub.setUp();
       testSub.testGet();
       testSub.testGetMany();
       testSub.tearDown();
-      Log.exit(TestGet.ME, "Good bye");
    }
 }
 

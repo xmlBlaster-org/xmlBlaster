@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.38 2002/09/09 13:39:53 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.39 2002/09/10 19:00:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -175,7 +175,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     * TEST: Construct a message and publish it.
     * <p />
     */
-   public void testPublish(int counter) throws XmlBlasterException
+   public void doPublish(int counter) throws XmlBlasterException
    {
       String oid = "Message" + "-" + counter;
       log.info(ME, "Publishing a message " + oid + " ...");
@@ -212,7 +212,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                waitOnUpdate(reconnectDelay*2L); // Message-4 We need to wait until the client reconnected (reconnect interval)
                waitOnUpdate(4000L); // Message-5
             }
-            testPublish(ii+1);
+            doPublish(ii+1);
             waitOnUpdate(4000L);
             assertTrue(assertInUpdate, assertInUpdate == null);
             assertInUpdate = null;
