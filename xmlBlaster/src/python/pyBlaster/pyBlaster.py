@@ -1,6 +1,6 @@
 """
-__version__ = '$Revision: 1.6 $'
-__date__    = '$Date: 2004/08/12 18:26:46 $'
+__version__ = '$Revision: 1.7 $'
+__date__    = '$Date: 2004/08/18 11:29:10 $'
 __author__  = 'spex66@gmx.net'
 __license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
 
@@ -161,10 +161,11 @@ class XmlBlasterClient:
         
     # XMLBLASTER
 
-    def login(self, username='guest', password='guest', callback_url=None):
+    def login(self, username='guest', password='guest', callback_url=None, additionalConnectQos=''):
         """
         Do login to xmlBlaster.
-        @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQosServer,String)
+        @param additionalConnectQos For example "<session timeout='3600000' maxSessions='10'/>"
+        @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
         @deprecated Use connect() instead
         @return The secret sessionId as a raw string
         """
@@ -174,7 +175,7 @@ class XmlBlasterClient:
         else:
             _cb = ""
         
-        qos = "<qos>%s</qos>" % _cb
+        qos = "<qos>" + _cb + additionalConnectQos + "</qos>"
         
         # remember the return secret value for further usage
         self.sessionId = self.proxy.authenticate.login(username, password, qos, "")
@@ -509,7 +510,8 @@ if __name__ == '__main__':
     
     
     print """    _.login('%s', '%s', '%s')""" % (user, passwd, xb.callback_url)
-    xb.login(user, passwd, xb.callback_url)
+    additionalConnectQos = "<session timeout='3600000' maxSessions='10'/>"
+    xb.login(user, passwd, xb.callback_url, additionalConnectQos)
     
     print """    _.subscribe("<key oid='' queryType='XPATH'>//%s</key>", "<qos/>")"""  % phrase
     xb.subscribe("<key oid='' queryType='XPATH'>//%s</key>" % phrase, "<qos/>")
