@@ -21,13 +21,14 @@ import java.lang.reflect.Method;
  * to still be JDK 1.2 compatible.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class SignalCatcher
+public class SignalCatcher implements Runnable
 {
    private String ME = "SignalCatcher";
-   private Global glob = null;
+   private Global glob;
    private LogChannel log;
-   private Thread shutdownHook = null;
-
+   private Thread thread;
+   private I_SignalListener listener;
+   private boolean runDummy = false;
 
    /**
     * You need to call init() after construction. 
@@ -44,10 +45,12 @@ public class SignalCatcher
     *  c.removeSignalCatcher();
     * </pre>
     */
-   public SignalCatcher(Global glob, Thread hook) {
+   public SignalCatcher(Global glob, I_SignalListener listener) {
       this.glob = glob;
       this.log = glob.getLog("core");
-      this.shutdownHook = hook;
+      this.listener = listener;
+      this.thread = new Thread(this, "XmlBlaster signal catcher thread for controlled shudown");
+      this.thread.setDaemon(true);
    }
 
    /**
@@ -60,8 +63,7 @@ public class SignalCatcher
     *
     * @return true: Shutdown hook is established
     */
-   public boolean catchSignals()
-   {
+   public boolean catchSignals() {
       Method method;
       try  {
          Class cls = Runtime.getRuntime().getClass();
@@ -80,7 +82,7 @@ public class SignalCatcher
       try {
          if (method != null) {
             Object[] params = new Object[1];
-            params[0] = shutdownHook;
+            params[0] = this.thread;
             method.invoke(Runtime.getRuntime(), params);
          }
       }
@@ -93,39 +95,84 @@ public class SignalCatcher
       return true;
    }
 
-   public void removeSignalCatcher()
-   {
-      if (shutdownHook == null)
-         return;
-
-      Method method;
-      try  {
-         Class cls = Runtime.getRuntime().getClass();
-         Class[] paramCls = new Class[1];
-         paramCls[0] = Class.forName("java.lang.Thread");
-         method = cls.getDeclaredMethod("removeShutdownHook", paramCls);
+   /**
+    * @return true on success
+    */
+   public boolean removeSignalCatcher() {
+      if (this.thread == null) {
+         return false;
       }
-      catch (java.lang.ClassNotFoundException e) {
-         return;
-      }
-      catch (java.lang.NoSuchMethodException e) {
-         if (log.TRACE) log.trace(ME, "No shutdown hook removed");
-         return;
-      }
-
+      //boolean removed = Runtime.getRuntime().removeShutdownHook(this.thread);
+      boolean removed = false;
       try {
-         if (method != null) {
-            Object[] params = new Object[1];
-            params[0] = shutdownHook;
-            method.invoke(Runtime.getRuntime(), params);
+         Method method;
+         try  {
+            Class cls = Runtime.getRuntime().getClass();
+            Class[] paramCls = new Class[1];
+            paramCls[0] = Class.forName("java.lang.Thread");
+            method = cls.getDeclaredMethod("removeShutdownHook", paramCls);
          }
+         catch (java.lang.ClassNotFoundException e) {
+            if (log.TRACE) log.trace(ME, "Shutdown hook not removed: " + e.toString());
+            return false;
+         }
+         catch (java.lang.NoSuchMethodException e) {
+            if (log.TRACE) log.trace(ME, "No shutdown hook removed");
+            return false;
+         }
+
+         try {
+            if (method != null) {
+               Object[] params = new Object[1];
+               params[0] = this.thread;
+               method.invoke(Runtime.getRuntime(), params);
+               removed = true; // TODO: check the real return value
+               return removed;
+            }
+         }
+         catch (java.lang.reflect.InvocationTargetException e) {
+            if (log.TRACE) log.trace(ME, "Shutdown hook not removed which is OK when we are in shutdown process already: " + e.toString());
+            return false;
+         }
+         catch (java.lang.IllegalAccessException e) {
+            if (log.TRACE) log.trace(ME, "Shutdown hook not removed: " + e.toString());
+            return false;
+         }
+         if (log.TRACE) log.trace(ME, "Shutdown hook removed");
       }
-      catch (java.lang.reflect.InvocationTargetException e) {
+      finally {
+         this.listener = null;
+         if (log.TRACE) log.trace(ME, "Removed = " + removed + " in removeSignalCatcher()");
+
+         // This is a hack to allow the garbage collector to destroy SignalCatcher
+         // (An unrun thread can't be garbage collected)
+         this.runDummy = true;
+         try {
+            this.thread.start(); // Run the Thread to allow the garbage collector to clean it up
+         }
+         catch (IllegalThreadStateException e) {
+            if (log.TRACE) log.trace(ME, "Thread has run already: " + e.toString());
+         }
+         
+         this.log = null;
+         this.glob = null;
+         this.thread = null;
+      }
+      return removed;
+   }
+
+   /**
+    * This is invoked on exit
+    */
+   public void run() {
+      if (runDummy) { // Run the Thread to allow the garbage collector to clean it up
          return;
       }
-      catch (java.lang.IllegalAccessException e) {
-         return;
+      if (this.log != null) {
+         this.log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
       }
-      if (log.TRACE) log.trace(ME, "Shutdown hook removed");
+      if (this.listener != null)
+         this.listener.shutdownHook();
+      this.listener = null;
    }
 }

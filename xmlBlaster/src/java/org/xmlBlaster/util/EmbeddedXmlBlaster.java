@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.8 2003/03/22 12:28:10 laghi Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.9 2003/03/27 10:26:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -151,27 +151,34 @@ public class EmbeddedXmlBlaster
 
    /**
     * @param sync if true the method blocks until the server is shutdown
+    * In this case global.shutdown() is called after shutdown and the Global is not usable anymore.
     */
    public void stopServer(boolean sync) {
-      log.info(ME, "Stopping the xmlBlaster server instance ...");
-      this.xmlBlasterMain.shutdown();
-      if (sync) {
-         while(true) {
-            if (this.xmlBlasterMain == null)
-               break;
-            if (this.xmlBlasterMain.isHalted())
-               break;
-            try { Thread.currentThread().sleep(100L); }
-            catch( InterruptedException i) {
-               log.info(ME, "Server has been interrupted");
+      try {
+         log.info(ME, "Stopping the xmlBlaster server instance ...");
+         this.xmlBlasterMain.shutdown();
+         if (sync) {
+            while(true) {
+               if (this.xmlBlasterMain == null)
+                  break;
+               if (this.xmlBlasterMain.isHalted())
+                  break;
+               try { Thread.currentThread().sleep(100L); }
+               catch( InterruptedException i) {
+                  log.info(ME, "Server has been interrupted");
+               }
             }
+            this.xmlBlasterMain = null;
+            Thread.currentThread().setName(this.origThreadName);
+            log.info(ME, "Server is down!");
          }
-         this.xmlBlasterMain = null;
-         Thread.currentThread().setName(this.origThreadName);
-         log.info(ME, "Server is down!");
+         else
+            log.info(ME, "Server is processing shutdown!");
       }
-      else
-         log.info(ME, "Server is processing shutdown!");
+      finally {
+         if (sync)
+            glob.shutdown();
+      }
    }
 
    /*
