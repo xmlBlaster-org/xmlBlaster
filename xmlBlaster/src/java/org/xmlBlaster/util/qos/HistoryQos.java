@@ -14,7 +14,7 @@ import org.xml.sax.Attributes;
  * Helper class holding QoS settings to acces historical message. 
  * <p />
  * <pre>
- *   &lt;history numEntries='20'/>
+ *   &lt;history numEntries='20'/>   <!-- type="index" (is default) -->
  * </pre>
  * <p>
  * Default is to deliver the most current entry (numEntries='1'),
@@ -22,7 +22,15 @@ import org.xml.sax.Attributes;
  * </p>
  * A future version could extend the query possibilities to e.g.
  * <pre>
- *   &lt;history>
+ *   &lt;history type="sql92">  <!-- client properties -->
+ *      myKey=2000
+ *   &lt;/history>
+ *
+ *   &lt;history type="regex">  <!-- content check -->
+ *      a.*
+ *   &lt;/history>
+ *
+ *   &lt;history type="special">
  *      &lt;time from='yesterday' to='now'>
  *   &lt;/history>
  * </pre>
