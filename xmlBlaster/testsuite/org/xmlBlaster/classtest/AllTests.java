@@ -19,6 +19,7 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.GlobalTest.class));
       suite.addTest(new TestSuite(classtest.GlobalLogTest.class));
       suite.addTest(new TestSuite(classtest.XmlKeySaxTest.class));
+      suite.addTest(new TestSuite(classtest.FileIOTest.class));
       return suite;
    }
 }
