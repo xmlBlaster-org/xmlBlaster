@@ -109,11 +109,13 @@ class I_Log
 
    <see type="API" lang="CPP">org::xmlBlaster::util::I_LogFactory</see>
    <see type="API" lang="CPP">org::xmlBlaster::util::I_Log</see>
+   <see type="CODE" lang="CPP">org::xmlBlaster::util::Log4cplus</see>
+   <!-- see type="API" lang="CPP">org::xmlBlaster::util::Log4cplus</see -->
    <see type="OTHER">http://log4cplus.sourceforge.net/</see>
    <see type="OTHER">http://logging.apache.org/log4j/docs/manual.html/</see>
    <see type="REQ">client.cpp.compile</see>
    <author><a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 02 11</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 </requirement>
 
