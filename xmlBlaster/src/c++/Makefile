@@ -19,3 +19,4 @@ endif
 
 clean:
 	$(RM) $(LIB_DIR)/$(SHARED_LIB_NAME) $(LIB_DIR)/$(SHARED_LIB_NAME).$(VERSION)
+	$(RM) $(GEN_DIR)/*.o $(UTIL_DIR)/*.o $(CLIENT_DIR)/*.o

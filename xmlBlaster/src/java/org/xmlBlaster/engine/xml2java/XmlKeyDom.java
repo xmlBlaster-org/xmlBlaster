@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.12 2001/02/14 21:00:53 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.13 2002/03/13 16:41:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine.xml2java;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.ClientInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -113,10 +113,10 @@ public class XmlKeyDom implements I_MergeDomNode
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   public final Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
+   public final Vector parseKeyOid(SessionInfo sessionInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
    {
       Vector xmlKeyVec = new Vector();
-      String clientName = clientInfo.toString();
+      String clientName = sessionInfo.toString();
 
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 

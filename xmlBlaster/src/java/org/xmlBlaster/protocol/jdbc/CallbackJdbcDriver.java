@@ -3,15 +3,14 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.3 2002/01/22 17:21:28 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.4 2002/03/13 16:41:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -59,13 +58,18 @@ public class CallbackJdbcDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by xmlBlaster
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Received message update '" + new String(msgUnitArr[0].content) + "' from sender '" + msgUnitWrapper.getPublisherName() + "'");
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         JdbcDriver.instance.update(msgUnitWrapper.getPublisherName(), msgUnitArr[ii].content);
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+
+      for (int ii=0; ii<msg.length; ii++) {
+         JdbcDriver.instance.update(msg[ii].getPublisherName(), msg[ii].getMessageUnit().getContent());
       }
-      return "<qos><state>OK</state></qos>";
+      String[] ret = new String[msg.length];
+      for (int ii=0; ii<ret.length; ii++)
+         ret[ii] = "<qos><state>OK</state></qos>";
+      return ret;
    }
 
 

@@ -3,13 +3,15 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.15 2001/12/16 21:25:33 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.16 2002/03/13 16:41:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.Destination;
 import java.util.Vector;
 
 
@@ -22,19 +24,20 @@ import java.util.Vector;
  * A typical <b>publish</b> qos in Publish/Subcribe mode could look like this:<br />
  * <pre>
  *  &lt;qos>
- *     &lt;expiration timeToLive='60000'/>
+ *     &lt;priority>5&lt;/priority>
+ *     &lt;expiration remainingLife='60000'/>
  *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
- *     &lt;forceUpdate />
+ *     &lt;forceUpdate>true</forceUpdate>
  *     &lt;readonly />
  *  &lt;/qos>
  * </pre>
  * A typical <b>publish</b> qos in PtP mode could look like this:<br />
  * <pre>
  *  &lt;qos>
- *     &lt;destination queryType='EXACT'>
+ *     &lt;destination queryType='EXACT' forceQueuing='true'>
  *        joe
  *     &lt;/destination>
- *     &lt;destination queryType='EXACT'>
+ *     &lt;destination>
  *        Tim
  *     &lt;/destination>
  *  &lt;/qos>
@@ -46,11 +49,13 @@ public class PublishQosWrapper extends QosWrapper
 {
    private String ME = "PublishQosWrapper";
    private Vector destVec = null;
+   /** The priority of the message */
+   private int priority = Constants.NORM_PRIORITY;
    private boolean isVolatile = false;
    private boolean isDurable = false;
-   private boolean forceUpdate = false;
+   private boolean forceUpdate = true;
    private boolean readonly = false;
-   private long timeToLive = 0;
+   private long remainingLife = XmlBlasterProperty.get("message.remainingLife", 0L);
 
 
 
@@ -85,13 +90,38 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Mark a message to be updated even that the content didn't change.
-    * <br />
-    * Default is that xmlBlaster doesn't send messages to subscribed clients, if the message didn't change.
+    * Message priority.
+    * @return priority 0-9
+    * @see org.xmlBlaster.engine.helper.Constants
     */
-   public void setForceUpdate()
+   public int getPriority()
    {
-      this.forceUpdate = true;
+      return priority;
+   }
+
+
+   /**
+    * Set message priority value, Constants.NORM_PRIORITY (5) is default. 
+    * Constants.MIN_PRIORITY (0) is slowest
+    * whereas Constants.MAX_PRIORITY (9) is highest priority.
+    * @see org.xmlBlaster.engine.helper.Constants
+    */
+   public void setPriority(int priority)
+   {
+      if (priority < Constants.MIN_PRIORITY || priority > Constants.MAX_PRIORITY)
+         throw new IllegalArgumentException("Message priority must be in range 0-9");
+      this.priority = priority;
+   }
+
+
+   /**
+    * Send message to subscriber even the content is the same as the previous?
+    * <br />
+    * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
+    */
+   public void setForceUpdate(boolean force)
+   {
+      this.forceUpdate = force;
    }
 
 
@@ -100,9 +130,9 @@ public class PublishQosWrapper extends QosWrapper
     * <br />
     * Only the first publish() will be accepted, followers are denied.
     */
-   public void setReadonly()
+   public void setReadonly(boolean readonly)
    {
-      this.readonly = true;
+      this.readonly = readonly;
    }
 
 
@@ -130,9 +160,9 @@ public class PublishQosWrapper extends QosWrapper
    /**
     * Mark a message to be persistent.
     */
-   public void setDurable()
+   public void setDurable(boolean durable)
    {
-      this.isDurable = true;
+      this.isDurable = durable;
    }
 
    /**
@@ -141,11 +171,11 @@ public class PublishQosWrapper extends QosWrapper
     * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.<br />
     * Passing 0 milliseconds asks the server for unlimited livespan, which
     * the server may or may not grant.
-    * @param timeToLive in milliseconds
+    * @param remainingLife in milliseconds
     */
-   public void setTimeToLive(long timeToLive)
+   public void setRemainingLife(long remainingLife)
    {
-      this.timeToLive = timeToLive;
+      this.remainingLife = remainingLife;
    }
 
    /**
@@ -186,14 +216,16 @@ public class PublishQosWrapper extends QosWrapper
             sb.append(destination.toXml());
          }
       }
-      if (timeToLive >= 0) {
-         sb.append("\n   <expiration timeToLive='").append(timeToLive).append("'/>");
+      sb.append("\n   <priority>").append(priority).append("</priority>");
+      if (remainingLife >= 0) {
+         sb.append("\n   <expiration remainingLife='").append(remainingLife).append("'/>");
       }
+      if (isVolatile)
       sb.append("\n   <isVolatile>").append(isVolatile).append("</isVolatile>");
       if (isDurable)
          sb.append("\n   <isDurable/>");
-      if (forceUpdate)
-         sb.append("\n   <forceUpdate/>");
+      if (forceUpdate == false)
+         sb.append("\n   <forceUpdate>").append(forceUpdate).append("</forceUpdate>");
       if (readonly)
          sb.append("\n   <readonly/>");
       sb.append("\n</qos>");
@@ -207,10 +239,11 @@ public class PublishQosWrapper extends QosWrapper
    {
       PublishQosWrapper qos =new PublishQosWrapper(new Destination("joe"));
       qos.addDestination(new Destination("Tim"));
-      qos.setDurable();
-      qos.setForceUpdate();
-      qos.setReadonly();
-      qos.setTimeToLive(60000);
+      qos.setPriority(Constants.HIGH_PRIORITY);
+      qos.setDurable(true);
+      qos.setForceUpdate(true);
+      qos.setReadonly(true);
+      qos.setRemainingLife(60000);
       System.out.println(qos.toXml());
    }
 }

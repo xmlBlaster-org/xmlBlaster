@@ -3,13 +3,12 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.17 2002/01/22 17:21:28 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.18 2002/03/13 16:41:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -23,7 +22,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -50,7 +49,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       String callbackIOR = callbackAddress.getAddress();
       try {
          cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
-         Log.info(ME, "Accessing client callback reference using given IOR string");
+         if (Log.TRACE) Log.trace(ME, "Accessing client callback reference using given IOR string");
       }
       catch (Exception e) {
          Log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
@@ -63,19 +62,22 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, org.xmlBlaster.engine.helper.MessageUnit[] messageUnitArr) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getUniqueKey() + ") to " + clientInfo.toString());
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
 
-      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[messageUnitArr.length];
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         updateArr[ii] = convert(messageUnitArr[ii]);
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
+      for (int ii=0; ii<msg.length; ii++) {
+         updateArr[ii] = convert(msg[ii].getMessageUnit());
       }
+
       try {
-         cb.update(updateArr);
-         return "<qos><state>OK</state></qos>";
+         return cb.update(callbackAddress.getSessionId(), updateArr);
+      } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" + e.id + " reason=" + e.reason);
       } catch (Exception e) {
-         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of message '" + msgUnitWrapper.getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
+         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
       }
    }
 

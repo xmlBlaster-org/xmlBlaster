@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.14 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestPub.java,v 1.15 2002/03/13 16:41:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -146,7 +146,7 @@ public class TestPub extends TestCase implements I_Callback
                       "   </TestPub-AGENT>" +
                       "</key>";
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
-      qosWrapper.setReadonly();
+      qosWrapper.setReadonly(true);
       String qos = qosWrapper.toXml(); // == "<qos><readonly /></qos>"
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);

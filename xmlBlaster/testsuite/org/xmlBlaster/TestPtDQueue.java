@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.19 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.20 2002/03/13 16:41:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -30,7 +30,7 @@ import test.framework.*;
  * from her queue in the xmlBlaster when she logs in.
  * <p>
  * A second test checks if there is an Exception thrown, if the receiver
- * is not logged in and the <ForceQueue> is not set.
+ * is not logged in and the <forceQueuing> is not set.
  * Invoke examples:<br />
  * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
@@ -79,6 +79,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       try {
          senderConnection = new XmlBlasterConnection();
          senderConnection.login(senderName, passwd, new ConnectQos(), this);
+         Log.info(ME, "Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
           Log.error(ME, e.toString());
@@ -105,19 +106,17 @@ public class TestPtDQueue extends TestCase implements I_Callback
     * TEST: Sending a message to a not logged in client, which logs in later.
     * <p />
     * The sent message will be stored in a xmlBlaster queue for this client and than delivered
-    * only if the &lt;qos>&lt;ForceQueuing />&lt;/qos> is set.
+    * only if the &lt;destination forceQueuing='true' is set.
     */
    public void testPtUnknownDestination()
    {
       {
-         if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination with NO <ForceQueuing /> set ...");
+         Log.info(ME, "Testing point to a unknown destination with NO forceQueuing set ...");
 
-         // Construct a message and send it to "Martin Unknown"
-         String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
-                         "</key>";
-
+         // Construct a message and send it to "Ulrike"
+         String xmlKey = "<key oid='' contentMime='text/plain'/>";
          String qos = "<qos>" +
-                      "   <destination queryType='EXACT'>" +
+                      "   <destination queryType='EXACT' forceQueuing='false'>" +
                               receiverName +
                       "   </destination>" +
                       "</qos>";
@@ -126,8 +125,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
             publishOid = senderConnection.publish(msgUnit);
-            Log.error(ME, "Publishing to a not logged in client should throw an exception");
-            assert("Publishing to a not logged in client should throw an exception", false);
+            Log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
+            assert("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
             Log.info(ME, "Exception is correct, client is not logged in");
          }
@@ -138,16 +137,15 @@ public class TestPtDQueue extends TestCase implements I_Callback
       }
 
       {
-         if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination with <ForceQueuing /> set ...");
+         Log.info(ME, "Testing point to a unknown destination with forceQueuing set ...");
 
          // Construct a message and send it to "Martin Unknown"
          String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
                          "</key>";
 
          String qos = "<qos>" +
-                      "   <destination queryType='EXACT'>" +
+                      "   <destination queryType='EXACT' forceQueuing='true'>" +
                               receiverName +
-                      "      <ForceQueuing />" +
                       "   </destination>" +
                       "</qos>";
 
@@ -165,7 +163,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
          numReceived = 0;
 
-         // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
+         // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
             receiverConnection = new XmlBlasterConnection();
             receiverConnection.login(receiverName, passwd, new ConnectQos(), this);

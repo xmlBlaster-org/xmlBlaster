@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.17 2001/12/30 10:41:14 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.18 2002/03/13 16:41:10 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -22,6 +22,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
@@ -108,6 +109,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       Log.trace(ME, "XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
+   }
+
+   /**
+    * Access the callback server or null
+    */
+   public I_CallbackServer getCallbackServer()
+   {
+      return callback;
    }
 
    private XmlRpcClient getXmlRpcClient() throws ConnectionException
@@ -311,7 +320,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public boolean shutdown()
    {
       if (this.callback != null) {
-         this.callback.shutdown();
+         this.callback.shutdownCb();
          this.callback = null;
       }
       return true;
@@ -394,8 +403,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       if (Log.CALL) Log.call(ME, "Entering publish(): id=" + sessionId);
 
-      //PublishQoS publishQoS = new PublishQoS(msgUnit.qos);
-      //msgUnit.qos = publishQoS.toXml();
+      //PublishQos publishQos = new PublishQos(msgUnit.qos);
+      //msgUnit.qos = publishQos.toXml();
 
       try {
          Vector args = new Vector();

@@ -3,7 +3,6 @@ Name:      Constants.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Constants.java,v 1.4 2002/02/25 17:05:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -101,12 +100,21 @@ public class Constants
    /** Type of a message queue */
    public final static String RELATING_UNRELATED = "unrelated";
 
+   /** message queue onOverflow handling, default is blocking until queue takes messages again */
+   public final static String ONOVERFLOW_BLOCK = "block";
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DEADLETTER = "deadLetter";
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DISCARDOLDEST = "discardOldest";
 
+   /** Praefix to create a sessionId */
+   public final static String SESSIONID_PRAEFIX = "sessionId:";
+   public final static String SUBSCRIPTIONID_PRAEFIX = "subscriptionId:";
 
+   public final static String INTERNAL_OID_PRAEFIX = "__sys__";
+
+   /** message queue onOverflow handling */
+   public final static String OID_DEAD_LETTER = INTERNAL_OID_PRAEFIX + "deadLetter";
 
    // action key --- xmlBlaster supported method names used to ckeck access rights, for raw socket messages etc.
    /** The get() method */

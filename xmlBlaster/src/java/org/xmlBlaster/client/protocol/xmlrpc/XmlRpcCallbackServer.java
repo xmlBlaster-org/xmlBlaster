@@ -3,13 +3,13 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.10 2002/02/07 20:21:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -47,7 +47,7 @@ import org.apache.xmlrpc.WebServer;
  * @author michele.laghi@attglobal.net
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-class XmlRpcCallbackServer
+class XmlRpcCallbackServer implements I_CallbackServer
 {
    private String ME = "XmlRpcCallbackServer";
    private final I_CallbackExtended boss;
@@ -145,19 +145,30 @@ class XmlRpcCallbackServer
    {
       CallbackAddress addr = new CallbackAddress("XML-RPC");
       addr.setAddress(callbackServerUrl);
+      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
       return addr;
    }
 
+   public void initCb()
+   {
+      Log.warn(ME, "initCb() is not implemented");
+   }
+
+   public void setCbSessionId(String sessionId)
+   {
+      Log.warn(ME, "setCbSessionId() is not implemented");
+   }
 
    /**
     * Shutdown the callback server.
     */
-   public void shutdown()
+   public boolean shutdownCb()
    {
       if (webServer != null)
          webServer.removeHandler("$default");
       webServer.shutdown();
       Log.info(ME, "The XML-RPC callback server is shutdown.");
+      return true;
    }
 
 
@@ -166,11 +177,12 @@ class XmlRpcCallbackServer
     * <p />
     * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
-   public void update(String loginName, String updateKey, byte[] content,
+   public String update(String cbSessionId, String updateKey, byte[] content,
                        String updateQoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering update(): loginName: " + loginName);
-      boss.update(loginName, updateKey, content, updateQoS);
+      if (Log.CALL) Log.call(ME, "Entering update(): sessionId: " + cbSessionId);
+      boss.update(cbSessionId, updateKey, content, updateQoS);
+      return "<qos><state>OK</state></qos>";
    }
 } // class XmlRpcCallbackServer
 

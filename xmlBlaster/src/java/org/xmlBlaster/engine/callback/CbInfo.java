@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.6 2002/02/15 19:08:03 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.7 2002/03/13 16:41:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -13,64 +13,57 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.ClientInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 
 /**
- * Holding all necessary infos to establish a callback
- * connection and invoke the update().
+ * Holding all necessary infos to establish callback
+ * connections and invoke their update().
  */
 public class CbInfo
 {
    public final String ME = "CbInfo";
    private I_CallbackDriver[] callbackDrivers = null;
+   private CallbackAddress[] cbArr = null;
    /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
    private static Hashtable protocols = null;
-   I_CallbackDriver cbDriverNative;
+
 
    public CbInfo()
    {
       callbackDrivers = new I_CallbackDriver[0];
+      cbArr = new CallbackAddress[0];
    }
 
-   public CbInfo(CallbackAddress[] cbArr, I_CallbackDriver cbDriver) throws XmlBlasterException
+   public CbInfo(CallbackAddress[] cbArr) throws XmlBlasterException
    {
-      initialize(cbArr, cbDriver);
+      initialize(cbArr);
    }
 
-   public void initialize(CallbackAddress[] cbArr, I_CallbackDriver cbDriverNative) throws XmlBlasterException
+   public void initialize(CallbackAddress[] cbArr) throws XmlBlasterException
    {
+      this.cbArr = cbArr;
       loadDrivers();
-      this.cbDriverNative = cbDriverNative;
-      if (cbArr == null) {
+      if (cbArr == null || cbArr.length==0) {
          callbackDrivers = new I_CallbackDriver[0];
+         cbArr = new CallbackAddress[0];
       }
       else {
          callbackDrivers = new I_CallbackDriver[cbArr.length];
-
          for (int ii=0; ii<cbArr.length; ii++) {
-         
-            Object obj = protocols.get(cbArr[ii].getType());
-            if (obj == null) {
-               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported, try setting it in xmlBlaster.properties");
+            // Load the protocol driver ...
+            Class cl = (Class)protocols.get(cbArr[ii].getType());
+            if (cl == null) {
+               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
                throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
             }
 
-            // Hack to pass the native callback driver:
-            if (cbDriverNative != null && obj.toString().indexOf("org.xmlBlaster.protocol.socket.CallbackSocketDriver") >= 0) {
-               callbackDrivers[ii] = cbDriverNative;
-               callbackDrivers[ii].init(cbArr[ii]);
-               if (Log.TRACE) Log.trace(ME, "Created native callback driver for protocol '" + cbArr[ii].getType() + "'");
-               continue;
-            }
-         
-            // Load the protocol driver ...
-            Class cl = (Class)obj;
 
             try {
                callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
@@ -107,20 +100,26 @@ public class CbInfo
 
 
    /** Send the messages back to the client, using all available drivers */
-   public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] arr) throws XmlBlasterException
+   public void sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
    {
-      I_Session sessionSecCtx = clientInfo.getSecuritySession();
-      if (sessionSecCtx==null) {
-         throw new XmlBlasterException(ME+".accessDenied", "No session security context!");
+      if (Log.TRACE) Log.trace(ME, "msg.length=" + msg.length + " callbackDrivers.length=" + callbackDrivers.length); 
+
+      // First we export the message (call the interceptor) ...
+      for (int i=0; i<msg.length; i++) {
+         I_Session sessionSecCtx = msg[i].getSessionInfo().getSecuritySession();
+         if (sessionSecCtx==null) {
+            Log.error(ME+".accessDenied", "No session security context!");
+            throw new XmlBlasterException(ME+".accessDenied", "No session security context!");
+         }
+         msg[i].setMessageUnit(sessionSecCtx.exportMessage(msg[i].getMessageUnit(i, msg.length, redeliver)));
+         if (Log.DUMP) Log.dump(ME, "CallbackQos=" + msg[i].getMessageUnit().getQos());
       }
 
-      MessageUnit[] msgUnitArr = new MessageUnit[arr.length];
-      for (int i=0; i<arr.length; i++) {
-         msgUnitArr[i] = sessionSecCtx.exportMessage(arr[i]);
-      }
+      if (callbackDrivers.length < 1)
+         Log.error(ME, "Sending of callback failed, no callback driver available");
 
       for (int ii=0; ii<callbackDrivers.length; ii++) {
-         callbackDrivers[ii].sendUpdate(clientInfo, msgUnitWrapper, msgUnitArr);
+         callbackDrivers[ii].sendUpdate(msg);
       }
    }
 
@@ -140,7 +139,6 @@ public class CbInfo
 
       protocols = new Hashtable();
       String defaultDrivers =
-               "SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver," +
                "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
                "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
                "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
@@ -191,24 +189,24 @@ public class CbInfo
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of ClientInfo as a XML ASCII string
+    * @return internal state of SessionInfo as a XML ASCII string
     */
    public final String toXml(String extraOffset) throws XmlBlasterException
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
       sb.append(offset + "<CbInfo>");
       if (callbackDrivers.length < 1)
-         sb.append(offset + "   <noCallbackDriver />");
+         sb.append(offset).append("   <noCallbackDriver />");
       else {
          for (int ii=0; ii<callbackDrivers.length; ii++) {
-            sb.append(offset + "   <" + callbackDrivers[ii].getName() + " />");
+            sb.append(offset).append("   <" + callbackDrivers[ii].getName() + " />");
          }
       }
-      sb.append(offset + "</CbInfo>\n");
+      sb.append(offset).append("</CbInfo>");
 
       return sb.toString();
    }

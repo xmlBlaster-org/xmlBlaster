@@ -3,7 +3,7 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.4 2002/01/17 17:05:17 ruff Exp $
+Version:   $Id: Destination.java,v 1.5 2002/03/13 16:41:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -24,7 +24,8 @@ public class Destination
    /** EXACT is default */
    private String queryType = "EXACT";
    /** No queuing is default */
-   private boolean forceQueuing = false;
+   private boolean DEFAULT_forceQueuing = false;
+   private boolean forceQueuing = DEFAULT_forceQueuing;
 
 
    /**
@@ -73,6 +74,18 @@ public class Destination
    public boolean isExactAddress()
    {
       return queryType.equals("EXACT");
+   }
+
+   /**
+    * Check if the address is a sessionId
+    */
+   public boolean isSessionId()
+   {
+      if (destination == null)
+         return false;
+      if (!isExactAddress())
+         return false;
+      return destination.startsWith(Constants.SESSIONID_PRAEFIX);
    }
 
 
@@ -155,11 +168,14 @@ public class Destination
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<destination").append(" queryType='" + queryType + "'").append(">");
-      sb.append(offset + "   " + destination);
-      if (forceQueuing())
-         sb.append(offset + "   <ForceQueuing />");
-      sb.append(offset + "</destination>");
+      sb.append(offset + "<destination");
+      if (!"EXACT".equals(queryType))
+         sb.append(" queryType='" + queryType + "'");
+      if (forceQueuing != DEFAULT_forceQueuing)
+         sb.append(" forceQueuing='" + forceQueuing + "'");
+      sb.append(">");
+      sb.append(destination);
+      sb.append("</destination>");
 
       return sb.toString();
    }

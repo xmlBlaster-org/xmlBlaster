@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.21 2002/01/30 17:36:54 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.22 2002/03/13 16:41:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.*;
 import java.io.*;
@@ -24,7 +25,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.21 2002/01/30 17:36:54 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.22 2002/03/13 16:41:11 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -44,7 +45,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * <br>
     * Used for performing logout.
     * <p>
-    * key   = client.getUniqueKey(), the active object map AOM id
+    * key   = client.getUniqueKey()
     * value = aboMap (Collections.synchronizedMap(new HashMap());)
     *         with SubscriptionInfo objects
     */
@@ -96,16 +97,16 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * SubscriptionInfo object here.
     * <p />
     * You can access XPATH or EXACT subscription objects through this method
-    * @param clientInfo All infos about the client
+    * @param sessionInfo All infos about the client
     * @param xmlKey     The XML based message key
     * @param qos        The base QoS class
     * @return corresponding subscriptionInfo object<br />
     *         or null if not found
     */
-   public SubscriptionInfo getSubscription(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
+   public SubscriptionInfo getSubscription(SessionInfo sessionInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
-      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, qos).toString();
-      return getSubscription(clientInfo, subscriptionInfoUniqueKey);
+      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(sessionInfo.getSessionQueue(), xmlKey, qos).toString();
+      return getSubscription(sessionInfo, subscriptionInfoUniqueKey);
    }
 
 
@@ -114,23 +115,24 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * SubscriptionInfo object here.
     * <p />
     * You can access XPATH or EXACT subscription objects through this method
-    * @param clientInfo All infos about the client
+    * @param sessionInfo All infos about the client
     * @param subscriptionInfoUniqueKey
     * @return corresponding subscriptionInfo object<br />
     *         or null if not found
     */
-   public SubscriptionInfo getSubscription(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
+   public SubscriptionInfo getSubscription(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
       Object obj;
       Map aboMap;
       synchronized(clientSubscriptionMap) {
-         obj = clientSubscriptionMap.get(clientInfo.getUniqueKey());
+         obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
          if (obj == null)
             return null;
          aboMap = (Map)obj;
       }
 
       SubscriptionInfo subs = (SubscriptionInfo)aboMap.get(subscriptionInfoUniqueKey);
+      if (Log.TRACE) Log.trace(ME, "Looking for subscriptionId=" + subscriptionInfoUniqueKey + " found " + subs);
       return subs;
    }
 
@@ -138,30 +140,29 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    /**
     * Invoked on successful client login (interface I_ClientListener)
     */
-   public void clientAdded(ClientEvent e) throws XmlBlasterException
+   public void sessionAdded(ClientEvent e) throws XmlBlasterException
    {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString() + ", nothing to do");
+      if (Log.CALL) Log.call(ME, "Login event for client " + e.getSessionInfo().toString() + ", nothing to do");
    }
 
 
    /**
     * Invoked when client does a logout (interface I_ClientListener)
     */
-   public void clientRemove(ClientEvent e) throws XmlBlasterException
+   public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "START-logout()");
       if (Log.DUMP) Log.dump(ME, requestBroker.toXml());
 
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString() + ", removing entries");
+      SessionInfo sessionInfo = e.getSessionInfo();
+      if (Log.TRACE) Log.trace(ME, "Logout event for client " + sessionInfo.toString() + ", removing entries");
       try {
-         removeFromClientSubscriptionMap(clientInfo, null);
+         removeFromClientSubscriptionMap(sessionInfo, null);
       } catch (XmlBlasterException e1) {
       }
 
       try {
-         removeFromSubscribeRequestsSet(clientInfo, null);
+         removeFromSubscribeRequestsSet(sessionInfo, null);
       } catch (XmlBlasterException e2) {
       }
 
@@ -170,12 +171,30 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
 
 
    /**
+    * Event invoked on new SubjectInfo. 
+    */
+   public void subjectAdded(ClientEvent e) throws XmlBlasterException
+   {
+      Log.warn(ME, "Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
+   }
+
+
+   /**
+    * Event invoked on deleted SubjectInfo. 
+    */
+   public void subjectRemoved(ClientEvent e) throws XmlBlasterException
+   {
+      Log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
+   }
+
+
+   /**
     * Event invoked on message erase() invocation (interface MessageEraseListener).
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Erase event for client " + clientInfo.toString());
+      SessionInfo sessionInfo = e.getSessionInfo();
+      if (Log.TRACE) Log.trace(ME, "Erase event for client " + sessionInfo.toString());
       MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
       String uniqueKey = msgUnitHandler.getUniqueKey();
    }
@@ -187,10 +206,10 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException
    {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
-      ClientInfo clientInfo = subscriptionInfo.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Subscription add event for client " + clientInfo.toString());
+      SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
+      if (Log.TRACE) Log.trace(ME, "Subscription add event for client " + sessionInfo.toString());
       XmlKey xmlKey = subscriptionInfo.getXmlKey();
-      String uniqueKey = clientInfo.getUniqueKey();
+      String uniqueKey = sessionInfo.getUniqueKey();
 
       // Insert into first map:
       Object obj;
@@ -205,6 +224,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             aboMap = (Map)obj;
          }
          aboMap.put(subscriptionInfo.getUniqueKey(), subscriptionInfo);
+         if (Log.TRACE) Log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getUniqueKey() + " to abomap");
       }
 
 
@@ -235,23 +255,23 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * <p />
     * Note that the subscriptionInfo object carried in SubscriptionEvent
     * is not the real known subscription, but rather misused as a container to
-    * carry the clientInfo and subscriptionInfoUniqueKey
+    * carry the sessionInfo and subscriptionInfoUniqueKey
     */
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException
    {
       String subscriptionInfoUniqueKey = e.getSubscriptionInfo().getUniqueKey();
-      ClientInfo clientInfo = e.getSubscriptionInfo().getClientInfo();
+      SessionInfo sessionInfo = e.getSubscriptionInfo().getSessionInfo();
 
-      if (Log.TRACE) Log.trace(ME, "Subscription remove event for client " + clientInfo.toString());
+      if (Log.TRACE) Log.trace(ME, "Subscription remove event for client " + sessionInfo.toString());
 
       try {
-         removeFromClientSubscriptionMap(clientInfo, subscriptionInfoUniqueKey);
+         removeFromClientSubscriptionMap(sessionInfo, subscriptionInfoUniqueKey);
       } catch (XmlBlasterException e1) {
          Log.error(ME+".subscriptionRemove", "removeFromClientSubscriptionMap: " + e1.toString());
       }
 
       try {
-         removeFromSubscribeRequestsSet(clientInfo, subscriptionInfoUniqueKey);
+         removeFromSubscribeRequestsSet(sessionInfo, subscriptionInfoUniqueKey);
       } catch (XmlBlasterException e2) {
          Log.error(ME+".subscriptionRemove", "removeFromSubscribeRequestsSet: " + e2.toString());
       }
@@ -262,23 +282,23 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param subscriptionInfoUniqueKey ==null: Remove client with all its subscriptions<br>
     *                                  !=null: Remove only the given subscription
     */
-   private void removeFromClientSubscriptionMap(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
+   private void removeFromClientSubscriptionMap(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      String uniqueKey = clientInfo.getUniqueKey();
+      String uniqueKey = sessionInfo.getUniqueKey();
 
       Object obj;
       synchronized(clientSubscriptionMap) {
          if (subscriptionInfoUniqueKey == null) {
             obj = clientSubscriptionMap.remove(uniqueKey); // client logout
-            if (Log.TRACE) Log.trace(ME, "Removing client " + clientInfo.toString() + " from clientSubscriptionMap ...");
+            if (Log.TRACE) Log.trace(ME, "Removing client " + sessionInfo.toString() + " from clientSubscriptionMap ...");
          }
          else {
             obj = clientSubscriptionMap.get(uniqueKey);    // client unsubscribes
-            if (Log.TRACE) Log.trace(ME, "Removing subscription " + subscriptionInfoUniqueKey + " from client " + clientInfo.toString() + " from clientSubscriptionMap ...");
+            if (Log.TRACE) Log.trace(ME, "Removing subscription " + subscriptionInfoUniqueKey + " from client " + sessionInfo.toString() + " from clientSubscriptionMap ...");
          }
       }
       if (obj == null) {
-         if (Log.TRACE) Log.trace(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + clientInfo.toString() + ", client never subscribed something");
+         if (Log.TRACE) Log.trace(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + sessionInfo.toString() + ", client never subscribed something");
          return;
       }
 
@@ -305,7 +325,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             sub = (SubscriptionInfo)aboMap.remove(subscriptionInfoUniqueKey);
          }
          if (sub == null) {
-            Log.error(ME + ".Internal", "Sorry, can't remove client subscription " + subscriptionInfoUniqueKey + " for " + clientInfo.toString() + ", not found");
+            Log.error(ME + ".Internal", "Sorry, can't remove client subscription " + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found");
             return;
          }
          sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
@@ -317,10 +337,10 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param subscriptionInfoUniqueKey ==null: Remove client with all its subscriptions<br>
     *                                  !=null: Remove only the given subscription
     */
-   private void removeFromSubscribeRequestsSet(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
+   private void removeFromSubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "removing client " + clientInfo.toString() + " from querySubscribeRequestsSet ...");
-      String uniqueKey = clientInfo.getUniqueKey();
+      if (Log.TRACE) Log.trace(ME, "removing client " + sessionInfo.toString() + " from querySubscribeRequestsSet ...");
+      String uniqueKey = sessionInfo.getUniqueKey();
 
       Vector vec = new Vector(querySubscribeRequestsSet.size());
 
@@ -329,7 +349,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (sub.getClientInfo().getUniqueKey().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
+            if (sub.getSessionInfo().getUniqueKey().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
                 subscriptionInfoUniqueKey == sub.getUniqueKey()) {
                vec.addElement(sub);
             }

@@ -3,15 +3,17 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.5 2002/02/14 22:52:58 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.6 2002/03/13 16:41:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -36,7 +38,7 @@ import java.io.Serializable;
  *          &lt;passwd>secret&lt;/passwd>
  *          ]]>
  *        &lt;/securityService>
- *        &lt;session timeout='3600000' maxSessions='20'>
+ *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false'>
  *        &lt;/session>
  *        &lt;ptp>true&lt;/ptp>
  *        &lt;callback type='IOR'>
@@ -65,10 +67,15 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    protected boolean ptpAllowed = true;
 
-   /** Default session span of life is one hour */
-   protected long sessionTimeout = 3600L * 1000L; // One hour
-   /** Maximum of six parallel logins for the same client */
-   protected int maxSessions = 6;
+   /** Default session span of life is one day, given in millis "-session.timeout 86400000" */
+   protected long sessionTimeout = XmlBlasterProperty.get("session.timeout", Constants.DAY_IN_MILLIS); // One day
+
+   /** Maximum of ten parallel logins for the same client "session.maxSessions 10" */
+   protected int maxSessions = XmlBlasterProperty.get("session.maxSessions", 10);
+
+   /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
+   protected boolean clearSessions = XmlBlasterProperty.get("session.clearSessions", false);
+
    /** Passing own sessionId is not yet supported */
    protected String sessionId = null;
 
@@ -78,7 +85,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected transient String tmpSecurityPluginType = null;
    protected transient String tmpSecurityPluginVersion = null;
 
+   /** Hack to transport callback driver for socket driver (as we have no seperate callback server) */
    protected I_CallbackDriver cbDriver = null;
+
 
    /**
     * The server reference, e.g. the CORBA IOR string or the XML-RPC url
@@ -91,20 +100,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
 
    // helper flags for SAX parsing
-   private transient boolean inBurstMode = false;
-   private transient boolean inCompress = false;
-   private transient boolean inPtpAllowed = false;
+   private transient boolean inQueue = false;
    private transient boolean inSecurityService = false;
    private transient boolean inSession = false;
    private transient boolean inSessionId = false;
    private transient boolean inCallback = false;
    
+   private transient QueueProperty tmpProp = null;
+   protected transient Vector queuePropertyVec = new Vector();
+   private transient QueueProperty subjectQueueProperty = null;
+   private transient QueueProperty sessionQueueProperty = null;
    private transient CallbackAddress tmpAddr = null;
-   /** <callback type="IOR>IOR:000122200..."</callback> */
-   protected transient CallbackAddress[] addressArr = null;
-   /** Contains CallbackAddress objects. 
-       <callback type="IOR>IOR:000122200..."</callback> */
-   protected Vector addressVec = new Vector();
 
    /**
     * Default constructor for clients without asynchronous callbacks
@@ -112,6 +118,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos()
    {
+      initialize();
    }
 
    
@@ -121,9 +128,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public ConnectQos(String xmlQoS_literal) throws XmlBlasterException
    {
       if (Log.DUMP) Log.dump(ME, "Creating ConnectQos(" + xmlQoS_literal + ")");
-      addressArr = null;
+      //addressArr = null;
       init(xmlQoS_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed ConnectQos to\n" + toXml());
+      initialize();
    }
 
 
@@ -140,6 +148,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       securityQos = getPlugin(mechanism,version).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
+      initialize();
    }
 
    /**
@@ -150,6 +159,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public ConnectQos(String mechanism, String version) throws XmlBlasterException
    {
       getPlugin(mechanism, version);
+      initialize();
    }
 
 
@@ -167,8 +177,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public ConnectQos(I_SecurityQos securityQos)
    {
       this.securityQos = securityQos;
+      initialize();
    }
 
+   private final void initialize()
+   {
+      tmpAddr = null;
+      tmpProp = null;
+   }
 
    /**
     * Accessing the Callback addresses of the client
@@ -177,6 +193,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @return An array of CallbackAddress objects, containing the address and the protocol type
     *         If no callback available, return an array of 0 length
     */
+    /*
    public CallbackAddress[] getCallbackAddresses()
    {
       if (addressArr == null) {
@@ -186,7 +203,28 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       return addressArr;
    }
+      */
 
+   /**
+    * Returns never null. 
+    * The subjectQueue has never callback addresses, the addresses of the sessions are used
+    * if configured.
+    */
+   public QueueProperty getSubjectQueueProperty() {
+      if (this.subjectQueueProperty == null) {
+         this.subjectQueueProperty = new QueueProperty(Constants.RELATING_SUBJECT);
+      }
+      return this.subjectQueueProperty;
+   }
+
+   /**
+    * Returns never null
+    */
+   public QueueProperty getSessionQueueProperty() {
+      if (this.sessionQueueProperty == null)
+         this.sessionQueueProperty = new QueueProperty(Constants.RELATING_SESSION);
+      return this.sessionQueueProperty;
+   }
 
    /**
     * Allows to set or overwrite the parsed security plugin. 
@@ -280,6 +318,25 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
 
    /**
+    * Deliver the driver object to be reused on callback
+    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
+    */
+   public void setCallbackDriver(I_CallbackDriver cbDriver)
+   {
+      this.cbDriver = cbDriver;
+   }
+
+
+   /**
+    * Deliver the driver object to be reused on callback
+    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
+    */
+   public I_CallbackDriver getCallbackDriver()
+   {
+      return this.cbDriver;
+   }
+
+   /**
     * Allows to set session specific informations. 
     *
     * @param timeout The login session will be destroyed after given milliseconds
@@ -291,12 +348,70 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       this.maxSessions = maxSessions;
    }
 
-   public void setSessionId(String id) {
+   /**
+    * Timeout until session expires if no communication happens
+    */
+   public long getSessionTimeout()
+   {
+      return this.sessionTimeout;
+   }
+
+   /**
+    * Timeout until session expires if no communication happens
+    */
+   public void setSessionTimeout(long timeout)
+   {
+      if (timeout < 0L)
+         this.sessionTimeout = 0L;
+      else
+         this.sessionTimeout = timeout;
+   }
+
+   /**
+    * If maxSession == 1, only a single login is possible
+    */
+   public int getMaxSessions()
+   {
+      return this.maxSessions;
+   }
+
+   /**
+    * If maxSession == 1, only a single login is possible
+    * @param max How often the same client may login
+    */
+   public void setMaxSessions(int max)
+   {
+      if (max < 0)
+         this.maxSessions = 0;
+      else
+         this.maxSessions = max;
+   }
+
+   /**
+    * If clearSessions is true, all old sessions of this user are discarded. 
+    */
+   public boolean clearSessions()
+   {
+      return this.clearSessions;
+   }
+
+   /**
+    * If clearSessions is true, all old sessions of this user are discarded. 
+    * @param clear Defaults to false
+    */
+   public void clearSessions(boolean clear)
+   {
+      this.clearSessions = clear;
+   }
+
+   public void setSessionId(String id)
+   {
       if(id==null || id.equals("")) id = null;
       sessionId = id;
    }
 
-   public String getSessionId() {
+   public String getSessionId()
+   {
       return sessionId;
    }
 
@@ -379,38 +494,18 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
 
    /**
-    * Add a callback address where to send the message.
+    * Add a callback address where to send the message (for PtP).
     * <p />
     * Note you can invoke this multiple times to allow multiple callbacks.
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
    public void addCallbackAddress(CallbackAddress callback)
    {
-      if (addressVec == null)
-         addressVec = new Vector();
-      addressVec.addElement(callback);
-      addressArr = null; // reset to be recalculated on demand
+      QueueProperty prop = new QueueProperty(null); // Use default queue properties for this callback address
+      prop.setCallbackAddress(callback);
+      queuePropertyVec.addElement(prop);
+      //queuePropertyArr = null; // reset to be recalculated on demand
    }
-
-   /**
-    * Deliver the driver object to be reused on callback
-    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
-    */
-   public void setCallbackDriver(I_CallbackDriver cbDriver)
-   {
-      this.cbDriver = cbDriver;
-   }
-
-
-   /**
-    * Deliver the driver object to be reused on callback
-    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
-    */
-   public I_CallbackDriver getCallbackDriver()
-   {
-      return this.cbDriver;
-   }
-
 
    /**
     * @return the login credentials or null if not set
@@ -490,109 +585,42 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if (inCallback && !inBurstMode && !inCompress && !inPtpAllowed) {
-         String tmp = character.toString().trim(); // The address
-         if (tmp.length() > 0) {
-            tmpAddr.setAddress(tmp);
-            //Log.info(ME, "Setting address '" + tmp + "'");
-            character.setLength(0);
-         }
+      if (inCallback) {
+         tmpAddr.startElement(uri, localName, name, character, attrs);
+         return;
       }
 
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
-         String tmp = character.toString().trim(); // The address (if before inner tags)
-         String type = null;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
-                  type = attrs.getValue(i).trim();
-                  break;
-                }
-            }
+         if (!inQueue) {
+            tmpProp = new QueueProperty(null); // Use default queue properties for this callback address
+            queuePropertyVec.addElement(tmpProp);
+            if (tmpProp.isSubjectRelated())
+               subjectQueueProperty = tmpProp;
+            else if (tmpProp.isSessionRelated())
+               sessionQueueProperty = tmpProp;
          }
-         if (type == null) {
-            Log.error(ME, "Missing 'callback' attribute 'type' in login-qos");
-            type = "IOR";
-         }
-         tmpAddr = new CallbackAddress(type);
-         if (tmp.length() > 0) {
-            tmpAddr.setAddress(tmp);
-            character.setLength(0);
-         }
+         tmpAddr = new CallbackAddress();
+         tmpAddr.startElement(uri, localName, name, character, attrs);
+         tmpProp.setCallbackAddress(tmpAddr);
          return;
       }
 
-      if (name.equalsIgnoreCase("burstMode")) {
-         inBurstMode = true;
-         if (tmpAddr == null || !inCallback) {
-            Log.error(ME, "<burstMode> tag is not in <callback> tag, element ignored.");
+      if (name.equalsIgnoreCase("queue")) {
+         inQueue = true;
+         if (inCallback) {
+            Log.error(ME, "<queue> tag is not allowed inside <callback> tag, element ignored.");
             character.setLength(0);
             return;
          }
-         if (attrs != null) {
-            int len = attrs.getLength();
-            int ii=0;
-            for (ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("collectTime")) {
-                  String tmp = attrs.getValue(ii).trim();
-                  try {
-                     tmpAddr.setCollectTime(new Long(tmp).longValue());
-                  } catch (NumberFormatException e) {
-                     Log.error(ME, "Wrong format of <burstMode collectTime='" + tmp + "'>, expected a long in milliseconds, burst mode is switched off.");
-                  }
-                  break;
-               }
-            }
-            if (ii >= len)
-               Log.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
-         }
-         else {
-            Log.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
-         }
+         tmpProp = new QueueProperty(null);
+         queuePropertyVec.addElement(tmpProp);
+         tmpProp.startElement(uri, localName, name, attrs);
+         if (tmpProp.isSubjectRelated())
+            subjectQueueProperty = tmpProp;
+         else if (tmpProp.isSessionRelated())
+            sessionQueueProperty = tmpProp;
          character.setLength(0);
-         return;
-      }
-
-      if (name.equalsIgnoreCase("compress")) {
-         inCompress = true;
-         if (tmpAddr == null || !inCallback) {
-            Log.error(ME, "<compress> tag is not in <callback> tag, element ignored.");
-            character.setLength(0);
-            return;
-         }
-         if (attrs != null) {
-            int len = attrs.getLength();
-            int ii=0;
-            for (ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("type")) {
-                  tmpAddr.setCompressType(attrs.getValue(ii).trim());
-               }
-               else if (attrs.getQName(ii).equalsIgnoreCase("minSize")) {
-                  String tmp = attrs.getValue(ii).trim();
-                  try {
-                     tmpAddr.setMinSize(new Long(tmp).longValue());
-                  } catch (NumberFormatException e) {
-                     Log.error(ME, "Wrong format of <compress minSize='" + tmp + "'>, expected a long in bytes, compress is switched off.");
-                  }
-               }
-            }
-         }
-         else {
-            Log.error(ME, "Missing 'type' attribute in login-qos <compress>");
-         }
-         character.setLength(0);
-         return;
-      }
-
-      if (name.equalsIgnoreCase("ptp")) {
-         inPtpAllowed = true;
-         if (tmpAddr == null || !inCallback) {
-            character.setLength(0); // Global PtP
-            return;
-         }
-         character.setLength(0); // Callback specific PtP
          return;
       }
 
@@ -630,6 +658,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                   this.sessionTimeout = (new Long(attrs.getValue(ii).trim())).longValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("maxSessions"))
                   this.maxSessions = (new Integer(attrs.getValue(ii).trim())).intValue();
+               else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
+                  this.clearSessions = (new Boolean(attrs.getValue(ii).trim())).booleanValue();
                else
                   Log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
@@ -639,12 +669,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("ptp")) {
+         setPtpAllowed(true);
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("sessionId")) {
          if (!inSession)
             return;
          inSessionId = true;
          character.setLength(0);
-
          return;
       }
 
@@ -687,37 +722,22 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if (name.equalsIgnoreCase("callback")) {
-         inCallback = false;
-         String tmp = character.toString().trim(); // The address (if after inner tags)
-         if (tmpAddr != null) {
-            if (tmp.length() > 0) tmpAddr.setAddress(tmp);
-            addressVec.addElement(tmpAddr);
-         }
+      if (name.equalsIgnoreCase("queue")) {
+         inQueue = false;
          character.setLength(0);
          return;
       }
 
-      if (name.equalsIgnoreCase("burstMode")) {
-         inBurstMode = false;
-         character.setLength(0);
+      if (inCallback) {
+         if (name.equalsIgnoreCase("callback")) inCallback = false;
+         tmpAddr.endElement(uri, localName, name, character);
          return;
       }
 
-      if (name.equalsIgnoreCase("compress")) {
-         inCompress = false;
-         character.setLength(0);
-         return;
-      }
-
-      if (name.equalsIgnoreCase("PtP")) {
-         inPtpAllowed = false;
+      if (name.equalsIgnoreCase("ptp")) {
          String tmp = character.toString().trim();
-         if (tmpAddr != null)
-            tmpAddr.setPtpAllowed(new Boolean(tmp).booleanValue());
-         else
+         if (tmp.length() > 0)
             setPtpAllowed(new Boolean(tmp).booleanValue());
-         character.setLength(0);
          return;
       }
 
@@ -798,35 +818,48 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          }
       }
 
-      StringBuffer sb = new StringBuffer(160);
+      StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append("<qos>\n");
+      sb.append(offset).append("<qos>");
 
       // <securityService ...
-      if(securityQos!=null) sb.append(securityQos.toXml("   ")); // includes the qos of the ClientSecurityHelper
+      if(securityQos!=null) sb.append(securityQos.toXml(extraOffset)); // includes the qos of the ClientSecurityHelper
 
-      sb.append(offset + "   <ptp>").append(ptpAllowed).append("</ptp>");
+      sb.append(offset).append("<ptp>").append(ptpAllowed).append("</ptp>");
 
-      sb.append(offset).append("   <session timeout='").append(sessionTimeout).append("' maxSessions='").append(maxSessions).append("'>");
+      sb.append(offset).append("<session timeout='").append(sessionTimeout);
+      sb.append("' maxSessions='").append(maxSessions);
+      sb.append("' clearSessions='").append(clearSessions());
       if(sessionId!=null) {
-         sb.append(offset).append("      <sessionId>").append(sessionId).append("</sessionId>");
+         sb.append("'>");
+         sb.append(offset).append("   <sessionId>").append(sessionId).append("</sessionId>");
+         sb.append(offset).append("</session>");
       }
-      sb.append(offset).append("   </session>");
+      else
+         sb.append("'/>");
 
+      for (int ii=0; ii<queuePropertyVec.size(); ii++) {
+         QueueProperty ad = (QueueProperty)queuePropertyVec.elementAt(ii);
+         sb.append(ad.toXml(extraOffset));
+      }
+      /*
       for (int ii=0; ii<addressVec.size(); ii++) {
          CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
          sb.append(ad.toXml("   ")).append("\n");
       }
+      */
 
       for (int ii=0; ii<serverRefVec.size(); ii++) {
          ServerRef ref = (ServerRef)serverRefVec.elementAt(ii);
-         sb.append(ref.toXml("   ")).append("\n");
+         sb.append(ref.toXml(extraOffset));
+         if (ii < serverRefVec.size()-1)
+            sb.append("\n");
       }
 
-      sb.append("</qos>");
+      sb.append(offset).append("</qos>");
 
       return sb.toString();
    }
@@ -836,39 +869,47 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       try {
          org.xmlBlaster.util.XmlBlasterProperty.init(args);
-         ConnectQos qos = new ConnectQos(new CallbackAddress("IOR"));
+         ConnectQos qos;
+         qos = new ConnectQos(new CallbackAddress("IOR"));
          I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos("joe", "secret");
          qos.setSecurityQos(securityQos);
          System.out.println("Output from manually crafted QoS:\n" + qos.toXml());
 
-
          String xml =
             "<qos>\n" +
+            /*
             "   <securityService type=\"simple\" version=\"1.0\">\n" +
             "      <![CDATA[\n" +
             "         <user>aUser</user>\n" +
             "         <passwd>theUsersPwd</passwd>\n" +
             "      ]]>\n" +
             "   </securityService>\n" +
+            */
             "   <ptp>true</ptp>\n" +
-            "   <session timeout='3600000' maxSessions='20'>\n" +
+            "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
             "      <sessionId>anId</sessionId>\n" +
             "   </session>\n" +
+            "   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>\n" +
+            "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
+            "         <ptp>true</ptp>\n" +
+            "         IOR:00011200070009990000....\n" +
+            "         <compress type='gzip' minSize='1000' />\n" +
+            "         <burstMode collectTime='400' />\n" +
+            "      </callback>\n" +
+            "   </queue>\n" +
             "   <callback type='IOR'>\n" +
-            "      <PtP>true</PtP>\n" +
-            "      IOR:00011200070009990000....\n" +
-            "      <compress type='gzip' minSize='1000' />\n" +
-            "      <burstMode collectTime='400' />\n" +
+            "      IOR:00000461203\n" +
             "   </callback>\n" +
             "   <callback type='EMAIL'>\n" +
             "      et@mars.universe\n" +
-            "      <PtP>false</PtP>\n" +
+            "      <ptp>false</ptp>\n" +
             "   </callback>\n" +
             "   <callback type='XML-RPC'>\n" +
-            "      <PtP>true</PtP>\n" +
+            "      <ptp>true</ptp>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
-            "   <offlineQueuing timeout='3600' />\n" +
+            "   <queue relating='session' maxMsg='1600' maxSize='2000'/>\n" +
+            "   <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000'/>\n" +
             "   <serverRef type='IOR'>\n" +
             "      IOR:00011200070009990000....\n" +
             "   </serverRef>\n" +
@@ -885,11 +926,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          qos = new ConnectQos(xml);
          System.out.println("=====Parsed and dumped===\n");
          System.out.println(qos.toXml());
+         
          qos.setSecurityPluginData("simple", "1.0", "joe", "secret");
          System.out.println("=====Added security======\n");
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
+         e.printStackTrace();
          Log.error("TestFailed", e.toString());
       }
    }

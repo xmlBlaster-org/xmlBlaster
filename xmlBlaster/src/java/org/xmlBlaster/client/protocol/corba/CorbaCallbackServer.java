@@ -3,22 +3,25 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.10 2001/09/05 12:21:26 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.11 2002/03/13 16:41:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 
@@ -31,7 +34,7 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
  * of this Callback implementation and add your own code.
  * <p />
  */
-public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations
+public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations, I_CallbackServer
 {
    private org.omg.CORBA.ORB orb = null;
    private org.omg.PortableServer.POA rootPOA = null;
@@ -101,15 +104,24 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
    }
 
+   public void initCb()
+   {
+      Log.warn(ME, "initCb() is not implemented");
+   }
+
+   public void setCbSessionId(String sessionId)
+   {
+      Log.warn(ME, "setCbSessionId() is not implemented");
+   }
 
    /**
     * Shutdown the callback server.
     */
-   public void shutdown()
+   public boolean shutdownCb()
    {
       if (this.callback == null) {
          if (Log.TRACE) Log.trace(ME, "No callback server to shutdown.");
-         return;
+         return false;
       }
 
       if (rootPOA != null && this.callback != null) {
@@ -140,6 +152,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
       */
       Log.info(ME, "The callback server is shutdown.");
+      return true;
    }
 
 
@@ -151,6 +164,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       // Add the stringified IOR to QoS ...
       CallbackAddress addr = new CallbackAddress("IOR");
       addr.setAddress(orb.object_to_string(this.callback));
+      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
       return addr;
    }
 
@@ -167,17 +181,37 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
     * @see xmlBlaster.idl
     */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+                        throws org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException
    {
-      if (msgUnitArr == null) return;
+      if (msgUnitArr == null)
+         return new String[0];
 
       try {
          // convert Corba to internal MessageUnit and call update() ...
          MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
-         boss.update(loginName, localMsgUnitArr);
+         boss.update(loginName, localMsgUnitArr);    // !!!! return value
+         String[] ret = new String[msgUnitArr.length];
+         for (int ii=0; ii<ret.length; ii++)
+            ret[ii] = "<qos><state>OK</state></qos>";
+         return ret;
       }
-      catch(XmlBlasterException e) {  // TODO: remove CORBA "oneway" and send Exception back to xmlBlaster.
+      catch(XmlBlasterException e) {
          Log.error(ME, "Delivering message to client failed, message is lost.");
+         org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
+             new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
+         eCorba.id = e.id;
+         eCorba.reason = e.reason;
+         throw eCorba;
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Delivering message to client failed, message is lost.");
+         e.printStackTrace();
+         org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
+             new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
+         eCorba.id = "CallbackFailedInClient";
+         eCorba.reason = "Delivering message to client failed, message is lost: " + e.toString();
+         throw eCorba;
       }
    }
 

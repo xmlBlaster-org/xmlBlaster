@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.4 2000/10/22 17:48:35 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.5 2002/03/13 16:41:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -53,9 +53,12 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
     */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
+   public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
    {
+      Log.info(ME, "#================== BlasterCallback update START =============");
+      Log.info(ME, "cbSessionId=" + cbSessionId);
       MessageUnit[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(corbaMsgUnitArr);
+      String[] ret = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
@@ -64,10 +67,11 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }
-         Log.info(ME, "#================== BlasterCallback update START =============");
          Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
          Log.info(ME, new String(msgUnit.content));
-         Log.info(ME, "#================== BlasterCallback update END ===============");
+         ret[ii] = "<qos><state>OK</state></qos>";
       }
+      Log.info(ME, "#================== BlasterCallback update END ===============");
+      return ret;
    }
 }

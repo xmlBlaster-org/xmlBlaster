@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.15 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.16 2002/03/13 16:41:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -15,6 +15,7 @@ import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -51,7 +52,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -166,7 +167,9 @@ public class RmiConnection implements I_XmlBlasterConnection
       }
    }
 
-
+   /**
+    * Reset
+    */
    public void init()
    {
       authServer = null;
@@ -174,6 +177,13 @@ public class RmiConnection implements I_XmlBlasterConnection
       sessionId = null;
    }
 
+   /**
+    * Access the callback server or null
+    */
+   public I_CallbackServer getCallbackServer()
+   {
+      return callback;
+   }
 
    /**
     * Accessing the xmlBlaster handle.
@@ -370,7 +380,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    public boolean shutdown()
    {
       if (this.callback != null) {
-         this.callback.shutdown();
+         this.callback.shutdownCb();
          this.callback = null;
       }
       return true;

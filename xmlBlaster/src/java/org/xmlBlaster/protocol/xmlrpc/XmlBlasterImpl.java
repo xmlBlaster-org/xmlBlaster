@@ -89,11 +89,11 @@ public class XmlBlasterImpl
     * @see xmlBlaster.idl
     */
    public String publish (String sessionId, String xmlKey_literal, byte[] content,
-         String publishQoS_literal)
+         String publishQos_literal)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering publish() ...");
-      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content, publishQoS_literal);
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content, publishQos_literal);
       return blasterNative.publish(sessionId, msgUnit);
    }
 
@@ -104,16 +104,16 @@ public class XmlBlasterImpl
     * @see xmlBlaster.idl
     */
    public String publish (String sessionId, String xmlKey_literal, String content,
-                          String publishQoS_literal)
+                          String publishQos_literal)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering publish() ....");
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), publishQoS_literal);
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), publishQos_literal);
 
 //      // convert the xml literal strings
 //      XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
-//      PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
+//      PublishQos publishQos = new PublishQos(publishQos_literal);
 
       String retVal = blasterNative.publish(sessionId, msgUnit);
       return retVal;
@@ -132,9 +132,9 @@ public class XmlBlasterImpl
 
       // convert the xml literal strings
       //XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
-      //PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
+      //PublishQos publishQos = new PublishQos(msgUnit.getQos());
 
-      // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+      // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQos);
       String retVal = blasterNative.publish(sessionId, msgUnit);
       return retVal;
    }

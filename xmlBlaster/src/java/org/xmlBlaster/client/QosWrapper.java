@@ -3,7 +3,7 @@ Name:      QosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QosWrapper.java,v 1.5 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: QosWrapper.java,v 1.6 2002/03/13 16:41:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -46,8 +46,7 @@ public class QosWrapper
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
-      sb.append("<qos>\n");
-      sb.append("</qos>");
+      sb.append("<qos/>");
       return sb.toString();
    }
 }

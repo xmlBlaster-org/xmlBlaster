@@ -11,9 +11,11 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQoS;
+import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 
 import java.util.*;
 
@@ -31,7 +33,6 @@ public class MessageUnitHandler
    // Default is that a single client can subscribe the same message multiple times
    // private boolean allowMultiSubscriptionPerClient = XmlBlasterProperty.get("Engine.allowMultiSubscriptionPerClient", true);
 
-
    /**
     * This map knows all clients which have subscribed on this message content
     * and knows all individual wishes of the subscription (QoS).
@@ -46,14 +47,16 @@ public class MessageUnitHandler
     */
    final private Map subscriberMap = Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
 
-
    /**
-    * This is the wrapper of the Message itself
+    * This is the wrapper of the Message itself. <p/>
+    * This variable may be null, always use the getMessageUnitWrapper() access method, this checks for null
     */
-   private MessageUnitWrapper msgUnitWrapper = null; // this variable may be null
-                                              // always use the getMessageUnitWrapper() access method, this checks for null
+   private MessageUnitWrapper msgUnitWrapper = null; 
 
-   private String uniqueKey;                  // Attribute oid of key tag: <key oid="..."> </key>
+   /** The xmlKey with parsed DOM tree */
+   private XmlKey xmlKey;
+   /** Attribute oid of key tag: <key oid="..."> </key> */
+   private String uniqueKey;
 
    private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MessageUnit is new created
 
@@ -79,27 +82,38 @@ public class MessageUnitHandler
       // mimeType and content remains unknown until first data is fed
    }
 
-
    /**
     * Use this constructor if a yet unknown object is fed by method publish().
     * <p />
     * @param requestBroker
+    * @param xmlKey On first occurrence of a message the XmlKey contains the parsed DOM
     * @param a MessageUnitWrapper containing the CORBA MessageUnit data container
     */
-   public MessageUnitHandler(RequestBroker requestBroker, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
    {
-      if (requestBroker == null || msgUnitWrapper == null) {
+      if (requestBroker == null || xmlKey == null || msgUnitWrapper == null) {
          Log.error(ME, "Invalid constructor parameters");
          throw new XmlBlasterException(ME, "Invalid constructor parameters");
       }
 
       this.requestBroker = requestBroker;
+      this.xmlKey = xmlKey;
       this.msgUnitWrapper = msgUnitWrapper;
-      this.uniqueKey = msgUnitWrapper.getXmlKey().getUniqueKey();
+      this.msgUnitWrapper.setMessageUnitHandler(this);
+      this.uniqueKey = this.xmlKey.getUniqueKey();
 
       if (Log.CALL) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
    }
 
+   public void finalize()
+   {
+      Log.info(ME, "finalize - garbage collect " + uniqueKey);
+   }
+
+   public RequestBroker getRequestBroker()
+   {
+      return this.requestBroker;
+   }
 
    /**
     * Check if this MessageUnit is already published and contains correct data.
@@ -111,13 +125,12 @@ public class MessageUnitHandler
       return msgUnitWrapper != null;
    }
 
-
    /**
     * Accessing the wrapper object of the MessageUnit
     * @return MessageUnitWrapper object
     * @exception XmlBlasterException if MessageUnitWrapper is unknown
     */
-   final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
+   public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (msgUnitWrapper == null) {
          Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.runtime.StackTrace.getStackTrace());
@@ -126,33 +139,26 @@ public class MessageUnitHandler
       return msgUnitWrapper;
    }
 
-
    /**
     * Accessing the key of this message
     */
    public final XmlKey getXmlKey() throws XmlBlasterException
    {
-      return getMessageUnitWrapper().getXmlKey();
+      return this.xmlKey;
    }
-
 
    /**
     * Accessing the key of this message.
     * <p />
     * Convenience if the caller is too lazy to catch exceptions
-    * @return null
+    * @return null            !!!! REMOVE
     */
    public final XmlKey getXmlKeyOrNull()
    {
       if (!isPublishedWithData())
          return null;
-      try {
-         return getMessageUnitWrapper().getXmlKey();
-      } catch (Exception e) {
-         return null;
-      }
+      return this.xmlKey;
    }
-
 
    /**
     * Clean up everything, since i will be deleted now
@@ -192,29 +198,33 @@ public class MessageUnitHandler
       uniqueKey = null;
    }
 
-
    /**
     * Setting update of a new content.
     *
     * @param xmlKey      The XmlKey object, derived from msgUnit.xmlKey string
     * @param msgUnit The CORBA MessageUnit struct
-    * @param publishQoS  Quality of Service, flags to control the publishing
+    * @param publishQos  Quality of Service, flags to control the publishing
     *
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
+   public boolean setContent(XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Setting content of xmlKey " + uniqueKey);
+      if (this.xmlKey == null) this.xmlKey = xmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
 
-      if (msgUnitWrapper == null) {  // storing the key from the first publish() invocation
-         msgUnitWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS);
-         return true;
+      if (publishQos.readonly() && isPublishedWithData()) {
+         Log.warn(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
+         throw new XmlBlasterException(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
       }
 
-      return msgUnitWrapper.setContent(msgUnit.content, publishQoS.getSender());
-   }
+      boolean changed = (msgUnitWrapper != null) ? !msgUnitWrapper.sameContent(msgUnit.getContent()) : true;
 
+      msgUnitWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQos);
+      msgUnitWrapper.setMessageUnitHandler(this);
+      
+      return changed;
+   }
 
    /**
     * A little helper for RequestBroker, showing if MessageUnit is new created
@@ -223,11 +233,11 @@ public class MessageUnitHandler
    {
       return handlerIsNewCreated;
    }
+
    public final void setNewCreatedFalse()
    {
       handlerIsNewCreated = false;
    }
-
 
    /*
     * The root node of the xmlBlaster DOM tree
@@ -237,9 +247,9 @@ public class MessageUnitHandler
       return getXmlKey().getRootNode();
    }
 
-
    /**
-    * A client subscribed to this message
+    * A client subscribed to this message, multiple subscriptions from
+    * the same client are OK.
     *
     * @return true new subscription added <br />
     *         false client had already subscribed
@@ -250,17 +260,6 @@ public class MessageUnitHandler
       synchronized(subscriberMap) {
          oldOne = subscriberMap.put(sub.getUniqueKey(), sub);
       }
-
-      /* 2002-01-30: ruff: changed behavior to allow multi subscriptions
-      if (!allowMultiSubscriptionPerClient && oldOne != null) {
-         subscriberMap.put(((SubscriptionInfo)oldOne).getUniqueKey(), oldOne);  // restore the original one ...
-         if (Log.TRACE) Log.trace(ME + ".DuplicateSubscription", "Client " + sub.getClientInfo().toString() + " has already subscribed to " + uniqueKey);
-         //No exception, since it would cancel other subscription requests as well
-         //-> the client is not informed about ignored duplicate subscriptions
-         //throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
-         return false;
-      }
-      */
 
       sub.addMessageUnitHandler(this);
 
@@ -275,7 +274,6 @@ public class MessageUnitHandler
       return true;
    }
 
-
    /**
     * If a callback fails, we remove it from the subscription
     * TODO: !!! -> generate dead letter
@@ -287,14 +285,13 @@ public class MessageUnitHandler
          Iterator iterator = removeSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            Log.info(ME, "Removed subcriber [" + sub.getClientInfo().getLoginName() + "] from message '" + sub.getXmlKey().getKeyOid() + "'");
+            Log.info(ME, "Removed subcriber [" + sub.getSessionInfo().getLoginName() + "] from message '" + sub.getXmlKey().getKeyOid() + "'");
             sub.removeSubscribe();
          }
          removeSet.clear();
          removeSet = null;
       }
    }
-
 
    /**
     * A client wants to unSubscribe from this message
@@ -314,7 +311,6 @@ public class MessageUnitHandler
       return subs;
    }
 
-
    /**
     * This is the unique key of the MessageUnit
     * <p />
@@ -324,7 +320,6 @@ public class MessageUnitHandler
    {
       return uniqueKey;
    }
-
 
    /**
     * What is the MIME type of this message content?
@@ -336,7 +331,6 @@ public class MessageUnitHandler
       return getXmlKey().getContentMime();
    }
 
-
    /**
     * A Set subscriberMap.entrySet() would be enough in most cases
     * but I'm not quite sure how to synchronize it ...
@@ -345,7 +339,6 @@ public class MessageUnitHandler
    {
       return subscriberMap;
    }
-
 
    /**
     * Access the raw CORBA msgUnit
@@ -356,14 +349,13 @@ public class MessageUnitHandler
       return getMessageUnitWrapper().getMessageUnit();
    }
 
-
    /**
     * Send updates to all subscribed clients.
     * <p />
     * The whole update blocks if one client would block - to avoid this the IDL update()
     * method is marked <code>oneway</code>
     */
-   public void invokeCallback() throws XmlBlasterException
+   public final void invokeCallback() throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
@@ -384,7 +376,6 @@ public class MessageUnitHandler
       if (removeSet != null) handleCallbackFailed(removeSet);
    }
 
-
    /**
     * Send update to subscribed client (Pub/Sub mode only).
     * @param sub The subscription handle of the client
@@ -396,9 +387,9 @@ public class MessageUnitHandler
          if (Log.TRACE) Log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return true;
       }
-      ClientInfo clientInfo = sub.getClientInfo();
+
       try {
-         clientInfo.sendUpdate(sub);
+         sub.getMsgQueue().putMsg(new MsgQueueEntry(sub, msgUnitWrapper));
       }
       catch(XmlBlasterException e) {
          if (e.id.equals("CallbackFailed")) {
@@ -411,7 +402,6 @@ public class MessageUnitHandler
       }
       return true;
    }
-
 
    /**
     * This class determines the sorting order, by which the
@@ -435,7 +425,6 @@ public class MessageUnitHandler
    }
    */
 
-
    /**
     * Dump state of this object into XML.
     * <br>
@@ -445,7 +434,6 @@ public class MessageUnitHandler
    {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into XML.

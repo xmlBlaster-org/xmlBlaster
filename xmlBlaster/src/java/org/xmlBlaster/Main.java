@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.71 2001/12/30 13:26:07 ruff Exp $
+Version:   $Id: Main.java,v 1.72 2002/03/13 16:41:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -78,6 +78,8 @@ public class Main
    /** command line arguments */
    private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
+   private Global global = null;
+   /** Version string, please change for new releases (4 digits) */
    private String version = "0.79d";
 
    /**
@@ -110,15 +112,17 @@ public class Main
       boolean showUsage = false;
       Thread.currentThread().setName("XmlBlaster MainThread");
 
-      try {
-         showUsage = XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
+      global = new Global();
+      int ret = global.init(args);
+      if (ret > 0)
+         showUsage = true;
+      else if (ret < 0) {
          usage();
-         Log.panic(ME, e.toString());
+         Log.panic(ME, "Bye");
       }
 
       try {
-         authenticate = new Authenticate();
+         authenticate = new Authenticate(global);
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
          catchSignals();

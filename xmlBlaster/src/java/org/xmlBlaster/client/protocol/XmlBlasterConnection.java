@@ -93,7 +93,7 @@ import java.util.Iterator;
  *
  * @author $Author: ruff $
  */
-public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
+public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer
 {
    private String ME = "XmlBlasterConnection";
    protected String[] args = null;
@@ -421,7 +421,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
-    * Setup the cache mode.
+    * Setup the cache mode. 
+    * <p />
+    * This installs a cache. When you call get(), a subscribe() is done
+    * in the background that we always have a current value in our client side cache.
+    * Further get() calls retrieve the value from the client cache.
     * <p />
     * Only the first call is used to setup the cache, following calls
     * are ignored silently
@@ -731,6 +735,27 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          e.printStackTrace();
       }
 
+      return false;
+   }
+
+   public void initCb() throws XmlBlasterException
+   {
+      throw new XmlBlasterException(ME, "initCb() is not implemented");
+   }
+
+   public void setCbSessionId(String sessionId) throws XmlBlasterException
+   {
+      throw new XmlBlasterException(ME, "setCbSessionId() is not implemented");
+   }
+
+   /**
+    * Shutdown the callback server.
+    */
+   public boolean shutdownCb() throws XmlBlasterException
+   {
+      I_CallbackServer cbServer = driver.getCallbackServer();
+      if (cbServer != null)
+         return cbServer.shutdownCb();
       return false;
    }
 
@@ -1305,6 +1330,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
+      text += "\n";
+      text += "Server setting:\n";
+      text += "   -burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [0].\n";
+      text += "                          This allows performance tuning, try set it to 200.\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";

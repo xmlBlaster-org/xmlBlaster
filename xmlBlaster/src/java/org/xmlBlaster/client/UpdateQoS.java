@@ -3,11 +3,13 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.19 2001/12/16 21:25:33 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.20 2002/03/13 16:41:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.Attributes;
 
@@ -21,21 +23,15 @@ import org.xml.sax.Attributes;
  * Example:
  * <pre>
  *   &lt;qos> &lt;!-- UpdateQoS -->
- *     &lt;state>
- *        OK
- *     &lt;/state>
- *     &lt;sender>
- *        Tim
- *     &lt;/sender>
- *     &lt;subscriptionId>
- *        __sys__TotalMem
- *     &lt;/subscriptionId>
- *     &lt;rcvTimestamp millis='1007764305862'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call -->
- *           2001-12-07 23:31:45.862   &lt;!-- The millis from above but human readable -->
+ *     &lt;state>OK&lt;/state>
+ *     &lt;sender>Tim&lt;/sender>
+ *     &lt;subscriptionId>subscriptionId:__sys__TotalMem&lt;/subscriptionId>
+ *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
+ *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
- *     &lt;expiration timeToLive='1200' /> &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
- *     &lt;queue index='0' of='1'> &lt;!-- If queued messages are flushed on login -->
- *     &lt;/queue>
+ *     &lt;expiration remainingLife='1200'/> &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
+ *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
+ *     &lt;redeliver>4&lt;/redeliver>
  *  &lt;/qos>
  * </pre>
  */
@@ -47,26 +43,33 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean inState = false;
    /** the state of the message */
    private String state = null;
+
    /** helper flag for SAX parsing: parsing inside <sender> ? */
    private boolean inSender = false;
    /** the sender (publisher) of this message (unique loginName) */
    private String sender = null;
+
    private boolean inExpiration = false;
-   /** To calculate the timeToLive, -1 if not known */
+   /** To calculate the remainingLife, -1 if not known */
    private long expirationTimestamp = -1L;
+
     /** helper flag for SAX parsing: parsing inside <subscriptionId> ? */
    private boolean inSubscriptionId = false;
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId = null;
+
    /** helper flag for SAX parsing: parsing inside <rcvTimestamp> ? */
    private boolean inRcvTimestamp = false;
-   private long rcvTimestamp = 0L;
-   private int rcvNanos = 0;
-   private String rcvTime = null;
+   private Timestamp rcvTimestamp;
 
    private int queueIndex = -1;
    private int queueSize = -1;
    private boolean inQueue = false;
+
+   /** helper flag for SAX parsing: parsing inside <redeliver> ? */
+   private boolean inRedeliver = false;
+   /** the number of resend tries on failure */
+   private int redeliver = 0;
 
 
    /**
@@ -79,7 +82,6 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       init(xmlQoS_literal);
    }
 
-
    /**
     * Access sender name.
     * @return loginName of sender
@@ -89,6 +91,14 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       return sender;
    }
 
+   /**
+    * Returns > 0 if the message probably is redelivered. 
+    * @return == 0 The message is guaranteed to be delivered only once.
+    */
+   public int getRedeliver()
+   {
+      return redeliver;
+   }
 
    /**
     * Access state of message.
@@ -98,7 +108,6 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       return state;
    }
-
 
    /**
     * If Pub/Sub style update: contains the subscribe ID which caused this update
@@ -130,9 +139,9 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    /** 
     * The approximate receive timestamp (UTC time),
     * when message was created - arrived at xmlBlaster server.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
     */
-   public final long getRcvTimestamp()
+   public final Timestamp getRcvTimestamp()
    {
       return rcvTimestamp;
    }
@@ -140,11 +149,11 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Human readable form of message receive time in xmlBlaster server,
     * in SQL representation e.g.:<br />
-    * 2001-12-07 23:31:45.862
+    * 2001-12-07 23:31:45.862000004
     */
    public final String getRcvTime()
    {
-      return rcvTime;
+      return rcvTimestamp.toString();
    }
 
     /**
@@ -154,7 +163,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
      * will be an offset (the time sending the message to us).
      * @return The time to live for this message or -1 if not known
      */
-   public final long getTimeToLive()
+   public final long getRemainingLife()
    {
       if (expirationTimestamp == -1L)  return -1L;
       return expirationTimestamp - System.currentTimeMillis();
@@ -200,6 +209,19 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if (name.equalsIgnoreCase("redeliver")) {
+         if (!inQos)
+            return;
+         inRedeliver = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <redeliver> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("subscriptionId")) {
          if (!inQos)
             return;
@@ -221,13 +243,9 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               if( attrs.getQName(i).equalsIgnoreCase("millis") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
                  String tmp = attrs.getValue(i).trim();
-                 try { rcvTimestamp = Long.parseLong(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
-                 String tmp = attrs.getValue(i).trim();
-                 try { rcvNanos = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+                 try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp)); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
                }
             }
             // if (Log.TRACE) Log.trace(ME, "Found rcvTimestamp tag");
@@ -242,12 +260,12 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               if( attrs.getQName(i).equalsIgnoreCase("timeToLive") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("remainingLife") ) {
                  String tmp = attrs.getValue(i).trim();
                  try {
-                    long timeToLive = Long.parseLong(tmp);
-                    this.expirationTimestamp = System.currentTimeMillis() + timeToLive;
-                 } catch(NumberFormatException e) { Log.error(ME, "Invalid timeToLive - millis =" + tmp); };
+                    long remainingLife = Long.parseLong(tmp);
+                    this.expirationTimestamp = System.currentTimeMillis() + remainingLife;
+                 } catch(NumberFormatException e) { Log.error(ME, "Invalid remainingLife - millis =" + tmp); };
                }
             }
          }
@@ -304,6 +322,14 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if(name.equalsIgnoreCase("redeliver")) {
+         inRedeliver = false;
+         String tmp = character.toString().trim();
+         try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - redeliver =" + tmp); };
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("subscriptionId")) {
          inSubscriptionId = false;
          subscriptionId = character.toString().trim();
@@ -314,7 +340,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if(name.equalsIgnoreCase("rcvTimestamp")) {
          inRcvTimestamp = false;
-         rcvTime = character.toString().trim();
+         // rcvTime = character.toString().trim();
          // if (Log.TRACE) Log.trace(ME, "Found message rcvTimestamp = " + rcvTimestamp);
          character.setLength(0);
          return;
@@ -361,38 +387,99 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
       sb.append(offset).append("<qos> <!-- UpdateQoS -->");
       if (state != null) {
-         sb.append(offset).append("   <state>");
-         sb.append(offset).append("      ").append(state);
-         sb.append(offset).append("   </state>");
+         sb.append(offset).append("   <state>").append(state).append("</state>");
       }
       if (sender != null) {
-         sb.append(offset).append("   <sender>");
-         sb.append(offset).append("      ").append(sender);
-         sb.append(offset).append("   </sender>");
+         sb.append(offset).append("   <sender>").append(sender).append("</sender>");
       }
       if (subscriptionId != null) {
-         sb.append(offset).append("   <subscriptionId>");
-         sb.append(offset).append("      ").append(subscriptionId);
-         sb.append(offset).append("   </subscriptionId>");
+         sb.append(offset).append("   <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
       }
 
-      sb.append(offset).append("   <rcvTimestamp millis='").append(getRcvTimestamp()).append("' nanos='").append(rcvNanos).append("'>");
-      sb.append(offset).append("      ").append(getRcvTime());
-      sb.append(offset).append("   </rcvTimestamp>");
-
-      sb.append(offset).append("   <expiration timeToLive='").append(getTimeToLive()).append("'/>");
+      if (getRcvTimestamp() != null)
+         sb.append(getRcvTimestamp().toXml(extraOffset+"   ", true));
+      else {
+         Log.error(ME, "Missing rcvTimestamp in update QoS");
+         sb.append(offset).append("   <error>No rcvTimestamp</error>");
+      }
+      sb.append(offset).append("   <expiration remainingLife='").append(getRemainingLife()).append("'/>");
 
       if(getQueueSize() > 0) {
-         sb.append(offset).append("   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'>");
-         sb.append(offset).append("   </queue>");
+         sb.append(offset).append("   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'/>");
       }
 
+      if(getRedeliver() > 0) {
+         sb.append(offset).append("   <redeliver>").append(getRedeliver()).append("</redeliver>");
+      }
 
       sb.append(offset).append("</qos>\n");
 
       return sb.toString();
    }
 
+   /**
+    * Wrapper to create the returned QoS (with update method). 
+    * Used by the xmlBlaster server. 
+    * Creates the callback QoS of the update() method. 
+    * <p />
+    * It is usually a subset of this xml string:
+    * <pre>
+    *   &lt;qos>
+    *    &lt;state>ERROR&lt;/state>
+    *    &lt;sender>joe&lt;/sender>
+    *    &lt;subscriptionId>subscriptionId:12003&lt;/subscriptionId>
+    *    &lt;rcvTimestamp nanos='1015959656372000000'/>     
+    *    &lt;expiration remainingLife='20000'/>
+    *    &lt;queue index='3' size='12'/>
+    *    &lt;redeliver>4&lt;/redeliver>
+    *   &lt;/qos>
+    *
+    * The receive timestamp can be delivered in human readable form as well
+    * by setting on server command line
+    *
+    *   -cb.recieveTimestampHumanReadable true
+    *
+    *   &lt;rcvTimestamp nanos='1015959656372000000'>
+    *     2002-03-12 20:00:56.372
+    *   &lt;/rcvTimestamp>
+    * </pre>
+    * @param index Index of entry in queue
+    * @param max Number of entries in queue
+    * @param state One of Constants.STATE_OK | Constants.STATE_EXPIRED | Constants.STATE_ERASED
+    * @param redeliver If > 0, the message is redelivered after a failure
+    */
+   public static final String toXml(String subscriptionId,
+                 org.xmlBlaster.engine.MessageUnitWrapper msgUnitWrapper,
+                 int index, int max, String state, int redeliver) {
+      if (msgUnitWrapper == null || state == null) {
+         Log.error("UpdateQos", "Arguments for UpdateQos are invalid: subscriptionId == " + subscriptionId + " msgUnitWrapper=" + msgUnitWrapper + " state=" + state);
+         throw new IllegalArgumentException("Arguments for UpdateQos are invalid");
+      }
+
+      // Check with RequestBroker.get() !!!
+      StringBuffer buf = new StringBuffer(512);
+      buf.append("\n<qos>");
+
+      if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state))
+         buf.append("\n <state>").append(state).append("</state>");
+
+      buf.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
+
+      if (subscriptionId != null)
+         buf.append("\n <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
+      
+      buf.append(msgUnitWrapper.getXmlRcvTimestamp());
+
+      if (msgUnitWrapper.getPublishQos().getRemainingLife() > 0L)
+         buf.append("\n <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>");
+
+      if (max > 0)
+         buf.append("\n <queue index='").append(index).append("' size='").append(max).append("'/>");
+      if (redeliver > 0)
+         buf.append("\n <redeliver>").append(redeliver).append("</redeliver>");
+      buf.append("\n</qos>");
+      return buf.toString();
+   }
 
    public final String toString()
    {
@@ -415,12 +502,12 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <subscriptionId>\n" +
                    "      1234567890\n" +
                    "   </subscriptionId>\n" +
-                   "   <rcvTimestamp millis='1007764305862'  nanos='012345'>\n" +
-                   "      2001-12-07 23:31:45.862\n" +
+                   "   <rcvTimestamp nanos='1007764305862000002'>\n" +
+                   "      2001-12-07 23:31:45.862000002\n" +
                    "   </rcvTimestamp>\n" +
-                   "   <expiration timeToLive='12000'/>\n" + 
-                   "   <queue index='0' size='1'>\n" +
-                   "   </queue>\n" +
+                   "   <expiration remainingLife='12000'/>\n" +
+                   "   <queue index='0' size='1'/>\n" +
+                   "   <redeliver>4</redeliver>\n" +
                    "</qos>";
 
       UpdateQoS up = new UpdateQoS(xml);

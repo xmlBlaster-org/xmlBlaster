@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.13 2002/02/26 10:46:54 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.14 2002/03/13 16:41:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -17,6 +17,7 @@ import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ import java.io.IOException;
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.socket.Parser
  */
-public class SocketCallbackImpl extends Executor implements Runnable
+public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
 {
    private final String ME;
    /** The connection manager 'singleton' */
@@ -100,14 +101,28 @@ public class SocketCallbackImpl extends Executor implements Runnable
       return addr;
    }
 
+   public void initCb()
+   {
+      Log.warn(ME, "initCb() is not implemented");
+   }
+
+   public void setCbSessionId(String sessionId)
+   {
+      Log.warn(ME, "setCbSessionId() is not implemented");
+   }
+
    /**
     * Shutdown callback, called by SocketConnection on problems
+    * @return true everything is OK, false if probably messages are lost on shutdown
     */
-   public void shutdown() {
+   public boolean shutdownCb() {
       running = false;
       try { iStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
-      if (responseListenerMap.size() > 0)
+      if (responseListenerMap.size() > 0) {
          Log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
+         return false;
+      }
+      return true;
    }
 } // class SocketCallbackImpl
 

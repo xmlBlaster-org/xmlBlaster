@@ -22,7 +22,6 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.97 2002/02/25 17:06:36 ruff Exp $
 #-----------------------------------------------------------
 
 

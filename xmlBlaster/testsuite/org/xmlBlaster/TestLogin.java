@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.17 2000/10/29 20:25:33 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.18 2002/03/13 16:41:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,6 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -32,8 +33,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestLogin
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestLogin
  * </pre>
  */
 public class TestLogin extends TestCase implements I_Callback
@@ -55,6 +56,9 @@ public class TestLogin extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
+
+   private final boolean IS_PTP = true;
+   private final boolean IS_PUBSUB = false;
 
    /**
     * Constructs the TestLogin object.
@@ -79,13 +83,15 @@ public class TestLogin extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         callbackConnection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
 
-         callbackConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         callbackConnection = new XmlBlasterConnection(); // Find orb
+         ConnectQos qos = new ConnectQos("simple", "1.0", senderName, passwd);
+         callbackConnection.connect(qos, this); // Login to xmlBlaster
 
          secondConnection = new XmlBlasterConnection(); // Find orb
-         secondConnection.login(secondName, passwd, null, this);
+         qos = new ConnectQos("simple", "1.0", secondName, passwd);
+         secondConnection.connect(qos, this);
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -130,8 +136,8 @@ public class TestLogin extends TestCase implements I_Callback
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
 
-      callbackConnection.logout();
-      secondConnection.logout();
+      callbackConnection.disconnect(null);
+      secondConnection.disconnect(null);
    }
 
 
@@ -178,6 +184,7 @@ public class TestLogin extends TestCase implements I_Callback
          msgUnit.qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
       try {
          publishOid = callbackConnection.publish(msgUnit);
+         Log.info(ME, "Success: Publish " + msgUnit.getXmlKey() + " done");
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-testPublish", "XmlBlasterException: " + e.reason);
@@ -195,27 +202,29 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void testLoginLogout()
    {
-      // test ordinary login
+      Log.info(ME, "TEST 1: Subscribe and publish -> Expecting one update");
       numReceived = 0;
       testSubscribeXPath();
-      testPublish(false);
-      waitOnUpdate(1000L, 1);              // message arrived?
+      testPublish(IS_PUBSUB);
+      waitOnUpdate(2000L, 1);              // message arrived?
 
-      // login again, without logout
+      Log.info(ME, "TEST 2: Login again without logout and publish PtP -> Expecting one update");
       setUp();
-      testPublish(true);                   // sending directly PtP to 'receiver'
-      waitOnUpdate(1000L, 1);              // message arrived?
+      testPublish(IS_PTP);                 // sending directly PtP to 'receiver'
+      waitOnUpdate(2000L, 2);              // 2 times logged in, 2 messages arrived?
 
-      // login again, without logout
+      Log.info(ME, "TEST 3: Login again without logout and publish Pub/Sub -> Expecting no update");
       setUp();
-      testPublish(false);
-      try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
-      assertEquals("Didn't expect an update", 0, numReceived);
+      testPublish(IS_PUBSUB);
+      waitOnUpdate(2000L, 1);              // 1 times subscribed (TEST 1), 1 messages arrived?
+      numReceived = 0;
+
+      Log.info(ME, "TEST 4: Now subscribe -> Expecting one update");
       numReceived = 0;
       testSubscribeXPath();
-      waitOnUpdate(1000L, 1);              // message arrived?
+      waitOnUpdate(2000L, 1);              // message arrived?
 
-      // test publish from other user
+      Log.info(ME, "TEST 5: Test publish from other user -> Expecting one update");
       numReceived = 0;
       try {
          // a sample message unit
@@ -230,16 +239,17 @@ public class TestLogin extends TestCase implements I_Callback
          Log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
          assert("second - publish - XmlBlasterException: " + e.reason, false);
       }
-      waitOnUpdate(1000L, 1);              // message arrived?
-
+      waitOnUpdate(2000L, 2); // 2 messages (we have subscribed 2 times, and the old session remained on relogin)
 
       assert("returned publishOid == null", publishOid != null);
       assertNotEquals("returned publishOid", 0, publishOid.length());
+
+      Log.info(ME, "TEST 6: Test logout with following publish -> Should not be possible");
       // test logout with following subscribe()
       callbackConnection.logout();
       try {
          publishOid = callbackConnection.publish(msgUnit);
-         assert("Didn't expect successful subscribe after logout", false);
+         assert("Didn't expect successful publish after logout", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success got exception for publishing after logout: " + e.toString());
       }
@@ -266,7 +276,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
    }
 
@@ -311,13 +321,13 @@ public class TestLogin extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestLogin
+    * Invoke: java testsuite.org.xmlBlaster.TestLogin
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin</pre>
     */
    public static void main(String args[])
    {

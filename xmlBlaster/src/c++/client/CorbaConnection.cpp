@@ -410,9 +410,11 @@ namespace org { namespace xmlBlaster {
 
       try {
          units = xmlBlaster_->get(xmlKey.c_str(), qos.c_str());
+         /*
          string subId = xmlBlaster_->subscribe(xmlKey.c_str(),
                                                qos.c_str());
          log_.info(me(),"New Entry in Cache created (subId="+subId+")");
+         */
          return units; // check if this is OK or if it must be duplicated.
       }
       catch(serverIdl::XmlBlasterException &e) {

@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.12 2002/02/26 10:47:24 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.13 2002/03/13 16:41:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -14,10 +14,9 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.client.protocol.ConnectionException;
 
 import java.net.ServerSocket;
@@ -82,19 +81,22 @@ public class HandleClient extends Executor implements Runnable
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr)
+   public final String[] sendUpdate(String cbSessionId, MsgQueueEntry[] msg)
       throws XmlBlasterException, ConnectionException
    {
-      if (Log.CALL) Log.call(ME, "Entering update: id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering update: id=" + cbSessionId);
 
-      if (msgUnitArr == null) {
+      if (msg == null || msg.length < 1) {
          Log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
          throw new XmlBlasterException(ME + ".InvalidArguments",
                                        "The argument of method update() are invalid");
       }
       try {
-         // currently we send the loginName of the sender as sessionId!!!
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.UPDATE, clientInfo.getLoginName()/*sessionId*/);
+         MessageUnit[] msgUnitArr = new MessageUnit[msg.length];
+         for (int ii=0; ii<msg.length; ii++)
+            msgUnitArr[ii] = msg[ii].getMessageUnit();
+
+         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.UPDATE, cbSessionId);
          parser.addMessage(msgUnitArr);
          if (updateIsOneway) {
             if (warnUpdateIsOneway) {
@@ -102,13 +104,15 @@ public class HandleClient extends Executor implements Runnable
                warnUpdateIsOneway = false;
             }
             execute(parser, ONEWAY);
-            return "<qos><state>OK</state></qos>";
+            String[] arr = new String[msg.length];
+            for (int jj=0; jj<msg.length; jj++)
+               arr[jj] = "<qos><state>OK</state></qos>";
+            return arr;
          }
          else {
             Object response = execute(parser, WAIT_ON_RESPONSE);
             if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got update response " + response.toString());
-            String[] arr = (String[])response; // return the QoS
-            return arr[0]; // Hack until every update uses arrays (one qos for each message
+            return (String[])response; // return the QoS
          }
       }
       catch (IOException e1) {
@@ -157,7 +161,7 @@ public class HandleClient extends Executor implements Runnable
                      this.sessionId = null;
                      // Note: the diconnect will call over the CbInfo our shutdown as well
                      // setting sessionId = null prevents that our shutdown calls disconnect() again.
-                     String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
+                     authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
                      //executeResponse(receiver, qos);   // The socket is closed already
                      shutdown();
                   }

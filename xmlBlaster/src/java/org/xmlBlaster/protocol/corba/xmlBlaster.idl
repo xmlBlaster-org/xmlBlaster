@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.4 2001/12/30 00:47:14 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.5 2002/03/13 16:41:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -102,12 +102,14 @@ module clientIdl
        * Note: MICO Orb (C++) and Cope Orb (Perl) don't like the combination
        * of 'oneway' and 'raises Exception' simultaneously,<br>
        * where as Visigenic and JacORB have no problems with it.
+       * <p>
        *
+       * @param sessionId To identify server
        * @param msgUnit Contains a sequence of 0 - n MessageUnit structs
-       * @param qos         Quality of Service for each MessageUnit
+       * @return For every message "<qos><state>OK</state></qos>"
        */
-     oneway void update(in serverIdl::MessageUnitArr msgUnitArr);
-                                //raises(serverIdl::XmlBlasterException);
+     serverIdl::StringArr update(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr)
+                                raises(serverIdl::XmlBlasterException);
    };
 
 }; // org::xmlBlaster::protocol::corba::clientIdl

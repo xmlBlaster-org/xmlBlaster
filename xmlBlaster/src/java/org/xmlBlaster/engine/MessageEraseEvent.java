@@ -3,11 +3,12 @@ Name:      MessageEraseEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The erase() event object
-Version:   $Id: MessageEraseEvent.java,v 1.3 2000/02/20 17:38:51 ruff Exp $
+Version:   $Id: MessageEraseEvent.java,v 1.4 2002/03/13 16:41:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.authentication.SessionInfo;
 
 /**
  * An event which indicates that the given message will be erased.
@@ -16,12 +17,12 @@ package org.xmlBlaster.engine;
  * <p />
  * This EventObject carries the MessageUnitHandler reference inside.
  *
- * @version $Id: MessageEraseEvent.java,v 1.3 2000/02/20 17:38:51 ruff Exp $
+ * @version $Id: MessageEraseEvent.java,v 1.4 2002/03/13 16:41:11 ruff Exp $
  * @author Marcel Ruff
  */
 public class MessageEraseEvent extends java.util.EventObject
 {
-   private ClientInfo clientInfo;
+   private SessionInfo sessionInfo;
 
 
    /**
@@ -29,10 +30,10 @@ public class MessageEraseEvent extends java.util.EventObject
     *
     * @param source the MessageEraseInfo object
     */
-   public MessageEraseEvent(ClientInfo clientInfo, MessageUnitHandler messageHandler)
+   public MessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler messageHandler)
    {
        super(messageHandler);
-       this.clientInfo = clientInfo;
+       this.sessionInfo = sessionInfo;
    }
 
    /**
@@ -47,9 +48,9 @@ public class MessageEraseEvent extends java.util.EventObject
    /**
     * Returns the originator of the event.
     *
-    * @return the ClientInfo object that originated the event
+    * @return the SessionInfo object that originated the event
     */
-   public ClientInfo getClientInfo() {
-       return clientInfo;
+   public SessionInfo getSessionInfo() {
+       return sessionInfo;
    }
 }

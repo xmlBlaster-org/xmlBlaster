@@ -23,7 +23,7 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.7 $
+    * @version $Revision: 1.8 $
     * @author $Author: ruff $
     */
    class I_Callback {
@@ -39,14 +39,19 @@ namespace org { namespace xmlBlaster {
        * the loginName which is delivered with this update() method may be 
        * used to dispatch the message to the correct client.
        *
+       * @param sessionId The sessionId to authenticate the callback
+       *                  This sessionId was passed on subscription
+       *                  we can use it to decide if we trust this update()
        * @param loginName The name to whom the callback belongs
        * @param updateKey The arrived key
        * @param content   The arrived message content
        * @param qos       Quality of Service of the MessageUnit
+       * @return The status string
        */
       
    public:
-      virtual void update(const string &loginName, UpdateKey &updateKey, 
+      virtual string update(const string &sessionId, const string &loginName,
+                          UpdateKey &updateKey, 
                           void *content, long contentSize, 
                           UpdateQoS &updateQoS) = 0;
    };

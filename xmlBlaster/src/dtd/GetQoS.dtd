@@ -1,8 +1,8 @@
 <!-- Qos for getting messageunits -->
 
-<!ELEMENT qos (noMeta?,
-               noContent?
+<!ELEMENT qos (meta?,
+               content?
               )>
 
-<!ELEMENT noMeta EMPTY>
-<!ELEMENT noContent EMPTY>
+<!ELEMENT meta EMPTY>
+<!ELEMENT content EMPTY>

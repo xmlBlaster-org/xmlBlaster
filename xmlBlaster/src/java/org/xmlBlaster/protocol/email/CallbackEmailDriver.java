@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.14 2002/01/22 17:21:28 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.15 2002/03/13 16:41:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -12,10 +12,9 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.util.Properties;
 import javax.mail.*;
@@ -61,12 +60,13 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * This sends the update to the client.
     */
-   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getUniqueKey() + ") to " + clientInfo.toString());
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
       try {
          String smtpHost = XmlBlasterProperty.get("EmailDriver.smtpHost", "localhost");
-         String from = XmlBlasterProperty.get("EmailDriver.from", "xmlblast@localhost"); //clientInfo.getLoginName();
+         String from = XmlBlasterProperty.get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
          String to = callbackAddress.getAddress();
 
          // Get system properties
@@ -83,13 +83,16 @@ public class CallbackEmailDriver implements I_CallbackDriver
          message.setFrom(new InternetAddress(from));
          message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
          message.setSubject("XmlBlaster Generated Email");
-         String text = getMailBody(msgUnitWrapper, messageUnitArr);
+         String text = getMailBody(msg);
          message.setText(text);
          Log.info(ME + ".sendUpdate", "Sending email from " + from + " to " + to + ", smtpHost=" + smtpHost);
          if (Log.DUMP) Log.dump(ME + ".sendUpdate", "\n"+text);
          // Send message
          Transport.send(message);
-         return "<qos><state>OK</state></qos>";
+         String[] ret = new String[msg.length];
+         for (int ii=0; ii<ret.length; ii++)
+            ret[ii] = "<qos><state>OK</state></qos>";
+         return ret;
       } catch (Exception e) {
          String str = "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress() + ": " + e.toString();
          Log.warn(ME + ".EmailSendError", str);
@@ -98,24 +101,18 @@ public class CallbackEmailDriver implements I_CallbackDriver
    }
 
 
-   private String getMailBody(MessageUnitWrapper msgUnitWrapper, MessageUnit[] arr) throws XmlBlasterException
+   private String getMailBody(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n";
 
       sb.append(offset).append("<xmlBlaster>");
-      sb.append(offset).append(msgUnitWrapper.getXmlKey().toXml()).append("\n");
-      sb.append(offset).append("   <content><![CDATA[").append(new String(msgUnitWrapper.getMessageUnit().getContent())).append("]]></content>");
-      sb.append(offset).append(msgUnitWrapper.getPublishQoS().toXml());
-      if (arr.length > 1)
-         Log.error(ME, "Sendung more than one callback email (burst mode) is not supported, mails are lost!");
-      /*
-      for (int ii=0; ii<arr.length; ii++) {
-         sb.append(offset).append(arr[ii].xmlKey);
-         sb.append(offset).append("<content>").append(arr[ii].content).append("</content>");
-         sb.append(offset).append(arr[ii].qos);
+      for (int ii=0; ii<msg.length; ii++) {
+         MessageUnit msgUnit = msg[ii].getMessageUnit();
+         sb.append(offset).append(msgUnit.getXmlKey()).append("\n");
+         sb.append(offset).append("   <content><![CDATA[").append(new String(msgUnit.getContent())).append("]]></content>");
+         sb.append(offset).append(msgUnit.getQos());
       }
-      */
       sb.append(offset).append("</xmlBlaster>\n");
       return sb.toString();
    }

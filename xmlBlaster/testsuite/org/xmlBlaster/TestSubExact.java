@@ -3,7 +3,6 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.11 2002/02/26 10:48:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -99,7 +98,7 @@ public class TestSubExact extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
+      String[] strArr = new String[0];
       try {
          strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }

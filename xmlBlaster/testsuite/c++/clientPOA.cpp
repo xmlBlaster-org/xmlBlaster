@@ -28,8 +28,10 @@ public:
   BlasterCallback_impl()  {}
   ~BlasterCallback_impl() {}
 
-  void update(const serverIdl::MessageUnitArr& messageUnitArr) {
+  serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
+    serverIdl::StringArr_var res = new serverIdl::StringArr;
+    res->length(nmax);
     cout << endl;
     cout << "Callback invoked: there are " << nmax << " messages" << endl;
     cout << "messages: " << endl;
@@ -37,6 +39,7 @@ public:
       print_msg(cout,messageUnitArr[i]);
       cout << endl;
     }
+    return res;
   };
 };
 

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.15 2002/02/26 10:46:54 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.16 2002/03/13 16:41:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -28,6 +28,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import org.xmlBlaster.protocol.socket.Parser;
@@ -382,7 +383,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public boolean shutdown()
    {
       if (this.cbReceiver != null) {
-         this.cbReceiver.shutdown();
+         this.cbReceiver.shutdownCb();
          this.cbReceiver = null;
       }
       try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
@@ -400,6 +401,13 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       return this.sock != null; // && cbReceiver != null
    }
 
+   /**
+    * Access handle of callback server. 
+    */
+   public I_CallbackServer getCallbackServer()
+   {
+      return this.cbReceiver;
+   }
 
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode).

@@ -3,7 +3,6 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.32 2002/02/16 17:41:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,10 +35,12 @@ public class TestAll
       //try { XmlBlasterProperty.set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       //try { XmlBlasterProperty.set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       suite.addTest(TestCorbaThreads.suite());
+      suite.addTest(TestSession.suite());
       suite.addTest(TestLogin.suite());
+      suite.addTest(TestCallback.suite());
       suite.addTest(TestLoginLogoutEvent.suite());
       suite.addTest(TestGet.suite());
-      suite.addTest(TestSubExact.suite());
+      //!!!!suite.addTest(TestSubExact.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());

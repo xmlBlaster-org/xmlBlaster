@@ -3,18 +3,23 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.30 2001/12/16 21:25:33 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.31 2002/03/13 16:41:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQoS;
+import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.callback.CbQueue;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.I_Timeout;
 import java.util.*;
 
 
@@ -26,12 +31,15 @@ import java.util.*;
  * So this Wrapper encapsulates the CORBA generated MessageUnit and adds
  * some value to it.
  */
-public class MessageUnitWrapper
+public class MessageUnitWrapper implements I_Timeout
 {
    private final static String ME = "MessageUnitWrapper";
 
    /** The broker which manages me */
    private RequestBroker requestBroker;
+
+   /** The MessageUnitHandler which manages me */
+   private MessageUnitHandler messageUnitHandler = null;
 
    /** The MessageUnit with key/content/qos (raw struct) */
    private MessageUnit msgUnit;
@@ -40,7 +48,7 @@ public class MessageUnitWrapper
    private XmlKey xmlKey;
 
    /** the flags from the publisher */
-   private PublishQoS publishQoS;
+   private PublishQos publishQos;
 
    /** Attribute oid of key tag: <key oid="..."> </key> */
    private String uniqueKey;
@@ -48,16 +56,30 @@ public class MessageUnitWrapper
    /** Handle on the persistence driver */
    private I_PersistenceDriver persistenceDriver;
 
+   private Timeout messageTimer;
+   private Timestamp timerKey = null;
+   private boolean isExpired = false;
+
+   private static final boolean recieveTimestampHumanReadable = XmlBlasterProperty.get("cb.recieveTimestampHumanReadable", false);
+
+   /**
+    * Count how often this messages is put into a queue
+    * When callback succeeded, the counter is reduced
+    * If the message isVolatile() we can delete it when all
+    * callbacks succeeded
+    */
+   private int enqueueCounter = 0;
+
    /**
     * Use this constructor if a new message object is fed by method publish().
     * <p />
     * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from msgUnit.xmlKey_literal
     * @param msgUnit the CORBA MessageUnit data container
-    * @param publishQoS the quality of service
+    * @param publishQos the quality of service
     */
-   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
+   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
-      if (xmlKey == null || msgUnit == null || publishQoS == null) {
+      if (xmlKey == null || msgUnit == null || publishQos == null) {
          Log.error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
@@ -66,8 +88,9 @@ public class MessageUnitWrapper
       this.msgUnit = msgUnit;
       this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();
-      this.publishQoS = publishQoS;
+      this.publishQos = publishQos;
       this.persistenceDriver = requestBroker.getPersistenceDriver();
+      this.messageTimer = requestBroker.getGlobal().getMessageTimer();
 
       if (this.msgUnit.content == null)
          this.msgUnit.content = new byte[0];
@@ -75,17 +98,80 @@ public class MessageUnitWrapper
       if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the msgUnit.xmlKey as well
          this.msgUnit.xmlKey = xmlKey.literal();
 
-      if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.isFromPersistenceStore())
+      if (persistenceDriver != null && publishQos.isDurable() && !publishQos.isFromPersistenceStore())
       {
          persistenceDriver.store(this);
          if(Log.TRACE) Log.trace(ME,"Storing MessageUnit with key oid="+xmlKey.getKeyOid());
       }
 
-      publishQoS.setFromPersistenceStore(false);
+      publishQos.setFromPersistenceStore(false);
+
+      if (publishQos.getRemainingLife() > 0L) {
+         Log.info(ME, "Setting expiry timer for " + getUniqueKey() + " to " + publishQos.getRemainingLife() + " msec");
+         timerKey = this.messageTimer.addTimeoutListener(this, publishQos.getRemainingLife(), null);
+      }
 
       if (Log.TRACE) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
    }
 
+   public void finalize()
+   {
+      if (timerKey != null) {
+         this.messageTimer.removeTimeoutListener(timerKey);
+         timerKey = null;
+      }
+
+      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + this.uniqueKey);
+   }
+
+   public void shutdown()
+   {
+      if (Log.CALL) Log.call(ME, "shutdown() of message " + this.uniqueKey);
+      isExpired = true;
+      if (timerKey != null) {
+         this.messageTimer.removeTimeoutListener(timerKey);
+         timerKey = null;
+         this.messageTimer = null;
+      }
+   }
+
+   public boolean isExpired()
+   {
+      return this.isExpired;
+   }
+
+   /**
+    * @param +1 to add, -1 to subtract
+    */
+   public synchronized void addEnqueueCounter(int val)
+   {
+      this.enqueueCounter++;
+   }
+
+   /**
+    * Count how often this messages is put into a queue
+    * When callback succeeded, the counter is reduced
+    * If the message isVolatile() we can delete it when all
+    * callbacks succeeded
+    */
+   public synchronized int getEnqueueCounter()
+   {
+      return this.enqueueCounter;
+   }
+
+   /**
+    * We are notified when this session expires. 
+    * @param userData You get bounced back your userData which you passed
+    *                 with Timeout.addTimeoutListener()
+    */
+   public final void timeout(Object userData)
+   {
+      synchronized (this) {
+         isExpired = true;
+         timerKey = null;
+         Log.warn(ME, "Message " + getUniqueKey() + " is expired, timeout event occurred - tests are missing!");
+      }
+   }
 
    /**
     * Accessing the key of this message
@@ -95,74 +181,60 @@ public class MessageUnitWrapper
       return xmlKey;
    }
 
+   void setMessageUnitHandler(MessageUnitHandler h)
+   {
+      this.messageUnitHandler = h;
+   }
+
+   /** May be null */
+   public MessageUnitHandler getMessageUnitHandler()
+   {
+      return this.messageUnitHandler;
+   }
+
    /** 
     * The approximate receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
     */
-   public final long getRcvTimestamp()
+   public final Timestamp getRcvTimestamp()
    {
-      return publishQoS.getRcvTimestamp();
+      return publishQos.getRcvTimestamp();
    }
 
    /**
     * Tagged form of message receive, e.g.:<br />
-    * &lt;rcvTimestamp millis='1007764305862'>2001-12-07 23:31:45.862&lt;/rcvTimestamp>
+    * &lt;rcvTimestamp nanos='1007764305862000004'/>
+    *
+    * @see org.xmlBlaster.util.Timestamp
     */
    public final String getXmlRcvTimestamp()
    {
-      java.sql.Timestamp ts = new java.sql.Timestamp(getRcvTimestamp());
-      StringBuffer sb = new StringBuffer();
-      sb.append("<rcvTimestamp millis='").append(publishQoS.getRcvTimestamp()).append("'>").append(ts.toString()).append("</rcvTimestamp>");
-      return sb.toString();
+      if (recieveTimestampHumanReadable)
+         return getRcvTimestamp().toXml(null, true);
+      else
+         return getRcvTimestamp().toXml();
    }
 
+
    /**
-    * Setting update of a changed content.
-    * <p />
-    * @param newContent The new data blob
-    * @param publisherName The source of the data (unique login name)
-    * @return changed? true:  if content has changed
-    *                  false: if content didn't change
+    * Compares bytes if the given content is identical to the
+    * internal content
+    * @return true content is identical
     */
-   final boolean setContent(byte[] newContent, String publisherName) throws XmlBlasterException
+   final boolean sameContent(byte[] newContent)
    {
-      // if (Log.TRACE) Log.trace(ME, "Updating xmlKey " + uniqueKey + " from " + publisherName + ", new newContent=" + new String(newContent));
-
-      if (publishQoS.readonly()) {
-         Log.warn(ME+".Readonly", "Sorry, new published message rejected, message is readonly.");
-         throw new XmlBlasterException(ME+".Readonly", "Sorry, new published message rejected, message is readonly.");
-      }
-
-      publishQoS.touchRcvTimestamp();
-
-      if (newContent == null)
-         newContent = new byte[0];
-
-      publishQoS.setSender(publisherName);
-
-      boolean changed = false;
-      if (this.msgUnit.content.length != newContent.length) {
-         changed = true;
-      }
-      else {
-         for (int ii=0; ii<newContent.length; ii++)
-            if (this.msgUnit.content[ii] != newContent[ii]) {
-               changed = true;
-               break;
-            }
-      }
-
-      if (Log.TRACE) Log.trace(ME+".setContent()", "changed=" + changed + " , persistenceDriver=" + persistenceDriver + " , isDurable=" + publishQoS.isDurable());
-      if (changed) {  // new content is not the same as old one
-         this.msgUnit.content = newContent;
-         if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.isFromPersistenceStore())
-            persistenceDriver.update(this);
-         return true;
-      }
-      else {
+      if (newContent == null) {
+         if (this.msgUnit.content.length < 1)
+            return true;
          return false;
       }
+      if (this.msgUnit.content.length != newContent.length)
+         return false;
+      for (int ii=0; ii<newContent.length; ii++)
+         if (this.msgUnit.content[ii] != newContent[ii])
+            return false;
+      return true;
    }
 
    /**
@@ -170,10 +242,9 @@ public class MessageUnitWrapper
     */
    final void erase() throws XmlBlasterException
    {
-      if (persistenceDriver != null && publishQoS.isDurable())
+      if (persistenceDriver != null && publishQos.isDurable())
          persistenceDriver.erase(xmlKey);
    }
-
 
    /**
     * This is the unique key of the msgUnit
@@ -183,13 +254,12 @@ public class MessageUnitWrapper
       return uniqueKey;
    }
 
-
    /**
     * Access the flags from the publisher
     */
-   public final PublishQoS getPublishQoS()
+   public final PublishQos getPublishQos()
    {
-      return publishQoS;
+      return publishQos;
    }
 
    /**
@@ -200,7 +270,6 @@ public class MessageUnitWrapper
       return CbQueue.NORM_PRIORITY;
    }
 
-
    /**
     * Access the unique login name of the (last) publisher.
     * <p />
@@ -210,11 +279,10 @@ public class MessageUnitWrapper
     */
    public String getPublisherName()
    {
-      if (publishQoS.getSender() == null)
+      if (publishQos.getSender() == null)
          return "";
-      return publishQoS.getSender();
+      return publishQos.getSender();
    }
-
 
    /**
     * This is the unique key of the msgUnit
@@ -224,7 +292,6 @@ public class MessageUnitWrapper
       this.xmlKey = xmlKey;
       this.msgUnit.xmlKey = xmlKey.literal();
    }
-
 
    /**
     */
@@ -236,7 +303,6 @@ public class MessageUnitWrapper
       }
       return xmlKey.getContentMime();
    }
-
 
    /**
     * Get the message unit.
@@ -252,7 +318,6 @@ public class MessageUnitWrapper
       return msgUnit;
    }
 
-
    /**
     * Get the cloned message unit.
     */
@@ -265,7 +330,6 @@ public class MessageUnitWrapper
       return msgUnit.getClone();
    }
 
-
    /**
     * Clones this MessageUnitWrapper to a new one, the only attributes
     * which is cloned is the MessageUnit.content. <p />
@@ -275,7 +339,7 @@ public class MessageUnitWrapper
     */
    MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQos);
 
       byte[] oldContent = this.msgUnit.content;
       byte[] newContent = new byte[oldContent.length];
@@ -288,7 +352,6 @@ public class MessageUnitWrapper
       return newWrapper;
    }
 
-
    /**
     * Used by clone() to assign the message content.
     * @param the new MessageUnit.content
@@ -297,7 +360,6 @@ public class MessageUnitWrapper
    {
       this.msgUnit.content = content;
    }
-
 
    /**
     * Try to find out the approximate memory consumption of this message.
@@ -328,11 +390,10 @@ public class MessageUnitWrapper
 
       // These are references on the original MessageUnitWrapper and consume almost no memory:
       // size += xmlKey;
-      // size += publishQoS;
+      // size += publishQos;
       // size += uniqueKey.size() + objectHandlingBytes;
       return size;
    }
-
 
    /**
     * Dump state of this object into XML.
@@ -343,7 +404,6 @@ public class MessageUnitWrapper
    {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into XML.
@@ -360,14 +420,10 @@ public class MessageUnitWrapper
 
       sb.append(offset).append("<MessageUnitWrapper>");
       sb.append(offset).append("   <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
-      if (xmlKey==null)
-         sb.append(offset).append("   <XmlKey>null</XmlKey>");
+      if (publishQos==null)
+         sb.append(offset).append("   <publishQos>null</publishQos>");
       else
-         sb.append(xmlKey.printOn(extraOffset).append("   ").toString());
-      if (publishQoS==null)
-         sb.append(offset).append("   <PublishQoS>null</PublishQoS>");
-      else
-         sb.append(publishQoS.toXml(extraOffset + "   "));
+         sb.append(publishQos.toXml(extraOffset + "   "));
       sb.append(offset).append("   <content>").append((msgUnit.content==null ? "null" : msgUnit.content.toString())).append("</content>");
 
       sb.append(offset).append("   ").append(getXmlRcvTimestamp());

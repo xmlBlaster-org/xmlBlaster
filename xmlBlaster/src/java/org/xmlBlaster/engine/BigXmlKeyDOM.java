@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.22 2001/02/24 23:17:29 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.23 2002/03/13 16:41:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -16,8 +16,8 @@ import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.SessionInfo;
 import java.util.*;
 import java.io.*;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * <p />
  * Full text search scanning the content BLOB may be available through MIME based plugins.
  */
-public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, MessageEraseListener
+public class BigXmlKeyDOM extends XmlKeyDom implements MessageEraseListener
 {
    final private static String ME = "BigXmlKeyDOM";
 
@@ -47,7 +47,6 @@ public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, Message
       this.requestBroker = requestBroker;
       this.authenticate = authenticate;
 
-      authenticate.addClientListener(this);
       requestBroker.addMessageEraseListener(this);
    }
 
@@ -59,26 +58,6 @@ public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, Message
    public org.w3c.dom.Node removeKeyNode(org.w3c.dom.Node node)
    {
       return xmlKeyDoc.getDocumentElement().removeChild(node);
-   }
-
-
-   /**
-    * Invoked on successful client login (interface I_ClientListener)
-    */
-   public void clientAdded(ClientEvent e) throws XmlBlasterException
-   {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString());
-   }
-
-
-   /**
-    * Invoked when client does a logout (interface I_ClientListener)
-    */
-   public void clientRemove(ClientEvent e) throws XmlBlasterException
-   {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString());
    }
 
 

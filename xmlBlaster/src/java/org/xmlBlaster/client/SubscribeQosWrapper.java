@@ -3,7 +3,7 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.6 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.7 2002/03/13 16:41:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -18,9 +18,9 @@ import java.util.Vector;
  * A full specified <b>subscribe</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
- *        &lt;noMeta />       &lt;!-- Don't send me the xmlKey meta data on updates -->
- *        &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
- *        &lt;noLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+ *        &lt;meta>false<&lt;/meta>      &lt;!-- Don't send me the xmlKey meta data on updates -->
+ *        &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
+ *        &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *     &lt;/qos>
  * </pre>
  * <p />
@@ -31,11 +31,11 @@ public class SubscribeQosWrapper extends QosWrapper
    private String ME = "SubscribeQosWrapper";
 
    /** not yet supported */
-   private boolean noMeta = false;
+   private boolean meta = true;
 
-   private boolean noContent = false;
+   private boolean content = true;
 
-   private boolean noLocal = false;
+   private boolean local = true;
 
 
 
@@ -51,11 +51,11 @@ public class SubscribeQosWrapper extends QosWrapper
     * Constructor to receive notifies only (no data content will be delivered).
     * <p />
     * This may be useful if you have huge contents, and you only want to be informed about a change
-    * @param noContent true - no data content is delivered
+    * @param content false - no data content is delivered
     */
-   public SubscribeQosWrapper(boolean noContent)
+   public SubscribeQosWrapper(boolean content)
    {
-      this.noContent = noContent;
+      this.content = content;
    }
 
 
@@ -64,7 +64,7 @@ public class SubscribeQosWrapper extends QosWrapper
     */
    public void setNoLocal()
    {
-      this.noLocal = true;
+      this.local = false;
    }
 
 
@@ -86,12 +86,9 @@ public class SubscribeQosWrapper extends QosWrapper
    {
       StringBuffer sb = new StringBuffer();
       sb.append("<qos>\n");
-      if (noMeta)
-         sb.append("   <noMeta />\n");
-      if (noContent)
-         sb.append("   <noContent />\n");
-      if (noLocal)
-         sb.append("   <noLocal />\n");
+      if (!meta) sb.append("   <meta>false</meta>\n");
+      if (!content) sb.append("   <content>false</content>\n");
+      if (!local) sb.append("   <local>false</local>\n");
       sb.append("</qos>");
       return sb.toString();
    }

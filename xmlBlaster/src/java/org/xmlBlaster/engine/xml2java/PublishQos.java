@@ -1,16 +1,19 @@
 /*------------------------------------------------------------------------------
-Name:      PublishQoS.java
+Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.23 2001/12/30 13:00:19 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.2 2002/03/13 16:41:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.RcvTimestamp;
 
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -27,53 +30,95 @@ import java.io.*;
  * QoS Informations sent from the client to the server via the publish() method<br />
  * They are needed to control xmlBlaster
  * <p />
- * Example:
+ * Example for Pub/Sub style:<p />
  * <pre>
- *   &lt;qos> &lt;!-- PublishQoS -->
- *     &lt;isDurable />
- *     &lt;sender>
- *        Tim
- *     &lt;/sender>
- *     &lt;expiration rcvTimestamp='1009709317836' timeToLive='129595811'/>
+ *  &lt;qos> &lt;!-- PublishQos -->
+ *     &lt;sender>Tim&lt;/sender>
+ *     &lt;priority>5&lt;/priority>
+ *     &lt;rcvTimestamp nanos='129595811'/>       <!-- Only for persistence layer -->
+ *     &lt;expiration remainingLife='129595811'/> <!-- Only for persistence layer -->
  *     &lt;isVolatile>false&lt;/isVolatile>
+ *     &lt;isDurable/>
+ *     &lt;readonly/>
  *  &lt;/qos>
  * </pre>
+ * Example for PtP addressing style:&lt;p />
+ * <pre>
+ *  &lt;qos>
+ *     &lt;destination queryType='EXACT' forceQueuing='true'>
+ *        Tim
+ *     &lt;/destination>
+ *     &lt;destination queryType='EXACT'>
+ *        Ben
+ *     &lt;/destination>
+ *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
+ *        //[GROUP='Manager']
+ *     &lt;/destination>
+ *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
+ *        //ROLE/[@id='Developer']
+ *     &lt;/destination>
+ *     &lt;sender>
+ *        Gesa
+ *     &lt;/sender>
+ *     &lt;priority>7&lt;/priority>
+ *  &lt;/qos>
+ * </pre>
+ * Note that receiveTimestamp is in nanoseconds, whereas all other time values are milliseconds
  */
-public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serializable
+public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
-   private String ME = "PublishQoS";
+   private String ME = "PublishQos";
 
    /**
-    * A message lease lasts a maximum of one and a half day (36 hours). <p />
-    * This value can be modified in XmlBlaster.properties:<br />
-    * <code>Message.lease.maxTimeToLive=3600000 # One hour lease</code><br />
-    * Every message can set the timeToLive value between 1 and maxTimeToLive
+    * A message lease lasts forever if not otherwise specified. <p />
+    * The default message life cycle can be modified in xmlBlaster.properties:<br />
+    * <code>message.lease.maxRemainingLife=3600000 # One hour lease</code><br />
+    * Every message can set the remainingLife value between 1 and maxRemainingLife, 
+    * 0 sets the life cycle on forever.
     */
-   private static long maxTimeToLive = XmlBlasterProperty.get("Message.lease.maxTimeToLive", 36L*60*60*1000);
+   private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 0L);
+   //private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 36L*60*60*1000);
 
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
    private boolean inSender = false; // parsing inside <sender> ?
+   private boolean inPriority = false; // parsing inside <priority> ?
    private boolean inExpiration = false; // parsing inside <expiration> ?
+   private boolean inRcvTimestamp = false; // parsing inside <rcvTimestamp> ?
    private boolean inIsVolatile = false; // parsing inside <isVolatile> ?
+   private boolean inIsDurable = false; // parsing inside <isDurable> ?
+   private boolean inReadonly = false; // parsing inside <readonly> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
 
    // flags for QoS state
    private boolean usesXPathQuery = false;
-   private boolean isVolatile = false;
-   private boolean isDurable = false;
-   private boolean forceUpdate = false;
-   private boolean readonly = false;
-   private boolean forceQueuing = false;
+   
+   public static boolean DEFAULT_isVolatile = false;
+   private boolean isVolatile = DEFAULT_isVolatile;
+
+   public static boolean DEFAULT_isDurable = false;
+   private boolean isDurable = DEFAULT_isDurable;
+
+   /**
+    * Send message to subscriber even the content is the same as the previous?
+    * <br />
+    * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
+    */
+   public static boolean DEFAULT_forceUpdate = true;
+   private boolean forceUpdate = DEFAULT_forceUpdate;
+
+   public static boolean DEFAULT_readonly = false;
+   private boolean readonly = DEFAULT_readonly;
 
    /** 
     * The receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
     */
-   private long rcvTimestamp;
+   private Timestamp rcvTimestamp;
+   private boolean rcvTimestampFound = false;
 
    /** 
     * A message expires after some time and will be discarded.
@@ -84,6 +129,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    /** the sender (publisher) of this message (unique loginName) */
    private String sender = null;
+
+   /** The priority of the message */
+   private int priority = Constants.NORM_PRIORITY;
 
    /**
     * Vector for loginQoS, holding all destination addresses (Destination objects)
@@ -98,11 +146,11 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Constructs the specialized quality of service object for a publish() call.
     * @param the XML based ASCII string
     */
-   public PublishQoS(String xmlQoS_literal) throws XmlBlasterException
+   public PublishQos(String xmlQoS_literal) throws XmlBlasterException
    {
       // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
       touchRcvTimestamp();
-      setTimeToLive(getMaxTimeToLive());
+      setRemainingLife(getMaxRemainingLife());
       parseQos(xmlQoS_literal);
       size = xmlQoS_literal.length();
    }
@@ -114,21 +162,24 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param the XML based ASCII string
     * @param true
     */
-   public PublishQoS(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
+   public PublishQos(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
    {
       if (!fromPersistenceStore) {
          touchRcvTimestamp();
-         setTimeToLive(getMaxTimeToLive());
+         setRemainingLife(getMaxRemainingLife());
       }
       this.fromPersistenceStore = fromPersistenceStore;
       parseQos(xmlQoS_literal);
       size = xmlQoS_literal.length();
+      if (fromPersistenceStore && !rcvTimestampFound) {
+         Log.error(ME, "Message from persistent store is missing rcvTimestamp");
+      }
    }
 
 
    /**
     */
-   private void parseQos(String xmlQoS_literal) throws XmlBlasterException
+   private final void parseQos(String xmlQoS_literal) throws XmlBlasterException
    {
       if (!isEmpty(xmlQoS_literal)) // if possible avoid expensive SAX parsing
          init(xmlQoS_literal);  // use SAX parser to parse it (is slow)
@@ -215,7 +266,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Access sender name.
     * @return loginName of sender
     */
-   public String getSender()
+   public final String getSender()
    {
       return sender;
    }
@@ -225,9 +276,34 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Access sender name.
     * @return loginName of sender
     */
-   public void setSender(String sender)
+   public final void setSender(String sender)
    {
       this.sender = sender;
+   }
+
+
+   /**
+    * Message priority.
+    * @return priority 0-9
+    * @see org.xmlBlaster.engine.helper.Constants
+    */
+   public final int getPriority()
+   {
+      return priority;
+   }
+
+
+   /**
+    * Set message priority value, Constants.NORM_PRIORITY (5) is default. 
+    * Constants.MIN_PRIORITY (0) is slowest
+    * whereas Constants.MAX_PRIORITY (9) is highest priority.
+    * @see org.xmlBlaster.engine.helper.Constants
+    */
+   public final void setPriority(int priority)
+   {
+      if (priority < Constants.MIN_PRIORITY || priority > Constants.MAX_PRIORITY)
+         throw new IllegalArgumentException("Message priority must be in range 0-9");
+      this.priority = priority;
    }
 
 
@@ -240,7 +316,6 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       return fromPersistenceStore;
    }
 
-
    /**
     * Internal use only, set if this message sent from the persistence layer
     * @param true/false
@@ -251,35 +326,52 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * @return Milliseconds until message expiration (from now) or Long.MAX_VALUE if forever
+    * Shall we queue PtP messages if destination is not online?
+    * @see org.xmlBlaster.engine.helper.Destination
     */
-   public long getTimeToLive()
+   public final boolean forceQueuing()
+   {
+      return this.destination.forceQueuing();
+   }
+
+   /**
+    * @return Milliseconds until message expiration (from now) or 0L if forever
+    */
+   public final long getRemainingLife()
    {
       if (expirationTimestamp < Long.MAX_VALUE)
          return expirationTimestamp - System.currentTimeMillis();
       else
-         return Long.MAX_VALUE;
+         return 0L;
    }
 
-   public void setTimeToLive(long timeToLive)
+   /**
+    * @param remainingLife in milliseconds
+    */
+   public final void setRemainingLife(long remainingLife)
    {
-      if (timeToLive <= 0L) timeToLive = Long.MAX_VALUE; // Check parameter
-
-      if (timeToLive <= getMaxTimeToLive())
-         this.expirationTimestamp = rcvTimestamp + timeToLive;
-      else {
-         if (Log.TRACE) Log.trace(ME, "Ignoring timeToLive=" + timeToLive + ", setting maximum message lifespan to " + getMaxTimeToLive() + " millis");
-         if (getMaxTimeToLive() == Long.MAX_VALUE)
-            this.expirationTimestamp = Long.MAX_VALUE;
+      if (remainingLife <= 0L && getMaxRemainingLife() <= 0L)
+         this.expirationTimestamp = Long.MAX_VALUE;
+      else if (remainingLife > 0L && getMaxRemainingLife() <= 0L)
+         this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
+      else if (remainingLife <= 0L && getMaxRemainingLife() > 0L)
+         this.expirationTimestamp = getRcvTimestamp().getMillis() + getMaxRemainingLife();
+      else if (remainingLife > 0L && getMaxRemainingLife() > 0L) {
+         if (remainingLife <= getMaxRemainingLife())
+            this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
          else
-            this.expirationTimestamp = rcvTimestamp + maxTimeToLive;
+            this.expirationTimestamp = getRcvTimestamp().getMillis() + getMaxRemainingLife();
       }
    }
 
-   public static long getMaxTimeToLive()
+   /**
+    * The server default for max. span of life,
+    * adjustable with property "message.maxRemainingLife"
+    * @return max span of life for a message
+    */
+   public static final long getMaxRemainingLife()
    {
-      if (maxTimeToLive <= 0L) maxTimeToLive=Long.MAX_VALUE; // Correct value if strange initialized
-      return maxTimeToLive;
+      return maxRemainingLife;
    }
 
    /** 
@@ -287,14 +379,21 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * when message arrived in requestBroker.publish() method.<br />
     * In milliseconds elapsed since midnight, January 1, 1970 UTC
     */
-   public long getRcvTimestamp()
+   public final Timestamp getRcvTimestamp()
    {
+      if (rcvTimestamp == null) {
+         Log.error(ME, "rcvTimestamp is not set, setting it to current");
+         touchRcvTimestamp();
+      }
       return rcvTimestamp;
    }
 
-   public void touchRcvTimestamp()
+   /**
+    * Set timestamp to current time.
+    */
+   public final void touchRcvTimestamp()
    {
-      rcvTimestamp = System.currentTimeMillis();
+      rcvTimestamp = new RcvTimestamp();
    }
 
    /**
@@ -342,6 +441,11 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
                   else
                      Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
                }
+               else if( attrs.getQName(i).equalsIgnoreCase("forceQueuing") ) {
+                  String tmp = attrs.getValue(i).trim();
+                  if (tmp.length() > 0)
+                     destination.forceQueuing(new Boolean(tmp).booleanValue());
+               }
             }
          }
          String tmp = character.toString().trim(); // The address or XPath query string
@@ -366,40 +470,61 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("priority")) {
+         if (!inQos)
+            return;
+         inPriority = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found priority tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("expiration")) {
          if (!inQos)
             return;
          inExpiration = true;
          if (attrs != null) {
             int len = attrs.getLength();
-            if (fromPersistenceStore) {  // First we need the rcvTimestamp:
-               String tmp = attrs.getValue("rcvTimestamp");
-               if (tmp != null) {
-                  try { rcvTimestamp = Long.parseLong(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
-               }
-               else {
-                  Log.warn(ME, "QoS from persistent store misses rcvTimestamp attribute, setting current date");
-                  touchRcvTimestamp();
-               }
-            }
-            String tmp = attrs.getValue("timeToLive");
+            String tmp = attrs.getValue("remainingLife");
             if (tmp != null) {
-               try { setTimeToLive(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid timeToLive - millis =" + tmp); };
+               try { setRemainingLife(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid remainingLife - millis =" + tmp); };
             }
             else {
-               Log.warn(ME, "QoS <expiration> misses timeToLive attribute, setting default of " + getMaxTimeToLive());
-               setTimeToLive(getMaxTimeToLive());
+               Log.warn(ME, "QoS <expiration> misses remainingLife attribute, setting default of " + getMaxRemainingLife());
+               setRemainingLife(getMaxRemainingLife());
             }
             // if (Log.TRACE) Log.trace(ME, "Found expiration tag");
          }
          return;
       }
 
-      if (name.equalsIgnoreCase("ForceQueuing")) {
+      if (name.equalsIgnoreCase("rcvTimestamp")) {
+         if (!inQos)
+            return;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            if (fromPersistenceStore) {  // First we need the rcvTimestamp:
+               String tmp = attrs.getValue("nanos");
+               if (tmp != null) {
+                  try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp.trim())); rcvTimestampFound = true; } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
+               }
+            }
+         }
+         inRcvTimestamp = true;
+         return;
+      }
+
+      // deprecated
+      if (name.equalsIgnoreCase("forceQueuing")) {
          if (!inDestination)
             return;
-         forceQueuing = true;
          destination.forceQueuing(true);
+         Log.warn(ME, "forceQuening is an attribute of destination - change your code");
          return;
       }
 
@@ -454,7 +579,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          inDestination = false;
          String tmp = character.toString().trim(); // The address or XPath query string
          if (tmp.length() > 0) {
-            destination.setDestination(tmp); // set address or XPath query string if it is before the ForceQueuing tag
+            destination.setDestination(tmp); // set address or XPath query string if it is before the forceQueuing tag
             character.setLength(0);
          }
          destinationVec.addElement(destination);
@@ -469,8 +594,32 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if(name.equalsIgnoreCase("priority")) {
+         inPriority = false;
+         priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
+         // if (Log.TRACE) Log.trace(ME, "Found priority = " + priority);
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("expiration")) {
          inExpiration = false;
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("rcvTimestamp")) {
+         inRcvTimestamp = false;
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("forceUpdate")) {
+         inIsVolatile = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            forceUpdate = new Boolean(tmp).booleanValue();
+         // if (Log.TRACE) Log.trace(ME, "Found forceUpdate = " + forceUpdate);
          character.setLength(0);
          return;
       }
@@ -478,16 +627,34 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if(name.equalsIgnoreCase("isVolatile")) {
          inIsVolatile = false;
          String tmp = character.toString().trim();
-         try {
+         if (tmp.length() > 0)
             isVolatile = new Boolean(tmp).booleanValue();
-         } catch (NumberFormatException e) {
-            Log.error(ME, "Wrong format of <isVolatile>" + tmp + "</isVolatile>, expected true or false.");
-         }
          // if (Log.TRACE) Log.trace(ME, "Found isVolatile = " + isVolatile);
          character.setLength(0);
          return;
       }
 
+      if(name.equalsIgnoreCase("isDurable")) {
+         inIsDurable = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            isDurable = new Boolean(tmp).booleanValue();
+         // if (Log.TRACE) Log.trace(ME, "Found isDurable = " + isDurable);
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("readonly")) {
+         inReadonly = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            readonly = new Boolean(tmp).booleanValue();
+         // if (Log.TRACE) Log.trace(ME, "Found readonly = " + readonly);
+         character.setLength(0);
+         return;
+      }
+
+      character.setLength(0); // reset data from unknown tags
    }
 
 
@@ -533,15 +700,25 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          sb.append(offset).append("      ").append(sender);
          sb.append(offset).append("   </sender>");
       }
-      sb.append(offset).append("   <expiration rcvTimestamp='").append(rcvTimestamp).append("' timeToLive='").append(getTimeToLive()).append("'/>");
 
-      sb.append(offset).append("   <isVolatile>").append(isVolatile).append("</isVolatile>");
+      if (Constants.NORM_PRIORITY != priority)
+         sb.append(offset).append("   <priority>").append(priority).append("</priority>");
+
+      sb.append(rcvTimestamp.toXml(extraOffset + "   ", false));
+      if (getRemainingLife() > 0L)
+         sb.append(offset).append("   <expiration remainingLife='").append(getRemainingLife()).append("'/>");
+
+      if (DEFAULT_isVolatile != isVolatile)
+         sb.append(offset).append("   <isVolatile>").append(isVolatile).append("</isVolatile>");
+
       if (isDurable())
-         sb.append(offset).append("   <isDurable />");
-      if (forceUpdate())
-         sb.append(offset).append("   <forceUpdate />");
+         sb.append(offset).append("   <isDurable/>");
+
+      if (DEFAULT_forceUpdate != forceUpdate())
+         sb.append(offset).append("   <forceUpdate>").append(forceUpdate()).append("</forceUpdate>");
+
       if (readonly())
-         sb.append(offset).append("   <readonly />");
+         sb.append(offset).append("   <readonly/>");
 
       sb.append(offset).append("</qos>\n");
 
@@ -549,19 +726,17 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
 
-   /** For testing: java org.xmlBlaster.engine.xml2java.PublishQoS */
+   /** For testing: java org.xmlBlaster.engine.xml2java.PublishQos */
    public static void main(String[] args)
    {
       try {
          XmlBlasterProperty.init(args);
          String xml =
             "<qos>\n" +
-            "   <destination queryType='EXACT'>\n" +
+            "   <destination queryType='EXACT' forceQueuing='true'>\n" +
             "      Tim\n" +
-            "      <ForceQueuing />\n" +
             "   </destination>\n" +
             "   <destination queryType='EXACT'>\n" +
-            "      <ForceQueuing timeout='12000' />\n" +
             "      Ben\n" +
             "   </destination>\n" +
             "   <destination queryType='XPATH'>\n" +
@@ -573,11 +748,13 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <sender>\n" +
             "      Gesa\n" +
             "   </sender>\n" +
-            "   <expiration rcvTimestamp='1007771081626' timeToLive='12000'/>\n" +
+            "   <priority>7</priority>\n" +
+            "   <rcvTimestamp nanos='1007771081626000000'/>\n" + // if from persistent store
+            "   <expiration remainingLife='12000'/>\n" +            // if from persistent store
             "   <isVolatile>false</isVolatile>\n" +
-            "   <isDurable />\n" +
-            "   <forceUpdate />\n" +
-            "   <readonly />\n" +
+            "   <isDurable/>\n" +
+            "   <forceUpdate>false</forceUpdate>\n" +
+            "   <readonly/>\n" +
             /*
             "   <defaultContent>\n" +
             "      Empty\n" +
@@ -585,8 +762,24 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
             */
             "</qos>\n";
 
-         PublishQoS qos = new PublishQoS(xml);
-         System.out.println(qos.toXml());
+         {
+            System.out.println("\nFull Message from client ...");
+            PublishQos qos = new PublishQos(xml);
+            System.out.println(qos.toXml());
+         }
+ 
+         {
+            System.out.println("\nFrom persistent store ...");
+            PublishQos qos = new PublishQos(xml, true);
+            System.out.println(qos.toXml());
+         }
+         
+         xml = "<qos></qos>";
+         {
+            System.out.println("\nEmpty message from client ...");
+            PublishQos qos = new PublishQos(xml);
+            System.out.println(qos.toXml());
+         }
       }
       catch(Throwable e) {
          Log.error("TestFailed", e.toString());

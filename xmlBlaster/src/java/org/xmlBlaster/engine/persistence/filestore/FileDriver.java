@@ -3,7 +3,6 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.8 2002/02/08 00:48:15 goetzger Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
@@ -16,10 +15,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQoS;
+import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.ClientInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
 
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
@@ -118,7 +117,7 @@ public class FileDriver implements I_PersistenceDriver
    public final void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException
    {
       XmlKey xmlKey = messageWrapper.getXmlKey();
-      PublishQoS qos = messageWrapper.getPublishQoS();
+      PublishQos qos = messageWrapper.getPublishQos();
       String mime = messageWrapper.getContentMime();
       byte[] content = messageWrapper.getMessageUnit().content;
 
@@ -151,7 +150,7 @@ public class FileDriver implements I_PersistenceDriver
          String oid = messageWrapper.getUniqueKey();
          FileUtil.writeFile(path, oid, messageWrapper.getMessageUnit().getContent());
          // Store the sender as well:
-         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getPublishQoS().toXml());
+         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getPublishQos().toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!DOCTYPE xmlBlaster SYSTEM "XmlQoS.dtd">
 
@@ -34,6 +34,7 @@
          <sender> <!-- Who published this message (the login name) -->
             jack
          </sender>
+         <priority>5</priority>
       </qos>
    </publish>
 
@@ -73,11 +74,14 @@
             joe
          </sender>
 
-         <expiration timeToLive='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration
-                                            This value is calculated relative to the rcvTimestamp in the xmlBlaster server -->
+         <priority>5</priority> <!-- Priority of message, 9 is highest whereas 0 is lowest -->
+
+         <expiration remainingLife='12000' />  <!-- Expires after given milliseconds (message is erased),
+                               clients will get a notify about expiration
+                               This value is calculated relative to the rcvTimestamp in the xmlBlaster server -->
                           <!-- Default is no expiration (similar to pass 0 milliseconds) -->
                           <!-- A second attribute timestamp='' may be added in a future version,
-                               allowing to pass absolute UTC millis since 1970 instead of the relative timeToLive -->
+                               allowing to pass absolute UTC millis since 1970 instead of the relative remainingLife -->
 
          <isVolatile>false</isVolatile> 
                           <!-- A non-volatile messages stays in memory as long as the server runs or until it is erased explicitly -->
@@ -88,8 +92,8 @@
                           <!-- If you use this feature, you normally give the message a well known key oid -->
                           <!-- Default is transient -->
 
-         <forceUpdate />  <!-- An update is forced even when the content and meta data didn't change -->
-                          <!-- Default is that identical published messages aren't sent to clients again -->
+         <forceUpdate />  <!-- An update is forced even when the content and meta data didn't change (default) -->
+                          <!-- Setting this to false does not resend identical messages (performance gain) -->
 
          <readonly />     <!-- A final/const message which may not be changed with further updates -->
                           <!-- Default is Read/Write -->
@@ -112,8 +116,8 @@
    <!-- QoS when accessing messages -->
    <get>
       <qos>
-         <noMeta />       <!-- Don't send me the key meta data on updates -->
-         <noContent />    <!-- Don't send me the content data on updates (notify only) -->
+         <meta>false</meta>       <!-- Don't send me the key meta data on updates -->
+         <content>false</content> <!-- Don't send me the content data on updates (notify only) -->
       </qos>
    </get>
 
@@ -121,9 +125,17 @@
    <!-- QoS when subscribing to messages -->
    <subscribe>
       <qos>
-         <noMeta />       <!-- Don't send me the xmlKey meta data on updates -->
-         <noContent />    <!-- Don't send me the content data on updates (notify only) -->
-         <noLocal />      <!-- Inhibit the delivery of messages to myself if i have published it -->
+         <meta>false</meta>       <!-- Don't send me the xmlKey meta data on updates -->
+         <content>false</content> <!-- Don't send me the content data on updates (notify only) -->
+         <local>false</local>     <!-- Inhibit the delivery of messages to myself if i have published it -->
+         <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+            <!-- Qualifies the session based queue, with a maximum of 1000 messages
+                 or 4000 KBytes of capacity, whichever is reached first.
+                 If exceeded a dead letter is published -->
+            <callback type='EMAIL' sessionId='sd3lXjs9Fdlggh'>
+               et@mars.universe   <!-- Sends messages to et with specified queue attributes -->
+            </callback>
+         </queue>
       </qos>
    </subscribe>
 
@@ -155,10 +167,10 @@
          <subscriptionId> <!-- The same id which you got returned from your previous subscribe() call -->
             Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
          </subscriptionId>
-         <rcvTimestamp millis='1007764305862' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call, nanos currently not supported -->
-            2001-12-07 23:31:45.862 <!-- The millis from above human readable -->
+         <rcvTimestamp nanos='1007764305862000006' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call -->
+            2001-12-07 23:31:45.862000006 <!-- The nanos from above human readable -->
          </rcvTimestamp>
-         <expiration timeToLive='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration -->
+         <expiration remainingLife='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration -->
                                             <!-- This value is calculated relative to the current time on sending the message from xmlBlaster -->
          <queue index='0' of='1'> <!-- If queued messages are flushed on login -->
          </queue>
@@ -176,7 +188,7 @@
    </update>
 
 
-   <!-- QoS with login -->
+   <!-- QoS with login or connect -->
    <client>
       <qos>
          <securityService type="simple" version="1.0">
@@ -187,8 +199,10 @@
          </securityService>
          <session timeout='3600000' maxSessions='20'>
          </session>
-         <!-- compress / burstMode / noPtP are allowed in all callback types -->
-         <callback type='IOR'> <!-- Use CORBA to callback messages -->
+
+         <!-- compress / burstMode / ptp are allowed in all callback types -->
+         <!-- Use CORBA to callback messages, on error retry 5 times pausing 60000 millis between retries -->
+         <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
             IOR:00011200070009990000....
             <compress type='gzip' minSize='1000' />
                       <!-- compress messages bigger 1000 bytes before sending them to me -->
@@ -198,24 +212,26 @@
                        This update mode is a 'transaction' for all collected messages -->
                        <!-- other attributes like numMsg or maxSize could allow other 'transaction' ranges -->
          </callback>
-         <callback type='EMAIL'>
-            et@mars.universe
-            <PtP>false</PtP> <!-- Set this flag if you don't want to receive any PtP messages -->
-                      <!-- prevents 'spamming' -->
-         </callback>
-         <callback type='XML-RPC'>
+         <callback type='XML-RPC' sessionId='sldg03loQ22'>
             http:/www.mars.universe:8080/RPC2
          </callback>
+              <!-- The session id is passed to the client callback server, he can check
+              if he trusts this sender, it defaults to the login name of the sender -->
 
+         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
+            <!-- Qualifies the session based queue, with a maximum of 1000 messages
+                 or 4000 KBytes of capacity, whichever is reached first.
+                 If exceeded a dead letter is published -->
 
-         <offlineQueuing timeout='3600' /> <!-- Messages older than timeout seconds
-                            (the time the client is offline) are discarded -->
-
-         <offlineQueuing maxMsg="36" /> <!-- Queue not more than 36 messages, older are discarded
-                            off the end -->
-
-         <offlineQueuing maxSize="2000" /> <!-- Max queue size in kByte, if exceeded, the
-                             oldest are discarded -->
+         <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000' onOverflow='block' onFailure='deadLetter'/>
+            <!-- The login name based queue expires after given milliseconds.
+                 If exceeded the oldest message(s) is discarded -->
+            <callback type='EMAIL'>
+               et@mars.universe
+               <ptp>false</ptp> <!-- Set this flag if you don't want to receive any PtP messages -->
+                         <!-- prevents 'spamming' -->
+            </callback>
+         </queue>
       </qos>
    </client>
 

@@ -3,6 +3,53 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
+TODO 
+- Renew lease for msg queue automatically on usage
+- RMI update() variant with string return
+
+  - For PtP messages <forceQueuing> is now an
+    attribute of <destination forceQueuing='true'>
+
+  - For PtP messages <forceUpdate> defaults now to true
+
+  - Added support for dead letters on failure
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
+
+  - Added support for multiple sessions per client, see:
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
+
+  - Added support for sophisticated queueing, priority messages,
+    guaranteed sequence, burst mode (sending messages in a bulk)
+    and much more, see:
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.callback.html
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.html
+
+  - PublisQosWrapper, setting boolean values require a parameter now:
+    setReadonly()    -> setReadonly(true)
+    setForceUpdate() -> setForceUpdate(true)
+
+  - Change get() and subscribe() QoS:
+    <noMeta/>    to <meta>false</meta>
+    <noContent/> to <content>false</content>
+    <noLocal/>   to <local>false</local>
+    Constructor of SubscribeQosWrapper() is inverted!
+    Constructor of GetQosWrapper() is inverted!
+
+  - xmlBlaster.idl changed incompatible
+    update() not oneway anymore, returns string and throws exception
+    update() now delivers a sessionId argument
+
+  - Changed to support session based client logins
+
+  - New high performing Timestamp supporting unique message timestamps
+    with simulated nanoseconds
+
+  - New QoS 'priority'
+
+  - Behavior change [Ruff]:
+    <forceUpdate> defaults now to true
+
   - Changed subscribe() return value to be always a unique subscription ID
     (thanks to Wolfgang Kleinertz)
 

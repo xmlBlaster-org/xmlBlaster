@@ -1,12 +1,7 @@
 package org.xmlBlaster.util;
 
-//import org.xmlBlaster.util.Log;
-//import org.xmlBlaster.util.XmlBlasterProperty;
-//import org.xmlBlaster.util.XmlBlasterException;
-//import org.xmlBlaster.authentication.plugins.I_Plugin;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.engine.ClientInfo;
 
 import java.util.Hashtable;
 import java.util.Vector;

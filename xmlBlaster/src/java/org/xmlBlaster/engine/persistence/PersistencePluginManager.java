@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.2 2002/02/08 00:48:15 goetzger Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.3 2002/03/13 16:41:17 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -15,10 +15,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.engine.ClientInfo;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.StringTokenizer;
 
 /**
  * Title: PluginManager

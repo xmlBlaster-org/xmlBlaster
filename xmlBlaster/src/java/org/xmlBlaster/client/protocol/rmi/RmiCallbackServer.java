@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.8 2002/01/22 17:21:28 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.9 2002/03/13 16:41:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -11,6 +11,7 @@ package org.xmlBlaster.client.protocol.rmi;
 
 import org.xmlBlaster.protocol.rmi.I_XmlBlasterCallback;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -53,7 +54,7 @@ import java.rmi.AlreadyBoundException;
  *        MyApp -rmi.registryPort 2079
  * </pre>
  */
-class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback
+class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
 {
    private final String ME;
    private final I_CallbackExtended boss;
@@ -171,14 +172,24 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
    {
       CallbackAddress addr = new CallbackAddress("RMI");
       addr.setAddress(callbackRmiServerBindName);
+      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
       return addr;
    }
 
+   public void initCb()
+   {
+      Log.warn(ME, "initCb() is not implemented");
+   }
+
+   public void setCbSessionId(String sessionId)
+   {
+      Log.warn(ME, "setCbSessionId() is not implemented");
+   }
 
    /**
     * Shutdown the callback server.
     */
-   public void shutdown()
+   public boolean shutdownCb()
    {
       try {
          if (callbackRmiServerBindName != null)
@@ -189,6 +200,7 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
          ;
       }
       Log.info(ME, "The RMI callback server is shutdown.");
+      return true;
    }
 
 
@@ -204,11 +216,14 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
     * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
     * @see xmlBlaster.idl
     */
-   public String update(MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
+   public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
-      if (msgUnitArr == null) return "<qos><state>ERROR</state></qos>";;
+      if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
       boss.update(loginName, msgUnitArr); // !!! TODO: add String as return type
-      return "<qos><state>OK</state></qos>";
+      String[] ret = new String[msgUnitArr.length];
+      for (int ii=0; ii<ret.length; ii++)
+         ret[ii] = "<qos><state>OK</state></qos>";
+      return ret;
    }
 
 } // class RmiCallbackServer

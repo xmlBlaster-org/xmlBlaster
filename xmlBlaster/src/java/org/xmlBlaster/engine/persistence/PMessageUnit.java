@@ -3,7 +3,7 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine
-Version:   $Id: PMessageUnit.java,v 1.2 2000/12/26 14:56:40 ruff Exp $
+Version:   $Id: PMessageUnit.java,v 1.3 2002/03/13 16:41:17 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ public class PMessageUnit implements Serializable
       timeStamp = System.currentTimeMillis();
       msgUnit   = mu;
 
-      // PublishQoS is now in the MessageUnit
+      // PublishQos is now in the MessageUnit
       size = mu.xmlKey.length() + mu.content.length  + mu.qos.length() + 2200;
    }
 

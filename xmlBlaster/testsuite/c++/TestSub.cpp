@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.4 2002/01/31 21:45:00 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.5 2002/03/13 16:41:36 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -58,6 +58,7 @@ private:
       publishOid_          = "dummy";
       contentMime_         = "text/xml";
       contentMimeExtended_ = "1.0";
+      senderContent_       = "Yeahh, i'm the new content";
    }
 
    virtual ~TestSub() {
@@ -95,9 +96,9 @@ private:
     * cleaning up .... erase() the previous message OID and logout
     */
    void tearDown() {
-      senderConnection_->run();
+      //senderConnection_->run();
+      log_.info(me(), "Cleaning up test - erasing message.");
 
-      cerr << "TEAR DOWN " << endl;
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
          + "<key oid='" + publishOid_ + "' queryType='EXACT'>\n</key>";
       string qos = "<qos></qos>";
@@ -164,7 +165,6 @@ private:
          "      </TestSub-DRIVER>"+
          "   </TestSub-AGENT>" +
          "</key>";
-      senderContent_ = "Yeahh, i'm the new content";
       serverIdl::MessageUnit msgUnit;
       msgUnit.xmlKey  = xmlKey.c_str();
       serverIdl::ContentType content(senderContent_.length()+1,
@@ -201,7 +201,7 @@ private:
          assert(0);
       }
       testPublish();
-      waitOnUpdate(5000L);
+      waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(me(),"numReceived after publishing");
          assert(0);
@@ -216,12 +216,16 @@ private:
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived
     * message this update is called.
     *
+    * @param sessionId The sessionId to authenticate the callback
+    *                  This sessionId was passed on subscription
+    *                  we can use it to decide if we trust this update()
     * @param loginName The name to whom the callback belongs
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   void update(const string &loginName, UpdateKey &updateKey,
+   string update(const string &sessionId, const string &loginName,
+               UpdateKey &updateKey,
                void *content, long contentSize,
                UpdateQoS &updateQoS) {
       log_.info(me(), string("Receiving update of message oid=") +
@@ -238,15 +242,15 @@ private:
       }
       if (subscribeOid_ != updateQoS.getSubscriptionId()) {
          log_.error(me(), string("engine.qos.update.subscriptionId: ")
-                    + "Wrong subscriptionId");
-         assert(0);
+                    + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQoS.getSubscriptionId());
+         //assert(0);
       }
       if (publishOid_ != updateKey.getUniqueKey()) {
          log_.error(me(), "Wrong oid of message returned");
          assert(0);
       }
       if (senderContent_ != string((char*)content)) {
-         log_.error(me(), "Message content is corrupted");
+         log_.error(me(), "Message content is corrupted: Sent '" + senderContent_ + "' received '" + string((char*)content) + "'");
          assert(0);
       }
       if (contentMime_ != updateKey.getContentMime()) {
@@ -258,7 +262,9 @@ private:
          assert(0);
       }
       messageArrived_ = true;
-      log_.exit(me(), "Good bye");
+
+      log_.info(me(), "Success, message arrived as expected.");
+      return "<qos><state>OK</state></qos>";
    }
 
 

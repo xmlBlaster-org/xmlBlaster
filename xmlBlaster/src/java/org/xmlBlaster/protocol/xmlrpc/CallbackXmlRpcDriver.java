@@ -3,17 +3,17 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.11 2002/01/22 17:21:29 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.12 2002/03/13 16:41:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
 
@@ -83,40 +83,42 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper,
-                                org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
-      throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+ 
       // transform the msgUnits to Vectors
-      int arraySize = msgUnitArr.length;
       try {
-         for (int i=0; i < arraySize; i++) {
+         String[] retVal = new String[msg.length];
+         for (int ii=0; ii < msg.length; ii++) {
             Vector args = new Vector();
-            args.addElement(clientInfo.getLoginName());
-            args.addElement(msgUnitArr[i].getXmlKey());
-            args.addElement(msgUnitArr[i].getContent());
-            args.addElement(msgUnitArr[i].getQos());
+            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            args.addElement(callbackAddress.getSessionId());
+            args.addElement(msgUnit.getXmlKey());
+            args.addElement(msgUnit.getContent());
+            args.addElement(msgUnit.getQos());
           
             if (Log.TRACE) Log.trace(ME, "Send an update to the client ...");
 
-            String retVal = (String)xmlRpcClient.execute("update", args);
-            if (Log.TRACE) Log.trace(ME, "Successfully sent message update '" +
-                            new String(msgUnitArr[i].content) + "' from sender '"
-                            + clientInfo.toString() + "', retVal=" + retVal);
-            return retVal;
+            retVal[ii] = (String)xmlRpcClient.execute("update", args);
+
+            if (Log.TRACE) Log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
+                + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
          }
+         return retVal;
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
-         if (Log.TRACE) Log.trace(ME + ".sendUpdate", "xml-rpc exception: " + ex.toString());
-         throw new XmlBlasterException("CallbackFailed", "xml-rpc exception" + ex.toString());
+         String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         if (Log.TRACE) Log.trace(ME + ".sendUpdate", str);
+         throw new XmlBlasterException("CallbackFailed", str);
       }
-      catch (IOException ex1) {
-         if (Log.TRACE) Log.trace(ME + ".sendUpdate", "I/O exception: " + ex1.toString());
-         ex1.printStackTrace();
-         throw new XmlBlasterException("CallbackFailed", "I/O exception: " + ex1.toString());
+      catch (Throwable e) {
+         String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         if (Log.TRACE) Log.trace(ME + ".sendUpdate", str);
+         e.printStackTrace();
+         throw new XmlBlasterException("CallbackFailed", str);
       }
-      return "<qos><state>ERROR</state></qos>";
    }
 
 

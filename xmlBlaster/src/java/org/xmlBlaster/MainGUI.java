@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.40 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.41 2002/03/13 16:41:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.engine.ClientInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.authentication.Authenticate;
@@ -199,7 +199,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       }
 
       {
-         sentMessages = ClientInfo.sentMessages;
+         sentMessages = SessionInfo.sentMessages;
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
          if ((sentMessages - lastSentMessages) == 1) currentSentAvg = 1;
          int totalSentAvg = (int)(sentMessages/elapsedSeconds);

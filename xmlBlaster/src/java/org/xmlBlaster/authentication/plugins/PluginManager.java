@@ -7,7 +7,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.engine.ClientInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.StringTokenizer;
@@ -92,18 +92,20 @@ public class PluginManager extends PluginManagerBase {
    }
 
    /**
-    * Returns the security manager, responsible for given session.
+    * Returns the security manager, responsible for given session. 
     * </p>
+    * NOTE: This method authenticates when getting the SessionInfo object with the sessionId
     * @param String sessionId
     * @param I_Manager
     * @exception Thrown, if the session is unknown.
     */
    public I_Manager getManager(String sessionId) throws XmlBlasterException {
-      ClientInfo clntInfo = auth.check(sessionId);
-      if (clntInfo==null)
+      SessionInfo sessionInfo = auth.check(sessionId);
+      if (sessionInfo==null) { // Should never be null, if access is denied an XmlBlasterException is thrown
+         Log.error(ME, "Authentication internal error, access denied");
          throw new XmlBlasterException(ME+".NoAccess","Unknown session!");
-      I_Session sessionSecCtx = clntInfo.getSecuritySession();
-
+      }
+      I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       return sessionSecCtx.getManager();
    }
 
@@ -115,12 +117,23 @@ public class PluginManager extends PluginManagerBase {
       return "Security.Server.Plugin";
    }
 
-
    /**
     * @return please return your default plugin classname or null if not specified
     */
    public String getDefaultPluginName() {
       return "org.xmlBlaster.authentication.plugins.simple.Manager";
+   }
+
+   /**
+    * Returns the security manager, responsible for given session.
+    * </p>
+    * @param String sessionId
+    * @param I_Manager
+    * @exception Thrown, if the session is unknown.
+    */
+   public I_Manager getManager(SessionInfo sessionInfo) throws XmlBlasterException {
+      I_Session sessionSecCtx = sessionInfo.getSecuritySession();
+      return sessionSecCtx.getManager();
    }
 
 

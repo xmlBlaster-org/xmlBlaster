@@ -3,7 +3,7 @@ Name:      GetQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: GetQosWrapper.java,v 1.2 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: GetQosWrapper.java,v 1.3 2002/03/13 16:41:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -22,8 +22,8 @@ import java.util.Vector;
  * A typical <b>get()</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
- *        &lt;noMeta />       &lt;!-- Don't send me the key meta data on updates -->
- *        &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+ *        &lt;meta>false<&lt;/meta>      &lt;!-- Don't send me the xmlKey meta data on updates -->
+ *        &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
  *     &lt;/qos>
  * </pre>
  * <p />
@@ -32,8 +32,8 @@ import java.util.Vector;
 public class GetQosWrapper extends QosWrapper
 {
    private String ME = "GetQosWrapper";
-   private boolean noMeta = false;
-   private boolean noContent = false;
+   private boolean meta = true;
+   private boolean content = true;
 
 
    /**
@@ -45,11 +45,11 @@ public class GetQosWrapper extends QosWrapper
 
 
    /**
-    * @param noMeta Store the message persistently
+    * @param meta false: Store the message persistently
     */
-   public GetQosWrapper(boolean noMeta)
+   public GetQosWrapper(boolean meta)
    {
-      this.noMeta = noMeta;
+      this.meta = meta;
    }
 
 
@@ -60,7 +60,7 @@ public class GetQosWrapper extends QosWrapper
     */
    public void setNoContent()
    {
-      this.noContent = true;
+      this.content = false;
    }
 
 
@@ -69,7 +69,7 @@ public class GetQosWrapper extends QosWrapper
     */
    public void setNoMeta()
    {
-      this.noMeta = true;
+      this.meta = false;
    }
 
 
@@ -91,10 +91,8 @@ public class GetQosWrapper extends QosWrapper
    {
       StringBuffer sb = new StringBuffer();
       sb.append("<qos>\n");
-      if (noMeta)
-         sb.append("   <noMeta />\n");
-      if (noContent)
-         sb.append("   <noContent />\n");
+      if (!meta) sb.append("   <meta>false</meta>\n");
+      if (!content) sb.append("   <content>false</content>\n");
       sb.append("</qos>");
       return sb.toString();
    }

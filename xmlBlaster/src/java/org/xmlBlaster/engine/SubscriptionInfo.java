@@ -3,7 +3,6 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.31 2002/02/26 10:44:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,11 +10,16 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
+import org.xmlBlaster.engine.queue.MsgQueue;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.jutils.time.TimeHelper;
+import java.util.Vector;
 
 
 /**
@@ -27,8 +31,10 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
-   /** reference on ClientInfo */
-   private ClientInfo clientInfo;
+   /** The initiatior of this subscription */
+   private SessionInfo sessionInfo;
+   /** reference on MsgQueue */
+   private MsgQueue msgQueue;
    /** reference to xmlKey */
    private XmlKey xmlKey;
    /** reference to 'Quality of Service' base class */
@@ -37,7 +43,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    private SubscribeQoS subscribeQoS = null;
    /** reference to 'Quality of Service' of unsubscription */
    private UnSubscribeQoS unSubscribeQoS = null;
-   /** The unique key of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS). <br />
+   /** The unique key of a subscription, which is a function of f(msgQueue,xmlKey,xmlQoS). <br />
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
    /** reference to my managing container */
@@ -45,6 +51,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /** A reference to the query subscription (XPATH), which created this subscription
        If the subscription was EXACT, querySub is null */
    private SubscriptionInfo querySub = null;
+   /** It it is a query subscription, we remember all subscriptions which resulted from this query */
+   private Vector childrenVec = null;
 
    private static long uniqueCounter = 1L;
 
@@ -53,32 +61,35 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * Use this constructor for an exact subscription.
-    * @param clientInfo The client we deal with
+    * @param sessionInfo The session which initiated this subscription
+    * @param msgQueue   The client (data sink) we deal with
     * @param xmlKey     The message meta info
     * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
     */
-   public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
+   public SubscriptionInfo(SessionInfo sessionInfo, MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
-      init(clientInfo, xmlKey, qos);
+      init(sessionInfo, msgQueue, xmlKey, qos);
    }
 
 
    /**
     * Use this constructor it the subscription is a result of a XPath subscription
-    * @param clientInfo The client we deal with
+    * @param sessionInfo The session which initiated this subscription
+    * @param msgQueue   The client we deal with
     * @param xmlKey     The message meta info
     * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
     */
-   public SubscriptionInfo(SubscriptionInfo querySub, XmlKey xmlKey) throws XmlBlasterException
+   public SubscriptionInfo(SessionInfo sessionInfo, SubscriptionInfo querySub, XmlKey xmlKey) throws XmlBlasterException
    {
       this.querySub = querySub;
-      init(querySub.getClientInfo(), xmlKey, querySub.getSubscribeQoS());
+      init(sessionInfo, querySub.getMsgQueue(), xmlKey, querySub.getSubscribeQoS());
    }
 
 
-   private void init(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
+   private void init(SessionInfo sessionInfo, MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
-      this.clientInfo = clientInfo;
+      this.sessionInfo = sessionInfo;
+      this.msgQueue = msgQueue;
       this.xmlKey = xmlKey;
 
       // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
@@ -91,13 +102,41 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
 
+   public SessionInfo getSessionInfo()
+   {
+      return this.sessionInfo;
+   }
+
+   /**
+    * For this query subscription remember all resulted subscriptions
+    */
+   public void addSubscription(SubscriptionInfo subs)
+   {
+      if (childrenVec == null) childrenVec = new Vector();
+      childrenVec.addElement(subs);
+   }
+
+   /**
+    * For this query subscription return all resulted subscriptions
+    */
+   public Vector getChildrenSubscriptions()
+   {
+      return childrenVec;
+   }
+
+   protected void finalize()
+   {
+      Log.info(ME, "finalize - garbage collect " + uniqueKey);
+   }
+  
+
    /**
     * Clean up everything, since i will be deleted now.
     */
    private void erase()
    {
       if (Log.TRACE) Log.trace(ME, "Entering erase()");
-      // clientInfo = null; not my business
+      // msgQueue = null; not my business
       xmlKey = null;
       xmlQoSBase = null;
       subscribeQoS = null;
@@ -134,10 +173,15 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    void removeSubscribe()
    {
-      if (myHandler == null) {
-         Log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
-         return;
-      }
+      try {
+         if (myHandler == null) {
+            if (!getXmlKey().isQuery()) {
+               Log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+               Thread.dumpStack();
+            }
+            return;
+         }
+      } catch(XmlBlasterException e) {}
       myHandler.removeSubscriber(uniqueKey);
       erase();
    }
@@ -147,10 +191,13 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return The message wrapper object
     * @exception If no MessageUnitWrapper available
     */
-   final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
+   public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (myHandler == null) {
-         Log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         if (!getXmlKey().isQuery()) {
+            Log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+            Thread.dumpStack();
+         }
          throw new XmlBlasterException(ME + ".NoMessageUnitWrapper", "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
       }
       return myHandler.getMessageUnitWrapper();
@@ -179,12 +226,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    */
 
    /**
-    * Access on ClientInfo object
-    * @return ClientInfo object
+    * Access on MsgQueue object
+    * @return MsgQueue object
     */
-   public ClientInfo getClientInfo()
+   public MsgQueue getMsgQueue()
    {
-      return clientInfo;
+      return msgQueue;
    }
 
 
@@ -215,7 +262,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public String getUniqueKey() throws XmlBlasterException
    {
       if (uniqueKey == null) {
-         uniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, xmlQoSBase).toString();
+         uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
       }
       return uniqueKey;
    }
@@ -236,16 +283,16 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * This static method may be used from external objects to get the unique key
-    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS).
+    * of a subscription, which is a function of f(msgQueue,xmlKey,xmlQoS).
     * <p />
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
     */
-   public static String generateUniqueKey(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
+   public static String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
    {
-      StringBuffer buf = new StringBuffer(80);
+      StringBuffer buf = new StringBuffer(126);
 
-      buf.append("Subscription-").append(clientInfo.getUniqueKey());
+      buf.append(Constants.SUBSCRIPTIONID_PRAEFIX).append(msgQueue.getName());
 
       buf.append("-").append(xmlKey.getUniqueKey());
 
@@ -296,16 +343,16 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       offset += extraOffset;
 
       sb.append(offset + "<SubscriptionInfo id='" + getUniqueKey() + "'>");
-      sb.append(offset + "   <clientInfo id='" + (clientInfo==null ? "null" : clientInfo.toString()) + "'/>");
+      sb.append(offset + "   <msgQueue id='" + (msgQueue==null ? "null" : msgQueue.getName()) + "'/>");
       sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
       if (subscribeQoS != null)
-         sb.append(subscribeQoS.printOn(extraOffset + "   ").toString());
+         sb.append(subscribeQoS.toXml(extraOffset + "   ").toString());
       else
-         sb.append(offset + "   <SubscribeQoS></SubscribeQoS>");
+         sb.append(offset + "   <SubscribeQos></SubscribeQos>");
       if (unSubscribeQoS != null)
          sb.append(unSubscribeQoS.printOn(extraOffset + "   ").toString());
       else
-         sb.append(offset + "   <UnSubscribeQoS></UnSubscribeQoS>");
+         sb.append(offset + "   <UnSubscribeQos></UnSubscribeQos>");
       sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       sb.append(offset + "</SubscriptionInfo>\n");

@@ -3,7 +3,7 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.11 2002/01/22 17:21:29 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.12 2002/03/13 16:41:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -12,8 +12,7 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -35,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -108,23 +107,23 @@ public class CallbackRmiDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update() to " + clientInfo.toString());
-      if (msgUnitArr.length < 1) {
-         Log.warn(ME, "xmlBlaster.update() to " + clientInfo.toString() + " invoked without a message to send");
-         return "<qos><state>ERROR</state></qos>";
-      }
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSessionId());
 
       try {
-         return getCb().update(msgUnitArr);
+         MessageUnit[] updateArr = new MessageUnit[msg.length];
+         for (int ii=0; ii<msg.length; ii++)
+            updateArr[ii] = msg[ii].getMessageUnit();
+         return getCb().update(callbackAddress.getSessionId(), updateArr);
       } catch (RemoteException e) {
-         String msg;
-         if (msgUnitArr.length > 1)
-            msg = "RMI Callback of " + msgUnitArr.length + " messages to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString();
+         String str;
+         if (msg.length > 1)
+            str = "RMI Callback of " + msg.length + " messages to client [" + callbackAddress.getSessionId() + "] failed, reason=" + e.toString();
          else
-            msg = "RMI Callback of message '" + msgUnitWrapper.getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString();
-         throw new XmlBlasterException("CallbackFailed", msg);
+            str = "RMI Callback of message '" + msg[0].getMessageUnit().getXmlKey() + "' to client [" + callbackAddress.getSessionId() + "] failed, reason=" + e.toString();
+         throw new XmlBlasterException("CallbackFailed", str);
       }
    }
 

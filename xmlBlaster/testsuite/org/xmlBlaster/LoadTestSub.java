@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.21 2000/10/29 20:26:01 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.22 2002/03/13 16:41:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -40,16 +40,20 @@ public class LoadTestSub extends TestCase implements I_Callback
    private StopWatch stopWatch = null;
 
    private String subscribeOid;
-   private String publishOid = "";
+   private String publishOid = "LoadTestSub";
    private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
+   private String passwd;
 
    private final int numPublish;        // 200;
    private int numReceived = 0;         // error checking
+   private int burstModePublish = 1;
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
+   private int lastContentNumber = -1;
+   private final String someContent = "Yeahh, i'm the new content number ";
 
    /**
     * Constructs the LoadTestSub object.
@@ -57,13 +61,16 @@ public class LoadTestSub extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     * @param numPublish The number of messages to send
+    * @param burstModePublish send given number of publish messages in one bulk
     */
-   public LoadTestSub(String testName, String loginName, int numPublish)
+   public LoadTestSub(String testName, String loginName, String passwd, int numPublish, int burstModePublish)
    {
        super(testName);
        this.senderName = loginName;
        this.receiverName = loginName;
+       this.passwd = passwd;
        this.numPublish = numPublish;
+       this.burstModePublish = burstModePublish;
    }
 
 
@@ -76,8 +83,8 @@ public class LoadTestSub extends TestCase implements I_Callback
    {
       try {
          senderConnection = new XmlBlasterConnection(); // Find orb
-         String passwd = "secret";
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " burstMode.collectTime=" + XmlBlasterProperty.get("burstMode.collectTime", 0L));
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -153,21 +160,25 @@ public class LoadTestSub extends TestCase implements I_Callback
       Log.info(ME, "Publishing " + numPublish + " messages ...");
 
       numReceived = 0;
-      String oid = "LoadTestSub";
-      String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+      String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "   <LoadTestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "      <LoadTestSub-DRIVER id='FileProof' pollingFreq='10'>" +
                       "      </LoadTestSub-DRIVER>"+
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+      MessageUnit[] arr = new MessageUnit[burstModePublish];
+      String[] publishOids;
+      for (int kk=0; kk<burstModePublish; kk++)
+         arr[kk] = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       stopWatch = new StopWatch();
       try {
-         for (int ii=0; ii<numPublish; ii++) {
-            senderContent = "Yeahh, i'm the new content number " + (ii+1);
-            msgUnit.content = senderContent.getBytes();
-            publishOid = senderConnection.publish(msgUnit);
+         for (int ii=0; ii<numPublish; ) {
+            for (int jj=0; jj<burstModePublish; jj++) {
+               arr[jj].content = new String(someContent + (ii+1)).getBytes();
+            }
+            ii+=burstModePublish;
+            publishOids = senderConnection.publishArr(arr);
             /*
             if (((ii+1) % 1) == 0)
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
@@ -178,7 +189,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          if (elapsed > 0.)
             avg = (long)(1000.0 * numPublish / elapsed);
          Log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
-         assertEquals("oid is different", oid, publishOid);
+         //assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
@@ -219,13 +230,22 @@ public class LoadTestSub extends TestCase implements I_Callback
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
       numReceived++;
-      /*
-      if ((numReceived % 1) == 0) {
+      if ((numReceived % 1000) == 0) {
          long avg = numReceived / (stopWatch.elapsed()/1000L);
          Log.info(ME, "Success: Update #" + numReceived + " received: '" + new String(content) + "', average messages/second = " + avg);
       }
-      */
       messageArrived = true;
+      String currentContent = new String(content);
+      int val = -1;
+      if (lastContentNumber >= 0) {
+         String number = currentContent.substring(someContent.length());
+         try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { Log.error(ME, e.toString()); }
+         if (val <= lastContentNumber) {
+            Log.error(ME, "lastContent=" + lastContentNumber + " currentContent=" + currentContent);
+            //assert("Sequence of received message is broken", false);
+         }
+      }
+      lastContentNumber = val;
    }
 
 
@@ -264,10 +284,20 @@ public class LoadTestSub extends TestCase implements I_Callback
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        int numMsg = 200;
-       suite.addTest(new LoadTestSub("testManyPublish", loginName, numMsg));
+       suite.addTest(new LoadTestSub("testManyPublish", loginName, "secret", numMsg, 200));
        return suite;
    }
 
+   static void usage()
+   {
+      Log.plain("\nAvailable options:");
+      Log.plain("   -name               The login name [Tim].");
+      Log.plain("   -passwd             The login name [secret].");
+      Log.plain("   -numPublish         Number of messages to send [5000].");
+      Log.plain("   -burstMode.publish  Collect given number of messages when publishing [1].");
+      XmlBlasterConnection.usage();
+      Log.usage();
+   }
 
    /**
     * Invoke: jaco testsuite.org.xmlBlaster.LoadTestSub
@@ -283,12 +313,20 @@ public class LoadTestSub extends TestCase implements I_Callback
    public static void main(String args[])
    {
       try {
-         XmlBlasterProperty.init(args);
+         boolean showUsage = XmlBlasterProperty.init(args);
+         if (showUsage) {
+            usage();
+            Log.exit(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -burstMode.publish 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
+         }
       } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+         usage();
+         Log.panic(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -burstMode.publish 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
       }
       int numPublish = XmlBlasterProperty.get("numPublish", 5000);
-      LoadTestSub testSub = new LoadTestSub("LoadTestSub", "Tim", numPublish);
+      int burstModePublish = XmlBlasterProperty.get("burstMode.publish", 1);
+      LoadTestSub testSub = new LoadTestSub("LoadTestSub", XmlBlasterProperty.get("name", "Tim"),
+                                            XmlBlasterProperty.get("passwd", "secret"),
+                                            numPublish, burstModePublish);
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();

@@ -94,13 +94,20 @@ namespace org { namespace xmlBlaster {
        * @param msgUnit      Contains a MessageUnit structs (your message)
        * @param qos              Quality of Service of the MessageUnit
        */
-      void update(const serverIdl::MessageUnitArr& msgUnitArr) {
+      serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr) {
+
+         // typedef StringSequenceTmpl<CORBA::String_var> StringArr;
+         // typedef TSeqVar<StringSequenceTmpl<CORBA::String_var> > StringArr_var;
+         // typedef TSeqOut<StringSequenceTmpl<CORBA::String_var> > StringArr_out;
+         // IDL: typedef sequence<string> StringArr;
+         serverIdl::StringArr *res = new serverIdl::StringArr(msgUnitArr.length());
+         res->length(msgUnitArr.length());
 
          if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
          
          if (msgUnitArr.length() == 0) {
             log_.warn(me(), "Entering update() with 0 messages");
-            return;
+            return res;
          }
          for (string::size_type i=0; i < msgUnitArr.length(); i++) {
             const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
@@ -136,18 +143,22 @@ namespace org { namespace xmlBlaster {
 //             forCache = cache_.update(updateQoS.getSubscriptionId(), 
 //                                      updateKey.toXml(), msgUnit.content);
 //          }
+            string oneRes = "<qos><state>OK</state></qos>";
             if (!forCache) {
                if (boss_) {
-                  boss_->update(loginName_, *updateKey,
+                  oneRes = boss_->update(sessionId, loginName_, *updateKey,
                                 (void*)&msgUnit.content[0], 
                                 msgUnit.content.length(), *updateQoS); 
                   // Call my boss
                }
                else log_.warn(me(), "can not update: no callback defined");
             }
+            CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
+            (*res)[i] = str;
             delete updateKey;
             delete updateQoS;
          }
+         return res; // res._retn();
       }
    }; // class DefaultCallback
 }} // namespace

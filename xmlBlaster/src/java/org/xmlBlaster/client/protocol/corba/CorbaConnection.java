@@ -3,7 +3,6 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.29 2002/02/07 13:09:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -11,6 +10,7 @@ package org.xmlBlaster.client.protocol.corba;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 
@@ -68,7 +68,6 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.29 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -176,10 +175,21 @@ public class CorbaConnection implements I_XmlBlasterConnection
       init();
    }
 
+   /**
+    * Reset
+    */
    public void init()
    {
       authServer   = null;
       xmlBlaster   = null;
+   }
+
+   /**
+    * Access the callback server or null
+    */
+   public I_CallbackServer getCallbackServer()
+   {
+      return callback;
    }
 
    /* DELETE it:
@@ -609,7 +619,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          this.xmlBlaster = null;
       }
       if (this.callback != null) {
-         this.callback.shutdown();
+         this.callback.shutdownCb();
          this.callback = null;
       }
       return true;

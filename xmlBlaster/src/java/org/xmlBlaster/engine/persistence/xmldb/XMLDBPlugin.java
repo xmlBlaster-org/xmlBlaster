@@ -3,7 +3,7 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.3 2002/02/09 20:03:26 goetzger Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.4 2002/03/13 16:41:18 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -116,7 +116,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       /*
       XmlKey xmlKey = messageWrapper.getXmlKey();
-      PublishQoS qos = messageWrapper.getPublishQoS();
+      PublishQos qos = messageWrapper.getPublishQos();
       String mime = messageWrapper.getContentMime();
       byte[] content = messageWrapper.getMessageUnit().content;
       */
@@ -129,7 +129,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       db.addDocument(key, oid + XMLKEY_TOKEN);
       db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
-      db.addDocument(messageWrapper.getPublishQoS().toXml(), oid + XMLQOS_TOKEN);
+      db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 
       // Log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().content)+"]]></content>");
       //        Log.trace(ME, new String(messageWrapper.getMessageUnit().content));
@@ -152,7 +152,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
       String oid = messageWrapper.getXmlKey().getKeyOid();
       db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       // Store the sender as well:
-      db.addDocument(messageWrapper.getPublishQoS().toXml(), oid + XMLQOS_TOKEN);
+      db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 
       if (Log.TRACE) Log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
    }

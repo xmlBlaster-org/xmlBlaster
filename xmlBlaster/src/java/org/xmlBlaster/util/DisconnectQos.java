@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.1 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.2 2002/03/13 16:41:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,7 +13,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import java.util.Vector;
+import org.xml.sax.Attributes;
+import java.io.Serializable;
 
 
 /**
@@ -24,15 +25,17 @@ import java.util.Vector;
  * <br />
  * A typical <b>logout</b> qos could look like this:<br />
  * <pre>
- *     &lt;qos>
- *     &lt;/qos>
+ *  &lt;qos>
+ *    &lt;deleteSubjectQueue>false&lt;/deleteSubjectQueue>
+ *  &lt;/qos>
  * </pre>
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
-public class DisconnectQos extends QosWrapper
+public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
    private String ME = "DisconnectQos";
+   private boolean deleteSubjectQueue = true;
 
    /**
     * Default constructor
@@ -42,12 +45,69 @@ public class DisconnectQos extends QosWrapper
    }
 
    /**
+    * Parses the given ASCII logout QoS. 
+    */
+   public DisconnectQos(String xmlQoS_literal) throws XmlBlasterException
+   {
+      if (Log.DUMP) Log.dump(ME, "Creating DisconnectQos(" + xmlQoS_literal + ")");
+      init(xmlQoS_literal);
+   }
+
+
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */
    public String toString()
    {
       return toXml();
+   }
+
+
+   /**
+    * Return true if subject queue shall be deleted with last user session
+    * @return true;
+    */
+   public boolean deleteSubjectQueue()
+   {
+      return deleteSubjectQueue;
+   }
+
+   /**
+    * @param true if subject queue shall be deleted with last user session logout
+    */
+   public void deleteSubjectQueue(boolean del)
+   {
+      this.deleteSubjectQueue = del;
+   }
+
+   public void startElement(String uri, String localName, String name, Attributes attrs)
+   {
+      if (super.startElementBase(uri, localName, name, attrs) == true)
+         return;
+      //if (Log.TRACE) Log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
+
+      if (name.equalsIgnoreCase("deleteSubjectQueue")) {
+         deleteSubjectQueue = true;
+         character.setLength(0);
+         return;
+      }
+   }
+
+
+   public void endElement(String uri, String localName, String name)
+   {
+      if (super.endElementBase(uri, localName, name) == true)
+         return;
+      //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+
+      if (name.equalsIgnoreCase("deleteSubjectQueue")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            deleteSubjectQueue(new Boolean(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
    }
 
 
@@ -71,13 +131,12 @@ public class DisconnectQos extends QosWrapper
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer(30);
+      StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append("<qos>\n");
-      sb.append("</qos>");
+      sb.append("<qos>").append("<deleteSubjectQueue>").append(deleteSubjectQueue).append("</deleteSubjectQueue>").append("</qos>");
 
       return sb.toString();
    }

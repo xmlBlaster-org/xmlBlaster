@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.2 2002/01/30 17:35:28 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.3 2002/03/13 16:41:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,6 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -50,7 +51,7 @@ public class TestSubMulti extends TestCase implements I_Callback
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
-   private long sentTimestamp = 0L;
+   private Timestamp sentTimestamp;
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
@@ -147,7 +148,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       senderContent = "some content";
       MessageUnit msgUnit = new MessageUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
       try {
-         sentTimestamp = System.currentTimeMillis();
+         sentTimestamp = new Timestamp();
          publishOid = con.publish(msgUnit);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
@@ -200,7 +201,8 @@ public class TestSubMulti extends TestCase implements I_Callback
 
       // Test requirement "engine.qos.update.rcvTimestamp":
       assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQoS.getRcvTimestamp(),
-             sentTimestamp<updateQoS.getRcvTimestamp() && (sentTimestamp+1000)>updateQoS.getRcvTimestamp());
+             sentTimestamp.getMillis() < updateQoS.getRcvTimestamp().getMillis() &&
+             (sentTimestamp.getMillis()+1000) > updateQoS.getRcvTimestamp().getMillis());
    }
 
 

@@ -3,13 +3,16 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.7 2001/02/12 00:05:53 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.8 2002/03/13 16:41:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 
@@ -26,10 +29,18 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
    // helper flags for SAX parsing
 
-   // flags for QoS state
-   private boolean noMeta = false;     // <noMeta />    <!-- Don't send me the xmlKey meta data on updates -->
-   private boolean noContent = false;  // <noContent /> <!-- Don't send me the content data on updates (notify only) -->
-   private boolean noLocal = false;    // <noLocal />   <!-- Inhibit the delivery of messages to myself if i have published it -->
+   /** <meta>false</meta> Don't send me the xmlKey meta data on updates */
+   private boolean meta = true;     
+   /** <content>false</content> Don't send me the content data on updates (notify only) */
+   private boolean content = true;
+   /** <local>false</local>  Inhibit the delivery of messages to myself if i have published it */
+   private boolean local = true;
+
+   private transient QueueProperty tmpProp = null;
+   protected Vector queuePropertyVec = new Vector();
+   private transient boolean inQueue = false;
+   private transient CallbackAddress tmpAddr = null;
+   private transient boolean inCallback = false;
 
 
    /**
@@ -42,6 +53,17 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    }
 
 
+   public QueueProperty[] getQueueProperties()
+   {
+      if (queuePropertyVec.size() < 1) {
+         queuePropertyVec.addElement(new QueueProperty(Constants.RELATING_SESSION)); // defaults to session queue
+      }
+      QueueProperty[] arr = new QueueProperty[queuePropertyVec.size()];
+      queuePropertyVec.toArray(arr);
+      return arr;
+   }
+
+
    /**
     * Does client wants to have the XmlKey meta tags on update?
     *
@@ -50,7 +72,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public final boolean sendMeta()
    {
-      return !noMeta;
+      return meta;
    }
 
 
@@ -62,7 +84,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public final boolean sendContent()
    {
-      return !noContent;
+      return content;
    }
 
 
@@ -72,7 +94,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public final boolean sendLocal()
    {
-      return !noLocal;
+      return local;
    }
 
 
@@ -91,12 +113,43 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if (!inQos) return;
 
-      if (name.equalsIgnoreCase("noMeta"))
-         noMeta = true;
-      if (name.equalsIgnoreCase("noContent"))
-         noContent = true;
-      if (name.equalsIgnoreCase("noLocal"))
-         noLocal = true;
+      if (name.equalsIgnoreCase("meta")) {
+         meta = true;
+         return;
+      }
+      if (name.equalsIgnoreCase("content")) {
+         content = true;
+         return;
+      }
+      if (name.equalsIgnoreCase("local")) {
+         local = true;
+         return;
+      }
+
+      if (inCallback) {
+         tmpAddr.startElement(uri, localName, name, character, attrs);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("callback")) {
+         inCallback = true;
+         if (!inQueue) {
+            tmpProp = new QueueProperty(null); // Use default queue properties for this callback address
+            queuePropertyVec.addElement(tmpProp);
+         }
+         tmpAddr = new CallbackAddress();
+         tmpAddr.startElement(uri, localName, name, character, attrs);
+         tmpProp.setCallbackAddress(tmpAddr);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("queue")) {
+         inQueue = true;
+         tmpProp = new QueueProperty(null);
+         queuePropertyVec.addElement(tmpProp);
+         tmpProp.startElement(uri, localName, name, attrs);
+         return;
+      }
    }
 
 
@@ -110,6 +163,42 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       super.endElement(uri, localName, name);
 
       if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+
+      if (name.equalsIgnoreCase("meta")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            meta = new Boolean(tmp).booleanValue();
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("content")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            content = new Boolean(tmp).booleanValue();
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("local")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            local = new Boolean(tmp).booleanValue();
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("queue")) {
+         inQueue = false;
+         character.setLength(0);
+         return;
+      }
+
+      if (inCallback) {
+         if (name.equalsIgnoreCase("callback")) inCallback = false;
+         tmpAddr.endElement(uri, localName, name, character);
+         return;
+      }
    }
 
 
@@ -118,9 +207,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml()
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -130,22 +219,22 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<" + ME + ">");
-      if (noMeta)
-         sb.append(offset + "   <noMeta />");
-      if (noContent)
-         sb.append(offset + "   <noContent />");
-      if (noLocal)
-         sb.append(offset + "   <noLocal />");
+      sb.append(offset).append("<" + ME + ">");
+      if (!meta)
+         sb.append(offset).append("   <meta>false</meta>");
+      if (!content)
+         sb.append(offset).append("   <content>false</content>");
+      if (!local)
+         sb.append(offset).append("   <local>false</local>");
       sb.append(offset + "</" + ME + ">\n");
 
-      return sb;
+      return sb.toString();
    }
 }

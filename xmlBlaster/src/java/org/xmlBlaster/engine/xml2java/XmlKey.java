@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.10 2002/01/30 17:35:47 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.11 2002/03/13 16:41:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -162,9 +162,84 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
    /** For testing: java org.xmlBlaster.engine.xml2java.XmlKey */
    public static void main(String[] args)
    {
+      int count = 1000;
+      int runs = 0;
+      long startTime;
+      long elapsed;
+      String testName;
+      XmlKey key;
+      // Test on 600 MHz Linux 2.4 with SUN Jdk 1.3.1 beta 15
       try {
-         XmlKey key = new XmlKey("<key oid='Hello'><Hacker /></key>");
-         System.out.println(key.toXml());
+         key = new XmlKey("<key oid='Hello' queryType='XPATH'>//key</key>");
+         System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
+         
+         key = new XmlKey("<key oid=\"Hello\" queryType=''><Hacker /></key>");
+         System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
+
+         key = new XmlKey("<key   oid='' queryType='EXACT'/>");
+         System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
+
+         key = new XmlKey("<key oid=''><Hacker /></key>");
+         System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
+
+         for (int kk=0; kk<runs; kk++) {
+            testName = "DomParseGivenOid";
+            startTime = System.currentTimeMillis();
+            for (int ii=0; ii<count; ii++) {
+               key = new XmlKey("<key oid='Hello'><Hacker /></key>");
+               key.getQueryType(); // Force DOM parse
+               String oid = key.getKeyOid();
+               //System.out.println(key.toXml());
+            }
+            elapsed = System.currentTimeMillis() - startTime;
+            System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
+            /*
+               DomParseGivenOid: For 1000 runs 2053 millisec -> 2053.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 1107 millisec -> 1107.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 686 millisec -> 686.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 684 millisec -> 684.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 687 millisec -> 687.0 mycrosec/inout
+            */
+         }
+
+         for (int kk=0; kk<runs; kk++) {
+            testName = "DomParseGeneratedOid";
+            startTime = System.currentTimeMillis();
+            for (int ii=0; ii<count; ii++) {
+               key = new XmlKey("<key oid=''><Hacker /></key>");
+               String oid = key.getKeyOid();
+               //System.out.println(key.toXml()); // oid="192.168.1.2-7609-1015227424082-660"
+            }
+            elapsed = System.currentTimeMillis() - startTime;
+            System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
+            /*
+               DomParseGeneratedOid: For 1000 runs 882 millisec -> 882.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 841 millisec -> 841.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 757 millisec -> 757.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 752 millisec -> 752.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 764 millisec -> 764.0 mycrosec/inout
+            */
+         }
+ 
+         for (int kk=0; kk<runs; kk++) {
+            testName = "SimpleParseGivenOid";
+            startTime = System.currentTimeMillis();
+            for (int ii=0; ii<count; ii++) {
+               key = new XmlKey("<key oid='Hello'><Hacker /></key>");
+               String oid = key.getKeyOid();
+               //System.out.println(key.toXml());
+            }
+            elapsed = System.currentTimeMillis() - startTime;
+            System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
+            /*
+               DomParseGivenOid: For 1000 runs 2053 millisec -> 2053.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 1107 millisec -> 1107.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 686 millisec -> 686.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 684 millisec -> 684.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 687 millisec -> 687.0 mycrosec/inout
+            */
+         }
+
       }
       catch (XmlBlasterException e) {
          System.out.println(e.toString());

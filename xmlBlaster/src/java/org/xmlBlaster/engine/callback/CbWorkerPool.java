@@ -3,13 +3,18 @@ Name:      CbWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: CbWorkerPool.java,v 1.2 2001/02/14 21:36:28 ruff Exp $
+Version:   $Id: CbWorkerPool.java,v 1.3 2002/03/13 16:41:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.queue.MsgQueue;
 import org.jutils.runtime.Sleeper;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 
 /**
@@ -18,40 +23,50 @@ import org.jutils.runtime.Sleeper;
 public class CbWorkerPool
 {
    public final String ME = "CbWorkerPool";
-   public final int MAX_CB_THREADS;
-   private int numActiveWorkers = 0;
-   private final long SLEEP_PERIOD = 10L;
-   private final ThreadGroup threadGroup;
+   private final PooledExecutor pool;
+   private int maximumPoolSize;
+   private int minimumPoolSize;
+   private int createThreads;
 
    /**
     * @param maxWorkers Maximum allowed callback threads
     */
-   public CbWorkerPool(int maxWorkers)
+   public CbWorkerPool()
    {
-      this.MAX_CB_THREADS = maxWorkers;
-      this.threadGroup = new ThreadGroup("CallbackWorkerThreadGroup");
+      this.pool = new PooledExecutor(new LinkedQueue());
+
+      maximumPoolSize = XmlBlasterProperty.get("cb.maximumPoolSize", 200);
+      minimumPoolSize = XmlBlasterProperty.get("cb.minimumPoolSize", 10);
+      createThreads = XmlBlasterProperty.get("cb.createThreads", minimumPoolSize);
+
+      pool.setMaximumPoolSize(maximumPoolSize);
+      pool.setMinimumPoolSize(minimumPoolSize);
+      pool.createThreads(createThreads);
+      pool.setKeepAliveTime(-1); // Threads live forever
+      pool.waitWhenBlocked();
    }
 
-   public CbWorker reserve()
+   public final void execute(MsgQueue queue, java.lang.Runnable command) throws XmlBlasterException
    {
-      int counter = 0;
-      while (true) {
-         if (numActiveWorkers < MAX_CB_THREADS) {
-            // Not completely thread save, but this is not crucial here
-            numActiveWorkers++;
-            return new CbWorker();
-         }
-         if (counter == 0 || ((counter * SLEEP_PERIOD) % 10000) == 0)
-            Log.warn(ME, "No callback thread available.");
-         Sleeper.sleep(SLEEP_PERIOD);
-         counter++;
+      try {
+         queue.setCbWorkerIsActive(true);
+         pool.execute(command);
+      }
+      catch (Throwable e) {
+         queue.setCbWorkerIsActive(false);
+         Log.error(ME, "Callback failed: " + e.toString());
+         throw new XmlBlasterException(ME, "Callback failed: " + e.toString());
       }
    }
 
-   public void release(CbWorker cbWorker)
+   public String getStatistic()
    {
-      numActiveWorkers--;
-      cbWorker = null;
+      return "Active threads=" + pool.getPoolSize() + " of max=" + pool.getMaximumPoolSize();
+   }
+
+   public void shutdownAfterProcessingCurrentlyQueuedTasks()
+   {
+      pool.shutdownAfterProcessingCurrentlyQueuedTasks();
    }
 }
 

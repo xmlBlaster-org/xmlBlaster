@@ -3,7 +3,6 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.100 2002/02/26 10:44:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -13,15 +12,23 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.queue.MsgQueue;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.PersistencePluginManager;
-
+import org.xmlBlaster.engine.callback.CbWorkerPool;
+import org.xmlBlaster.client.PublishQosWrapper;
 
 import java.util.*;
 import java.io.*;
@@ -33,11 +40,13 @@ import java.io.*;
  * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
+ * <p>
+ * See <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl">xmlBlaster.idl</a>,
+ * the CORBA access interface on how clients can access xmlBlaster.
  *
- * @version $Revision: 1.100 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public class RequestBroker implements I_ClientListener, MessageEraseListener
+public final class RequestBroker implements I_ClientListener, MessageEraseListener
 {
    /** Total count of published messages */
    public static long publishedMessages = 0L;
@@ -65,7 +74,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * The login name "__RequestBroker_internal__" is reserved!<br />
     * TODO: security discussion
     */
-   private final ClientInfo unsecureClientInfo;
+   private final SessionInfo unsecureSessionInfo;
 
    /**
     * Helper to handle the subscriptions
@@ -103,6 +112,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
    Hashtable loggedIn = null;
 
+   private Timeout burstModeTimer;
+
+
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -110,7 +122,12 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
-      unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
+      this.authenticate = authenticate;
+      getGlobal().setRequestBroker(this);
+
+      this.burstModeTimer = new Timeout("BurstmodeTimer");
+
+      unsecureSessionInfo = authenticate.unsecureCreateSession("__RequestBroker_internal__");
 
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
@@ -127,14 +144,77 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
-      this.authenticate = authenticate;
-
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
 
       loadPersistentMessages();
    }
 
+
+   /**
+    * Access the global handle. 
+    * @return The Global instance of this xmlBlaster server
+    */
+   public final Global getGlobal()
+   {
+      return this.authenticate.getGlobal();
+   }
+
+   /**
+    * Publish dead letters, expired letters should be filtered away before. 
+    * <p />
+    * The key contains an attribute with the oid of the lost message:
+    * <pre>
+    *   &lt;key oid='__sys__deadLetter'>
+    *      &lt;oid>aMessage&lt;/oid>
+    *   &lt;key>
+    * </pre>
+    * @return State inforamtion (is never null)
+    */
+   public String[] deadLetter(MsgQueueEntry[] entries)
+   {
+      if (Log.CALL) Log.call(ME, "Publishing " + entries.length + " dead letters, some may be filtered away");
+      if (entries == null) {
+         Log.error(ME, "deadLetter() with null argument");
+         return new String[0];
+      }
+
+      try {
+         Log.info(ME, "Publishing " + entries.length + " volatile dead letters");
+         String[] retArr = new String[entries.length];
+         PublishQosWrapper pubQos = new PublishQosWrapper();
+         pubQos.isVolatile(true);
+         for (int ii=0; ii<entries.length; ii++) {
+            MsgQueueEntry entry = entries[ii];
+            MessageUnit msgUnit = entry.getMessageUnitWrapper().getMessageUnitClone();
+            try {
+               if (entry.getMessageUnitWrapper().getXmlKey().isDeadLetter()) {  // Check for recursion of dead letters
+                  Log.error(ME, "PANIC: Recursive dead letter is lost, no recovery possible - dumping to file not yet coded: " + msgUnit.toXml());
+                  retArr[ii] = entry.getMessageUnitWrapper().getXmlKey().getUniqueKey();
+                  continue;
+               }
+
+               StringBuffer buf = new StringBuffer(256);
+               buf.append("<key oid='").append(Constants.OID_DEAD_LETTER).append("'><oid>").append(entry.getMessageUnitWrapper().getUniqueKey()).append("</oid></key>");
+               msgUnit.setKey(buf.toString());
+               msgUnit.setQos(pubQos.toXml());
+               XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+               retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(msgUnit.getQos()));
+            }
+            catch(Throwable e) {
+               Log.error(ME, "PANIC: " + entry.getMessageUnitWrapper().getUniqueKey() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + msgUnit.toXml());
+               retArr[ii] = entry.getMessageUnitWrapper().getXmlKey().getUniqueKey();
+            }
+         }
+         return retArr;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         Log.error(ME, "PANIC: " + entries.length + " dead letters are lost, no recovery possible - dumping to file code is missing:" + e.toString());
+      }
+
+      return new String[0];
+   }
 
    /**
     * Try to load all persistent stored messages.
@@ -160,7 +240,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                // Fetch the MessageUnit by oid from the persistence
                MessageUnit msgUnit = persistenceDriver.fetch(oid);
 
-               PublishQoS publishQos = new PublishQoS(msgUnit.getQos());
+               PublishQos publishQos = new PublishQos(msgUnit.getQos());
 
                // PublishQos flag: 'fromPersistenceStore' must be true
                publishQos.setFromPersistenceStore(true);
@@ -168,7 +248,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
 
                // RequestBroker publishes messages self
-               this.publish(unsecureClientInfo, xmlKey, msgUnit, publishQos);
+               this.publish(unsecureSessionInfo, xmlKey, msgUnit, publishQos);
             }
          }
       }
@@ -271,13 +351,11 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * <p />
     * Asynchronous read-access method.
     * <p>
-    * In CORBA connection mode, the results are returned to the
+    * The results are returned to the
     * Client-Callback interface via the update() method.
     * You need to implement the method BlasterCallback.update()<br />
     * This is the push modus.
     * <p>
-    * Duplicate subscriptions are silently ignored (no Exception is thrown)
-    * <br>
     *
     * @param xmlKey  Key allowing XPath or exact selection<br>
     *                See XmlKey.dtd for a description
@@ -286,9 +364,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *         Example (note that the qos are not yet fully implemented):<p />
     * <pre>
     *    &lt;qos>
-    *       &lt;noMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *       &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
-    *       &lt;noLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+    *       &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the key meta data on updates -->
+    *       &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
+    *       &lt;local>false&lt;/false>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
     *    &lt;/qos>
     * </pre>
     * @return oid    A unique subscription ID<br>
@@ -300,34 +378,55 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @see addListener in Java event model
     * @see addObserver in Java observer pattern
     */
-   String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
+   String subscribe(SessionInfo sessionInfo, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-         if (xmlKey.isInternalStateQuery())
-            updateInternalStateInfo(clientInfo);
-
-         String returnOid = "";
-         if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
-            returnOid = subs.getUniqueKey();
-            fireSubscriptionEvent(subs, true);
+         if (xmlKey.isInternalStateQuery()) {
+            updateInternalStateInfo(sessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
          }
 
-         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+         QueueProperty[] props = subscribeQos.getQueueProperties();
+         if (props.length > 1) {         // WE NEED TO RETURN A STRING[] (currently wer return a simple String!!
+            Log.warn(ME, "subcribe for more than one queue is currently not supported");
+            throw new XmlBlasterException(ME, "subcribe for more than one queue is currently not supported");
+         }
+         String[] returnOid = new String[props.length];
 
-         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-            if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
-               xmlKeyExact = xmlKey;
-            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
-            subscribeToOid(subs);                // fires event for subscription
+         MsgQueue msgQueue = null;
+         for (int ii=0; ii<props.length; ii++) {
+            returnOid[ii] = "";
+            if (props[ii].isSessionRelated())
+               msgQueue = sessionInfo.getSessionQueue();
+            else if (props[ii].isSubjectRelated())
+               msgQueue = sessionInfo.getSubjectInfo().getSubjectQueue();
+            else
+               msgQueue = new MsgQueue("unrelated:"+props[ii].getCallbackAddresses()[0], new QueueProperty(Constants.RELATING_UNRELATED), getGlobal());
 
-            if (returnOid.equals("")) returnOid = subs.getUniqueKey(); // old:  returnOid = xmlKeyExact.getUniqueKey();
+            SubscriptionInfo subsQuery = null;
+            if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
+               subsQuery = new SubscriptionInfo(sessionInfo, msgQueue, xmlKey, subscribeQos);
+               returnOid[ii] = subsQuery.getUniqueKey();
+               fireSubscriptionEvent(subsQuery, true);
+            }
+
+            Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, subscribeQos);
+
+            for (int jj=0; jj<xmlKeyVec.size(); jj++) {
+               XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(jj);
+               if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
+                  xmlKeyExact = xmlKey;
+               SubscriptionInfo subs = new SubscriptionInfo(sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
+               if (subsQuery != null)
+                  subsQuery.addSubscription(subs);
+               subscribeToOid(subs);                // fires event for subscription
+
+               if (returnOid[ii].equals("")) returnOid[ii] = xmlKeyExact.getUniqueKey();
+            }
          }
 
-         return returnOid;
+         return returnOid[0];  //!!! Only index 0 supported
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -349,21 +448,15 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *                See XmlKey.dtd for a description
     * @param qos     Quality of Service, flags to control subscription<br>
     *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
-    *         Example (note that the qos are not yet fully implemented):<p />
-    * <pre>
-    *    &lt;qos>
-    *       &lt;noMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *       &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
-    *    &lt;/qos>
-    * </pre>
     * @return A sequence of 0 - n MessageUnit structs
+    * @see org.xmlBlaster.client.GetQosWrapper
     */
-   MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
+   MessageUnit[] get(SessionInfo sessionInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
          if (xmlKey.isInternalStateQuery())
-            updateInternalStateInfo(clientInfo);
+            updateInternalStateInfo(sessionInfo);
 
          if (xmlKey.getKeyOid().equals("__sys__jdbc")) { // Query RDBMS !!! hack, we need a general service interface
             String query = xmlKey.toXml();
@@ -373,7 +466,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             return adap.query();
          }
 
-         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
+         Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, qos);
          Vector msgUnitVec = new Vector(xmlKeyVec.size());
 
          for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -392,22 +485,15 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
                MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
 
-               // Check with ClientInfo.getUpdateQoS() !!!
+               // Check with SessionInfo.getUpdateQoS() !!!
                StringBuffer buf = new StringBuffer();
                buf.append("\n<qos>\n");
-
-               buf.append("   <state>\n");  // !!! not yet supported
-               buf.append("      OK\n");    // OK | EXPIRED | ERASED
-               buf.append("   </state>\n");
-
-               buf.append("   <sender>\n");
-               buf.append("      ").append(msgUnitWrapper.getPublisherName());
-               buf.append("\n   </sender>\n");
-
+               buf.append("   <state>OK</state>\n");    // OK | EXPIRED | ERASED
+               buf.append("   <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>\n");
                buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
 
-               if (msgUnitWrapper.getPublishQoS().getTimeToLive() >= 0L) {
-                  buf.append("   <expiration timeToLive='").append(msgUnitWrapper.getPublishQoS().getTimeToLive()).append("'/>\n");
+               if (msgUnitWrapper.getPublishQos().getRemainingLife() >= 0L) {
+                  buf.append("   <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>\n");
                }
 
                buf.append("</qos>");
@@ -421,6 +507,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             msgUnitArr[ii] = (MessageUnit)msgUnitVec.elementAt(ii);
 
          getMessages += msgUnitArr.length;
+         if (Log.TRACE) Log.trace(ME, "Returning for get() " + msgUnitArr.length + " messages");
          return msgUnitArr;
       }
       catch (XmlBlasterException e) {
@@ -453,63 +540,70 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *       &lt;/key>
     * </pre>
     *
-    * @param clientInfo The client who triggered the refresh
+    * @param sessionInfo The client who triggered the refresh
     * @return A sequence of 0...n MessageUnit structs
     */
-   private void updateInternalStateInfo(ClientInfo clientInfo) throws XmlBlasterException
+   private void updateInternalStateInfo(SessionInfo sessionInfo) throws XmlBlasterException
    {
       String oid = "__sys__TotalMem";
       String content = "" + Runtime.getRuntime().totalMemory();
-      updateInternalStateInfoHelper(clientInfo, oid, content);
+      updateInternalStateInfoHelper(sessionInfo, oid, content);
 
       oid = "__sys__FreeMem";
       content = "" + Runtime.getRuntime().freeMemory();
-      updateInternalStateInfoHelper(clientInfo, oid, content);
+      updateInternalStateInfoHelper(sessionInfo, oid, content);
 
       oid = "__sys__UsedMem";
       content = "" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
-      updateInternalStateInfoHelper(clientInfo, oid, content);
-
+      updateInternalStateInfoHelper(sessionInfo, oid, content);
    }
 
-
-   private void updateInternalUserList(ClientInfo clientInfo) throws XmlBlasterException
+   private void updateInternalUserList(SessionInfo sessionInfo) throws XmlBlasterException
    {
       String oid = "__sys__UserList";
       String content = "";
       synchronized (loggedIn) {
          Enumeration e=loggedIn.elements();
          while(e.hasMoreElements()) {
-            content=content+((ClientInfo)e.nextElement()).getLoginName()+"\n";
+            content=content+((SubjectInfo)e.nextElement()).getLoginName()+"\n";
          }
       }
-      updateInternalStateInfoHelper(clientInfo, oid, content);
+      updateInternalStateInfoHelper(sessionInfo, oid, content);
 
       // Add here more internal states
    }
 
-
    /**
     * Little helper to publish internal data into myself
     */
-   private void updateInternalStateInfoHelper(ClientInfo clientInfo, String oid, String content) throws XmlBlasterException
+   private void updateInternalStateInfoHelper(SessionInfo sessionInfo, String oid, String content) throws XmlBlasterException
    {
       String xmlKey_literal = "<key oid='" + oid + "' contentMime='text/plain'>\n   <__sys__internal>\n   </__sys__internal>\n</key>";
       String qos_literal = "<qos></qos>";
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), qos_literal);
-      publish(clientInfo, msgUnit); // can we could reuse the PublishQoS? -> better performing.
+      publish(sessionInfo, msgUnit); // can we could reuse the PublishQos? -> better performing.
       if (Log.TRACE) Log.trace(ME, "Refreshed internal state for '" + oid + "'");
    }
-
 
    /**
     * Internal publishing helper.
     */
-   private String publish(ClientInfo clientInfo, MessageUnit msgUnit) throws XmlBlasterException
+   private String[] publish(SessionInfo sessionInfo, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
-      return publish(clientInfo, new XmlKey(msgUnit.xmlKey, true), msgUnit, new PublishQoS(msgUnit.qos));
+      String[] retArr = new String[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         retArr[ii] = publish(sessionInfo, new XmlKey(msgUnitArr[ii].xmlKey, true), msgUnitArr[ii], new PublishQos(msgUnitArr[ii].qos));
+      }
+      return retArr;
    }
 
+   /**
+    * Internal publishing helper.
+    */
+   private String publish(SessionInfo sessionInfo, MessageUnit msgUnit) throws XmlBlasterException
+   {
+      return publish(sessionInfo, new XmlKey(msgUnit.xmlKey, true), msgUnit, new PublishQos(msgUnit.qos));
+   }
 
    /**
     * This method does the query (queryType = "XPATH" | "EXACT").
@@ -519,13 +613,13 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
+   private Vector parseKeyOid(SessionInfo sessionInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
    {
       Vector xmlKeyVec = null;
-      String clientName = clientInfo.toString();
+      String clientName = sessionInfo.toString();
 
       if (xmlKey.isQuery()) { // query: subscription without a given oid
-         xmlKeyVec = bigXmlKeyDOM.parseKeyOid(clientInfo, xmlKey, qos);
+         xmlKeyVec = bigXmlKeyDOM.parseKeyOid(sessionInfo, xmlKey, qos);
       }
 
       else if (xmlKey.isExact()) { // subscription with a given oid
@@ -608,6 +702,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       // Now the MessageUnit exists, subscribe to it
       boolean newSubscribed = msgUnitHandler.addSubscriber(subs);
+      subs.addMessageUnitHandler(msgUnitHandler);
 
       if (!newSubscribed) return;         // client had already subscribed
 
@@ -621,10 +716,10 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * If you have subscribed before, you can cancel your
     * subscription with this method again
     *
-    * @param clientInfo
+    * @param sessionInfo
     * @param xmlKey    Key with the oid to unSubscribe<br>
     *                  See XmlKey.dtd for a description<br>
-    *                  If you subscribed with XPath, you need to pass the oid you got from your subscription
+    *                  If you subscribed with XPath, you need to pass the id you got from your subscription
     * @param qos       Quality of Service, flags to control unsubscription<br>
     *                  See XmlQoS.dtd for a description
     *         Example (note that the qos are not yet fully implemented):<p />
@@ -634,20 +729,38 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *    &lt;/qos>
     * </pre>
     */
-   void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
+   void unSubscribe(SessionInfo sessionInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQos) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-         String suppliedXmlKey = xmlKey.getUniqueKey().substring(0); // remember (clone) supplied oid, another oid may be generated later
+         SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey());
+         if (subs != null) {
+            Vector childs = subs.getChildrenSubscriptions();
+            if (childs != null) {
+               Log.info(ME, "unSubscribe() Traversing " + childs.size() + " childs");
+               for (int ii=0; ii<childs.size(); ii++) {
+                  SubscriptionInfo so = (SubscriptionInfo)childs.elementAt(ii);
+                  fireSubscriptionEvent(so, false);
+                  so = null;
+               }
+            }
+            fireSubscriptionEvent(subs, false);
+            subs = null;
+         }
+         else
+            Log.warn(ME, "UnSubscribe of " + xmlKey.getUniqueKey() + " failed");
 
-         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
+         /*
+         String suppliedXmlKey = xmlKey.getUniqueKey(); // remember (clone) supplied oid, another oid may be generated later
+
+         Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, unSubscribeQos);
 
          if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
             // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
-            SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
+            SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
             if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
-               xmlKeyVec = parseKeyOid(clientInfo, subs.getXmlKey(), unSubscribeQoS);
+               xmlKeyVec = parseKeyOid(sessionInfo, subs.getXmlKey(), unSubscribeQos);
                fireSubscriptionEvent(subs, false);    // Remove the object containing the XPath query
             }
          }
@@ -655,18 +768,22 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          for (int ii=0; ii<xmlKeyVec.size(); ii++) {
             XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
             if (xmlKeyExact == null) {
-               Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+               Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + sessionInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
                throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
 
             }
-            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
-            fireSubscriptionEvent(subs, false);
+            SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKeyExact.getUniqueKey());
+            if (subs != null)
+               fireSubscriptionEvent(subs, false);
+            else
+               Log.warn(ME, "UnSubscribe of " + xmlKeyExact.getUniqueKey() + " failed");
          }
 
          if (xmlKeyVec.size() < 1) {
             Log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
          }
+         */
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -693,88 +810,42 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * <p />
     * This triggers the method update() if observed by somebody
     * <p />
-    * If the given key doesn't exist, it will be automatically added, <br>
+    * If the given key oid doesn't exist, it will be automatically added, <br>
     * so this covers the SQL'ish INSERT and UPDATE.
     * <p />
     * If MessageUnit is created from subscribe or MessageUnit is new, the key meta
     * data are added to the big DOM tree once (XmlKeyBase takes care of that).
+    * <p />
+    * See <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl">xmlBlaster.idl</a>,
+    * the CORBA access interface on how clients can access xmlBlaster.
     *
-    * @param clientInfo  The ClientInfo object, describing the publishing client
-    * @param msgUnit The CORBA MessageUnit struct
-    * @param publishQoS  Quality of Service, flags to control the publishing<p />
-    *         Example for Pub/Sub style (note that the qos are not yet fully implemented):<p />
-    * <pre>
-    *    &lt;qos>
-    *       &lt;expires>        &lt;!-- Expires after given milliseconds, clients will get a notify about expiration -->
-    *          12000         &lt;!-- Default is no expiration (similar to pass 0 milliseconds) -->
-    *       &lt;/expires>
-    *
-    *       &lt;erase>          &lt;!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
-    *          24000         &lt;!-- Default is no erasing (similar to pass 0 milliseconds) -->
-    *       &lt;/erase>
-    *
-    *       &lt;isDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
-    *                        &lt;!-- Default is transient -->
-    *
-    *       &lt;forceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
-    *                        &lt;!-- Default is that identical published messages aren't sent to clients again -->
-    *
-    *       &lt;readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
-    *                        &lt;!-- Default is Read/Write -->
-    *
-    *       &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->
-    *          $content GE 100 &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
-    *       &lt;/check>
-    *
-    *       &lt;alter lang='TCL'> &lt;!-- Allow content manipulation with a scripting language -->
-    *          set content [$key('4711') * 1.2 + $content] &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
-    *       &lt;/alter>
-    *    &lt;/qos>
-    * </pre><p />
-    * Example for PtP addressing style (note that the qos are not yet fully implemented):<p />
-    * <pre>
-    *    &lt;qos>
-    *       &lt;destination queryType='EXACT'>
-    *          Tim
-    *       &lt;/destination>
-    *
-    *       &lt;destination queryType='EXACT'>
-    *          Ben
-    *       &lt;/destination>
-    *
-    *       &lt;destination queryType='XPATH'>
-    *          //[GROUP='Manager']
-    *       &lt;/destination>
-    *
-    *       &lt;destination queryType='XPATH'>
-    *          //ROLE/[@id='Developer']
-    *       &lt;/destination>
-    *    &lt;/qos>
-    * </pre>
+    * @param sessionInfo  The SessionInfo object, describing the publishing client
+    * @param msgUnit The MessageUnit struct
+    * @param publishQos  Quality of Service, flags to control the publishing<p />
     * @return String with the key oid of the msgUnit<br />
     *         If you let the oid be generated, you need this information
     *         for further publishing to the same MessageUnit<br />
     *         Rejected Messages will contain an empty string ""
     *
-    * @see xmlBlaster.idl for comments
+    * @see org.xmlBlaster.engine.xml2java.PublishQos
     */
-   String publish(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
+   String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       try {
-         if (msgUnit == null || publishQoS==null || xmlKey==null) {
+         if (msgUnit == null || publishQos==null || xmlKey==null) {
             Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
             throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          }
 
          if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
-         if (Log.DUMP) Log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQoS.toXml());
+         if (Log.DUMP) Log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQos.toXml());
 
-         String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
+         String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
 
-         if (! publishQoS.isFromPersistenceStore())
-            publishQoS.setSender(clientInfo.getLoginName());
+         if (! publishQos.isFromPersistenceStore())
+            publishQos.setSender(sessionInfo.getLoginName());
 
-         if (publishQoS.isPubSubStyle()) {
+         if (publishQos.isPubSubStyle()) {
             if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
 
             //----- 1. set new value or create the new message:
@@ -787,7 +858,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                synchronized(messageContainerMap) {
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                   if (obj == null) {
-                     msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS));
+                     msgUnitHandler = new MessageUnitHandler(this, xmlKey, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos));
                      messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                   }
                   else {
@@ -799,7 +870,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
                boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
 
                if (messageExisted) {
-                  contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQoS);
+                  contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQos);
                }
 
                if (!messageExisted || isYetUnpublished) {
@@ -815,35 +886,53 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             }
 
             //----- 2. now we can send updates to all interested clients:
-            if (contentChanged || publishQoS.forceUpdate()) // if the content changed of the publisher forces updates ...
+            if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
                msgUnitHandler.invokeCallback();
 
             // this gap is not 100% thread save
 
             //----- 3. check all known query subscriptions if the new message fits as well
-            checkExistingSubscriptions(clientInfo, xmlKey, msgUnitHandler, publishQoS);
+            // TODO: Only check if it is a new message (XmlKey is immutable)
+            checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
 
-            if (publishQoS.isVolatile()) {
-                 if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
-
-                 fireMessageEraseEvent(clientInfo, msgUnitHandler);
-                 msgUnitHandler.erase();
-                 msgUnitHandler = null;
-            }
+            // We can't do it here, first all callback calls must be successful - the CbWorker does it
+            //eraseVolatile(sessionInfo, msgUnitHandler);
          }
-         else if (publishQoS.isPTP_Style()) {
+         else if (publishQos.isPTP_Style()) {
             if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
-            if (Log.DUMP) Log.dump(ME, publishQoS.toXml());
+            if (Log.DUMP) Log.dump(ME, publishQos.toXml());
 
-            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS);
-            Vector destinationVec = publishQoS.getDestinations(); // !!! add XPath client query here !!!
+            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+            Vector destinationVec = publishQos.getDestinations(); // !!! add XPath client query here !!!
 
             //-----    Send message to every destination client
             for (int ii = 0; ii<destinationVec.size(); ii++) {
                Destination destination = (Destination)destinationVec.elementAt(ii);
                if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
-               ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(destination.getDestination());
-               destinationClient.sendUpdate(msgUnitWrapper, destination);
+               if (destination.isSessionId()) {
+                  SessionInfo receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
+                  if (receiverSessionInfo == null) {
+                     String tmp = "Sending PtP message to unknown session '" + destination.getDestination() + "' failed, message is lost.";
+                     Log.warn(ME, tmp);
+                     throw new XmlBlasterException("PtP.Failed", tmp);
+                  }
+                  receiverSessionInfo.queueMessage(new MsgQueueEntry(receiverSessionInfo, msgUnitWrapper));
+               }
+               else {
+                  if (publishQos.forceQueuing()) {
+                     SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
+                     destinationClient.queueMessage(new MsgQueueEntry(destinationClient, msgUnitWrapper));
+                  }
+                  else {
+                     SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
+                     if (destinationClient == null) {
+                        String tmp = "Sending PtP message to '" + destination.getDestination() + "' failed, message is lost.";
+                        Log.warn(ME, tmp);
+                        throw new XmlBlasterException("PtP.Failed", tmp+" Client is not logged in and <destination forceQueuing='true'> is not set");
+                     }
+                     destinationClient.queueMessage(new MsgQueueEntry(destinationClient, msgUnitWrapper));
+                  }
+               }
             }
          }
          else {
@@ -863,14 +952,24 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       }
    }
 
+   /**
+    * Called from CbWorker when a isVolatile() message is successfully delivered to all clients
+    */
+   public void eraseVolatile(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
+   {
+      if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
+      fireMessageEraseEvent(sessionInfo, msgUnitHandler);
+      msgUnitHandler.erase();
+      msgUnitHandler = null;
+   }
 
    /**
     * This helper method checks for a published message which didn't exist before if
     * there are any XPath subscriptions pending which match.
     * <p />
     */
-   private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
-                                  MessageUnitHandler msgUnitHandler, PublishQoS xmlQoS)
+   private final void checkExistingSubscriptions(SessionInfo sessionInfo, XmlKey xmlKey,
+                                  MessageUnitHandler msgUnitHandler, PublishQos xmlQoS)
                                   throws XmlBlasterException
    {
       if (msgUnitHandler.isNewCreated()) {
@@ -895,7 +994,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
                // ... check if the new message matches ...
                if (xmlKey.match(xpath) == true) {
-                  SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription, xmlKey);
+                  SubscriptionInfo subs = new SubscriptionInfo(sessionInfo, existingQuerySubscription, xmlKey);
+                  subs.addMessageUnitHandler(msgUnitHandler);
+                  existingQuerySubscription.addSubscription(subs);
                   matchingSubsVec.addElement(subs);
                }
             }
@@ -916,7 +1017,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /**
     * Client wants to erase a message.
     * <p />
-    * @param clientInfo  The ClientInfo object, describing the invoking client
+    * @param sessionInfo  The SessionInfo object, describing the invoking client
     * @param xmlKey      Key allowing XPath or exact selection<br>
     *                    See XmlKey.dtd for a description
     * @param eraseQoS    Quality of Service, flags to control the erasing
@@ -924,12 +1025,12 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @return String array with the key oid's which are deleted
     *         "" strings mark query subscriptions
     */
-   String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
+   String[] erase(SessionInfo sessionInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
+         Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, qoS);
          Set oidSet = new HashSet(xmlKeyVec.size());
 
          for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -942,10 +1043,11 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             }
 
             MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+            //Log.info(ME, "Erasing " + msgUnitHandler.toXml());
 
             oidSet.add(msgUnitHandler.getUniqueKey());
             try {
-               fireMessageEraseEvent(clientInfo, msgUnitHandler);
+               fireMessageEraseEvent(sessionInfo, msgUnitHandler);
             } catch (XmlBlasterException e) {
             }
             msgUnitHandler.erase();
@@ -994,19 +1096,22 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *    &lt;/key>
     * </pre>
     */
-   public void clientAdded(ClientEvent e) throws XmlBlasterException
+   public void sessionAdded(ClientEvent e) throws XmlBlasterException
    {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString());
+      SessionInfo sessionInfo = e.getSessionInfo();
+      if (Log.TRACE) Log.trace(ME, "Login event for client " + sessionInfo.toString());
       synchronized (msgUnitLoginEvent.content) {
-         msgUnitLoginEvent.content = clientInfo.getLoginName().getBytes();
-         publish(clientInfo, msgUnitLoginEvent); // publish that this client logged in
+         msgUnitLoginEvent.content = sessionInfo.getLoginName().getBytes();
+         publish(sessionInfo, msgUnitLoginEvent); // publish that this client logged in
       }
 
-      if (Log.TRACE) Log.trace(ME, " client added:"+clientInfo.getLoginName());
+      if (Log.TRACE) Log.trace(ME, " client added:"+sessionInfo.getLoginName());
       synchronized (loggedIn){
-         loggedIn.put(clientInfo.getLoginName(), clientInfo);
-         updateInternalUserList(clientInfo);
+         Object obj = loggedIn.get(sessionInfo.getLoginName());
+         if (obj == null) {
+            loggedIn.put(sessionInfo.getLoginName(), sessionInfo.getSubjectInfo());
+            updateInternalUserList(sessionInfo);
+         }
       }
    }
 
@@ -1020,19 +1125,39 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *    &lt;/key>
     * </pre>
     */
-   public void clientRemove(ClientEvent e) throws XmlBlasterException
+   public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
-      ClientInfo clientInfo = e.getClientInfo();
-      if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString());
+      SessionInfo sessionInfo = e.getSessionInfo();
+      if (Log.TRACE) Log.trace(ME, "Logout event for client " + sessionInfo.toString());
       synchronized (msgUnitLogoutEvent.content) {
-         msgUnitLogoutEvent.content = clientInfo.getLoginName().getBytes();
-         publish(clientInfo, msgUnitLogoutEvent); // publish that this client logged out
+         msgUnitLogoutEvent.content = sessionInfo.getLoginName().getBytes();
+         publish(sessionInfo, msgUnitLogoutEvent); // publish that this client logged out
       }
-      if (Log.TRACE) Log.trace(ME, " client removed:"+clientInfo.getLoginName());
+      if (Log.TRACE) Log.trace(ME, " client removed:"+sessionInfo.getLoginName());
       synchronized (loggedIn) {
-         loggedIn.remove(clientInfo.getLoginName());
-         updateInternalUserList(clientInfo);
+         if (sessionInfo.getSubjectInfo().getSessions().size() == 1) {
+            loggedIn.remove(sessionInfo.getLoginName());
+            updateInternalUserList(sessionInfo);
+         }
       }
+   }
+
+
+   /**
+    * Event invoked on new SubjectInfo. 
+    */
+   public void subjectAdded(ClientEvent e) throws XmlBlasterException
+   {
+      Log.warn(ME, "Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
+   }
+
+
+   /**
+    * Event invoked on deleted SubjectInfo. 
+    */
+   public void subjectRemoved(ClientEvent e) throws XmlBlasterException
+   {
+      Log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
 
 
@@ -1118,16 +1243,16 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /**
     * Notify all Listeners that a message is erased.
     *
-    * @param clientInfo
+    * @param sessionInfo
     * @param msgUnitHandler
     */
-   private final void fireMessageEraseEvent(ClientInfo clientInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
+   private final void fireMessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
       synchronized (messageEraseListenerSet) {
          if (messageEraseListenerSet.size() == 0)
             return;
 
-         MessageEraseEvent event = new MessageEraseEvent(clientInfo, msgUnitHandler);
+         MessageEraseEvent event = new MessageEraseEvent(sessionInfo, msgUnitHandler);
          Iterator iterator = messageEraseListenerSet.iterator();
 
          while (iterator.hasNext()) {
