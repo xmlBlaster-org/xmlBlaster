@@ -1146,11 +1146,13 @@ public class Global implements Cloneable
       if (this.cbHostname == null) {
          try {
             Address addr = getBootstrapAddress();
-            Socket sock = new Socket(addr.getHostname(), addr.getPort());
-            this.cbHostname = sock.getLocalAddress().getHostAddress();
-            sock.close();
-            sock = null;
-            if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
+            if (addr.getPort() > 0) {
+               Socket sock = new Socket(addr.getHostname(), addr.getPort());
+               this.cbHostname = sock.getLocalAddress().getHostAddress();
+               sock.close();
+               sock = null;
+               if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
+            }
          }
          catch (java.io.IOException e) {
             log.trace(ME, "Can't find default cb hostname: " + e.toString());
