@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.28 2002/09/09 17:24:54 ruff Exp $
+Version:   $Id: Parser.java,v 1.29 2002/09/10 18:56:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -534,6 +534,8 @@ public class Parser
    /**
     * This parses the raw message from an InputStream (typically from a socket).
     * Use the get...() methods to access the data.
+    * <p />
+    * This method blocks until a message arrives
     */
    public final void parse(InputStream in) throws IOException {
 
