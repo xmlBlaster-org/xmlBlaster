@@ -48,35 +48,35 @@
       not reachable, a queue is created to hold messages addressed for this destination.
       Two message queue types are created on login and one for each published callback address.
       <ol>
-         <li>SessionIdQueue (<i>SessionID:</i>)<br />
+         <li>SessionQueue (<i>SessionID:</i>)<br />
          This queue is created on login and destroyed on logout.
          It can be used as the ReplyTo address for sent messages.
          This is the default callback for session based subscriptions without a specified callback in the login QoS.
          </li>
-         <li>LoginNameQueue (<i>UserID:</i>)<br />
+         <li>SubjectQueue (<i>UserID:</i>)<br />
          This queue is created on login if not existing beforehand.
          The queue is named similar to the login name of the client.
          It may remain living after logout, or may be created before login if
          a PtP message addresses it.
          This is the default callback for login name based (durable) subscriptions without a specified callback in its QoS.
          It is destroyed when the queue expires.
-         The specified callback server of the SessionIdQueue is used if not otherwise specified in the login QoS.
+         The specified callback server of the SessionQueue is used if not otherwise specified in the login QoS.
          Every message from this queue is delivered to all current sessions of the user. On multiple logins,
          the same message is delivered multiple times.
          </li>
-         <li>CallbackQueue (<i>CbID:</i>)<br />
-         This are queues which are created for subcribes which expressly states a callback
+         <li>UnrelatedQueue (<i>CbID:</i>)<br />
+         This are queues which are created for subscribes which expressly states a callback
          address in its QoS. It can be a delegated subscribe (e.g. for a dumb toaster).
          This is a durable subscription outliving the logout of its creator (if not otherwise configured).
          It is destroyed when the queue expires.
-         Subscribes without callbacks specified in its QoS, are using as a default the callback address of the SessionIdQueue
-         or the LoginNameQueue if the first is not available.
+         Subscribes without callbacks specified in its QoS, are using as a default the callback address of the SessionQueue
+         or the SubjectQueue if the first is not available.
          </li>
       </ol>
       </li>
       <li>Zero or one callback address<br />
       Every message queue has zero or one callback addresses associated:
-      The SessionIdQueue and the CallbackQueue have exactly one, the LoginNameQueue 
+      The SessionQueue and the UnrelatedQueue have exactly one, the SubjectQueue 
       has one or zero (if not logged in).
       </li>
       <li>Synchronous browsing<br />
@@ -92,6 +92,79 @@
    </description>
    <example lang="Java">
       <![CDATA[
+
+      These is an example QoS of a connect() invocation:
+      ==================================================
+
+      <qos>
+         ...
+         <!-- default SessionQueue callback: Use CORBA to send messages back -->
+         <callback type='IOR'>
+            IOR:00011200070009990000....
+         </callback>
+      </qos>
+
+
+      <qos>
+         ...
+         <!-- SubjectQueue callback: Use email -->
+         <queue relating='subject' maxMsg='1600' expires='360000000' onOverflow='discardOldest'>
+            <callback type='EMAIL'>
+               et@mars.universe
+            </callback>
+         </queue>
+      </qos>
+
+
+      <qos>
+         ...
+         <callback type='IOR'> <!-- SessionQueue callback: Use CORBA to send messages back -->
+            IOR:00011200070009990000....
+            <compress type='gzip' minSize='1000' />
+                      <!-- compress messages bigger 1000 bytes before sending them to me -->
+            <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
+                       them in one callback (burst mode) -->
+         </callback>
+      </qos>
+
+
+      These are example QoS of subsribe() invocations:
+      ================================================
+
+      <!-- The subscribed messages are delivered via the SessionQueue of the subscriber -->
+      <qos>
+      </qos>
+
+      <!-- Same as above -->
+      <qos>
+         <queue relating='session'/>
+      </qos>
+
+      Any other queue overwrites session delivery:
+
+      <!-- The subscribed messages are only delivered via the SubjectQueue of the current client -->
+      <qos>
+         <queue relating='subject'/>
+         <queue relating='subject:somebodyElse'/>
+      </qos>
+
+      <qos>
+         <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
+            <callback type='EMAIL'>
+               et@mars.universe   <!-- Sends messages to et with specified queue attributes -->
+            </callback>
+         </queue>
+
+         <callback type='EMAIL'>  <!-- callback specification is always unrelated -->
+            tolkien@mars.universe <!-- Sends messages to tolkien, with default queue settings -->
+         </callback>
+
+
+         <callback type='IOR'> <!-- Sends message via CORBA as well -->
+            IOR:00011200070009990000....
+         </callback>
+      </qos>
+      
       ]]>
    </example>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
@@ -100,7 +173,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
