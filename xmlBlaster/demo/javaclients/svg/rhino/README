@@ -16,8 +16,13 @@ change chessRhino.svg) by invoking
 java org.xmlBlaster.Main
 
 2) On another terminal start the svgbrowser from batik by invoking
-java org.apache.batik.apps.svgbrowser.Main $XMLBLASTER_HOME/demo/javaclients/svg/rhino/chessRhino.svg
+   
+   java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy 
+        org.apache.batik.apps.svgbrowser.Main
+        $XMLBLASTER_HOME/demo/javaclients/svg/rhino/chessRhino.svg
+
 This loads already the chess game.
+Assure to load our relaxed xmlBlaster.policy to avoid 'access denied' exceptions
 
 3) start another svgbrowser on another terminal as you did in 2) and then you can start
 to play chess.
