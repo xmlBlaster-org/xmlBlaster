@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.56 2000/10/11 15:57:28 ruff Exp $
+Version:   $Id: Main.java,v 1.57 2000/10/15 10:56:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -114,7 +114,7 @@ public class Main
          authenticate = new Authenticate();
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
-         /* Marcel: Runs fine with JDK 1.3, not yet tested what happens in JDK 1.2 (does it compile?)
+         /* Marcel: Runs fine with JDK 1.3, but does not compile with JDK 1.2
          try {  // Add shutdown hook (since JDK 1.3, catch signals)
             Runtime.getRuntime().addShutdownHook(new Thread() {
                public void run() {
