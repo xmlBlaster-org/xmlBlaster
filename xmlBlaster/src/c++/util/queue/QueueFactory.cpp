@@ -18,7 +18,9 @@ Comment:   Factory to create different queue implementations
 #include <util/PlatformUtils.hpp>
 #include <util/queue/QueueFactory.h>
 #include <util/queue/RamQueuePlugin.h>
-#include <util/queue/SQLiteQueuePlugin.h>
+#ifdef XMLBLASTER_PERSISTENT_QUEUE
+#  include <util/queue/SQLiteQueuePlugin.h>
+#endif
 #include <string>
 
  
