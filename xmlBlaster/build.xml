@@ -263,6 +263,7 @@ TODO
       <echo message="                   you need to compile xmlBlaster before with target 'all'"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
       <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
+      <echo message="   runTestsAndReport --> does both of above"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   javadocs-delete --> remove the above"/>
