@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.34 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.35 2002/06/15 16:19:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -95,7 +95,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          Address addressProp = new Address(glob);
          addressProp.setDelay(4000L);      // retry connecting every 4 sec
          addressProp.setRetries(-1);       // -1 == forever
-         addressProp.setPingInterval(0L);  // switched off
+         addressProp.setPingInterval(-1L); // switched off
          addressProp.setMaxMsg(1000);      // queue up to 1000 messages
          con.initFailSave(this);
 
@@ -202,7 +202,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             if (ii == 5) {
                Log.info(ME, "Starting xmlBlaster again, expecting the previous published messages ...");
                serverThread = ServerThread.startXmlBlaster(serverPort);
-               waitOnUpdate(8000L);
+               waitOnUpdate(4000L);
             }
             testPublish(ii+1);
             waitOnUpdate(4000L);
