@@ -17,7 +17,7 @@ Comment:   Handles the I_XmlBlasterConnections
 #define _UTIL_DISPATCH_CONNECTIONSHANDLER_H
 
 #include <util/xmlBlasterDef.h>
-#include <client/protocol/I_XmlBlasterConnection.h>
+#include <util/dispatch/I_ConnectionsHandler.h>
 #include <client/I_ConnectionProblems.h>
 #include <util/XmlBlasterException.h>
 #include <util/thread/Thread.h>
@@ -26,7 +26,6 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/queue/PublishQueueEntry.h>
 #include <util/queue/ConnectQueueEntry.h>
 
-using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util;
@@ -34,9 +33,7 @@ using namespace org::xmlBlaster::util::queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-enum States {START, CONNECTED, POLLING, DEAD, END};
-
-class Dll_Export ConnectionsHandler : public I_Timeout
+class Dll_Export ConnectionsHandler : public I_Timeout, public I_ConnectionsHandler
 {
 private:
    const string            ME;
@@ -111,7 +108,7 @@ public:
    string ping(const string& qos);
 
    SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
-
+                                                                                
    vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
 
    vector<UnSubscribeReturnQos> 
@@ -136,11 +133,7 @@ public:
     */
    long flushQueue();
 
-   /**
-    * Creates and returns a copy of the client queue. if 'eraseOriginalQueueEntries' is 'true', then the
-    * original queue (the client queue) is cleared.
-    */
-   MsgQueue getCopyOfQueue(bool eraseOriginalQueueEntries=true);
+   MsgQueue* getQueue();
 
    bool isFailsafe() const;
 

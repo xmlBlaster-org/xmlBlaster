@@ -525,23 +525,9 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
    return ret;
 }
 
-/**
- * Creates and returns a copy of the client queue. if 'eraseOriginalQueueEntries' is 'true', then the
- * original queue (the client queue) is cleared.
- */
-MsgQueue ConnectionsHandler::getCopyOfQueue(bool eraseOriginalQueueEntries)
+MsgQueue* ConnectionsHandler::getQueue()
 {
-   if (log_.CALL) log_.call(ME, "getCopyOfQueue");
-   if (!queue_) {
-      if (!connectQos_) {
-         ConnectQos tmp(global_);
-         return MsgQueue(global_, tmp.getClientQueueProperty());
-      }
-      return MsgQueue(global_, connectQos_->getClientQueueProperty());
-   }
-   MsgQueue ret = *queue_;
-   if (eraseOriginalQueueEntries) ret.clear();
-   return ret;
+   return queue_;
 }
 
 bool ConnectionsHandler::isFailsafe() const

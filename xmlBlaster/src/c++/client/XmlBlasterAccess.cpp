@@ -304,15 +304,6 @@ long XmlBlasterAccess::flushQueue()
    return connection_->flushQueue();
 }
 
-MsgQueue XmlBlasterAccess::getCopyOfQueue(bool eraseOriginalQueueEntries)
-{
-   if (!connection_) {
-      throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::getCopyOfQueue", "no connection exists when trying to flush the queue: try to connect to xmlBlaster first");
-   }
-   return connection_->getCopyOfQueue(eraseOriginalQueueEntries);
-}
-
-
 
 }}} // namespaces
 

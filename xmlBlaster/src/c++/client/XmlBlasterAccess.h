@@ -228,12 +228,6 @@ public:
     */
    long flushQueue();
 
-   /**
-    * Creates and returns a copy of the client queue. if 'eraseOriginalQueueEntries' is 'true', then the
-    * original queue (the client queue) is cleared.
-    */
-   MsgQueue getCopyOfQueue(bool eraseOriginalQueueEntries=true);
-
 };
 
 }}} // namespaces

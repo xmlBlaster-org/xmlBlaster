@@ -33,10 +33,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
    {
    public:
 
+/*
       virtual ~I_XmlBlasterConnection() 
       {
       }
-
+*/
       /**
        * connect() is a login or authentication as well, the authentication schema
        * is transported in the qos.
