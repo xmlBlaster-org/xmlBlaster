@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id: TestXmlDb.java,v 1.1 2000/08/22 21:57:30 kron Exp $
+Version:   $Id $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -104,6 +104,10 @@ public class TestXmlDb extends TestCase
 
       if(pmu!=null)
          assert("Can't delete MessageUnit from xmldb with oid : "+pmu.oid,false);
+   }
+
+   public void testQuery()
+   {
    }
 
    /**
