@@ -91,13 +91,11 @@ void Destination::setQueryType(const string &queryType)
 
 string Destination::toXml(const string &extraOffset) const
 {
-   string ret    = "\n   ";
-   string offset = extraOffset;
-    ret += offset + "<destination queryType='" + queryType_ + "'" +
-      ">" + offset + "   " + sessionQos_.getAbsoluteName();
-   if (forceQueuing())
-      ret +=  offset + "   <ForceQueuing />";
-   ret += offset + "</destination>";
+   string offset = Constants::OFFSET + extraOffset;
+   string ret;
+   ret += offset + "<destination queryType='" + queryType_ + "'";
+   ret += " forceQueuing='" + lexical_cast<string>(forceQueuing()) + "'";
+   ret +=  ">" + sessionQos_.getAbsoluteName() + "</destination>";
    return ret;
 }
 
