@@ -97,20 +97,23 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       }
 
       if (msgQueueEntries != null && msgQueueEntries.length > 0) {
+         // 1. Generate dead letters from passed messages
+         glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
+
          if (msgQueue != null) {
+            // Remove the above published dead message from the queue
             try {
-               // Assume the passed messages are from the passed queue
-               handleEnqueuedEntries(msgQueue, msgQueueEntries.length, message);
+               if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
+               long removed = 0L;
+               boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
+               for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
+               if (removed != msgQueueEntries.length) {
+                  log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
+               }
             }
-            catch (Throwable e) {
-               if (log.CALL) log.call(ME, "Error handling of " + msgQueueEntries.length + " failed: " + e.toString());
-               glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
+            catch (XmlBlasterException e) {
+               log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
             }
-         }
-         else {
-            // 1. Generate dead letters from passed messages
-            //    which are not bound to any queue (they may not be encrypted already)
-            glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
          }
       }
 
@@ -122,9 +125,32 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
 
       // 2. Generate dead letters if there are some in the queue
       long size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
-      if (size > 0L) {
-         if (log.TRACE) log.trace(ME, "Flushing " + size + " remaining message from queue");
-         handleEnqueuedEntries(msgQueue, size, message);
+      if (log.TRACE) log.trace(ME, "Flushing " + size + " remaining message from queue");
+      if (size > 0) {
+         try {
+            QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
+            if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
+               // TODO: loop with small amounts to avoid OutOfMemory !
+               ArrayList list = msgQueue.peek(-1, -1L);
+               MsgQueueEntry[] msgArrAll = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+               MsgQueueEntry[] msgArr = putPtPBackToSubjectQueue(this.sessionInfo, msgArrAll);
+               if (msgArr.length > 0) {
+                  glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
+               }
+               if (msgArrAll.length > 0) {
+                  msgQueue.removeRandom(msgArrAll);
+               }
+            }
+            else {
+               log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
+                     "' is implemented, " + msgQueue.getNumOfEntries() + " messages are lost: " + message);
+            }
+         }
+         catch(Throwable e) {
+            e.printStackTrace();
+            log.error(ME, "PANIC: givingUpDelivery failed, " + size +
+                           " messages are lost: " + message + ": " + e.toString());
+         }
       }
 
       if (dispatchManager == null || dispatchManager.isDead()) {
@@ -159,34 +185,6 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                               " messages are lost: " + message + ": " + e.toString());
             }
          }
-      }
-   }
-
-   private void handleEnqueuedEntries(I_Queue msgQueue, long size, String message) {
-      if (size == 0) return;
-      try {
-         QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
-         if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
-            // TODO: loop with small amounts to avoid OutOfMemory !
-            ArrayList list = msgQueue.peek((int)size, -1L);
-            MsgQueueEntry[] msgArrAll = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-            MsgQueueEntry[] msgArr = putPtPBackToSubjectQueue(this.sessionInfo, msgArrAll);
-            if (msgArr.length > 0) {
-               glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
-            }
-            if (msgArrAll.length > 0) {
-               msgQueue.removeRandom(msgArrAll);
-            }
-         }
-         else {
-            log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
-                  "' is implemented, " + msgQueue.getNumOfEntries() + " messages are lost: " + message);
-         }
-      }
-      catch(Throwable e) {
-         e.printStackTrace();
-         log.error(ME, "PANIC: givingUpDelivery failed, " + size +
-                        " messages are lost: " + message + ": " + e.toString());
       }
    }
 
