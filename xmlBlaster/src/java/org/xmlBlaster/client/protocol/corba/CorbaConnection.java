@@ -466,6 +466,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                      }
                      log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService ORBInitRef.NameService=" +
                                   System.getProperty("ORBInitRef.NameService"));
+                     this.authServer = authServerFirst;
                      return authServerFirst;
                   }
                   else {
