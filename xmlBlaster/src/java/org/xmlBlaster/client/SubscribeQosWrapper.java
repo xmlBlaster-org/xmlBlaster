@@ -3,7 +3,7 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.11 2002/05/06 07:33:53 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.12 2002/06/22 12:29:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -21,7 +21,7 @@ import java.util.Vector;
  * A full specified <b>subscribe</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
- *        &lt;meta>false<&lt;/meta>      &lt;!-- Don't send me the xmlKey meta data on updates -->
+ *        &lt;meta>false&lt;/meta>      &lt;!-- Don't send me the xmlKey meta data on updates -->
  *        &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
  *        &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *        &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
