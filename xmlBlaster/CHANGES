@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Added new property to delay xmlBlaster startup, for example
+   -xmlBlaster/sleepOnStartup 5000 sets it to 5 seconds.
+   Useful for example for Windows Service startup delay to wait on MSSQLServer JDBC listener
+
  o J2ME:
    - Ported String concat with '+' to StringBuffer.append()
    - Fixed compilation for JDK 1.5 (forcing target 1.4)
