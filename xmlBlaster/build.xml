@@ -2333,7 +2333,7 @@ TODO
    <target name="cpp-demo-single" depends="prepare-cpp" description="Create single C++ demo client">
       <foreach list="${cppToCompile}"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
-         <param name="compileCppSourcePath" value="${demo.dir}/src/c++" />
+         <param name="compileCppSourcePath" value="${demo.dir}/c++" />
       </foreach>
    </target>
 
