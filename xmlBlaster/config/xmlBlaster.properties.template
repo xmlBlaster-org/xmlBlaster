@@ -20,13 +20,17 @@
 # <protocol-type>:<driverClass>,<protocol-type>:<driverClass>,...
 # For supported protocol types see xmlBlaster/src/java/org/xmlBlaster/protocol directory
 
-# Switch on the CORBA, and the JDBC service:
+# Switch on the CORBA, RMI and XML-RPC driver and the JDBC service:
 Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
+                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
                  JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
 Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
+                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
                          JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 
-# Switch on CORBA driver only:
+# Example to switch on CORBA driver only:
 #Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
 #Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 
@@ -46,6 +50,7 @@ Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
 
 #------------------------------------------------------------------------------
 # List of all jdbc drivers to initalize for the XmlDBAdapter
+JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 #JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
 #JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
 #------------------------------------------------------------------------------
