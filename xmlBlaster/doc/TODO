@@ -1,3 +1,5 @@
 - Performance: ev. XtOmQuery implementerien (oid zugriff)
 
 - dtd support
+
+- get for OID request
