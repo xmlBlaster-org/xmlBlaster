@@ -408,8 +408,6 @@ public final class TopicHandler implements I_Timeout
       try {
          if (log.TRACE) log.trace(ME, "Making topicHandler persistent, topicEntry=" + topicEntry.getUniqueId());
          int numAdded = this.requestBroker.addPersistentTopicHandler(entry);
-         //log.error(ME, "DEBUG ONLY: Persisted " + numAdded + " TopicHandler: " + toXml());
-         //Thread.currentThread().dumpStack();
          if (log.TRACE) log.trace(ME, "Persisted " + numAdded + " TopicHandler");
          return numAdded>0;
       }
@@ -809,6 +807,7 @@ public final class TopicHandler implements I_Timeout
          return;
       }
 
+      if (log.TRACE) log.trace(ME, "addSubscriber("+sub.getId()+")");
       if (queryQos.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
          if (hasHistoryEntries())
@@ -930,7 +929,7 @@ public final class TopicHandler implements I_Timeout
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
-      if (log.TRACE) log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + this.subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
 
       // Take a copy of the map entries (a current snapshot)
       // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
@@ -1619,7 +1618,6 @@ public final class TopicHandler implements I_Timeout
             pq.setSender(sessionName);
             MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
             PublishQosServer ps = new PublishQosServer(glob, pq.getData());
-            //log.error(ME, "DEBUG ONLY" + msgUnit.toXml());
             publish(publisherSessionInfo, msgUnit, ps);
          }
          catch (XmlBlasterException e) {
