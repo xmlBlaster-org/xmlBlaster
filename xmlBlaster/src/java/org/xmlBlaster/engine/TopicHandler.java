@@ -525,16 +525,8 @@ public final class TopicHandler implements I_Timeout
        
             this.msgUnitCache.put(msgUnitWrapper);
 
-            if (publishQosServer.isPtp()) {
-               /*publishReturnQos =*/ forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
-               if (!publishQosServer.isSubscribeable()) {
-                  publishReturnQos.getData().setStateInfo("PtP request handled");
-                  return publishReturnQos;
-               }
-            }
-
-
-            if (this.historyQueue != null && msgUnitWrapper.isAlive()) { // no volatile messages
+            if (this.historyQueue != null && msgUnitWrapper.isAlive() &&             // no volatile messages
+                !(publishQosServer.isPtp() && publishQosServer.isSubscribeable())) { // no invisible PtP 
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
                }
@@ -544,8 +536,19 @@ public final class TopicHandler implements I_Timeout
             }
          } // synchronized
 
+         // NOTE: Putting entries into callback queues must be outside of a synchronized(topicHandler) to avoid deadlock
+         //       The DeliveryWorker removes a MsgUnitWrapper entry from the msgstore (see entryDestroyed()) and would deadlock
 
-         //----- 2. now we can send updates to all interested clients:
+         //----- 2a. now we can send updates to all destination clients:
+         if (publishQosServer.isPtp()) {
+            /*publishReturnQos =*/ forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+            if (!publishQosServer.isSubscribeable()) {
+               publishReturnQos.getData().setStateInfo("PtP request handled");
+               return publishReturnQos;
+            }
+         }
+
+         //----- 2b. now we can send updates to all subscribed clients:
          if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
          if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
             invokeCallback(publisherSessionInfo, msgUnitWrapper);
