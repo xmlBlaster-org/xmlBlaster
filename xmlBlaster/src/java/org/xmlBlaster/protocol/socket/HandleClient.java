@@ -299,7 +299,7 @@ public class HandleClient extends Executor implements Runnable
                   log.warn(ME, "Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
                }
                else {
-                  log.warn(ME, "Error parsing TCP data from '" + remoteSocketStr + "': " + e.toString());
+                  log.warn(ME, "Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
                }
                shutdown();
                break;
