@@ -63,7 +63,7 @@ QueueFactory::~QueueFactory()
 
 I_Queue& QueueFactory::getPlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property, const string& type, const string& version)
 {
-   org::xmlBlaster::util::I_Log& log = global.getLog("queue");
+   org::xmlBlaster::util::I_Log& log = global.getLog("org.xmlBlaster.queue");
    if (log.call()) log.call(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
    string typ = type.empty() ? property.getType() : type;
    string ver = version.empty() ? property.getVersion() : version;
