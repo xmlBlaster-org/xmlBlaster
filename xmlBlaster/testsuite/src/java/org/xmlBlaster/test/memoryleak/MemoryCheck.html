@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>/home/xmlblast/homepage/MemoryCheck.html</title>
+</head>
+<body>
+<h1>Checks with memory leak tool</h1>
+<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellspacing="2"
+ cellpadding="2">
+  <tbody>
+    <tr style="font-weight: bold;">
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Comment<br>
+      </td>
+      <td colspan="2" rowspan="1"
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Without
+subscriber<br>
+      </td>
+      <td colspan="2" rowspan="1"
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">With
+subscriber<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">With
+subscriber + swapping:<br>
+-queue/callback/maxEntriesCache 1<br>
+-queue/subject/maxEntriesCache 1<br>
+-queue/history/maxEntriesCache 1<br>
+      </td>
+    </tr>
+    <tr style="font-weight: bold;">
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">-persistent
+false</td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">-persistent
+true</td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">-persistent
+false</td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">-persistent
+true<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">-persistent
+false</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;"> -lifeTime
+0&nbsp;&nbsp;&nbsp;&nbsp; (volatile)<br>
+-queue/history/maxEntries 0 (no history)<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">2<br>
+      </td>
+      <td style="vertical-align: top;"> -lifeTime
+0&nbsp;&nbsp;&nbsp;&nbsp; (volatile)<br>
+-queue/history/maxEntries 10</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;"> -lifeTime 3600<br>
+-queue/history/maxEntries 0</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">4<br>
+      </td>
+      <td style="vertical-align: top;"> -lifeTime 3600<br>
+-queue/history/maxEntries 10</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+protocol=SOCKET<br>
+persistence/msgUnitStore/maxEntriesCache=1<br>
+<br>
+java org.xmlBlaster.Main<br>
+<br>
+java javaclients.HelloWorldSubscribe -queue/callback/maxEntries 1000
+-queue/callback/maxEntriesCache 1 -queue/subject/maxEntries 1000
+-queue/subject/maxEntriesCache 1 -session.name Subscriber/2
+-dispatch/callback/retries -1 -dispatch/connection/retries -1
+-dispatch/connection/delay 5000 -dispatch/connection/pingInterval 5000
+-session.timeout 0 -local false -multiSubscribe false
+-persistentSubscribe true<br>
+<br>
+java javaclients.HelloWorldPublish&nbsp; -session.name publisher/1
+-dispatch/callback/retries -1 -dispatch/connection/retries -1
+-dispatch/connection/delay 5000 -dispatch/connection/pingInterval 5000
+-session.timeout 0 -priority 9 -persistent true -lifeTime 360000
+-forceDestroy false -numPublish 100 -queue/history/maxEntriesCache 1
+-persistence/msgUnitStore/maxEntriesCache 1 -protocol SOCKET
+-destination Subscriber/2<br>
+<br>
+</body>
+</html>
