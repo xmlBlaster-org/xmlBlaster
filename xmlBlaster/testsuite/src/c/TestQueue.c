@@ -11,7 +11,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.
 #include <stdlib.h>
 #include <string.h>
 #include <util/queue/I_Queue.h>
-#include <unistd.h>   /* unlink */
 #include "test.h"
 
 #ifdef XMLBLASTER_PERSISTENT_QUEUE
@@ -24,6 +23,8 @@ static char int64Str_[32];
 static char * const int64Str = int64Str_;   /* to make the pointer address const */
 static char int64StrX_[32];
 static char * const int64StrX = int64StrX_;   /* a second one */
+/* Try switch on/off logging with using function pointer 'xmlBlasterDefaultLogging' or '0' */
+static XmlBlasterLogging loggingFp = xmlBlasterDefaultLogging;
 
 #define mu_assert_checkException(message, exception) \
       do {\
@@ -45,6 +46,33 @@ static char * const int64StrX = int64StrX_;   /* a second one */
          }\
       } while (0)
 
+static bool destroy();
+
+/**
+ * Kill complete DB on HD
+ */
+static bool destroy(const char *dbName)
+{
+   bool stateOk;
+   I_Queue *queueP;
+   ExceptionStruct exception;
+   QueueProperties queueProperties;
+   strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "a", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "b", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "c", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 10;
+   queueProperties.maxNumOfBytes = 10;
+   
+   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   
+   stateOk = queueP->destroy(&queueP, &exception);
+
+   if (!stateOk) {
+      printf("Ignoring problem during destroy: %s", getExceptionStr(errorString, ERRORSTR_LEN, &exception));
+   }
+   return stateOk;
+}
 
 /**
  * Invoke: TestQueue -logLevel TRACE
@@ -59,9 +87,8 @@ static const char * test_illegal()
    const char *dbName = "xmlBlasterClient-C-Test.db";
    int32_t numRemoved;
 
-   printf("-----------------------------------------\n");
-   printf("Testing test_illegal ...\n");
-   unlink(dbName); /* Delete old db file */
+   printf("\n--------test_illegal---------------------\n");
+   destroy(dbName); /* Delete old db file */
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
 
@@ -69,6 +96,7 @@ static const char * test_illegal()
    mu_assert("create() Wrong properties", queueP == 0);
 
    queueP = createQueue(&queueProperties, 0, 0, &exception);
+   mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
@@ -78,6 +106,7 @@ static const char * test_illegal()
    queueProperties.maxNumOfEntries = 0;
    queueProperties.maxNumOfBytes = 0;
    queueP = createQueue(&queueProperties, 0, 0, &exception);
+   mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
    queueProperties.maxNumOfEntries = 10;
@@ -107,6 +136,7 @@ static const char * test_illegal()
    mu_assertEqualsInt("peekWithSamePriority() entries", 0, entries->len);
    mu_assert("peekWithSamePriority() entries", entries->queueEntryArr == 0);
    freeQueueEntryArr(entries);
+   entries = 0;
 
    numRemoved = queueP->randomRemove(0, 0, 0);
    numRemoved = queueP->randomRemove(0, 0, &exception);
@@ -123,6 +153,7 @@ static const char * test_illegal()
    mu_assert_checkException("randomRemove()", exception);
    mu_assertEqualsInt("numRemoved", 0, (int)numRemoved);
    freeQueueEntryArr(entries);
+   entries = 0;
 
    mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
    queueP->clear(0, 0);
@@ -139,13 +170,106 @@ static const char * test_illegal()
    mu_assertEqualsInt("numOfEntries", -1, queueP->getNumOfEntries(0));
    mu_assertEqualsInt("numOfBytes", -1, (int)queueP->getNumOfBytes(0));
 
-   freeQueue(queueP);
+   queueP->shutdown(&queueP, &exception);
    printf("Testing test_illegal DONE\n");
    printf("-----------------------------------------\n");
    return 0;
 }
 
-/* TODO: Test overflow */
+/**
+ * Test overflow of maxNumOfBytes and maxNumOfEntries. 
+ */
+static const char * test_overflow()
+{
+   ExceptionStruct exception;
+   QueueProperties queueProperties;
+   I_Queue *queueP = 0;
+   const char *dbName = "xmlBlasterClient-C-Test.db";
+
+   const int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
+   const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
+   const char *data[] =      { ""                   , ""                   , ""                   , ""                   , ""};
+   const int numPut = sizeof(idArr)/sizeof(int64_t);
+   int lenPut = 0;
+
+   printf("\n---------test_overflow-------------------\n");
+   destroy(dbName); /* Delete old db file */
+
+   strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 4L;
+   queueProperties.maxNumOfBytes = 25LL;
+
+   queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
+   mu_assertEqualsLong("create() maxNumOfEntries", 4L, (long)queueP->getMaxNumOfEntries(queueP));
+   mu_assertEqualsString("create() maxNumOfBytes", int64ToStr(int64Str, 25LL), int64ToStr(int64StrX, queueP->getMaxNumOfBytes(queueP)));
+   mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
+
+   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
+
+   {  /* Test entry overflow */
+      size_t i;
+      for (i=0; i<numPut; i++) {
+         QueueEntry queueEntry;
+         queueEntry.priority = prioArr[i];
+         queueEntry.isPersistent = true;
+         queueEntry.uniqueId = idArr[i];
+         strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+         queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
+         queueEntry.embeddedBlob.data = (char *)data[i];
+         queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
+
+         queueP->put(queueP, &queueEntry, &exception);
+         if (i < 4) {
+            mu_assert_checkException("put()", exception);
+            lenPut += strlen(queueEntry.embeddedBlob.data);
+         }
+         else {
+            mu_assert_checkWantException("put() numOfEntries overflow", exception);
+         }
+
+      }
+      mu_assertEqualsInt("put() numOfEntries", 4, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+
+   }
+   queueP->clear(queueP, &exception);
+
+   {  /* Test byte overflow */
+      size_t i;
+      for (i=0; i<numPut; i++) {
+         QueueEntry queueEntry;
+         queueEntry.priority = prioArr[i];
+         queueEntry.isPersistent = true;
+         queueEntry.uniqueId = idArr[i];
+         strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+         queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
+         queueEntry.embeddedBlob.data = "0123456789";
+         queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
+
+         queueP->put(queueP, &queueEntry, &exception);
+         if (i < 3) {
+            mu_assert_checkException("put()", exception);
+            lenPut += strlen(queueEntry.embeddedBlob.data);
+         }
+         else {
+            mu_assert_checkWantException("put() numOfBytes overflow", exception);
+         }
+
+      }
+      mu_assertEqualsInt("put() numOfEntries", 3, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
+      mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
+
+   }
+   queueP->clear(queueP, &exception);
+
+   queueP->shutdown(&queueP, &exception);
+   return 0;
+}
 
 static const char * test_queue()
 {
@@ -161,7 +285,8 @@ static const char * test_queue()
    const int numPut = sizeof(idArr)/sizeof(int64_t);
    int lenPut = 0;
 
-   unlink(dbName); /* Delete old db file */
+   printf("\n---------test_queue----------------------\n");
+   destroy(dbName); /* Delete old db file */
 
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
@@ -170,7 +295,7 @@ static const char * test_queue()
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
 
-   queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
+   queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
    mu_assert("create()", queueP != 0);
    mu_assert("create() QueueProperty", queueP->getProperties(queueP) != 0);
    mu_assert("create() userObject", queueP->userObject == 0);
@@ -207,16 +332,10 @@ static const char * test_queue()
 
       printf("-----------------------------------------\n");
       printf("Testing shutdown and restart ...\n");
-      queueP->shutdown(queueP, &exception);
-      mu_assertEqualsBool("create() isInitialized", false, queueP->isInitialized);
-      mu_assert("create() userObject", queueP->userObject == 0);
+      queueP->shutdown(&queueP, &exception);
+      mu_assert("shutdown()", queueP == 0);
 
-      entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
-      mu_assertEqualsString("create() isShutdown", "resource.db.unavailable", exception.errorCode);
-      freeQueueEntryArr(entries);
-      freeQueue(queueP);
-
-      queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
+      queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
       mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
       mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
@@ -444,10 +563,9 @@ static const char * test_queue()
    mu_assertEqualsInt("put() numOfBytes", 0, (int)queueP->getNumOfBytes(queueP));
    mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
 
-   queueP->shutdown(queueP, &exception);
-   freeQueue(queueP);
+   queueP->shutdown(&queueP, &exception);
 
-   unlink(dbName); /* Delete the db file */
+   destroy(dbName); /* Delete the db file */
 
    return 0;
 }
@@ -457,6 +575,7 @@ static const char *all_tests()
 {
    mu_run_test(test_illegal);
    mu_run_test(test_queue);
+   mu_run_test(test_overflow);
    return 0;
 }
 
