@@ -45,7 +45,6 @@
          <tr><td>Key</td><td><code>&lt;key oid='MyMessage'/></code></td></tr>
          <tr><td>QoS</td><td><code>&lt;qos>
   &lt;erase forceDestroy='false'/>
-  &lt;notify>true&lt;/notify>
 &lt;/qos></code>
          </td></tr>
       </table>
@@ -61,7 +60,7 @@
    </pre>
    </td></tr></table>
       <p>
-      Note that erasing a message with <code>&lt;notify>true&lt;/notify></code> 
+      Note that erasing a message
       sends to all subscribers an update
       with the update QoS state id set to ERASED, see HelloWorld4.java as an example.<br />
       Constants.java defines the ERASED state and other states. This setting
@@ -75,6 +74,9 @@
   &lt;subscribe id='__subId:heron-7'/>
 &lt;/qos>
       </pre>
+      <p>
+      A subscriber can decide to suppress those erase events with a specific <code>SubscribeQoS</code> setting.
+      </p>
       <p>
       The <code>forceDestroy</code> setting influences the life cycle
       of this message, please have a look into the message state chart in the
@@ -133,7 +135,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
