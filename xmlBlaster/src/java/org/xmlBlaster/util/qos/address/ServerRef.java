@@ -7,6 +7,7 @@ Comment:   Holding serverRef address string and protocol string to
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Helper class holding serverRef address string and protocol string.
@@ -79,14 +80,13 @@ public class ServerRef
     * @return The xml representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+      StringBuffer sb = new StringBuffer(1200);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<serverRef type='").append(getType()).append("'>");
-      sb.append(offset + "   ").append(getAddress());
-      sb.append(offset + "</serverRef>");
+      sb.append(offset).append("<serverRef type='").append(getType()).append("'>");
+      sb.append(offset).append(getAddress());
+      sb.append(offset).append("</serverRef>");
 
       return sb.toString();
    }

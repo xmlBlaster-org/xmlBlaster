@@ -4,6 +4,7 @@ import org.xml.sax.Attributes;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.jutils.text.StringHelper;
 
@@ -181,17 +182,14 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer(160);
-      String offset = "\n   ";
+      StringBuffer sb = new StringBuffer(250);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<securityService type=\"").append(getPluginType()).append("\" version=\"").append(getPluginVersion()).append("\">");
-      sb.append(offset).append("   <![CDATA[");
-      sb.append(offset).append("   <user>").append(user).append("</user>");
-      sb.append(offset).append("   <passwd>").append(passwd).append("</passwd>");
-      sb.append(offset).append("   ]]>");
-      sb.append(offset).append("</securityService>");
+      sb.append(offset).append("<securityService type=\"").append(getPluginType()).append("\" version=\"").append(getPluginVersion()).append("\"><![CDATA[");
+      sb.append(offset).append(" <user>").append(user).append("</user>");
+      sb.append(offset).append(" <passwd>").append(passwd).append("</passwd>");
+      sb.append(offset).append("]]></securityService>");
 
       return sb.toString();
    }
