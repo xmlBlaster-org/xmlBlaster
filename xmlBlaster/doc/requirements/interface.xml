@@ -10,6 +10,12 @@
       to avoid client/server conflicts between different versions.
       </p>
       <p>
+      Note that this is a remote interface, accessible from clients in any
+      programming language and at any geographical location.
+      This is different to JMS (Java message service) where the specification
+      defines the client side Java API.
+      </p>
+      <p>
       Following methods are supported (CORBA IDL notation),
       at the bottom of this page you find links to requirements which
       describe them in detail:
@@ -98,13 +104,13 @@
    <see type="REQ">interface.erase</see>
    <see type="REQ">interface.get</see>
  
-   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl.html</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.I_XmlBlaster</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>See testsuite</comment>

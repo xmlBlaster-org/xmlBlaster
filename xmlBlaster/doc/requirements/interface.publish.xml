@@ -44,10 +44,25 @@
       Here is an example MsgUnit:
       </p>
       <table border="1">
+         <tr><th>Field</th><th>Example</th></tr>
          <tr><td>Key</td><td>&lt;key oid='MyMessageOid' contentMime='text/plain'/></td></tr>
          <tr><td>Content</td><td>Hello world</td></tr>
          <tr><td>QoS</td><td>&lt;qos>&lt;priority>5&lt;/priority>&lt;/qos></td></tr>
       </table>
+      <p>
+      The <i>MsgUnit</i> consists of three attributes:
+      </p>
+      <p>
+      The <b>key</b> is XML markup describing the topic name, here <i>MyMessageOid</i>
+      and other useful meta information about this topic.
+      </p>
+      <p>
+      The <b>content</b> is binary data which you want to transport with this message.
+      </p>
+      <p>
+      The <b>QoS</b> is the <i>quality of service</i> it describes in XML markup
+      how the message shall be handled by the xmlBlaster server.
+      </p>
       <p>
       And a return value:
     </p>
@@ -106,14 +121,14 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
    &lt;priority>5&lt;/priority>
    
-   &lt;!-- The message is automatically destroyed after 129595811 milliseconds -->
+   &lt;!-- The message is automatically destroyed after 60000 milliseconds -->
    &lt;expiration lifeTime='60000'/>
    
    &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
    &lt;persistent/>
    
    &lt;!-- Administration: configure the topic on first publish (optional) -->
-   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
+   &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' maxMsg='1000' maxBytes='4000'/>
       &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'/>
    &lt;/topic>
@@ -364,7 +379,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
