@@ -157,9 +157,9 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
 
    try {
       for (size_t i=0; i<msgUnitArr->len; i++) {
-         char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
-         printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",xml);
-         free(xml);
+         //char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
+         //printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",xml);
+         //free(xml);
          if (log.trace()) log.trace(ME, "Received callback message");
          ::MsgUnit& msgUnit = msgUnitArr->msgUnitArr[i];
          I_Callback* cb = socketDriver->getCallbackClient();
@@ -213,8 +213,7 @@ void SocketDriver::initialize(const string& name, I_Callback &client)
       if (connection_->initialize(connection_, myUpdate, &socketException) == false) {
          log_.error(ME, "Connection to xmlBlaster failed,"
                 " please start the server or check your configuration\n");
-         freeXmlBlasterAccessUnparsed(connection_);
-         connection_ = NULL;
+         freeResources(true);
       }
       if (log_.trace()) log_.trace(ME, "After createCallbackServer");
    } catch_MACRO("::initialize", true)
@@ -238,10 +237,9 @@ string SocketDriver::getCbAddress()
 
 bool SocketDriver::shutdownCb()
 {
-   try {
-      connection_->callbackP->shutdown(connection_->callbackP);
-      return true;
-   } catch_MACRO("::shutdownCb", false)
+   if (connection_ == 0 || connection_->callbackP == 0) return false;
+   connection_->callbackP->shutdown(connection_->callbackP);
+   return true;
 }
 
 ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) throw (XmlBlasterException)
@@ -288,14 +286,9 @@ string SocketDriver::getProtocol()
 
 bool SocketDriver::shutdown()
 {
-  if (connection_ == 0) return false;
-  log_.error(ME, "Shutdown is not implemented");
-# ifdef TODO
    Lock lock(mutex_);
-   try {
-      return connection_->shutdown();
-   } catch_MACRO("::shutdown", false)
-# endif
+   if (connection_ == 0) return false;
+   freeResources(true);
    return true;
 }
 
