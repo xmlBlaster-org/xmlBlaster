@@ -149,6 +149,7 @@ public class ReferenceEntry extends MsgQueueEntry
       }
       catch (Throwable ex) {
          log.error(ME, " added '" + storageId + "' raised an exception: " + ex.toString());
+         //ex.printStackTrace();
       }
    }
 
@@ -162,8 +163,8 @@ public class ReferenceEntry extends MsgQueueEntry
          MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
          if (msgUnitWrapper != null) {
             msgUnitWrapper.incrementReferenceCounter(-1, storageId);
-            msgUnitWrapper = null;
             if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed successfully from queue, new reference count is " + msgUnitWrapper.getReferenceCounter());
+            msgUnitWrapper = null;
          }
          else {
             if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
@@ -171,6 +172,7 @@ public class ReferenceEntry extends MsgQueueEntry
       }
       catch (Throwable ex) {
          log.error(ME, " removed '" + storageId + "' raised an exception: " + ex.toString());
+         //ex.printStackTrace();
       }
    }
 
