@@ -1,0 +1,24 @@
+This is an example to access xmlBlaster from a C++ callback
+
+- client.cc uses the MICO (C++) CORBA library
+- xmlBlaster runs with JacORB (Java)
+
+
+1.) Install MICO (2.3) and set the environment variable to point to MICO
+
+   export MICO_HOME=/usr/local/mico
+
+
+2) Compile the client with
+
+   make all
+
+
+3) Start the xmlBlaster server
+
+	 ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+
+
+4) And connect with the C++ client
+
+	 ./client `cat /tmp/NS_Ref`
