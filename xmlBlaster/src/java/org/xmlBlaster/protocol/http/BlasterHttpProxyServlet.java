@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.27 2000/05/19 15:20:43 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.28 2000/05/24 14:42:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -139,6 +139,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             }
             pushHandler = null;
             Log.info(ME, "Persistent HTTP connection lost, leaving doGet(sessionId=" + sessionId + ") ....");
+            /*
+            System.out.println("Currently consumed threads:");
+            System.out.println("===========================");
+            testsuite.org.xmlBlaster.ThreadLister.listAllThreads(System.out);
+            */
          }
 
 
