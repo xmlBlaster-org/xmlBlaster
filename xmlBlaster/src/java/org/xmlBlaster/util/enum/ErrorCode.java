@@ -424,6 +424,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_PTP_DENIED = new ErrorCode("user.ptp.denied",
+           "You have send a point to point message but the receiver session does not accept PtP.",
+           new ResourceInfo[] {
+               new ResourceInfo(ResourceInfo.REQ, "interface.connect",
+                   "interface.connect")
+         }
+      );
+
    public static final ErrorCode USER_MESSAGE_INVALID = new ErrorCode("user.message.invalid",
          "Usually thrown by a mime plugin if your MIME type does not fit to your message content, e.g. mime='text/xml' and content='Nice weather'.",
          new ResourceInfo[] {
