@@ -280,6 +280,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       //   cb.queue.persistent.url=jdbc:postgresql://localhost/test
       //   client.queue.persistent.url=jdbc:postgresql://localhost/test
 
+      // TODO:
+      //
+      // Instance settings:
+      // "queue/history/maxEntries" -> "queue=history, maxEntries=5"
+      //
+      // Class settings:
+      // "plugin/QueuePlugin[JDBC][1.0]/className/org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin"
+      // "plugin/QueuePlugin[JDBC][1.0]/tableNamePrefix/XB_"
 
       // the old generic properties (for the defaults) outside the plugin 
       this.url = prop.get("queue.persistent.url", "jdbc:postgresql://localhost/test");
