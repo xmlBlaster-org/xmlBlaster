@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.3 2000/10/21 20:53:45 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.4 2000/10/22 08:39:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -19,13 +19,9 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
@@ -66,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -84,12 +80,12 @@ public class CorbaConnection implements I_XmlBlasterConnection
    // The drawback is that a running client can't change the
    // orb behavior
    static protected org.omg.CORBA.ORB orb = null;
-   static protected org.omg.PortableServer.POA rootPOA = null;
 
    protected NamingContext nameService = null;
    protected AuthServer authServer = null;
    protected Server xmlBlaster = null;
-   protected BlasterCallback callback = null;
+   /** Our default implementation for a Corba callback server */
+   protected CorbaCallbackServer callback = null;
    protected String loginName = null;
    private String passwd = null;
    protected LoginQosWrapper loginQos = null;
@@ -288,7 +284,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
       String iorHost = getLocalIP();
-      int iorPort = XmlBlasterProperty.get("iorPort", org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT); // 7609
+      int iorPort = XmlBlasterProperty.get("iorPort", CorbaDriver.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
             authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
@@ -406,13 +402,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
          this.loginQos = qos;
 
       if (client != null) {
-         createCallbackServer(new DefaultCallback(loginName, client));
-
-         // Add the stringified IOR to QoS ...
-         CallbackAddress addr = new CallbackAddress("IOR");
-         addr.setAddress(orb.object_to_string(this.callback));
-         loginQos.addCallbackAddress(addr);
-         if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
+         this.callback = new CorbaCallbackServer(loginName, client, orb);
+         loginQos.addCallbackAddress(this.callback.getCallbackIOR());
       }
 
       loginRaw();
@@ -463,7 +454,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "logout() ...");
 
       if (xmlBlaster == null) {
-         shutdownCallbackServer();
+         if (this.callback != null) this.callback.shutdown();
          // Thread leak !!!
          // orb.shutdown(true);
          // orb = null;
@@ -472,7 +463,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
       try {
          authServer.logout(xmlBlaster);
-         shutdownCallbackServer();
+         if (this.callback != null) this.callback.shutdown();
          // Thread leak !!!
          // orb.shutdown(true);
          // orb = null;
@@ -485,7 +476,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          e.printStackTrace();
       }
 
-      shutdownCallbackServer();
+      if (this.callback != null) this.callback.shutdown();
       // Thread leak !!!
       // orb.shutdown(true);
       // orb = null;
@@ -500,67 +491,6 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public boolean isLoggedIn()
    {
       return xmlBlaster != null;
-   }
-
-
-   /**
-    * Building a Callback server, using the tie approach.
-    *
-    * @return the BlasterCallback server
-    * @exception XmlBlasterException if the BlasterCallback server can't be created
-    *            id="CallbackCreationError"
-    */
-   public void createCallbackServer(org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations callbackImpl) throws XmlBlasterException
-   {
-      BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
-
-      // Getting the default POA implementation "RootPOA"
-      try {
-         rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-      } catch (Exception e) {
-         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
-         throw new XmlBlasterException("CallbackCreationError", e.toString());
-      }
-
-      try {
-         this.callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
-         rootPOA.the_POAManager().activate();
-         // necessary for orbacus
-         if (orb.work_pending()) orb.perform_work();
-      } catch (Exception e) {
-         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
-         throw new XmlBlasterException("CallbackCreationError", e.toString());
-      }
-   }
-
-
-   /**
-    * Shutdown the callback server.
-    */
-   public void shutdownCallbackServer()
-   {
-      if (callback == null) {
-         if (Log.TRACE) Log.trace(ME, "No callback server to shutdown.");
-         return;
-      }
-
-      if (rootPOA != null && callback != null) {
-         try {
-            rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
-         callback = null;
-      }
-
-      // Thread leak !!!
-      /*
-      if (rootPOA != null) {
-         try {
-            rootPOA.the_POAManager().deactivate(true, true);
-         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
-         rootPOA = null;
-      }
-      */
-      Log.info(ME, "The callback server is shutdown.");
    }
 
 
@@ -735,58 +665,3 @@ public class CorbaConnection implements I_XmlBlasterConnection
       return text;
    }
 } // class CorbaConnection
-
-
-/**
- * Example for a callback implementation.
- * <p />
- * You can use this default callback handling with your clients,
- * but if you need other handling of callbacks, take a copy
- * of this Callback implementation and add your own code.
- * <p />
- */
-class DefaultCallback implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations
-{
-   private final String ME;
-   private final I_CallbackExtended boss;
-   private final String loginName;
-
-   /**
-    * Construct a persistently named object.
-    */
-   public DefaultCallback(String name, I_CallbackExtended boss)
-   {
-      this.ME = "DefaultCallback-" + name;
-      this.boss = boss;
-      this.loginName = name;
-      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
-   }
-
-
-   /**
-    * This is the callback method invoked from the CORBA server
-    * informing the client in an asynchronous mode about new messages.
-    * <p />
-    * It implements the interface BlasterCallbackOperations.
-    * <p />
-    * The call is converted to the native MessageUnit, and the other update()
-    * method of this class is invoked.
-    *
-    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
-    * @see xmlBlaster.idl
-    */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
-   {
-      if (msgUnitArr == null) return;
-
-      try {
-         // convert Corba to internal MessageUnit and call update() ...
-         boss.update(loginName, CorbaDriver.convert(msgUnitArr));
-      }
-      catch(XmlBlasterException e) {  // TODO: remove CORBA "oneway" and send Exception back to xmlBlaster.
-         Log.error(ME, "Delivering message to client failed, message is lost.");
-      }
-   }
-
-} // class DefaultCallback
-
