@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.21 1999/11/22 18:17:31 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.22 1999/11/23 12:59:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -30,7 +30,7 @@ public class RequestBroker implements ClientListener
    private static RequestBroker requestBroker = null; // Singleton pattern
 
    /**
-    * All MessageUnitHandler objects are stored in this map. 
+    * All MessageUnitHandler objects are stored in this map.
     * <p>
     * key   = messageUnithandler.getUniqueKey() == xmlKey.getUniqueKey() == oid value from <key oid="...">
     * value = MessageUnitHandler object
@@ -111,7 +111,7 @@ public class RequestBroker implements ClientListener
       xmlKeyDoc = new com.sun.xml.tree.XmlDocument ();
       com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement ("xmlBlaster");
       xmlKeyDoc.appendChild(root);
-      xmlKeyRootNode = xmlKeyDoc.getDocumentElement(); 
+      xmlKeyRootNode = xmlKeyDoc.getDocumentElement();
 
       authenticate.addClientListener(this);
    }
@@ -150,7 +150,7 @@ public class RequestBroker implements ClientListener
 
          // !!! not performant, should be instantiated only just before needed
          //     whith stale check
-         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);             
+         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
 
          return node;
 
@@ -168,7 +168,7 @@ public class RequestBroker implements ClientListener
     */
    public org.w3c.dom.Node removeKeyNode(org.w3c.dom.Node node)
    {
-      return xmlKeyRootNode.removeChild(node); 
+      return xmlKeyRootNode.removeChild(node);
    }
 
 
@@ -177,31 +177,11 @@ public class RequestBroker implements ClientListener
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      //if (Log.DUMP) Log.dump(ME, "-------subscribe()-XmlKey:---------\n" + xmlKey.printOn().toString());
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
             xmlKeyExact = xmlKey;
-
-         /*
-         SubscriptionInfo subs = null;
-         if (xmlKeyExact == null) {
-            if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription on a yet unknown message ...
-               subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
-               MessageUnitHandler msg = new MessageUnitHandler(this, subs);
-               synchronized(messageContainerMap) {
-                  messageContainerMap.put(xmlKey.getUniqueKey(), msg);
-               }
-            }
-            else {
-               Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-               throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-            }
-         }
-         else {
-         }
-         */
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
          subscribeToOid(subs);                // fires event for subscription
       }
@@ -219,8 +199,8 @@ public class RequestBroker implements ClientListener
 
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 
-          // fires event for query subscription, this needs to be remembered
-          // for a match check of future published messages
+         // fires event for query subscription, this needs to be remembered
+         // for a match check of future published messages
          fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, qos), true);
 
          Enumeration nodeIter;
@@ -251,13 +231,6 @@ public class RequestBroker implements ClientListener
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
          Log.info(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
-         /*
-         if (xmlKeyExact == null) {
-            Log.warning(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-            throw new XmlBlasterException(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-         }
-         Will be generated
-         */
          xmlKeyVec.addElement(xmlKeyExact);
       }
 
@@ -388,31 +361,6 @@ public class RequestBroker implements ClientListener
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
          fireSubscriptionEvent(subs, false);
       }
-      /*
-      String uniqueKey = xmlKey.getUniqueKey();
-      MessageUnitHandler msgHandler = getMessageHandlerFromOid(uniqueKey);
-      if (msgHandler == null) {
-         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
-         throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
-      }
-
-      // For perfomance reasons, this removeSubscriber() is not triggered thru fireSubscriptionEvent()
-      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, unSubscribeQoS).toString();
-      SubscriptionInfo subs = msgHandler.removeSubscriber(subscriptionInfoUniqueKey);
-      if (subs == null) {
-         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey + " subcription-id=" + subs.getUniqueKey());
-         throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
-      }
-      */
-
-      /*
-      SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey, unSubscribeQoS);
-      if (subs == null) {
-         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey() + " subcription-id=" + subs.getUniqueKey());
-         throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey());
-      }
-      fireSubscriptionEvent(subs, false);
-      */
    }
 
 
@@ -481,11 +429,6 @@ public class RequestBroker implements ClientListener
       // !!! TODO: handling of qos
 
       String[] returnArr = new String[messageUnitArr.length];
-      /*
-      for (int kk=0; kk<returnArr.length; kk++)
-         returnArr[kk] = ""; // initialize
-      */
-
       for (int ii=0; ii<messageUnitArr.length; ii++) {
          returnArr[ii] = publish(messageUnitArr[ii], qos_literal_Arr[ii]);
       }
@@ -495,7 +438,7 @@ public class RequestBroker implements ClientListener
 
 
    /**
-    * Store or update a new arrived message. 
+    * Store or update a new arrived message.
     *
     * @param xmlKey       so the messageUnit.xmlKey_literal is not parsed twice
     * @param messageUnit  containing the new, published data
@@ -572,7 +515,7 @@ public class RequestBroker implements ClientListener
 
    /**
     * Invoked when client does a logout (interface ClientListener)
-    */    
+    */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
       ClientInfo clientInfo = e.getClientInfo();
@@ -649,7 +592,7 @@ public class RequestBroker implements ClientListener
 
       Iterator iterator = messageContainerMap.values().iterator();
 
-      sb.append(offset + "<RequestBroker>"); 
+      sb.append(offset + "<RequestBroker>");
       while (iterator.hasNext()) {
          MessageUnitHandler msgHandler = (MessageUnitHandler)iterator.next();
          sb.append(msgHandler.printOn(extraOffset + "   ").toString());
