@@ -397,7 +397,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             subMap = (Map)obj;
          }
          subMap.put(subscriptionInfo.getSubscriptionId(), subscriptionInfo);
-         if (log.TRACE) log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getSubscriptionId() + " to subMap of client " + sessionInfo.getLoginName());
+         if (log.TRACE) log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getSubscriptionId() + " to subMap of client " + sessionInfo.getId());
       }
 
 
