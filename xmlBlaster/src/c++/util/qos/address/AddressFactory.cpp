@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.4 2003/02/07 11:41:42 laghi Exp $
+Version:   $Id: AddressFactory.cpp,v 1.5 2003/02/07 21:21:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -89,23 +89,23 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
                address_->setSecretSessionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "pingInterval")) {
-               address_->setPingInterval(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+               address_->setPingInterval(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "retries")) {
                address_->setRetries(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "delay")) {
-               address_->setDelay(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+               address_->setDelay(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "oneway")) {
                string str1 = SaxHandlerBase::getStringValue(attrs.getValue(i));
-               bool ret = "false";
+               bool ret = false;
                if (str1 == "true") ret = true;
                address_->setOneway(ret);
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "useForSubjectQueue")) {
                string str1 = SaxHandlerBase::getStringValue(attrs.getValue(i));
-               bool ret = "false";
+               bool ret = false;
                if (str1 == "true") ret = true;
                address_->useForSubjectQueue_ = ret;
             }
@@ -136,10 +136,10 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
          int i=0;
          for (i = 0; i < len; i++) {
             if (SaxHandlerBase::caseCompare(attrs.getName(i), "collectTime")) {
-               address_->setCollectTime(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+               address_->setCollectTime(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "collectTimeOneway")) {
-               address_->setCollectTimeOneway(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+               address_->setCollectTimeOneway(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
          }
       }
