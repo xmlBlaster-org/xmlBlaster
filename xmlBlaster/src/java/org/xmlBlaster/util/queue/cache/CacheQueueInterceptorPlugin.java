@@ -454,6 +454,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "takeWithPriority not implemented");
+      // if (this.notifiedAboutAddOrRemove) {}
    }
 
 
@@ -474,9 +475,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
+      ArrayList list = null;
       synchronized (this.swappingPutMonitor) {
          if (isSwapping) {
-            ArrayList list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
+            list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
+            if (this.notifiedAboutAddOrRemove) {
+               for(int i=0; i<list.size(); i++)
+                  ((I_Entry)list.get(i)).removed(this.queueId);
+            }
             if (list.size() > 1) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "takeLowest for more than one entry is not implemented");
             }
@@ -484,27 +490,27 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             if (num > 0L) {
                log.error(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store");
             }
-            return list;
          }
          else {
-            ArrayList list = this.transientQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
+            list = this.transientQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
+            if (this.notifiedAboutAddOrRemove) {
+               for(int i=0; i<list.size(); i++)
+                  ((I_Entry)list.get(i)).removed(this.queueId);
+            }
             if (list.size() > 0 && this.persistentQueue!=null) {
                this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
             }
-            return list;
          }
       }
+      return list;
    }
-
 
    /**
     * @see I_Queue#peek()
     */
-   public I_QueueEntry peek() throws XmlBlasterException
-   {
+   public I_QueueEntry peek() throws XmlBlasterException {
       return this.transientQueue.peek();
    }
-
 
    /**
     * @see I_Queue#peek(int,long)
@@ -673,12 +679,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       }
       // and now the transient queue (the ram queue)
       if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
-      ret = this.transientQueue.removeRandom(queueEntries);
 
       if (this.notifiedAboutAddOrRemove) {
          for(int i=0; i<queueEntries.length; i++)
             queueEntries[i].removed(this.queueId);
       }
+
+      ret = this.transientQueue.removeRandom(queueEntries);
 
       loadFromPersistence();
       return ret;
@@ -848,7 +855,15 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
    public long clear() {
-      long ret = this.transientQueue.clear();
+      long ret = 0;
+
+      synchronized(this) {
+         // Activate reference decrement temporary ... entry.removed()
+         if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(true);
+         ret = this.transientQueue.clear();
+         if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(false);
+      }
+
       if (this.persistentQueue != null && this.isConnected)
          ret += this.persistentQueue.clear();
 //      this.numOfBytes = 0L;
@@ -906,7 +921,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<CacheQueueInterceptorPlugin id='").append(getStorageId().getId()).append("'>");
+      sb.append(offset).append("<CacheQueueInterceptorPlugin id='").append(getStorageId().getId());
+      sb.append("' type='").append(getType());
+      sb.append("' version='").append(getVersion());
+      sb.append("' numOfEntries='").append(getNumOfEntries());
+      sb.append("' numOfBytes='").append(getNumOfBytes());
+      sb.append("'>");
       sb.append(this.transientQueue.toXml(extraOffset+Constants.INDENT));
       if (this.persistentQueue != null)
          sb.append(this.persistentQueue.toXml(extraOffset+Constants.INDENT));
