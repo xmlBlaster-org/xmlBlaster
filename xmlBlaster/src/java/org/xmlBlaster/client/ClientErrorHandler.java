@@ -10,11 +10,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.client.XmlBlasterAccess;
@@ -50,11 +52,35 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
    public void handleError(I_MsgErrorInfo msgErrorInfo) {
       if (msgErrorInfo == null) return;
       if (log.CALL) log.call(ME, "Entering handleError for " + msgErrorInfo.getMsgQueueEntries().length + " messages");
+
+      boolean shutdown = false;
+      XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
+      if (ex.isUser()) {
+         shutdown = true;
+      }
+
       MsgQueueEntry[] entries = msgErrorInfo.getMsgQueueEntries();
       for (int i=0; i<entries.length; i++) {
-         log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" + entries[i].getEmbeddedType() + "' '" +
+         if (entries[i].getMethodName() == MethodName.CONNECT) {
+            shutdown = true;
+         }
+         else {
+            log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" + entries[i].getEmbeddedType() + "' '" +
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
+         }
       }
+
+      if (shutdown) {
+         log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
+         if (msgErrorInfo.getDeliveryManager() != null) {
+            msgErrorInfo.getDeliveryManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+            if (xmlBlasterAccess.getQueue() != null)
+               xmlBlasterAccess.getQueue().clear();
+            msgErrorInfo.getDeliveryManager().shutdown();
+            return;
+         }
+      }
+
       Thread.currentThread().dumpStack();
       if (xmlBlasterAccess.getQueue() != null)
          xmlBlasterAccess.getQueue().clear();
