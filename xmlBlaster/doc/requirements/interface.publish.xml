@@ -380,15 +380,15 @@ print "\nLogout done, bye.\n";
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPub</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPtD</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.PublishTest</test>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.PublishQosTest</test>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.PublishReturnQosTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest</test>
    </testcase>
 </requirement>
 
