@@ -96,6 +96,7 @@ public class HelloWorldSubscribe implements I_Callback
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
          boolean wantContent = glob.getProperty().get("wantContent", true);
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
+         boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
          String filterQuery = glob.getProperty().get("filter.query", "");
@@ -144,6 +145,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -local             " + local);
          log.info(ME, "   -initialUpdate     " + initialUpdate);
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
+         log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
@@ -188,6 +190,7 @@ public class HelloWorldSubscribe implements I_Callback
          
          HistoryQos historyQos = new HistoryQos(glob);
          historyQos.setNumEntries(historyNumUpdates);
+         historyQos.setNewestFirst(historyNewestFirst);
          sq.setHistoryQos(historyQos);
 
          if (filterQuery.length() > 0) {
