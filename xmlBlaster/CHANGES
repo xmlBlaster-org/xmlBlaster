@@ -2,6 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Added separate links for client side Java API and complete Java API on homepage.
+
  o Cluster configuration change
    The xml configuration expects now a standard ConnectQos markup instead of the old
    specific <info> section. The old markup is still working but deprecated.
@@ -73,6 +75,8 @@ Changes cvs
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - Added C client API documentation with doxygen, see
+     http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/index.html
    - Changed 'ExceptionStruct: bool remote;' to type 'int' to have 4 byte struct alignment
      It crashed when called from VC7 C++ into C
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientCD.dll"
@@ -88,6 +92,8 @@ Changes cvs
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
       o Removed namespace from header: Clients now may need to add
          using namespace org::xmlBlaster::util::qos;
+   - Updated C++ client API documentation with doxygen, see
+     http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/index.html
    - New methods for XmlBlasterAccess: isAlive(), isPolling(), isDead()
    - SecurityQos constructor now accepts the security plugin name
    - Fixed reading of default client name
