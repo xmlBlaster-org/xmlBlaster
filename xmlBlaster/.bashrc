@@ -46,7 +46,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
-	if [ -f ${XMLBLASTER_HOME/lib/xmlBlaster.jar} ]; then
+	if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
 	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
 	fi
    export CLASSPATH
