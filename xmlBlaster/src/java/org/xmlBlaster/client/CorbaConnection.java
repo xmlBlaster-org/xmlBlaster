@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.34 2000/02/29 16:54:19 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.35 2000/02/29 18:08:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -57,7 +57,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -219,7 +219,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Killing the ping thread (not recommended). 
+    * Killing the ping thread (not recommended).
     */
    public void killPing()
    {
@@ -564,7 +564,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Logout from the server. 
+    * Logout from the server.
     * <p />
     * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
@@ -833,6 +833,17 @@ public class CorbaConnection implements ServerOperations
    }
 
 
+   public int queueSize()
+   {
+      if (recorder == null) {
+         Log.warning(ME, "Internal error: don't call queueSize(), you are not in fail save mode");
+         return 0;
+      }
+
+      return recorder.size();
+   }
+
+
    public void flushQueue() throws XmlBlasterException
    {
       if (recorder == null) {
@@ -843,6 +854,7 @@ public class CorbaConnection implements ServerOperations
       recorder.pullback(0L, 0L, 0.);
    }
 
+
    public void resetQueue()
    {
       if (recorder == null) {
@@ -852,6 +864,7 @@ public class CorbaConnection implements ServerOperations
 
       recorder.reset();
    }
+
 
    /**
     * Poll for xmlBlaster server
