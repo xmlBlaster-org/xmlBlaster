@@ -358,9 +358,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publishArr -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<publishArr>");
             for (int i=0; i < ret.length; i++) {
-               this.response.append("  <messageId>");
+               this.response.append("\n  <message>");
                this.response.append(ret[i].toXml("    "));
-               this.response.append("  </messageId>\n");
+               this.response.append("\n  </message>\n");
             }
             this.response.append("\n</publishArr>\n");
             flushResponse();

@@ -12,6 +12,30 @@
 
   <wait delay="1000" />
   <erase><key oid="test"></key><qos/></erase>
+
+  <publishArr>
+    <message>
+      <key oid="test"></key>
+      <content>This is a simple script test 1</content>
+      <qos/>
+    </message>
+    <message>
+      <key oid="test"></key>
+      <content>This is a simple script test 2</content>
+      <qos/>
+    </message>
+    <message>
+      <key oid="test"></key>
+      <content>This is a simple script test 3</content>
+      <qos/>
+    </message>
+    <message>
+      <key oid="test"></key>
+      <content>This is a simple script test 4</content>
+      <qos/>
+    </message>
+  </publishArr>
+
   <disconnect />
 
 </xmlBlaster>
