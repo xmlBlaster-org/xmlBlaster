@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.28 2000/05/24 14:42:16 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.29 2000/05/29 11:43:41 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -90,7 +90,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
       HttpSession session = req.getSession(true);
       if (actionType.equals("login")) {
-         session.invalidate();   // force a new sessionId
+         boolean invalidate = Util.getParameter(req, "xmlBlaster.invalidate", true);
+         if (invalidate == true)
+            session.invalidate();   // force a new sessionId
          session = req.getSession(true);
       }
       String sessionId = session.getId();

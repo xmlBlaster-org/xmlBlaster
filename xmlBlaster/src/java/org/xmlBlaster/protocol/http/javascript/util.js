@@ -45,7 +45,7 @@ function getFromUrlParam(urlParams, key, defaultValue)
 {
    // Log.trace("Looking for key='" + key + "' in URL params=" + urlParams);
    if (urlParams == null || urlParams.length < 5) {
-      Log.warning("Your URL parameters are empty, can't find '" + key + "', using default = '" + defaultValue + "'");
+      Log.trace("Your URL parameters are empty, can't find '" + key + "', using default = '" + defaultValue + "'");
       return defaultValue;
    }
 

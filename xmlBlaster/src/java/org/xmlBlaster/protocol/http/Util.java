@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: Util.java,v 1.1 2000/03/03 15:48:35 ruff Exp $
+Version:   $Id: Util.java,v 1.2 2000/05/29 11:43:41 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -30,8 +30,25 @@ public class Util
    public static final String getParameter(HttpServletRequest req, String name, String defaultVal)
    {
       String[] strArr = req.getParameterValues(name);
-      if (strArr == null || strArr.length < 1)
-         return defaultVal;
+      if (strArr == null || strArr.length < 1) {
+         HttpSession session = req.getSession(false);
+         if (session == null) {
+            return defaultVal;
+         }
+         String val = (String)session.getValue(name);
+         if (val == null) {
+            return defaultVal;
+         } else {
+            return val;
+         }
+      }
       return strArr[0];
+   }
+
+
+
+   public static final boolean getParameter(HttpServletRequest req, String name, boolean defaultVal)
+   {
+      return Boolean.getBoolean(getParameter(req, name, new Boolean(defaultVal).toString()));
    }
 }

@@ -16,17 +16,20 @@
       function doLogin()
       {
          var urlParams = parent.location.search;
-         if (urlParams == null || urlParams < 1) {
-            var err = "Please add loginName and passwd to your URL, for example: http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret";
-            top.Log.warning(err);
-            // return;
-         }
-         var action = top.getFromUrlParam(urlParams, "ActionType", "login");
-         var loginName = top.getFromUrlParam(urlParams, "loginName", "peter");
-         var passwd = top.getFromUrlParam(urlParams, "passwd", "secret");
 
-         top.Log.info("Login request from '" + loginName + "', calling BlasterHttpProxyServlet ...");
-         var servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&loginName=" + loginName + "&passwd=" + passwd;
+         var action = top.getFromUrlParam(urlParams, "ActionType", "");
+         var loginName = top.getFromUrlParam(urlParams, "loginName", "");
+         var passwd = top.getFromUrlParam(urlParams, "passwd", "");
+
+         var servlet;
+         if (action != "" && loginName != "" && passwd != "") {
+            // login infos passed by URL parameters
+            top.Log.info("Login request from '" + loginName + "', calling BlasterHttpProxyServlet ...");
+            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&loginName=" + loginName + "&passwd=" + passwd;
+         } else {
+            // login infos passed by session object (cookies or hidden fields)
+            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=login";
+         }
          top.callbackFrame.location.href=servlet;
       }
    </script>
