@@ -185,7 +185,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       pluginManager = new PersistencePluginManager(glob);
 
       this.loggedIn = new Hashtable();
-      this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
+      this.clientSubscriptions = new ClientSubscriptions(glob, this, authenticate);
 
       {
          // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
@@ -549,7 +549,21 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(jj);
                if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
                   xmlKeyExact = xmlKey;
-               SubscriptionInfo subs = new SubscriptionInfo(glob, sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
+               SubscriptionInfo subs = null;
+               if (sessionInfo.getConnectQos().duplicateUpdates() == false) {
+                  Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKeyExact.getUniqueKey());
+                  if (vec != null) {
+                     if (vec.size() > 0) {
+                        subs = (SubscriptionInfo)vec.firstElement();
+                        if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getUniqueKey() + "' is subscribed " + vec.size() + " times with duplicateUpdates==false");
+                     }
+                     if (vec.size() > 1)
+                        log.error(ME, "Internal problem for session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getUniqueKey() + "' is subscribed " + vec.size() + " times but duplicateUpdates==false!");
+                  }
+               }
+               if (subs == null)
+                  subs = new SubscriptionInfo(glob, sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
+
                if (subsQuery != null)
                   subsQuery.addSubscription(subs);
                subscribeToOid(subs);                // fires event for subscription
@@ -823,6 +837,11 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
 
    /**
+    * Find the MessageUnitHandler, note that for subscriptions
+    * where never a message arrived this method will return null. 
+    * 
+    * Use ClientSubscriptions.getSubscriptionByOid() to find those as well.
+    *
     * @param oid  This is the XmlKey:uniqueKey
     * @return null if not found
     */
@@ -916,7 +935,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
             else {
                log.warn(ME, "UnSubscribe of " + xmlKey.getUniqueKey() + " failed");
-               log.plain(ME, toXml());
+               if (log.DUMP) log.dump(ME, toXml());
             }
          }
          else { // Try to unssubscribe with message oid instead of subscribe id:
@@ -1519,9 +1538,11 @@ synchronized (this) {
 
    final void fireUnSubscribeEvent(SubscriptionInfo subscriptionInfo) throws XmlBlasterException  {
       fireSubscriptionEvent(subscriptionInfo, false);
+      subscriptionInfo.decrSubscribeCounter();
    }
 
    final void fireSubscribeEvent(SubscriptionInfo subscriptionInfo) throws XmlBlasterException  {
+      subscriptionInfo.incrSubscribeCounter();
       fireSubscriptionEvent(subscriptionInfo, true);
    }
 
