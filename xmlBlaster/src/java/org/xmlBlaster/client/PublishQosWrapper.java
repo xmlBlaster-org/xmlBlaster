@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.8 2000/05/16 20:57:36 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.9 2000/05/26 20:48:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -139,7 +139,7 @@ public class PublishQosWrapper extends QosWrapper
       if (destVec != null) {
          for (int ii=0; ii<destVec.size(); ii++) {
             Destination destination = (Destination)destVec.elementAt(ii);
-            sb.append(destination.printOn("   ").toString()).append("\n");
+            sb.append(destination.toXml("   ")).append("\n");
          }
       }
       if (expires >= 0) {
