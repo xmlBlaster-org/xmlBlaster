@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.39 2001/01/30 14:07:17 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.40 2001/02/14 00:42:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -359,7 +359,17 @@ public class MessageUnitHandler
          return;
       }
       ClientInfo clientInfo = sub.getClientInfo();
-      clientInfo.sendUpdate(sub);
+      try {
+         clientInfo.sendUpdate(sub);
+      }
+      catch(XmlBlasterException e) {
+         if (e.id.equals("CallbackFailed")) {
+            Log.warn(ME, e.toString());
+            // Error handling missing !!! -> generate dead letter
+         }
+         else
+            throw e;
+      }
    }
 
 
