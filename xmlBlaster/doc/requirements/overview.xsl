@@ -4,7 +4,7 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: overview.xsl,v 1.3 2000/10/09 09:54:53 ruff Exp $
+Version:   $Id: overview.xsl,v 1.4 2002/05/28 07:15:28 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -30,7 +30,7 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/10/09 09:54:53 $ $Author: ruff $
+       Last updated $Date: 2002/05/28 07:15:28 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
 
@@ -49,8 +49,8 @@ Author:    ruff@swand.lake.de
       </thead>
       <xsl:for-each select="/files/url">
          <xsl:apply-templates select="document(.)/requirement"/>
-        <xsl:sort select="document(.)/requirement/@status" order="ascending"/>
         <xsl:sort select="document(.)/requirement/@id" order="ascending"/>
+        <xsl:sort select="document(.)/requirement/@status" order="ascending"/>
       </xsl:for-each>
    </table>
    <p class="sideend">
