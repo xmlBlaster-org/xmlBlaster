@@ -10,6 +10,9 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: configurator.cxx,v $
+// Revision 1.3  2004/10/12 20:50:05  ruff
+// Replacing now ${xy} variable with lookup in other properties additionally to env lookup
+//
 // Revision 1.2  2004/02/11 08:45:05  ruff
 // Updated to version 1.0.2
 //
@@ -147,7 +150,8 @@ namespace {
      *
      * @param val The string on which variable substitution is performed.
      */
-    log4cplus::tstring substEnvironVars(const log4cplus::tstring& val,
+    log4cplus::tstring substEnvironVars(const log4cplus::helpers::Properties &properties,
+	                                     const log4cplus::tstring& val,
                                         log4cplus::helpers::LogLog& loglog) 
     {
        log4cplus::tstring sbuf;
@@ -179,11 +183,18 @@ namespace {
                 else {
                     j += DELIM_START_LEN;
                     log4cplus::tstring key = val.substr(j, k - j);
-                    char* replacement = 
+
+                    log4cplus::tstring repl = properties.getProperty(key);
+                    if (repl.size() > 0) {
+                       sbuf += repl;
+                    }
+                    else {
+                       char* replacement = 
                             getenv(LOG4CPLUS_TSTRING_TO_STRING(key).c_str());
 
-                    if(replacement != 0)
-                        sbuf += LOG4CPLUS_STRING_TO_TSTRING(replacement);
+                       if(replacement != 0)
+                          sbuf += LOG4CPLUS_STRING_TO_TSTRING(replacement);
+                    }
                     i = k + DELIM_STOP_LEN;
                 }
             }
@@ -297,13 +308,13 @@ log4cplus::PropertyConfigurator::replaceEnvironVariables()
     for(; it!=keys.end(); ++it) {
         log4cplus::tstring key = *it;
         log4cplus::tstring val = properties.getProperty(key);
-        log4cplus::tstring subKey = substEnvironVars(key, getLogLog());
+        log4cplus::tstring subKey = substEnvironVars(properties, key, getLogLog());
         if(subKey != key) {
             properties.removeProperty(key);
             properties.setProperty(subKey, val);
         }
 
-        log4cplus::tstring subVal = substEnvironVars(val, getLogLog());
+        log4cplus::tstring subVal = substEnvironVars(properties, val, getLogLog());
         if(subVal != val) {
             properties.setProperty(subKey, subVal);
         }
