@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.2 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.3 2000/07/02 17:18:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -150,11 +150,16 @@ public class XmlBlasterProperty
    }
 
 
-   public final static void init(String[] args) throws JUtilsException
+   /**
+    * Returns true if the user wants a 'usage' help. 
+    * @return true if the option '--help' or '-help' or '-h' or '-?' was given.
+    */
+   public final static boolean init(String[] args) throws JUtilsException
    {
       property = new Property("xmlBlaster.properties", true, args, true);  // initialize
       Log.setLogLevel(property);  // Initialize logging as well.
       // System.out.println(toXml());
+      return property.wantsHelp();
    }
 
    public final static void addArgs2Props(String[] args) throws JUtilsException
@@ -174,7 +179,8 @@ public class XmlBlasterProperty
       String ME = "XmlBlasterProperty";
 
       try {
-         XmlBlasterProperty.init(args);  // initialize
+         boolean showUsage = XmlBlasterProperty.init(args);  // initialize
+         if (showUsage) Log.plain("Usage: java org.xmlBlaster.util.XmlBlasterProperty -isNice true -Persistence.Driver myDriver -isCool yes");
       } catch (JUtilsException e) {
          Log.panic(ME, e.toString());
       }
