@@ -64,6 +64,11 @@ Changes for 0.80 [Sep, xx 2002]
     * Bugfix: Message where sometimes corrupted, during writing one message
       another mixed enbetween. Fixed with synchronize.
       Reported by Antti Jarvinen
+    * Bugfix for blocking recursive remote invocations
+      e.g. call publish() in update() body
+      This is solved with a Thread per request approach on client side
+    * Bugfix: Avoid blocking client thread on lost connection waiting
+      for return value (freePendingThreads())
 
   - Renamed ServerThread.java -> EmbeddedXmlBlaster.java
 
