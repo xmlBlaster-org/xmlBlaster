@@ -379,8 +379,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
          }
       }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Complete recover from persistence store failed: " + e.toString());
+      }
       catch (Exception e) {
          log.error(ME, "Complete recover from persistence store failed: " + e.toString());
+         e.printStackTrace();
       }
 
       if (num > 0)
