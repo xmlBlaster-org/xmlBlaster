@@ -150,7 +150,7 @@ All packages allow free use for both commercial and non-commercial applications.
 
 
 12) servlet.jar Servlet API 2.0
-==============================================
+===============================
   (Not yet:
   servlet.jar from jakarta-servletapi-4.0-m5
   Java Servlet 2.3 and JSP 1.2 specifications
@@ -158,6 +158,7 @@ All packages allow free use for both commercial and non-commercial applications.
 
 
 13) connector.jar jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar
+==============================================
   J2EE connector support by Peter Antman
 
   connector.jar      javax.resource.cci  and  javax.resource.spi packages
@@ -166,3 +167,11 @@ All packages allow free use for both commercial and non-commercial applications.
   jms.jar            javax.jms
   ejb2.0.jar         javax.ejb
   jndi-jdk1_3_1.jar  javax.naming (only required for JDK 1.2, not for JDK1.3)
+
+
+14) xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/jcrypt.java
+==============================================
+  Java-based implementation of the unix crypt command
+  http://locutus.kingwoodcable.com/jfd/crypt.html
+  Based upon C source code written by Eric Young, eay@psych.uq.oz.au
+
