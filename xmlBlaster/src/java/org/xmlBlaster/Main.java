@@ -434,7 +434,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     */
    private void keyboardUsage() {
       log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "XmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp());
+      log.plain(ME, "XmlBlaster " + ((glob != null) ? glob.getVersion() : "") +
+                    ((glob != null) ? (" build " + glob.getBuildTimestamp()) : ""));
       log.plain(ME, "Following interactive keyboard input is recognized:");
       log.plain(ME, "Key:");
       log.plain(ME, "   g             Popup the control panel GUI.");
