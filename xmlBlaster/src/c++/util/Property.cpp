@@ -26,6 +26,7 @@ Property::Property(int args, const char * const argv[]) : properties_() {
 Property::Property(MapType propMap) : properties_(propMap)
 {
    initializeDefaultProperties();
+	replaceVariables(true);
 }
 
 void Property::initializeDefaultProperties()
