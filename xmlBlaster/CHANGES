@@ -34,7 +34,8 @@ Changes for xxxxx [xxx, xx 200x]
 
   - Added more administrative introspection properties:
     nodeId, version, buildTimestamp, buildJavaVendor, buildJavaVersion
-    numNodes, nodeList
+    numNodes, nodeList etc.
+    Parts of them are burned during compilation with ant/build.xml
 
 
 Changes for 0.79f [Jun, 17 2002]
