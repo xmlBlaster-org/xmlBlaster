@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.3 2002/03/13 16:41:13 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.4 2002/03/17 13:33:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -78,8 +78,13 @@ public class CbWorker implements Runnable
             Log.error(ME, "No CbInfo available");
       }
       catch(Throwable e) {
-         Log.error(ME, "Callback failed: " + e.toString());
-         if (!(e instanceof XmlBlasterException)) e.printStackTrace();
+         if (e instanceof XmlBlasterException) {
+            Log.warn(ME, "Callback failed: " + e.toString());
+         }
+         else {
+            Log.error(ME, "Callback failed: " + e.toString());
+            e.printStackTrace();
+         }
          if (entries != null) {
             Log.info(ME, "Recovering " + entries.length + " messages");
             try {
@@ -95,7 +100,7 @@ public class CbWorker implements Runnable
       finally {
          //synchronized (this.msgQueue.getMonitor()) {
             this.msgQueue.setCbWorkerIsActive(false);
-            if (msgQueue.size() > 0) {
+            if (msgQueue.size() > 0 && !msgQueue.isShutdown()) {
                Log.info(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
                try{ msgQueue.activateCallbackWorker(); } catch(Throwable e) { Log.error(ME, e.toString()); }// Assure the queue is flushed with another worker
             }
