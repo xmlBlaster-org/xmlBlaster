@@ -91,28 +91,30 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     *
     * Currently this precedence is supported:
     * <pre>
-    *  maxEntries                                                   (weakest, not recommended)
+    *  maxEntries                                         (weakest, not recommended)
     *
-    *  /node/heron/plugin/socket/port                               (recommended)
+    *  /node/heron/plugin/socket/port                     (recommended)
     *
-    *  persistence/msgUnitStore/maxEntries                          (recommended)
+    *  queue/maxEntries                                   (supported until all is ported)
     *
-    *  /node/heron/persistence/msgUnitStore/maxEntries              (recommended in cluster)
+    *  queue/callback/maxEntries                          (recommended)
     *
-    *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
+    *  /node/heron/queue/callback/maxEntries              (recommended in cluster)
+    *
+    *  /node/heron/topic/hello/queue/callback/maxEntries  (strongest)
     * </pre>
     *
     * <!-- 
-    *  maxEntries                                                   (weakest, not recommended)
-    *  /node/heron/maxEntries                                       (not recommended)
-    *  persistence.maxEntries                                       (deprecated)
-    *  persistence/maxEntries                                       (not recommended)
-    *  msgUnitStore.persistence.maxEntries                          (deprecated)
-    *  persistence/msgUnitStore/maxEntries                          (recommended)
-    *  /node/heron/persistence/msgUnitStore/maxEntries              (recommended)
-    *  msgUnitStore.persistence.maxEntries[heron]                   (deprecated)
-    *  /node/heron/persistence/msgUnitStore/maxEntries
-    *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
+    *  maxEntries                                         (weakest, not recommended)
+    *  /node/heron/maxEntries                             (not recommended)
+    *  queue.maxEntries                                   (deprecated)
+    *  queue/maxEntries                                   (not recommended)
+    *  callback.queue.maxEntries                          (deprecated)
+    *  queue/callback/maxEntries                          (recommended)
+    *  /node/heron/queue/callback/maxEntries              (recommended)
+    *  callback.queue.maxEntries[heron]                   (deprecated)
+    *  /node/heron/queue/callback/maxEntries
+    *  /node/heron/topic/hello/queue/callback/maxEntries  (strongest)
     * -->
     * @return the matching key
     */
@@ -164,7 +166,11 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       }
       */
 
-      /*
+      /* This makes sense to set generally maxEntries for all queues, otherwise we
+         need to specify it for every queue instance like 'callback' 'history' 'connection'
+         e.g. queue/callback/defaultPlugin=RAM,1.0
+         With the new markup 'plugin/callback/maxEntries' this will be not supported anymore
+      */
       // check "queue/maxEntries" variant
       if (className != null) {
          name.setLength(0);
@@ -175,7 +181,6 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
             usedName = name.toString();
          }
       }
-      */
 
       /*
       // check OLD STYLE "history.queue.maxEntries" (deprecated)
