@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Collecting data on how many messages are successfully delivered. 
@@ -53,9 +54,8 @@ public class DeliveryStatistic
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
       sb.append(offset).append("<DeliveryStatistic numUpdate='").append(getNumUpdate()).append("' numPublish='").append(getNumPublish()).append("'/>");
       return sb.toString();
    }
