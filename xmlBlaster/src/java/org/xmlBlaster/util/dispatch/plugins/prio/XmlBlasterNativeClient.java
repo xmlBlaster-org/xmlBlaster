@@ -78,12 +78,18 @@ public final class XmlBlasterNativeClient implements I_Callback
    /**
     * Creates a remote client to xmlBlaster. 
     */
-   public XmlBlasterNativeClient(final Global glob, PriorizedDeliveryPlugin plugin, String sessionId) throws XmlBlasterException {
-      this.log = glob.getLog("dispatch");
-      this.glob = glob;
+   public XmlBlasterNativeClient(final Global glob_, PriorizedDeliveryPlugin plugin, String sessionId) throws XmlBlasterException {
+      String args[] = new String[] { // To avoid recursiv loading of this PRIO plugin
+         "-DispatchPlugin.defaultPlugin",
+         "undef",
+         "-cb.DispatchPlugin.defaultPlugin",
+         "undef"
+      };
+      this.glob = glob_.getClone(args);
+      this.log = this.glob.getLog("dispatch");
       this.plugin = plugin;
       /*
-      this.authenticate = (I_Authenticate)glob.getObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY);
+      this.authenticate = (I_Authenticate)this.glob.getObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY);
       if (this.authenticate == null) {
          throw new IllegalArgumentException(ME + ": The I_Authenticate handle is not registered in the properties, lookup of '" + Constants.I_AUTHENTICATE_PROPERTY_KEY + "' failed");
       }
@@ -93,7 +99,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       log.info(ME, "Connecting to xmlBlaster to subscribe to status messages");
 
       // Connect as a remote client ...
-      xmlBlasterCon = glob.getXmlBlasterAccess();
+      xmlBlasterCon = this.glob.getXmlBlasterAccess();
       this.loginName = this.glob.getProperty().get("PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin");
       String passwd = this.glob.getProperty().get("PriorizedDeliveryPlugin.password", "secret");
       this.cbSessionId = passwd;
@@ -116,24 +122,19 @@ public final class XmlBlasterNativeClient implements I_Callback
             
             public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                connected = true;
-               conRetQos = xmlBlasterCon.getConnectReturnQos();
-               log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
-               try {
-                  xmlBlasterCon.flushQueue();    // send all tailback messages
-                  // xmlBlasterCon.resetQueue(); // or discard them (it is our choice)
-               } catch (XmlBlasterException e) {
-                  log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
-               }
-               return false;
+               conRetQos = connectionHandler.getConnectReturnQos();
+               log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + 
+                            connectionHandler.getGlobal().getId() + " as " + conRetQos.getSessionName());
+               return true;
             }
 
             public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-               log.warn(ME, "I_ConnectionProblems: No connection to " + glob.getId());
+               log.warn(ME, "I_ConnectionProblems: No connection to " + connectionHandler.getGlobal().getId());
                connected = false;
             }
 
             public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-               log.error(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
+               log.error(ME, "I_ConnectionStateListener: Connection to " + connectionHandler.getGlobal().getId() + " is dead");
                connected = false;
             }
          });
@@ -147,7 +148,7 @@ public final class XmlBlasterNativeClient implements I_Callback
          log.info(ME, "Succefully initialized");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Can't subscribe to status messages: " + e.toString());
+         log.error(ME, "Can't subscribe to status messages: " + e.getMessage());
       }
    }
 
@@ -271,7 +272,7 @@ public final class XmlBlasterNativeClient implements I_Callback
                xmlBlasterCon.unSubscribe(uk.toXml(), uq.toXml());
             }
             catch (XmlBlasterException e) {
-               log.warn(ME, "Unsubscribe failed: " + e.toString());
+               log.warn(ME, "Unsubscribe failed: " + e.getMessage());
             }
          }
 
