@@ -13,6 +13,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -34,7 +35,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.util.HashMap;
 
@@ -98,7 +99,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
       this.ME = "XmlBlasterAccess-" + getId();
 
       String typeVersion = glob.getProperty().get("queue.defaultPlugin", "CACHE,1.0");
-      String queueId = "client:"+getId();
+      StorageId queueId = new StorageId("client", getId());
       this.clientQueue = glob.getQueuePluginManager().getPlugin(typeVersion, queueId,
                                              this.connectQos.getClientQueueProperty());
 
@@ -115,7 +116,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
          createDefaultCbServer();
       }
 
-      MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue, this.connectQos);
+      MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos);
 
       // Try to connect to xmlBlaster ...
       this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
@@ -336,7 +337,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
       throw new XmlBlasterException(ME, "not implemented!");
    }
 
-   public MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
+   public MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "not implemented!");
    }
 
@@ -344,16 +345,16 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
       throw new XmlBlasterException(ME, "not implemented!");
    }
 
-   public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException {
-      return (PublishReturnQos)queueMessage(new MsgQueuePublishEntry(glob, msgUnit, clientQueue));
+   public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException {
+      return (PublishReturnQos)queueMessage(new MsgQueuePublishEntry(glob, msgUnit, this.clientQueue.getStorageId()));
    }
 
-   public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit [] msgUnitArr) throws XmlBlasterException {
+   public void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "not implemented!");
    }
 
    // rename to publish()
-   public PublishReturnQos[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {
+   public PublishReturnQos[] publishArr(org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "not implemented!");
    }
 
@@ -433,7 +434,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
          XmlBlasterAccess xmlBlasterAccess = new XmlBlasterAccess(glob);
          xmlBlasterAccess.connect(null, null);
          log.info("", "Successfully connect to xmlBlaster");
-         MessageUnit msgUnit = new MessageUnit("<key oid='HelloWorld'/>", "Hi".getBytes(), "<qos/>");
+         MsgUnit msgUnit = new MsgUnit(glob, "<key oid='HelloWorld'/>", "Hi".getBytes(), "<qos/>");
          PublishReturnQos publishReturnQos = xmlBlasterAccess.publish(msgUnit);
          log.info("", "Successfully published a message to xmlBlaster");
          log.info("", "Sleeping");
