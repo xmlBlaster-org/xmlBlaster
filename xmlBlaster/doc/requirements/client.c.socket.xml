@@ -521,6 +521,87 @@ int main(int argc, char** argv)
    </pre>
    </example>
 
+   <example lang="C" type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>
+      This example shows how to redirect the logging output from the C lib:
+      </p>
+    <pre><![CDATA[
+/* Snippet from xmlBlaster/demo/c/socket/LogRedirect.c */
+
+...
+
+/**
+ * Customized logging output is handled by this method. 
+ * <p>
+ * We register this function with 
+ * </p>
+ * <pre>
+ * xa->log = myLogger;
+ * </pre>
+ * @param currLevel The actual log level of the client
+ * @param level The level of this log entry
+ * @param location A string describing the code place
+ * @param fmt The formatting string
+ * @param ... Other variables to log, corresponds to 'fmt'
+ * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default implementation
+ */
+static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...)
+{
+   /* Guess we need no more than 200 bytes. */
+   int n, size = 200;
+   char *p = 0;
+   va_list ap;
+
+   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
+      return;
+   }
+   if ((p = (char *)malloc (size)) == NULL)
+      return;
+
+   for (;;) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = vsprintf (p, fmt, ap);
+      va_end(ap);
+      /* If that worked, print the string to console. */
+      if (n > -1 && n < size) {
+         if (level == LOG_TRACE)
+            printf("%s %s\n", getLogLevelStr(level), p);
+         else
+            printf("{%s-%s-%s} [%s] %s\n", __DATE__, __TIME__, getLogLevelStr(level), location, p);
+         free(p);
+         return;
+      }
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      if ((p = (char *)realloc (p, size)) == NULL) {
+         return;
+      }
+   }
+}
+
+...
+
+/* Code in main() */
+
+...
+
+xa = getXmlBlasterAccessUnparsed(argc, argv);
+
+/* Register our own logging function */
+xa->log = myLogger;
+
+...
+        ]]>
+    </pre>
+   </example>
+
    <configuration where="client">
       <p><a NAME="config"></a>
       These configurations are tested:
@@ -685,8 +766,6 @@ int main(int argc, char** argv)
         will deadlock (i believe so).
         Probably we need to add a thread pool</li>
 
-      <li> Add logging redirection (using a configurable function pointer)</li>
-
       <li> Add extended property support (parsing command line and getenv())</li>
 
       <li> Add another layer which parses the QoS with Expat</li>
@@ -707,6 +786,7 @@ int main(int argc, char** argv)
 
    <see type="CODE" lang="C">HelloWorld.c</see>
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
+   <see type="CODE" lang="C">xmlBlaster/demo/c/socket/LogRedirect.c</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/c/README</see>
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
@@ -716,6 +796,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
 </requirement>
 
