@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.29 2002/07/12 17:16:56 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.30 2002/08/12 13:34:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -672,7 +672,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public final void addCallbackAddress(CallbackAddress callback) {
       CbQueueProperty prop = new CbQueueProperty(glob, null, nodeId); // Use default queue properties for this callback address
       prop.setCallbackAddress(callback);
-      queuePropertyVec.addElement(prop);
+      addCbQueueProperty(prop);
       //queuePropertyArr = null; // reset to be recalculated on demand
    }
 
@@ -789,11 +789,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          inCallback = true;
          if (!inQueue) {
             tmpProp = new CbQueueProperty(glob, null, null); // Use default queue properties for this callback address
-            queuePropertyVec.addElement(tmpProp);
-            if (tmpProp.isSubjectRelated())
-               subjectCbQueueProperty = tmpProp;
-            else if (tmpProp.isSessionRelated())
-               sessionCbQueueProperty = tmpProp;
+            addCbQueueProperty(tmpProp);
          }
          tmpAddr = new CallbackAddress(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
@@ -809,12 +805,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             return;
          }
          tmpProp = new CbQueueProperty(glob, null, null);
-         queuePropertyVec.addElement(tmpProp);
          tmpProp.startElement(uri, localName, name, attrs);
-         if (tmpProp.isSubjectRelated())
-            subjectCbQueueProperty = tmpProp;
-         else if (tmpProp.isSessionRelated())
-            sessionCbQueueProperty = tmpProp;
+         addCbQueueProperty(tmpProp);
          character.setLength(0);
          return;
       }
