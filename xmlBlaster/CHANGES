@@ -30,7 +30,6 @@ Changes for 0.x [200x-xx-xx]
  o Added support for C and C++ based persistent queue based on http://www.sqlite.org
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 
->>>>>>> 1.365
  o Added possibility to activate/inhibit dispatch of callback entries (SessionInfo.activateDispatcher)
 
  o Added support for primitive and buildin types such as Boolean, Short, Integer, Float and Double
