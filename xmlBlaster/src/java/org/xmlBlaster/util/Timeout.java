@@ -125,7 +125,9 @@ public class Timeout extends Thread
     */
    public int getSize()
    {
-      return map.size();
+      synchronized (map) {
+         return map.size();
+      }
    }
 
 
@@ -138,6 +140,7 @@ public class Timeout extends Thread
       while (running) {
          long delay = 100000; // sleep veeery long
          container = null;
+         int oldSize = 0;
          synchronized (map) {
             try {
                Timestamp nextWakeup = (Timestamp) map.firstKey(); // throws exception if empty
@@ -157,6 +160,7 @@ public class Timeout extends Thread
                if (debug)
                   System.out.println("The listener map is empty, nothing to do.");
             }
+            oldSize = map.size();
          }
 
          if (container != null) {
@@ -168,14 +172,18 @@ public class Timeout extends Thread
             continue;
          }
 
-         try {
-            synchronized (this) {
-               ready = true; // only needed on thread creation / startup
-               wait(delay);
+         if (delay > 0) {
+            try {
+               synchronized (this) {
+                  ready = true; // only needed on thread creation / startup
+                  if (oldSize == getSize()) { // If in the sync gap (~5 lines higher) a new timer was registered we need to loop again and recalculate the delay
+                     wait(delay);
+                  }
+               }
             }
-         }
-         catch (InterruptedException i) {
-            // Wakeing up, and check if there is something to do
+            catch (InterruptedException i) {
+               // Wakeing up, and check if there is something to do
+            }
          }
       }
    }
@@ -408,7 +416,12 @@ public class Timeout extends Thread
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
     */
    public static void main(String args[]) throws Exception {
-      testWeakReference();
+      {
+         Timeout t = new Timeout();
+         System.out.println("Timeout constructor done, sleeping 10 sec");
+         try { Thread.currentThread().sleep(10000); } catch (InterruptedException e) {}
+      }
+      //testWeakReference();
       //testStrongReference();
    }
 
