@@ -24,6 +24,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 
@@ -96,7 +97,7 @@ public class HelloWorld3 implements I_Callback
 
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         con.unSubscribe(uk.toXml(), uq.toXml());
+         UnSubscribeReturnQos[] urq = con.unSubscribe(uk.toXml(), uq.toXml());
 
          EraseKey ek = new EraseKey(glob, "HelloWorld3");
          EraseQos eq = new EraseQos(glob);
