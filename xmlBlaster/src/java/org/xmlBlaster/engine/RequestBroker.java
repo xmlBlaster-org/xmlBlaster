@@ -1314,7 +1314,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // cluster support - forward pubSub message to master ...
          if (useCluster) {
             if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
-               if (publishQos.isPubSubStyle()) {
+               if (publishQos.isSubscribeable()) {
                   try {
                      PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
                      //Thread.currentThread().dumpStack();
