@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * DataHolder Object to hold the return data of methods used in the different
  * implementations of the I_Queue and their helper classes.
  * 
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  *
  */
@@ -20,6 +20,6 @@ public class ReturnDataHolder {
 
    public long countEntries = 0;
    public long countBytes = 0L;
-   public ArrayList list = null;
+   public final ArrayList list = new ArrayList();
 
 }
