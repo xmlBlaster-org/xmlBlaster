@@ -340,8 +340,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
-         getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          getCbReceiver().execute(parser, WAIT_ON_RESPONSE/*ONEWAY*/, SOCKET_TCP);
+         getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          return true;
       }
       catch (XmlBlasterException e) {
@@ -352,8 +352,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e1);
       }
       finally {
-         shutdown(); // the callback server
-         sessionId = null;
+       //  shutdown(); // the callback server
+       //  sessionId = null;
       }
    }
 
@@ -368,10 +368,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
          this.cbReceiver.shutdownSocket();
       }
-      if (this.sock != null) {
-         try { this.sock.getInputStream().close();  } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-         try { this.sock.getOutputStream().close(); } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-         try { this.sock.close(); this.sock=null;   } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      Socket sk = this.sock;
+      if (sk != null) {
+         try { sk.getInputStream().close();  } catch (IOException e) { log.trace(ME+".shutdown", "InputStream.close(): " + e.toString()); }
+         try { sk.getOutputStream().close(); } catch (IOException e) { log.trace(ME+".shutdown", "OutputStream.close(): " + e.toString()); }
+         try { sk.close(); this.sock=null;   } catch (IOException e) { log.warn(ME+".shutdown", "socket.close(): " + e.toString()); }
       }
    }
 
