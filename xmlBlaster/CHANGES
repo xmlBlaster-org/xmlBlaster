@@ -2,6 +2,16 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+ o BUGFIX: Fixed two synchronize gaps which could lead to
+   "The timeout handle is null, no timeout refresh done" exception
+
+ o BUGFIX: Fixed TopicHandler.java synchronize bug which could lead
+   to multiple initial XPATH subscriptions instead of one.
+
+ o NEW FEATURE: A subscriber can supress to receive topic ERASE
+   events on topics which are erased and on which he has subscribed,
+   see SubscribeQos.setWantNotify(boolean)
+  
  o BUGFIX for SOCKET and RMI protocol when on client startup the xmlBlaster server
    was missing. Reported by Xavier Roques <xRoques@infovista.com>
 
