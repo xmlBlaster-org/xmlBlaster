@@ -97,7 +97,7 @@ public class HelloWorld4
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (con != null) { con.disconnect(null); }
+         if (con != null) { con.disconnect(new DisconnectQos()); }
       }
    }
 
