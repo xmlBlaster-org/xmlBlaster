@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.12 2002/02/15 19:06:54 ruff Exp $
+Version:   $Id: Parser.java,v 1.13 2002/02/16 18:33:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -166,6 +166,10 @@ public class Parser extends Converter
    /** Parser.INVOKE_TYPE */
    public void setType(String type) {
       this.type = type;
+   }
+
+   public String getType() {
+      return this.type;
    }
 
    public boolean isInvoke() {
