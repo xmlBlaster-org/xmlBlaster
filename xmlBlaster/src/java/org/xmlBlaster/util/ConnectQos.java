@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.16 2002/05/03 16:39:12 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.17 2002/05/06 14:39:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -320,6 +320,19 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       securityQos = plugin.getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
+   }
+
+   /**
+    * Allows to set or overwrite the login name. 
+    * <p />
+    * @param loginName The unique user id
+    */
+   public final void setUserId(String loginName) throws XmlBlasterException
+   {
+      org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
+      I_ClientPlugin plugin = loader.getClientPlugin(null, null);
+      securityQos = plugin.getSecurityQos();
+      securityQos.setUserId(loginName);
    }
 
    /**
