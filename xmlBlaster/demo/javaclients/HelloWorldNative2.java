@@ -52,16 +52,6 @@ public class HelloWorldNative2 implements I_Plugin
    private String loginName;
    private String topicName;
 
-   private static final String[] nativeConnectArgs = {
-          "-protocol", "LOCAL",
-          "-dispatch/connection/pingInterval", "0",
-          "-dispatch/connection/burstMode/collectTime", "0",
-          //"-queue/callback/defaultPlugin", "RAM,1.0",
-          //"-queue/connection/defaultPlugin", "RAM,1.0",
-          //"-queue/subject/defaultPlugin", "RAM,1.0",
-          "-queue/defaultPlugin", "RAM,1.0"
-          };
-
    private final void pubsub() {
       try {
          log.info(ME, "Connecting with protocol 'LOCAL' to xmlBlaster");
@@ -114,11 +104,11 @@ public class HelloWorldNative2 implements I_Plugin
    }
 
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.glob = glob.getClone(nativeConnectArgs);
+      this.glob = glob.getClone(glob.getNativeConnectArgs()); // Sets  "-protocol LOCAL" etc.
       this.log = this.glob.getLog("plugin");
       this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
-      this.loginName = pluginInfo.getParameters().getProperty("loginName", "NO_LOGIN_NAME_CONFIGURED");
-      this.topicName = pluginInfo.getParameters().getProperty("topicName", "NO_TOPIC_NAME_CONFIGURED");
+      this.loginName = glob.get("loginName", "NO_LOGIN_NAME_CONFIGURED", null, pluginInfo);
+      this.topicName = glob.get("topicName", "NO_TOPIC_NAME_CONFIGURED", null, pluginInfo);
 
       log.info(ME, "init(): The plugin is loaded, doing a publish and subscribe\n\n");
       pubsub();
