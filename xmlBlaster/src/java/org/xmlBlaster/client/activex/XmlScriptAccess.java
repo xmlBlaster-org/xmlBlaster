@@ -50,20 +50,19 @@ import org.xmlBlaster.util.MsgUnit;
 /**
  * This bean can be exported to a Microsoft dll (ActiveX component) and
  * be accessed by C# or Visual Basic.Net 
- * <br />
+ * <p>
  * Here we support XML scripting access as described in the <i>client.script</i> requirement
  * by calling <code>sendRequest()</code> or alternatively you can use the methods
- * like <code>publish()</code> or <code>subscribe()</code>. The latter
+ * like <code>publishStr()</code> or <code>subscribe()</code> directly. The latter
  * methods have the advantage to return a ready parsed object to the ActiveX component,
  * for example Visual Basic can directly call all methods of <code>SubscribeReturnQos</code>
  * which is returned by <code>subscribe()</code>.
- * <br />
- * One instance of this can hold one permanent connection to the xmlBlaster server,
- * multi threaded access is supported.
- * <br />
+ * </p>
+ * <p>
  * Compile the ActiveX control with <code>build activex</code> and see Visual Basic
  * and C# samples in directory <code>xmlBlaster/demo/activex</code>.
- * <br />
+ * </p>
+ * <p>
  * As events into ActiveX can't have a return value and can't throw
  * an exception back to us we handle it here as a callback, for example
  * Visual Basic needs to call <code>sendUpdateReturn()</code> or <code>sendUpdateException()</code> after
@@ -71,6 +70,11 @@ import org.xmlBlaster.util.MsgUnit;
  * Our update thread blocks until one of those two methods is called, however
  * the blocking times out after 10 minutes which is adjustable with
  * the property <code>client/activex/responseWaitTime</code> given in milli seconds.
+ * </p>
+ * <p>
+ * One instance of this can hold one permanent connection to the xmlBlaster server,
+ * multi threaded access is supported.
+ * </p>
  *
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">client.script requirement</a>
  * @see <a href="http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html">ActiveX Bridge Developer Guide</a>
@@ -98,14 +102,27 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public XmlScriptAccess() {
       this.glob = new Global();  // Reads xmlBlaster.properties
-      this.log = glob.getLog("demo");
+      this.log = glob.getLog("XmlScriptAccess");
+
       // Wait max 10 minutes for update() method in C#/VB to return:
       this.responseWaitTime = this.glob.getProperty().get("client/activex/responseWaitTime", 1000L * 60L * 10L);
       if (log.CALL) log.call(ME, "Calling ctor of XmlScriptAccess, responseWaitTime=" + this.responseWaitTime);
+
+      // Use socket protocol as default setting
+      String protocol = this.glob.getProperty().get("protocol", "");
+      if ("".equals(protocol)) {
+         try {
+            this.glob.getProperty().set("protocol", "SOCKET");
+         }
+         catch (org.jutils.JUtilsException e) {
+            log.error(ME, "Failed setting SOCKET protocol, we continue nevertheless: " + e.toString());
+         }
+      }
    }
 
    /**
     * Add a C# / VisualBasic listener over the ActiveX bridge. 
+    * This method is called automatically when activating the bridge
     */
    public void addUpdateListener(UpdateListener updateListener) /* throws java.util.TooManyListenersException */ {
       log.info(ME, "Registering update listener");
@@ -115,6 +132,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
 
    /**
     * Remove a C# / VisualBasic listener. 
+    * This method is called automatically when deactivating the bridge
     */
    public void removeUpdateListener(UpdateListener updateListener) {
       log.info(ME, "Removing update listener");
@@ -403,16 +421,20 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
                   new GetQos(this.glob, glob.getQueryQosFactory().readObject(xmlQos)));
    }
 
+   //public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException {
+   //   return this.glob.getXmlBlasterAccess().publish(msgUnit);
+   //}
+
    /**
     * Publish a message. 
     * @param xmlKey The message topic
     * @param contentStr The payload as a string
     * @param xmlQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(MsgUnit)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(org.xmlBlaster.util.MsgUnit)
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
-   public PublishReturnQos publish(String xmlKey, String contentStr, String xmlQos) throws XmlBlasterException {
+   public PublishReturnQos publishStr(String xmlKey, String contentStr, String xmlQos) throws XmlBlasterException {
       MsgUnit msgUnit = new MsgUnit(this.glob, xmlKey, contentStr, xmlQos);
       return this.glob.getXmlBlasterAccess().publish(msgUnit);
    }
@@ -423,7 +445,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * @param content The payload as binary blob
     * @param xmlQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(MsgUnit)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(org.xmlBlaster.util.MsgUnit)
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    public PublishReturnQos publishBlob(String xmlKey, byte[] content, String xmlQos) throws XmlBlasterException {
@@ -497,7 +519,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          //   System.out.println("ERROR: queued update message not consumed properly");
 
          System.out.println("***** Publishing ...");
-         PublishReturnQos ret = access.publish("<key oid='test'/>", "Bla", "<qos/>");
+         PublishReturnQos ret = access.publishStr("<key oid='test'/>", "Bla", "<qos/>");
          System.out.println("***** Published message ret=" + ret.getState());
          Thread.currentThread().sleep(2000);
          response = access.sendRequest("<xmlBlaster>disconnect/></xmlBlaster>");
