@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.20 2001/08/30 21:00:54 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.21 2001/08/30 21:41:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -39,7 +39,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <pre>
  *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSub
  *
- *    jaco javaclients.ClientSub -name Jeff -client.protocol RMI
+ *    java javaclients.ClientSub -name Jeff -client.protocol RMI
  *
  *    java javaclients.ClientSub -help
  * </pre>

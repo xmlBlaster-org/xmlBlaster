@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.1 2001/08/30 21:24:59 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.2 2001/08/30 21:41:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -23,7 +23,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 
 /**
- * This client demonstrates the method subscribe() with a later publish(). 
+ * This client demonstrates the method subscribe() with a later publish().
  * <p />
  * We use a subscribe variant, where for every subscribe we define a
  * specialized update method.<br />
@@ -64,14 +64,14 @@ public class ClientSubDispatch implements I_Callback
          // Now we are connected to xmlBlaster MOM server.
 
 
-         
+
          // Subscribe to messages with XPATH using some helper classes
          Log.info(ME, "Subscribing #1 for anonymous callback class using XPath syntax ...");
          SubscribeKeyWrapper key = new SubscribeKeyWrapper("//DispatchTest", "XPATH");
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
                public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
-                  Log.info(ME, "Receiving message #1 with specialized update() ...");
+                  Log.info(ME, "Receiving message with specialized update() #1 ...");
                   numReceived1++;
                   Log.plain("UpdateKey", updateKey.printOn().toString());
                   Log.plain("content", (new String(content)).toString());
@@ -79,12 +79,12 @@ public class ClientSubDispatch implements I_Callback
                }
             });
 
-         
+
          Log.info(ME, "Subscribing #2 for anonymous callback class using XPath syntax ...");
          key = new SubscribeKeyWrapper("A message id");
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
                public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
-                  Log.info(ME, "Receiving message #2 with specialized update() ...");
+                  Log.info(ME, "Receiving message with specialized update() #2 ...");
                   numReceived2++;
                   Log.plain("UpdateKey", updateKey.printOn().toString());
                   Log.plain("content", (new String(content)).toString());
@@ -92,7 +92,7 @@ public class ClientSubDispatch implements I_Callback
                }
             });
 
-         
+
          // Construct a message and publish it ...
          String publishOid1 = "";
          // This time, as an example, we don't use the wrapper helper classes,
@@ -101,15 +101,17 @@ public class ClientSubDispatch implements I_Callback
                            "   <DispatchTest>" +
                            "   </DispatchTest>" +
                            "</key>";
-         String content = "Some content";
+         String content = "Some content #1";
          MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid1 = blasterConnection.publish(msgUnit);
          Log.info(ME, "Publishing done, returned oid=" + publishOid1);
 
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          String publishOid2 = "";
          xmlKey = "<key oid='A message id' contentMime='text/xml'>\n" +
                   "</key>";
+         content = "Some content #2";
          msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid2 = blasterConnection.publish(msgUnit);
          Log.info(ME, "Publishing done, returned oid=" + publishOid2);
@@ -139,7 +141,7 @@ public class ClientSubDispatch implements I_Callback
          strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " message.");
 
-         
+
          blasterConnection.logout();
          // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }
