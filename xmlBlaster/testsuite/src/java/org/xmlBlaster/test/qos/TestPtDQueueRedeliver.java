@@ -52,6 +52,9 @@ import junit.framework.*;
  * This client does test if a subscriber can reconnect to its session and 
  * its callback queue holded the messages during downtime. 
  * <p>
+ * See method testPersitentPtp() for a description.
+ * </p>
+ * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
  * </p>
@@ -120,9 +123,15 @@ public class TestPtDQueueRedeliver extends TestCase
    }
 
    /**
-    * xmlBlaster starts and sender sends persistent and forceQueuing PtP message.
-    * xmlBlaster stops and starts again
-    * receiver start and should receive the message
+    * <p>
+    * 1. xmlBlaster starts and sender sends persistent and forceQueuing PtP message.
+    * </p>
+    * <p>
+    * 2. xmlBlaster stops and starts again
+    * </p>
+    * <p>
+    * 3. receiver start and should receive the message
+    * </p>
     */
    public void testPersitentPtp() {
       log.info(ME, "testPersitentPtp("+sessionNameRcv+") ...");
