@@ -3,7 +3,7 @@
 COMMENT:
    This page contains a frameset, the 'northFrame' recevies the
    data (system infos from our web server) and draws the
-   'cpuinfo' and 'meminfo' frames. 
+   'cpuinfo' and 'meminfo' frames.
 
    We receive instant callbacks over the persistent http connection.
 
@@ -45,11 +45,10 @@ AUTHOR:
           */
          function loginSucceeded(persistentWindow)
          {
-            Log = xmlBlasterWindow.Log;
+            Log = top.xmlBlasterWindow.Log;
             // Switch debugging on/off
-            Log.INFO = true;
+            Log.INFO = false;
             Log.TRACE = false;
-
             Log.trace("Login succeeded, loading application ...");
             // use absolute name, since this method is called from persistentWindow servlet
             top.systemInfoWindow.northFrame.location.href = "/systemInfo/northFrame.html";
