@@ -24,6 +24,27 @@ extern "C" {
 #endif
 #endif
 
+/** Declare function pointer to write to socket */
+typedef ssize_t ( * XmlBlasterWriteToSocketFunc)(void *xb, const int fd, const char *ptr, const size_t nbytes);
+/** Declare function pointer to read from socket */
+typedef ssize_t ( * XmlBlasterReadFromSocketFunc)(void *xb, const int fd, char *ptr, const size_t nbytes);
+
+/**
+ * Holds a callback function pointer and its user pointer (the 'this' pointer). 
+ */
+typedef struct {
+   XmlBlasterReadFromSocketFunc funcP;
+   void *userP;
+} XmlBlasterReadFromSocketFuncHolder;
+
+/**
+ * Holds a callback function pointer and its user pointer (the 'this' pointer, first argument). 
+ */
+typedef struct {
+   XmlBlasterWriteToSocketFunc funcP;
+   void *userP;
+} XmlBlasterWriteToSocketFuncHolder;
+
 /**
  * Holds arbitrary raw data and its length
  */
