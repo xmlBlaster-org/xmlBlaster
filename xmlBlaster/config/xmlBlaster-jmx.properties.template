@@ -8,6 +8,8 @@
 # Run RAM based only. The hsql used by XmlBlaster does not work on JBoss 3.0
 #
 persistence/msgUnitStore/defaultPlugin=RAM,1.0
+persistence/session/defaultPlugin=RAM,1.0
+persistence/subscribe/defaultPlugin=RAM,1.0
 queue/subject/defaultPlugin=RAM,1.0
 queue/history/defaultPlugin=RAM,1.0
 queue/callback/defaultPlugin=RAM,1.0
