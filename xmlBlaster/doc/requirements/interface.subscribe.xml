@@ -78,7 +78,8 @@
    &lt;notify>false&lt;/notify>
    
    &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
-   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
+   &lt;!-- Here we use the RegEx filter and only want content starting with 'H' -->
+   &lt;filter type='GnuRegexFilter' version='1.0'>^H.*$&lt;/filter>
                                 
    &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all (default: 1) -->
    &lt;history numEntries='20'/>
@@ -260,6 +261,7 @@
    <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
    <see type="REQ">client.subscribe.dispatch</see>
 
+   <see type="API">javaclients.HelloWorldSubscribe</see>
    <see type="API">org.xmlBlaster.engine.xml2java.XmlKey</see>
    <see type="API">org.xmlBlaster.client.qos.SubscribeQos</see>
    <see type="API">org.xmlBlaster.client.qos.SubscribeReturnQos</see>
@@ -268,7 +270,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
