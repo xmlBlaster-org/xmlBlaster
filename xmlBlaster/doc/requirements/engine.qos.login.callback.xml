@@ -34,12 +34,6 @@
    <changerequest prio='MEDIUM' status="OPEN">
    <!-- name>Michele,Marcel</name -->
    <p>
-   The login mode is changed to be session based.
-   This allows multiple logins for the same client.
-   The logins are distinguished by a unique, random session ID.
-   </p>
-
-   <p>
    A callback address corresponds to a callback server created
    by a client. A client may establish many callback servers,
    for example one CORBA and another for XML-RPC.
@@ -48,15 +42,6 @@
    tried until the message is delivered.
    If all callback addresses fail, the result will depend on the
    specified login qos.
-   </p>
-
-   <p>
-   XmlBlaster allows to check clients with a ping to the callback server.
-   The ping frequency is adjustable at login time by the client itself.
-   Interested parties can subscribe on Login/Logout events, to find out if
-   a client arrives or disappears.
-   A client disappears when it does a logout or on failure (no response to the ping)
-   or on session-timeout.
    </p>
 
    <p>
@@ -134,25 +119,13 @@
    All resources are controlled by 'timeout' values (similar to 'leases' in Jini)
    so that no resource leaks can occur with 'miss behaving' clients.
    </p>
-
-   <p>
-   This new callback framework will be queue based with a queue manager,
-   allowing the following additional qualities:<br />
-   - Priorities for messages
-   - Guaranteed sequence of messages
-   </p>
-
-   <p>
-   The Thread pooling will be probably based on Doug Lea's lib
-   http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
-   </p>
    </changerequest>
 
 
 
    <example lang="Java">
       <![CDATA[
-      <!-- QoS of a login method, this raw string is delivered to xmlBlaster -->
+      <!-- QoS examples of a login method, this raw string is delivered to xmlBlaster -->
       <qos>
          <callback type='IOR'>     <!-- Use CORBA to deliver messages -->
             IOR:00011200070009990000....
@@ -167,6 +140,25 @@
             http:/www.mars.universe:8080/RPC2
          </callback>
 
+         <!-- A full blown example: -->
+         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+            <callback type='XML-RPC' sessionId='4e56890ghdFzj0' pingInterval='60000'>
+               http:/www.mars.universe:8080/RPC2
+               <ptp>true</ptp>
+               <compress type='gzip' minSize='1000'/>
+               <burstMode collectTime='400'/>
+            </callback>
+         </queue>
+         <!-- 
+          The callback queue is set up with the given attributes (max 4000 kBytes or
+          max 1000 messages are stored).
+          If the queue is full a dead letter is published containing the lost messages.
+          This callback collects messages for 400 milliseconds, compresses the
+          message array if it is bigger 1000 bytes and accepts PtP messages.
+          The callback server is pinged every 60000 millis (1 minute)
+          and the callback update() method is invoked with the noted sessionId 
+          so that the client can trust the update.
+         -->
       </qos>
 
 
@@ -199,7 +191,7 @@
    <see type="API">org.xmlBlaster.client.LoginQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
