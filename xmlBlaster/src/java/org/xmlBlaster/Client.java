@@ -1,6 +1,8 @@
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
+import org.xmlBlaster.serverIdl.*;
+import org.xmlBlaster.clientIdl.*;
 import jacorb.naming.NameServer;
 import org.omg.CosNaming.*;
 
