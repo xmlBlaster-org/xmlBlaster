@@ -59,17 +59,42 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    void registerConnectionListener(I_ConnectionStateListener connectionListener);
 
    /**
-    * Login to xmlBlaster
+    * Login to xmlBlaster. 
+    * <p>
+    * Connecting with the default configuration (which checks xmlBlaster.properties and
+    * your command line arguments):
+    * </p>
     * <pre>
-    *  ConnectQos qos = new ConnectQos(glob);
-    *
+    *  I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
+    *  xmlBlasterAccess.connect(null, null);
+    * </pre>
+    * <p>
+    * The default behavior is to poll automatically for the server if it is not found.
+    * As we have not specified a listener for returned messages from the server there
+    * is no callback server created. 
+    * </p>
+    * <p>
+    * This example shows how to configure different behavior:
+    * </p>
+    * <pre>
     *  // Example how to configure fail safe settings
-    *  Address addr = new Address(glob);
-    *  addr.setDelay(2000L);
-    *  addr.setRetries(-1);
-    *  addr.setMaxEntries(2000);
-    *  addr.setPingInterval(5000L);
-    *  qos.addAddress(addr);
+    *  ConnectQos connectQos = new ConnectQos(glob);
+    *
+    *  Address address = new Address(glob);
+    *  address.setDelay(4000L);      // retry connecting every 4 sec
+    *  address.setRetries(-1);       // -1 == forever
+    *  address.setPingInterval(0L);  // switched off
+    *  addr.setType("SOCKET");       // don't use CORBA protocol, but use SOCKET instead
+    *
+    *  connectQos.setAddress(address);
+    *
+    *  CallbackAddress cbAddress = new CallbackAddress(glob);
+    *  cbAddress.setDelay(4000L);      // retry connecting every 4 sec
+    *  cbAddress.setRetries(-1);       // -1 == forever
+    *  cbAddress.setPingInterval(4000L); // ping every 4 seconds
+    *  connectQos.addCallbackAddress(cbAddress);
+    *  
+    *  xmlBlasterAccess.connect(connectQos);
     *
     * </pre>
     * @param qos Your configuration desire
