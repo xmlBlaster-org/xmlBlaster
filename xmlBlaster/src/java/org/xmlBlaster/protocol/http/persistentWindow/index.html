@@ -34,9 +34,9 @@
                // Response to servlet that we are alive ...
                Log.warning("Received ping '" + state + "', sending pong back to servlet");
                // Sending the state is for debugging only (or for proxies to let it through?)
-               self.frames["controlFrame"].location.reload(true);
-               // self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
-               self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
+               self.frames["pingFrame"].location.reload(true);
+               // self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
+               self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
             if ((typeof pingTimeoutHandler) != "undefined")
                window.clearTimeout(pingTimeoutHandler);
@@ -69,9 +69,10 @@
    </head>
 
 <!-- frames -->
-<frameset cols="10,10,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+<frameset cols="1,1,1,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
 <frame name="callbackFrame" src="loginCB.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="controlFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+<frame name="pingFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="connectionTextFrame" src="connected.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 </frameset>
 
