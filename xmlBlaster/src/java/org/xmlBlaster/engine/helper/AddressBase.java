@@ -3,11 +3,12 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.5 2002/05/01 21:40:07 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.6 2002/05/02 12:35:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xml.sax.Attributes;
 
@@ -23,6 +24,7 @@ import org.xml.sax.Attributes;
 public abstract class AddressBase
 {
    private static final String ME = "AddressBase";
+   protected final Global glob;
 
    /** The root xml element: &lt;callback> or &lt;address>, is set from the derived class */
    protected String rootTag = null;
@@ -35,7 +37,7 @@ public abstract class AddressBase
    protected int port = DEFAULT_port;
 
    /** The unique protocol type, e.g. "IOR" */
-   protected String type;
+   protected String type = "";
    
    /** BurstMode: The time to collect messages for publish/update */
    public static final long DEFAULT_collectTime = 0L;
@@ -84,10 +86,10 @@ public abstract class AddressBase
 
    /**
     */
-   public AddressBase(String rootTag)
+   public AddressBase(Global glob, String rootTag)
    {
+      this.glob = glob;
       setRootTag(rootTag);
-      setType(null);
    }
 
    /**
@@ -113,7 +115,10 @@ public abstract class AddressBase
     */
    public final void setType(String type)
    {
-      this.type = type;
+      if (type == null)
+         this.type = "";
+      else
+         this.type = type;
    }
 
    /**
@@ -161,7 +166,7 @@ public abstract class AddressBase
 
    /**
     * Returns the protocol type.
-    * @return e.g. "EMAIL" or "IOR"
+    * @return e.g. "EMAIL" or "IOR" (never null).
     */
    public final String getType()
    {

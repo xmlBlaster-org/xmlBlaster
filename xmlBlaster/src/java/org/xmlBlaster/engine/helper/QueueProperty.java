@@ -3,7 +3,7 @@ Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueueProperty.java,v 1.5 2002/04/26 21:31:51 ruff Exp $
+Version:   $Id: QueueProperty.java,v 1.6 2002/05/02 12:35:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -455,7 +455,7 @@ public class QueueProperty
    {
       QueueProperty prop = new QueueProperty(new Global(args), null);
       System.out.println(prop.toXml());
-      CallbackAddress adr = new CallbackAddress("EMAIL");
+      CallbackAddress adr = new CallbackAddress(new Global(args), "EMAIL");
       adr.setAddress("et@mars.sun");
       prop.setCallbackAddress(adr);
       System.out.println(prop.toXml());
