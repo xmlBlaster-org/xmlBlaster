@@ -53,604 +53,590 @@ Else add it manually.
 ============================================================================ -->
 
 <project default="usage" basedir=".">
-
-  <taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
-  <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
-  <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
-  <taskdef name="foreach" classname="org.apache.tools.ant.taskdefs.contrib.ForEach" />
-  <taskdef name="osfamily" classname="org.apache.tools.ant.taskdefs.contrib.OsFamily" />
-  <taskdef name="switch" classname="org.apache.tools.ant.taskdefs.contrib.Switch" />
-
-  <property file="build.properties"/>
-
-  <property name="name" value="xmlBlaster"/>
-  <property name="version" value="0.74-dev"/>
-  <property name="year" value="2000"/>
-
-  <property name="build.compiler" value="classic"/>
-  <property name="debug" value="off"/>
-
-  <property name="src.dir" value="./src/java"/>
-  <property name="dtd.dir" value="./src/dtd"/>
-  <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
-  <property name="doc.dir" value="./doc"/>
-  <property name="classes.dir" value="./classes"/>
-  <property name="javadoc.dir" value="./doc/api"/>
-  <property name="testsuite.dir" value="./testsuite"/>
-  <property name="demo.dir" value="./demo"/>
-  <property name="bin.dir" value="./bin"/>
-  <property name="lib.dir" value="./lib"/>
-  <property name="req.dir" value="./doc/requirements"/>
-  <property name="packages" value="org.xmlBlaster.*"/>
-
-  <property name="demo.http.dir"        value="${demo.dir}/http"/>
-  <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
-  <!-- The document root of the servlet engine (deploy dir for war files): -->
-  <property name="TOMCAT_HOME"          value="${user.home}/jakarta-tomcat"/>
-  <property name="WWW_ROOT"             value="${TOMCAT_HOME}/webapps"/>
-
-  <property name="idl" value="org.xmlBlaster.protocol.corba"/>
-  <property name="idl.class" value="org.jacorb.idl.parser"/>
-
-  <property name="build.dir" value="./build"/>
-  <property name="build.src" value="${build.dir}/src"/>
-  <property name="build.dest" value="${build.dir}/classes"/>
-  <property name="build.war" value="${build.dir}/war"/>
-
-  <property name="dist.dir" value="./dist"/>
-  <property name="dist-client.dir" value="./dist-client"/>
-
-
-  <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar"/>
-
-  <property name="src.cpp.dir" value="./src/c++"/>
-  <property name="CORBACPP_VER" value="2.3.6"/>
-  <property name="CORBACPP_HOME" value="/opt/local/mico"/>
-  <property name="XMLCPP_VER" value="1_6_0"/>
-  <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
-
-  <!-- =================================================================== -->
-  <!-- Help on usage                                                       -->
-  <!-- =================================================================== -->
-  <target name="usage">
-    <echo message=""/>
-    <echo message=""/>
-    <echo message="xmlBlaster Build file"/>
-    <echo message="-------------------------------------------------------------"/>
-    <echo message=""/>
-    <echo message=" available targets are:"/>
-    <echo message=""/>
-    <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
-    <echo message="   demo        --> generates the demo.jar file"/>
-    <echo message="   testsuite   --> generates the testsuite.jar file"/>
-    <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library/dll)"/>
-    <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
-    <echo message="   cpp-test    --> generates C++ test clients"/>
-    <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
-    <echo message="   javadocs    --> generates the javadoc documentation"/>
-    <echo message="   dist        --> generates the xmlBlaster distribution"/>
-    <echo message="   clean       --> cleans up the directory"/>
-    <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
-    <echo message="                   demonstrates persistent http callbacks"/>
-    <echo message="   k2          --> create the J2EE connector"/>
-    <echo message="   jms-adapter --> create the J2EE connector example bean"/>
-    <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
-    <echo message=""/>
-    <echo message=" See the comments inside the build.xml file for more details."/>
-    <echo message="-------------------------------------------------------------"/>
-    <echo message=""/>
-    <echo message=""/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Prepares the build directory                                        -->
-  <!-- =================================================================== -->
-  <target name="prepare">
-    <mkdir dir="${build.dir}"/>
-    <osfamily property="os.family" />
-    <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the source code                                            -->
-  <!-- =================================================================== -->
-  <target name="prepare-src" depends="prepare">
-    <!-- create directories -->
-    <mkdir dir="${build.src}"/>
-    <mkdir dir="${build.dest}"/>
-
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the xmlBlaster core source directory                       -->
-  <!-- =================================================================== -->
-  <target name="xmlBlaster" depends="prepare-src">
-
-    <!-- convert idl -->
-    <echo message="Converting idl..."/>
-    <java classname="${idl.class}"
-          args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
-
-    <copy todir="${build.src}/xmlBlaster">
-       <fileset dir="${src.dir}">
-          <exclude name="org/jutils"/>
-          <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-          <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-          <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-          <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-          <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-          <exclude name="**/OracleSqlFactory.java"/>
-       </fileset>
-    </copy>
-
-    <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
-    <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
-    <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
-    <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties"/>
-    <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties"/>
-
-    <javac srcdir="${build.src}/xmlBlaster"
-           destdir="${build.dest}"
-           classpath="${classpath}"
-           debug="${debug}"/>
-
-    <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
-    <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
-    <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
-
-    <!-- include content of jutils.jar in xmlBlaster.jar -->
-    <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
-
-    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
-
-    <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the xmlBlaster demo source directory                       -->
-  <!-- =================================================================== -->
-  <target name="demo" depends="xmlBlaster">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
-    <copy todir="${build.src}/demo">
-      <fileset dir="${demo.dir}">
-        <exclude name="README"/>
-        <exclude name="Makefile"/>
-        <exclude name="c/**"/>
-        <exclude name="**/XmlRpcHttpClient.java"/>
-      </fileset>
-    </copy>
-    <javac srcdir="${build.src}/demo"
-           destdir="${build.dest}"
-           classpath="${classpath}:${lib.dir}/${name}.jar"
-           debug="${debug}"/>
-    <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
-    <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the xmlBlaster, demo, and  testsuite source directories    -->
-  <!-- =================================================================== -->
-  <target name="all" depends="xmlBlaster,demo,testsuite">
-  <!--target name="all" depends="prepare-src"-->
-    <delete file="${lib.dir}/demo.jar"/>
-    <delete file="${lib.dir}/testsuite.jar"/>
-    <delete file="${build.dir}/${name}.jar"/>
-    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
-    <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the xmlBlaster testsuite source directory                  -->
-  <!-- =================================================================== -->
-  <target name="testsuite" depends="xmlBlaster">
-    <copy todir="${build.src}/testsuite/org">
-      <fileset dir="${testsuite.dir}/org">
-        <exclude name="README, Makefile"/>
-        <exclude name="Makefile"/>
-      </fileset>
-    </copy>
-    <javac srcdir="${build.src}/testsuite"
-           destdir="${build.dest}"
-           classpath="${classpath}:${lib.dir}/${name}.jar"
-           debug="${debug}"/>
-    <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
-    <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Builds the J2EE XmlBlaster resource adapter, with example bean      -->
-  <!-- =================================================================== -->
-  <target name="k2" depends="xmlBlaster">
-   <!-- Pack rar archive -->
-   <!-- create tmp dir to build it up -->
-   <mkdir dir="${build.dir}/ra"/>
-   <mkdir dir="${build.dir}/ra/META-INF"/>
-   <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
-   <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
-   <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
-
-    <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
-    <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
-    <!-- I know it is deprecated, but how else to remove dirs -->
-    <deltree dir="${build.dir}/ra"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
-  <!-- =================================================================== -->
-  <target name="jms-adapter" depends="k2">
-    <!-- Pack rar archive -->
-    <!-- create tmp dir to build it up -->
-    <mkdir dir="${build.dir}/jms"/>
-    <mkdir dir="${build.dir}/jms/META-INF"/>
-    <mkdir dir="${build.dir}/jms/javaclients/j2ee/k2/"/>
-    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
-    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
-    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
-
-
-   <javac srcdir="${build.src}/javaclients/j2ee/k2/"
-          destdir="${build.dest}"
-          classpath="${classpath}:${lib.dir}/${name}.jar"
-          debug="${debug}"/>
-
-    <jar destfile="${build.dir}/JmsAdapter.jar">
-        <fileset dir="${build.dest}"
-             includes="**/JmsAdapter.class"/>
-        <fileset dir="${build.dir}/jms"/>
-    </jar>
-
-    <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
-    <!-- I know it is deprecated, but how else to remove dirs -->
-    <deltree dir="${build.dir}/jms"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
-  <!-- =================================================================== -->
-  <target name="deploy_war" depends="prepare">
-     <echo message="Please run 'build.sh all' before if you have changed some code"/>
-     <mkdir dir="${build.war}"/>
-     <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
-     <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
-     <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http">
-       <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
-     </copy>
-     <copy todir="${build.war}/WEB-INF/classes/http">
-       <fileset dir="${build.dest}/http"/>
-     </copy>
-     <copy file="${lib.dir}/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
-     <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
-     <copy file="${lib.dir}/parser.jar" tofile="${build.war}/WEB-INF/lib/parser.jar"/>
-
-     <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
-     <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
-     <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
-
-     <copy todir="${build.war}/javascript">
-       <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
-     </copy>
-     <copy todir="${build.war}/persistentWindow">
-       <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
-     </copy>
-     <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
-     <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
-     <copy todir="${build.war}/images">
-       <fileset dir="${demo.http.dir}/images"/>
-     </copy>
-     <copy todir="${build.war}/dhtml">
-       <fileset dir="${demo.http.dir}/dhtml"/>
-     </copy>
-     <copy todir="${build.war}/svg">
-       <fileset dir="${demo.http.dir}/svg"/>
-     </copy>
-
-     <jar destfile="${build.dir}/xmlBlaster.war"
-          basedir="${build.war}/"
-          includes="**"/>
-
-     <copy file="${lib.dir}/${name}.jar" tofile="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
-     <delete dir="${WWW_ROOT}/xmlBlaster"/>
-     <delete file="${WWW_ROOT}/xmlBlaster.war"/>
-     <copy file="${build.dir}/xmlBlaster.war" tofile="${WWW_ROOT}/xmlBlaster.war"/>
-     <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
-
-     <echo message=""/>
-     <echo message="   Start xmlBlaster and a demo data publisher:"/>
-     <echo message="      java org.xmlBlaster.Main -xmlrpc.port 8089    (we switch port to allow tomcat on 8080)"/>
-     <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
-     <echo message=""/>
-     <echo message="   Start tomcat and invoke the demo with:"/>
-     <echo message="      tomcat.sh start"/>
-     <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the core javadoc documentation                              -->
-  <!-- =================================================================== -->
-  <target name="javadocs" depends="xmlBlaster">
-    <mkdir dir="${javadoc.dir}"/>
-        <javadoc packagenames="org.xmlBlaster.*"
-                sourcepath="${src.dir}"
-                classpath="${classpath}"
-                destdir="${javadoc.dir}"
-                author="true"
-                version="true"
-                use="true"
-                windowtitle="xmlBlaster API"
-                doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
-
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the distribution                                            -->
-  <!-- =================================================================== -->
-  <target name="dist" depends="all">
-    <mkdir dir="${dist.dir}"/>
-    <mkdir dir="${dist.dir}/bin"/>
-    <mkdir dir="${dist.dir}/src"/>
-    <mkdir dir="${dist.dir}/demo"/>
-    <mkdir dir="${dist.dir}/doc"/>
-    <mkdir dir="${dist.dir}/testsuite"/>
-    <mkdir dir="${dist.dir}/lib"/>
-
-    <copy todir="${dist.dir}/src/java">
-      <fileset dir="${src.dir}"/>
-    </copy>
-    <copy todir="${dist.dir}/src/dtd">
-      <fileset dir="${dtd.dir}"/>
-    </copy>
-    <copy todir="${dist.dir}/src/idl">
-      <fileset dir="${idl.dir}"/>
-    </copy>
-
-    <copy todir="${dist.dir}/doc">
-      <fileset dir="${doc.dir}"/>
-    </copy>
-    <copy todir="${dist.dir}/demo">
-      <fileset dir="${demo.dir}"/>
-    </copy>
-    <copy todir="${dist.dir}/lib">
-      <fileset dir="${lib.dir}"/>
-    </copy>
-    <copy todir="${dist.dir}/bin">
-      <fileset dir="${bin.dir}"/>
-    </copy>
-
-    <copy file="README" tofile="${dist.dir}/README"/>
-    <copy file="INSTALL" tofile="${dist.dir}/INSTALL"/>
-    <copy file="LICENSE" tofile="${dist.dir}/LICENSE"/>
-    <copy file="config/xmlBlaster.properties.template" tofile="${dist.dir}/config/xmlBlaster.properties.template"/>
-    <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template"/>
-    <copy file="config/xmlBlaster.policy" tofile="${dist.dir}/config/xmlBlaster.policy"/>
-    <copy file=".bashrc" tofile="${dist.dir}/.bashrc"/>
-    <copy file="build.xml" tofile="${dist.dir}/build.xml"/>
-    <jar destfile="${name}-${version}.jar" basedir="${dist.dir}"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the distribution for java clients                           -->
-  <!-- =================================================================== -->
-  <target name="dist-client" depends="all">
-    <mkdir dir="${dist-client.dir}"/>
-    <mkdir dir="${dist-client.dir}/lib"/>
-    <mkdir dir="${dist-client.dir}/classes"/>
-
-    <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
-    <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
-    <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
-    <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
-    
-    <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
-    <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" basedir="${dist-client.dir}/classes"/>
-    <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete>
-
-    <echo message="--------------------------------------------"/>
-    <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
-    <echo message="It supports clients with XmlRpc, CORBA and RMI"/>
-    <echo message="Note: The XML parser support is not included, we expect your XML library."/>
-    <echo message="--------------------------------------------"/>
-  </target>
-
-
-  <!-- =================================================================== -->
-  <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
-  <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
-  <!-- =================================================================== -->
-  <target name="cpp-lib" depends="prepare">
-
-     <echo message="Adjust following settings in build.properties if necessary:"/>
-     <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
-     <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
-     <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
-     <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
-     <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
-
-
-     <switch value="${os.family}" caseinsensitive="false">
-        <case value="unix">
-           <antcall target="setUnixCpp" />
-        </case>
-        <default value="dummy">
-           <antcall target="setWinCpp" />
-        </default>
-     </switch>
-
-     <switch value="${os.family}" caseinsensitive="false">
-        <case value="unix">
-           <property name="WIN_TOKEN" value="" />
-        </case>
-        <default value="dummy">
-           <property name="WIN_TOKEN" value="win32-" />
-        </default>
-     </switch>
-
-     <!-- A typical idl CORBA compile:
-       /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
-     -->
-     <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/${WIN_TOKEN}bin/idl" failonerror="true">
-        <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
-        <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
-        <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
-        <arg line="--poa"/>
-        <arg line="--c++-suffix cpp"/>
-        <arg line="../../../${idl.dir}/xmlBlaster.idl"/>
-     </exec>
-     <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
-
-
-
-      <switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="linkerarg.1" value="-fpic" />
-         </case>
-         <default value="dummy">
-            <property name="linkerarg.1" value="/WARN" />
-         </default>
-      </switch>
-      <switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="warnlevel" value="-Wall" />
-         </case>
-         <default value="dummy">
-            <property name="warnlevel" value="/WARN" />
-         </default>
-      </switch>
-
-
-     <!-- A typical compile:
-       g++ -g
-           -fpic -I/opt/local/mico/include -DMICO -c /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.cc
-      -->
-     <!-- A typical shared library link:
-       g++ -shared -g
-           -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79c
-           /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
-     -->
-     <!-- Build a shared library -->
-     <cc debug="true" link="shared" outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj">
-
-        <compiler name="msvc" if="BUILD_WINDOWS"> <!-- is set in build.bat -->
-           <!-- defineset define="DLL_EXPORT"/ -->
-           <defineset><define name="_WINDOWS" value="1" /></defineset>
-        </compiler>
-        <compiler name="gcc" if="BUILD_UNIX"> <!-- is set in build.sh -->
-           <!-- defineset><define name="dummyX" value="1" /></defineset -->
-        </compiler>
-
-        <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
-        <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
-        <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
-        <includepath location="${src.cpp.dir}" />
-        <!-- sysincludepath location="${STL_HOME}/stlport" /-->
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/src" /> <!-- win32 -->
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <defineset>
-           <define name="MICO" value="1" />
-           <!-- undefine name="UNWANTEDDEF" / -->
-        </defineset>
-        <!-- compilerarg value="-GX" / -->  <!-- Windows -->
-        <linkerarg value="${linkerarg.1}" />
-        <linkerarg value="${warnlevel}" />
-        <linkerarg value="-Wimplicit-int" /> <!-- UNIX/g++ -->
-        <linkerarg value="-Werror-implicit-function-declaration" />  <!-- UNIX/g++ -->
-     </cc>
-  </target>
-
-  <target name="setUnixCpp">
-     <!-- echo message="Doing UNIX stuff ..."/ -->
-     <!-- <property name="linkerarg.1" value="-fpic"/>  Seems to have scope in this target only! -->
-  </target>
-
-  <target name="setWinCpp">
-     <echo message="Please check if the binary directory of ${CORBACPP_HOME} is in your path environment"/>
-  </target>
-
-
-  <!-- =================================================================== -->
-  <!-- Corba/C++ integration - create C++ testclients                      -->
-  <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
-  <!-- =================================================================== -->
-  <!-- g++ -g -Wall -I/opt/local/mico/include
-                    -I/opt/xerces-c-src1_5_1/include
-                    -I/home/xmlblast/xmlBlaster/src/c++
-                    -DMICO -c TestGet.cpp
-       g++ -g -Wall -Wl,-rpath=/home/xmlblast/xmlBlaster/lib -Wl,-rpath=/opt/xerces-c-src1_5_1/lib -Wl,-rpath=/opt/local/mico/lib
-                    TestGet.o -o/home/xmlblast/xmlBlaster/testsuite/c++/bin/TestGet
-                    -L/opt/xerces-c-src1_5_1/lib -lxerces-c1_5_1 -lpthread -ldl
-                    -L/opt/local/mico/lib -lmico2.3.6 -lpthread
-                    -L/opt/local/mico/lib -lmicocoss2.3.6
-                    -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClient -lstdc++
-
-      Using STLport 4.5.1 gives a problem when linking an executable (on Linux):
-          /home/xmlblast/xmlBlaster/lib/libxmlBlasterClient.so: undefined reference to `CORBA::UserException::_print(_STL::basic_ostream<char, _STL::char_traits<char> > &) const'
-  -->
-  <target name="cpp-test" depends="prepare"> <!-- depends="prepare,cpp-lib" -->
-     <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
-  </target>
-
-  <target name="compileCppExe">
-     <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
-
-     <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-        <!-- libstlport_gcc, -->
-        <!-- libpath location="${STL_HOME}/lib"/ -->
-        <libpath location="${CORBACPP_HOME}/lib"/>
-        <libpath location="${XMLCPP_HOME}/lib"/>
-        <libpath location="${lib.dir}"/>
-     </libset>
-
-     <cc debug="true" link="executable"
-         outfile="${testsuite.dir}/c++/bin/${exeName}"
-         objdir="build/obj">
-        <compiler name="msvc" if="BUILD_WINDOWS">
-           <defineset define="DLL_EXPORT"/>
-           <defineset><define name="_WINDOWS" value="1" /></defineset>
-        </compiler>
-        <compiler name="gcc" if="BUILD_UNIX"> <!-- is set in build.sh -->
-           <!-- defineset><define name="dummyX" value="1" /></defineset -->
-        </compiler>
-        <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
-        <includepath location="${src.cpp.dir}" />
-        <!-- sysincludepath location="${STL_HOME}/stlport" / -->
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset refid="libs"/>
-        <defineset>
-           <define name="MICO" value="1" />
-        </defineset>
-        <compilerarg value="-Wall" />
-        <compilerarg value="-Wstrict-prototypes" />
-        <compilerarg value="-Wimplicit-int" />
-        <compilerarg value="-Werror-implicit-function-declaration" />
-        <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${lib.dir}" />
-     </cc>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Cleans everything                                                   -->
-  <!-- =================================================================== -->
-   <target name="clean" depends="prepare">
-      <delete dir="${build.dir}"/>
-      <delete dir=".c_dependency_cache"/>
-      <delete includeEmptyDirs="true">
-         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-         <!-- fileset dir="${req.dir}" includes="*.class"/ -->
-         <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
-         <fileset dir="${testsuite.dir}/c++" includes="*.o"/>
-         <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
-      </delete>
+ 
+   <taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
+   <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
+   <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
+ 
+   <taskdef name="foreach" classname="net.sf.antcontrib.logic.ForEach" />
+   <taskdef name="osfamily" classname="net.sf.antcontrib.platform.OsFamily" />
+   <taskdef name="switch" classname="net.sf.antcontrib.logic.Switch" />
+   <taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" />
+  
+   <property file="build.properties"/>
+ 
+   <property name="name" value="xmlBlaster"/>
+   <property name="version" value="0.74-dev"/>
+   <property name="year" value="2000"/>
+ 
+   <property name="build.compiler" value="classic"/>
+   <property name="debug" value="off"/>
+ 
+   <property name="src.dir" value="./src/java"/>
+   <property name="dtd.dir" value="./src/dtd"/>
+   <property name="doc.dir" value="./doc"/>
+   <property name="classes.dir" value="./classes"/>
+   <property name="javadoc.dir" value="./doc/api"/>
+   <property name="testsuite.dir" value="./testsuite"/>
+   <property name="demo.dir" value="./demo"/>
+   <property name="bin.dir" value="./bin"/>
+   <property name="lib.dir" value="./lib"/>
+   <property name="req.dir" value="./doc/requirements"/>
+   <property name="packages" value="org.xmlBlaster.*"/>
+ 
+   <property name="demo.http.dir"        value="${demo.dir}/http"/>
+   <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
+   <!-- The document root of the servlet engine (deploy dir for war files): -->
+   <property name="TOMCAT_HOME"          value="${user.home}/jakarta-tomcat"/>
+   <property name="WWW_ROOT"             value="${TOMCAT_HOME}/webapps"/>
+ 
+   <property name="idl" value="org.xmlBlaster.protocol.corba"/>
+   <property name="idl.class" value="org.jacorb.idl.parser"/>
+   <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
+   <property name="idl.file" value="${idl.dir}/xmlBlaster.idl" />
+ 
+   <property name="build.dir" value="./build"/>
+   <property name="build.src" value="${build.dir}/src"/>
+   <property name="build.dest" value="${build.dir}/classes"/>
+   <property name="build.war" value="${build.dir}/war"/>
+ 
+   <property name="dist.dir" value="./dist"/>
+   <property name="dist-client.dir" value="./dist-client"/>
+ 
+ 
+   <property name="xmlblaster_home" value="."/>
+   <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar"/>
+ 
+   <property name="src.cpp.dir" value="./src/c++"/>
+   <property name="CORBACPP_VER" value="2.3.6"/>
+   <property name="CORBACPP_HOME" value="/opt/local/mico"/>
+   <property name="XMLCPP_VER" value="1_6_0"/>
+   <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
+ 
+   <!-- =================================================================== -->
+   <!-- Help on usage                                                       -->
+   <!-- =================================================================== -->
+   <target name="usage">
+      <echo message=""/>
+      <echo message=""/>
+      <echo message="xmlBlaster Build file"/>
+      <echo message="-------------------------------------------------------------"/>
+      <echo message=""/>
+      <echo message=" available targets are:"/>
+      <echo message=""/>
+      <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
+      <echo message="   demo        --> generates the demo.jar file"/>
+      <echo message="   testsuite   --> generates the testsuite.jar file"/>
+      <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library/dll)"/>
+      <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
+      <echo message="   cpp-test    --> generates C++ test clients"/>
+      <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
+      <echo message="   javadocs    --> generates the javadoc documentation"/>
+      <echo message="   dist        --> generates the xmlBlaster distribution"/>
+      <echo message="   clean       --> cleans up the directory"/>
+      <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
+      <echo message="                   demonstrates persistent http callbacks"/>
+      <echo message="   k2          --> create the J2EE connector"/>
+      <echo message="   jms-adapter --> create the J2EE connector example bean"/>
+      <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
+      <echo message=""/>
+      <echo message=" See the comments inside the build.xml file for more details."/>
+      <echo message="-------------------------------------------------------------"/>
+      <echo message=""/>
+      <echo message=""/>
    </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Prepares the build directory                                        -->
+   <!-- =================================================================== -->
+   <target name="prepare">
+      <mkdir dir="${build.dir}"/>
+      <osfamily property="os.family" />
+      <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="BUILD_UNIX" value="true" />
+         </case>
+         <default>
+            <property name="BUILD_WINDOWS" value="true" />
+         </default>
+      </switch>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Compiles the source code                                            -->
+   <!-- =================================================================== -->
+   <target name="prepare-src" depends="prepare">
+      <!-- create directories -->
+      <mkdir dir="${build.src}"/>
+      <mkdir dir="${build.dest}"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster core source directory                       -->
+   <!-- =================================================================== -->
+   <target name="xmlBlaster" depends="prepare-src">
+      <!-- convert idl -->
+      <echo message="Converting idl..."/>
+      <java classname="${idl.class}"
+            args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
-   <target name="delete" depends="clean">
-      <delete>
-         <fileset dir="${dist.dir}" includes="**"/>
-      </delete>
-      <delete>
-         <fileset dir="${dist-client.dir}" includes="**"/>
-      </delete>
+      <copy todir="${build.src}/xmlBlaster">
+         <fileset dir="${src.dir}">
+            <exclude name="org/jutils"/>
+            <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="**/OracleSqlFactory.java"/>
+         </fileset>
+      </copy>
+
+      <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
+      <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
+      <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
+      <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties"/>
+      <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties"/>
+
+      <javac srcdir="${build.src}/xmlBlaster"
+            destdir="${build.dest}"
+            classpath="${classpath}"
+            debug="${debug}"/>
+
+      <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
+      <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
+      <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
+
+      <!-- include content of jutils.jar in xmlBlaster.jar -->
+      <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
+
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
+
+      <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster demo source directory                       -->
+   <!-- =================================================================== -->
+   <target name="demo" depends="xmlBlaster">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
+      <copy todir="${build.src}/demo">
+         <fileset dir="${demo.dir}">
+         <exclude name="README"/>
+         <exclude name="Makefile"/>
+         <exclude name="c/**"/>
+         <exclude name="**/XmlRpcHttpClient.java"/>
+         </fileset>
+      </copy>
+      <javac srcdir="${build.src}/demo"
+            destdir="${build.dest}"
+            classpath="${classpath}:${lib.dir}/${name}.jar"
+            debug="${debug}"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
+      <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster, demo, and  testsuite source directories    -->
+   <!-- =================================================================== -->
+   <target name="all" depends="xmlBlaster,demo,testsuite">
+   <!--target name="all" depends="prepare-src"-->
+      <delete file="${lib.dir}/demo.jar"/>
+      <delete file="${lib.dir}/testsuite.jar"/>
+      <delete file="${build.dir}/${name}.jar"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
+      <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster testsuite source directory                  -->
+   <!-- =================================================================== -->
+   <target name="testsuite" depends="xmlBlaster">
+      <copy todir="${build.src}/testsuite/org">
+         <fileset dir="${testsuite.dir}/org">
+            <exclude name="README, Makefile"/>
+            <exclude name="Makefile"/>
+         </fileset>
+      </copy>
+      <javac srcdir="${build.src}/testsuite"
+            destdir="${build.dest}"
+            classpath="${classpath}:${lib.dir}/${name}.jar"
+            debug="${debug}"/>
+      <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
+      <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Builds the J2EE XmlBlaster resource adapter, with example bean      -->
+   <!-- =================================================================== -->
+   <target name="k2" depends="xmlBlaster">
+      <!-- Pack rar archive -->
+      <!-- create tmp dir to build it up -->
+      <mkdir dir="${build.dir}/ra"/>
+      <mkdir dir="${build.dir}/ra/META-INF"/>
+      <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
+      <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
+      <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
+
+      <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
+      <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
+      <!-- I know it is deprecated, but how else to remove dirs -->
+      <deltree dir="${build.dir}/ra"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
+   <!-- =================================================================== -->
+   <target name="jms-adapter" depends="k2">
+      <!-- Pack rar archive -->
+      <!-- create tmp dir to build it up -->
+      <mkdir dir="${build.dir}/jms"/>
+      <mkdir dir="${build.dir}/jms/META-INF"/>
+      <mkdir dir="${build.dir}/jms/javaclients/j2ee/k2/"/>
+      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
+      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
+      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
+
+
+      <javac srcdir="${build.src}/javaclients/j2ee/k2/"
+            destdir="${build.dest}"
+            classpath="${classpath}:${lib.dir}/${name}.jar"
+            debug="${debug}"/>
+
+      <jar destfile="${build.dir}/JmsAdapter.jar">
+         <fileset dir="${build.dest}" includes="**/JmsAdapter.class"/>
+         <fileset dir="${build.dir}/jms"/>
+      </jar>
+
+      <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
+      <!-- I know it is deprecated, but how else to remove dirs -->
+      <deltree dir="${build.dir}/jms"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
+   <!-- =================================================================== -->
+   <target name="deploy_war" depends="prepare">
+      <echo message="Please run 'build.sh all' before if you have changed some code"/>
+      <mkdir dir="${build.war}"/>
+      <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
+      <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
+      <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http">
+        <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
+      </copy>
+      <copy todir="${build.war}/WEB-INF/classes/http">
+         <fileset dir="${build.dest}/http"/>
+      </copy>
+      <copy file="${lib.dir}/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
+      <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
+      <copy file="${lib.dir}/parser.jar" tofile="${build.war}/WEB-INF/lib/parser.jar"/>
+ 
+      <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
+      <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
+      <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
+ 
+      <copy todir="${build.war}/javascript">
+         <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
+      </copy>
+      <copy todir="${build.war}/persistentWindow">
+         <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
+      </copy>
+      <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
+      <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
+      <copy todir="${build.war}/images">
+         <fileset dir="${demo.http.dir}/images"/>
+      </copy>
+      <copy todir="${build.war}/dhtml">
+         <fileset dir="${demo.http.dir}/dhtml"/>
+      </copy>
+      <copy todir="${build.war}/svg">
+         <fileset dir="${demo.http.dir}/svg"/>
+      </copy>
+ 
+      <jar destfile="${build.dir}/xmlBlaster.war"
+           basedir="${build.war}/"
+           includes="**"/>
+ 
+      <copy file="${lib.dir}/${name}.jar" tofile="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
+      <delete dir="${WWW_ROOT}/xmlBlaster"/>
+      <delete file="${WWW_ROOT}/xmlBlaster.war"/>
+      <copy file="${build.dir}/xmlBlaster.war" tofile="${WWW_ROOT}/xmlBlaster.war"/>
+      <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
+ 
+      <echo message=""/>
+      <echo message="   Start xmlBlaster and a demo data publisher:"/>
+      <echo message="      java org.xmlBlaster.Main -xmlrpc.port 8089    (we switch port to allow tomcat on 8080)"/>
+      <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
+      <echo message=""/>
+      <echo message="   Start tomcat and invoke the demo with:"/>
+      <echo message="      tomcat.sh start"/>
+      <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates the core javadoc documentation                              -->
+   <!-- =================================================================== -->
+   <target name="javadocs" depends="xmlBlaster">
+      <mkdir dir="${javadoc.dir}"/>
+      <javadoc packagenames="org.xmlBlaster.*"
+               sourcepath="${src.dir}"
+               classpath="${classpath}"
+               destdir="${javadoc.dir}"
+               author="true"
+               version="true"
+               use="true"
+               windowtitle="xmlBlaster API"
+               doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates the distribution                                            -->
+   <!-- =================================================================== -->
+   <target name="dist" depends="all">
+      <mkdir dir="${dist.dir}"/>
+      <mkdir dir="${dist.dir}/bin"/>
+      <mkdir dir="${dist.dir}/src"/>
+      <mkdir dir="${dist.dir}/demo"/>
+      <mkdir dir="${dist.dir}/doc"/>
+      <mkdir dir="${dist.dir}/testsuite"/>
+      <mkdir dir="${dist.dir}/lib"/>
+
+      <copy todir="${dist.dir}/src/java">
+         <fileset dir="${src.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/src/dtd">
+         <fileset dir="${dtd.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/src/idl">
+         <fileset dir="${idl.dir}"/>
+      </copy>
+
+      <copy todir="${dist.dir}/doc">
+         <fileset dir="${doc.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/demo">
+         <fileset dir="${demo.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/lib">
+         <fileset dir="${lib.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/bin">
+         <fileset dir="${bin.dir}"/>
+      </copy>
+
+      <copy file="README" tofile="${dist.dir}/README"/>
+      <copy file="INSTALL" tofile="${dist.dir}/INSTALL"/>
+      <copy file="LICENSE" tofile="${dist.dir}/LICENSE"/>
+      <copy file="config/xmlBlaster.properties.template" tofile="${dist.dir}/config/xmlBlaster.properties.template"/>
+      <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template"/>
+      <copy file="config/xmlBlaster.policy" tofile="${dist.dir}/config/xmlBlaster.policy"/>
+      <copy file=".bashrc" tofile="${dist.dir}/.bashrc"/>
+      <copy file="build.xml" tofile="${dist.dir}/build.xml"/>
+      <jar destfile="${name}-${version}.jar" basedir="${dist.dir}"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates the distribution for java clients                           -->
+   <!-- =================================================================== -->
+   <target name="dist-client" depends="all">
+      <mkdir dir="${dist-client.dir}"/>
+      <mkdir dir="${dist-client.dir}/lib"/>
+      <mkdir dir="${dist-client.dir}/classes"/>
+
+      <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
+      
+      <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
+      <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" basedir="${dist-client.dir}/classes"/>
+      <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete>
+
+      <echo message="--------------------------------------------"/>
+      <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
+      <echo message="It supports clients with XmlRpc, CORBA and RMI"/>
+      <echo message="Note: The XML parser support is not included, we expect your XML library."/>
+      <echo message="--------------------------------------------"/>
+   </target>
+ 
+ 
+   <!-- =================================================================== -->
+   <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
+   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- =================================================================== -->
+   <target name="cpp-lib" depends="prepare">
+      <echo message="Adjust following settings in build.properties if necessary:"/>
+      <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
+      <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
+      <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
+      <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
+      <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
+ 
+      <!-- C++ compilation needs some OS dependend settings (sorry, if have only UNIX & WINDOWS to test) -->
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="WIN_TOKEN" value="" />
+            <property name="IDL_EXEC" value="${CORBACPP_HOME}/bin/idl" />
+         </case>
+         <default>
+            <property name="WIN_TOKEN" value="win32-" />
+            <property name="IDL_EXEC" value="${CORBACPP_HOME}/win32-bin/idl" />
+            <echo message="Please check if the binary directory of ${CORBACPP_HOME} is in your path environment"/>
+         </default>
+      </switch>
+ 
+      <!-- Start IDL compiler to create CORBA stubs and skeletons -->
+      <property name="idlBuild.required" value="true" />
+      <uptodate property="idlBuild.required" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="false">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+      <if><equals arg1="${idlBuild.required}" arg2="false" />
+         <then>
+            <echo message="IDL stubs and skeletons are up to date" />
+         </then>
+         <else>
+            <echo message="Generating IDL stubs and skeletons" />
+            <!-- A typical idl CORBA compile:
+              /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+            -->
+            <exec dir="${src.cpp.dir}/generated" executable="${IDL_EXEC}" failonerror="true">
+               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
+               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
+               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
+               <arg line="--poa"/>
+               <arg line="--c++-suffix cpp"/>
+               <arg line="../../../${idl.file}"/>
+            </exec>
+            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+         </else>
+      </if>
+ 
+      <!-- Build a shared library xmlBlasterClient.sl or xmlBlasterClient.dll -->
+      <!-- A typical compile:
+        g++ -g
+            -fpic -I/opt/local/mico/include -DMICO -c /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.cc
+       -->
+      <!-- A typical shared library link:
+        g++ -shared -g
+            -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79d
+            /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
+      -->
+      <cc debug="true" link="shared" outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj">
+         <compiler name="msvc" if="BUILD_WINDOWS">
+            <defineset><define name="_WINDOWS" value="1" /></defineset>
+            <defineset define="DLL_EXPORT"/>
+            <compilerarg value="/GX" />
+            <compilerarg value="/GR" />
+            <compilerarg value="/TP" />
+            <compilerarg value="/MTd" />
+         </compiler>
+         <compiler name="gcc" if="BUILD_UNIX">   <!-- -fPIC -Wall is set automatically -->
+            <compilerarg value="-Wimplicit-int"/>
+            <compilerarg value="-Werror-implicit-function-declaration"/>
+         </compiler>
+
+         <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
+         <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
+         <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
+         <includepath location="${src.cpp.dir}" />
+         <!-- sysincludepath location="${STL_HOME}/stlport" /-->
+         <sysincludepath location="${CORBACPP_HOME}/include" />
+         <sysincludepath location="${CORBACPP_HOME}/include/windows" /> <!-- necessary for mico on win32 -->
+         <sysincludepath location="${XMLCPP_HOME}/src" />               <!-- win32 -->
+         <sysincludepath location="${XMLCPP_HOME}/include" />
+         <defineset>
+            <define name="MICO" value="1" />
+            <!-- undefine name="UNWANTEDDEF" / -->
+         </defineset>
+      </cc>
+   </target>
+ 
+ 
+   <!-- =================================================================== -->
+   <!-- Corba/C++ integration - create C++ testclients                      -->
+   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- =================================================================== -->
+   <!-- g++ -g -Wall -I/opt/local/mico/include
+                     -I/opt/xerces-c-src1_5_1/include
+                     -I/home/xmlblast/xmlBlaster/src/c++
+                     -DMICO -c TestGet.cpp
+        g++ -g -Wall -Wl,-rpath=/home/xmlblast/xmlBlaster/lib -Wl,-rpath=/opt/xerces-c-src1_5_1/lib -Wl,-rpath=/opt/local/mico/lib
+                     TestGet.o -o/home/xmlblast/xmlBlaster/testsuite/c++/bin/TestGet
+                     -L/opt/xerces-c-src1_5_1/lib -lxerces-c1_5_1 -lpthread -ldl
+                     -L/opt/local/mico/lib -lmico2.3.6 -lpthread
+                     -L/opt/local/mico/lib -lmicocoss2.3.6
+                     -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClient -lstdc++
+ 
+       Using STLport 4.5.1 gives a problem when linking an executable (on Linux):
+           /home/xmlblast/xmlBlaster/lib/libxmlBlasterClient.so: undefined reference to `CORBA::UserException::_print(_STL::basic_ostream<char, _STL::char_traits<char> > &) const'
+   -->
+   <target name="cpp-test" depends="prepare"> <!-- depends="prepare,cpp-lib" -->
+      <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
+   </target>
+ 
+   <target name="compileCppExe">
+      <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
+ 
+      <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
+         <!-- libstlport_gcc, -->
+         <!-- libpath location="${STL_HOME}/lib"/ -->
+         <libpath location="${CORBACPP_HOME}/lib"/>
+         <libpath location="${XMLCPP_HOME}/lib"/>
+         <libpath location="${lib.dir}"/>
+      </libset>
+ 
+      <cc debug="true" link="executable"
+          outfile="${testsuite.dir}/c++/bin/${exeName}"
+          objdir="build/obj">
+         <compiler name="msvc" if="BUILD_WINDOWS">
+            <defineset><define name="_WINDOWS" value="1" /></defineset>
+            <compilerarg value="/GX" />
+            <compilerarg value="/GR" />
+            <compilerarg value="/TP" />
+            <compilerarg value="/MTd" />
+         </compiler>
+         <compiler name="gcc" if="BUILD_UNIX">
+            <compilerarg value="-Wall" />
+            <compilerarg value="-Wstrict-prototypes" />
+            <compilerarg value="-Wimplicit-int" />
+            <compilerarg value="-Werror-implicit-function-declaration" />
+         </compiler>
+         <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
+         <includepath location="${src.cpp.dir}" />
+         <!-- sysincludepath location="${STL_HOME}/stlport" / -->
+         <sysincludepath location="${CORBACPP_HOME}/include" />
+         <sysincludepath location="${XMLCPP_HOME}/include" />
+         <libset refid="libs"/>
+         <defineset>
+            <define name="MICO" value="1" />
+         </defineset>
+         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${lib.dir}" />
+      </cc>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Cleans everything                                                   -->
+   <!-- =================================================================== -->
+    <target name="clean" depends="prepare">
+       <delete dir="${build.dir}"/>
+       <delete dir=".c_dependency_cache"/>
+       <delete includeEmptyDirs="true">
+          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
+          <!-- fileset dir="${req.dir}" includes="*.class"/ -->
+          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
+          <fileset dir="${testsuite.dir}/c++" includes="*.o"/>
+          <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
+       </delete>
+    </target>
+ 
+    <target name="delete" depends="clean">
+       <delete>
+          <fileset dir="${dist.dir}" includes="**"/>
+       </delete>
+       <delete>
+          <fileset dir="${dist-client.dir}" includes="**"/>
+       </delete>
    </target>
 </project>
