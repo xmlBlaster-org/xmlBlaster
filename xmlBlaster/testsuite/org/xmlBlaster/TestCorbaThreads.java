@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.16 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.17 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -39,9 +39,9 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestCorbaThreads
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
+ *    java junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestCorbaThreads
  * </pre>
  */
 public class TestCorbaThreads extends TestCase implements I_CallbackExtended

@@ -33,7 +33,7 @@ import junit.framework.*;
  */
 public class TestSubXPathMany extends TestCase
 {
-   private static String ME = "Tim";
+   private static String ME = "TestSubXPathMany";
    private final Global glob;
    private final LogChannel log;
 

@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.15 2002/06/18 13:51:57 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.16 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -49,7 +49,7 @@ import junit.framework.*;
  */
 public class TestSubManyClients extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestSubManyClients";
    private final Global glob;
    private boolean messageArrived = false;
 

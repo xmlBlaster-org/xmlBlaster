@@ -31,6 +31,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestPub.class \
     $(CLASS_DIR)/TestPubBurstMode.class \
     $(CLASS_DIR)/TestPubForce.class \
+    $(CLASS_DIR)/TestErase.class \
     $(CLASS_DIR)/TestFailSave.class \
     $(CLASS_DIR)/TestFailSavePing.class \
     $(CLASS_DIR)/TestFailSaveAsync.class \

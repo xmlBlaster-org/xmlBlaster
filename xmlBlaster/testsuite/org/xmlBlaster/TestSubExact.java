@@ -36,7 +36,7 @@ import junit.framework.*;
  */
 public class TestSubExact extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestSubExact";
    private final Global glob;
    private boolean messageArrived = false;
 

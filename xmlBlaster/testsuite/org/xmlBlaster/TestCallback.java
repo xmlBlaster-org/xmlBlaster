@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.11 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.12 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  */
 public class TestCallback extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestCallback";
    private final Global glob;
    private String name;
    private String passwd = "secret";

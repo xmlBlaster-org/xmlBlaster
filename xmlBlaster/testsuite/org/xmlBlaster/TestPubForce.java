@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.20 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.21 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,7 +37,7 @@ import junit.framework.*;
  */
 public class TestPubForce extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestPubForce";
    private final Global glob;
    private boolean messageArrived = false;
 

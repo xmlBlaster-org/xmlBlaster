@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.12 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.13 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -46,7 +46,7 @@ import junit.framework.*;
  */
 public class TestSubLostClient extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestSubLostClient";
    private final Global glob;
    private boolean messageArrived = false;
 

@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.9 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.10 2002/06/25 18:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -41,7 +41,7 @@ import junit.framework.*;
  */
 public class TestPubBurstMode extends TestCase
 {
-   private static String ME = "Tim";
+   private static String ME = "TestPubBurstMode";
    private final Global glob;
    private boolean messageArrived = false;
 
