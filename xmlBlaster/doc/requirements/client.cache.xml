@@ -3,21 +3,34 @@
 
 <requirement id='client.cache' type='NEW' prio='LOW' status="CLOSED">
    <topic>
-      Allows Java clients to poll synchronously for messages with the get() method,
+      Allows Java clients to poll synchronously for messages with the getCached() method,
       and access the up to date message high performing from a local cache.
    </topic>
    <description>
+      <p>
       The Java I_XmlBlasterAccess class (the Java client side interface) has a built in cache.
       If you activate this
-      cache with the initCache() method, the xmlBlasterAccess.get() method accesses
-      a message on the first call synchronously and returns it to you.<br />
-      Behind the scenes, a subscribe() is done as well, and incoming updates
-      of this messages are put into the cache.<br />
-      Following get() invocations for the same message, are retrieved from
+      cache with the <i>createSynchronousCache()</i> method,
+      the <i>xmlBlasterAccess.getCached()</i> method accesses
+      a message on the first call synchronously and returns it to you.
+      </p>
+      <p>
+      Behind the scenes, a <i>subscribe()</i> is done as well, and incoming updates
+      of this messages are put into the cache.
+      This way the messages in the cache are never outdated.
+      Following <i>getCached()</i> invocations for the same message, are retrieved from
       the local cache.
-      <p />
+      </p>
+      <p>
+      <i>getCached()</i> requests where the GetKey contains an EXACT oid are automatically
+      removed from cache when the topic with this oid is erased.
+      XPATH queries are removed from cache
+      when the last topic oid which matched the XPATH disappears.
+      </p>
+      <p>
       Note that this is a pure client behavior, and for the moment the only reference implementation
       is in Java.
+      </p>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -25,34 +38,32 @@
          xmlBlasterAccess = glob.getXmlBlasterAccess(); // Hides Corba stuff
 
          // Setup cache ...
-         xmlBlasterAccess.initCache(10);
+         xmlBlasterAccess.registerConnectionListener(10);
 
          // and do the login ...
          xmlBlasterAccess.connect(null, this);
 
-         // This get() is only on the first call a write through to xmlBlaster
+         // This getCached() is only on the first call a write through to xmlBlaster
          // Following calls retrieve the up to date data from the local cache:
          MsgUnit[] msgUnitArr =
-               xmlBlasterAccess.get(xmlKey, xmlQos);
+               xmlBlasterAccess.getCached(xmlKey, xmlQos);
       }
       catch (XmlBlasterException e) {
           System.out.println("ERROR: " + e.getMessage());
       }
       ]]>
    </example>
-   <todo>Rename xmlBlasterAccess.get() to getCached(), which automatically initializes the cache</todo>
-   <todo>Add a test case to the testsuite</todo>
-   <todo>How to unsubscribe?</todo>
    <see>org.xmlBlaster.client.I_XmlBlasterAccess</see>
-   <see>org.xmlBlaster.client.BlasterCache</see>
+   <see>org.xmlBlaster.client.SynchronousCache</see>
    <author>Konrad.Krafft@doubleSlash.de</author>
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
+   <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.6 $</revision>
-   <testcase status="OPEN">
+   <revision>$Revision: 1.7 $</revision>
+   <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE"></test>
+      <test tool="SUITE">org.xmlBlaster.test.client.TestSynchronousCache</test>
    </testcase>
 </requirement>
 
