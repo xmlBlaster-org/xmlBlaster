@@ -79,6 +79,22 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    Log::~Log() {
    }
 
+   void Log::exitLow(int val) {
+      // gcc 3.x: The functions abort, exit, _Exit and _exit are recognized and presumed not to return,
+      // but otherwise are not built in.
+      // _exit is not recognized in strict ISO C mode (`-ansi', `-std=c89' or `-std=c99').
+      // _Exit is not recognized in strict C89 mode (`-ansi' or `-std=c89').
+#     if defined(__ICC)
+         ::exit(val);
+#     elif  __GNUC__==3
+         ::exit(val);
+#     elif defined(__sun)
+         ::exit(val);
+#     else
+         ::_exit(val);
+#     endif
+   }
+
    void Log::setWithXtermColor(bool val /* = true */) {
       withXtermColor_ = val;
    }

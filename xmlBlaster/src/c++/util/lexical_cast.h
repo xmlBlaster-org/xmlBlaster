@@ -64,7 +64,7 @@ namespace org { namespace xmlBlaster { namespace util {
 
         return result;
     }
-#if __GNUC__ == 2
+#if __GNUC__ == 2 || defined(__sun)
   // Problems with g++ 2.95.3 and template<>
 #else
    /**

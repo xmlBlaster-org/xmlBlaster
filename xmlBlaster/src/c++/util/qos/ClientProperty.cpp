@@ -100,7 +100,15 @@ std::string ClientProperty::getStringValue() const {
       std::vector<unsigned char> vec = Base64::Decode(value_);
       std::string str;
       str.reserve(vec.size());
-      str.assign(vec.begin(),vec.end());
+#     if defined(__sun)
+         std::vector<unsigned char>::const_iterator it;
+         for(it = vec.begin(); it != vec.end(); ++it) {
+            unsigned char c = (*it);
+            str += c;
+         }
+#     else
+         str.assign(vec.begin(),vec.end());
+#     endif
       return str;
    }
    return value_;

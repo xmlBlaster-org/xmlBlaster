@@ -341,7 +341,7 @@ SessionQosData SessionQosFactory::readObject(const string& qos)
       text += string("Control my login session settings:\n");
       text += string("   -session.name []\n");
       text += string("                       The name for login, e.g. 'joe' or with public session ID 'joe/2'.\n");
-      text += string("   -session.timeout ["+lexical_cast<std::string>(Constants::DAY_IN_MILLIS)+"], defaults to one day.\n");
+      text += string("   -session.timeout ["+lexical_cast<std::string>((int)Constants::DAY_IN_MILLIS)+"], defaults to one day.\n");
       text += string("                       How long lasts our login session in milliseconds, 0 is forever.\n");
       text +=        "   -session.maxSessions [10]\n";
       text += string("                       Maximum number of simultanous logins per client.\n");

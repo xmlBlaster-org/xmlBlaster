@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.60 2004/02/19 21:53:50 ruff Exp $
+Version:   $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,13 +31,13 @@ Version:   $Id: Global.cpp,v 1.60 2004/02/19 21:53:50 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.60 2004/02/19 21:53:50 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.60 2004/02/19 21:53:50 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
-#if __GNUC__ == 2
+#if __GNUC__ == 2 || defined(__sun)
   // Problems with g++ 2.95.3 and template<>
 #else
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
