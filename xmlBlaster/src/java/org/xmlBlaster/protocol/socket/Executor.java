@@ -77,6 +77,8 @@ public abstract class Executor implements ExecutorBase
    private final String DUMMY_OBJECT = "";
    private final Set latchSet = new HashSet();
    private AddressBase addressConfig;
+   /** Holds remote "host:port" for logging */
+   protected String remoteSocketStr;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -109,6 +111,7 @@ public abstract class Executor implements ExecutorBase
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
+      this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
       setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
       // the responseWaitTime is used later to wait on a return value
@@ -338,9 +341,12 @@ public abstract class Executor implements ExecutorBase
                executeException(receiver, xmlBlasterException, udp);
                return true;
             }
-            if (xmlBlasterImpl != null) {
+            if (xmlBlasterImpl != null) { // Server side: Forward ping to xmlBlaster core
                String response = xmlBlasterImpl.ping(/*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
                executeResponse(receiver, response, udp); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
+            }
+            else { // Client side: answer directly, not forwarded to client code
+               executeResponse(receiver, Constants.RET_OK, udp); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
             }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
@@ -455,7 +461,7 @@ public abstract class Executor implements ExecutorBase
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
-         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -dispatch/callback/plugin/socket/responseTimeout <millis>";
+         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
       }
 
@@ -489,7 +495,7 @@ public abstract class Executor implements ExecutorBase
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -dispatch/callback/plugin/socket/responseTimeout <millis>";
+            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
             removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
          }
@@ -504,7 +510,7 @@ public abstract class Executor implements ExecutorBase
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log != null && log.TRACE) log.trace(ME, "Freeing " + ((latchSet==null) ? 0 : latchSet.size()) + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (log != null && log.TRACE && latchSet.size()>0) log.trace(ME, "Freeing " + ((latchSet==null) ? 0 : latchSet.size()) + " pending threads (waiting on responses) from their ugly blocking situation");
       if (latchSet != null) {
          while (true) {
             Latch l = null;
