@@ -300,9 +300,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Returns a shallow clone, you can change savely all basic or immutable types
-    * like boolean, String, int.
-    * Currently RouteInfo is not cloned (so don't change it)
+    * Returns a shallow clone. 
     */
    public Object clone() {
       try {
