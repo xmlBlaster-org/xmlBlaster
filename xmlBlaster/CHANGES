@@ -10,9 +10,11 @@ Changes for 0.79 [?, ? 2000]
   - build.xml:  Target 'all' collects demo and testuite classes
     into xmlBlaster.jar as well.
 
-  - added customized MANIFEST to xmlBlaster.jar, allowing
+  - NEW: Installation and ready to go in 30 seconds!
+    Added customized MANIFEST to xmlBlaster.jar, allowing
     to start xmlBlaster without any CLASSPATH setting:
 		java -jar lib/xmlBlaster.jar
+	 See INSTALL file.
 
   - Migrated to Ant 1.1
 
