@@ -1,6 +1,12 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
 
+Changes for 0.72 [Feb. 2000]
+==============================
+
+   - Two bug fixes with unSubscribe() calls for previous XPATH subscriptions.
+
+
 Changes for 0.71 [Jan.20 2000]
 ==============================
 
