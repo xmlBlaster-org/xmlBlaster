@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.8 2002/05/30 16:28:00 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.9 2002/06/18 10:17:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -54,6 +54,8 @@ public class CbWorker implements Runnable
          String[] returnVals = cbManager.sendUpdate(entries, this.msgQueue.getErrorCounter()); // redeliver == errorCounter
 
          this.msgQueue.resetErrorCounter(); // callback is fine
+
+         this.msgQueue.incrNumUpdate(returnVals.length);
 
          // Delete volatile messages ...
          this.msgQueue.checkForVolatileErase(entries);
