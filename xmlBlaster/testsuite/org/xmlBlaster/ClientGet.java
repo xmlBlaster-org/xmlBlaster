@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.2 1999/11/23 13:59:22 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.3 1999/11/23 14:54:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,11 +14,20 @@ import org.xmlBlaster.clientIdl.*;
 import jacorb.naming.NameServer;
 import org.omg.CosNaming.*;
 
+
+/**
+ * This client tests the method get().
+ * <p>
+ * Invoke examples:
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet `cat /tmp/NS_Ref`
+ *
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet -name "Jeff" `cat /tmp/NS_Ref`
+ */
 public class ClientGet
 {
    private org.omg.CORBA.ORB orb = null;
    private Server xmlBlaster = null;
-   private String ME = "Heidi";
+   private static String ME = "Heidi";
 
    public ClientGet(String args[])
    {
@@ -167,7 +176,7 @@ public class ClientGet
             Log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
             Log.plain(ME, msgArr[ii].xmlKey +
-                          "\n################### RETURN CONTENT: ##################\n\n" + 
+                          "\n################### RETURN CONTENT: ##################\n\n" +
                           new String(msgArr[ii].content) +
                           "\n\n#######################################");
          }
@@ -239,5 +248,6 @@ public class ClientGet
    public static void main(String args[])
    {
       new ClientGet(args);
+      Log.exit(ClientGet.ME, "Good bye");
    }
 }

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.9 1999/11/23 10:44:19 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.10 1999/11/23 14:54:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,11 +14,21 @@ import org.xmlBlaster.clientIdl.*;
 import jacorb.naming.NameServer;
 import org.omg.CosNaming.*;
 
+
+/**
+ * This client tests the method subscribe()/publish() with XML syntax key
+ * and XPath query.
+ * <p>
+ * Invoke examples:
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml `cat /tmp/NS_Ref`
+ *
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml -name "Jeff" `cat /tmp/NS_Ref`
+ */
 public class ClientXml
 {
    private org.omg.CORBA.ORB orb = null;
    private Server xmlBlaster = null;
-   private String ME = "Tim";
+   private static String ME = "Tim";
 
    public ClientXml(String args[])
    {
@@ -242,5 +252,6 @@ public class ClientXml
    public static void main(String args[])
    {
       new ClientXml(args);
+      Log.exit(ClientXml.ME, "Good bye");
    }
 }

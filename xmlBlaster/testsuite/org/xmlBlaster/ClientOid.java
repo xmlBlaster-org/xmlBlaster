@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.5 1999/11/22 22:14:59 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.6 1999/11/23 14:54:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,14 +14,23 @@ import org.xmlBlaster.clientIdl.*;
 import jacorb.naming.NameServer;
 import org.omg.CosNaming.*;
 
+
+/**
+ * This client tests the method get().
+ * <p>
+ * Invoke examples:
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid `cat /tmp/NS_Ref`
+ *
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid -name "Jeff" `cat /tmp/NS_Ref`
+ */
 public class ClientOid
 {
    private org.omg.CORBA.ORB orb = null;
    private Server xmlServer = null;
+   private static String ME = "Ben";
 
-   public ClientOid(String args[]) 
-   { 
-      String ME = "Ben";
+   public ClientOid(String args[])
+   {
 
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
@@ -29,8 +38,8 @@ public class ClientOid
          String authServerIOR = null;
 
          if (args.length == 1) {
-            authServerIOR = args[0];  // args[0] is an IOR-string 
-         } 
+            authServerIOR = args[0];  // args[0] is an IOR-string
+         }
          else if (args.length > 1) {
             String argv = args[0];
             if (argv.equals("-name")) {
@@ -58,7 +67,7 @@ public class ClientOid
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa = 
+         org.omg.PortableServer.POA poa =
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intializing my Callback interface:
@@ -190,8 +199,9 @@ public class ClientOid
    }
 
 
-   public static void main(String args[]) 
+   public static void main(String args[])
    {
       new ClientOid(args);
+      Log.exit(ClientOid.ME, "Good bye");
    }
 }
