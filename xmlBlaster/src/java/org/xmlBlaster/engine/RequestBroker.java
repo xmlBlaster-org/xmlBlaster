@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.87 2001/02/23 01:42:52 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.88 2001/03/26 13:31:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.87 $
+ * @version $Revision: 1.88 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -97,6 +97,8 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /** The messageUnit for a logout event */
    private MessageUnit msgUnitLogoutEvent = null;
 
+   Hashtable loggedIn = null;
+
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -104,6 +106,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
+      this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 
       // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
@@ -398,6 +401,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       oid = "__sys__UsedMem";
       content = "" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+      updateInternalStateInfoHelper(clientInfo, oid, content);
+
+      oid = "__sys__UserList";
+      content = "";
+      Enumeration e=loggedIn.elements();
+      while(e.hasMoreElements()) {
+         content=content+((ClientInfo)e.nextElement()).getLoginName()+"\n";
+      }
       updateInternalStateInfoHelper(clientInfo, oid, content);
 
       // Add here more internal states
@@ -730,7 +741,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
          if (publishQoS.isVolatile()) {
               if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
- 
+
               fireMessageEraseEvent(clientInfo, msgUnitHandler);
               msgUnitHandler.erase();
               msgUnitHandler = null;
@@ -891,6 +902,12 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          msgUnitLoginEvent.content = clientInfo.getLoginName().getBytes();
          publish(clientInfo, msgUnitLoginEvent); // publish that this client logged in
       }
+
+      if (Log.TRACE) Log.trace(ME, " client added:"+clientInfo.getLoginName());
+      synchronized (loggedIn){
+         loggedIn.put(clientInfo.getLoginName(), clientInfo);
+         updateInternalStateInfo(clientInfo);
+      }
    }
 
 
@@ -910,6 +927,11 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       synchronized (msgUnitLogoutEvent.content) {
          msgUnitLogoutEvent.content = clientInfo.getLoginName().getBytes();
          publish(clientInfo, msgUnitLogoutEvent); // publish that this client logged out
+      }
+      if (Log.TRACE) Log.trace(ME, " client removed:"+clientInfo.getLoginName());
+      synchronized (loggedIn) {
+         loggedIn.remove(clientInfo.getLoginName());
+         updateInternalStateInfo(clientInfo);
       }
    }
 
