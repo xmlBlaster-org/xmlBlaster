@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.84x [xxx, xx 2003]
 ================================
+ o QoS Bugfix: subscribing <local>false</local> was broken,
+   the fix is checked with
+    http://www.xmlblaster.org/xmlBlaster/testsuite/src/java/org/xmlBlaster/test/qos/TestSubNoLocal.java.html
+   Reported by colin.madere@ieminc.com
 
  o Coded new requirement for CORBA NameService
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.corba.NameService.html
