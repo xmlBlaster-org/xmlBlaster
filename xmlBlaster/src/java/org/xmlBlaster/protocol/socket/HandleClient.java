@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.6 2002/02/16 11:23:21 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.7 2002/02/16 11:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -29,7 +29,9 @@ import java.io.BufferedOutputStream;
 
 
 /**
- * Handles a request from a client, delivering the AuthServer IOR
+ * Handles a requests from one client with plain socket messaging. 
+ * 
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class HandleClient extends Executor implements Runnable
 {
@@ -42,6 +44,7 @@ public class HandleClient extends Executor implements Runnable
 
 
    /**
+    * Creates an instance which serves exactly one client. 
     */
    public HandleClient(SocketDriver driver, Socket sock) throws IOException {
       super(sock, driver.getXmlBlaster(), null);
@@ -69,7 +72,7 @@ public class HandleClient extends Executor implements Runnable
    }
 
    /**
-    * Updating multiple messages in one sweep.
+    * Updating multiple messages in one sweep, callback to client. 
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */

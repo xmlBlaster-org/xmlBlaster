@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.7 2002/02/16 11:23:21 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.8 2002/02/16 11:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -25,16 +25,20 @@ import java.io.OutputStream;
 /**
  * Socket driver class to invoke the xmlBlaster server over a native message format
  * <p />
- * This driver needs to be registered in xmlBlaster.properties
+ * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- *   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
- *                    RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
- *                    SOCKET:org.xmlBlaster.protocol.socket.SocketDriver
- *
- *   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                            RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
- *                            SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver
+ *Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+ *                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
+ *                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
+ *                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
+ *                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+ *Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+ *                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+ *                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
+ *                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
+ *                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
+ *                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
  * </pre>
  *
  * The variable socket.port (default 7607) sets the socket server port,
@@ -45,6 +49,8 @@ import java.io.OutputStream;
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
+ * <p />
+ * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.socket.SocketDriver#usage()}
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @see org.xmlBlaster.protocol.socket.Parser
  */
@@ -72,6 +78,7 @@ public class SocketDriver extends Thread implements I_Driver
 
 
    /**
+    * Creates the driver. 
     * Note: getName() is enforced by interface I_Driver, but is already defined in Thread class
     */
    public SocketDriver()
@@ -79,10 +86,16 @@ public class SocketDriver extends Thread implements I_Driver
       super(ME);
    }
 
+   /**
+    * Access the handle to the xmlBlaster authenication core
+    */
    I_Authenticate getAuthenticate() {
       return this.authenticate;
    }
 
+   /**
+    * Access the handle to the xmlBlaster core
+    */
    I_XmlBlaster getXmlBlaster() {
       return this.xmlBlasterImpl;
    }
@@ -107,9 +120,6 @@ public class SocketDriver extends Thread implements I_Driver
          return;
       }
 
-      //if (XmlBlasterProperty.get("socket.debug", false) == true)
-      //   setDebug(true);
-
       hostname = XmlBlasterProperty.get("socket.hostname", (String)null);
       if (hostname == null) {
          try  {
@@ -132,7 +142,7 @@ public class SocketDriver extends Thread implements I_Driver
 
 
    /**
-    * Starts the server socket
+    * Starts the server socket and waits for clients to connect. 
     */
    public void run()
    {
@@ -172,7 +182,7 @@ public class SocketDriver extends Thread implements I_Driver
 
 
    /**
-    * Close the listener port
+    * Close the listener port, the driver shuts down. 
     */
    public void shutdown()// throws IOException
    {
@@ -220,7 +230,6 @@ public class SocketDriver extends Thread implements I_Driver
       text += "   -socket.hostname    Specify a hostname where the SOCKET web server runs.\n";
       text += "                       Default is the localhost.\n";
       text += "   -socket.backlog     Queue size for incmming connection request [50].\n";
-      //text += "   -socket.debug       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
    }

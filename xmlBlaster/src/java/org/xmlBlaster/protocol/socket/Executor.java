@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.4 2002/02/16 11:23:21 ruff Exp $
+Version:   $Id: Executor.java,v 1.5 2002/02/16 11:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -33,6 +33,8 @@ import java.util.Collections;
  * A common base class for socket based messaging.
  * Allows to block during a request and deliver the return message
  * to the waiting thread.
+ *
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public abstract class Executor implements ExecutorBase
 {
@@ -57,7 +59,9 @@ public abstract class Executor implements ExecutorBase
    protected I_XmlBlaster xmlBlasterImpl = null;
 
    /**
-    * For listeners who want to be informed about return messages or exceptions
+    * For listeners who want to be informed about return messages or exceptions,
+    * the invocation is blocking during this period.
+    * <p />
     * The key is the String requestId, the value the listener thread I_ResponseListener
     */
    protected final Map responseListenerMap = Collections.synchronizedMap(new HashMap());

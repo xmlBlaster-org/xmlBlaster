@@ -3,20 +3,16 @@ Name:      Converter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter class for raw socket messages
-Version:   $Id: Converter.java,v 1.4 2002/02/16 11:22:10 ruff Exp $
+Version:   $Id: Converter.java,v 1.5 2002/02/16 11:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
-
-import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * Converter class for raw socket messages, use as a base class
- * @author ruff@swand.lake.de
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class Converter
 {

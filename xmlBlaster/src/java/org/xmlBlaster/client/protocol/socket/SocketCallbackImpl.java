@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.7 2002/02/16 11:40:30 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.8 2002/02/16 11:51:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -25,6 +25,7 @@ import java.io.IOException;
  * <p />
  * One instance of this for each client. 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @see org.xmlBlaster.protocol.socket.Parser
  */
 public class SocketCallbackImpl extends Executor implements Runnable
 {
