@@ -67,10 +67,6 @@ public abstract class AddressBase
    public static final long DEFAULT_collectTime = 0L;
    protected PropLong collectTime = new PropLong(DEFAULT_collectTime);
    
-   /** BurstMode: The time to collect messages for oneway publish/update */
-   public static final long DEFAULT_collectTimeOneway = 0L;
-   protected PropLong collectTimeOneway = new PropLong(DEFAULT_collectTimeOneway);
-
    /** Ping interval: pinging every given milliseconds */
    abstract public long getDefaultPingInterval();
    protected PropLong pingInterval = new PropLong(getDefaultPingInterval());
@@ -169,7 +165,6 @@ public abstract class AddressBase
 
       // These are protocol unspecific values
       this.collectTime.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTime");
-      this.collectTimeOneway.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTimeOneway");
       this.pingInterval.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "pingInterval");
       this.retries.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "retries");
       this.delay.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "delay");
@@ -527,29 +522,12 @@ public abstract class AddressBase
    }
 
    /**
-    * BurstMode: The time span to collect oneway messages before sending. 
-    * @return The time to collect in milliseconds
-    */
-   public final long getCollectTimeOneway() {
-      return this.collectTimeOneway.getValue();
-   }
-
-   /**
     * BurstMode: The time to collect messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
    public void setCollectTime(long collectTime) {
       if (collectTime < 0L) this.collectTime.setValue(0L);
       else this.collectTime.setValue(collectTime);
-   }
-
-   /**
-    * BurstMode: The time to collect oneway messages for sending in a bulk. 
-    * @param The time to collect in milliseconds
-    */
-   public void setCollectTimeOneway(long collectTimeOneway) {
-      if (collectTimeOneway < 0L) this.collectTimeOneway.setValue(0L);
-      else this.collectTimeOneway.setValue(collectTimeOneway);
    }
 
    /**
@@ -823,18 +801,10 @@ public abstract class AddressBase
                      log.error(ME, "Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
                   }
                }
-               else if (attrs.getQName(ii).equalsIgnoreCase("collectTimeOneway")) {
-                  String ll = attrs.getValue(ii).trim();
-                  try {
-                     setCollectTimeOneway(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode collectTimeOneway='" + ll + "'>, expected a long in milliseconds, burst mode is switched off for oneway messages.");
-                  }
-               }
             }
          }
          else {
-            log.error(ME, "Missing 'collectTime' or 'collectTimeOneway' attribute in login-qos <burstMode>");
+            log.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
          }
          return;
       }
@@ -946,8 +916,6 @@ public abstract class AddressBase
          sb.append(offset).append(" ").append("<burstMode");
          if (this.collectTime.isModified())
             sb.append(" collectTime='").append(getCollectTime()).append("'");
-         if (this.collectTimeOneway.isModified())
-            sb.append(" collectTimeOneway='").append(getCollectTimeOneway()).append("'");
          sb.append("/>");
       }
       if (this.compressType.isModified())

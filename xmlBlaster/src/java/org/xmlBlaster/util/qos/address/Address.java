@@ -96,8 +96,8 @@ public class Address extends AddressBase
       text += super.usage();
     //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
     //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
-      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTimeOneway\n";
-      text += "                       Number of milliseconds we shall collect oneway\n";
+      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTime\n";
+      text += "                       Number of milliseconds we shall collect\n";
       text += "                       publish messages [" + Address.DEFAULT_collectTime + "].\n";
       text += "                       This allows performance tuning, try set it to 200.\n";
     //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
