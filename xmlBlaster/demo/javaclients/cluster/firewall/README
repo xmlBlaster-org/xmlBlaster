@@ -1,5 +1,6 @@
 #
 # xmlBlaster/demo/javaclients/cluster/firewall/README
+# xmlBlaster@marcelruff.info 2003/12/06
 #
 
 Example of a slave xmlBlaster cluster node 'frodo' running behind
