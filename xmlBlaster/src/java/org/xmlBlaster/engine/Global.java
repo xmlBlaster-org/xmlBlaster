@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.16 2002/06/15 16:09:40 ruff Exp $
+Version:   $Id: Global.java,v 1.17 2002/06/17 15:16:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -347,4 +347,23 @@ public final class Global extends org.xmlBlaster.util.Global
    public RequestBroker getRequestBroker() {
       return this.requestBroker;
    }
+
+   public String getDump() throws XmlBlasterException {
+      StringBuffer sb = new StringBuffer(10000);
+      sb.append("<xmlBlaster id='").append(getId()).append("'");
+      sb.append(" version='").append(getVersion()).append("'");
+      sb.append("\n   ");
+      sb.append(" buildTimestamp='").append(getBuildTimestamp()).append("'");
+      sb.append(" buildJavaVendor='").append(getBuildJavaVendor()).append("'");
+      sb.append(" buildJavaVersion='").append(getBuildJavaVersion()).append("'");
+      sb.append("\n   ");
+      sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
+      //sb.append(" ='").append(get()).append("'");
+      sb.append(">");
+      sb.append(getAuthenticate().toXml());
+      sb.append(getAuthenticate().getXmlBlaster().toXml());
+      sb.append("</xmlBlaster>");
+      return sb.toString();
+   }
+
 }
