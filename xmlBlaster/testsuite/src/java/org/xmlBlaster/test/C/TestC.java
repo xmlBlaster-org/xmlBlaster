@@ -290,6 +290,74 @@ public class TestC extends TestCase implements I_ExecuteListener
                e.getExitValue() + " : " + e.getStdout());
    }
 
+   /**
+    * Test the C API implementation, leaving the server without disconnect. 
+    */
+   public void test_C_LeaveServer()
+   {
+      Runtime runtime = Runtime.getRuntime();
+      String[] commandArr = { pathToCBinary+sep+"TestLeaveServer" };
+      String[] envArr = { "" };
+
+      log.info(ME, "######## Start test_C_LeaveServer('" + commandArr[0] + "')");
+
+      Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
+      e.run();
+
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info(ME, "######## SUCCESS test_C_LeaveServer('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
+   }
+
+   /**
+    * Test the C API SOCKET implementation. 
+    */
+   public void test_C_Socket()
+   {
+      Runtime runtime = Runtime.getRuntime();
+      String[] commandArr = { pathToCBinary+sep+"TestSocket" };
+      String[] envArr = { "" };
+
+      log.info(ME, "######## Start test_C_Socket('" + commandArr[0] + "')");
+
+      Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
+      e.run();
+
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info(ME, "######## SUCCESS test_C_Socket('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
+   }
+
    public void stdout(String data) {
       log.info(ME, "Native C output: " + data);
    }
@@ -313,6 +381,8 @@ public class TestC extends TestCase implements I_ExecuteListener
       test.test_C_MethodInvocations();
       test.test_C_IllegalArguments();
       test.test_C_Queue();
+      test.test_C_LeaveServer();
+      test.test_C_Socket();
       test.test_C_Stress();
       test.tearDown();
    }
