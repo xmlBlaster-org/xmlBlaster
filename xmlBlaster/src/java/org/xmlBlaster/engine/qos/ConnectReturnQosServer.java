@@ -25,6 +25,10 @@ public final class ConnectReturnQosServer {
       this.connectQosData = connectQosData;
    }
 
+   public ConnectReturnQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+      this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+   }
+
    public ConnectQosData getData() {
       return this.connectQosData;
    }
