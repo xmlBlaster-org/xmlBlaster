@@ -156,7 +156,7 @@ public:
 /**
  * Try
  * <pre>
- *   java HelloWorld2 -help
+ *   HelloWorld2 -help
  * </pre>
  * for usage help
  */
@@ -165,8 +165,8 @@ int main(int args, char ** argv)
    XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
-// XmlBlasterConnection::usage();
-//   glob.getLog().info("HelloWorld2", "Example: java HelloWorld2\n");
+// XmlBlasterAccess::usage();
+// glob.getLog().info("HelloWorld2", "Example: HelloWorld2\n");
 
    HelloWorld2 hello(glob);
    hello.execute();
