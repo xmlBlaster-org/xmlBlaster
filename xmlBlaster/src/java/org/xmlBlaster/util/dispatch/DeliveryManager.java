@@ -492,8 +492,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (this.isShutdown) return false; // assert
 
       if (msgQueue.isShutdown()) { // assert
-         log.error(ME, "The queue is shutdown, can't activate callback worker thread.");
-         Thread.currentThread().dumpStack();
+         if (log.TRACE) log.trace(ME, "The queue is shutdown, can't activate callback worker thread.");
+         // e.g. client has disconnected on the mean time.
+         //Thread.currentThread().dumpStack();
          shutdown();
          return false;
       }
