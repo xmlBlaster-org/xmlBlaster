@@ -826,7 +826,7 @@ TODO
    <!--
    <filelist id="j2me.preverify.cp" 
              dir="${J2ME_HOME}/lib" 
-             files="cldcapi11.jar,midpapi20.jar,${build.dir}/j2me/tmpclasses"/>
+             files="cldcapi10.jar,midpapi10.jar,${build.dir}/j2me/tmpclasses"/>
    <pathconvert targetos="${os.family}"
                 property="j2me.preverify.cp}"
                 refid="j2me.preverify.cp}" />
