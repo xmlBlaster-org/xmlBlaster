@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.1 2002/12/06 13:55:58 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.2 2002/12/06 19:28:14 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -132,13 +132,13 @@ protected:
 
 public:
 
-   virtual long getDefaultPingInterval() = 0;
+   virtual Timestamp getDefaultPingInterval() = 0;
    virtual int getDefaultRetries() = 0;
-   virtual long getDefaultDelay() = 0;
+   virtual Timestamp getDefaultDelay() = 0;
 
    /**
     */
-   AddressBase(Global& global, const string& rootTag);
+   AddressBase(Global& global, const string& rootTag="");
 
    virtual ~AddressBase();
 

@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.1 2002/12/06 13:55:58 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.2 2002/12/06 19:28:14 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -169,7 +169,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
       if (address_ == "") {
          address_ = "http://" + getHostname();
          if (getPort() > 0)
-            address_ += ":" + getPort();
+            address_ += ":" + lexical_cast<string>(getPort());
       }
       return address_;
    }
@@ -490,7 +490,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
                   try {
                      setDelay(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " delay='" + ll + "'>, expected a long in milliseconds.");
+                     log.error(ME, "Wrong format of <" + rootTag " delay='" + ll + "'>, expected a long in milliseconds.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
@@ -616,6 +616,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     */
    string AddressBase::toXml(const string& extraOffset)
    {
+      if (log_.CALL) log_.call(ME, "::toXml");
       string ret;
       string offset = string("\n   ");
       offset += extraOffset;

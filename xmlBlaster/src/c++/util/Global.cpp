@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.2 2002/12/06 13:55:58 laghi Exp $
+Version:   $Id: Global.cpp,v 1.3 2002/12/06 19:28:14 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 
@@ -12,6 +12,7 @@ namespace org { namespace xmlBlaster { namespace util {
    Global::Global() : ME("Global"), logMap_()
    {
       copy();
+      isInitialized_ = false;
    }
 
 /*
@@ -46,6 +47,9 @@ namespace org { namespace xmlBlaster { namespace util {
 
    void Global::initialize(int args, const char * const argc[])
    {
+      if (isInitialized_) {
+         getLog("core").warn(ME, "::initialize: the global is already initialized. Ignoring this initialization");
+      }
       args_     = args;
       argc_     = argc;
       if (property_ != NULL) delete property_;
@@ -68,11 +72,12 @@ namespace org { namespace xmlBlaster { namespace util {
       LogMap::iterator pos = logMap_.find(logName);
       if (pos != logMap_.end()) return (*pos).second;
 
-      logMap_.insert(LogMap::value_type(logName, Log(args_, argc_)));
+      Log help(args_, argc_);
+      help.initialize();
+      logMap_.insert(LogMap::value_type(logName, help));
       pos = logMap_.find(logName);
       if (pos != logMap_.end()) {
          Log* log = &(*pos).second;
-         log->initialize();
          return *log;
       }
 

@@ -155,7 +155,7 @@ Property::writePropertyFile(const char *filename) const
 }
 
 /**
- * Gets the propety with the specified name. If no such property exists,
+ * Gets the property with the specified name. If no such property exists,
  * an empty string is returned. If the string is not found, it searches
  * in among the environment variables (only if env is set to true which
  * is the default). In the property is not found there either, it returns
@@ -201,8 +201,30 @@ Property::getIntProperty(const string &name, int def, bool env)
    return ret;
 }
 
+long
+Property::getLongProperty(const string &name, long def, bool env)
+{
+   string value = getProperty(name, env);
+   if (value.length() == 0) return def;
+   char *test = (char*)0;
+   long ret = atol(value.c_str());
+   if (test == value.c_str()) return def;
+   return ret;
+}
 
-bool 
+Timestamp
+Property::getTimestampProperty(const string &name, Timestamp def, bool env)
+{
+   string value = getProperty(name, env);
+   if (value.length() == 0) return def;
+   char *test = (char*)0;
+   // WARNING THIS IS NOT ANSI COMPATIBLE ...
+   long ret = atoll(value.c_str());
+   if (test == value.c_str()) return def;
+   return ret;
+}
+
+bool
 Property::getBoolProperty(const string &name, bool def, bool env) 
 {
    string value = getProperty(name, env);

@@ -7,11 +7,11 @@ Comment:   Class used to read, store & write (java) properties.
 #ifndef _UTIL_PROPERTY_H
 #define _UTIL_PROPERTY_H
 
-#include <util/XmlBCfg.h>
-# include <iostream>
+#include <util/xmlBlasterDef.h>
+#include <iostream>
 #include <fstream>
 #include <map>
-# include <string>
+#include <string>
 
 #include <stdlib.h>
 #include <util/PropertyDef.h>
@@ -147,6 +147,9 @@ namespace util {
 
       int getIntProperty(const string &name, int def, bool env=true);
 
+      long getLongProperty(const string &name, long def, bool env=true);
+
+      Timestamp getTimestampProperty(const string &name, Timestamp def, bool env=true);
 
       bool getBoolProperty(const string &name, bool def, bool env=true);
 
