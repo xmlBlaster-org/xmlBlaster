@@ -31,11 +31,17 @@ BUGS:
 * PtP isDurable redelivery
 
 
-Changes for xxxxx [xxx, xx 200x]
-================================
+Changes for 0.79dev [xxx, xx 200x]
+==================================
   - Updated to use newest JUnit from cvs
 
+  - Added new documentation (all are CLOSED), see
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.disconnect.html
+
   - Added clearSession QoS for disconnect() invocations
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.disconnect.html
 
   - Added requirement describing message priorities
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.priority.html
@@ -58,6 +64,7 @@ Changes for xxxxx [xxx, xx 200x]
     This allows for multiple subscribes of one client sessions on
     the same me message to only receive on update.
     Defaults to true.
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.duplicate.html
 
   - Added more administrative introspection properties:
     nodeId, version, buildTimestamp, buildJavaVendor, buildJavaVersion

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.99 2002/06/27 14:16:38 ruff Exp $
+Version:   $Id: Main.java,v 1.100 2002/06/28 07:17:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -388,7 +388,7 @@ public class Main implements I_RunlevelListener
             log.info(ME, Memory.getStatistic());
             if (controlPanel == null) {
                log.info(ME, "###########################################");
-               log.info(ME, "# xmlBlaster " + glob.getVersion() + " is ready for requests  #");
+               log.info(ME, "# xmlBlaster " + glob.getVersion() + " is ready for requests#");
                log.info(ME, "# press <?> and <enter> for options       #");
                log.info(ME, "###########################################");
             }

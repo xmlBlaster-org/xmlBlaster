@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.38 2002/06/25 17:39:30 ruff Exp $
+Version:   $Id: Global.java,v 1.39 2002/06/28 07:17:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -45,7 +45,7 @@ public class Global implements Cloneable
    private static Global firstInstance = null;
 
    /** Version string, please change for new releases (4 digits) */
-   private String versionDefault = "0.79f";
+   private String versionDefault = "0.79dev";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
    /** This will be replaced by build.xml with the build timestamp */
