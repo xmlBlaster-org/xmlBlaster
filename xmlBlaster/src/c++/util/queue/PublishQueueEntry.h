@@ -44,6 +44,8 @@ public:
 
    PublishReturnQos getPublishReturnQos() const;
 
+   string onlyForTesting() const;
+
 };
 
 }}}} // namespace

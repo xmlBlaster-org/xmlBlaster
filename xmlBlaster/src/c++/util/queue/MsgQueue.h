@@ -62,13 +62,13 @@ public:
     * which fit into the range specified are returned. If there are no such entries, an empty vector is
     * returned.
     */
-   vector<MsgQueueEntry*> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
+   vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
 
    /**
     * Deletes the entries specified in the vector in the argument list. If this vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   long randomRemove(const vector<MsgQueueEntry*>& entries);
+   long randomRemove(const vector<EntryType>& entries);
 
 };
 

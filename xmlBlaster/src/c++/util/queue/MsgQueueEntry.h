@@ -174,6 +174,7 @@ public:
    // this should actually be in another interface but since it is an only method we put it here.
    virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection) = 0;
 
+   virtual string onlyForTesting() const = 0;
 
 };
 

@@ -41,6 +41,8 @@ public:
 
    ConnectReturnQos getConnectReturnQos() const;
 
+   virtual string onlyForTesting() const;
+
 };
 
 }}}} // namespace

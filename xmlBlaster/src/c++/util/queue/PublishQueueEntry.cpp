@@ -41,6 +41,12 @@ PublishReturnQos PublishQueueEntry::getPublishReturnQos() const
    return *publishReturnQos_;
 }
 
+string PublishQueueEntry::onlyForTesting() const 
+{
+   return "PublishQueueEntry";
+}
+
+
 }}}} // namespace
 
 

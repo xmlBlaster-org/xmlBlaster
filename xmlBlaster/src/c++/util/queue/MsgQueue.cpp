@@ -59,9 +59,9 @@ void MsgQueue::put(MsgQueueEntry *entry)
  * which fit into the range specified are returned. If there are no such entries, an empty vector is
  * returned.
  */
-vector<MsgQueueEntry*> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
+vector<EntryType> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
 {
-   vector<MsgQueueEntry*> ret;
+   vector<EntryType> ret;
    if (storage_.empty()) return ret;
    StorageType::const_iterator iter = storage_.begin();
    long numOfEntries = 0;
@@ -73,7 +73,7 @@ vector<MsgQueueEntry*> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long
       if (numOfBytes > maxNumOfBytes && maxNumOfBytes > -1) break;
       if (numOfEntries > maxNumOfEntries && maxNumOfBytes > -1) break;
       if ((**iter).getPriority() != referencePriority ) break;
-      MsgQueueEntry* entry = &(**iter);
+      EntryType entry = (*iter);
       ret.insert(ret.end(), entry); 
       iter++;
    }
@@ -85,16 +85,15 @@ vector<MsgQueueEntry*> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long
  * Deletes the entries specified in the vector in the argument list. If this vector is empty or if
  * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
  */
-long MsgQueue::randomRemove(const vector<MsgQueueEntry*>& entries) 
+long MsgQueue::randomRemove(const vector<EntryType>& entries) 
 {
    if (entries.empty() || storage_.empty()) return 0;
-   vector<MsgQueueEntry*>::const_iterator iter = entries.begin();
+   vector<EntryType>::const_iterator iter = entries.begin();
    long count = 0;
    while (iter != entries.end()) {
       long entrySize = (*iter)->getSizeInBytes();
       if (storage_.empty()) return 0;
-      EntryType el(**iter);
-      int help = storage_.erase(el);
+      int help = storage_.erase(*iter);
       if (help > 0) {
          count -= help;
          numOfBytes_ -= help * entrySize;
@@ -105,5 +104,51 @@ long MsgQueue::randomRemove(const vector<MsgQueueEntry*>& entries)
 }
 
 }}}} // namespace
+
+
+
+
+
+#ifdef _XMLBLASTER_CLASSTEST
+
+#include <util/qos/ConnectQos.h>
+#include <util/queue/ConnectQueueEntry.h>
+
+using org::xmlBlaster::util::qos::ConnectQos;
+using org::xmlBlaster::util::queue::ConnectQueueEntry;
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::queue;
+
+int main(int args, char* argv[])
+{
+
+   Global& global = Global::getInstance();
+   global.initialize(args, argv);
+   Log& log = global.getLog("main");
+   
+   QueueProperty property(global, "");
+   log.info("main", string("queue property: ") + property.toXml());
+
+   ConnectQos qos(global);
+   ConnectQueueEntry* entry = new ConnectQueueEntry(qos);
+
+   {
+      MsgQueue queue(global, property);
+      queue.put(entry);
+      vector<EntryType> vec = queue.peekWithSamePriority();
+//      ConnectQueueEntry pub(*vec[0]);
+//      cout << pub.getConnectQos().toXml() << endl;
+      cout << (vec[0])->onlyForTesting() << endl;
+
+   }
+
+   return 0;
+}
+
+#endif
+
+
 
 

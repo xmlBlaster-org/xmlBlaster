@@ -40,6 +40,12 @@ ConnectReturnQos ConnectQueueEntry::getConnectReturnQos() const
    return *connectReturnQos_;
 }
 
+string ConnectQueueEntry::onlyForTesting() const 
+{
+   return "ConnectQueueEntry";
+}
+
+
 }}}} // namespace
 
 
