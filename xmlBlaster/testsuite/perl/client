@@ -53,9 +53,9 @@ my $content = "Hello xmlBlaster, i'm a Perl client";
 #$message = new serverIdl::MessageUnit xmlKey => $xmlKey, content => $content, qos => $qos;
 my $qos = "";
 $message = {xmlKey => $xmlKey, content => $content, qos => $qos};
-my $publishOid = $xmlBlaster->publish($message);
+my $publishRetQos = $xmlBlaster->publish($message);
 
-print "Successful published message with new oid=$publishOid\n\n";
+print "Successful published message returned QoS=$publishRetQos\n\n";
 
 
 #-------------- subscribe() to the previous message OID -------

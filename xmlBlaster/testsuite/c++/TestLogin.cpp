@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.8 2002/05/01 21:40:17 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.9 2002/06/02 21:39:37 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -38,7 +38,7 @@ private:
       return "Tim";
    }
 
-   string publishOid_, secondOid_;
+   string publishReturnQos, secondOid_;
    string oid_;
    string senderName_, secondName_;
    string senderContent_;
@@ -63,7 +63,7 @@ public:
              const string &secondName) : stopWatch_() {
       senderName_  = senderName;
       secondName_  = secondName;
-      publishOid_  = "";
+      publishReturnQos  = "";
       secondOid_   = "SecondOid";
       oid_         = "TestLogin";
       numReceived_ = 0;
@@ -257,8 +257,8 @@ public:
             "\n</destination>\n</qos>";
       try {
          msgUnit_->qos = qos.c_str();
-         publishOid_ = senderConnection_->publish(*msgUnit_);
-         if (oid_ != publishOid_) {
+         publishReturnQos = senderConnection_->publish(*msgUnit_);
+         if (publishReturnQos.find(oid_) == string::npos) {
             cerr << "oid is different" << endl;
             assert(0);
          }
@@ -273,11 +273,11 @@ public:
          assert(0);
       }
 
-      if (publishOid_ == "") {
+      if (publishReturnQos == "") {
          cerr << "returned publishOid == null" << endl;
          assert(0);
       }
-      if (publishOid_.length() < 1) {
+      if (publishReturnQos.length() < 1) {
          cerr << "returned publishOid is zero in length";
          assert(0);
       }
@@ -325,7 +325,7 @@ public:
                                    (CORBA::Octet*)content.c_str());
 
          secondMsg.qos = "<qos></qos>";
-         publishOid_ = /*secondBlaster_*/
+         publishReturnQos = /*secondBlaster_*/
             /*second*/ senderConnection_->publish(secondMsg);
       }
       catch(serverIdl::XmlBlasterException &e) {
@@ -338,11 +338,11 @@ public:
       }
       waitOnUpdate(1000L, 1);              // message arrived?
 
-      if (publishOid_ == "") {
+      if (publishReturnQos == "") {
          cerr <<  "returned publishOid == null" << endl;
          assert(0);
       }
-      if (publishOid_.length() == 0) {
+      if (publishReturnQos.length() == 0) {
          cerr << "returned publishOid" << endl;
          assert(0);
       }
@@ -350,7 +350,7 @@ public:
       senderConnection_->logout();
       try {
          msgUnit_->qos = "<qos></qos>";
-         publishOid_ = /*xmlBlaster_*/
+         publishReturnQos = /*xmlBlaster_*/
             senderConnection_->publish(*msgUnit_);
          cerr << "Didn't expect successful subscribe after logout";
          assert(0);

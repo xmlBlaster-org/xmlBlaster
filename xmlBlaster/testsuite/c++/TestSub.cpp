@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.8 2002/05/01 21:40:17 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.9 2002/06/02 21:39:37 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -174,8 +174,8 @@ private:
       try {
          msgUnit.qos = "<qos></qos>";
          string tmp = senderConnection_->publish(msgUnit);
-         if (publishOid_ != tmp) {
-            log_.error(me(), "Wrong publishOid");
+         if (tmp.find(publishOid_) == string::npos) {
+            log_.error(me(), "Wrong publishOid: " + tmp);
             assert(0);
          }
          log_.info(me(), string("Success: Publishing done, returned oid=") +
