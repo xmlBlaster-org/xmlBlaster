@@ -295,10 +295,11 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
             msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc(retQos.c_str());
          }
          else { /* Return QoS: Everything is OK */
-            msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+            log.error(ME, string("Ignoring unexpected update message as client has not registered a callback: ") + msgUnit.key);
+            msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc(Constants::RET_OK); // "<qos><state id='OK'/></qos>");
          }
       }
-      //throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "TEST THROWING XCEPT");
+      //throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "TEST THROWING EXCEPTION");
    } 
    catch (XmlBlasterException &e) {
       string tmp = "Exception caught in update(), " +
