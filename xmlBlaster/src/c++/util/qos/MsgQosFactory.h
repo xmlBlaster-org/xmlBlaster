@@ -35,7 +35,7 @@ class Dll_Export MsgQosFactory : public parser::XmlHandlerBase
 {
 private:
    std::string          ME;
-   MsgQosData           msgQosData_;
+   MsgQosData*          msgQosDataP_;
    Destination          destination_;
    org::xmlBlaster::util::cluster::RouteInfo routeInfo_;
    org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
@@ -74,6 +74,10 @@ private:
    std::string SIZE;
 
    ClientProperty* clientProperty_;
+
+   // Private copy ctor and assignement
+   MsgQosFactory(const MsgQosFactory& data);
+   MsgQosFactory& operator=(const MsgQosFactory& data);
 
 public:
    /**

@@ -22,7 +22,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 MsgQosFactory::MsgQosFactory(Global& global)
    : XmlHandlerBase(global), 
      ME("MsgQosFactory"),
-     msgQosData_(global), 
+     msgQosDataP_(0), 
      destination_(global), 
      routeInfo_(global),
      queuePropertyFactory_(global),
@@ -65,24 +65,33 @@ MsgQosFactory::~MsgQosFactory()
    if (clientProperty_ != 0) {
       delete(clientProperty_);
    }
+   if (msgQosDataP_ != 0) {
+      delete(msgQosDataP_);
+   }
 }                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)
 {
+   delete msgQosDataP_;
+   msgQosDataP_ = new MsgQosData(global_);
+   routeInfo_ = RouteInfo(global_);
+   //queuePropertyFactory_ = QueuePropertyFactory(global_);
+   delete clientProperty_;
+   clientProperty_ = 0;
+
    if (xmlQos.empty()) init("<qos/>");
    else init(xmlQos);
-   return msgQosData_;
+   return *msgQosDataP_;
 }
 
 void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
+   //log_.error(ME, "startElement: name=" + name);// + " attrs=" + attrs.size());
    bool      tmpBool;
-//      int       tmpInt;
    string    tmpString;
    long      tmpLong;
    Timestamp tmpTimestamp;
    if (name.compare("qos") == 0) {
-     msgQosData_ = MsgQosData(global_); // kind of reset
      inQos_ = true;
      return;
    }
@@ -100,10 +109,10 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       string tmpValue = (*iter).second;
       while (iter != attrs.end()) {
          if (tmpName.compare("id") == 0) {
-            msgQosData_.setState(tmpValue);
+            msgQosDataP_->setState(tmpValue);
          }
          else if (tmpName.compare("info") == 0) {
-            msgQosData_.setStateInfo(tmpValue);
+            msgQosDataP_->setStateInfo(tmpValue);
          }
          iter++;
       }
@@ -145,18 +154,18 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       if (!inQos_) return;
       inExpiration_ = true;
 //         int len = attrs.getLength();
-      if (getLongAttr(attrs, LIFE_TIME, tmpLong)) msgQosData_.setLifeTime(tmpLong);
+      if (getLongAttr(attrs, LIFE_TIME, tmpLong)) msgQosDataP_->setLifeTime(tmpLong);
       else {
-         log_.warn(ME, string("QoS <expiration> misses lifeTime attribute, setting default of ") + lexical_cast<std::string>(msgQosData_.getMaxLifeTime()));
-         msgQosData_.setLifeTime(msgQosData_.getMaxLifeTime());
+         log_.warn(ME, string("QoS <expiration> misses lifeTime attribute, setting default of ") + lexical_cast<std::string>(msgQosDataP_->getMaxLifeTime()));
+         msgQosDataP_->setLifeTime(msgQosDataP_->getMaxLifeTime());
       }
-      if (getBoolAttr(attrs, FORCE_DESTROY, tmpBool)) msgQosData_.setForceDestroy(tmpBool);
-      if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosData_.setRemainingLifeStatic(tmpLong);
+      if (getBoolAttr(attrs, FORCE_DESTROY, tmpBool)) msgQosDataP_->setForceDestroy(tmpBool);
+      if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosDataP_->setRemainingLifeStatic(tmpLong);
       return;
    }
    if (name.compare("rcvTimestamp") == 0) {
       if (!inQos_) return;
-      if (getTimestampAttr(attrs, NANOS, tmpTimestamp)) msgQosData_.setRcvTimestamp(tmpTimestamp);
+      if (getTimestampAttr(attrs, NANOS, tmpTimestamp)) msgQosDataP_->setRcvTimestamp(tmpTimestamp);
       inRcvTimestamp_ = true;
       return;
    }
@@ -203,7 +212,7 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       AttributeMap::const_iterator iter = attrs.begin();
       while (iter != attrs.end()) {
          if ( ((*iter).first).compare("id") == 0) {
-            msgQosData_.setSubscriptionId( (*iter).second );
+            msgQosDataP_->setSubscriptionId( (*iter).second );
          }
          iter++;
       }
@@ -212,19 +221,19 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
 
    if (name.compare("persistent") == 0) {
       if (!inQos_) return;
-      msgQosData_.setPersistent(true);
+      msgQosDataP_->setPersistent(true);
       return;
    }
 
    if (name.compare("forceUpdate") == 0) {
       if (!inQos_) return;
-      msgQosData_.setForceUpdate(true);
+      msgQosDataP_->setForceUpdate(true);
       return;
    }
 
    if (name.compare("readonly") == 0) {
       if (!inQos_) return;
-      msgQosData_.setReadonly(true);
+      msgQosDataP_->setReadonly(true);
       log_.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
       return;
    }
@@ -260,6 +269,7 @@ void MsgQosFactory::endElement(const string &name)
       inQos_ = false;
       return;
    }
+   //log_.error(ME, "endElement: name=" + name + " character_=" + character_);
    if (inQueue_ || inPersistence_) {
       queuePropertyFactory_.endElement(name);
       if(name.compare("queue") == 0) {
@@ -267,10 +277,10 @@ void MsgQosFactory::endElement(const string &name)
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
          string relating = tmp.getRelating();
-         TopicProperty tmpProp = msgQosData_.getTopicProperty();
+         TopicProperty tmpProp = msgQosDataP_->getTopicProperty();
          if (relating == Constants::RELATING_HISTORY) {
             tmpProp.setHistoryQueueProperty(tmp);
-            msgQosData_.setTopicProperty(tmpProp);
+            msgQosDataP_->setTopicProperty(tmpProp);
          }
          else {
             log_.error(ME, string("Ignoring unknown <queue relating='") + relating + "'/> configuration");
@@ -282,9 +292,9 @@ void MsgQosFactory::endElement(const string &name)
          inPersistence_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
-         TopicProperty tmpProp = msgQosData_.getTopicProperty();
+         TopicProperty tmpProp = msgQosDataP_->getTopicProperty();
          tmpProp.setMsgUnitStoreProperty(tmp);
-         msgQosData_.setTopicProperty(tmpProp);
+         msgQosDataP_->setTopicProperty(tmpProp);
          return;
       }
    }
@@ -298,18 +308,18 @@ void MsgQosFactory::endElement(const string &name)
    if( name.compare("destination") == 0) {
       inDestination_ = false;
       StringTrim::trim(character_); // The address or XPath query string
-      if (!character_.empty() == 0) {
+      if (!character_.empty()) {
          destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before the forceQueuing tag
          character_.erase();
       }
-      msgQosData_.addDestination(destination_);
+      msgQosDataP_->addDestination(destination_);
       return;
    }
 
    if(name.compare("sender") == 0) {
       inSender_ = false;
       StringTrim::trim(character_);
-      msgQosData_.setSender(SessionQos(global_, character_));
+      msgQosDataP_->setSender(SessionQos(global_, character_));
       // if (log.trace()) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
       character_.erase();
       return;
@@ -318,7 +328,7 @@ void MsgQosFactory::endElement(const string &name)
    if(name.compare("priority") == 0) {
       inPriority_ = false;
       int prio = atoi(character_.c_str());
-      msgQosData_.setPriority(int2Priority(prio));
+      msgQosDataP_->setPriority(int2Priority(prio));
       character_.erase();
       return;
    }
@@ -339,8 +349,8 @@ void MsgQosFactory::endElement(const string &name)
       inIsVolatile_ = false;
       StringTrim::trim(character_);
       if (!character_.empty()) {
-         if (character_ == "true") msgQosData_.setForceUpdate(true);
-         else msgQosData_.setForceUpdate(false);
+         if (character_ == "true") msgQosDataP_->setForceUpdate(true);
+         else msgQosDataP_->setForceUpdate(false);
       }
       // if (log.trace()) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
       character_.erase();
@@ -357,8 +367,8 @@ void MsgQosFactory::endElement(const string &name)
       inIsPersistent_ = false;
       StringTrim::trim(character_);
       if (!character_.empty())
-         if (character_ == "true") msgQosData_.setPersistent(true);
-         else  msgQosData_.setPersistent(false);
+         if (character_ == "true") msgQosDataP_->setPersistent(true);
+         else  msgQosDataP_->setPersistent(false);
       // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
       character_.erase();
       return;
@@ -368,8 +378,8 @@ void MsgQosFactory::endElement(const string &name)
       inReadonly_ = false;
       StringTrim::trim(character_);
       if (!character_.empty())
-         if (character_ == "true") msgQosData_.setReadonly(true);
-         else  msgQosData_.setReadonly(false);
+         if (character_ == "true") msgQosDataP_->setReadonly(true);
+         else  msgQosDataP_->setReadonly(false);
       // if (log.trace()) log.trace(ME, "Found readonly = " + msgQosData.readonly());
       character_.erase();
       return;
@@ -378,13 +388,13 @@ void MsgQosFactory::endElement(const string &name)
    if(name.compare("redeliver") == 0) {
       inRedeliver_ = false;
       StringTrim::trim(character_);
-      msgQosData_.setRedeliver(atoi(character_.c_str()));
+      msgQosDataP_->setRedeliver(atoi(character_.c_str()));
       character_.erase();
       return;
    }
 
    if (name.compare("node") == 0) {
-      msgQosData_.addRouteInfo(routeInfo_);
+      msgQosDataP_->addRouteInfo(routeInfo_);
       character_.erase();
       return;
    }
@@ -397,7 +407,7 @@ void MsgQosFactory::endElement(const string &name)
 
    if (name.compare("clientProperty") == 0) {
       clientProperty_->setValueRaw(character_);
-      msgQosData_.addClientProperty(*clientProperty_);
+      msgQosDataP_->addClientProperty(*clientProperty_);
       delete clientProperty_;
       clientProperty_ = 0;
       character_.erase();
