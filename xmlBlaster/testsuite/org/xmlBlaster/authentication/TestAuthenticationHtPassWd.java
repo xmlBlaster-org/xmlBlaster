@@ -27,13 +27,13 @@ public class TestAuthenticationHtPassWd extends TestCase
   public TestAuthenticationHtPassWd (String name)
   { super(name);
     this.glob = new Global();
-    this.userhome = glob.getProperty().get("${user.home}","/home/astelzl")+glob.getProperty().get("${file.separator}","/");
+    this.userhome = glob.getProperty().get("user.home","/home/astelzl")+java.io.File.separatorChar;
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
       FileUtil.writeFile(userhome+"test.htpasswd1","*");
     }
     catch(Exception ex)
-    { assertTrue("Could not create password files. Tests won't work!",false);
+    { assertTrue("Could not create password files in directory '" + userhome + "'. Tests won't work!",false);
     }
   }                                     
 
@@ -140,12 +140,12 @@ public class TestAuthenticationHtPassWd extends TestCase
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
       ConnectReturnQos conRetQos = con.connect(qos, null);
       con.disconnect(null);
+      assertTrue("Could connect although it should not have been possible with the specified username and password",isValue);
     }
     catch(Exception ex)
     { isValue = true;
       Log.info(ME,"Could not connect");
     }
-    assertTrue("Could connect although it should not have been possible with the specified username and password",isValue);
   }
 
   public void testAuthHtPassWordCase3()
