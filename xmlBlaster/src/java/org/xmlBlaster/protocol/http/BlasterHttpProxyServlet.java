@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.21 2000/05/13 22:15:23 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.22 2000/05/13 22:45:20 www Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -152,7 +152,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
-               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='browserReady'</body></html>");
+               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='browserReady' " + System.currentTimeMillis() + "</body></html>");
                return;
             }
             catch (XmlBlasterException e) {
@@ -165,17 +165,22 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          // pings the browser to hold the http connection.
          // The browser responses with 'pong', to allow the servlet to
          // detect if the browser is alive.
+         // Locally this works fine, but over the internet the second or third pong from the browser
+         // was never reaching this servlet. Adding some dynamic content/URL helped a bit,
+         // but after some ten pongs, the following pongs where lost.
+         // The browserReady request hasn't got this problem, why??
+         // So we do a pong on browserReady as well, which solved the problem (see HttpPushHandler.java)
          else if(actionType.equals("pong")) {
             try {
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
                pushHandler.pong();
 
                // state is only for debugging
-               Log.warning(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
+               if (Log.TRACE) Log.trace(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
-               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='pong'</body></html>");
+               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='pong' " + Util.getParameter(req, "state", "noState") + " " + System.currentTimeMillis() + "</body></html>");
                return;
             }
             catch (XmlBlasterException e) {

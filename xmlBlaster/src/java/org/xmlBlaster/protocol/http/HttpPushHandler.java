@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.23 2000/05/13 22:15:23 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.24 2000/05/13 22:45:20 www Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -240,6 +240,8 @@ public class HttpPushHandler
    {
       this.browserIsReady = ready;
       if (Log.TRACE) Log.trace(ME, "Setting browserReady=" + browserIsReady);
+
+      pong(); // Use this as a browser alive as well, since some internet proxies seem to hold back my pongs
 
       //send queue if browser is ready
       if (browserIsReady) {
@@ -499,7 +501,7 @@ public class HttpPushHandler
     */
    public void pong()
    {
-      pingThread.pong();
+      if (pingThread != null) pingThread.pong();
    }
 
 

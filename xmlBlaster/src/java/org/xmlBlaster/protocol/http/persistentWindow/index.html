@@ -32,7 +32,7 @@
             }
             else {
                // Response to servlet that we are alive ...
-               Log.warning("Received refresh ping '" + state + "', sending pong back to servlet");
+               Log.trace("Received refresh ping '" + state + "', sending pong back to servlet");
                // Sending the state is for debugging only (or for proxies to let it through?)
                self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
