@@ -349,9 +349,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
  int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries);
             for (int i=0; i < queueEntries.length; i++) {
 //               boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries[i]);
-               boolean isProcessed = help[i] > 0 || help[i] == Statement.SUCCESS_NO_INFO;
+               boolean isProcessed = help[i] > 0 || help[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
                if (this.log.TRACE) {
-               	  this.log.trace(ME, "put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "' (by the way SUCCESS_NO_INFO is '" + Statement.SUCCESS_NO_INFO + "'");
+                  this.log.trace(ME, "put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "'"); // (by the way SUCCESS_NO_INFO is '" + Statement.SUCCESS_NO_INFO + "'");
                }
                if (isProcessed) {
                   this.numOfEntries++;
