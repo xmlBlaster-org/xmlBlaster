@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.7 2002/05/11 09:36:28 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.8 2002/06/10 22:35:55 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -107,25 +107,6 @@ public class PersistencePluginManager extends PluginManagerBase
     */
    public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
-   }
-
-
-   /**
-    * Resolve type and version to the plugins name
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return String The name of the requested plugin.
-    */
-   protected String[] choosePlugin(String type, String version) throws XmlBlasterException
-   {
-      /*if (type == null || type.equals("simple")) {
-         if (glob.getProperty().get("Security.Server.allowSimpleDriver", true) == false){
-            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
-         }
-      }*/
-
-      return super.choosePlugin(type, version);
    }
 
 
