@@ -50,21 +50,22 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
 ConnectionsHandler::~ConnectionsHandler()
 {
    if (log_.call()) log_.call(ME, "destructor");
+   if (timestamp_ != 0) {
+      global_.getPingTimer().removeTimeoutListener(timestamp_);
+      timestamp_ = 0;
+   }
    doStopPing_ = true;
+   /*
    while (pingIsStarted_) {
       Thread::sleep(200);
    }
+   */
    Lock lock(connectMutex_);
    string type = connectQos_->getAddress().getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
       global_.getDispatchManager().releasePlugin(instanceName_, type, version);
       connection_ = NULL;
-   }
-
-   if (timestamp_ != 0) {
-      global_.getPingTimer().removeTimeoutListener(timestamp_);
-      timestamp_ = 0;
    }
    if ( queue_ ) {
       delete queue_;
