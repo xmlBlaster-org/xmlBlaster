@@ -16,6 +16,7 @@ import java.util.ArrayList;
 /**
  * The Interface which our persistent map and cache map must implement. 
  * </p>
+ * All methods are reentrant and thread safe
  * @author xmlBlaster@marcelruff.info
  */
 public interface I_Map
@@ -50,6 +51,12 @@ public interface I_Map
     * @return null if not found
     */
    I_MapEntry get(final long uniqueId) throws XmlBlasterException;
+
+   /**
+    * Retrieve all entries in the storage, please take care on memory consumption.
+    * @return A current snapshot of all entries
+    */
+   I_MapEntry[] getAll() throws XmlBlasterException;
    
    /**
     * Adds one entry and automatically increments the reference counter. 
@@ -57,6 +64,7 @@ public interface I_Map
     * @throws XmlBlasterException in case an error occurs. Possible causes of
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
     * @return Number of new entries added: 0 if entry existed, 1 if new entry added
+    *         Note: If an entry existed already (0 is returned), it is NOT updated in storage
     */
    int put(I_MapEntry mapEntry) throws XmlBlasterException;
 
