@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.9 2002/06/15 16:03:28 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.10 2002/08/15 18:18:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -98,6 +98,12 @@ public class SubscribeKeyWrapper extends KeyWrapper
       }
       if (queryType.equals(Constants.XPATH)) {
          sb.append(" queryType='").append(queryType).append("'>\n");
+         sb.append(queryString);
+         sb.append("\n</key>");
+      }
+      else if (queryString != null && queryString.length() > 0) {
+         // If user tags need to be wrapped
+         sb.append(">\n");
          sb.append(queryString);
          sb.append("\n</key>");
       }
