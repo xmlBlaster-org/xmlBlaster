@@ -22,9 +22,10 @@ public class Execute
    private static final String ME = "Execute";
    private Global glob;
    private LogChannel log;
-   private Process process = null;
+   private Process process;
    private String[] commandArr;
    private String[] envArr;
+   private String errorText;
 
    private int BUFFERED_READER_SIZE = 200000; // 200 kBytes, must be big enough to collect stdout/stderr
    /** Thread to collect stdout of a process */
@@ -54,6 +55,7 @@ public class Execute
     */
    public void run() {
       if (log.TRACE) log.trace( ME, "Entering Method Execute.run()");
+      errorText = null;
       try {
          Runtime runtime = Runtime.getRuntime();
          process = runtime.exec(commandArr, envArr); // start the process
@@ -102,9 +104,9 @@ public class Execute
          return;
       }
       catch (Exception e) {
-         String text = "Process [" + commandArr[0] + "] could not be started: " + e.toString();
-         log.error(ME, text);
-         e.printStackTrace();
+         errorText = "Process [" + commandArr[0] + "] could not be started: " + e.toString();
+         log.error(ME, errorText);
+         //e.printStackTrace();
       }
       finally {
          if (stdoutThread != null) { stdoutThread.stopIt(); stdoutThread=null; } // necessary?
@@ -135,6 +137,13 @@ public class Execute
 
    public int getExitValue() {
       return this.exitValue;
+   }
+
+   /**
+    * If not null an error occurred in run()
+    */
+   public String getErrorText() {
+      return errorText;
    }
 
    /**
