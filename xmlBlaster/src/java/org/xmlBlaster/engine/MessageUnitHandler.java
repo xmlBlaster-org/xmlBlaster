@@ -180,24 +180,10 @@ public class MessageUnitHandler
 
    /**
     * Clean up everything, since i will be deleted now
-    * @param The state of the update message QoS e.g. Constants.STATE_OK,
-    *        if null no erase event is sent
     */
-   public void erase(SessionInfo sessionInfo, String state) throws XmlBlasterException
+   public void erase(SessionInfo sessionInfo) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Entering erase()");
-
-      if (state != null) {
-         if (log.TRACE) log.trace(ME, "Sending client notification about message erase() event");
-         try {
-            invokeCallback(sessionInfo, state);
-         }
-         catch (XmlBlasterException e) {
-            // The access plugin or client may throw an exception
-            // The behavior is not coded yet
-            log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.toString());
-         }
-      }
 
       try {
          // TODO: Erases message from persistent store,
@@ -223,13 +209,13 @@ public class MessageUnitHandler
     * Setting update of a new content.
     *
     * @param xmlKey      The XmlKey object, derived from msgUnit.xmlKey string
-    * @param msgUnit The CORBA MessageUnit struct
+    * @param msgUnitWr     The MessageUnitWrapper instance
     * @param publishQos  Quality of Service, flags to control the publishing
     *
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey unparsedXmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public boolean setContent(XmlKey unparsedXmlKey, MessageUnitWrapper msgUnitWr, PublishQos publishQos) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Setting content");
       if (this.xmlKey == null) this.xmlKey = unparsedXmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
@@ -239,10 +225,10 @@ public class MessageUnitHandler
          throw new XmlBlasterException(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
       }
 
-      boolean changed = (msgUnitWrapper != null) ? !msgUnitWrapper.sameContent(msgUnit.getContent()) : true;
+      boolean changed = (this.msgUnitWrapper != null) ? !this.msgUnitWrapper.sameContent(msgUnitWr.getMessageUnit().getContent()) : true;
 
-      msgUnitWrapper = new MessageUnitWrapper(glob, requestBroker, xmlKey, msgUnit, publishQos);
-      msgUnitWrapper.setMessageUnitHandler(this);
+      this.msgUnitWrapper = msgUnitWr;
+      this.msgUnitWrapper.setMessageUnitHandler(this);
       
       return changed;
    }
@@ -343,13 +329,12 @@ public class MessageUnitHandler
             eraseQos.setNotify(false);
             String[] dummy = requestBroker.erase(requestBroker.getInternalSessionInfo(), xmlKey, eraseQos);
             */
-            requestBroker.fireMessageEraseEvent(sessionInfo, this);
             if (log.TRACE) log.trace(ME, "Erasing message '" + getUniqueKey() + "' with last subscriber disappearing");
-            erase(sessionInfo, null); // Constants.STATE_ERASED);
+            requestBroker.fireMessageEraseEvent(sessionInfo, this, null); // Constants.STATE_ERASED);
          }
          catch(XmlBlasterException e) {
             log.error(ME, "Internal problem erasing the message skeleton of '" + getUniqueKey() + "', ignoring problem: " + e.toString());
-            Thread.currentThread().dumpStack();
+            e.printStackTrace();
          }
       }
       return subs;
@@ -478,6 +463,22 @@ public class MessageUnitHandler
 
    public final boolean hasSubscribers() {
       return subscriberMap.size() != 0;
+   }
+
+   /**
+    * Returns true if there are subscribers with exact query on oid or domain
+    * @return false If no subscriber exists or all subscribers are through XPath query
+    */
+   public final boolean hasExactSubscribers() {
+      synchronized(subscriberMap) {
+         Iterator iterator = subscriberMap.values().iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            if (!sub.isCreatedByQuerySubscription())
+               return true;
+         }
+      }
+      return false;
    }
 
    /**
