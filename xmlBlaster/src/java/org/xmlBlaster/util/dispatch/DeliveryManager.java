@@ -478,7 +478,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /**
     * Here we prepare messages which are coming directly from the queue.
     * <ol>
-    *   <li>We eliminate expired messages</li>
+    *   <li>We eliminate destroyed messages</li>
     *   <li>We make a shallow copy of the message.
     *       We need to do this, out messages are references directly into the queue.
     *       The delivery framework is later changing the QoS
@@ -798,7 +798,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<DeliveryManager id='").append(getId()).append("'>");
+      sb.append(offset).append("<DeliveryManager id='").append(getId());
+      if (this.msgQueue != null)
+         sb.append(offset).append("' numEntries='").append(this.msgQueue.getNumOfEntries());
+      sb.append("'>");
       sb.append(this.deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
       sb.append(offset).append("</DeliveryManager>");
