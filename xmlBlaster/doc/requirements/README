@@ -66,7 +66,7 @@ Validating with IBM parser:
 ===========================
 export CLASSPATH=/www/xml4j/xml4j.jar:/www/xml4j/xml4jSamples.jar:$CLASSPATH
 java dom.DOMCount -p dom.wrappers.DOMParser engine.get.no.xml
-java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml 
+java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml
 
 
 
@@ -85,3 +85,5 @@ http://localhost:8000/servlet/servletName?objectKey=9988
 http://localhost:8000/servlet/servletName?objectKey=9988
 
 
+---- XSL-FO engine to generate PDF output ----------------
+http://www.unicorn-enterprises.com/download_ufo.html
