@@ -3,13 +3,14 @@ Name:      TestMuDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing MessageUnit database
-Version:   $Id: TestMuDb.java,v 1.2 2000/09/15 17:16:22 ruff Exp $
+Version:   $Id: TestMuDb.java,v 1.3 2000/12/26 14:56:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.engine.persistence.mudb.MuDb;
 import org.xmlBlaster.engine.persistence.mudb.file.*;
 import org.xmlBlaster.engine.persistence.mudb.dom.*;
+import org.xmlBlaster.engine.persistence.PMessageUnit;
 import org.xmlBlaster.util.*;
 
 import java.io.File;
@@ -33,7 +34,6 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.PMessageUnit;
 
 import test.framework.*;
 
@@ -74,18 +74,26 @@ public class TestMuDb extends TestCase
    // Test insert with durable-messages
    public void insertMsg(String oid, boolean durable)
    {
+      Log.call(ME, "insertMsg(" + oid + "," + durable + ")");
       MessageUnit mu;
       String key;
 
       key = "<?xml version='1.0' ?>\n"+"<key oid='"+oid+"'>\n"+"<person pid='10"+oid+"' gid='200'>\n" +"<name age='31' sex='f'>Lisa</name>\n"+
                "<surname>Schmid</surname>\n"+ "<adress>\n <street>Bakerstreet 2a</street>\n </adress>\n"+"</person>\n"+" </key>\n";
 
+      PMessageUnit pmu = null;
       if(durable){
          mu = new MessageUnit(key,content.getBytes(),qosD);
+         pmu = new PMessageUnit(mu, true, oid);
       }else{
          mu = new MessageUnit(key,content.getBytes(),qos);
+         pmu = new PMessageUnit(mu, false, oid);
       }
-      String result = mudb.insert(mu);
+      try {
+         boolean result = mudb.insert(pmu);
+      } catch (XmlBlasterException e) {
+         assert(e.toString(), false);
+      }
 //      assertNotEquals("Can't insert MessageUnit with oid : "+result+" because Key exists", result, oid);
    }
 
@@ -97,24 +105,28 @@ public class TestMuDb extends TestCase
 
       PMessageUnit pmu = mudb.get("100");
 
+      Log.trace(ME,"Success, got pmu.oid=" + pmu.oid);
+
       mudb.showCacheState();
       if(pmu==null)
          assert("Can't get MessageUnit from MuDb with oid : 100",false);
 
       //invoke a second insert with oid=100
-      mudb.delete("100");
+      try { mudb.delete("100"); } catch(XmlBlasterException e) { assert(e.toString(), false); }
+
+      Log.trace(ME,"Success, delete oid=100");
    }
 
    public void testDelete()
    {
       Log.call(ME,"Testcase ...... testDelete()");
-      mudb.delete("100");
+      try { mudb.delete("100"); } catch(XmlBlasterException e) { assert(e.toString(), false); }
       PMessageUnit pmu = mudb.get("100");
 
       if(pmu!=null)
          assert("Can't delete MessageUnit from Mudb with oid : "+pmu.oid,false);
       //invoke a second delete with oid=100
-      mudb.delete("100");
+      try { mudb.delete("100"); } catch(XmlBlasterException e) { assert(e.toString(), false); }
    }
 
    public void testQuery()
@@ -124,7 +136,12 @@ public class TestMuDb extends TestCase
       insertMsg("101",true);
       insertMsg("102",true);
 
-      Enumeration msgIter = mudb.query("//key[@oid=\"101\"]");
+      Enumeration msgIter = null;
+      try {
+         msgIter = mudb.query("//key[@oid=\"101\"]");
+      } catch (XmlBlasterException e) {
+         assert(e.toString(), false);
+      }
       PMessageUnit pmu=null;
       while(msgIter.hasMoreElements())
       {
@@ -145,7 +162,12 @@ public class TestMuDb extends TestCase
          insertMsg(String.valueOf(i),true);
       }
 
-      Enumeration msgIter = mudb.query("//key");
+      Enumeration msgIter = null;
+      try {
+         msgIter = mudb.query("//key");
+      } catch (XmlBlasterException e) {
+         assert(e.toString(), false);
+      }
       PMessageUnit pmu=null;
       int countMsg=0;
       while(msgIter.hasMoreElements())
@@ -153,10 +175,10 @@ public class TestMuDb extends TestCase
          pmu = (PMessageUnit)msgIter.nextElement();
          countMsg++;
       }
-      assertEquals("Insert-Query-Test was failed.",new String("100"),String.valueOf(countMsg));
+      assertEquals("Insert-Query-Test failed.",new String("100"),String.valueOf(countMsg));
       //Delete MessageUnits from MessageUnit database
       for(int i=100;i<200;i++){
-         mudb.delete(String.valueOf(i));
+         try { mudb.delete(String.valueOf(i)); } catch(XmlBlasterException e) { assert(e.toString(), false); }
       }
    }
 
@@ -179,7 +201,12 @@ public class TestMuDb extends TestCase
       stop.restart();
 
       // Query-time-test
-      Enumeration msgIter = mudb.query("//key");
+      Enumeration msgIter = null;
+      try {
+         msgIter = mudb.query("//key");
+      } catch (XmlBlasterException e) {
+         assert(e.toString(), false);
+      }
       Log.info(ME,"Time for a simple query (1000 MessageUnits):"+stop.toString());
 
       PMessageUnit pmu=null;
@@ -195,7 +222,7 @@ public class TestMuDb extends TestCase
       stop.restart();
       // Delete MessageUnits
       for(int i=100;i<1100;i++){
-        mudb.delete(String.valueOf(i));
+        try { mudb.delete(String.valueOf(i)); } catch(XmlBlasterException e) { assert(e.toString(), false); }
       }
       Log.info(ME,"1000 MessageUnits deleted in: "+stop.toString());
    }
@@ -226,13 +253,18 @@ public class TestMuDb extends TestCase
          Log.info(ME,"    MessageUnits per Second by INSERT : "+String.valueOf((int)msgSec)+" Msg/sec.");
          stop.restart();
 
-         Enumeration msgIter = mudb.query("//key");
+         Enumeration msgIter = null;
+         try {
+            msgIter = mudb.query("//key");
+         } catch (XmlBlasterException e) {
+            assert(e.toString(), false);
+         }
          Log.info(ME,"    Query 1000 MUs.....in..."+stop.toString());
 
          stop.restart();
          mudb.showCacheState();
          for(int i=2000;i<3000;i++){
-           mudb.delete(String.valueOf(i));
+           try { mudb.delete(String.valueOf(i)); } catch(XmlBlasterException e) { assert(e.toString(), false); }
          }
          Log.info(ME,"    Delete 1000 MUs....in..."+stop.toString());
 

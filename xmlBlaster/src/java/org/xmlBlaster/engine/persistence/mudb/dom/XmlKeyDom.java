@@ -3,13 +3,14 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Stores the xmlkey in a DOM.
-Version:   $Id: XmlKeyDom.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.3 2000/12/26 14:56:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.dom;
 
 import java.util.Enumeration;
 import java.io.*;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.w3c.dom.*;
 
@@ -17,7 +18,7 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
-import org.xmlBlaster.engine.PMessageUnit;
+import org.xmlBlaster.engine.persistence.PMessageUnit;
 
 import com.jclark.xsl.om.*;
 import com.jclark.xsl.dom.XMLProcessorImpl;
@@ -25,61 +26,75 @@ import com.jclark.xsl.dom.SunXMLProcessorImpl;
 import com.fujitsu.xml.omquery.DomQueryMgr;
 import com.fujitsu.xml.omquery.JAXP_ProcessorImpl;
 
-import com.sun.xml.tree.XmlDocument;
-import com.sun.xml.tree.ElementNode;
-import gnu.regexp.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.*;
+
 
 public class XmlKeyDom
 {
 
    private static final String ME = "XmlKeyDom";
-   private static XmlKeyDom _domInstance;
-   private static XmlDocument _xmlBlasterDoc;
-   private static org.w3c.dom.Node _rootNode;
-   private static Vector _oidTable;
+
+   private  Hashtable _oidTable;
+   private  XmlToDom _xmlToDom;
+
+   private  org.w3c.dom.Document _xmlBlasterDoc;
+   private  org.w3c.dom.Node     _rootNode;
 
 
-   private XmlKeyDom(){
-   }
-
-   public static XmlKeyDom getInstance()
+   public XmlKeyDom()
    {
-      if(_domInstance == null)
-      {
-         _domInstance  = new XmlKeyDom();
-         _xmlBlasterDoc = new XmlDocument();
-         _oidTable      = new Vector();
+      if (Log.CALL) Log.call(ME, "Entering XmlKeyDom ...");
+      try{
+       /* Instantiate the Factory  */
+         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-         /** Create DOM-Key-Tree  */
-         _rootNode = (org.w3c.dom.Node)_xmlBlasterDoc.createElement("xmlBlaster");
-         _xmlBlasterDoc.appendChild(_rootNode);
+         /* Get a Parser, which is defined in the system-properties */
+         DocumentBuilder builder = factory.newDocumentBuilder();
+
+         /* Create a new Document, which is w3c conform */
+         _xmlBlasterDoc = builder.newDocument();
+
+      }catch(ParserConfigurationException pc){
+         Log.error(ME, "ParserConfigurationException: " + pc.toString());
       }
-      return _domInstance;
+
+      _oidTable      = new Hashtable();
+
+      _xmlToDom      = new XmlToDom(this);
+
+      /** Create DOM-Key-Tree  */
+      _rootNode = (org.w3c.dom.Node)_xmlBlasterDoc.createElement("xmlBlaster");
+
+      /* Add the root node to the XmlDocument */
+      _xmlBlasterDoc.appendChild(_rootNode);
    }
 
    /**
     * Insert a MessageUnit to xmldb.
     * <br>
-    * @param mu        The MesageUnit
-    * @param isDurable The durable-flag makes the MessageUnit persistent
+    * @param pmu  MessageUnit wrapper for persistence.
     */
-   public final void insert(PMessageUnit pmu)
+   public final void insert(PMessageUnit pmu) throws XmlBlasterException
    {
-      if(pmu == null){
-         Log.error(ME + ".insert", "The arguments of insert() are invalid (null)");
-      }
+
+      OidInfo oidInfo = null;
       if(!keyExists(pmu.oid)){
-         _oidTable.addElement(pmu.oid);
+         oidInfo = new OidInfo(pmu.oid);
+         _oidTable.put(pmu.oid, oidInfo);
       }else{
+         if (Log.TRACE) Log.trace(ME, "pmu.oid=" + pmu.oid + " existed already");
          return;
       }
 
       // Insert key to DOM
       try
       {
-         XmlToDom.parse(pmu.msgUnit.xmlKey, _xmlBlasterDoc);
+         oidInfo.setNode(_xmlToDom.parse(pmu.msgUnit.xmlKey, _xmlBlasterDoc));
       }catch(Exception e){
-         e.printStackTrace();
+         throw new XmlBlasterException(ME,e.toString());
       }
    }
 
@@ -103,29 +118,33 @@ public class XmlKeyDom
    }
 
 
-   public final void  delete(String oid)
+   public final void  delete(String oid) throws XmlBlasterException
    {
       /** Delete Key from DOM **/
-      NodeList nl = _rootNode.getChildNodes();
-      for(int i=0; i<nl.getLength();i++)
-      {
-         org.w3c.dom.Node node = nl.item(i);
 
-         ElementNode keyNode = (com.sun.xml.tree.ElementNode)node;
-         String nodeString = keyNode.toString();
-         String getOid = getOid(nodeString);
-         if(oid.equals(getOid))
-         {
-            _rootNode.removeChild(node);
-            break;
-         }
-      }
-      _oidTable.remove(oid);
+     OidInfo oidInfo = (OidInfo)_oidTable.get(oid);
+
+     if( oidInfo != null )
+     {
+        try{
+           if (Log.TRACE) Log.trace(ME, "delete: " + oidInfo.getNode());
+           _rootNode.removeChild(oidInfo.getNode());
+        }catch(Exception e){
+           Log.warn(ME, "removeChild(" + oid + " [" + oidInfo.getNode() + "]): " + e.toString());
+           throw new XmlBlasterException(ME, "removeChild(" + oid + "): " + e.toString());
+        }
+        finally{
+           _oidTable.remove(oid);
+        }
+
+     }else{
+        Log.error(ME,"Trying to remove unknown oid="+oid);
+     }
    }
 
 
    // query with your QUERY language e.g. XPATH and gets a Enumeration of Nodes
-   public final Enumeration query(String queryString)
+   public final Enumeration query(String queryString) throws XmlBlasterException
    {
      /** TODO recognize QUERY-TYPE */
       Log.trace(ME,"Querystring : "+queryString);
@@ -141,8 +160,9 @@ public class XmlKeyDom
       try{
          DomQueryMgr query_mgr = new DomQueryMgr(_xmlBlasterDoc);
 
-         NamespacePrefixMap nspm = query_mgr.getEmptyNamespacePrefixMap();
-         nspm = nspm.bind("fuj", "http://www.fujitsu.co.jp/");
+         /* TODO: in future porting to xmlBlaster namespace */
+         //NamespacePrefixMap nspm = query_mgr.getEmptyNamespacePrefixMap();
+         //nspm = nspm.bind("xmlBlaster", "http://www.xmlBlaster.org/");
 
          keys = query_mgr.getNodesByXPath(_xmlBlasterDoc, queryString);
       }catch(XSLException e){
@@ -156,14 +176,11 @@ public class XmlKeyDom
          Object obj = keys.nextElement();
          org.w3c.dom.Node node = (org.w3c.dom.Node)obj;
          String nodeString="";
-         com.sun.xml.tree.ElementNode keyNode = null;
-         try{
-            keyNode = (com.sun.xml.tree.ElementNode)getKeyNode(node);
-         }catch(XmlBlasterException e){
-            Log.error(ME,e.reason);
-         }
-         nodeString = keyNode.toString();
-         String oid = getOid(nodeString);
+         org.w3c.dom.Node keyNode = null;
+
+         keyNode = getKeyNode(node);
+
+         String oid = getOid((Element)keyNode);
 
          v.addElement(oid);
       }
@@ -183,46 +200,65 @@ public class XmlKeyDom
          Log.warn(ME+".NoParentNode", "no parent node found");
          throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
       }
-      String nodeName = node.getNodeName();
+
+      String nodeName = node.getNodeName();      // com.sun.xml.tree.ElementNode: getLocalName();
 
       if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
          Log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
          throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
       }
 
-      if (!nodeName.equals("key")) {
+      // check if we have found the <documentRoot><xmlBlaster><key oid=''> element
+      boolean foundKey = false;
+      if (nodeName.equals("key")) {
+         org.w3c.dom.Node parent = node.getParentNode();
+         if (parent == null) throw new XmlBlasterException(ME+".InvalidDom", "DOM tree is invalid");
+
+         if (parent.getParentNode().getParentNode() == null)
+            foundKey = true;
+      }
+
+      if (!foundKey) {
          return getKeyNode(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
-      }else{
-         return node;
       }
+
+      return node;
    }
 
-   private String getOid(String nodeString)
+   /* Precondition: element must be the key */
+   private String getOid(org.w3c.dom.Element elem) throws XmlBlasterException
    {
-     RE expression = null;
-     String oid = null;
-     try{
-        expression = new RE("oid=(\'|\"|\\s)(.*)(\'|\")");
-        REMatch match = expression.getMatch(nodeString);
-        if(match != null)
-        {
-            /** matches OID pure */
-            RE re = new RE("[^oid=\'\"]");
-            REMatch[] matches = re.getAllMatches(match.toString());
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < matches.length; i++) {
-              sb.append(matches[i]);
-            }
-            oid = sb.toString();
-
-         }else{
-            Log.error(ME,"Invalid xmlKey.");
-         }
-
-      }catch(REException e){
-        Log.error(ME,"Can't create RE."+e.toString());
+      org.w3c.dom.Attr nodeAttr = elem.getAttributeNode("oid");
+      if (nodeAttr  == null)
+      {
+          throw new XmlBlasterException(ME,"Internal Errror oid is null");
       }
-     return oid;
+      try{
+         return nodeAttr.getValue();
+      }catch(DOMException ex){
+         throw new XmlBlasterException(ME,ex.toString());
+      }
    }
 
+}
+
+class OidInfo
+{
+   private String _oid;
+   private org.w3c.dom.Node _node;
+
+   public OidInfo(String oid)
+   {
+      _oid = oid;
+   }
+
+   public final org.w3c.dom.Node getNode()
+   {
+      return _node;
+   }
+
+   public final void setNode(org.w3c.dom.Node node)
+   {
+      _node = node;
+   }
 }

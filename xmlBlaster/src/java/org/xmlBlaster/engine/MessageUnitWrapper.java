@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.23 2000/12/12 08:52:31 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.24 2000/12/26 14:56:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -132,7 +132,7 @@ public class MessageUnitWrapper
       if (changed) {  // new content is not the same as old one
          this.msgUnit.content = newContent;
          if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.isFromPersistenceStore())
-            persistenceDriver.store(xmlKey, newContent, publishQoS);
+            persistenceDriver.update(this);
          return true;
       }
       else {

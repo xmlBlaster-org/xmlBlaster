@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.7 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.8 2000/12/26 14:56:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -34,6 +34,7 @@ import com.jclark.xsl.dom.XMLProcessorImpl;
 import com.jclark.xsl.dom.SunXMLProcessorImpl;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Attr;
 
@@ -159,7 +160,7 @@ class DomQueryTest
       {
          n++;
          Object obj = nodeIter.nextElement();
-         com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
+         Element node = (Element)obj;
          if (dumpIt) {
             System.out.println(node.toString());
 
@@ -184,12 +185,12 @@ class DomQueryTest
       return n;
    }
 
-   private String getKeyOID(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws Exception
+   private String getKeyOID(org.w3c.dom.Node node) throws Exception
    {
       if (node == null)
          throw new Exception("no parent node found");
 
-      String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
+      String nodeName = node.getNodeName();
       // Log.trace(ME, "Anlyzing node = " + nodeName);
 
       if (nodeName.equals("xmlBlaster"))       // ERROR: the root node, must be specialy handled
@@ -200,7 +201,7 @@ class DomQueryTest
          return getKeyOID(node.getParentNode());  // w3c: getParentNode() sun: getParentImpl()
       }
 
-      /* com.sun.xml.tree.ElementNode:
+      /* !!! Element
       org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
       if (keyOIDAttr != null)
          return keyOIDAttr.getValue();

@@ -50,12 +50,12 @@ Test the driver:
 
 To further Test the driver:
 ===========================
-   jaco -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.Main -call true
+   jaco org.xmlBlaster.Main -call true
 
-   java -Dsax.driver=com.sun.xml.parser.Parser helma.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
+   java helma.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
 
-   java -Dsax.driver=com.sun.xml.parser.Parser helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='__sys__Login'></key>" "<qos></qos>"
+   java helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='__sys__Login'></key>" "<qos></qos>"
 
-   java -Dsax.driver=xp  helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='cpuinfo'></key>" "<qos></qos>"
+   java helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='cpuinfo'></key>" "<qos></qos>"
 
 and the proxy receives the updates.

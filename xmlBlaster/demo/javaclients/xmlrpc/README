@@ -34,14 +34,13 @@ NOTE: The client sends the data from demo.xml
 NOTE: There is a helper class in src/java/org/xmlBlaster/client/protocol/xmlrpc
       called XmlBlasterProxy.java which clients can use.
       It wraps the 'low level' xml-rpc invocation
-      (using  -Dsax.driver=com.sun.xml.parser.Parser).
 
 NOTE: https should work as well (see xmlrpc mailing list):
     You may install SUN JSSE (or used another product, because this one is only a proof of
     concept)
-    and execute the following lines before using the helma.xmlrpc.XmlRpcClient. 
+    and execute the following lines before using the helma.xmlrpc.XmlRpcClient.
     These system properties can also be set on the command line,
-    without having to modify your application 
+    without having to modify your application
     (the requiered jar files must have been added to your classpath, refer to the product
     installation)
 
@@ -49,8 +48,6 @@ NOTE: https should work as well (see xmlrpc mailing list):
       "com.sun.net.ssl.internal.www.protocol");
       System.setProperty("javax.net.ssl.keyStore",         pathToMyKeyStore);
       System.setProperty("javax.net.ssl.keyStorePassword", myKeyStorePassword);
-
-
 
 
 enjoy it !

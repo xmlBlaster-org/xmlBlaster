@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.6 2000/10/27 13:20:49 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.7 2000/12/26 14:56:39 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -60,9 +60,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private void initXmlRpcClient() throws XmlBlasterException
    {
       try {
-         // similar to -Dsax.driver=com.sun.xml.parser.Parser
-         System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
-
          String hostname;
          try  {
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -546,7 +543,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * Dump of the server, remove in future. 
+    * Dump of the server, remove in future.
     */
    public String toXml(String extraOffset) throws XmlBlasterException
    {
@@ -596,7 +593,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * For Testing.
     * <pre>
-    * java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
+    * java org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
     * </pre>
     */
    public static void main(String args[])

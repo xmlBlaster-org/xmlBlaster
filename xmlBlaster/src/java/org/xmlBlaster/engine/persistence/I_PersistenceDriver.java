@@ -3,7 +3,7 @@ Name:      I_PersistenceDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_PersistenceDriver.java,v 1.8 2000/12/12 08:52:32 ruff Exp $
+Version:   $Id: I_PersistenceDriver.java,v 1.9 2000/12/26 14:56:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
@@ -30,7 +30,7 @@ import java.util.Enumeration;
  * <br />
  * TODO: Extend interface to support caching!<br />
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public interface I_PersistenceDriver
@@ -57,8 +57,7 @@ public interface I_PersistenceDriver
     * @param content The data to store
     * @param qos The quality of service, may contain another publisher name
     */
-   public void store(XmlKey xmlKey, byte[] content, PublishQoS qos) throws XmlBlasterException;
-
+   public void update(MessageUnitWrapper messageWrapper) throws XmlBlasterException;
 
    /**
     * Fetches one message by oid from the persistence.

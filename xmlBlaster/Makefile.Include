@@ -38,7 +38,7 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 
 #------------------------------------------------------------------------------
 #JAVAC_FLAGS=
-JAVAC_FLAGS= -deprecation -g
+JAVAC_FLAGS= -deprecation -g -Xfuture
 
 ifdef JIKES_HOME
    JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
@@ -53,6 +53,7 @@ else
    endif
 endif
 #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+JAVAC= jikes -nowarn  $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 #------------------------------------------------------------------------------
 
 

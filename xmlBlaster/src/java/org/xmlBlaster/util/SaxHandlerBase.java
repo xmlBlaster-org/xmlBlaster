@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.7 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.8 2000/12/26 14:56:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,6 +12,8 @@ import org.xmlBlaster.util.Log;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
 
 
 /**
@@ -23,7 +25,7 @@ public class SaxHandlerBase extends HandlerBase
 {
    private String ME = "SaxHandlerBase";
 
-   // private static final String DEFAULT_PARSER_NAME =  // com.ibm.xml.parsers.SAXParser // com.sun.xml.parser.ValidatingParser
+   // private static final String DEFAULT_PARSER_NAME =  // com.ibm.xml.parsers.SAXParser // .sun.xml.parser.ValidatingParser
    protected StringBuffer character = new StringBuffer();
 
 
@@ -68,10 +70,26 @@ public class SaxHandlerBase extends HandlerBase
    private void parse(String xmlData) throws XmlBlasterException
    {
       try {
+         /*
          Parser parser = ParserFactory.makeParser(); // DEFAULT_PARSER_NAME
          parser.setDocumentHandler(this);
          parser.setErrorHandler(this);
          parser.setDTDHandler(this);
+         parser.parse(new InputSource(new StringReader(xmlData)));
+         */
+
+
+         Parser parser;
+         SAXParserFactory spf = SAXParserFactory.newInstance ();
+         String validation = System.getProperty ("javax.xml.parsers.validation", "false");
+         if (validation.equalsIgnoreCase("true"))
+            spf.setValidating (true);
+
+         SAXParser sp = spf.newSAXParser();
+         parser = sp.getParser();
+
+         parser.setDocumentHandler(this);
+         parser.setErrorHandler(this); // !!! new MyErrorHandler ());
          parser.parse(new InputSource(new StringReader(xmlData)));
       }
       catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)

@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.6 2000/10/27 13:06:48 ruff Exp $
+Version:   $Id: XmlRpcCallbackServer.java,v 1.7 2000/12/26 14:56:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -45,10 +45,6 @@ import helma.xmlrpc.WebServer;
  * The correct port is automatically transferred in the login - QoS - so that xmlBlaster
  * can find the callback server.
  * <p />
- * Invoke options: <br />
- * <pre>
- *   java -Dsax.driver=com.sun.xml.parser.Parser MyApp
- * </pre>
  * @author michele.laghi@attglobal.net
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */

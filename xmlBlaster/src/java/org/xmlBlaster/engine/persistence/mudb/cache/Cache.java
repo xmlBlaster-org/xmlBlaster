@@ -3,7 +3,7 @@ Name:      Cache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Caches MessageUnits by LRU.
-Version:   $Id: Cache.java,v 1.2 2000/09/15 17:16:16 ruff Exp $
+Version:   $Id: Cache.java,v 1.3 2000/12/26 14:56:41 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.cache;
@@ -18,7 +18,7 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.PMessageUnit;
+import org.xmlBlaster.engine.persistence.PMessageUnit;
 import org.xmlBlaster.engine.persistence.mudb.file.*;
 
 /**

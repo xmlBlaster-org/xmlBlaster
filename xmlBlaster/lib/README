@@ -38,10 +38,18 @@ All packages allow free use for both commercial and non-commercial applications.
    It is not the xtdash.jar from omquery, since there the servlet
    support is missing.
 
+   com/jclark/xsl/dom/SunXMLProcessorImpl.java is changed to use jaxp
+
 
 3) jaxp.jar and parser.jar
 ==========================
-   XML parser from Sun jaxp1.0.1 form April, 21 2000
+   jaxp-1.1ea from SUN, DOM2 SAX2:
+      jaxp.jar and crimson.jar (renamed to parser.jar)
+
+   (Migrated:
+    XML parser from Sun jaxp1.0.1 form April, 21 2000 OLD
+    com.sun.xml.tree.XmlDocument  ->  org.apache.crimson.tree.XmlDocument
+   )
 
    Download http://java.sun.com/xml
 
@@ -124,6 +132,8 @@ All packages allow free use for both commercial and non-commercial applications.
    please keep this copyright and disclaimer intact and visible. You are free
    to modify this library for your own use and to redistribute it with your
    modifications, provided that the modifications are prominently documented.
+
+   The file helma/xmlrpc/XmlRpc.java is modified to run with JAXP parsers.
 
 
 11) ant.jar 1.2

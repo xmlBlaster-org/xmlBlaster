@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.49 2000/10/30 22:56:11 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.50 2000/12/26 14:56:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,7 +39,11 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.49 $
+<<<<<<< BlasterHttpProxyServlet.java
+ * @version $Revision: 1.50 $
+=======
+ * @version $Revision: 1.50 $
+>>>>>>> 1.48.2.1
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
@@ -395,7 +399,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     * Setting the system properties.
     * <p />
     * These may be overwritten in zone.properties, e.g.
-    *    servlets.default.initArgs=servlets.default.initArgs=org.xml.sax.parser=com.sun.xml.parser.Parser
+    *    servlets.default.initArgs=servlets.default.initArgs=org.xml.sax.parser=org.apache.crimson.parser.Parser2
     * <p />
     * We set the properties to choose JacORB and Suns XML parser as a default.
     */
@@ -428,7 +432,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          Log.trace(ME, "Found system parameter org.xml.sax.parser=" + conf.getInitParameter("org.xml.sax.parser"));
       }
       else
-         props.put("org.xml.sax.parser", "com.sun.xml.parser.Parser"); // xmlBlaster uses Suns XML parser as default
+         props.put("org.xml.sax.parser", "org.apache.crimson.parser.Parser2"); // xmlBlaster uses Suns XML parser as default
       Log.info(ME, "Using system parameter org.xml.sax.parser=" + props.get("org.xml.sax.parser"));
 
       System.setProperties(props);

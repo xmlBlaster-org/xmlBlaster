@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.14 2000/11/03 15:25:02 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.15 2000/12/26 14:56:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -87,9 +87,6 @@ public class XmlRpcDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      // similar to -Dsax.driver=com.sun.xml.parser.Parser
-      System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
-
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
 
       String hostname;
@@ -116,7 +113,7 @@ public class XmlRpcDriver implements I_Driver
          serverUrl = "http://" + hostname + ":" + xmlPort + "/";
          Log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
       } catch (IOException e) {
-         Log.error(ME, "Error creating webServer: " + e.toString());
+         Log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
          e.printStackTrace();
       }
    }
@@ -152,7 +149,6 @@ public class XmlRpcDriver implements I_Driver
       text += "   -xmlrpc.port        The XML-RPC web server port [8080].\n";
       text += "   -xmlrpc.hostname    Specify a hostname where the XML-RPC web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   java -Dsax.driver=  JVM property [com.sun.xml.parser.Parser].\n";
       text += "\n";
       return text;
    }

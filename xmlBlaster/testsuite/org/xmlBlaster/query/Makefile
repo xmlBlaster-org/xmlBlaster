@@ -14,9 +14,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster/query
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
-      $(CLASS_DIR)/REvParsing.class \
-			$(CLASS_DIR)/DomQueryTest.class \
-			$(CLASS_DIR)/XtOmQueryTest.class
+      $(CLASS_DIR)/REvParsing.class
 #------------------------------------------------------------------------------
 
 

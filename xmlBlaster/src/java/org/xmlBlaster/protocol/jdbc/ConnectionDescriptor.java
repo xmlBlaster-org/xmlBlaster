@@ -3,14 +3,15 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.6 2000/11/12 13:22:28 ruff Exp $
+ * Version:   $Id: ConnectionDescriptor.java,v 1.7 2000/12/26 14:56:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.Log;
-import com.sun.xml.tree.XmlDocument;
-import com.sun.xml.tree.TreeWalker;
-import org.w3c.dom.*;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 
 /**
  * @author James
@@ -30,12 +31,12 @@ public class ConnectionDescriptor {
    private String       rowrootnode = "row";
    private int          rowlimit = -1;
 
-   private XmlDocument  document = null;
+   private Document  document = null;
 
    /**
     * @param document This will be parsed
     */
-   public ConnectionDescriptor(XmlDocument document) {
+   public ConnectionDescriptor(Document document) {
       this.document = document;
 
       parse();
@@ -45,7 +46,7 @@ public class ConnectionDescriptor {
     */
    private void parse() {
       Node        firstNode = document.getFirstChild();
-      TreeWalker  tw = new TreeWalker(firstNode);
+      org.apache.crimson.tree.TreeWalker  tw = new org.apache.crimson.tree.TreeWalker(firstNode);
       Node        curNode = null;
 
       while ((curNode = (Node) tw.getNext()) != null) {

@@ -3,7 +3,7 @@ Name:      Lru.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Caches MessageUnits by LRU.
-Version:   $Id: Lru.java,v 1.1 2000/09/03 18:01:52 kron Exp $
+Version:   $Id: Lru.java,v 1.2 2000/12/26 14:56:41 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.cache;
@@ -19,7 +19,6 @@ import java.util.NoSuchElementException;
 
 import org.jutils.log.*;
 import org.jutils.runtime.Memory;
-import org.xmlBlaster.engine.PMessageUnit;
 
 
 /**

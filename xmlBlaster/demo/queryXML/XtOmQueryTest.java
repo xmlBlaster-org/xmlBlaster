@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.6 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.7 2000/12/26 14:56:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -34,7 +34,7 @@ import com.fujitsu.xml.omquery.XtOmQueryMgr;
 
 class XtOmQueryTest
 {
-   static private final String parser_name = "com.sun.xml.parser.Parser";
+   static private final String parser_name = "org.apache.crimson.parser.Parser2";
    static private final String ME = "XtOmQueryTest";
 
    public XtOmQueryTest(String argv[])

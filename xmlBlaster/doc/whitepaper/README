@@ -8,6 +8,12 @@ To generate a HTML version from the xml file download from
 Unzip it and correct the path below from /opt/docbook to
 your installation path.
 
+Read http://gnosis.cx/publish/programming/xml_matters_4.txt
+for background info on xml based DocBook.
+
+For XML editing with a Java GUI you can use Xeena:
+http://www.alphaworks.ibm.com/tech/xeena
+
 
 Generate HTML output:
 =====================
@@ -52,7 +58,7 @@ Other pdf generators:
 =====================
    Rendering Engine from XML/XSL to PDF format (REXP), Open source
       http://www.esng.dibe.unige.it/REXP/
-   
+
 
    FO to PDF (Latex based)
       http://users.ox.ac.uk/~rahtz/passivetex/

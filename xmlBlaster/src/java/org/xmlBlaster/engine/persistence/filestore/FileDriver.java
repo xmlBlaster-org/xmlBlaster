@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.5 2000/12/12 08:52:32 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.6 2000/12/26 14:56:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
@@ -124,18 +124,19 @@ public class FileDriver implements I_PersistenceDriver
     * @param content The data to store
     * @param qos The quality of service, may contain another publisher name
     */
-   public final void store(XmlKey xmlKey, byte[] content, PublishQoS qos) throws XmlBlasterException
+   public final void update(MessageUnitWrapper messageWrapper)throws XmlBlasterException
    {
-      String oid = xmlKey.getKeyOid(); // The file name
 
       try {
-         FileUtil.writeFile(path, oid, content);
-         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
+         String oid = messageWrapper.getUniqueKey();
+         FileUtil.writeFile(path, oid, messageWrapper.getMessageUnit().getContent());
+         // Store the sender as well:
+         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getPublishQoS().toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
 
-      if (Log.TRACE) Log.trace(ME, "Successfully updated store " + oid);
+      if (Log.TRACE) Log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
    }
 
 

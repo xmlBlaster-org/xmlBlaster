@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.14 2000/09/15 17:16:19 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.15 2000/12/26 14:56:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -14,8 +14,11 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.client.PublishKeyWrapper;
 
 import org.w3c.dom.Text;
-import com.sun.xml.tree.XmlDocument;
-import com.sun.xml.tree.ElementNode;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
 
 import java.sql.ResultSet;
 import java.sql.Connection;
@@ -108,7 +111,7 @@ public class XmlDBAdapter
     */
    public MessageUnit[] query()
    {
-      XmlDocument document = null;
+      Document document = null;
 
       try {
          document = createDocument();
@@ -144,33 +147,26 @@ public class XmlDBAdapter
    /**
     * Parse the XML encoded SQL statement.
     */
-   private XmlDocument createDocument() throws Exception {
-      XmlDocument          document = null;
-      ByteArrayInputStream bais = new ByteArrayInputStream(content);
-
-      try {
-         document = XmlDocument.createXmlDocument(bais, false);
-      }
-      catch (Exception e) {
-         Log.warn(ME, "Exception in create: " + e);
-
-         throw (e);
-      }
-
-      return document;
+   private Document createDocument() throws Exception
+   {
+      DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
+      Document doc = docBuilder.parse(inputStream);
+      return doc;
    }
 
 
    /**
     * Query the database.
     */
-   private XmlDocument queryDB(ConnectionDescriptor descriptor) throws XmlBlasterException
+   private Document queryDB(ConnectionDescriptor descriptor) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering queryDB() ...");
       Connection  conn = null;
       Statement   stmt = null;
       ResultSet   rs = null;
-      XmlDocument doc = null;
+      Document doc = null;
 
       try {
          conn =  namedPool.reserve(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword()); // using default connection pool properties
@@ -214,25 +210,36 @@ public class XmlDBAdapter
     * @param rowsAffected
     * @param descriptor
     */
-   private XmlDocument createUpdateDocument(int rowsAffected,
-                                            ConnectionDescriptor descriptor) {
-      XmlDocument document = new XmlDocument();
-      ElementNode root =
-         (ElementNode) document.createElement(descriptor.getDocumentrootnode());
+   private Document createEmptyDocument() throws XmlBlasterException
+   {
+      // !!! performance: should we have a singleton?
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setValidating(false);
+      factory.setIgnoringComments(false);
+      factory.setNamespaceAware(false);
+      try {
+         return factory.newDocumentBuilder().newDocument();
+      } catch (ParserConfigurationException e) {
+         Log.error(ME, "Can't create xml document: " + e.toString());
+         throw new XmlBlasterException(ME, "Can't create xml document: " + e.toString());
+      }
+   }
 
+
+   /**
+    * @param rowsAffected
+    * @param descriptor
+    */
+   private Document createUpdateDocument(int rowsAffected, ConnectionDescriptor descriptor) throws XmlBlasterException
+   {
+      Document document = createEmptyDocument();
+
+      Element root = (Element)document.createElement(descriptor.getDocumentrootnode());
       document.appendChild(root);
-
-      ElementNode row =
-         (ElementNode) document.createElement(descriptor.getRowrootnode());
-
+      Element row =  (Element)document.createElement(descriptor.getRowrootnode());
       root.appendChild(row);
-
-      Text  rows =
-         (Text) document.createTextNode(rowsAffected
-                                        + " row(s) were affected during the update.");
-
+      Text rows = (Text)document.createTextNode(rowsAffected + " row(s) were affected during the update.");
       row.appendChild(rows);
-
       return document;
    }
 
@@ -240,10 +247,10 @@ public class XmlDBAdapter
    /**
     * SELECT results in XML.
     */
-   private MessageUnit[] getResponseMessage(XmlDocument doc)
+   private MessageUnit[] getResponseMessage(Document doc)
    {
       ByteArrayOutputStream bais = new ByteArrayOutputStream();
-      try { doc.write(bais); } catch(IOException e) { Log.error(ME, e.getMessage()); }
+      try { ((org.apache.crimson.tree.XmlDocument)doc).write(bais); } catch(IOException e) { Log.error(ME, e.getMessage()); }
       return getResponseMessage(bais.toByteArray(), "QueryResults");
    }
 

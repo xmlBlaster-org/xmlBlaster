@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.9 2000/09/15 17:16:17 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.10 2000/12/26 14:56:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -20,6 +20,10 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
 /**
  * Building a DOM tree for XmlKeys.
  * <p />
@@ -31,9 +35,8 @@ public class XmlKeyDom implements I_MergeDomNode
 
    protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
-   protected com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
-   //protected org.w3c.dom.Document xmlKeyDoc = null;      // Document with the root node
-   protected org.w3c.dom.Node xmlKeyRootNode = null;       // Root node <xmlBlaster></xmlBlaster>
+   protected Document xmlKeyDoc = null;
+   protected Node xmlKeyRootNode = null; // Root node <xmlBlaster></xmlBlaster>
 
    protected String encoding = "ISO-8859-1";             // !!! TODO: access from xmlBlaster.properties file
                                                          // default is "UTF-8"
@@ -65,9 +68,9 @@ public class XmlKeyDom implements I_MergeDomNode
       }
       */
 
-      // Using Sun's approach to be able to use  com.sun.xml.tree.XmlDocument::changeNodeOwner(node) later
-      xmlKeyDoc = new com.sun.xml.tree.XmlDocument ();
-      com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement("xmlBlaster");
+      // Using Sun's approach to be able to use  org.apache.crimson.tree.XmlDocument::changeNodeOwner(node) later
+      xmlKeyDoc = new org.apache.crimson.tree.XmlDocument ();
+      Element root = (Element)xmlKeyDoc.createElement("xmlBlaster");
       xmlKeyDoc.appendChild(root);
       xmlKeyRootNode = xmlKeyDoc.getDocumentElement();
    }
@@ -99,7 +102,7 @@ public class XmlKeyDom implements I_MergeDomNode
       try {     // !!! synchronize is missing !!!
          if (Log.TRACE) Log.trace(ME, "mergeNode=" + node.toString());
 
-         xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
+         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).changeNodeOwner(node); // not DOM portable
 
          // !!! PENDING: If same key oid exists, remove the old and replace with new
 
@@ -149,7 +152,7 @@ public class XmlKeyDom implements I_MergeDomNode
          while (nodeIter.hasMoreElements()) {
             n++;
             Object obj = nodeIter.nextElement();
-            com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
+            Element node = (Element)obj;
             try {
                String uniqueKey = getKeyOid(node);
                Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successful query");
@@ -175,14 +178,14 @@ public class XmlKeyDom implements I_MergeDomNode
     * Given a node <key>, extract its attribute oid='...'
     * @return oid = unique object id of the MessageUnit
     */
-   protected final String getKeyOid(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws XmlBlasterException
+   protected final String getKeyOid(org.w3c.dom.Node node) throws XmlBlasterException
    {
       if (node == null) {
          Log.warn(ME+".NoParentNode", "no parent node found");
          throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
       }
 
-      String nodeName = node.getNodeName();      // com.sun.xml.tree.ElementNode: getLocalName();
+      String nodeName = node.getNodeName();
 
       if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
          Log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
@@ -203,7 +206,7 @@ public class XmlKeyDom implements I_MergeDomNode
          return getKeyOid(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
       }
 
-      /* com.sun.xml.tree.ElementNode:
+      /* org.apache.crimson.tree.Element: !!!!
       org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
       if (keyOIDAttr != null)
          return keyOIDAttr.getValue();
@@ -255,7 +258,7 @@ public class XmlKeyDom implements I_MergeDomNode
       sb.append(offset + "<XmlKeyDom>");
       try {
          java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         xmlKeyDoc.write(out/*, encoding*/); // !!!
+         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).write(out/*, encoding*/); // !!!
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + "   " + st.nextToken());
