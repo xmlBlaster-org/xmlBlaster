@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+
+<!-- ===========================================================================
+
+ xmlBlaster build file 
+ 
+Authors:
+ James Birchfield <jmbirchfield@proteustechnologies.com>
+ 
+Todo:
+ 
+Legal: 
+  Copyright (c) 1999 The Apache Software Foundation. All Rights Reserved.
+
+============================================================================ -->
+
+<project default="xmlBlaster" basedir=".">
+
+  <property name="name" value="xmlBlaster"/>
+  <property name="version" value="0.74-dev"/>
+  <property name="year" value="2000"/>
+
+  <property name="build.compiler" value="classic"/>
+  <property name="debug" value="off"/>
+
+  <property name="src.dir" value="./src/java"/>
+  <property name="dtd.dir" value="./src/dtd"/>
+  <property name="idl.dir" value="./src/idl"/>
+  <property name="doc.dir" value="./doc"/>
+  <property name="testsuite.dir" value="./testsuite"/>
+  <property name="demo.dir" value="./demo"/>
+  <property name="bin.dir" value="./bin"/>
+  <property name="lib.dir" value="./lib"/>
+  <property name="packages" value="org.xmlBlaster.*"/>
+
+  <property name="idl" value="org.xmlBlaster"/>
+  <property name="idl.class" value="jacorb.idl.parser"/>
+
+  <property name="build.dir" value="./build"/>
+  <property name="build.src" value="./build/src"/>
+  <property name="build.idl" value="./build/idl"/>
+  <property name="build.dtd" value="./build/dtd"/>
+  <property name="build.dest" value="./build/classes"/>
+  <property name="build.docs" value="./build/docs"/>
+
+  <property name="dist.dir" value="./dist"/>
+
+
+  <property name="xmlblaster_home" value="."/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/xml.jar:./lib/test.jar:./lib/xtdash.jar:./lib/collections.jar:"/>
+
+  <!-- =================================================================== -->
+  <!-- Help on usage                                                       -->
+  <!-- =================================================================== -->
+  <target name="usage">
+    <echo message=""/>
+    <echo message=""/>
+    <echo message="xmlBlaster Build file"/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=" available targets are:"/>
+    <echo message=""/>
+    <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
+    <echo message="   demo        --> generates the demo.jar file"/>
+    <echo message="   testsuite   --> generates the testsuite.jar file"/>
+    <echo message="   all         --> generates the xmlBlaster.jar, demo.jar, and testsuite.jar file"/>
+    <echo message="   dist        --> generates the xmlBlaster distribution"/>
+    <echo message="   clean       --> cleans up the directory"/>
+    <echo message=""/>
+    <echo message=" See the comments inside the build.xml file for more details."/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=""/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Prepares the build directory                                        -->
+  <!-- =================================================================== -->
+  <target name="prepare">
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source code                                            -->
+  <!-- =================================================================== -->
+  <target name="prepare-src" depends="prepare">
+    <!-- create directories -->
+    <mkdir dir="${build.src}"/>
+    <mkdir dir="${build.dest}"/>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the xmlBlaster core source directory                       -->
+  <!-- =================================================================== -->
+  <target name="xmlBlaster" depends="prepare-src">
+    <mkdir dir="${build.dest}/xmlBlaster"/>
+
+    <!-- convert idl -->
+	<echo message="Converting idl..."/>
+    <java
+		class="${idl.class}"
+		args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>  
+
+    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" ignore="README, Makefile"/>
+
+    <javac
+		srcdir="${build.src}/xmlBlaster"
+		destdir="${build.dest}/xmlBlaster"
+		classpath="${classpath}"
+		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
+		debug="${debug}"/>
+
+    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}/xmlBlaster" items="org"/>
+
+    <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the xmlBlaster demo source directory                       -->
+  <!-- =================================================================== -->
+  <target name="demo" depends="xmlBlaster">
+    <mkdir dir="${build.dest}/demo"/>
+    <copydir src="${demo.dir}" dest="${build.src}/demo" ignore="README, Makefile"/>
+    <javac
+		srcdir="${build.src}/demo"
+		destdir="${build.dest}/demo"
+		classpath="${classpath}"
+		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
+		debug="${debug}"/>
+
+    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}/demo" items="javaclients"/>
+
+    <copyfile src="${build.dir}/demo.jar" dest="${lib.dir}/demo.jar"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the xmlBlaster, demo, and  testsuite source directories    -->
+  <!-- =================================================================== -->
+  <target name="all" depends="xmlBlaster,demo,testsuite">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the xmlBlaster testsuite source directory                  -->
+  <!-- =================================================================== -->
+  <target name="testsuite" depends="xmlBlaster">
+    <mkdir dir="${build.dest}/testsuite"/>
+    <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" ignore="README, Makefile"/>
+    <javac
+		srcdir="${build.src}/testsuite"
+		destdir="${build.dest}/testsuite"
+		classpath="${classpath}"
+		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
+		debug="${debug}"/>
+    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}/testsuite" items="testsuite"/>
+    <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the distribution                                            -->
+  <!-- =================================================================== -->
+  <target name="dist" depends="xmlBlaster,demo,testsuite">
+    <mkdir dir="${dist.dir}"/>
+    <mkdir dir="${dist.dir}/bin"/>
+    <mkdir dir="${dist.dir}/src"/>
+    <mkdir dir="${dist.dir}/demo"/>
+    <mkdir dir="${dist.dir}/doc"/>
+    <mkdir dir="${dist.dir}/testsuite"/>
+    <mkdir dir="${dist.dir}/lib"/>
+
+    <copydir src="${src.dir}" dest="${dist.dir}/src/java" />
+    <copydir src="${dtd.dir}" dest="${dist.dir}/src/dtd" />
+    <copydir src="${idl.dir}" dest="${dist.dir}/src/idl" />
+
+    <copydir src="${doc.dir}" dest="${dist.dir}/doc"/>
+    <copydir src="${demo.dir}" dest="${dist.dir}/demo"/>
+    <copydir src="${lib.dir}" dest="${dist.dir}/lib" />
+    <copydir src="${bin.dir}" dest="${dist.dir}/bin"/>
+
+    <copyfile src="README" dest="${dist.dir}/README"/>
+    <copyfile src="INSTALL" dest="${dist.dir}/INSTALL"/>
+    <copyfile src="LICENSE" dest="${dist.dir}/LICENSE"/>
+    <copyfile src="xmlBlaster.properties.template" dest="${dist.dir}/xmlBlaster.properties.template"/>
+    <copyfile src="jacorb_properties.template" dest="${dist.dir}/jacorb_properties.template"/>
+    <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
+    <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
+
+    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" items="."/>
+    <deltree dir="${dist.dir}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Cleans everything                                                   -->
+  <!-- =================================================================== -->
+  <target name="clean">
+    <deltree dir="${build.dir}"/>
+    <deltree dir="${dist.dir}"/>
+    <deltree dir="${lib.dir}/${name}.jar"/>
+    <deltree dir="${lib.dir}/demo.jar"/>
+    <deltree dir="${lib.dir}/testsuite.jar"/>
+    <deltree dir="${name}-${version}.jar"/>
+  </target>
+
+</project>
+
+
+<!-- End of file -->
