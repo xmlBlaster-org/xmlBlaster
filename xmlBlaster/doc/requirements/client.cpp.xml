@@ -9,7 +9,7 @@
    <description>
      <p>
      For c++ client applications you can use the class XmlBlasterAccess which provides access to
-     xmlBlaster in an easy way. All invocations to xmlBlaster are done by passing objects to the 
+     xmlBlaster in an easy way. All invocations to xmlBlaster are done by passing objects to the
      dispatcher.
      </p>
      <p>
@@ -23,7 +23,7 @@
      <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
      <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
      </ul>
-     For the invocation on the qos and key objects please refere to the APIs for 
+     For the invocation on the qos and key objects please refere to the APIs for
      <ul>
      <li>org::xmlBlaster::util::qos (for ConnectQos)</li>
      <li>org::xmlBlaster::client::qos</li>
@@ -83,9 +83,9 @@ private:
    Log&    log_;                      // the reference to the log object for this instance
 
 public:
-   HelloWorld2(Global& glob) 
+   HelloWorld2(Global& glob)
    : ME("HelloWorld2"),
-     global_(glob), 
+     global_(glob),
      log_(glob.getLog("demo"))        // all logs written in this class are written to the
    {                                  // log channel called 'demo'. To see the traces of this
    }                                  // channel invoke -trace[demo] true on the command line,
@@ -182,7 +182,7 @@ public:
    }
 
    /**
-    * Callbacks from xmlBlaster arrive here. 
+    * Callbacks from xmlBlaster arrive here.
     */
    string update(const string& /*sessionId*/, UpdateKey& updateKey, void* /*content*/,
                  long /*contentSize*/, UpdateQos& updateQos)
@@ -301,6 +301,19 @@ int main(int args, char ** argv)
 
        <tr>
        <td>6</td>
+       <td>SunOS 5.8 sparc</td>
+       <td>CC: Forte Developer 7 C++ 5.4 2002/03/09</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.843</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td>CORBA: <a href="http://www.iona.com/" target="others">Orbix ASP 5.1</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 1.6</a></td>
+       <td>2003-03-02</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
+
+       <tr>
+       <td>7</td>
        <td>Linux 2.4.4</td>
        <td>gcc 2.95.3 compiler</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
@@ -338,7 +351,7 @@ See <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/client/protocol/corba/
 </p>
 <p>
 Please <a href="mailto:xmlBlaster-devel@xmlBlaster.org">let us know</a> if you successfully compiled and ran the testsuite with other combinations.
-Particularly interesting it would be the INTEL compiler on Linux and Windows and Solaris with the GCC Compiler. 
+Particularly interesting it would be the INTEL compiler on Linux and Windows and Solaris with the GCC Compiler.
 </p>
    </configuration>
 
@@ -353,6 +366,6 @@ Particularly interesting it would be the INTEL compiler on Linux and Windows and
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 </requirement>
 
