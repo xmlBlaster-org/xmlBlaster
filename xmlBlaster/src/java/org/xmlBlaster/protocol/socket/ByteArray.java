@@ -81,6 +81,13 @@ public class ByteArray extends OutputStream {
     }
 
     /**
+     * Get the inner byte array buffer, handle with care
+     */
+    public byte[] getByteArray() {
+        return buf;
+    }
+
+    /**
      * Insert byte at position
      */
     public void insert(int index, byte b) {
