@@ -82,7 +82,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          newProp = (QueuePropertyBase)userData;
       }
       catch(Throwable e) { // this.log is still null
-         throw XmlBlasterException.convert(this.glob, ME, "Can't configure topic cache, your properties are invalid", e); // glob is allowed to be null
+         throw XmlBlasterException.convert(this.glob, ME, "Can't configure RAM map, your properties are invalid", e); // glob is allowed to be null
       }
 
       this.property = newProp;
@@ -226,7 +226,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          }
 
          if (this.storage.size() > 0) {
-            log.error(ME+".removeOldest", "LRU cache has no entries, we remove an arbitrary entry from cache");
+            log.error(ME+".removeOldest", "LRU set has no entries, we remove an arbitrary entry from RAM map");
             it = this.storage.values().iterator();
             if (it.hasNext()) {
                I_MapEntry entry = (I_MapEntry)it.next();
@@ -310,12 +310,12 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       //Thread.currentThread().dumpStack();
       synchronized (this.storage) {
          if (this.storage.size() > 0) {
-            if (log.TRACE) log.trace(ME, "Shutting down topic cache which contains " + this.storage.size() + " messages");
+            if (log.TRACE) log.trace(ME, "Shutting down RAM map which contains " + this.storage.size() + " messages");
          }
          this.lruSet.clear();
          isShutdown = true;
       }
-      if (log.CALL) log.call(ME, "shutdown() of topic cache " + this.getStorageId());
+      if (log.CALL) log.call(ME, "shutdown() of RAM map " + this.getStorageId());
 
    }
 
