@@ -229,6 +229,7 @@ public class TestPtSession extends TestCase
       log.error(ME, "DEBUG ONLY: tearDown() all resources released");
       this.glob = null;
       this.log = null;
+      Global.instance().shutdown();
    }
 
    /**
