@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.20 2002/08/03 10:13:55 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.21 2002/08/12 12:54:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -173,7 +173,7 @@ public class HandleClient extends Executor implements Runnable
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                         cbKey = cbArr[ii].getType() + cbArr[ii].getAddress();
-                        driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well (see CbInfo.java)
+                        driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well
                      }
 
                      ConnectReturnQos retQos = authenticate.connect(conQos);
