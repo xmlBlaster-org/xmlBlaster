@@ -73,8 +73,13 @@ import java.applet.Applet;
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  * <p />
  * If a client side security plugin is specified in xmlBlaster.properties
- * or on command line, this will be enforced here. All xmlBlaster invocations
- * will be intercepted with your supplied plugin.
+ * or on command line, this will be loaded and used here. All xmlBlaster invocations
+ * will be intercepted with your supplied plugin.<br />
+ * Your plugin must implement the interfaces I_SecurityClientHelper and I_SecurityInitQoSWrapper
+ *
+ * @see org.xmlBlaster.authentication.plugins.I_SecurityClientHelper 
+ * @see org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper
+ * @see testsuite.org.xmlBlaster.TestFailSave 
  *
  * @author $Author: ruff $
  */
