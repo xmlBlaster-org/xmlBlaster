@@ -203,15 +203,23 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * 'true' if the connection is OK, false otherwise. The ping is done by invocation 
     */
    public boolean ping() {
+      Connection conn = null;
       try {
-         Connection conn = this.pool.getConnection();
+         conn = this.pool.getConnection();
          boolean ret = ping(conn);
-         this.pool.releaseConnection(conn);
          return ret;
       }
       catch (XmlBlasterException ex) {
          this.log.warn(ME, "ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'");
          return false;
+      }
+      finally {
+      	 try {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
+         catch (XmlBlasterException e) {
+            this.log.error(ME, "ping: releaseConnection failed: " + e.getMessage());
+         }
       }
    }
 
@@ -225,9 +233,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.CALL) this.log.call(ME, "ping");
       if (conn == null) return false; // this could occur if it was not possible to create the connection
 
+      Statement st = null;
       try {
          // conn.isClosed();
-         Statement st = conn.createStatement();
+         st = conn.createStatement();
 //          st.execute(""); <-- this will not work on ORACLE (fails)
          st.execute("SELECT count(*) from " + this.tablesTxt);
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
@@ -236,6 +245,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          this.log.warn(ME, "ping to DB failed. DB may be down");
          return false;
+      }
+      finally {
+         try {
+            if (st != null) st.close();
+         }
+         catch (Exception e) {
+            this.log.warn(ME, "ping exception when closing the statement " + e.toString());
+         }
       }
    }
 
@@ -317,31 +334,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * 
     */
    protected final boolean handleSQLException(Connection conn, String location, SQLException ex, String trace) {
-
-
-      /*
-      int err = ex.getErrorCode(), i=0;
-      boolean ret = false;
-
-      // postgres hack (since postgres does not return error codes other than 0)
-      if (ex.getMessage().startsWith("FATAL"))
-         ret = true;
-      else {
-         for (i=0; i < this.errCodes.length; i++) {
-            if (this.errCodes[i] == err) break;
-         }
-         ret = (i < this.errCodes.length);
-      }
-
-      this.log.dump(ME, location + ": error code     : " + ex.getErrorCode());
-      this.log.dump(ME, location + ": SQL state      : " + ex.getSQLState());
-      this.log.dump(ME, location + ": SQL ex. msg    : " + ex.getMessage());
-      if (trace != null && trace.length() > 0) {
-         if (this.log.TRACE) this.log.trace(ME, location + ": additional info: " + trace);
-      }
-      */
-
-
       boolean ret = false;
 
       if (conn != null) ret = !ping(conn);
@@ -730,9 +722,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return update(req);
       }
       catch (SQLException ex) {
-         Connection conn = this.pool.getConnection();
-         handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
-         if (conn != null) this.pool.releaseConnection(conn);
+         Connection conn = null;
+         try {
+            conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -806,11 +803,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             if (conn != null) {
                conn.setAutoCommit(true);
-               this.pool.releaseConnection(conn);
             }
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
+         }
+      	 finally {
+            this.pool.releaseConnection(conn);
          }
       }
 
@@ -884,9 +883,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //         }
       }
       catch (SQLException ex) {
-         Connection conn = this.pool.getConnection();
-         handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems");
-         if (conn != null) this.pool.releaseConnection(conn);
+         Connection conn = null;
+         try {
+   	    conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems");
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -1072,9 +1076,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return update(req);
       }
       catch (SQLException ex) {
-         Connection conn = this.pool.getConnection();
-         handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex);
-         if (conn != null) this.pool.releaseConnection(conn);
+         Connection conn = null;
+         try {
+   	    conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex);
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -1264,9 +1273,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return count;
       }
       catch (SQLException ex) {
-         Connection conn = this.pool.getConnection();
-         handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
-         if (conn != null) this.pool.releaseConnection(conn);
+         Connection conn = null;
+         try {
+            conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
+      	 }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -1703,6 +1717,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          System.err.println("Main" + ex.toString());
       }
 
+   }
+
+   public void shutdown() {
+      if (this.pool != null) this.pool.shutdown();
    }
 
 }

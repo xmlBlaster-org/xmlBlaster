@@ -98,12 +98,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       // try a connection ...
       try {
          this.log.warn(ME, "timeout:retrying to establish connections");
-         // initializing and establishing of connections to DB ...
+         // initializing and establishing of connections to DB but first clearing the connections ...
+         disconnect();
+
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
             if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
-            this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
+            this.currentIndex = i;
          }
          int oldStatus = this.status;
          this.status = I_StorageProblemListener.AVAILABLE;
@@ -350,6 +352,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.glob = glob;
       this.pluginProp = pluginProperties;
       this.log = this.glob.getLog("jdbc");
+      this.log.info(ME, "initialize");
 
       // could these also be part of the properties specific to the invoking plugin ?
       org.jutils.init.Property prop = glob.getProperty();
@@ -435,7 +438,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       // could block quite a long time if the number of connections is big
       // or if the connection to the DB is slow.
       try {
-         // initializing and establishing of connections to DB ...
+         // initializing and establishing of connections to DB (but first disconnect if already connected)
+         disconnect();
+
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
             if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
@@ -548,7 +553,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          return;
       }
       //if already disconnected it will silently return
-      if (this.connections[connNumber] == null) return;
+      if (this.connections == null || this.connections[connNumber] == null) return;
       try {
          Connection conn = this.connections[connNumber];
          this.connections[connNumber] = null;
@@ -758,8 +763,12 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             ex.printStackTrace();
          }
       }
-
    }
+
+   public void shutdown() {
+      disconnect();
+   }
+
 }
 
 

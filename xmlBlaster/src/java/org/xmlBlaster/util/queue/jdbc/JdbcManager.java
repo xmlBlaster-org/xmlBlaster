@@ -1592,6 +1592,11 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       return cleanUp(null, true);
    }
 
+   public void shutdown() {
+      if (this.pool != null) this.pool.shutdown();
+   }
+
+
    /**
     * This main method can be used to delete all tables on the db which start
     * with a certain prefix. It is useful to cleanup the entire DB.

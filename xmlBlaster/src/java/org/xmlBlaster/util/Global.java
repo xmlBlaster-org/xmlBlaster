@@ -1775,6 +1775,28 @@ public class Global implements Cloneable
          messageTimer.shutdown();
          messageTimer = null;
       }
+
+      if (this.jdbcQueueManagers != null) {
+         java.util.Enumeration enum = this.jdbcQueueManagers.keys();
+         while (enum.hasMoreElements()) {
+            String key = (String)enum.nextElement();
+            Object obj = this.jdbcQueueManagers.get(key);
+            if (obj != null) ((JdbcManager)obj).shutdown();
+         }
+         this.jdbcQueueManagers.clear();
+         this.jdbcQueueManagers = null;
+      }
+      if (this.jdbcQueueManagersCommonTable != null) {
+         java.util.Enumeration enum = this.jdbcQueueManagersCommonTable.keys();
+         while (enum.hasMoreElements()) {
+            String key = (String)enum.nextElement();
+            Object obj = this.jdbcQueueManagersCommonTable.get(key);
+            if (obj != null) ((JdbcManagerCommonTable)obj).shutdown();
+         }
+         this.jdbcQueueManagersCommonTable.clear();
+         this.jdbcQueueManagersCommonTable = null;
+      }
+
    }
 
    /**

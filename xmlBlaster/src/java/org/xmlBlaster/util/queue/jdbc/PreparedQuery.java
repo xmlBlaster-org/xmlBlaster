@@ -91,6 +91,7 @@ public class PreparedQuery {
          throw new XmlBlasterException(pool.getGlobal(), ErrorCode.INTERNAL_UNKNOWN, ME, "inTransactionRequest should not be called if autocommit is on");
 
       try {
+         if (this.st != null) this.st.close();  // close the previous statement
          this.st = conn.prepareStatement(request);
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);
