@@ -351,7 +351,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   continue;
                }
 
-               log.warn(ME, "Generating dead message '" + entry.getLogId() + "'"
+               log.warn(ME, "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
                             " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
                             ((queue == null) ? "null" : queue.getQueueId()) + "' failed" +
