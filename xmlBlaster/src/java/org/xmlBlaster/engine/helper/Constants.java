@@ -165,6 +165,8 @@ public class Constants
    public static final String       ERASE = "erase";
    /** The publish() method */
    public static final String     PUBLISH = "publish";
+   /** The publishArr() method */
+   public static final String     PUBLISH_ARR = "publishArr";
    /** The publishOneway() method */
    public static final String PUBLISH_ONEWAY = "publishOneway";
    /** The subscribe() method */
@@ -192,6 +194,7 @@ public class Constants
       if (Constants.GET.equals(method) ||
           Constants.ERASE.equals(method) ||
           Constants.PUBLISH.equals(method) ||
+          Constants.PUBLISH_ARR.equals(method) ||
           Constants.PUBLISH_ONEWAY.equals(method) ||
           Constants.SUBSCRIBE.equals(method) ||
           Constants.UNSUBSCRIBE.equals(method) ||
