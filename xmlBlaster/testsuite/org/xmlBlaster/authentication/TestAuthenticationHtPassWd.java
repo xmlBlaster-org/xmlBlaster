@@ -5,6 +5,8 @@ import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.jutils.io.FileUtil;
 
+import testsuite.org.xmlBlaster.Util;
+
 
 import junit.framework.*;
 
@@ -19,6 +21,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   private String userhome = "";
   private Global glob = null;
   private XmlBlasterConnection con = null;
+  private int serverPort = 7604;
 
   public final String ME = "TestAuthenticationHtPassWd";
 
@@ -31,18 +34,21 @@ public class TestAuthenticationHtPassWd extends TestCase
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
       FileUtil.writeFile(userhome+"test.htpasswd1","*");
+      Log.error(ME,"In TestAuthenticationHtPassWd");
     }
     catch(Exception ex)
     { assertTrue("Could not create password files in directory '" + userhome + "'. Tests won't work!",false);
     }
-  }                                     
+  }                                                         
 
   protected void setUp()
   {
   }
 
   private void testCaseSetup(int testcase)
-  { String[] args = new String[4];
+  { 
+    String[] ports = Util.getOtherServerPorts(serverPort);
+    String[] args = new String[4+ports.length];
     switch (testcase)
     { case 1: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";      
               args[1] = userhome+"test.htpasswd";
@@ -65,7 +71,11 @@ public class TestAuthenticationHtPassWd extends TestCase
               args[3] = "false";
               break;  
     }
-    serverThread = ServerThread.startXmlBlaster(new Global(args));
+    for (int i=0;i<ports.length ;i++ ) {
+      args[i+4] = ports[i];
+    }
+    glob.init(args);
+    serverThread = ServerThread.startXmlBlaster(glob);
   }
 
   protected void tearDown()
@@ -79,7 +89,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     testCaseSetup(1);
     boolean isValue=true;
     try
-    { con = new XmlBlasterConnection(new Global(new String[0]));
+    { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
     { Log.error(ME,"Could not initialize XmlBlasterConnection: " + ex.toString());
@@ -104,7 +114,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     testCaseSetup(2);
     boolean isValue = true;
     try
-    { con = new XmlBlasterConnection(new Global(new String[0]));
+    { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
     { Log.error(ME,"Could not initialize XmlBlasterConnection");
@@ -128,7 +138,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     testCaseSetup(3);
     boolean isValue = false;
     try
-    { con = new XmlBlasterConnection(new Global(new String[0]));
+    { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
     { Log.error(ME,"Could not initialize XmlBlasterConnection");
@@ -150,7 +160,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     testCaseSetup(4);
     boolean isValue = true;
     try
-    { con = new XmlBlasterConnection(new Global(new String[0]));
+    { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
     { Log.error(ME,"Could not initialize XmlBlasterConnection");
