@@ -402,7 +402,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     * On reconnect polling try to establish the connection. 
     */
    protected final void reconnect() throws XmlBlasterException {
-      log.info(ME, "Entering reconnect(" + this.driver + ")");
+      if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + this.driver.getLoginName() + ")");
       if (this.driver != null)
          this.connectReturnQos = this.driver.loginRaw();
    }
