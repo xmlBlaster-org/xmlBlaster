@@ -94,7 +94,13 @@ namespace {
             milliseconds = 0;
         else
         {
-            milliseconds = ((xt.sec - cur.sec) * MILLISECONDS_PER_SECOND) +
+/*
+       [cc] c:\Marcel\xmlBlaster\src\c++\libs\thread\src\timeconv.inl(99) : warning C4244: '=' : conversion from 'boost::int_fast64_t' to 'int', possi
+ble loss of data
+       [cc] c:\Marcel\xmlBlaster\src\c++\libs\thread\src\timeconv.inl(116) : warning C4244: '=' : conversion from 'boost::int_fast64_t' to 'int', poss
+ible loss of data
+*/
+            milliseconds = static_cast<int>((xt.sec - cur.sec) * MILLISECONDS_PER_SECOND) +
                 (((xt.nsec - cur.nsec) + (NANOSECONDS_PER_MILLISECOND/2)) /
                 NANOSECONDS_PER_MILLISECOND);
         }
@@ -111,7 +117,7 @@ namespace {
             microseconds = 0;
         else
         {
-            microseconds = ((xt.sec - cur.sec) * MICROSECONDS_PER_SECOND) +
+            microseconds = static_cast<int>((xt.sec - cur.sec) * MICROSECONDS_PER_SECOND) +
                 (((xt.nsec - cur.nsec) + (NANOSECONDS_PER_MICROSECOND/2)) /
                 NANOSECONDS_PER_MICROSECOND);
         }
