@@ -265,7 +265,7 @@ public class PluginManagerBase implements I_PluginManager {
     * Plugin with type=="undef" are ignored
     */
    public final static boolean ignorePlugin(String typeVersion) {
-      if (NO_PLUGIN_TYPE.equalsIgnoreCase(typeVersion) || "undef,1.0".equalsIgnoreCase(typeVersion))
+      if (NO_PLUGIN_TYPE.equalsIgnoreCase(typeVersion.trim()) || "undef,1.0".equalsIgnoreCase(typeVersion.trim()))
          return true;
       return false;
    }
