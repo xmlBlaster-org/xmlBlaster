@@ -35,20 +35,29 @@ void QueryKeyData::setQueryType(const string& queryType)
    string tmp = queryType;
    transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
  
-   if (Constants::EXACT != tmp && Constants::XPATH !=tmp)
+   if (Constants::EXACT != tmp && Constants::XPATH !=tmp && Constants::D_O_M_A_I_N !=tmp)
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setQueryType",
                                 "Your queryType=" + queryType_ + " is invalid, use one of '" + 
-                                Constants::EXACT + "' , '" + Constants::XPATH + "'");
+                                Constants::EXACT + "' , '" + Constants::XPATH + "' , '" + Constants::D_O_M_A_I_N + "'");
    queryType_ = tmp;
 }
 
 /**
  * Your XPath query string. 
+ * NOTE: You need to set the query type first!
  * @param str Your tags in ASCII XML syntax
  */
 void QueryKeyData::setQueryString(const string& tags)
 {
-   queryString_ = tags;
+   if ( queryType_ == Constants::EXACT ) {
+      oid_ = tags;
+   }
+   else if ( queryType_ == Constants::XPATH ) {
+      queryString_ = tags;
+   }
+   else if ( queryType_ == Constants::D_O_M_A_I_N ) {
+      domain_ = tags;
+   }
 }
 
 string QueryKeyData::getQueryString() const
