@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.93 2002/06/17 06:45:27 ruff Exp $
+Version:   $Id: Main.java,v 1.94 2002/06/17 12:33:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -61,9 +61,6 @@ public class Main implements I_RunlevelListener
 
    /** Starts/stops xmlBlaster */
    private RunlevelManager runlevelManager = null;
-
-   /** Version string, please change for new releases (4 digits) */
-   private String version = "0.79f";
 
    private boolean showUsage = false;
 
@@ -388,7 +385,7 @@ public class Main implements I_RunlevelListener
             log.info(ME, Memory.getStatistic());
             if (controlPanel == null) {
                log.info(ME, "###########################################");
-               log.info(ME, "# xmlBlaster " + version + " is ready for requests  #");
+               log.info(ME, "# xmlBlaster " + glob.getVersion() + " is ready for requests  #");
                log.info(ME, "# press <?> and <enter> for options       #");
                log.info(ME, "###########################################");
             }
@@ -412,6 +409,7 @@ public class Main implements I_RunlevelListener
     */
    private void keyboardUsage() {
       log.plain(ME, "----------------------------------------------------------");
+      log.plain(ME, "XmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp());
       log.plain(ME, "Following interactive keyboard input is recognized:");
       log.plain(ME, "Key:");
       log.plain(ME, "   g             Popup the control panel GUI.");
@@ -425,7 +423,7 @@ public class Main implements I_RunlevelListener
     * Command line usage.
     */
    private void usage() {
-      log.plain(ME, "-----------------------" + version + "-------------------------------");
+      log.plain(ME, "-----------------------" + glob.getVersion() + "-------------------------------");
       log.plain(ME, "java org.xmlBlaster.Main <options>");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "   -h                  Show the complete usage.");

@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.32 2002/06/16 15:12:07 ruff Exp $
+Version:   $Id: Global.java,v 1.33 2002/06/17 12:33:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -41,6 +41,17 @@ import java.util.Enumeration;
 public class Global implements Cloneable
 {
    private static Global firstInstance = null;
+
+   /** Version string, please change for new releases (4 digits) */
+   private String versionDefault = "0.79f";
+   /** This will be replaced by build.xml with the current version */
+   private String version = "@version@";
+   /** This will be replaced by build.xml with the build timestamp */
+   private String buildTimestamp = "@build.timestamp@";
+   /** This will be replaced by build.xml with the compiling JDK vendor */
+   private String buildJavaVendor = "@build.java.vendor@";
+   /** This will be replaced by build.xml with the compiling JDK version */
+   private String buildJavaVersion = "@build.java.version@";
 
    private String ME = "Global";
    protected String ip_addr = null;
@@ -118,6 +129,38 @@ public class Global implements Cloneable
    public Global(org.xmlBlaster.util.Global utilGlob) {
       shallowCopy(utilGlob);
       //Thread.currentThread().dumpStack();
+   }
+
+   /**
+    * See @version@ which will be replaced by build.xml with the current version
+    * @return e.g. "0.79f"
+    */
+   public String getVersion() {
+      if (version.indexOf("@") == -1) // Check if replaced
+         return version;
+      return versionDefault;
+   }
+
+   /**
+    * See @build.timestamp@ which will be replaced by build.xml with the current timestamp
+    * @return e.g. "06/17/2002 01:38 PM"
+    */
+   public String getBuildTimestamp() {
+      return buildTimestamp;
+   }
+
+   /**
+    * @return e.g. "1.3.1-beta"
+    */
+   public String getBuildJavaVendor() {
+      return buildJavaVendor;
+   }
+
+   /**
+    * @return e.g. "1.3.1-beta"
+    */
+   public String getBuildJavaVersion() {
+      return buildJavaVersion;
    }
 
    /**
