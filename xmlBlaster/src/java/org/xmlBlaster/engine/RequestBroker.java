@@ -149,19 +149,17 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    /** The messageUnit for a login event */
    private boolean publishLoginEvent = true;
    private MsgKeyData xmlKeyLoginEvent = null;
+   private org.xmlBlaster.client.qos.PublishQos publishQosForEvents;
    private PublishQosServer publishQosLoginEvent;
 
    /** Initialize a messageUnit for a zserList event */
    private boolean publishUserList = true;
    private MsgKeyData xmlKeyUserListEvent = null;
-   private PublishQosServer publishQosUserListEvent;
 
    /** Initialize a messageUnit for a logout event */
    private boolean publishLogoutEvent = true;
    private MsgKeyData xmlKeyLogoutEvent = null;
    private PublishQosServer publishQosLogoutEvent;
-
-   Hashtable loggedIn = null;
 
    //private Timeout burstModeTimer;
 
@@ -216,7 +214,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       pluginManager = new PersistencePluginManager(glob);
 
-      this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(glob, this, authenticate);
 
       {// Put this code in a generic internal message producer class (future release)
@@ -232,6 +229,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          historyQueueProperty.setMaxMsg(2);
          topicProperty.setHistoryQueueProperty(historyQueueProperty);
          publishQos.setTopicProperty(topicProperty);
+         this.publishQosForEvents = publishQos;
 
          // Should we configure historyQueue and topicCache to be RAM based only?
 
@@ -257,7 +255,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__UserList", "text/plain");
             publishKey.setClientTags("<__sys__internal/>");
             this.xmlKeyUserListEvent = publishKey.getData();
-            this.publishQosUserListEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
          }
       }
 
@@ -750,17 +747,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          }
 
          if (xmlKey.getOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
-            String query = xmlKey.toXml();
-            // Extract the query from the xmlkey - this is a bad hack - we need a function to extract user tags in <key>...</key>!
-            int start = query.indexOf(">")+1;
-            int end = query.lastIndexOf("<");
-            if (start<0 || end <0 || start >= end) {
-               log.warn(ME, "The JDBC query is invalid '" + query + "'");
-               throw new XmlBlasterException(glob, ErrorCode.USER_JDBC_INVALID, ME, "Your JDBC query is invalid");
-            }
-            String content = query.substring(start, end);
             org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(glob,
-                        content.getBytes(), (org.xmlBlaster.protocol.jdbc.NamedConnectionPool)this.glob.getObjectEntry("NamedConnectionPool-"+glob.getId()));
+                        xmlKey.getQueryString().getBytes(), (org.xmlBlaster.protocol.jdbc.NamedConnectionPool)this.glob.getObjectEntry("NamedConnectionPool-"+glob.getId()));
             return adap.query();
          }
 
@@ -808,7 +796,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             if (topicHandler.isAlive()) {
 
                int numEntries = getQos.getHistoryQos().getNumEntries();
-               MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries);
+               MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, false);
                
                NEXT_HISTORY:
                for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
@@ -867,15 +855,17 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
    }
 
-   private void updateInternalUserList(SessionInfo sessionInfo) throws XmlBlasterException {
+   public void updateInternalUserList() throws XmlBlasterException {
       // "__sys__UserList";
       if (this.publishUserList) {
-         this.publishQosUserListEvent.clearRoutes();
+         // Create QoS with new timestamp
+         PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
+         //publishQosUserListEvent.clearRoutes();
          MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent, 
                                  glob.getAuthenticate().getSubjectList().getBytes(), //content.getBytes(),
-                                 this.publishQosUserListEvent.getData());
-         publish(sessionInfo, msgUnit); // can we could reuse the PublishQos? -> better performing.
-         this.publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
+                                 publishQosUserListEvent.getData());
+         publish(this.unsecureSessionInfo, msgUnit);
+         publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
          if (log.TRACE) log.trace(ME, "Refreshed internal state for '" + this.xmlKeyUserListEvent.getOid() + "'");
       }
    }
@@ -1675,13 +1665,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
 
       if (log.TRACE) log.trace(ME, " client added:"+sessionInfo.getLoginName());
-      synchronized (loggedIn){
-         Object obj = loggedIn.get(sessionInfo.getLoginName());
-         if (obj == null) {
-            loggedIn.put(sessionInfo.getLoginName(), sessionInfo.getSubjectInfo());
-            updateInternalUserList(sessionInfo);
-         }
-      }
    }
 
 
@@ -1708,12 +1691,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
 
       if (log.TRACE) log.trace(ME, " client removed:"+sessionInfo.getLoginName());
-      synchronized (loggedIn) {
-         if (sessionInfo.getSubjectInfo().getSessions().length == 1) {
-            loggedIn.remove(sessionInfo.getLoginName());
-            updateInternalUserList(sessionInfo);
-         }
-      }
    }
 
 
