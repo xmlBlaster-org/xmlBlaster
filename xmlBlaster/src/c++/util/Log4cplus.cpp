@@ -116,11 +116,14 @@ namespace util {
    Log4cplusLog::Log4cplusLog(std::string logName) : logName_(logName), logger_(Logger::getInstance(logName)) {
       //Should we set this if basic configured??:
       //logger.setLogLevel(INFO_LOG_LEVEL);
+      call_ = dump_ = time_ = logger_.isEnabledFor(log4cplus::DEBUG_LOG_LEVEL);
+      trace_ = logger_.isEnabledFor(log4cplus::TRACE_LOG_LEVEL);
+      info_ = logger_.isEnabledFor(log4cplus::INFO_LOG_LEVEL);
    }
 
    void Log4cplusLog::info(const std::string &instance, const std::string &text){
       //std::cout << "[INFO]  " << instance << ": " << text << std::endl;
-      if(logger_.isEnabledFor(log4cplus::INFO_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::INFO_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::INFO_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
@@ -129,7 +132,7 @@ namespace util {
    }
    
    void Log4cplusLog::warn(const std::string &instance, const std::string &text){
-      if(logger_.isEnabledFor(log4cplus::WARN_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::WARN_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::WARN_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
@@ -137,7 +140,7 @@ namespace util {
    }
    
    void Log4cplusLog::error(const std::string &instance, const std::string &text){
-      if(logger_.isEnabledFor(log4cplus::ERROR_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::ERROR_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::ERROR_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
@@ -145,7 +148,7 @@ namespace util {
    }
 
    void Log4cplusLog::panic(const std::string &instance, const std::string &text){
-      if(logger_.isEnabledFor(log4cplus::FATAL_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::FATAL_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::FATAL_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
@@ -154,7 +157,7 @@ namespace util {
    }
    
    void Log4cplusLog::trace(const std::string &instance, const std::string &text){
-      if(logger_.isEnabledFor(log4cplus::TRACE_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::TRACE_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::TRACE_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
@@ -162,7 +165,7 @@ namespace util {
    }
    
    void Log4cplusLog::call(const std::string &instance, const std::string &text){
-      if(logger_.isEnabledFor(log4cplus::DEBUG_LOG_LEVEL)) {
+      if (logger_.isEnabledFor(log4cplus::DEBUG_LOG_LEVEL)) {
          log4cplus::tostringstream _log4cplus_buf;
          _log4cplus_buf << text;
          logger_.forcedLog(log4cplus::DEBUG_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
