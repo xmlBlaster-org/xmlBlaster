@@ -3,93 +3,237 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.2 1999/12/09 00:22:05 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.3 1999/12/10 09:20:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
 
 /**
- * This client tests the method get().
+ * This client tests the PtP style, Manuel sends to Ulrike a love letter. 
  * <p>
- * Invoke examples:
+ * Invoke example:
  *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientPubDestination
- *
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientPubDestination -name "Jeff"
  */
 public class ClientPubDestination
 {
    private Server xmlBlaster = null;
-   private static String ME = "Paul";
+   private final static String ME = "ClientPubDestination";
+   private final String[] args;
 
+   private final String senderName = "Manuel";
+
+   private final String receiverName = "Ulrike";
+   private CorbaConnection receiverConnection = null;
+   private Server receiverXmlBlaster = null;
+   private int numReceived = 0;
+
+
+   /**
+    */
    public ClientPubDestination(String args[])
    {
-      StopWatch stop = new StopWatch();
+      this.args = args;
+   }
+
+
+   /**
+    * @return true: No errors, false: panic
+    */
+   private boolean testScenario()
+   {
+      if (initReceiver(receiverName) == false) return false;
+      
+      if (initSender(senderName) == false) return false;
+
+      receiverConnection.logout(receiverXmlBlaster);
+
+      return true;
+   }
+
+
+   /**
+    * @return true: No errors, false: panic
+    */
+   private boolean initReceiver(String name)
+   {
+      boolean retVal = true;
+      String loginName = ME;
+      if (name != null) loginName = name;
+
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
-         String loginName = ME;
+         receiverConnection = new CorbaConnection(args);
 
-         //----------- Find orb ----------------------------------
+         //---------- Building a Callback server ----------------------
+         org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(receiverConnection.getOrb().resolve_initial_references("RootPOA"));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new PubDestinationCallback(loginName, this));
+         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         Log.trace(loginName, "Exported Callback Server interface");
+
+         String passwd = "some";
+         receiverXmlBlaster = receiverConnection.login(loginName, passwd, callback, "<qos></qos>");
+      }
+      catch (Exception e) {
+          e.printStackTrace();
+          Log.error(ME, e.toString());
+          retVal = false;
+      }
+      return retVal;
+   }
+
+
+   /**
+    * @return true: No errors, false: panic
+    */
+   private boolean initSender(String name)
+   {
+      boolean retVal = true;
+      String loginName = ME;
+      if (name != null) loginName = name;
+
+      try {
          CorbaConnection corbaConnection = new CorbaConnection(args);
-
 
          //---------- Building a Callback server ----------------------
          org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new PubDestinationCallback(loginName, this));
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-         Log.trace(ME, "Exported Callback Server interface" + stop.nice());
+         Log.trace(loginName, "Exported Callback Server interface");
 
 
          String passwd = "some";
          xmlBlaster = corbaConnection.login(loginName, passwd, callback, "<qos></qos>");
 
 
-         //----------- Construct a message and publish it ---------
+         //----------- Construct a love message and send it to Ulrike ---------
          {
-            String xmlKey = "<key oid='' contentMime='text/xml'>\n" +
-                            "   <AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                            "      <DRIVER id='FileProof' pollingFreq='10'>" +
-                            "      </DRIVER>"+
-                            "   </AGENT>" +
+            String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
                             "</key>";
 
             String qos = "<qos>" +
                          "   <destination queryType='EXACT'>" +
-                                ME +
+                                receiverName +
                          "   </destination>" +
                          "</qos>";
 
-            String content = "Yeahh, i'm the new content, directly send from " + ME;
+            String content = "Hi " + receiverName + ", i love you, " + senderName;
             MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
-            Log.trace(ME, "Publishing ...");
-            stop.restart();
             try {
                String publishOid = xmlBlaster.publish(messageUnit, qos);
-               Log.info(ME, "Returned oid=" + publishOid);
-               Log.trace(ME, "Publishing done, there should be a callback now, since it was addressed to myself" + stop.nice());
+               Log.info(ME, "Sending done, Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+               retVal = false;
             }
          }
 
+         Util.delay(1000);
+
+         if (numReceived == 1)
+            Log.info(ME, "Success, got one PtP message");
+         else
+            Log.error(ME, numReceived + " callbacks arrived, did expect one after a direct addressing from " + senderName);
+         numReceived = 0;
 
          corbaConnection.logout(xmlBlaster);
       }
       catch (Exception e) {
           e.printStackTrace();
-          Log.panic(ME, "Error: " + e.toString());
+          Log.error(ME, e.toString());
+          retVal = false;
+      }
+      return retVal;
+   }
+
+
+   /**
+    * The SubCallback.update calls this method, to allow some error checking
+    * @param name of client installed this Callback
+    */
+   public void update(String loginName, MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
+      if (Log.CALLS) Log.calls(loginName + "UpdateKey", "Receiving update");
+      if (messageUnitArr.length != 0)
+         numReceived += messageUnitArr.length;
+      else
+         numReceived = -1;       // error
+
+
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         MessageUnit messageUnit = messageUnitArr[ii];
+         UpdateKey updateKey = null;
+         UpdateQoS updateQoS = null;
+         byte[] content = messageUnit.content;
+         try {
+            updateKey = new UpdateKey(messageUnit.xmlKey);
+            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, e.reason);
+         }
+
+         // Now we know all about the received message, dump it or do some checks
+         Log.plain(loginName + "UpdateKey", updateKey.printOn().toString());
+         Log.plain(loginName + "content", (new String(content)).toString());
+         Log.plain(loginName + "UpdateQoS", updateQoS.printOn().toString());
+
+         if (loginName.equals(receiverName))
+            Log.info(ME, "Success, " + loginName + " received message from " + updateQoS.getSender());
+         else
+            Log.error(ME, "Wrong receiver " + loginName + " expected " + receiverName);
+
       }
    }
 
 
+   /**
+    * Invoke: ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientPubDestination
+    */
    public static void main(String args[])
    {
-      new ClientPubDestination(args);
-      Log.exit(ClientPubDestination.ME, "Good bye");
+      ClientPubDestination cl = new ClientPubDestination(args);
+
+      if (cl.testScenario() == true)
+         Log.exit(ClientPubDestination.ME, "Good bye");
+      else
+         Log.panic(ClientPubDestination.ME, "Good bye");
    }
-}
+} // ClientPubDestination
+
+
+/**
+ * Example for a callback implementation.
+ */
+class PubDestinationCallback implements BlasterCallbackOperations
+{
+   private final String ME;
+   private final ClientPubDestination boss;
+   private final String loginName;
+
+   /**
+    * Construct a persistently named object.
+    */
+   public PubDestinationCallback(java.lang.String name, ClientPubDestination boss)
+   {
+      this.ME = "PubDestinationCallback-" + name;
+      this.boss = boss;
+      this.loginName = name;
+      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+   }
+
+
+   /**
+    * This is the callback method invoked from the server
+    * informing the client in an asynchronous mode about new messages
+    */
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
+      boss.update(loginName, messageUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
+   }
+} // PubDestinationCallback
+

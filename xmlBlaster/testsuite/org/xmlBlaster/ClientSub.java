@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.7 1999/12/10 08:21:09 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.8 1999/12/10 09:20:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -161,7 +161,7 @@ public class ClientSub
          Log.plain("UpdateKey", updateKey.printOn().toString());
          Log.plain("content", (new String(content)).toString());
          Log.plain("UpdateQoS", updateQoS.printOn().toString());
-
+         Log.info(ME, "Received message from publisher " + updateQoS.getSender());
       }
    }
 
