@@ -3,7 +3,7 @@ Name:      GetQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQos.java,v 1.1 2001/03/27 19:49:32 ruff Exp $
+Version:   $Id: GetQos.java,v 1.2 2001/03/27 20:18:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -14,7 +14,7 @@ import org.xml.sax.Attributes;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
- * in the returned messages of a get() method call. 
+ * in the returned messages of a get() method call.
  * <p />
  * If you are a Java client you may use this class to parse the QoS argument.
  * <p />
@@ -152,9 +152,9 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn()
+   public final String toXml()
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -164,7 +164,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset)
+   public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -184,13 +184,13 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
       }
       sb.append(offset + "</qos>\n");
 
-      return sb;
+      return sb.toString();
    }
 
 
    public final String toString()
    {
-      return printOn(null).toString();
+      return toXml(null);
    }
 
 
