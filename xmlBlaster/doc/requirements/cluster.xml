@@ -472,11 +472,62 @@
       </p>
    </example>
 
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the cluster default behavior.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>cluster.node.id</td>
+            <td>167.92.1.4:7607</td>
+            <td>The world wide unique name of this xmlBlaster instance (= cluster node id), 
+                if not specified defaults to the listen port of one of your activated
+                protocol drivers.
+                If you specify the name yourself, you should use a unique name like <i>heron.mycompany.com</i>
+            </td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cluster.domainMapper.type</td>
+            <td>DomainToMaster</td>
+            <td>Specifies which domain to master mapping plugin to use (see xmlBlaster.properties)</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cluster.domainMapper.version</td>
+            <td>1.0</td>
+            <td>The plugin version to use</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cluster.loadBalancer.type</td>
+            <td>RoundRobin</td>
+            <td>Specifies which load balance plugin to use (see xmlBlaster.properties)</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cluster.loadBalancer.version</td>
+            <td>1.0</td>
+            <td>The plugin version to use</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.cluster.ClusterManager</see>
+   <see type="REQ">util.property</see>
 
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
+   <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
