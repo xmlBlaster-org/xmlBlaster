@@ -1,0 +1,220 @@
+/*
+Name:      xmlBlaster.idl
+Project:   xmlBlaster.org
+Task:      Serverinterface
+Copyright: LGPL http://www.gnu.org
+           $Id: xmlBlaster.idl,v 1.1 1999/11/05 18:44:28 ruff Exp $
+Comment:   PRE RELEASE
+Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
+================================================================================
+*/
+
+#ifndef _xmlBlaster_IDL_
+#define _xmlBlaster_IDL_
+
+
+//------------------------------------------------------------------------------
+//#include "xy.idl"
+//------------------------------------------------------------------------------
+
+
+module org { module xmlBlaster
+{
+   typedef string XmlType;
+   typedef sequence<octet> ContentType;
+   typedef long ExceptionIdType;
+
+
+   /**
+    * Exception class for xmlBlaster interface
+    */
+   exception XmlBlasterException
+   {
+      ExceptionIdType id;  // unique error code
+      string reason;       // in english
+   };
+
+
+   /**
+    * This is an easy to use, message based, non adressing communication
+    * middleware interface.
+    * <p>
+    * It allows event-driven instant communication between sperate modules.<br>
+    *
+    * COMMENTS:
+    *   It is generic to avoid future changes to the IDL.<br>
+    *
+    *   This server uses the benefits of both technologies XML and CORBA.<br>
+    *
+    *   It is a compromise between compile time type checking (CORBA)
+    *   and runtime type checking (XML).<p>
+    *
+    *   Runtime checking allows easier maintenance and migration to newer
+    *   xmlBlaster Versions, compile time checking of invariant interfaces
+    *   allows enhanced performance and early error checking.
+    *
+    *   Authentication and Authorization is not supported, they will be
+    *   provided as seperate servers.<p>
+    *
+    *   The <KEY id=""> strings have to be handled in a hierarchical manner to avoid
+    *   namespace conflicts or may be generated (as number) by the xmlBlaster-server.
+    *
+    * BENEFITS:
+    *   xmlBlaster allows instant communication between different uncoupled modules
+    *   spread over the internet (publish / subscriber framework).
+    *
+    *   For example:
+    *   - Clipboard functionality to store permanent the clipboard entries
+    *     of many clients
+    *   - Task handling
+    *     This feature allows automatical notification, when a task
+    *     for a special user is available.
+    *   - Inter client communication (chat rooms, grahic rooms etc.)
+    *   - Broadcasts over well known attribute-keys
+    *     or by notifing all known client-callback interfaces
+    *   - email like instant notifications
+    *   - inter process 'model/view/controller' paradigm
+    *   - synchronize html with embedded applets over the server
+    *   - data and message transfer between subsystems
+    *   - controler support functionality like subsystem-alive slots,
+    *     start and stop events etc.
+    *   - configuration attributes with auto-notification
+    *
+    * RELATED DESIGN PATTERNS:
+    *   Java Naming & Directory Interface, www.javasoft.com/products/jndi
+    *   Observer Pattern, Gamma et.al
+    *   CORBA Property Service, www.omg.org
+    *   Corba Event Service (push/pull concepts), www.omg.org
+    *   CORBA Design Patterns, Mowbray Thomas J. et al. 'Dynamic Attributes'
+    *   Adressless message-event-middleware pattern
+    */
+   interface Server
+   {
+      /**
+       * X.509 Certificate of the server from CA (certificate authority)
+       */
+      //readonly attribute string certificate() raises (xmlBlasterException);
+
+      /**
+       * Login to server
+       * @return sessionId
+       */
+      //string login(in string loginName, in string passwd) raises (xmlBlasterException);
+
+
+      /**
+       * Initially tell your BlasterCallback interface IOR
+       * the client must provide this callback interface
+       * if he wants to use the subscribe/publish pattern
+       */
+      void initCallback(in Object iorCallback);
+
+
+      /**
+       * Synchron read-access methods.
+       * This is the polling modus.
+       * RETURN:
+       *   Attribute(s) if no error occurs
+       *   An empty AttributeStruct if key is not existing
+       *     -> attr.key is set to an empty string "" which you may
+       *        check in Java like:  if (attr.key.length() == 0) ...
+       *   Throws Exception if access/internal/other error
+      AttributeStruct get(in AttributeKey key, in long bitFlag)
+                                          raises(XmlBlasterException);
+      AttributeSeq getExpr(in AttributeKey regExpr, in long bitFlag)
+                                          raises(XmlBlasterException);
+                                          raises(XmlBlasterException);
+         */
+
+      /**
+       * Asynchron read-access methods
+       * The result are returned to the
+       * Client-Callback interface via the update() method.
+       * If you wish automatical updates when changes occur,
+       * please register yourself with your Observable
+       * Tell your own Interface Callback IOR initially using initCallback()
+       * and implement the method update(AttributeSeq)
+       * This is the push modus.
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       *                See xmlKey.dtd for a description
+       * @param qos     Quality of Service, flags to control subscritpion<br>
+       *                See qosSubscribe.dtd for a description
+       */
+      //oneway
+      void subscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+      /**
+       * if a key was subscribed forever, you can cancel your
+       * subscription with following method
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       *                See xmlKey.dtd for a description
+       * @param qos     Quality of Service, flags to control unsubscritpion<br>
+       *                See qosSubscribe.dtd for a description
+       */
+      //oneway
+      void unSubscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * Write-Access Method
+       * They trigger the method update() if observed by somebody
+       * If the given key doesn't exist, the set() method adds it.<br>
+       * so this covers the SQL'ish INSERT and UPDATE
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       * @param content The data to store (XML data, java objects, ...)
+       *
+       * @return number of keys successfully set
+       */
+      long set(in XmlType xmlKey, in ContentType content)
+                                          raises(XmlBlasterException);
+
+      /**
+       * Write-Access Method
+       * Allows to specify Quolity of service (QOS) for some specific
+       * content.
+       * The QOS is remembered for its corresponding xmlKey(s)
+       * by the xmlBlaster server, so you need
+       * only send it once at the beginning
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       * @param content The data to store (XML data, java objects, ...)
+       * @param qos     Qualitiy of Service which is supported by the xmlBlaster server<br>
+       *                or by its plugin (XML formated)
+       *
+       * @return number of keys successfully set
+       */
+      long setQos(in XmlType xmlKey, in ContentType content, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+      /**
+       * erase an attribute
+       * @return number of entries removed
+       */
+      long erase(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+   };
+   //--------------------------------------------------------------------------
+
+
+   /**
+    * This interface needs to be implemented by the clients using
+    * the AttributeServer
+    * The IOR of this BlasterCallback has to be passed initially to the
+    * xmlBlaster using the initCallback() method
+    */
+   interface BlasterCallback
+   {
+     //oneway
+     void update(in XmlType xmlKey, in ContentType content);
+   };
+   //--------------------------------------------------------------------------
+
+}; }; // org::xmlBlaster
+
+
+#endif // _xmlBlaster_IDL_
