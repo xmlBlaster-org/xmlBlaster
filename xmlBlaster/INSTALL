@@ -255,8 +255,9 @@ instructions.
       jaco jacorb.naming.ContextLister
       jaco -DORBInitRef.NamingService=corbaloc::160.45.11.41:38693/StandardNS/NameServer%2DPOA/_root
         jacorb.naming.ContextLister
+   How to replace the JDK org.omg packages:
+    http://java.sun.com/j2se/1.4.1/docs/guide/standards/index.html
    }
-
 
 +-----------------------------------+
 | START XMLBLASTER AS A RMI SERVER  |
