@@ -1471,7 +1471,7 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestGet,TestSub,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread"
+      <foreach list="TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
