@@ -280,7 +280,3 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
 }}}; // namespaces
 
 
-int main() {
-   return 0;
-}
-
