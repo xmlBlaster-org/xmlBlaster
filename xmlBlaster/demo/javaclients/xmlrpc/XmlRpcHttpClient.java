@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.3 2000/10/11 21:51:11 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.4 2000/10/13 08:26:29 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -126,15 +126,20 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
       boolean showUsage = false;
 
       try {
-         showUsage = XmlBlasterProperty.init(args);
+         if (XmlBlasterProperty.init(args)) {
+            usage();
+            Log.exit(ME, "");
+         }
       } catch(org.jutils.JUtilsException e) {
          usage();
          Log.panic(ME, e.toString());
       }
 
       try {
-
-         XmlRpcHttpClient client = new XmlRpcHttpClient("http://localhost:8080", 8081);
+         String host = XmlBlasterProperty.get("xmlrpc.host", "localhost");
+         int port = XmlBlasterProperty.get("xmlrpc.port", 8080);
+         int cb_port = XmlBlasterProperty.get("xmlrpc.cb_port", 8081);
+         XmlRpcHttpClient client = new XmlRpcHttpClient("http://" + host + ":" + port, cb_port);
 
          Log.info(ME, "Connected to xmlBlaster using XML-RPC");
 
@@ -215,6 +220,9 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
       Log.plain(ME, "java -Dsax.driver=com.sun.xml.parser.Parser javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "   -h                  Show the complete usage.");
+      Log.plain(ME, "   -xmlrpc.host        The XML-RPC web server host [localhost].");
+      Log.plain(ME, "   -xmlrpc.port        The XML-RPC web server port [8080].");
+      Log.plain(ME, "   -xmlrpc.cb_port     My XML-RPC callback web server port [8081].");
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "");
