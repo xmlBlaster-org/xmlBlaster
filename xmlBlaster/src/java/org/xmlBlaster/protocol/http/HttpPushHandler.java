@@ -3,12 +3,13 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.3 2000/03/13 22:20:39 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.4 2000/03/15 17:55:25 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import java.rmi.RemoteException;
 import java.io.*;
+import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.xmlBlaster.util.*;
@@ -203,13 +204,38 @@ public class HttpPushHandler
       }
    }
 
-   public void update( String text )
+
+   /**
+    * calls the update method in the parentframe of the callback frame
+    * The data must be Javascript code
+    */
+   public void update( String updateKey, String content, String updateQos )
    {
       try {
-         push( text );
+         String codedKey 		= URLEncoder.encode( updateKey );
+         String codedContent 	= URLEncoder.encode( content );
+         String codedQos 		= URLEncoder.encode( updateQos );
+         push("if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n");
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
       }
    }
+
+
+   /**
+    * calls the message method in the parentframe of the callback frame
+    * The data must be Javascript code
+    */
+   public void message( String text )
+   {
+      try {
+         String codedText = URLEncoder.encode( text );
+         push("if (parent.message != null) parent.message('"+codedText+"');\n");
+      }
+      catch(Exception e) {
+         Log.error(ME,e.toString());
+      }
+   }
+
 }

@@ -3,13 +3,14 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.1 2000/03/14 17:49:05 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.2 2000/03/15 17:55:25 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
+import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.xmlBlaster.client.*;
@@ -36,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -95,12 +96,16 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
             // Find proxyConnection !!Attention, other browser can use an existing
             //                        xmlBlaster connection. This is an security problem.
-            ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnection( loginName, passwd );
+            ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnectionByLoginName( loginName );
+            if(proxyConnection != null) {
+               pushHandler.message("You are already logged in.");
+            }
+            else {
+               proxyConnection = BlasterHttpProxy.getNewProxyConnection( loginName, passwd );
+               pushHandler.message("Successful login.");
+            }
+            
             proxyConnection.addHttpSession( sessionId, pushHandler );
-
-
-            // confirm successful login:
-            pushHandler.push("if (parent.loginSuccess != null) parent.loginSuccess(true);\n");
 
             // Don't fall out of doGet() to keep the HTTP connection open
             Log.info(ME, "Waiting forever, permanent HTTP connection ...");
@@ -116,10 +121,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
       } catch (XmlBlasterException e) {
          Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
-         pushHandler.push("if (parent.error != null) parent.error('Fehler:"+e.reason+"');\n");
+         String codedText = URLEncoder.encode( e.reason );
+         pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n");
       } catch (Exception e) {
          Log.error(ME, "Caught Exception: " + e.toString());
-         pushHandler.push("if (parent.error != null) parent.error('Fehler:"+e.toString()+"');\n");
+         pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n");
          e.printStackTrace();
       } finally {
          Log.info(ME, "Entering finally of permanent connection");
@@ -164,8 +170,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       HttpPushHandler pushHandler = null;
 
       try {
-         proxyConnection = BlasterHttpProxy.getProxyConnection(sessionId);
-      	xmlBlaster = proxyConnection.getXmlBlaster();
+         proxyConnection = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
+         if( proxyConnection == null ) {
+            throw new XmlBlasterException(ME, "Session not registered yet (sessionId="+sessionId+")");
+         }
+         xmlBlaster = proxyConnection.getXmlBlaster();
          pushHandler = proxyConnection.getHttpPushHandler(sessionId);
       }
       catch (XmlBlasterException e) {

@@ -32,8 +32,8 @@
 <!ATTLIST requirement
           id ID #REQUIRED
 			 prio  (LOW | MEDIUM | HIGH) "LOW"
-          type (NEW | BUG) "BUG"
-			 status (OPEN | CLOSED) "OPEN">  
+          type (NEW | BUG | CHANGE_REQUEST) "BUG"
+			 status (OPEN | INWORK | CLOSED) "OPEN">  
 
 <!ATTLIST fix status (OPEN | CLOSED) "OPEN">  
 <!ATTLIST test tool (SUITE | MANUAL) "SUITE">  

@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.2 2000/03/14 17:49:05 kkrafft2 Exp $
+Version:   $Id: ProxyConnection.java,v 1.3 2000/03/15 17:55:25 kkrafft2 Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -31,16 +31,16 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
 {
-   private final String ME                                                              = "ProxyConnection";
-   private String loginName                                                             = null;
-   private CorbaConnection corbaConnection                      = null;
-   private Server       xmlBlaster                                                              = null;
-   private Hashtable httpConnections                                    = null;
+   private final String ME                              = "ProxyConnection";
+   private String loginName                             = null;
+   private CorbaConnection corbaConnection              = null;
+   private Server       xmlBlaster                      = null;
+   private Hashtable httpConnections                    = null;
 
 
    /**
@@ -73,7 +73,7 @@ public class ProxyConnection implements I_Callback
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
-        ((HttpPushHandler)e.nextElement()).update( updateKey.toString() );
+        ((HttpPushHandler)e.nextElement()).update( updateKey.toString(), new String(content), updateQoS.toString() );
    }
 
    /**
