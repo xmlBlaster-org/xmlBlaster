@@ -9,6 +9,7 @@ package org.xmlBlaster.util.queue;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.StorageId;
 
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ import java.util.ArrayList;
  * As an example for sorting see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
  * </p>
  * @author laghi@swissinfo.org
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_Queue
 {
@@ -43,7 +44,7 @@ public interface I_Queue
     *                "update:/node/heron/client/joe/2", "history:<oid>", "client:joe/2"
     * @param userData For example a Properties object or a String[] args object passing the configuration data
     */
-   public void initialize(String uniqueQueueId, Object userData)
+   public void initialize(StorageId storageId, Object userData)
       throws XmlBlasterException;
 
    /**
@@ -56,6 +57,19 @@ public interface I_Queue
     * Access the current queue configuration
     */
    public Object getProperties();
+
+   /**
+    * @param true The I_QueueEntry.addedToQueue() and removedFromQueue() are invoked<br />
+    *        false The entries are not informed
+    */
+   public void setNotifiedAboutAddOrRemove(boolean notify);
+
+   /**
+    * Defaults to false. 
+    * @return true The I_QueueEntry.addedToQueue() and removedFromQueue() are invoked<br />
+    *        false The entries are not informed
+    */
+   public boolean isNotifiedAboutAddOrRemove();
 
    /**
     * Register a listener which wants to be informed on put() events.
@@ -116,7 +130,7 @@ public interface I_Queue
    /**
     * Returns the unique ID of this queue
     */
-   String getQueueId();
+   StorageId getStorageId();
 
    /**
     * Takes an entry out of the queue. The ordering is first priority and secondly timestamp.
@@ -167,12 +181,11 @@ public interface I_Queue
     *
     * @param numOfEntries inclusive, zero up to numOfEntries, if -1 up to the whole queue
     * @param numOfBytes inclusive, and minimum one is returned (but not if limitEntry suppress it)
-    * @param numOfEntries
-    * @param numOfBytes
     * @param entry
-    * @return the list containing all entries which fit into the constrains.
+    * @param leaveOne Usually set to false. (true for cache queue to never flush transient queue totally)
+    * @return the list containing all entries which fit into the constrains, never null.
     */
-   ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry)
+   ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException;
 
    /**
@@ -281,7 +294,7 @@ public interface I_Queue
 
    /**
     * returns the maximum number of elements for this queue
-    * @return int the maximum number of elements in the queue
+    * @return The maximum number of elements in the queue
     */
    long getMaxNumOfEntries();
 
@@ -290,7 +303,7 @@ public interface I_Queue
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return int the number of elements currently in the queue
+    * @return The number of elements currently in the queue
     */
    long getNumOfBytes();
 
@@ -340,14 +353,14 @@ public interface I_Queue
     * @param queueEntries the entries to erase.
     * @return the number of elements erased.
     */
-   long removeRandom(I_QueueEntry[] queueEntries) throws XmlBlasterException;
+   long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException;
 
    /**
     * Removes the given entry.
     * @param entry The entry to erase.
     * @return the number of elements erased.
     */
-   int removeRandom(I_QueueEntry entry) throws XmlBlasterException;
+   int removeRandom(I_Entry entry) throws XmlBlasterException;
 
    /**
     * Removes all the transient entries (the ones which have the flag 'durable'
