@@ -132,7 +132,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          String type = connectQos.getSessionCbQueueProperty().getType();
          String version = connectQos.getSessionCbQueueProperty().getVersion();
          if (log.TRACE) log.trace(ME, "Creating callback queue type=" + type + " version=" + version);
-         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId("cb", this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
+         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
          this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
          this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
@@ -304,6 +304,14 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
    public final ConnectQosServer getConnectQos() {
       return this.connectQos;
+   }
+
+   public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
+      CbQueueProperty cpQueueProperty = newConnectQos.getSessionCbQueueProperty();
+      if (this.deliveryManager != null) {
+         this.deliveryManager.getDeliveryConnectionsHandler().initialize(cpQueueProperty.getCallbackAddresses());
+         log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
+      }
    }
 
    /**
