@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.42 2000/10/29 20:22:42 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.43 2000/11/05 19:19:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -374,12 +374,14 @@ public class ClientInfo
 
    /**
     * This is the unique identifier of the client,
-    * it is currently the byte[] oid from the POA active object map.
+    * it is currently the byte[] oid from the POA active object map
+    * with a counter added.
     * <p />
     * @return oid
     */
    public final String getUniqueKey() throws XmlBlasterException
    {
+      //return loginName;
       return authInfo.getUniqueKey();
    }
 
@@ -440,7 +442,7 @@ public class ClientInfo
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<ClientInfo id='" + instanceId + "'>");
+      sb.append(offset + "<ClientInfo id='" + instanceId + "' sessionId='" + getUniqueKey() + "'>");
       sb.append(offset + "   <loginName>" + loginName + "</loginName>");
       if (isLoggedIn())
          sb.append(offset + "   <isLoggedIn />");
