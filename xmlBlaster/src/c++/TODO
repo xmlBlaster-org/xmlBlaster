@@ -5,6 +5,10 @@ and memory leak checked with valgrind.
 
 Following issues however remain:
 
+o Add a logging abstraction and add a default library like:
+  http://www.codeproject.com/cpp/logdriver.asp
+  http://log4cpp.sourceforge.net/
+
 o Add expat xml parser into the distribution
   and use the Arabica SAX2 layer for simple parsing
   -> This avoids to download Xerces separately
