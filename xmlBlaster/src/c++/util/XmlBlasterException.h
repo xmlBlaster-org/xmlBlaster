@@ -45,10 +45,11 @@ Comment:   Basic xmlBlaster exception.
 #include <string>
 // #include <util/Timestamp.h>
 #include <util/ErrorCode.h>
+#include <stdexcept>
 
 namespace org { namespace xmlBlaster { namespace util {
 
-class Dll_Export XmlBlasterException
+class Dll_Export XmlBlasterException : public std::exception
 {
    private:
       const std::string errorCodeStr_;
@@ -61,6 +62,7 @@ class Dll_Export XmlBlasterException
       std::string stackTrace_;
       std::string embeddedMessage_;
       const std::string transactionInfo_;
+      mutable std::string str_; // for what(), holds memory for const char * return
 
    public:
 
@@ -93,6 +95,8 @@ class Dll_Export XmlBlasterException
    XmlBlasterException(const ErrorCode &errorCode,
                        const std::string &node,
                        const std::string &embeddedMessage);
+
+   virtual ~XmlBlasterException() throw();
 
    std::string getErrorCodeStr() const;
    std::string getNode() const;
@@ -148,6 +152,12 @@ class Dll_Export XmlBlasterException
    bool isUser() const;
 
    bool isTransaction() const;
+
+   /**
+    * Enforced by std::exception
+    * @return The complete exception text with location and message
+    */ 
+   const char *what() const throw();
 
    /**
     * Returns a std::stringified version of the exception

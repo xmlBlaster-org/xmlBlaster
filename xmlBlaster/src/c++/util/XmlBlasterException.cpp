@@ -90,6 +90,16 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
    if (stackTrace_.size() < 1 && isInternal()) stackTrace_ = getStackTrace();
 }
 
+XmlBlasterException::~XmlBlasterException() throw()
+{
+}
+
+const char *XmlBlasterException::what() const throw()
+{
+   str_ = toString();
+   return str_.c_str();
+}
+
 string XmlBlasterException::getErrorCodeStr() const
 {
    return errorCodeStr_;
@@ -293,7 +303,7 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
 #else
 string XmlBlasterException::getStackTrace(int )
 {
-   return "no stack trace provided in this system";
+   return ""; //no stack trace provided in this system";
 }
 #endif
 
