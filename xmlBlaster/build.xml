@@ -118,7 +118,7 @@ TODO
    <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
    <property name="idl.file" value="${idl.dir}/xmlBlaster.idl" />
 
-   <property name="build.dir" value="./build"/>
+   <property name="build.dir" value="./build.tmp"/>
    <property name="build.src" value="${build.dir}/src"/>
    <property name="build.dest" value="${build.dir}/classes"/>
    <property name="build.war" value="${build.dir}/war"/>
