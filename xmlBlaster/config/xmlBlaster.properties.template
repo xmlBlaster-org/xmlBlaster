@@ -227,12 +227,33 @@ JdbcStorage[ldbc]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                     nestedBracketsSupported=false,\
                     configurationIdentifier=ldbc
 
+#SQLite: After extending PreparedStatement.setBinaryStream(),ResultSet.getBinaryStream()
+#        with Base64 encoding and setting ping() to return 'true'.
+#http://www.ch-werner.de/javasqlite/
+# Point to dll or shared library (libsqlite_jni.so and libsqlite.so)
+#export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
+#SQLite.JDBCDriver
+#file:/opt/j2sdk1.4.1/jre/lib/ext/sqlite.jar!/SQLite/JDBCDriver.class  + commons-codec.jar (Base64)
+JdbcStorage[SQLite]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                      url=jdbc:sqlite:/${user.home}${file.separator}tmp${file.separator}$_{xmlBlaster_uniqueId}.db,\
+                      user=sqlite,\
+                      password=,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      nodesTableName=NODES,\
+                      queuesTableName=QUEUES,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+
 
 StoragePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
 StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
 StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
 
@@ -250,6 +271,7 @@ QueuePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
 
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
 QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
@@ -301,7 +323,8 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    com.mysql.jdbc.Driver:\
                    org.postgresql.Driver:\
                    de.sag.jdbc.adabasd.ADriver:\
-                   com.sybase.jdbc2.jdbc.SybDriver
+                   com.sybase.jdbc2.jdbc.SybDriver:\
+                   SQLite.JDBCDriver
 
 # Now you can configure your database access.
 
