@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes cvs
+Changes svn
 ===========
  o Added new property to delay xmlBlaster startup, for example
    -xmlBlaster/sleepOnStartup 5000 sets it to 5 seconds.
