@@ -14,6 +14,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.engine.xml2java.EraseQoS;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
@@ -201,7 +202,8 @@ public class MessageUnitHandler
       try {
          // TODO: Erases message from persistent store,
          // this is too early if some messages are still in update queue !!!
-         getMessageUnitWrapper().erase();
+         if (isPublishedWithData())
+            getMessageUnitWrapper().erase();
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Problems erasing message: " + e.reason);
@@ -284,10 +286,12 @@ public class MessageUnitHandler
 
       if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getLoginName() + "' has successfully subscribed to '" + uniqueKey + "'");
 
-      if (invokeCallback(null, sub, Constants.STATE_OK) == false) {
-         Set removeSet = new HashSet();
-         removeSet.add(sub);
-         handleCallbackFailed(removeSet);
+      if (sub.getSubscribeQoS().initialUpdate() == true) {
+         if (invokeCallback(null, sub, Constants.STATE_OK) == false) {
+            Set removeSet = new HashSet();
+            removeSet.add(sub);
+            handleCallbackFailed(removeSet);
+         }
       }
 
       return;
@@ -328,6 +332,26 @@ public class MessageUnitHandler
          log.warn(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
 
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + subscriberMap.size());
+
+      if (!isPublishedWithData() && !hasSubscribers()) {
+         try {
+            // clean up previously erased message as no subscribers exist any more
+            // we use internal session to assure we are authorized to do it
+            SessionInfo sessionInfo = requestBroker.getInternalSessionInfo();
+            /*
+            EraseQoS eraseQos = new EraseQoS(glob);
+            eraseQos.setNotify(false);
+            String[] dummy = requestBroker.erase(requestBroker.getInternalSessionInfo(), xmlKey, eraseQos);
+            */
+            requestBroker.fireMessageEraseEvent(sessionInfo, this);
+            if (log.TRACE) log.trace(ME, "Erasing message '" + getUniqueKey() + "' with last subscriber disappearing");
+            erase(sessionInfo, null); // Constants.STATE_ERASED);
+         }
+         catch(XmlBlasterException e) {
+            log.error(ME, "Internal problem erasing the message skeleton of '" + getUniqueKey() + "', ignoring problem: " + e.toString());
+            Thread.currentThread().dumpStack();
+         }
+      }
       return subs;
    }
 
@@ -446,6 +470,14 @@ public class MessageUnitHandler
             throw e;
       }
       return true;
+   }
+
+   public final int numSubscribers() {
+      return subscriberMap.size();
+   }
+
+   public final boolean hasSubscribers() {
+      return subscriberMap.size() != 0;
    }
 
    /**
