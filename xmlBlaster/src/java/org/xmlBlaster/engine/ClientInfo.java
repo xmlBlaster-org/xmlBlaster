@@ -109,7 +109,7 @@ public class ClientInfo
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + cbInfo.getSize() + " callback drivers, sending message");
          try {
             MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
-            msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
+            msg.qos = getUpdateQoS((String)null, msgUnitWrapper, -1, -1);
             MessageUnit[] arr = new MessageUnit[1];
             arr[0] = msg;
             cbInfo.sendUpdate(this, msgUnitWrapper, arr);
@@ -163,7 +163,7 @@ public class ClientInfo
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + cbInfo.getSize() + " callback drivers, sending message");
          MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
-         msg.qos = getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper());
+         msg.qos = getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper(), -1, -1);
          MessageUnit[] arr = new MessageUnit[1];
          arr[0] = msg;
          cbInfo.sendUpdate(this, msgUnitWrapper, arr);
@@ -214,17 +214,22 @@ public class ClientInfo
 
       // send messages to client, if there are any in the queue
       if (messageQueue != null) {
+         int iMessage = 0;
+         int numMessages = messageQueue.getSize();
+         if (Log.TRACE) Log.trace(ME, "Flushing " + numMessages + " queued messages to client");
          while (true) {
             MessageUnitWrapper msgUnitWrapper = messageQueue.pull();
             if (msgUnitWrapper == null)
                break;
             MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
-            msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
+            msg.qos = getUpdateQoS((String)null, msgUnitWrapper, iMessage, numMessages);
+            if (Log.TRACE) Log.trace(ME, "Flushing message #" + iMessage + ": " + msg.qos);
             MessageUnit[] arr = new MessageUnit[1];
             arr[0] = msg;
             // TODO: emails can also be sent to the logged off client!
             cbInfo.sendUpdate(this, msgUnitWrapper,arr);
             sentMessages++;
+            iMessage++;
          }
       }
    }
@@ -245,7 +250,7 @@ public class ClientInfo
     *      &lt;/qos>
     *   </pre>
     */
-   private String getUpdateQoS(String subscriptionId, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
+   private String getUpdateQoS(String subscriptionId, MessageUnitWrapper msgUnitWrapper, int index, int max) throws XmlBlasterException
    {
       StringBuffer buf = new StringBuffer();
       buf.append("\n<qos>\n");
@@ -263,6 +268,10 @@ public class ClientInfo
          buf.append("   <subscriptionId>\n");
          buf.append("      ").append(subscriptionId);
          buf.append("\n   </subscriptionId>\n");
+      }
+      if (max > 0) {
+         buf.append("   <queue index='").append(index).append("' size='").append(max).append("'>\n");
+         buf.append("   </queue>\n");
       }
 
 // wkl to be implemented
