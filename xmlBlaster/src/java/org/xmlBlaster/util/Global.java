@@ -1338,7 +1338,7 @@ public class Global implements Cloneable
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager class not found", ex);
          }
          catch (SQLException ex) {
-            this.log.error(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
+            if (this.log.TRACE) this.log.trace(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager SQL exception", ex);
          }
 
