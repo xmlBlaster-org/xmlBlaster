@@ -19,9 +19,9 @@ Overview of the xmlBlaster.org packages
      only BlasterCallbackImpl.java is handcrafted
 
    - client
-	  Some helper for Java clients.
-	  You may use these as a base if you are a Java programmer,
-	  for easy access to xmlBlaster
+     Some helper for Java clients.
+     You may use these as a base if you are a Java programmer,
+     for easy access to xmlBlaster
 
 
 2. The directory 'util' contains some helper classes
@@ -45,9 +45,9 @@ Overview of the xmlBlaster.org packages
       jaco org.xmlBlaster.MainGUI
 
    which pops up a control panel with query interface and
-	performance/logging display
+   performance/logging display
 
 
-6. Client.java may be used as a first test client:
+6. xmlBlaster/demo/javaclients/ClientSub.java may be used as a first test client:
 
-     jaco org.xmlBlaster.Client
+     jaco javaclients.ClientSub 
