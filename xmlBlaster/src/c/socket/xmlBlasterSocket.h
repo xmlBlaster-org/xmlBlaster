@@ -19,19 +19,19 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 
 #define  MAX_METHODNAME_LEN 20
 #define  MAX_SESSIONID_LEN 256
-typedef struct ResponseHolderStruct {
+typedef struct SocketDataHolderStruct {
    size_t msgLen;
    bool checksum;
    bool compressed;
    char type;
    char version;
-   long requestId;
+   char requestId[MAX_REQUESTID_LEN];
    char methodName[MAX_METHODNAME_LEN];
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t dataLenUncompressed;
    size_t dataLen;
    char *data; // allocated with malloc, you need to free() it yourself, is compressed if marked as such
-} ResponseHolder;
+} SocketDataHolder;
 
 #define MSG_LEN_FIELD_LEN 10
 #define MSG_FLAG_FIELD_LEN 6
@@ -56,6 +56,16 @@ enum XMLBLASTER_MSG_TYPE_ENUM {
 #define XMLBLASTER_VERSION 49
 
 
-extern size_t readn(int fd, char *ptr, size_t nbytes);
-extern int getLength(char *data);
+extern char *encodeSocketMessage(
+              enum XMLBLASTER_MSG_TYPE_ENUM msgType,
+              const char * const requestId, 
+              const char * const methodName,
+              const char * const secretSessionId,
+              const char *data,
+              size_t dataLen,
+              bool debug,
+              size_t *rawMsgLen);
+extern char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug);
+extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
+extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
 

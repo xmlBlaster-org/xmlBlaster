@@ -15,15 +15,20 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 // All member pointers are allocated with malloc(), you need to free() them
 typedef struct MsgUnitStruct {
    char *key;               // XML formatted ASCII string of message key
-   size_t contentLen;
-   char *content;  // Raw data
+   size_t contentLen;       // Number of bytes in content
+   char *content;           // Raw data (not 0 terminated)
    char *qos;               // XML formatted ASCII string of Quality of Service
+   char *responseQos;       // Used to transport the response QoS string back to caller
 } MsgUnit;
 
 typedef struct MsgUnitStructArr {
+   bool isOneway;
    size_t len;
    MsgUnit *msgUnitArr;
 } MsgUnitArr;
+
+#define MAX_REQUESTID_LEN 256
+#define MAX_SECRETSESSIONID_LEN 256
 
 #define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
 #define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
@@ -38,7 +43,6 @@ typedef struct XmlBlasterExceptionStruct {
 #define XMLBLASTER_CONNECT "connect"
 #define XMLBLASTER_DISCONNECT "disconnect"
 #define XMLBLASTER_PING "ping"
-#define XMLBLASTER_EXCEPTION "exception"
 #define XMLBLASTER_UPDATE "update"
 #define XMLBLASTER_PUBLISH "publish"
 #define XMLBLASTER_GET "get"
@@ -53,7 +57,7 @@ extern char *messageUnitToXml(MsgUnit *msg);
 extern char *contentToString(char *content, MsgUnit *msg);
 extern char *strFromBlobAlloc(const char *blob, const size_t len);
 extern char *strcpyAlloc(const char *src);
-//extern int strcpy_alloc(char **into_string, const char *from_string);
+extern char *strcatAlloc(char **dest, const char *src);
 extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 extern void trim(char *s);
 extern char *toReadableDump(char *data, size_t len);

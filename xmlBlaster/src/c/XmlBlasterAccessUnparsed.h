@@ -28,8 +28,6 @@ typedef char *( * XmlBlasterPing)(XmlBlasterAccessUnparsed *xb, const char * con
 typedef bool  ( * IsConnected)(XmlBlasterAccessUnparsed *xb);
 typedef const char *( * Usage)(XmlBlasterAccessUnparsed *xb);
 
-#define MAX_SECRETSESSIONID_LEN 256
-
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
  */

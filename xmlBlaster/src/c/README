@@ -27,8 +27,9 @@ Features:
     for all methods to have object oriented like access,
     see client.c as a usage example
 
-  o The C library is thread safe, multiple instances of
-    client connections can run in parallel.
+  o The access library and the callback library is thread safe.
+    Multiple instances of client connections or callback servers
+    can run in parallel.
 
 
 COMPILE:
@@ -52,6 +53,45 @@ and the C client:
    client
 
 The client connects and does some invocations (see the main() in client.c).
+
+
+
+How it works:
+=============
+
+If you want a client connection (without callback) you need
+to include 
+
+   #include <XmlBlasterAccessUnparsed.h>
+
+in your client code, thats it. In this header is a structure which
+allows you complete synchronous access to xmlBlaster:
+
+   XmlBlasterException exception;
+
+   XmlBlasterAccessUnparsed *xb = getXmlBlasterAccessUnparsed(argc, argv);
+   ...
+   response = xb->connect(xb, connectQos, &exception);
+   ...
+   msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
+   ...
+
+If you want to install a callback server you need to include the header
+CallbackServerUnparsed.h, here is a complete example:
+
+   #include <CallbackServerUnparsed.h>
+   int main(int argc, char** argv)
+   {
+      CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate);
+      printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
+      cb->initCallbackServer(cb); // blocks on socket listener
+
+      // This code is reached only on socket EOF
+      cb->shutdown(cb);
+      printf("[main] Socket listener is shutdown\n");
+      freeCallbackServerUnparsed(cb);
+      return 0;
+   }
 
 
 Next steps:

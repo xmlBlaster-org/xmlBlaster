@@ -23,7 +23,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 
 
 static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv);
-static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHolder, XmlBlasterException *exception);
+static bool getResponse(XmlBlasterAccessUnparsed *xb, SocketDataHolder *responseHolder, XmlBlasterException *exception);
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -111,7 +111,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
 
    if (xb->debug) printf("[XmlBlasterAccessUnparsed] Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...\n", serverHostName, servTcpPort);
 
-   memset(xb->secretSessionId, 0, sizeof(xb->secretSessionId));
+   *xb->secretSessionId = 0;
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
    xmlBlasterAddr.sin_family=AF_INET;
 
@@ -158,7 +158,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
    return true;
 }
 
-bool isConnected(XmlBlasterAccessUnparsed *xb)
+static bool isConnected(XmlBlasterAccessUnparsed *xb)
 {
    return (xb->socketToXmlBlaster > -1) ? true : false;
 }
@@ -174,7 +174,7 @@ const char *xmlBlasterAccessUnparsedUsage()
 
 void shutdownConnection(XmlBlasterAccessUnparsed *xb)
 {
-   if (isConnected(xb)) {
+   if (xb->isConnected(xb)) {
       shutdown(xb->socketToXmlBlaster, 2);
       xb->socketToXmlBlaster = -1;
    }
@@ -183,30 +183,29 @@ void shutdownConnection(XmlBlasterAccessUnparsed *xb)
 /**
  * Send a message over the socket to xmlBlaster. 
  * @param methodName The name of the remote method to invoke e.g. "connect"
+ * @param msgType The type of message: INVOKE, RESPONSE, EXCEPTION
  * @param data The message payload to send
- * @param response The returned data, you need to free it with free(response->data) if we returned true.
+ * @param responseHolder The returned data, you need to free it with free(response->data) if we returned true.
  *        Supply NULL for oneway messages.
  * @param exception The exception struct, exception->errorCode is filled on exception.
  *        You need to supply it.
- * @return true if OK and response is filled<br />
+ * @return true if OK and response is filled (if not oneway or exception or response itself)<br />
            false on error and exception is filled
  */
-bool sendData(XmlBlasterAccessUnparsed *xb, 
+static bool sendData(XmlBlasterAccessUnparsed *xb, 
               const char * const methodName,
+              enum XMLBLASTER_MSG_TYPE_ENUM msgType,
               const char *data,
               size_t dataLen,
-              ResponseHolder *responseHolder,
+              SocketDataHolder *responseHolder,
               XmlBlasterException *exception)
 {
-   size_t numSent;
+   ssize_t numSent;
    size_t rawMsgLen = 0;
    char *rawMsg = (char *)0;
    char *rawMsgStr;
-   size_t currpos = 0;
-   char tmp[256];
    size_t lenUnzipped = dataLen;
-   char lenFormatStr[56]; // = "%10.d";
-   char lenStr[MSG_LEN_FIELD_LEN+1];
+   char requestId[MAX_REQUESTID_LEN];
 
    if (data == 0) {
       data = "";
@@ -222,6 +221,13 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
    }
    *exception->errorCode = 0;
 
+   if (!xb->isConnected(xb)) {
+      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] No connection to xmlBlaster\n");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
+      return false;
+   }
+
    if (strcmp(XMLBLASTER_CONNECT, methodName) && strlen(xb->secretSessionId) < 1) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please call connect() before invoking '%s'\n", methodName);
@@ -230,44 +236,24 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
    }
 
    xb->requestId++;
+   if (xb->requestId > 1000000000) xb->requestId = 0;
+   sprintf(requestId, "%ld", xb->requestId);
 
-   rawMsg = (char *)calloc(500 + dataLen, sizeof(char));
-
-   *(rawMsg+MSG_FLAG_POS_TYPE) = MSG_TYPE_INVOKE;
-   *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_VERSION;
-
-   currpos = MSG_POS_REQESTID;
-   //sprintf(tmp, "%ld%s%ld", xb->requestId, methodName, lenUnzipped);
-   sprintf(tmp, "%ld", xb->requestId);
-   memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); // inclusive '\0'
-   currpos += strlen(tmp)+1;
-
-   memcpy(rawMsg+currpos, methodName, strlen(methodName)+1); // inclusive '\0'
-   currpos += strlen(methodName)+1;
-
-   memcpy(rawMsg+currpos, xb->secretSessionId, strlen(xb->secretSessionId)+1); // inclusive '\0'
-   currpos += strlen(xb->secretSessionId)+1;
-   
-   sprintf(tmp, "%u", lenUnzipped);
-   memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); // inclusive '\0'
-   currpos += strlen(tmp)+1;
-
-   memcpy(rawMsg+currpos, data, dataLen);
-   rawMsgLen = currpos+dataLen;
-
-   sprintf(lenFormatStr, "%%%d.d", MSG_LEN_FIELD_LEN);
-   sprintf(lenStr, lenFormatStr, rawMsgLen);
-   memcpy(rawMsg, lenStr, MSG_LEN_FIELD_LEN);
-   
-   if (xb->debug) {
-      rawMsgStr = toReadableDump(rawMsg, rawMsgLen);
-      printf("[XmlBlasterAccessUnparsed] Sending now %u bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
-      free(rawMsgStr);
-   }
+   rawMsg = encodeSocketMessage(msgType, requestId, methodName, xb->secretSessionId,
+                             data, dataLen, xb->debug, &rawMsgLen);
 
    // send the header ...
    numSent = send(xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen, 0);
-   if (numSent !=  rawMsgLen) {
+
+   if (numSent == -1) {
+      if (xb->debug) printf("[XmlBlasterAccessUnparsed] Lost connection to xmlBlaster server\n");
+      shutdownConnection(xb);
+      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Lost connection to xmlBlaster server\n");
+      return false;
+   }
+
+   if (numSent != (int)rawMsgLen) {
       if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
@@ -278,14 +264,21 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
    free(rawMsg);
    rawMsg = 0;
 
-   if (responseHolder) { // if not oneway
+   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION)
+      return true;
+
+   if (responseHolder) { // if not oneway read the response message
       if (getResponse(xb, responseHolder, exception) == false) {
+         if (xb->debug) printf("[XmlBlasterAccessUnparsed] Lost connection to xmlBlaster server\n");
+         shutdownConnection(xb);
+         strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         sprintf(exception->message, "[XmlBlasterAccessUnparsed] Lost connection to xmlBlaster server\n");
          return false;
       }
 
       if (xb->debug) {
          rawMsgStr = toReadableDump(responseHolder->data, responseHolder->dataLen);
-         printf("Received response msgLen=%u type=%c version=%c requestId=%ld methodName=%s dateLen=%u data='%.100s ...'\n",
+         printf("Received response msgLen=%u type=%c version=%c requestId=%s methodName=%s dateLen=%u data='%.100s ...'\n",
                   responseHolder->msgLen, responseHolder->type, responseHolder->version, responseHolder->requestId,
                   responseHolder->methodName, responseHolder->dataLen, rawMsgStr);
          free(rawMsgStr);
@@ -297,112 +290,18 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
 
 /**
  * Parse the returned message from xmlBlaster. 
+ * This method blocks until data arrives.
+ * <br />
  * The responseHolder holds all informations about the returned data from xmlBlaster,
  * on error the exception struct is filled.
  *
  * @param responseHolder You need to free(responseHolder->data) if return is 'true'.
- * @param exception Contains the exception thrown (on error only)
- * @return true if OK and false if exception is filled
+ * @param exception Contains the exception thrown (on error only *exception->errorCode!=0)
+ * @return true if OK or on exception, false on EOF
  */
-static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHolder, XmlBlasterException *exception) 
+static bool getResponse(XmlBlasterAccessUnparsed *xb, SocketDataHolder *responseHolder, XmlBlasterException *exception)
 {
-   char msgLenPtr[MSG_LEN_FIELD_LEN+1];
-   char ptr[MSG_LEN_FIELD_LEN+1];
-   char *rawMsg;
-   char tmpPtr[256];
-   size_t numRead;
-   size_t currPos = 0;
-
-   // initialize
-   memset(msgLenPtr, 0, MSG_LEN_FIELD_LEN+1);
-   memset(ptr, 0, MSG_LEN_FIELD_LEN+1);
-   memset(tmpPtr, 0, MSG_LEN_FIELD_LEN+1);
-   memset(responseHolder, 0, sizeof(ResponseHolder));
-
-   // read the first 10 bytes to determine the length
-   //numRead = recv(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN, 0);
-   numRead = readn(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN);
-   if (numRead != MSG_LEN_FIELD_LEN) {
-      strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received numRead=%d header bytes but expected %d", numRead, MSG_LEN_FIELD_LEN);
-      if (xb->debug) { printf(exception->message); printf("\n"); }
-      return false;
-   }
-   strcpy(ptr, msgLenPtr);
-   trim(ptr);
-   sscanf(ptr, "%u", &responseHolder->msgLen);
-
-   // read the complete message
-   rawMsg = (char *)calloc(responseHolder->msgLen, sizeof(char));
-   memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
-   //numRead = recv(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
-   numRead = readn(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN);
-   if (numRead != (responseHolder->msgLen-MSG_LEN_FIELD_LEN)) {
-      strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
-      if (xb->debug) { printf(exception->message); printf("\n"); }
-      free(rawMsg);
-      return false;
-   }
-
-   responseHolder->type = *(rawMsg+MSG_FLAG_POS_TYPE);
-   if (responseHolder->type != MSG_TYPE_RESPONSE && responseHolder->type != MSG_TYPE_EXCEPTION) {
-      strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received response message of type=%c", responseHolder->type);
-      if (xb->debug) { printf(exception->message); printf("\n"); }
-      free(rawMsg);
-      return false;
-   }
-
-   responseHolder->version = *(rawMsg+MSG_FLAG_POS_VERSION);
-   if (responseHolder->version != XMLBLASTER_VERSION) {
-      strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received response message of unsupported version=%c", responseHolder->version);
-      if (xb->debug) { printf(exception->message); printf("\n"); }
-      free(rawMsg);
-      return false;
-   }
-
-
-   currPos = MSG_POS_REQESTID;
-
-   strncpy0(tmpPtr, rawMsg+currPos, 256);
-   currPos += strlen(tmpPtr)+1;
-   trim(tmpPtr);
-   sscanf(tmpPtr, "%ld", &responseHolder->requestId);
-
-   strncpy0(responseHolder->methodName, rawMsg+currPos, MAX_METHODNAME_LEN);
-   currPos += strlen(responseHolder->methodName)+1;
-
-   strncpy0(responseHolder->secretSessionId, rawMsg+currPos, MAX_SESSIONID_LEN);
-   currPos += strlen(responseHolder->secretSessionId)+1;
-
-   strncpy0(tmpPtr, rawMsg+currPos, 256);
-   currPos += strlen(tmpPtr)+1;
-   trim(tmpPtr);
-   sscanf(tmpPtr, "%u", &responseHolder->dataLenUncompressed);
-
-   // Read the payload
-   responseHolder->dataLen = responseHolder->msgLen - currPos;
-   responseHolder->data = (char *)malloc(responseHolder->dataLen * sizeof(char));
-   memcpy(responseHolder->data, rawMsg+currPos, responseHolder->dataLen);
-
-   free(rawMsg);
-   rawMsg = 0;
-
-   if (responseHolder->type == MSG_TYPE_EXCEPTION) { // convert XmlBlasterException
-      size_t currpos = 0;
-      strncpy0(exception->errorCode, responseHolder->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      currpos += strlen(exception->errorCode) + 1;
-      sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, responseHolder->data+currpos);
-      trim(exception->message);
-      
-      free(responseHolder->data);
-      responseHolder->data = 0;
-      return false;
-   }
-
-   return true;
+   return parseSocketData(xb->socketToXmlBlaster, responseHolder, exception, xb->debug);
 }
 
 /**
@@ -415,7 +314,7 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
  */
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception)
 {
-   ResponseHolder responseHolder;
+   SocketDataHolder responseHolder;
    char *response;
    
    if (qos == 0 || exception == 0) {
@@ -425,7 +324,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const 
       return (char *)0;
    }
 
-   if (sendData(xb, XMLBLASTER_CONNECT, (const char *)qos,
+   if (sendData(xb, XMLBLASTER_CONNECT, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseHolder, exception) == false) {
       return (char *)0;
@@ -476,7 +375,7 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * cons
       return false;
    }
 
-   if (sendData(xb, XMLBLASTER_DISCONNECT, (const char *)qos, 
+   if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 0, exception) == false) {
       return false;
@@ -494,40 +393,13 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * cons
  */
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception)
 {
-   size_t qosLen, keyLen, totalLen;
-   char *data;
-   char contentLenStr[126];
-   size_t currpos = 0;
-   ResponseHolder responseHolder;
-   char *response;
+   size_t totalLen;
+   SocketDataHolder responseHolder;
+   char *response = 0;
 
-   if (msgUnit == 0 || msgUnit->key == 0 || msgUnit->content == 0) {
-      if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Invalid argument=NULL in publish(), message not sent\n");
-      return (char *)0;
-   }
-   if (msgUnit->qos == 0) msgUnit->qos = "";
+   char *data = encodeMsgUnit(msgUnit, &totalLen, xb->debug);
 
-   qosLen = strlen(msgUnit->qos);
-   keyLen = strlen(msgUnit->key);
-   sprintf(contentLenStr, "%d", msgUnit->contentLen);
-
-   totalLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
-
-   data = (char *)malloc(totalLen);
-
-   memcpy(data+currpos, msgUnit->qos, qosLen+1); // inclusive '\0'
-   currpos += qosLen+1;
-
-   memcpy(data+currpos, msgUnit->key, keyLen+1); // inclusive '\0'
-   currpos += keyLen+1;
-
-   memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); // inclusive '\0'
-   currpos += strlen(contentLenStr)+1;
-
-   memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
-   //currpos += msgUnit->contentLen;
-
-   if (sendData(xb, XMLBLASTER_PUBLISH, data, totalLen,
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
                 &responseHolder, exception) == false) {
       free(data);
       return 0;
@@ -550,7 +422,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
-   ResponseHolder responseHolder;
+   SocketDataHolder responseHolder;
    char *response;
 
    if (key == 0 || exception == 0) {
@@ -576,17 +448,19 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
    memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
    currpos += keyLen+1;
 
-   if (sendData(xb, XMLBLASTER_SUBSCRIBE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_SUBSCRIBE, MSG_TYPE_INVOKE, data, totalLen,
                 &responseHolder, exception) == false) {
       free(data);
       return (char *)0;
    }
    free(data);
 
-   response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
+   if (responseHolder.dataLen > 0) {
+      response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
+   }
    free(responseHolder.data);
 
-   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for subscribe(): %s", response);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for subscribe(): %s\n", response);
 
    return response;
 }
@@ -601,7 +475,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
-   ResponseHolder responseHolder;
+   SocketDataHolder responseHolder;
    char *response;
 
    if (key == 0 || exception == 0) {
@@ -627,7 +501,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
    memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
    currpos += keyLen+1;
 
-   if (sendData(xb, XMLBLASTER_UNSUBSCRIBE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_UNSUBSCRIBE, MSG_TYPE_INVOKE, data, totalLen,
                 &responseHolder, exception) == false) {
       free(data);
       return (char *)0;
@@ -652,7 +526,7 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
-   ResponseHolder responseHolder;
+   SocketDataHolder responseHolder;
    char *response;
 
    if (key == 0 || exception == 0) {
@@ -678,7 +552,7 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
    memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
    currpos += keyLen+1;
 
-   if (sendData(xb, XMLBLASTER_ERASE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_ERASE, MSG_TYPE_INVOKE, data, totalLen,
                 &responseHolder, exception) == false) {
       free(data);
       return (char *)0;
@@ -701,13 +575,13 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
  */
 static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xb, const char * const qos)
 {
-   ResponseHolder responseHolder;
+   SocketDataHolder responseHolder;
    char *response;
    XmlBlasterException exception;
 
    if (!xb->isInitialized || !xb->isConnected(xb)) return (char *)0;
    
-   if (sendData(xb, XMLBLASTER_PING, (const char *)qos,
+   if (sendData(xb, XMLBLASTER_PING, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseHolder, &exception) == false) {
       return (char *)0;
@@ -730,9 +604,8 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
-   size_t currIndex;
-   ResponseHolder responseHolder;
-   MsgUnitArr *msgUnitArr = (MsgUnitArr *)malloc(sizeof(MsgUnitArr));
+   SocketDataHolder responseHolder;
+   MsgUnitArr *msgUnitArr = 0;
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -755,60 +628,16 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
    memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
    currpos += keyLen+1;
 
-   if (sendData(xb, XMLBLASTER_GET, data, totalLen,
+   if (sendData(xb, XMLBLASTER_GET, MSG_TYPE_INVOKE, data, totalLen,
                 &responseHolder, exception) == false) {
       free(data);
-      return (MsgUnitArr *)0;
+      return (MsgUnitArr *)0; // exception is filled with details
    }
    free(data);
 
-   currpos = 0;
-   currIndex = 0;
-   msgUnitArr->len = 10;
-   msgUnitArr->msgUnitArr = (MsgUnit *)calloc(msgUnitArr->len, sizeof(MsgUnit));
-   while (currpos < responseHolder.dataLen) {
-      char ptr[56];
+   // Now process the returned messages
 
-      if (currIndex >= msgUnitArr->len) {
-         msgUnitArr->len += 10;
-         msgUnitArr->msgUnitArr = (MsgUnit *)realloc(msgUnitArr->msgUnitArr, msgUnitArr->len * sizeof(MsgUnit));
-      }
-
-      {
-         MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
-        
-         // read QoS
-         msgUnit->qos = strcpyAlloc(responseHolder.data+currpos);
-         currpos += strlen(msgUnit->qos)+1;
-        
-         // read key
-         if (currpos < responseHolder.dataLen) {
-            msgUnit->key = strcpyAlloc(responseHolder.data+currpos);
-            currpos += strlen(msgUnit->key)+1;
-         }
-        
-         // read content
-         if (currpos < responseHolder.dataLen) {
-            strcpy(ptr, responseHolder.data+currpos);
-            currpos += strlen(ptr)+1;
-            trim(ptr);
-            sscanf(ptr, "%u", &msgUnit->contentLen);
-        
-            msgUnit->content = (char *)malloc(msgUnit->contentLen * sizeof(char));
-            memcpy(msgUnit->content, responseHolder.data+currpos, msgUnit->contentLen);
-            currpos += msgUnit->contentLen;
-         }
-      }
-   }
-
-   if (currIndex == 0) {
-      free(msgUnitArr->msgUnitArr);
-      msgUnitArr->len = 0;
-   }
-   else if (currIndex < msgUnitArr->len) {
-      msgUnitArr->msgUnitArr = (MsgUnit *)realloc(msgUnitArr->msgUnitArr, currIndex * sizeof(MsgUnit));
-      msgUnitArr->len = currIndex; 
-   }
+   msgUnitArr = parseMsgUnitArr(responseHolder.dataLen, responseHolder.data);
 
    free(responseHolder.data);
 

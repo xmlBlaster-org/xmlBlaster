@@ -37,6 +37,7 @@ void freeMsgUnitData(MsgUnit *msgUnit)
    free(msgUnit->content);
    msgUnit->contentLen = 0;
    free(msgUnit->qos);
+   free(msgUnit->responseQos);
    //free(msgUnit);
 }
 
@@ -57,16 +58,24 @@ void freeMsgUnit(MsgUnit *msgUnit)
  */
 char *messageUnitToXml(MsgUnit *msg)
 {
-   //char content[msg->contentLen+1];
-   char *content = (char *)malloc(msg->contentLen+1);
-   size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
-   char *xml = (char *)malloc(len*sizeof(char));
-   sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
-                      msg->key,
-                      contentToString(content, msg), /* append \0 */
-                      msg->qos);
-   free(content);
-   return xml;
+   if (msg->key == 0 && msg->contentLen < 1) {
+      return strcpyAlloc(msg->qos);
+   }
+   else if (msg->contentLen < 1) {
+      char *xml = strcpyAlloc(msg->key);
+      return strcatAlloc(&xml, msg->qos);
+   }
+   else {
+      char *content = (char *)malloc(msg->contentLen+1);
+      size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
+      char *xml = (char *)malloc(len*sizeof(char));
+      sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
+                         msg->key,
+                         contentToString(content, msg), /* append \0 */
+                         msg->qos);
+      free(content);
+      return xml;
+   }
 }
 
 char *contentToString(char *content, MsgUnit *msg)
@@ -91,17 +100,14 @@ char *strcpyAlloc(const char *src)
 }
 
 /**
- * Allocates the string with malloc for you. 
- * You need to free it with free()
- * @return 1 if OK
+ * Same as strcat but reallocs the 'dest' string
  */
-int strcpy_alloc(char **dest, const char *src)
+char *strcatAlloc(char **dest, const char *src)
 {
-   if (src == 0) {(*dest)=(char *)0; return -1;}  // error
-   (*dest) = (char *)malloc((strlen(src)+1)*sizeof(char));
-   strcpy((*dest), src);
-   if ((*dest) != (char *)0) return 1;       // OK
-   return 0;    // nothing done
+   if (src == 0) return (char *)0;
+   (*dest) = (char *)realloc(*dest, (strlen(src)+strlen(*dest)+1)*sizeof(char));
+   strcat((*dest), src);
+   return (*dest);
 }
 
 /**
@@ -129,20 +135,8 @@ char *strFromBlobAlloc(const char *blob, const size_t len)
 }
 
 /**
- * Same as strcat but reallocs the 'dest' string
- */
-int strcat_alloc(char **dest, const char *src)
-{
-   if (src == 0) return -1;  // error
-   (*dest) = (char *)realloc(*dest, (strlen(src)+strlen(*dest)+1)*sizeof(char));
-   strcat((*dest), src);
-   if ((*dest) != 0) return 1;       // OK
-   return 0;    // error
-}
-
-/**
  * Guarantees a '\0' terminated string
- * @param maxLen will be filled with a '\0'
+ * @param maxLen of 'to' will be filled with a '\0'
  * @return The destination string 'to'
  */
 char *strncpy0(char * const to, const char * const from, const size_t maxLen)
@@ -198,6 +192,9 @@ char *toReadableDump(char *data, size_t len)
 {
    char *readable;
    size_t i;
+   if (data == 0) {
+      return 0;
+   }
    readable = (char *)malloc((len+1) * sizeof(char));
    for (i=0; i<len; i++) {
       if (data[i] == 0)

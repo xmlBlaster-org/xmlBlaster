@@ -22,23 +22,67 @@ struct CallbackServerUnparsedStruct;
 typedef struct CallbackServerUnparsedStruct CallbackServerUnparsed;
 
 // Define function pointers
+
+/**
+ * Use this function directly after creation of the callback server
+ * if you want to force to reuse the given socket for callbacks. 
+ *
+ * @param socketToUse Usually pass -1 so that we establish a callback server, else
+ *               pass an opened socket (e.g. from XmlBlasterAccessUnparsed->socketToXmlBlaster)
+ * @return true on success
+ */
+typedef bool (* UseThisSocket)(CallbackServerUnparsed *cb, int socketToUse);
+
 typedef void (* InitCallbackServer)(CallbackServerUnparsed *cb);
+
+/**
+ * @return true if the socket is open and waits for callback messages
+ */
 typedef bool (* IsListening)(CallbackServerUnparsed *cb);
-typedef char *(*UpdateFp)(MsgUnit *msg, XmlBlasterException *xmlBlasterException);
+
+/**
+ * Here we asynchronous receive the callback from xmlBlaster
+ * msg = char *key, char *content, int contentLen, char *qos
+ *
+ * NOTE: After this call the memory of msgUnitArr is freed immediately by callbackServer.c
+ *       So you need to take a copy of all message members if needed out of the scope of this function.
+ *
+ * @param msgUnitArr The messages from the server, use mgsUnit->responseQos to transport the return value
+ * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
+ *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
+ * @return Return true if everything is OK
+ *         Return false if you want to throw an exception, please fill xmlBlasterException in such a case.
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+ */
+typedef bool (*UpdateFp)(MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
+
 typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
 /**
- * This structure holds a complete callback server instance
+ * This structure holds a complete callback server instance. 
+ * The function pointers like <i>isListening()</i> allow you to
+ * invoke methods on this structure.
+ * <br />
+ * The function pointer <i>update</i> holds the clients callback function
+ * which is invoked when messages arrive. See the description of UpdateFp.
  */
 struct CallbackServerUnparsedStruct {
    int listenSocket;
+   int acceptSocket;
    const char *hostCB;
    int portCB;
    bool debug;
+   /**
+    * Is created by the client and used to validate callback messages in update. 
+    * This is sent on connect in ConnectQos.
+    * (Is different from the xmlBlaster secret session ID)
+    */
+   char secretSessionId[MAX_SECRETSESSIONID_LEN];
    InitCallbackServer initCallbackServer;
    IsListening isListening;
    ShutdownCallbackServerRaw shutdown;
    UpdateFp update;
+   UseThisSocket useThisSocket;
 };
 
 /**
@@ -48,10 +92,12 @@ struct CallbackServerUnparsedStruct {
  * @param argc Number of command line arguments
  * @param argv The command line arguments
  * @param update The function pointer on your update() function which handles the received messages
+ *               Please read the documentation of UpdateFp above.
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterAccessUnparsed().
  */
-extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateFp update);
+extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
+                               UpdateFp update);
 
 /**
  * free() the CallbackServerUnparsed structure
