@@ -342,10 +342,9 @@ public final class TopicHandler implements I_Timeout
          if (msgUnitEntry != null) { // Check WeakReference
             this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
          }
-         log.info(ME, "Removed oldest entry '" + entry.getLogId() + "' in history queue and decremented reference counter");
          */
          MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-         if (!entry.isInternal()) log.info(ME, "Removed oldest entry in history queue.");
+         if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
       }
 
 
@@ -604,7 +603,7 @@ public final class TopicHandler implements I_Timeout
          Iterator iterator = removeSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            log.info(ME, "Removed subscriber '" + sub.getSessionInfo().getId() + "' as callback failed.");
+            if (log.TRACE) log.trace(ME, "Removed subscriber '" + sub.getSessionInfo().getId() + "' as callback failed.");
             sub.removeSubscribe();
          }
          removeSet.clear();
@@ -1065,11 +1064,11 @@ public final class TopicHandler implements I_Timeout
             return;
          }
          if (hasHistoryEntries()) {
-            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
+            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
          if (hasCacheEntries()) {
-            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgstore cache entries");
+            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgstore cache entries");
             this.msgUnitCache.clear();  // Who removes the MsgUnitWrapper entries from their Timer?!!!! TODO
          }
 
@@ -1093,12 +1092,12 @@ public final class TopicHandler implements I_Timeout
             return;
          }
          if (hasHistoryEntries()) {
-            log.info(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + getNumOfHistoryEntries() + " history entries");
+            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
 
          if (hasSubscribers()) {
-            log.info(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
+            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
             notifySubscribersAboutErase();
             clearSubscribers();
          }
@@ -1110,6 +1109,7 @@ public final class TopicHandler implements I_Timeout
 
    private void toDead(boolean forceDestroy) {
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
+      long numHistory = 0L;
       synchronized (this) {
          if (isDead()) {
             return;
@@ -1127,21 +1127,28 @@ public final class TopicHandler implements I_Timeout
 
          if (hasHistoryEntries()) {
             try {
-               long num = this.historyQueue.clear();
-               log.warn(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " history entries");
+               numHistory = this.historyQueue.clear();
+               if (log.TRACE) log.trace(ME, getStateStr() + "->" + "DEAD: Cleared " + numHistory + " history entries");
             }
             catch (Throwable e) {
                log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the history queue: " + e.getMessage());
             }
          }
+         if (this.historyQueue != null) {
+            this.historyQueue.shutdown(true);
+         }
+
          if (hasCacheEntries()) {
             try {
                long num = this.msgUnitCache.clear();
-               log.warn(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " message storage entries");
+               if (log.TRACE) log.trace(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " message storage entries");
             }
             catch (XmlBlasterException e) {
                log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
             }
+         }
+         if (this.msgUnitCache != null) {
+            this.msgUnitCache.shutdown(true);
          }
 
          this.state = DEAD;
@@ -1156,7 +1163,7 @@ public final class TopicHandler implements I_Timeout
             this.timerKey = null;
          }
       }
-      //log.info(ME, "Topic reached state " + getStateStr());
+      log.info(ME, "Topic reached state " + getStateStr() + ". " + numHistory + " history entries are destroyed.");
    }
 
    /**
@@ -1290,7 +1297,7 @@ public final class TopicHandler implements I_Timeout
     * This timeout occurs after a configured delay in UNREFERENCED state
     */
    public final void timeout(Object userData) {
-      log.info(ME, "Timeout after destroy delay occurred - destroying topic now ...");
+      if (log.CALL) log.call(ME, "Timeout after destroy delay occurred - destroying topic now ...");
       this.timerKey = null;
       if (isDead())
          return;
