@@ -151,10 +151,10 @@ thread.impl   = OMNITHREAD
 #   Extend src/c++/client/protocol/corba/CompatibleCorba.h for another ORB
 #
 # XMLCPP_VER    = 1_ or _2D     (Windows)
-# XMLCPP_VER    = 1_7_0         (UNIX: and xerces < 2)
+# XMLCPP_VER    = 1_7_0         (UNIX: and xerces smaller version 2)
 # XMLCPP_VER    =               (UNIX: empty for xerces >= 2, e.g. for 2.2)
 #   Windows e.g.  xerces-c_2.lib or xerces-c_2D.lib
-#   Linux and Xerces < 2.0 e.g.     ibxerces-c1_7_0.so
+#   Linux and Xerces below 2.0 e.g. libxerces-c1_7_0.so
 #   Linux and Xerces >= 2.0 e.g.    libxerces-c.so.22.0
 #
 # thread.impl   = OMNITHREAD | BOOST
@@ -174,6 +174,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 </requirement>
 
