@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.34 2000/07/13 09:46:42 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.35 2000/07/14 13:06:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -99,7 +99,7 @@ public class MessageUnitHandler
 
 
    /**
-    * Accessing the wrapper object of the MessageUnit
+    * Check if this MessageUnit is already published and contains correct data. 
     * @return true a MessageUnit object is published, so you may do updates<br />
     *         false this handler holds subscriptions only, no message content is yet known
     */
@@ -250,7 +250,7 @@ public class MessageUnitHandler
 
       if (oldOne != null) {
          subscriberMap.put(((SubscriptionInfo)oldOne).getUniqueKey(), oldOne);  // restore the original one ...
-         Log.warning(ME + ".DuplicateSubscription", "Client " + sub.getClientInfo().toString() + " has already subscribed to " + uniqueKey);
+         if (Log.TRACE) Log.trace(ME + ".DuplicateSubscription", "Client " + sub.getClientInfo().toString() + " has already subscribed to " + uniqueKey);
          //No exception, since it would cancel other subscription requests as well
          //-> the client is not informed about ignored duplicate subscriptions
          //throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
