@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.29 2000/05/03 08:17:02 ruff Exp $
+Version:   $Id: Main.java,v 1.30 2000/05/03 18:25:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -184,6 +184,11 @@ public class Main
       } catch (Exception e) {
          e.printStackTrace();
          Log.panic(ME, e.toString());
+      }
+
+      boolean useKeyboard = Property.getProperty("useKeyboard", true);
+      if (!useKeyboard) {
+         orb.run();
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
