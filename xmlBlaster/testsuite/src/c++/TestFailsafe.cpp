@@ -53,7 +53,7 @@ public:
       : ME("TestFailsafe"), 
         global_(glob), 
         log_(glob.getLog()),
-        embeddedServer_(glob, "", "-info false -warn false -error false"),
+        embeddedServer_(glob, "", "-call true -trace true > failsafe.dump 2>&1"),
         updateMutex_()
    {
       connection_   = NULL;
@@ -110,7 +110,8 @@ public:
          connQos_ = new ConnectQos(global_, "guy", "secret");
 
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
-         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
+//         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
+         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, NULL));  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
 
          subKey_ = new SubscribeKey(global_);
@@ -159,15 +160,15 @@ public:
          pubKey_ = new PublishKey(global_);
          pubKey_->setOid("TestFailsafe");
 
-         for (int i=0; i < 120; i++) {
+         for (int i=0; i < 18; i++) {
             string msg = lexical_cast<string>(i);
             MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
             PublishReturnQos pubRetQos = connection_->publish(msgUnit);
-            if (i == 12) {
+            if (i == 2) {
                embeddedServer_.stop();
             }
-            if (i == 22) {
+            if (i == 12) {
                embeddedServer_.start();
             }
             try {
@@ -183,6 +184,7 @@ public:
          log_.error(ME, string("exception occurred in setFailSafe. ") + ex.toXml());
          assert(0);
       }
+      Thread::sleepSecs(20);
    }
 
 
@@ -212,7 +214,7 @@ public:
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
-      Lock lock(updateMutex_);
+//      Lock lock(updateMutex_);
  //     log_.info(ME, "update: key    : " + updateKey.toXml());
 //      log_.info(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
@@ -250,11 +252,11 @@ int main(int args, char ** argv)
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
    }
-   catch (exception& ex) {
-      cout << " exception: " << ex.what() << endl;
-   }
    catch (bad_exception& ex) {
       cout << "bad_exception: " << ex.what() << endl;
+   }
+   catch (exception& ex) {
+      cout << " exception: " << ex.what() << endl;
    }
    catch (string& ex) {
       cout << "string: " << ex << endl;
