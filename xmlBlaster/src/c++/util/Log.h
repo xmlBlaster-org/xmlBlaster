@@ -5,8 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
 -----------------------------------------------------------------------------*/
 
-#define _TERM_WITH_COLORS_
-
 #ifndef _UTIL_LOG_H
 #define _UTIL_LOG_H
 
@@ -99,16 +97,16 @@ namespace util {
 
       string   ME;
 
-
+#if   _TERM_WITH_COLORS_
+      string timeE, callE, traceE, plainE, infoE;
+      string warnE, errorE, panicE, exitE;
+#else
       /**
        * Output text for different logging levels
+       * The DOS box does not know any colors
        */
       string timeX, callX, traceX, plainX, infoX;
       string warnX, errorX, panicX, exitX;
-
-#ifdef _TERM_WITH_COLORS_
-      string timeE, callE, traceE, plainE, infoE;
-      string warnE, errorE, panicE, exitE;
 #endif // _TERM_WITH_COLORS_
 
    private:

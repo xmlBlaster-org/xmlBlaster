@@ -9,7 +9,6 @@ $(TARGET):
 	echo target is $(TARGET)
 ifeq ($(USE_CPP),true) 
 	$(CD) $(GEN_DIR); make $(TARGET); $(CD) ..
-	$(CD) $(XMLBLASTER_HOME)/src/java/org/xmlBlaster/util/cpp; make $(TARGET); $(CD) $(XMLBLASTER_HOME)/src/c++
 	$(CD) $(UTIL_DIR); make $(TARGET); $(CD) ..
 	$(CD) $(CLIENT_DIR); make $(TARGET); $(CD) ..
 	$(RM) $(LIB_DIR)/$(SHARED_LIB_NAME)

@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.2 2001/12/16 22:47:38 ruff Exp $
+Version:   $Id: Log.cpp,v 1.3 2001/12/26 15:47:28 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -14,7 +14,7 @@ using namespace std;
 namespace org { namespace xmlBlaster {
 namespace util {
 
-char* const Log::ESC          = "\033[0m"; 
+char* const Log::ESC          = "\033[0m";
 char* const Log::BOLD         = "\033[1m";
 char* const Log::RED_BLACK    = "\033[31;40m";
 char* const Log::GREEN_BLACK  = "\033[32;40m";
@@ -31,61 +31,46 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
 
 
+   /**
+    * Initializes logging and Properties
+    */
    Log::Log(int args, const char * const argc[]) {
-      bool isNewProperty = false;
-      if (numOfImplementations_ == 0) {
-         properties_ = new Property(args, argc);
-         isNewProperty = true;
-      }
-      else {
-         if ((args != 0) && (argc != 0)) {
-            delete properties_;
-            properties_ = new Property(args, argc);
-            isNewProperty = true;
-         }
-      }
-
-      if (isNewProperty) { // all static stuff here ...
-         CALL   = true;
-         TIME    = true;
-         TRACE   = true;
-         DUMP    = true;
-         currentLogFormat       = "{0} {1} {2}: {3}";
+      bool isNewProperty = ((numOfImplementations_ == 0)||((args != 0) && (argc != 0))) ? true :false;
+      if (isNewProperty) {
+         ME = "Log";
+         CALL = true;
+         TIME = true;
+         TRACE = true;
+         DUMP = true;
+         currentLogFormat = "{0} {1} {2}: {3}";
          logFormatPropertyRead  = false;
          logLevel_ = L_PANIC | L_ERROR | L_WARN | L_INFO;
-         string path = properties_->getProperty("HOME");
-         string name = "xmlBlaster.properties";
-         // introduce exceptions here if needed...
-         int ret = properties_->loadPropsFromFile(name, path);
-         if ( ret == -1) {
-            path = properties_->getProperty("XMLBLASTER_HOME");
-            ret  = properties_->loadPropsFromFile(name,path);
-            if (ret == -1)
-               error("reading properties: ", "could not find the file");
-         }
+#             ifdef _TERM_WITH_COLORS_
+            timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
+            callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
+            traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
+            plainE  = string(WHITE_BLACK  ) + "     " + ESC;
+            infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
+            warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
+            errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
+            panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
+            exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
+#        else
+            timeX   = "TIME ";
+            callX   = "CALL ";
+            traceX  = "TRACE";
+            plainX  = "     ";
+            infoX   = "INFO ";
+            warnX   = "WARN ";
+            errorX  = "ERROR";
+            panicX  = "PANIC";
+            exitX   = "EXIT ";
+#        endif // _TERM_WITH_COLORS_
+
+         if (numOfImplementations_ > 0) delete properties_;
+         //std::cout << "Log: initialize properties" << std::endl;
+         properties_ = new Property(args, argc);
       }
-      // the following stuff does not matter if reinitialized many times
-      ME      = "Log";
-      timeX   = "TIME ";
-      callX  = "CALL ";
-      traceX  = "TRACE";
-      plainX  = "     ";
-      infoX   = "INFO ";
-      warnX   = "WARN ";
-      errorX  = "ERROR";
-      panicX  = "PANIC";
-      exitX   = "EXIT ";
-#ifdef _TERM_WITH_COLORS_
-      timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
-      callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
-      traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
-      plainE  = string(WHITE_BLACK  ) + "     " + ESC;
-      infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
-      warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
-      errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
-      panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
-      exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
-#endif // _TERM_WITH_COLORS_
       numOfImplementations_++;
    }
 
@@ -262,7 +247,7 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
          }
       }
 
-   void Log::log(const string &levelStr, int level, const string &instance, 
+   void Log::log(const string &levelStr, int level, const string &instance,
              const string &text) {
        if (logFormatPropertyRead == false) {
           initialize();
@@ -273,11 +258,11 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
           logFormat = "{3}";
        else
           logFormat = currentLogFormat;
-   
+
        string logEntry = levelStr + " ";
        if (level & L_TIME) logEntry += getTime() + ": ";
        if ((level & L_ERROR) || (level & L_WARN) || (level & L_PANIC))
-         cerr << logEntry << instance << " " << text << endl;
+          cerr << logEntry << instance << " " << text << endl;
        else
           cout << logEntry << instance << " " << text << endl;
     }
@@ -285,11 +270,11 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
    void Log::usage() {
       plain(ME, "");
       plain(ME, "Logging options:");
-      plain(ME, "   +trace              Show code trace.");
-      plain(ME, "   +dump               Dump internal state.");
-      plain(ME, "   +call               Show important method entries");
-      plain(ME, "   +time               Display some performance data.");
-      plain(ME, "   -logFile <fileName> Log to given file instead to console.");
+      plain(ME, "  -trace true         Show code trace.");
+      plain(ME, "  -dump true          Dump internal state.");
+      plain(ME, "  -call true          Show important method entries");
+      plain(ME, "  -time true          Display some performance data.");
+      //plain(ME, "  -logFile <fileName> Log to given file instead to console.");
       plain(ME, "");
    }
 

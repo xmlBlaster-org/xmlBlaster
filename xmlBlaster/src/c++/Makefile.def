@@ -28,7 +28,9 @@ SYMLINK    =ln -s
 CD         =cd
 CFLAGS     =-g -Wall -Wstrict-prototypes -Wimplicit-int -Werror-implicit-function-declaration
 CC         =g++ $(CFLAGS)
-CL         =g++ $(CFLAGS) -Wl,-rpath=$(LIB_DIR)
+# To avoid setting of LD_LIBRARY_PATH:
+SHARED_LIB_FLAGS=-Wl,-rpath=$(LIB_DIR) -Wl,-rpath=$(XMLCPP_HOME)/lib -Wl,-rpath=$(CORBACPP_HOME)/lib
+CL         =g++ $(CFLAGS) $(SHARED_LIB_FLAGS)
 SLIB_FLAGS =-fpic
 LD         =g++ -shared $(CFLAGS)
 SLIB_ATTR  =chmod a-w

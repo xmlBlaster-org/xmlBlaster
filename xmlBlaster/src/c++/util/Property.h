@@ -74,7 +74,7 @@ namespace util {
          }
          string name, value;
          name.assign(line, 0, pos);
-         value.assign(line.c_str(), pos+1);
+         value = line.substr(pos+1);
          return pair<const string, string>(filter(name), filter(value));
       }
       
@@ -82,13 +82,59 @@ namespace util {
    public:
       
       /**
-       * The default constructor does nothing else than allocate the storage
-       * map for the properties.
+       * The default constructor allocate the storage
+       * map for the properties and parses the command line properties.<p />
+       * NOTE: You have to call loadPropertyFile() separatly
        */
       Property(int args=0, const char * const argc[]=0) : properties_() {
+
          if (args && argc) {
-//          loadProps(args, argc); // java-style properties
-            loadProps(args, argc, "-", false); // xmlBlaster-style properties
+            loadCommandLineProps(args, argc, "-", false); // xmlBlaster-style properties
+         }
+
+         //loadPropertyFile();
+      }
+
+      /*
+       * xmlBlaster.properties is searched in this sequence:
+       * <ul>
+       *    <li>the command line parameter '-propertyFile', e.g. "-propertyFile /tmp/xy.properties"</li>
+       *    <li>the environment variable 'propertyFile', e.g. "propertyFile=/tmp/xy.properties"</li>
+       *    <li>the local directory: ./xmlBlaster.properties</li>
+       *    <li>in your home directory, HOME/xmlBlaster.properties</li>
+       *    <li>in the $XMLBLASTER_HOME directory</li>
+       * </ul>
+       * Command line properties have precedence<p />
+       * Environment variables are weakest
+       */
+      void loadPropertyFile()
+      {
+         const string filename = "xmlBlaster.properties";
+         string path="";
+         int num=0;
+
+         if (num < 1) {
+            path = getProperty("propertyFile", false); // command line property
+            if (!path.empty())
+               num = readPropertyFile(path, false);
+         }
+         if (num < 1) {
+            path = getProperty("propertyFile", true); // looking in environment as well
+            if (!path.empty())
+               num = readPropertyFile(path, false);
+         }
+         if (num < 1) {
+            num = readPropertyFile(filename, false);
+         }
+         if (num < 1) {
+            path = getenv("HOME");
+            if (!path.empty())
+               num = readPropertyFile(path + FILE_SEP + filename, false);
+         }
+         if (num < 1) {
+            path = getenv("XMLBLASTER_HOME");
+            if (!path.empty())
+               num = readPropertyFile(path + FILE_SEP + filename, false);
          }
       }
 
@@ -103,8 +149,8 @@ namespace util {
        * from the file are inserted into the properties even if a property 
        * with the same name has been defined earlier. 
        */
-      int readPropertyFile(const char *filename, bool overwrite=true) {
-         ifstream in(filename);
+      int readPropertyFile(const string &filename, bool overwrite=true) {
+         ifstream in(filename.c_str());
          string  line;
          int     count = 0;
          if (in == 0) return -1;
@@ -113,12 +159,15 @@ namespace util {
             if (!in.eof()) {
                pair<const string, string> valuePair(getPair(line));
                if ((valuePair.first != "") && (valuePair.second != "")) {
-                  if (setProperty(valuePair.first, 
-                                  valuePair.second,overwrite)) count++;
+                  //std::cout << "readPropertyFile: " << valuePair.first << "=" << valuePair.second << std::endl;
+                  if (setProperty(valuePair.first, valuePair.second, overwrite))
+                     count++;
                }
             }
          }
          in.close();
+         if (count > 0)
+            std::cout << "Successfully read " << count << " entries from " << filename << std::endl;
          return count;
       }
       
@@ -218,22 +267,6 @@ namespace util {
 
 
       /**
-       * Loads the properties from the file specified in the argument list with
-       * name in the given path. If no such file is found, or if it could not
-       * be opened, then it trys to open the file in the current directory. If
-       * this also fails, it returns -1, otherwise it returns the number of
-       * properties which have been read in.
-       */
-      int loadPropsFromFile(const string &filename, const string &path) {
-         string actualName = path + FILE_SEP + filename;
-         int    ret;
-         if ( (ret=readPropertyFile(actualName.c_str())) == -1)
-            return readPropertyFile(filename.c_str());
-         return ret;
-      }
-      
-
-      /**
        * Loads the properties read from the command line (or another array).
        * The syntax for passing properties is the same as in java if the 
        * switch javaStyle is true (default). That is "-Dprop1=val1" is 
@@ -243,7 +276,7 @@ namespace util {
        * equality sign between name and value).
        * Errors in syntax are silenty ignored (the property just isn't load).
        */
-      int loadProps(int args, const char * const argc[], const string &sep="-D", 
+      int loadCommandLineProps(int args, const char * const argc[], const string &sep="-D", 
                     bool javaStyle=true) {
 
          int    count = 1, ret=0, nmax = args;
@@ -252,10 +285,11 @@ namespace util {
          while (count < nmax) {
             string name = argc[count];
             if (name.find(sep) == 0) { // it is a property
-               name.assign(name.c_str(), sep.length());
+               name = name.substr(sep.length()); // remove separator e.g. "-trace" -> "trace"
                if (!javaStyle) { // Corba style (or other non-java styles)
                   count++;
                   value = argc[count];
+                  //std::cout << "readPropertyCommandLine: " << name << "=" << value << std::endl;
                   if (setProperty(name, value)) ret++;
                }
                else { // java style
@@ -265,6 +299,8 @@ namespace util {
             }
             count++;
          }
+         if (count > 0)
+            std::cout << "Successfully read " << (count-1)/2 << " command line arguments" << std::endl;
          return ret;
       }
       

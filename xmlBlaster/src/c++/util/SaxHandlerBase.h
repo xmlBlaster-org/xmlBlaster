@@ -249,7 +249,7 @@ namespace util {
          delete systemIdHelper;
          if (systemId != "") {
             int index = systemId.find_last_of('/');
-            if (index != -1) systemId.assign(systemId.c_str(), index + 1);
+            if (index != -1) systemId = systemId.substr(index + 1);
             str += systemId;
          }
          char buffer[128];

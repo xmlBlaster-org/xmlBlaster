@@ -71,22 +71,6 @@ xmlBlaster to jutil). Some slight differences are:
 
 - There is no caching in CorbaConnection (yet)
 
-- No direct way of reading the IOR string via HTTP (see below)
-
-There is a small java helper application which you might use.
-It is called HttpIorForCpp. It reads the IOR string of the xmlBlaster server
-and writes it to the standard output. This is done to avoid
-to use some (big) www library for the only purpose to implement this little
-feature. So if you want to read the IOR from the HTTP server (as is default
-in xmlBlaster), do the following when running the client application (in unix):
-
-TestGet -ior `java -classpath $CLASSPATH:util org.jutils.cpp.HttpIorForCpp  2>&1 | grep IOR`
-
-(see xmlBlaster/testsuite/c++/README for simpler examples on the same
- host or with a naming service)
-
-I will implement the reading from http as an option later.
-
 
 -Some notes on XERCES
 
@@ -198,3 +182,4 @@ I will implement the reading from http as an option later.
 Cheers & good Luck
 
 Michele (michele.laghi@attglobal.net)
+Marcel (ruff@swand.lake.de)

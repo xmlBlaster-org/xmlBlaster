@@ -279,7 +279,7 @@ namespace org { namespace xmlBlaster {
        * These variables may be set in xmlBlaster.properties as well.
        * Don't use the "-" prefix there.
        */
-      void usage();
+      static void usage();
    
    }; // class CorbaConnection
 }} // namespace
