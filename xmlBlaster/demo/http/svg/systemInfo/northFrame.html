@@ -39,8 +39,43 @@ COMMENT:
             top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
             top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("meminfo"));
             top.xmlBlasterWindow.Log.trace("OK, subscribed to meminfo");
+            // Uncomment to test the other methods:
+            //test();
             top.xmlBlasterWindow.setReady( self, true );
             top.xmlBlasterWindow.Log.trace("OK, i am ready");
+         }
+
+         /**
+          * Test some other xmlBlaster invocations
+          */
+         function test() {
+            top.xmlBlasterWindow.Log.INFO = true;
+
+            {
+               var key = new top.xmlBlasterWindow.PublishKeyWrapper("MessageFromBrowser");
+               var content = "Hello from browser";
+               var qos = "<qos></qos>";
+               var message = new top.xmlBlasterWindow.MessageWrapperLiteral(key, content, qos);
+               top.xmlBlasterWindow.publish(message);
+               top.xmlBlasterWindow.Log.info("OK, published " + key.oid);
+
+               top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("MessageFromBrowser"));
+
+               top.xmlBlasterWindow.unSubscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("MessageFromBrowser"));
+            }
+
+            {
+               var key = new top.xmlBlasterWindow.PublishKeyWrapper("TmpMessageFromBrowser");
+               var content = "Temporary hello from browser";
+               var qos = "<qos></qos>";
+               var message = new top.xmlBlasterWindow.MessageWrapperLiteral(key, content, qos);
+
+               top.xmlBlasterWindow.publish(message);
+               top.xmlBlasterWindow.Log.info("OK, published " + key.oid);
+
+               top.xmlBlasterWindow.erase(new top.xmlBlasterWindow.SubscribeKeyWrapper("TmpMessageFromBrowser"));
+               top.xmlBlasterWindow.Log.info("OK, erased " + key.oid);
+            }
          }
 
          /**
@@ -128,14 +163,15 @@ COMMENT:
       <p />
       XmlBlaster Apache/Tomcat 3.2.x web server (Linux)
       <br />
+      <h3>It is very simple to embed this framework into your application (only some lines of Javascript):</h3>
+      Study this frame source (xmlBlaster/demo/http/svg/systemInfo/northFrame.html),
+      this is all you need to do to implement your own application!<br />
+      The update() method receives the message from xmlBlaster.<br />
+      The initialize() method does the subscriptions for this demo.<br />
+      The test() method shows you how to do other invocations to the server.<br />
+      <br />
       <font size='-2'>Below you should see the SVG plugin displaying dynamic (real time) CPU and MEM data:</font>
       <br />
-      <script language="Javascript1.2">
-         /*  top.xmlBlasterWindow is not yet valid if systemInfo.html is the persistentWindow creater
-         var info = top.xmlBlasterWindow.getBrowserInfo();
-         document.writeln('<font size="-2">' + info + '</font>');
-         */
-      </script>
    </center>
    </body>
 </html>
