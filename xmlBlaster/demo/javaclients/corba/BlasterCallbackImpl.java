@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.5 2002/03/13 16:41:05 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.6 2002/03/17 17:21:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -38,7 +38,6 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
       if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
    }
 
-
    /**
     * Construct a transient object.
     */
@@ -48,10 +47,10 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
       if (Log.CALL) Log.trace(ME, "Entering constructor without argument");
    }
 
-
    /**
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
+    * @see xmlBlaster.idl
     */
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
    {
@@ -73,5 +72,37 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
       }
       Log.info(ME, "#================== BlasterCallback update END ===============");
       return ret;
+   }
+
+   /**
+    * This is the callback method invoked from the CORBA server
+    * informing the client in an asynchronous mode about new messages.
+    * <p />
+    * This oneway method does not return something, it is high performing but
+    * you loose the application level hand shake.
+    *
+    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @see xmlBlaster.idl
+    */
+   public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      try {
+         update(cbSessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
+   /**
+    * Ping to check if the callback server is alive.
+    * @param qos ""
+    * @return ""
+    */
+   public String ping(String qos)
+   {
+      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      return "";
    }
 }

@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.5 2002/03/13 16:41:05 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.6 2002/03/17 17:21:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -276,6 +276,32 @@ class RawCallback implements BlasterCallbackOperations
          ret[ii] = "<qos><state>OK</state></qos>";
       }
       return ret;
+   }
+
+   /**
+    * This oneway method does not return something, it is high performing but
+    * you loose the application level hand shake.
+    * @see xmlBlaster.idl
+    */
+   public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      try {
+         update(cbSessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
+   /**
+    * Ping to check if the callback server is alive.
+    * @param qos ""
+    * @return ""
+    */
+   public String ping(String qos)
+   {
+      return "";
    }
 } // RawCallback
 
