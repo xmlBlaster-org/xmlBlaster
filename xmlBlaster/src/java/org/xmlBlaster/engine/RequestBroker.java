@@ -152,7 +152,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    private org.xmlBlaster.client.qos.PublishQos publishQosForEvents;
    private PublishQosServer publishQosLoginEvent;
 
-   /** Initialize a messageUnit for a zserList event */
+   /** Initialize a messageUnit for a userList event */
    private boolean publishUserList = true;
    private MsgKeyData xmlKeyUserListEvent = null;
 
@@ -797,7 +797,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
                int numEntries = getQos.getHistoryQos().getNumEntries();
                MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, false);
-               
+
                NEXT_HISTORY:
                for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
 
@@ -861,7 +861,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // Create QoS with new timestamp
          PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
          //publishQosUserListEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent, 
+         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent,
                                  glob.getAuthenticate().getSubjectList().getBytes(), //content.getBytes(),
                                  publishQosUserListEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit);
@@ -1456,7 +1456,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    }
 
    /**
-    * Rorward a message to another cluster node. 
+    * Rorward a message to another cluster node.
     * TODO: How to return multiple retVal from multiple destinations? !!!
     * @return if not null the message was forwarded to another cluster
     */
@@ -1657,7 +1657,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLoginEvent, 
+         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLoginEvent,
                                   sessionInfo.getLoginName().getBytes(),
                                   this.publishQosLoginEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client has logged in
