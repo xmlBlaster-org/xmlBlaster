@@ -1135,7 +1135,7 @@ TODO
                version="true"
                use="true"
                windowtitle="xmlBlaster ${version} client API"
-               doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
+               doctitle="&lt;h1&gt;xmlBlaster client API&lt;/h1&gt;"
                header="xmlBlaster ${version} client API"
                bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
       <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
