@@ -20,6 +20,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropString;
@@ -117,6 +118,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
 
       this.dispatchConnectionsHandler.initialize(addrArr);
+   }
+
+   public boolean isSyncMode() {
+      return this.isSyncMode;
    }
 
    /**
@@ -478,7 +483,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       
       if (log.TRACE) log.trace(ME, "putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
-      for (int ii=0; ii<queueEntries.length; ii++) entryList.add(queueEntries[ii]);
+      for (int ii=0; ii<queueEntries.length; ii++) {
+         if (this.trySyncMode && !this.isSyncMode && queueEntries[ii] instanceof MsgQueueGetEntry) { // this.trySyncMode === isClientSide
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "You can't call get() in asynchronous mode (gets can't be queued because we don't know its return value)");
+         }
+         entryList.add(queueEntries[ii]);
+      }
       this.syncDispatchWorker.run(entryList);
       return false;
    }
