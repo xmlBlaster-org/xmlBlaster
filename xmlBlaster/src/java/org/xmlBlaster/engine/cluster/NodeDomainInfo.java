@@ -7,6 +7,7 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 
@@ -19,15 +20,21 @@ import org.xml.sax.Attributes;
  * <pre>
  * &lt;!-- Messages of type "__sys__cluster.node.domainmapping:heron": -->
  *
- * &lt;master stratum='0' refid='bilbo' type='Simple' version='1.0'>
+ * &lt;master stratum='0' refid='bilbo' type='DomainToMaster' version='1.0'>
  *    &lt;![CDATA[
  *       &lt;key domain=''/>
  *       &lt;key domain='rugby'/>
  *    ]]>
  * &lt;/master>
  * </pre>
+ * Here the plugin 'DomainToMaster' with version '1.0' is chosen, this is mapped
+ * with the xmlBlaster.properties entry
+ * <pre>
+ * MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster
+ * </pre>
+ * to the real java implementation.
  */
-public final class NodeDomainInfo
+public final class NodeDomainInfo implements Comparable
 {
    /** Unique name for logging */
    private final static String ME = "NodeDomainInfo";
@@ -49,10 +56,15 @@ public final class NodeDomainInfo
 
    private XmlKey[] keyMappings;
 
+   /**
+    * Create a NodeDomainInfo belonging to the given cluster node. 
+    */
    public NodeDomainInfo(Global glob, ClusterNode clusterNode) {
       this.glob = glob;
       this.clusterNode = clusterNode;
-      count = counter++;
+      synchronized (NodeDomainInfo.class) {
+         count = counter++;
+      }
       version = glob.getProperty().get("cluster.domainMapper.version", DEFAULT_version);
    }
 
@@ -141,11 +153,19 @@ public final class NodeDomainInfo
       this.preparedQuery = preparedQuery;
    }
 
+   /**
+    * The distance of the node to the master. 
+    * @param 0 is the master, 1 is the direct slave, 2 is the slave of the slave ...
+    */
    public void setStratum(int stratum) {
       if (stratum < 0) throw new IllegalArgumentException("NodeDomainInfo: stratum can't be small zero");
       this.stratum = stratum;
    }
 
+   /**
+    * The distance of the node to the master. 
+    * @return 0 is the master, 1 is the direct slave, 2 is the slave of the slave ...
+    */
    public int getStratum() {
       return this.stratum;
    }
@@ -158,18 +178,32 @@ public final class NodeDomainInfo
       return this.refId;
    }
 
+   /**
+    * The plugin type. 
+    */
    public void setType(String type) {
       this.type = type;
    }
 
+   /**
+    * The plugin type. 
+    * @return Defaults to "DomainToMaster"
+    */
    public String getType() {
       return this.type;
    }
 
+   /**
+    * The plugin version. 
+    */
    public void setVersion(String version) {
       this.version = version;
    }
 
+   /**
+    * The plugin version. 
+    * @return Defaults to "1.0"
+    */
    public String getVersion() {
       return this.version;
    }
@@ -259,5 +293,26 @@ public final class NodeDomainInfo
       sb.append(offset).append("</master>");
 
       return sb.toString();
+   }
+
+   /**
+    * Enforced by interface Comparable, does sorting
+    * of NodeDomainInfo instances in a treeSet with stratum
+    */
+   public int compareTo(Object obj)  {
+      NodeDomainInfo a = (NodeDomainInfo)obj;
+      
+      try {
+         if (getClusterNode().getConnectionState() != a.getClusterNode().getConnectionState())
+            return getClusterNode().getConnectionState() - a.getClusterNode().getConnectionState();
+      }
+      catch (XmlBlasterException e) {
+         glob.getLog().error(ME, "Unexpected exception in compareTo(), no sorting for connection state possible: " + e.toString());
+      }
+
+      if (getStratum() != a.getStratum())
+         return getStratum() - a.getStratum();
+   
+      return getCount() - a.getCount(); 
    }
 }

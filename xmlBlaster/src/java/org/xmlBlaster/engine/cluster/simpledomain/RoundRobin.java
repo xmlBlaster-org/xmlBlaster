@@ -13,6 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.cluster.I_LoadBalancer;
 import org.xmlBlaster.engine.cluster.NodeInfo;
+import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
@@ -94,25 +95,27 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
    /**
     * We determine which xmlBlaster node to choose with a simple counter. 
     * <p />
-    * @param clusterNodeSet A set containing ClusterNode objects, the possible xmlBlaster nodes.
+    * @param nodeDomainInfoSet A set containing NodeDomainInfo objects, the possible xmlBlaster nodes.
     *                       Is never null, but may have a size of 0.
     * @return The chosen clusterNode to handle the message or null
+    * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set)
     */
-   public synchronized ClusterNode getClusterNode(Set clusterNodeSet) throws XmlBlasterException {
-      if (clusterNodeSet.size() == 0) {
-         log.warn(ME, "Empty clusterNodeSet, using local node");
+   public synchronized ClusterNode getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException {
+      if (nodeDomainInfoSet.size() == 0) {
+         log.warn(ME, "Empty nodeDomainInfoSet, using local node");
          return glob.getClusterManager().getMyClusterNode(); // handle locally
       }
 
-      if (counter >= clusterNodeSet.size()) // counter is our RoundRobin approach
+      if (counter >= nodeDomainInfoSet.size()) // counter is our RoundRobin approach
          counter = 0;
 
       /* !!!
-       TODO: We should sort the set/map after
+       The Set is sorted after
        "<available:stratum:nodeId>"
-       available := 0 OK, 1 polling, 2 unavailable
+       available := 0 connected, 1 polling, 2 unavailable
        stratum   := 0 master, 1 stratum, 2 stratum ...
 
+       TODO:
        So we may choose a slave routing to a master,
        the chosen stratum must smaller (closer to the master) than our current stratum
        
@@ -120,13 +123,14 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
        directly (choosing the stratum which is exactly one smaller?)
       */
 
-      Iterator it = clusterNodeSet.iterator();
+      Iterator it = nodeDomainInfoSet.iterator();
       int ii=0;
       while (it.hasNext()) {
          Object obj = it.next();
          if (ii == counter) {
-            ClusterNode clusterNode = (ClusterNode)obj;
-            log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + clusterNodeSet.size() + " nodes");
+            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)obj;
+            ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
+            log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
             counter++;
             return clusterNode;
          }

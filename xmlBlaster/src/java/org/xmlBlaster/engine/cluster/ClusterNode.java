@@ -24,6 +24,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node). 
@@ -111,18 +112,20 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" +
              addr.getAddress() + "' using protocol=" + addr.getType());
 
-         String[] args = new String[10];
-         // TODO: This needs to be generic
-         args[0] = "-client.protocol";
-         args[1] = addr.getType();
-         args[2] = "-iorPort";     // For all protocol we may use set an alternate server port
-         args[3] = ""+addr.getPort(); // glob.getProperty().get("iorPort["+getId()+"]", "7609");
-         args[4] = "-socket.port";
-         args[5] = ""+addr.getPort(); // glob.getProperty().get("socket.port["+getId()+"]", "7607");
-         args[6] = "-rmi.registryPort";
-         args[7] = ""+addr.getPort(); // glob.getProperty().get("rmi.registryPort["+getId()+"]", "1099");
-         args[8] = "-xmlrpc.port";
-         args[9] = ""+addr.getPort(); // glob.getProperty().get("xmlrpc.port["+getId()+"]", "8080");
+         Vector vec = new Vector();
+         vec.addElement("-client.protocol");
+         vec.addElement(addr.getType());
+         vec.addElement("-iorPort");     // For all protocol we may use set an alternate server port
+         vec.addElement(""+addr.getPort()); // glob.getProperty().get("iorPort["+getId()+"]", "7609");
+         vec.addElement("-socket.port");
+         vec.addElement(""+addr.getPort()); // glob.getProperty().get("socket.port["+getId()+"]", "7607");
+         vec.addElement("-rmi.registryPort");
+         vec.addElement(""+addr.getPort()); // glob.getProperty().get("rmi.registryPort["+getId()+"]", "1099");
+         vec.addElement("-xmlrpc.port");
+         vec.addElement(""+addr.getPort()); // glob.getProperty().get("xmlrpc.port["+getId()+"]", "8080");
+         vec.addElement("-server.node.id"); // Set a nice name to which node we want to connect
+         vec.addElement(getId());
+         String[] args = (String[])vec.toArray(new String[0]);
 
          this.xmlBlasterConnection = new XmlBlasterConnection(args);
          
@@ -147,9 +150,16 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // new Global(args) !!!!!!!
          ConnectQos qos = new ConnectQos(glob, type, version, name, passwd);
          qos.setSessionTimeout(0L); // session lasts forever
+         //qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
          // Login to other xmlBlaster cluster node, register for updates
-         ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this, cbProps);
+         try {
+            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this, cbProps);
+         }
+         catch(XmlBlasterException e) {
+            Log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
+            Log.info(ME, "The connection is in fail save mode and will queue messages until " + getId() + " is available");
+         }
       }
       return xmlBlasterConnection;
    }
@@ -213,8 +223,44 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Check if we have currently a functional connection to this node. 
     */
-   public boolean isAvailable() {
-      return available;
+   public boolean isLoggedIn() throws XmlBlasterException {
+      XmlBlasterConnection con = getXmlBlasterConnection();
+      if (con != null)
+         return con.isLoggedIn();
+      return false;
+   }
+
+   public boolean isPolling() throws XmlBlasterException {
+      XmlBlasterConnection con = getXmlBlasterConnection();
+      if (con != null)
+         return con.isPolling();
+      return false;
+   }
+
+   /**
+    * Is this node usable. 
+    * @return true if we are logged in or are polling for the node<br />
+    *         false if the node should not be used
+    */
+   public boolean isAllowed() throws XmlBlasterException {
+      XmlBlasterConnection con = getXmlBlasterConnection();
+      if (con != null)
+         return true;
+      return false;
+   }
+
+   /**
+    * Returns the current connection state to the node. 
+    * @return 0 -> We are logged in<br />
+    *         1 -> We are polling for this node<br />
+    *         2 -> The node is not allowed to use<br />
+    */
+   public int getConnectionState() throws XmlBlasterException {
+      if (isLoggedIn())
+         return 0;
+      if (isPolling())
+         return 1;
+      return 2;
    }
 
    /**
@@ -247,9 +293,18 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public void reConnected() {
       available = true;
-      log.info(ME, "I_ConnectionProblems: Reconnected to xmlBlaster node '" + getId() + "'");
-      log.warn(ME, "Customized reconnect handling code is missing, but all tailed back messages will be flushed");
-      // corbaConnection.resetQueue(); // discard messages (dummy)
+      try {
+         if (xmlBlasterConnection.queueSize() > 0) {
+            Log.info(ME, "Reconnected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
+            xmlBlasterConnection.flushQueue();
+         }
+         else
+            Log.info(ME, "Reconnected to " + getId() + ", no backup messages to flush");
+      }
+      catch (XmlBlasterException e) {
+         // !!!! TODO: producing dead letters
+         Log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
+      }
    }
 
    /**

@@ -23,8 +23,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.Iterator;
+import java.util.Comparator;
 
 /**
  * The manager instance for a cluster node. 
@@ -53,7 +55,10 @@ public final class ClusterManager
    public final String pluginLoadBalancerType;
    public final String pluginLoadBalancerVersion;
 
-   /**  Map containing ClusterNode objects, the key is a 'node Id' */
+   /**
+    * Map containing ClusterNode objects, the key is a 'node Id'
+    * The entries are sorted to contain the local node as first entry.
+    */
    private Map clusterNodeMap;
 
    /** Info about myself */
@@ -75,7 +80,7 @@ public final class ClusterManager
          throw new XmlBlasterException("ClusterManager.PluginFailed", tmp); // is caught in RequestBroker.java
       }
 
-      this.clusterNodeMap = new HashMap();
+      this.clusterNodeMap = new TreeMap(new NodeComparator());
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob, this);
 
       if (this.glob.getNodeId() == null)
@@ -263,10 +268,19 @@ public final class ClusterManager
 
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
+      if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_PRAEFIX)) {
+         // internal system messages are handled locally
+         if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_CLUSTER_PRAEFIX))
+            glob.getLog().error(ME, "Forwarding of " + msgWrapper.getXmlKey().getUniqueKey() + " implementation is missing");
+            // !!! TODO: forward system messages with cluster info of foreign nodes!
+         return null;
+      }
+
       // Search all other cluster nodes to find the masters of this message ...
 
-      Set masterSet = new TreeSet(); // Contains the ClusterNode objects which match this message
-      int numRulesFound = 0;         // For nicer logging of warnings
+      Set masterSet = new TreeSet(); // Contains the NodeDomainInfo objects which match this message
+                                     // Sorted by stratum (0 is the first entry) -> see NodeDomainInfo.compareTo
+      int numRulesFound = 0;                             // For nicer logging of warnings
 
       Iterator it = getClusterNodeMap().values().iterator();
       // for each cluster node ...
@@ -290,7 +304,7 @@ public final class ClusterManager
             // Now invoke the plugin to find out who is the master ...
             ClusterNode master = domainMapper.getMasterId(nodeDomainInfo, msgWrapper);
             if (master != null) {
-               masterSet.add(master);
+               masterSet.add(nodeDomainInfo);
                break; // found one
             }
          }
@@ -361,4 +375,57 @@ public final class ClusterManager
 
       return sb.toString();
    }
+
+   /**
+    * Sorts the cluster nodes for the clusterNodeMap
+    * <ol>
+    *   <li>First is the local node</li>
+    *   <li>Others by node id</li>
+    * </ol>
+    */
+   class NodeComparator implements Comparator
+   {
+      /**
+       * We compare the cluster node id string. 
+       */
+      public final int compare(Object o1, Object o2) {
+         String id1 = (String)o1;
+         String id2 = (String)o2;
+         //Log.info("NodeComparator", "Compare " + id1 + " to " + id2);
+         if (id1.equals(id2))
+            return 0;
+         if (id1.equals(glob.getId())) // id1 is local node
+            return -1;
+         if (id2.equals(glob.getId())) // id2 is local node
+            return 1;
+         return id1.compareTo(id2);
+      }
+   }
+
+   /**
+    * Sorts the cluster nodes for the masterSet
+    * <ol>
+    *   <li>First is the local node</li>
+    *   <li>Others by node id</li>
+    * </ol>
+    */
+    /*
+   class MasterNodeComparator implements Comparator
+   {
+
+      public final int compare(Object o1, Object o2) {
+         NodeDomainInfo id1 = (NodeDomainInfo)o1;
+         NodeDomainInfo id2 = (NodeDomainInfo)o2;
+         //Log.info("MasterNodeComparator", "Compare " + id1 + " to " + id2);
+
+         if (id1.equals(id2))
+            return 0;
+         if (id1.equals(glob.getId())) // id1 is local node
+            return -1;
+         if (id2.equals(glob.getId())) // id2 is local node
+            return 1;
+         return id1.compareTo(id2);
+      }
+   }  */
 }
+
