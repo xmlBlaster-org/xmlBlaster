@@ -11,6 +11,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/c.client.socket
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/helper.h>
 #include <util/msgUtil.h>
 #include "test.h"
 
