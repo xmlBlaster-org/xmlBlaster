@@ -2,9 +2,7 @@
 Name:      I_CallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_CallbackServer.java,v 1.3 2002/03/17 07:29:03 ruff Exp $
-Author:    ruff@swand.lake.de
+Comment:   Interface for clients, used by xmlBlaster to send messages back
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -28,7 +26,12 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_CallbackServer
 {
-   /** Initialize and start the callback server */
+   /**
+    * Initialize and start the callback server
+    * @param glob The global handle with your environment settings
+    * @param name The login name of the client, for logging only
+    * @param client Your implementation to receive the callback messages from xmlBlaster
+    */
    public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException;
 
    /**
