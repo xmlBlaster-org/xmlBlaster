@@ -288,14 +288,16 @@
         and address based maxConnections -->
 
    &lt;clusternode id='heron' maxConnections='800'>
-      &lt;address type='IOR'>IOR:00044550005...&lt;/address>
-      &lt;address type='XML-RPC' maxConnections='20'>http://www.mars.universe:8080/RPC2&lt;/address>
-      &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
-      &lt;backupnode>
-         &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
-         &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
-      &lt;/backupnode>
-      &lt;nameservice>true&lt;/nameservice>
+      &lt;info>
+         &lt;address type='IOR'>IOR:00044550005...&lt;/address>
+         &lt;address type='XML-RPC' maxConnections='20'>http://www.mars.edu/RPC2&lt;/address>
+         &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
+         &lt;backupnode>
+            &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
+            &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
+         &lt;/backupnode>
+         &lt;nameservice>true&lt;/nameservice>
+      &lt;/info>
    &lt;/clusternode>
          </pre></td></tr>
       </table>
@@ -312,7 +314,7 @@
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // This is a master for domainless messages, for football and rugby
+   // This is a master for domainless messages, football and rugby
    &lt;clusternode id='heron'>
       &lt;master stratum='0'>
          &lt;key domain=''/>           &lt;!-- default setting -->
@@ -439,7 +441,7 @@
       &lt;state>
          &lt;cpu id='0' idle='40'/>    &lt;!-- currently 60% load on first CPU -->
          &lt;cpu id='1' idle='44'/>
-         &lt;ram free='12000'/>        &lt;!-- xmlBlaster server instance has 12 MB free memory -->
+         &lt;ram free='12000'/>        &lt;!-- xmlBlaster server has 12 MB free memory -->
          &lt;performance bogomips='1205.86' idleIndex='20'/>
       &lt;/state>
    &lt;/clusternode>
@@ -454,7 +456,7 @@
 
       <p>
       <table border="1">
-         <tr><td> </td><td>Quality of Service (QoS) of a message traversing a cluster</td><td>Comments</td></tr>
+         <tr><td> </td><td>Quality of Service (QoS) of a published message traversing a cluster</td><td>Comments</td></tr>
          <tr><td>qos</td><td><pre>
    &lt;qos>
       &lt;sender>joe&lt;/sender>
@@ -533,7 +535,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
