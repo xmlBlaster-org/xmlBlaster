@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.3 2000/05/16 20:57:38 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.4 2000/06/03 12:33:07 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -49,6 +49,7 @@ public class XmlDBAdapter implements I_Callback {
     */
    public XmlDBAdapter(String args[]) {
       this.args = args;
+      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
       initDrivers();
       initBlaster();
@@ -61,15 +62,13 @@ public class XmlDBAdapter implements I_Callback {
     */
    public void update(String login, UpdateKey key, byte[] content,
                       UpdateQoS updateQos) {
-
+      if (Log.CALLS) Log.calls(ME, "Message '" + key.getUniqueKey() + "' from '" + updateQos.getSender() + "' received");
       String               cust = updateQos.getSender();
       String               qos = updateQos.printOn().toString();
       XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust,
               content, qos, xmlBlaster);
 
       worker.start();
-
-
    }
 
    /**
@@ -139,11 +138,14 @@ public class XmlDBAdapter implements I_Callback {
       for (int i = 0; i < numDrivers; i++) {
          try {
             driver = st.nextToken().trim();
-
-            Class.forName(driver);
+            if (Log.TRACE) Log.trace(ME, "Trying JDBC driver Class.forName(´" + driver + "´) ...");
+            Class cl = Class.forName(driver);
+            java.sql.Driver dr = (java.sql.Driver)cl.newInstance();
+            java.sql.DriverManager.registerDriver(dr);
+            Log.info(ME, "Jdbc driver '" + driver + "' loaded.");
          }
-         catch (Exception e) {
-            Log.warning(ME, "Couldn't initialize dirver =>" + driver);
+         catch (Throwable e) {
+            Log.warning(ME, "Couldn't initialize driver =>" + driver);
          }
       }
    }
