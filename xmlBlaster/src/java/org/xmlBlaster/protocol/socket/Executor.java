@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.7 2002/02/16 16:33:12 ruff Exp $
+Version:   $Id: Executor.java,v 1.8 2002/02/16 18:03:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -213,9 +213,11 @@ public abstract class Executor implements ExecutorBase
             String[] response = new String[arr.length];      // !!! TODO response from update
             for (int ii=0; ii<arr.length; ii++)
                response[ii] = "<qos><state>OK</state></qos>";
-            if (updateIsOneway && warnUpdateIsOneway) {
-               Log.info(ME, "blocking update() mode is currently switched of");
-               warnUpdateIsOneway = false;
+            if (updateIsOneway) {
+               if (warnUpdateIsOneway) {
+                  Log.info(ME, "blocking update() mode is currently switched of");
+                  warnUpdateIsOneway = false;
+               }
             }
             else
                executeResponse(receiver, response);
@@ -254,7 +256,9 @@ public abstract class Executor implements ExecutorBase
          if (Constants.GET.equals(receiver.getMethodName())) {
             listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
          }
-         else if (Constants.ERASE.equals(receiver.getMethodName()) || Constants.PUBLISH.equals(receiver.getMethodName())) {
+         else if (Constants.ERASE.equals(receiver.getMethodName()) ||
+                  Constants.UPDATE.equals(receiver.getMethodName()) ||
+                  Constants.PUBLISH.equals(receiver.getMethodName())) {
             listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
          }
          else {
