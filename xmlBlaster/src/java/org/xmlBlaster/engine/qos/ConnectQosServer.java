@@ -23,7 +23,7 @@ import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 /**
  * This class encapsulates the qos of a connect() invocation. 
  * <p />
- * @see org.xmlBlaster.util.qos.ConnectQosServerSaxFactory
+ * @see org.xmlBlaster.util.qos.ConnectQosSaxFactory
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html">connect interface</a>
  */
 public final class ConnectQosServer
@@ -35,11 +35,13 @@ public final class ConnectQosServer
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = connectQosData;
+      this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
    public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
+      this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
    public ConnectQosData getData() {
