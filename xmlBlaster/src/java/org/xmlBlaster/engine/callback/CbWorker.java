@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.5 2002/03/22 08:30:57 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.6 2002/03/22 14:12:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -101,7 +101,8 @@ public class CbWorker implements Runnable
          //synchronized (this.msgQueue.getMonitor()) {
             this.msgQueue.setCbWorkerIsActive(false);
             if (msgQueue.size() > 0 && !msgQueue.isShutdown()) {
-               Log.info(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
+               // Log.info(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
+               if (Log.TRACE) Log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
                try{ msgQueue.activateCallbackWorker(); } catch(Throwable e) { Log.error(ME, e.toString()); }// Assure the queue is flushed with another worker
             }
          //}
