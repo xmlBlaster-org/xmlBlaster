@@ -48,9 +48,11 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlaster
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos, UpdateFp update, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, XmlBlasterException *exception);
+static QosArr *xmlBlasterPublishArr(XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
+static void xmlBlasterPublishOneway(XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
+static QosArr *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
+static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
 static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos);
 static bool isConnected(XmlBlasterAccessUnparsed *xa);
@@ -68,7 +70,7 @@ static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *excep
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterAccessUnparsed().
  */
-Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
+Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const char* const* argv) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
    if (xa == 0) return xa;
    xa->argc = argc;
@@ -79,11 +81,13 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char*
       return (XmlBlasterAccessUnparsed *)0;
    }
    xa->isInitialized = false;
-   xa->userData = 0; /* A client can use this pointer to point to any client specific information */
+   xa->userObject = 0; /* A client can use this pointer to point to any client specific information */
    xa->connect = xmlBlasterConnect;
    xa->initialize = initialize;
    xa->disconnect = xmlBlasterDisconnect;
    xa->publish = xmlBlasterPublish;
+   xa->publishArr = xmlBlasterPublishArr;
+   xa->publishOneway = xmlBlasterPublishOneway;
    xa->subscribe = xmlBlasterSubscribe;
    xa->unSubscribe = xmlBlasterUnSubscribe;
    xa->erase = xmlBlasterErase;
@@ -212,6 +216,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    if (xa->connectionP->initConnection(xa->connectionP, exception) == false) /* Establish low level TCP/IP connection */
       return false;
 
+   /* the fourth arg 'xa' is returned as 'void *userData' in update() method */
    xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateCbFp, xa);
    if (xa->callbackP == 0) {
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -364,7 +369,7 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfo->requestIdStr);
    /* Wait for response, the callback server delivers it */
-   while (xa->responseBlob.dataLen == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
+   while (xa->responseType == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
       if (useTimeout == true) {
          int error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
          if (error == ETIMEDOUT) {
@@ -436,8 +441,8 @@ Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
    SNPRINTF(usage, XMLBLASTER_MAX_USAGE_LEN, "%.950s%.950s%s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),
-                  "\n  -plugin/socket/responseTimeout  [60000 (one minute)]"
-                  "\n                       The time in millis to wait on a response, 0 is forever");
+                  "\n   -plugin/socket/responseTimeout  [60000 (one minute)]"
+                  "\n                       The time in millis to wait on a response, 0 is forever.");
    
    return usage;
 }
@@ -576,6 +581,34 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, X
 }
 
 /**
+ * Publish a message array in a bulk to the server. 
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ * @see XmlBlasterConnectionUnparsed#publishArr() for a function documentation
+ */
+static QosArr *xmlBlasterPublishArr(XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
+{
+   QosArr *p;
+   if (checkArgs(xa, "publishArr", true, exception) == false ) return 0;
+   p = xa->connectionP->publishArr(xa->connectionP, msgUnitArr, exception);
+   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
+   return p;
+}
+
+/**
+ * Publish a message array in a bulk to the server, we don't receive an ACK. 
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ * @see XmlBlasterConnectionUnparsed#publishOneway() for a function documentation
+ */
+static void xmlBlasterPublishOneway(XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
+{
+   if (checkArgs(xa, "publishOneway", true, exception) == false ) return;
+   xa->connectionP->publishOneway(xa->connectionP, msgUnitArr, exception);
+   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
+}
+
+/**
  * Subscribe a message. 
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
@@ -591,12 +624,14 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * cons
 
 /**
  * UnSubscribe a message from the server. 
+ * @return The raw QoS XML strings returned from xmlBlaster, only NULL if an exception is thrown
+ *         You need to free it with freeQosArr() after usage
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
+static QosArr *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
-   char *p;
+   QosArr *p;
    if (checkArgs(xa, "unSubscribe", true, exception) == false ) return 0;
    p = xa->connectionP->unSubscribe(xa->connectionP, key, qos, exception);
    if (*exception->errorCode != 0) mutexUnlock(xa, exception);
@@ -605,12 +640,15 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * co
 
 /**
  * Erase a message from the server. 
+ * @return A struct holding the raw QoS XML strings returned from xmlBlaster,
+ *         only NULL if an exception is thrown.
+ *         You need to freeQosArr() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
+static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
-   char *p;
+   QosArr *p;
    if (checkArgs(xa, "erase", true, exception) == false ) return 0;
    p = xa->connectionP->erase(xa->connectionP, key, qos, exception);
    if (*exception->errorCode != 0) mutexUnlock(xa, exception);
@@ -706,7 +744,7 @@ static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterExce
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
 
    for (i=0; i<msgUnitArr->len; i++) {
-      char *key = msgUnitArr->msgUnitArr[i].key;
+      const char *key = msgUnitArr->msgUnitArr[i].key;
       xa->log(xa->logLevel, LOG_INFO, __FILE__,
           "CALLBACK update() default handler: Asynchronous message update arrived:%s id=%s, we ignore it in this default handler\n",
           key, ((SocketDataHolder*)socketDataHolder)->requestId);
@@ -879,10 +917,10 @@ int main(int argc, char** argv)
          if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
             char usage[XMLBLASTER_MAX_USAGE_LEN];
             const char *pp =
-            "\n  -logLevel            ERROR | WARN | INFO | TRACE [WARN]"
-            "\n  -numTests            How often to run the same tests [1]"
+            "\n   -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]"
+            "\n   -numTests            How often to run the same tests [1]"
             "\n\nExample:"
-            "\n  XmlBlasterAccessUnparsedMain -logLevel TRACE"
+            "\n   XmlBlasterAccessUnparsedMain -logLevel TRACE"
                  " -dispatch/connection/plugin/socket/hostname server.mars.universe";
             printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
                    getXmlBlasterVersion(), xmlBlasterAccessUnparsedUsage(usage), pp);
