@@ -100,10 +100,10 @@
 cd xmlBlaster/src/c
 
 Linux C:
-   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+   gcc -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
 
 Linux C++:
-   g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+   g++ -Wall -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
 
 Windows:
    cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c
@@ -633,6 +633,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 </requirement>
 
