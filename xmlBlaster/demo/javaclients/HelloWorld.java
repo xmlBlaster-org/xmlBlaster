@@ -19,19 +19,9 @@ public class HelloWorld
 {
    public HelloWorld(String[] args) {
       try {
-         I_XmlBlasterAccess con = new XmlBlasterAccess(args);
-
-         con.connect(null, null);    // Login to xmlBlaster as "guest"
-
-         MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
-
-         System.out.println("\nHelloWorld: xmlBlaster has currently " +
-                new String(msgs[0].getContent()) + " bytes of free memory\n");
-
-         con.disconnect(null);
       }
       catch (Exception e) {
-         System.err.println("HelloWorld: We have a problem: " + e.toString());
+         System.err.println("HelloWorld: We have a problem: " + e.getMessage());
       }
    }
 

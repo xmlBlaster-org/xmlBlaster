@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxx, xx 2003]
 ================================
 
+ o This release is not backward compatible.
+
  o One big step further to unify the command line properties, try
      java HelloWorld2 -help
 
