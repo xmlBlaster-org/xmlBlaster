@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.subscribe.dispatch' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      XmlBlasterConnection is a helper class for Java clients which supports
+      a subscribe variant, allowing to dispatch callback messages to dedicated
+      update methods.
+   </topic>
+   <description>
+      In XmlBlasterConnection.java there is a subscribe() variant with an
+      I_Callback argument.
+      This way you can specify for every subscription another callback handling
+      method.
+      Having only one central update() method, forced you to look into
+      the received message to decide what to do with it.
+      Now on subscription the messages are dispatched to the corresponding
+      update().
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      ...
+
+      // login:
+      XmlBlasterConnection con = new XmlBlasterConnection(args);
+      con.login(loginName, passwd, loginQos, this);
+
+      ...
+
+      // subscribe with an anonymous update() method only for this subscription
+      con.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
+            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+               Log.info(ME, "Receiving message with specialized update() ...");
+            }
+         });
+      ]]>
+   </example>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
+   <date>2001 08 30</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubDispatch</test>
+   </testcase>
+</requirement>
+
