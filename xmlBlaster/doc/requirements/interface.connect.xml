@@ -74,7 +74,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
    &lt;queue relating='callback' maxEntries='1000' maxBytes='4000000'
                                                    onOverflow='deadMessage'>
       &lt;callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='10000'
-          retries='-1' delay='10000' oneway='false' dispatchPlugin='undef'>
+          retries='-1' delay='10000' oneway='false' dispatcherActive='true' dispatchPlugin='undef'>
          IOR:10000010033200000099000010....
          &lt;burstMode collectTime='400' maxEntries='20' maxBytes='-1L' />
          &lt;compress type='gzip' minSize='3000'/> &lt;!-- only implemented for SOCKET protocol -->
@@ -88,13 +88,22 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
 &lt;/qos>
    </pre>
    </td></tr></table>
-   <h3>&lt;securityService></h3>
+
+   <table border="1">
+   <tr>
+   <th>Parameter</th><th>Description</th>
+   </tr>
+   <tr>
+   <td>&lt;securityService></td><td>
     <p>
     The <b>&lt;securityService></b> allows to choose the authentication plugin
     and delivers the credentials as expected by the plugin. Here it
     is a simple password based approach.
     </p>
-   <h3>&lt;session></h3>
+   </td>
+   </tr>
+   <tr>
+   <td>&lt;session></td><td>
     <p>
     In the above example we use the <b>&lt;session></b> tag to configure our login session.
     We login to xmlBlaster as user <i>joe</i>. Additionally we have specified
@@ -122,11 +131,19 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     is the creator of a session to reconnect to a session. See requirement <code>client.confiuration</code>
     for more details.
     </p>
-   <h3>&lt;ptp></h3>
+   </td>
+   </tr>
+   <tr>
+   <td>&lt;ptp></td>
+   <td>
     <p>
      This allows to suppress receiving PtP messages
     </p>
-   <h3>&lt;duplicateUpdates></h3>
+   </td>
+   </tr>
+   <tr>
+   <td>&lt;duplicateUpdates></td>
+   <td>
     <p>
      If a client subscribes to the same topic multiple times it will
      receive multiple updates of the same message. Setting <i>duplicateUpdates</i>
@@ -139,13 +156,22 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
      has more functionality and is specific for each <tt>subscribe()</tt>, see
      requirement <tt>engine.qos.subscribe.multiSubscribe</tt> for more details.
     </p>
-   <h3>&lt;queue></h3>
+   </td>
+   </tr>
+   <tr>
+   <td>&lt;queue></td>
+   <td>
     <p>
      This markup allows to configure how our callback queue looks like.
      Further the inner <b>&lt;callback></b> tag allows us to pass the address
      of our client side callback server. In the above example we use CORBA to receive
      callbacks.
     </p>
+   </td>
+   </tr>
+   <tr>
+   <td><a NAME="oneway"></a>oneway</td>
+   <td>
     <p>
     Setting the <b>oneway</b> attribute to true forces all callback invocations to
     use the higher performing <tt>updateOneway()</tt> method call instead of the
@@ -153,11 +179,33 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     We recommend to use the <b>updateOneway</b> setting from the subscribe QoS
     to configure this only for well chosen subscriptions (see requirement interface.subscribe).
     </p>
+   </td>
+   </tr>
+   <tr>
+   <td><a NAME="dispatcherActive"></a>dispatcherActive</td>
+   <td>
+    <p>
+    Setting the <b>dispatcherActive</b> attribute to <i>false</i> inhibits all callback invocations.
+    You can use this to avoid receiving messages directly after login.
+    When all your client side initialization is done you need to manually activate
+    the callback dispatcher with a administrative command, for example with
+    telnet <pre> set client/receiver/1/?dispatcherActive=true</pre> or a command
+    message <pre>__cmd:?client/receiver/1/?dispatcherActive=true</pre>
+    This setting defaults to <i>true</i>.
+    </p>
+   </td>
+   </tr>
+   <tr>
+   <td>persistence</td>
+   <td>
     <p>
     Once you have made a session persistent (see engine.persistence.session) and you are reconnecting,
     the new connection will ignore the <i>persistent</i> flag. Once made persistent, the session
     will remain persistent.
     </p>
+   </td>
+   </tr>
+   </table>
    </example>
 
    <example lang="XML" type="HTML">
@@ -255,6 +303,24 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
 
 });
       </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h3><a NAME="dispatcherActiveExample"></a>Callback activation</h3>
+      <p>
+      This console example shows how to play with the callback activation setting,
+      which allows to inhibit sending of queued callback messages during login:
+      </p>
+      <p><tt> java org.xmlBlaster.Main </tt></p>
+      <p><tt> java javaclients.HelloWorldPublish -destination receiver/1  -numPublish 100 </tt></p>
+      <p><tt> java javaclients.HelloWorldSubscribe -session.name receiver/1 -dispatch/callback/dispatcherActive false </tt></p>
+      <p><tt> java javaclients.HelloWorldPublish -oid __cmd:client/receiver/1/?dispatcherActive=true </tt></p>
+      <p>First start the server and a publisher which sends some PtP messages to the user <i>receiver/1</i>.<br />
+      When <i>receiver/1</i> connects the PtP messages are not send
+      (note <tt>-dispatch/callback/dispatcherActive false</tt>) until we finally
+      send the administrative command <tt>__cmd:client/receiver/1/?dispatcherActive=true</tt>
+      which activates the receivers callback delivery.
+      </p>
    </example>
 
    <configuration>

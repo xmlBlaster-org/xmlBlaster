@@ -79,8 +79,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
-   public DispatchManager(Global glob, I_MsgErrorHandler failureListener, I_MsgSecurityInterceptor securityInterceptor,
-                          I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener, AddressBase[] addrArr) throws XmlBlasterException {
+   public DispatchManager(Global glob, I_MsgErrorHandler failureListener,
+                          I_MsgSecurityInterceptor securityInterceptor,
+                          I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
+                          AddressBase[] addrArr) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
 
@@ -97,6 +99,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.connectionStatusListeners = new HashSet();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
       
+      if (addrArr != null) {
+         for (int ii=0; ii<addrArr.length; ii++) { // TODO: How to handle setting of multiple addresses??
+            this.dispatcherActive = addrArr[ii].isDispatcherActive();
+         }
+      }
 
       /*
        * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
@@ -695,6 +702,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       }
 
       if (this.isSyncMode) {
+         return false;
+      }
+
+      if (!this.dispatcherActive) {
          return false;
       }
 

@@ -129,6 +129,8 @@ public class CallbackAddress extends AddressBase
       text += "   -dispatch/" + this.instanceName + "/oneway\n";
       text += "                       Shall the update() messages be send oneway (no\n";
       text += "                       application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/dispatcherActive\n";
+      text += "                       If false inhibit delivery of callback messages [" + DEFAULT_dispatcherActive + "]\n";
       /*
       text += "   -dispatch/" + this.instanceName + "/compress/type\n";
       text += "                                      With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";

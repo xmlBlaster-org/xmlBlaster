@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.21 2004/09/27 12:54:30 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**
@@ -29,6 +29,7 @@ const string DEFAULT_type               = Global::getDefaultProtocol(); //"IOR";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
 const bool   DEFAULT_oneway             = false;
+const bool   DEFAULT_dispatcherActive   = true;
 const string DEFAULT_compressType       = "";
 const long   DEFAULT_minSize            = 0L;
 const bool   DEFAULT_ptpAllowed         = true;
@@ -60,6 +61,7 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
    retries_             = defaultRetries_;
    delay_               = defaultDelay_;
    oneway_              = DEFAULT_oneway;
+   dispatcherActive_    = DEFAULT_dispatcherActive;
    compressType_        = DEFAULT_compressType;
    minSize_             = DEFAULT_minSize;
    ptpAllowed_          = DEFAULT_ptpAllowed;
@@ -347,6 +349,16 @@ void AddressBase::setOneway(bool oneway)
    oneway_ = oneway;
 }
 
+bool AddressBase::isDispatcherActive() const
+{
+   return dispatcherActive_;
+}
+
+void AddressBase::setDispatcherActive(bool dispatcherActive)
+{
+   dispatcherActive_ = dispatcherActive;
+}
+
 /**
  * @param Set if we accept point to point messages
  */
@@ -481,6 +493,10 @@ string AddressBase::toXml(const string& extraOffset) const
        string onewayStr = "false";
        if (oneway()) onewayStr = "true";
        ret += string(" oneway='") + onewayStr + string("'");
+   }
+   if (DEFAULT_dispatcherActive != isDispatcherActive()) {
+       string dispatcherActiveStr = (isDispatcherActive()) ? "true" : "false";
+       ret += string(" dispatcherActive='") + dispatcherActiveStr + string("'");
    }
    if (DEFAULT_useForSubjectQueue != useForSubjectQueue_) {
        string useForSubjectQueueStr = "false";

@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.18 2004/09/27 12:54:30 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**
@@ -92,6 +92,11 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
             bool ret = false;
             if (tmpValue == "true") ret = true;
             address_->setOneway(ret);
+         }
+         else if (tmpName.compare("dispatcherActive") == 0) {
+            bool ret = false;
+            if (tmpValue == "true") ret = true;
+            address_->setDispatcherActive(ret);
          }
          else if (tmpName.compare("useForSubjectQueue") == 0) {
             bool ret = false;
@@ -217,6 +222,7 @@ int main(int args, char* argv[])
       a.setRetries(17);
       a.setDelay(7890l);
       a.setOneway(true);
+      a.setDispatcherActive(false);
       a.setSecretSessionId("0x4546hwi89");
       cout << a.toXml() << endl;
 

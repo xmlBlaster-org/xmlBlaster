@@ -30,6 +30,7 @@ extern Dll_Export const std::string    DEFAULT_type;
 extern Dll_Export const std::string    DEFAULT_version;
 extern Dll_Export const long      DEFAULT_collectTime;
 extern Dll_Export const bool      DEFAULT_oneway;
+extern Dll_Export const bool      DEFAULT_dispatcherActive;
 extern Dll_Export const std::string    DEFAULT_compressType;
 extern Dll_Export const long      DEFAULT_minSize;
 extern Dll_Export const bool      DEFAULT_ptpAllowed;
@@ -99,6 +100,13 @@ protected:
     */
    bool oneway_; // = DEFAULT_oneway;
    
+   /**
+    * Control if the dispatcher is activated on login, i.e. if it is 
+    * able to deliver asynchronous messages from the queue.
+    * defaults to true
+    */
+   bool dispatcherActive_; // = DEFAULT_dispatcherActive;
+
    /** Compress messages if set to "gzip" or "zip" */
    std::string compressType_; // = DEFAULT_compressType;
    
@@ -147,6 +155,7 @@ protected:
       retries_             = addr.retries_;
       delay_               = addr.delay_;
       oneway_              = addr.oneway_;
+      dispatcherActive_    = addr.dispatcherActive_;
       compressType_        = addr.compressType_;
       minSize_             = addr.minSize_;
       ptpAllowed_          = addr.ptpAllowed_;
@@ -337,6 +346,18 @@ public:
     * @param oneway false is default
     */
    void setOneway(bool oneway);
+
+   /**
+    * Inhibits/activates the delivery of asynchronous dispatches of messages.
+    * @param dispatcherActive
+    */
+   void setDispatcherActive(bool dispatcherActive);
+   
+   /**
+    * @return true if the dispatcher is currently activated, i.e. if it is 
+    * able to deliver asynchronous messages from the queue.
+    */
+   bool isDispatcherActive() const;
 
    /**
     * @param Set if we accept point to point messages

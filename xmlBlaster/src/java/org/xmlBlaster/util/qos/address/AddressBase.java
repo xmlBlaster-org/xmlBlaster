@@ -91,6 +91,14 @@ public abstract class AddressBase
    public static final boolean DEFAULT_oneway = false;
    protected PropBoolean oneway = new  PropBoolean(DEFAULT_oneway);
    
+   public static final boolean DEFAULT_dispatcherActive = true;
+   /**
+    * Control if the dispatcher is activated on login, i.e. if it is 
+    * able to deliver asynchronous messages from the callback queue.
+    * defaults to true
+    */
+   protected PropBoolean dispatcherActive = new PropBoolean(DEFAULT_dispatcherActive);
+
    /** Compress messages if set to "gzip" or "zip" */
    public static final String DEFAULT_compressType = "";
    protected PropString compressType = new PropString("compressType", DEFAULT_compressType);
@@ -142,6 +150,12 @@ public abstract class AddressBase
       setRootTag(rootTag);
    }
 
+   /**
+    * @throws IllegalArgumentException Not implemented. 
+    */
+   public Object clone() {
+      throw new IllegalArgumentException("AddressBase.clone() is not implemented");
+   }
 
    /**
     * Configure property settings. 
@@ -189,6 +203,7 @@ public abstract class AddressBase
       this.retries.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "retries");
       this.delay.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "delay");
       this.oneway.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "oneway");
+      this.dispatcherActive.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "dispatcherActive");
       this.compressType.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "compress/type");
       this.minSize.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "compress/minSize");
       this.ptpAllowed.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "ptpAllowed");
@@ -391,7 +406,7 @@ public abstract class AddressBase
     */
    public String getSettings() {
       StringBuffer buf = new StringBuffer(126);
-      buf.append("type=").append(getType()).append(" oneway=").append(oneway()).append(" burstMode.collectTime=").append(getCollectTime());
+      buf.append("type=").append(getType()).append(" oneway=").append(oneway()).append(" dispatcherActive=").append(isDispatcherActive()).append(" burstMode.collectTime=").append(getCollectTime());
       return buf.toString();
    }
 
@@ -708,6 +723,22 @@ public abstract class AddressBase
    }
 
    /**
+    * Inhibits/activates the delivery of asynchronous dispatches of messages.
+    * @param dispatcherActive
+    */
+   public void setDispatcherActive(boolean dispatcherActive) {
+      this.dispatcherActive.setValue(dispatcherActive);
+   }
+   
+   /**
+    * @return true if the dispatcher is currently activated, i.e. if it is 
+    * able to deliver asynchronous messages from the queue.
+    */
+   public boolean isDispatcherActive() {
+      return this.dispatcherActive.getValue();
+   }
+
+   /**
     * @param Set if we accept point to point messages
     */
    public void setPtpAllowed(boolean ptpAllowed) {
@@ -867,6 +898,9 @@ public abstract class AddressBase
                else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
                   setOneway(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
+               else if( attrs.getQName(i).equalsIgnoreCase("dispatcherActive") ) {
+                  setDispatcherActive(new Boolean(attrs.getValue(i).trim()).booleanValue());
+               }
                else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
                   this.useForSubjectQueue.setValue(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
@@ -1022,6 +1056,8 @@ public abstract class AddressBase
           sb.append(" delay='").append(getDelay()).append("'");
       if (this.oneway.isModified())
           sb.append(" oneway='").append(oneway()).append("'");
+      if (this.dispatcherActive.isModified())
+          sb.append(" dispatcherActive='").append(isDispatcherActive()).append("'");
       if (this.useForSubjectQueue.isModified())
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue.getValue()).append("'");
       if (this.dispatchPlugin.isModified())

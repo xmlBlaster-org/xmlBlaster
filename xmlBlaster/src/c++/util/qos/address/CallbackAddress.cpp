@@ -27,6 +27,7 @@ inline void CallbackAddress::initialize()
    setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay", defaultDelay_));
    useForSubjectQueue(global_.getProperty().getBoolProperty("dispatch/callback/useForSubjectQueue", DEFAULT_useForSubjectQueue));
    setOneway(global_.getProperty().getBoolProperty("dispatch/callback/oneway", DEFAULT_oneway));
+   setDispatcherActive(global_.getProperty().getBoolProperty("dispatch/callback/dispatcherActive", DEFAULT_dispatcherActive));
    setCompressType(global_.getProperty().getStringProperty("dispatch/callback/compress.type", DEFAULT_compressType));
    setMinSize(global_.getProperty().getLongProperty("dispatch/callback/compress.minSize", DEFAULT_minSize));
    setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/callback/ptpAllowed", DEFAULT_ptpAllowed));
@@ -41,6 +42,7 @@ inline void CallbackAddress::initialize()
       setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay["+nodeId_+"]", delay_));
       useForSubjectQueue(global_.getProperty().getBoolProperty("dispatch/callback/useForSubjectQueue["+nodeId_+"]", useForSubjectQueue_));
       setOneway(global_.getProperty().getBoolProperty("dispatch/callback/oneway["+nodeId_+"]", oneway_));
+      setDispatcherActive(global_.getProperty().getBoolProperty("dispatch/callback/dispatcherActive["+nodeId_+"]", dispatcherActive_));
       setCompressType(global_.getProperty().getStringProperty("dispatch/callback/compress.type["+nodeId_+"]", compressType_));
       setMinSize(global_.getProperty().getLongProperty("dispatch/callback/compress.minSize["+nodeId_+"]", minSize_));
       setPtpAllowed(global_.getProperty().getBoolProperty("dispatch/callback/ptpAllowed["+nodeId_+"]", ptpAllowed_));
@@ -116,6 +118,9 @@ string CallbackAddress::usage()
    if (DEFAULT_oneway) help = "true";
    text += string("   -dispatch/callback/oneway [") + help + string("]\n");
    text += string("                       Shall the update() messages be send oneway (no application level ACK).\n");
+
+   text += string("   -dispatch/callback/dispatcherActive [") + lexical_cast<string>(DEFAULT_dispatcherActive) + string("]\n");
+   text += string("                       If false inhibit delivery of callback messages.\n");
 
    text += string("   -dispatch/callback/pingInterval [") + lexical_cast<std::string>(defaultPingInterval_) + string("]\n");
    text += string("                       Pinging every given milliseconds.\n");

@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
+ o #13300 Added dispatcherActive property to ConnectQos to support
+   inhibiting callbacks on login, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#dispatcherActive
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#dispatcherActiveExample
+
+ o #13299 C++ client library
+   Fixed to send command line callback address property settings with ConnectQos
+
  o #13295 Added new server methods for administrative access:
     getServerTimestampMillis(): Access current server time in milli seconds
     getServerTimestamp(): Access current server time, e.g. "2005-03-21 11:18:12.622"
