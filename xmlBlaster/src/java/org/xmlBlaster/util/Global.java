@@ -3,13 +3,14 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.3 2002/03/17 07:26:58 ruff Exp $
+Version:   $Id: Global.java,v 1.4 2002/04/19 10:55:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 
 import java.util.Properties;
@@ -29,8 +30,8 @@ public class Global
    private final static String ME = "Global";
 
    private String[] args;
-   private XmlBlasterProperty property = new XmlBlasterProperty();
-   private Log log = new Log();
+   protected XmlBlasterProperty property = new XmlBlasterProperty();
+   protected Log log = new Log();
 
    private Map nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
 
