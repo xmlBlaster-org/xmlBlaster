@@ -58,6 +58,10 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /** It it is a query subscription, we remember all subscriptions which resulted from this query */
    private Vector childrenVec = null;
 
+   /** If duplicateUpdates=false is set we can check here how often this message is
+       subscribed from the same client */
+   private int subscribeCounter = 0; // is incr/decr by fireSubscribeEvent() and fireUnSubscribeEvent()
+
    private static long uniqueCounter = 1L;
 
    private long creationTime = System.currentTimeMillis();
@@ -116,6 +120,29 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getUniqueKey() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
+   /**
+    * If same client subscribes multiple times on same message but wants
+    * to suppress multi-updates (e.g. cluster node clients).
+    */
+   public void incrSubscribeCounter() {
+      subscribeCounter++;
+   }
+
+   /**
+    * If same client subscribes multiple times on same message but wants
+    * to suppress multi-updates (e.g. cluster node clients).
+    */
+   public void decrSubscribeCounter() {
+      subscribeCounter--;
+   }
+
+   /**
+    * If same client subscribes multiple times on same message but wants
+    * to suppress multi-updates (e.g. cluster node clients).
+    */
+   public int getSubscribeCounter() {
+      return subscribeCounter;
+   }
    /**
     * The session info of the client who initiated this subscription
     */
