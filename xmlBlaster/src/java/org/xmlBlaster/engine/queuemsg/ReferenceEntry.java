@@ -193,7 +193,6 @@ public class ReferenceEntry extends MsgQueueEntry
             else {
                log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
             }
-            msgUnitWrapper = null;
          }
          if (preDestroyed && msgUnitWrapper != null) {
             msgUnitWrapper.toDestroyed();
