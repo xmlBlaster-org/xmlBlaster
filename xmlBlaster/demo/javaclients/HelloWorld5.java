@@ -62,11 +62,20 @@ public class HelloWorld5
                      PublishQosWrapper pq = new PublishQosWrapper();
                      pq.addDestination(new Destination(updateQos.getSender()));
                      MessageUnit msgUnit = new MessageUnit(pk.toXml(), "ACK".getBytes(), pq.toXml());
-                     PublishRetQos retQos = receiver.publish(msgUnit);
-                     log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                     boolean oneway = false; // just for demo, you can try a variant with never blocking oneway
+                     if (oneway) {
+                        MessageUnit[] arr = new MessageUnit[1];
+                        arr[0] = msgUnit;
+                        receiver.publishOneway(arr);
+                        log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                     }
+                     else {
+                        PublishRetQos retQos = receiver.publish(msgUnit);
+                        log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                     }
                   }
                   catch (XmlBlasterException e) {
-                     log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed");
+                     log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed: " + e.toString());
                   }
 
                   return "";
