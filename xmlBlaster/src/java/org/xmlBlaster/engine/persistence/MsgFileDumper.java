@@ -230,6 +230,7 @@ public final class MsgFileDumper
 
    /** Invoke:  java org.xmlBlaster.engine.persistence.MsgFileDumper */
    public static void main(String args[]) {
+      /*
       try {
          org.xmlBlaster.engine.Global glob = new org.xmlBlaster.engine.Global();
          org.xmlBlaster.client.key.PublishKey key = 
@@ -250,6 +251,7 @@ public final class MsgFileDumper
          System.out.println(e.toString());
          e.printStackTrace();
       }
+      */
    }
 }
 
