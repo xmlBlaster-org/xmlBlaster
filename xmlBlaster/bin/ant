@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ -f $HOME/.antrc ] ; then 
+if [ -f "$HOME/.antrc" ] ; then 
   . $HOME/.antrc
 fi
 
@@ -131,4 +131,4 @@ if $cygwin; then
   LOCALCLASSPATH=`cygpath --path --windows "$LOCALCLASSPATH"`
 fi
 
-$JAVACMD -classpath "$LOCALCLASSPATH" -Dant.home="${ANT_HOME}" $ANT_OPTS org.apache.tools.ant.Main "$@"
+$JAVACMD -classpath "$LOCALCLASSPATH" -Dant.home="${ANT_HOME}" $ANT_OPTS org.apache.tools.ant.Main $ANT_ARGS "$@"
