@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.51 $
+# $Revision: 1.52 $
 #-----------------------------------------------------------
 
 
@@ -188,6 +188,13 @@ if [ ${JIKES_HOME:=""} != "" ] ; then
       ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
    fi
 fi
+
+
+#-------- Running with TowerJ native compiler -
+TOWERJ_JAVA_HOME=${JDK_HOME}
+export TOWERJ_JAVA_HOME
+PATH=${PATH}:/opt/TowerJ/bin/x86-linux
+export PATH
 
 
 return 0
