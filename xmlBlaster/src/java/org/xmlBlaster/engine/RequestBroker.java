@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.84 2000/12/12 08:52:32 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.85 2000/12/12 21:41:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.84 $
+ * @version $Revision: 1.85 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -677,8 +677,6 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       if (! publishQoS.isFromPersistenceStore())
          publishQoS.setSender(clientInfo.getLoginName());
-
-      Log.info(ME, publishQoS.toXml()); // !!!
 
       if (publishQoS.isPubSubStyle()) {
          if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
