@@ -235,18 +235,18 @@ int main(int args, char *argc[])
       delete testObj;
       testObj = NULL;
    }
-        catch (XmlBlasterException& err) {
-           cout << "exception occurred in main string = " << err.getMessage() << endl;
-        }
-        catch (const exception& err) {
-           cout << "exception occurred in main string = " << err.what() << endl;
-        }
-        catch (const string& err) {
-           cout << "exception occurred in main string = " << err << endl;
-        }
-        catch (const char* err) {
+   catch (XmlBlasterException& err) {
+      cout << "exception occurred in main string = " << err.getMessage() << endl;
+   }
+   catch (const exception& err) {
+      cout << "exception occurred in main string = " << err.what() << endl;
+   }
+   catch (const string& err) {
+      cout << "exception occurred in main string = " << err << endl;
+   }
+   catch (const char* err) {
       cout << "exception occurred in main char* = " << err << endl;
-        }
+   }
    catch (...) {
       cout << "exception occurred in main"<< endl;
    }
