@@ -8,7 +8,6 @@ package org.xmlBlaster.engine.queuemsg;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;

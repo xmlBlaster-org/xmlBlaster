@@ -1652,7 +1652,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          return publishReturnQos.toXml(); // Use the return value of the cluster master node
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "Throwing execption in publish: " + e.toXml()); // Remove again
+         if (log.TRACE) log.trace(ME, "Throwing exception in publish: " + e.toXml()); // Remove again
          throw e;
       }
       catch (Throwable e) {
