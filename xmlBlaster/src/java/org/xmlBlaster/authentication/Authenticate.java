@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.33 2000/09/15 17:16:12 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.34 2000/10/21 20:50:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -85,7 +85,8 @@ public class Authenticate
                        String xmlQoS_literal, String sessionId)
                           throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + toXml().toString());
+      if (Log.DUMP) Log.dump(ME, "-------START-login(" + loginName + ", " + sessionId + ")---------\n" + toXml().toString());
+      if (Log.DUMP) Log.dump(ME, xmlQoS_literal);
 
       // !=== CHECK PASSWORD HERE IN FUTURE VERSION ====!
 
@@ -129,6 +130,7 @@ public class Authenticate
 
       fireClientEvent(clientInfo, true);
 
+      Log.info(ME, "Successful login for client " + loginName);
       if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + toXml().toString());
       return sessionId;
    }
