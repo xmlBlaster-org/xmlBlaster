@@ -6,46 +6,56 @@ import javax.swing.*;
 import org.xmlBlaster.engine.helper.Constants;
 import org.jutils.log.LogChannel;
 
+
+/*****************************************************************************
+ * Demonstation of xmlBlaster security basics.
+ * @author <a href="email:wolfgang.kleinertz@doubleSlash.de">Wolfgang Kleinertz</a>
+ *****************************************************************************/
 public class PluginGUI extends JFrame {
-   JPanel contentPane;
-   GridLayout gridLayout1 = new GridLayout();
-   JScrollPane jScrollPane1 = new JScrollPane();
-   Box box1;
-   JScrollPane jScrollPane2 = new JScrollPane();
-   JTextArea inOutput = new JTextArea();
-   JTextArea outOutput = new JTextArea();
-   JLabel serverImage = new JLabel();
-   JScrollPane jScrollPane3 = new JScrollPane();
-   JPanel jPanel1 = new JPanel();
-   JMenuBar jMenuBar1 = new JMenuBar();
-   BorderLayout borderLayout1 = new BorderLayout();
-   JPanel jPanel2 = new JPanel();
-   JLabel actionOut = new JLabel();
-   JLabel actionLabel = new JLabel();
-   FlowLayout flowLayout1 = new FlowLayout();
-   JTabbedPane jTabbedPane1 = new JTabbedPane();
-   JPanel keyTab = new JPanel();
-   JPanel qosTab = new JPanel();
-   JPanel contentTab = new JPanel();
+   JPanel           contentPane;
+   GridLayout       gridLayout1 = new GridLayout();
+   JScrollPane     jScrollPane1 = new JScrollPane();
+   Box                     box1;
+   JScrollPane     jScrollPane2 = new JScrollPane();
+   JTextArea           inOutput = new JTextArea();
+   JTextArea          outOutput = new JTextArea();
+   JLabel           serverImage = new JLabel();
+   JScrollPane     jScrollPane3 = new JScrollPane();
+   JPanel               jPanel1 = new JPanel();
+   JMenuBar           jMenuBar1 = new JMenuBar();
+   BorderLayout   borderLayout1 = new BorderLayout();
+   JPanel               jPanel2 = new JPanel();
+   JLabel             actionOut = new JLabel();
+   JLabel           actionLabel = new JLabel();
+   FlowLayout       flowLayout1 = new FlowLayout();
+   JTabbedPane     jTabbedPane1 = new JTabbedPane();
+   JPanel                keyTab = new JPanel();
+   JPanel                qosTab = new JPanel();
+   JPanel            contentTab = new JPanel();
    JScrollPane outKeyScrollPane = new JScrollPane();
-   JTextArea outKey = new JTextArea();
-   BorderLayout borderLayout2 = new BorderLayout();
-   JScrollPane jScrollPane4 = new JScrollPane();
-   JTextArea outQoS = new JTextArea();
-   BorderLayout borderLayout3 = new BorderLayout();
-   BorderLayout borderLayout4 = new BorderLayout();
-   JScrollPane jScrollPane5 = new JScrollPane();
-   JTextArea outContent = new JTextArea();
-   JPanel jPanel3 = new JPanel();
-   JButton allowButton = new JButton();
-   JButton denyButton = new JButton();
-   JLabel nameLabel = new JLabel("UserId: ");
-   JLabel outName = new JLabel();
+   JTextArea             outKey = new JTextArea();
+   BorderLayout   borderLayout2 = new BorderLayout();
+   JScrollPane     jScrollPane4 = new JScrollPane();
+   JTextArea             outQoS = new JTextArea();
+   BorderLayout   borderLayout3 = new BorderLayout();
+   BorderLayout   borderLayout4 = new BorderLayout();
+   JScrollPane     jScrollPane5 = new JScrollPane();
+   JTextArea         outContent = new JTextArea();
+   JPanel               jPanel3 = new JPanel();
+   JButton          allowButton = new JButton();
+   JButton           denyButton = new JButton();
+   JLabel             nameLabel = new JLabel("UserId: ");
+   JLabel               outName = new JLabel();
 
-   private boolean allowed = false;
-   private Thread sleeper;
+   private boolean               allowed = false;
+   private boolean       threadSuspended = false;
+   private Object  accessDecisionMonitor = new Object();
+   private Thread                sleeper;
+      
 
-   /**Construct the frame*/
+   /**************************************************************************
+    * Construct the frame
+    **************************************************************************/
    public PluginGUI() {
       enableEvents(AWTEvent.WINDOW_EVENT_MASK);
       try {
@@ -55,7 +65,11 @@ public class PluginGUI extends JFrame {
          e.printStackTrace();
       }
    }
-   /**Component initialization*/
+   
+
+   /**************************************************************************
+    * Component initialization
+    **************************************************************************/
    private void jbInit() throws Exception  {
       box1 = Box.createHorizontalBox();
       gridLayout1.setRows(3);
@@ -140,7 +154,11 @@ public class PluginGUI extends JFrame {
       jScrollPane2.getViewport().add(outOutput, null);
       System.out.println("DONE");
    }
-   /**Overridden so we can exit when window is closed*/
+
+
+   /**************************************************************************
+    * Overridden so we can exit when window is closed
+    **************************************************************************/
    protected void processWindowEvent(WindowEvent e) {
       super.processWindowEvent(e);
       if (e.getID() == WindowEvent.WINDOW_CLOSING) {
@@ -149,21 +167,59 @@ public class PluginGUI extends JFrame {
       }
    }
 
+
+   /**************************************************************************
+    * Call as result of a pressed deny-button to reject a subjects attempt
+    * to log in.
+    * <br />
+    * @param e An ActionEvent
+    * @see #allowButton_actionPerformed(ActionEvent e);
+    **************************************************************************/
    void denyButton_actionPerformed(ActionEvent e) {
       allowed = false;
-      if(sleeper!=null) sleeper.resume();
+      //if(sleeper!=null) sleeper.resume();// deprecated -> using the following workaround instead
+      if (sleeper!=null) {
+         synchronized(accessDecisionMonitor) {
+             threadSuspended = false;
+         }
+      }
    }
 
+   
+   /**************************************************************************
+    * Call as result of a pressed allow-button to grant a subject to log in.
+    * <br />
+    * @param e An ActionEvent
+    * @see #denyButton_actionPerformed(ActionEvent e);
+    **************************************************************************/
    void allowButton_actionPerformed(ActionEvent e) {
       allowed = true;
-      if(sleeper!=null) sleeper.resume();
+      //if(sleeper!=null) sleeper.resume();// deprecated -> using the following workaround instead
+      if (sleeper!=null) {
+         synchronized(accessDecisionMonitor) {
+             threadSuspended = false;
+         }
+      }
    }
 
+   
+   /**************************************************************************
+    * Returns the result of decision process. Access granted or rejected.
+    * <br />
+    * @param true: access granted; otherwise false
+    * @see #denyButton_actionPerformed(ActionEvent e);
+    * @see #allowButton_actionPerformed(ActionEvent e);
+    **************************************************************************/
    public synchronized boolean getAccessDecision() {
-
       try {
          sleeper = Thread.currentThread();
-         sleeper.suspend();
+         //sleeper.suspend(); // deprecated -> using the following workaround instead
+         synchronized(accessDecisionMonitor) {
+            threadSuspended = true;
+            while (threadSuspended) {
+               wait();
+            }
+         }
       }
       catch (Exception e) {
       }
@@ -171,14 +227,26 @@ public class PluginGUI extends JFrame {
       return allowed;
    }
 
+
+   /**************************************************************************
+    *
+    * <br />
+    *
+    **************************************************************************/
    public void printName(String name) {
       outName.setText(name);
    }
 
+   
+   /**************************************************************************
+    * Displays actions
+    * <br />
+    * @param key The action type
+    **************************************************************************/
    public void printAction(String key) {
       actionOut.setText(key);
       outKey.disable();
-      if(key.equals("LOGIN")) {
+      if (key.equals("LOGIN")) {
          outKey.setText("");
          outKey.setEditable(false);
          outQoS.setText("");
@@ -208,31 +276,58 @@ public class PluginGUI extends JFrame {
       }
    }
 
+   
+   /**************************************************************************
+    * Displays the key information on screen
+    * <br />
+    * @param QoS The key
+    **************************************************************************/
    public void printKey(String key) {
       outKey.setText(key);
    }
 
+   
+   /**************************************************************************
+    * Displays the content information on screen
+    * <br />
+    * @param QoS The content
+    **************************************************************************/
    public void printContent(String content) {
       outContent.setText(content);
    }
 
+
+   /**************************************************************************
+    * Displays the qos information on screen
+    * <br />
+    * @param QoS The qos
+    **************************************************************************/
    public void printQoS(String qos) {
       outQoS.setText(qos);
    }
 
-
-
+   
+   /**************************************************************************
+    *
+    * <br />
+    *
+    **************************************************************************/
    public void printInputStream(String xmlString) {
 //      inOutput.append(xmlString+"\n\n");
       inOutput.setText(xmlString);
    }
 
 
-
+   /**************************************************************************
+    *
+    * <br />
+    *
+    **************************************************************************/
    public void printOutputStream(String xmlString) {
 //      outOutput.append(xmlString+"\n\n");
       outOutput.setText(xmlString);
    }
+
 
    public static void main(String [] args) {
       PluginGUI frame = new PluginGUI();
