@@ -11,7 +11,7 @@ Example for subscribing to a message:
    - And subscirbe to a message
      (here the actual memory consumption of xmlBlaster):
 
-     jaco org.xmlBlaster.client.reader.SubscribeMessage -oid __sys__TotalMem
+     jaco org.xmlBlaster.client.reader.SubscribeMessage  -name Tim  -passwd secret  -oid __sys__TotalMem
 
 
 How to get help:

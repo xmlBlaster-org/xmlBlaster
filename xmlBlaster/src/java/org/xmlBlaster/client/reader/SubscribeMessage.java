@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.1 2000/03/28 10:26:21 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.2 2000/03/28 11:45:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
- * Subscribe from command line for a message. 
+ * Subscribe from command line for a message.
  * <br />
  * Use this as a command line tool to subscribe for messages from xmlBlaster,
  * for example for debugging reasons.
@@ -153,6 +153,7 @@ public class SubscribeMessage implements I_Callback
 
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
+      Log.plain(ME, "");
       Log.plain(ME, "============= START " + updateKey.getUniqueKey() + " =======================");
       Log.info(ME, "Receiving update of a message ...");
       Log.plain(ME, "<xmlBlaster>");
@@ -164,6 +165,7 @@ public class SubscribeMessage implements I_Callback
       Log.plain(ME, updateQoS.toString());
       Log.plain(ME, "</xmlBlaster>");
       Log.plain(ME, "============= END " + updateKey.getUniqueKey() + " =========================");
+      Log.plain(ME, "");
    }
 
 
