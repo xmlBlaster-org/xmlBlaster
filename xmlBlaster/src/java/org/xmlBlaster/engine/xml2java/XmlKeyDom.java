@@ -219,20 +219,18 @@ public class XmlKeyDom implements I_MergeDomNode
     * <br>
     * @return XML state of XmlKeyDom
     */
-   public StringBuffer printOn() throws XmlBlasterException
-   {
-      return printOn((String)null);
+   public String toXml() throws XmlBlasterException {
+      return toXml((String)null, false);
    }
-
 
    /**
     * Dump state of this object into XML.
     * <br>
     * @param extraOffset indenting of tags
+    * @param stripDeclaration if true '&lt;?xml version="1.0" encoding="UTF-8"?>' is not dumped
     * @return XML state of XmlKeyDom
     */
-   public StringBuffer printOn(String extraOffset) throws XmlBlasterException
-   {
+   public String toXml(String extraOffset, boolean stripDeclaration) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(2048);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -241,11 +239,15 @@ public class XmlKeyDom implements I_MergeDomNode
       try {
          StringTokenizer st = new StringTokenizer(XmlNotPortable.write(xmlKeyDoc).toString(), "\n");
          while (st.hasMoreTokens()) {
-            sb.append(offset).append(Constants.INDENT).append(st.nextToken());
+            String line = st.nextToken().trim();
+            if (stripDeclaration && line.startsWith("<?xml")) {
+               continue;
+            }
+            sb.append(offset).append(Constants.INDENT).append(line);
          }
       } catch (Exception e) { }
       sb.append(offset).append("</XmlKeyDom>\n");
 
-      return sb;
+      return sb.toString();
    }
 }
