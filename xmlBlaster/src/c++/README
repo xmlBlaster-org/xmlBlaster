@@ -18,6 +18,7 @@ HOW TO BUILD THE CLIENT CLASSES:
 - install xerces, lets say in /opt/local/xerces
 - install one c++ implementation of corba (currently MICO or ORBACUS)
   lets say in /opt/local/mico
+     ./configure --prefix /opt/local --disable-mini-stl
 - define the following environment variables if different than the default
   (the given value is the default setting).
 
