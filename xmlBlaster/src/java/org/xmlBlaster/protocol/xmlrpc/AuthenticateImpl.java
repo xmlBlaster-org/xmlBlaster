@@ -11,8 +11,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
-import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.client.LogoutQosWrapper;
 
 
@@ -61,7 +60,7 @@ public class AuthenticateImpl
       ConnectQos connectQos = new ConnectQos(qos_literal);
       connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
 
-      LoginReturnQoS returnQos = authenticate.connect(connectQos);
+      ConnectReturnQos returnQos = authenticate.connect(connectQos);
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
       return returnQos.getSessionId();
    }
@@ -83,9 +82,9 @@ public class AuthenticateImpl
    /**
     * Login to xmlBlaster.
     * @parameter qos_literal See LoginQosWrapper.java
-    * @return The xml string from LoginReturnQoS.java<br />
+    * @return The xml string from ConnectReturnQos.java<br />
     * @see org.xmlBlaster.client.LoginQosWrapper
-    * @see org.xmlBlaster.engine.xml2java.LoginReturnQoS
+    * @see org.xmlBlaster.engine.xml2java.ConnectReturnQos
     */
    public String connect(String qos_literal) throws XmlBlasterException
    {
@@ -95,8 +94,8 @@ public class AuthenticateImpl
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
          ConnectQos connectQos = new ConnectQos(qos_literal);
-         LoginReturnQoS qos = authenticate.connect(connectQos);
-         returnValue = qos.toXml();
+         ConnectReturnQos returnQos = authenticate.connect(connectQos);
+         returnValue = returnQos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {

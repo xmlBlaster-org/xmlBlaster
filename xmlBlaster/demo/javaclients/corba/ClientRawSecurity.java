@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.3 2001/09/04 15:50:13 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.4 2001/09/05 12:21:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
-import org.xmlBlaster.authentication.plugins.InitResultQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 
 import org.omg.CosNaming.*;
 
@@ -126,14 +126,14 @@ public class ClientRawSecurity
             String retXml = authServer.connect(qos);
 
             // Parse the returned string, it contains the server IOR
-            InitResultQos retQos = new InitResultQos(retXml);
+            ConnectReturnQos returnQos = new ConnectReturnQos(retXml);
 
             Log.info(ME, "Login (Connect) done.");
             Log.info(ME, "Used QoS=\n" + qos);
-            Log.info(ME, "Returned QoS=\n" + retQos.toXml());
+            Log.info(ME, "Returned QoS=\n" + returnQos.toXml());
 
             // Get the CORBA handle of xmlBlaster ...
-            String xmlBlasterIOR = retQos.getServerRef();
+            String xmlBlasterIOR = returnQos.getServerRef().getAddress();
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
 
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {

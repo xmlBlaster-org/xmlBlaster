@@ -3,7 +3,7 @@ Name:      HttpIorForCpp.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Writes to standard output the IOR read from the HTTP Server
-Version:   $Id: HttpIorForCpp.java,v 1.4 2001/09/04 17:25:21 ruff Exp $
+Version:   $Id: HttpIorForCpp.java,v 1.5 2001/09/05 12:21:27 ruff Exp $
 Author:    michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -12,10 +12,6 @@ package org.xmlBlaster.util.cpp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
-import org.xmlBlaster.authentication.plugins.InitResultQos;
-import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -38,9 +34,6 @@ public class HttpIorForCpp
       // check if parameter -name <userName> is given at startup of client
       String loginName = XmlBlasterProperty.get("-name", "ben");
       String passwd = XmlBlasterProperty.get("-passwd", "secret");
-
-      LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
-      loginQos.setSecurityQos(new SecurityQos(loginName, passwd));
 
       CorbaConnection con = new CorbaConnection(args);
 
@@ -66,7 +59,7 @@ public class HttpIorForCpp
       Log.plain("\nAvailable options:");
       Log.plain("   -name               The login name [ClientSub].");
       Log.plain("   -passwd             The login name [secret].");
-      XmlBlasterConnection.usage();
+      CorbaConnection.usage();
       Log.usage();
       Log.exit("", "Example: jaco org.xmlBlaster.util.cpp.HttpIorForCpp -name Jeff\n");
    }

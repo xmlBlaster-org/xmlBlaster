@@ -1,7 +1,22 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.xx [xx, xx 2001]
-==============================
+Changes for 0.79c [Sep, 05 2001]
+================================
+
+ - Remove your old xmlBlaster.properties and jacorb.properties
+   and orb.properties files.
+   Use the new files from directory xmlBlaster/config
+   if wanted.
+
+ - Backward compatibility:
+   * Clients accessing xmlBlaster directly (C++,Python,Perl)
+     will run with old xmlBlaster servers.
+   * Clients using the Java helper classes will only connect
+     to the new xmlBlaster 0.79c, since these classes
+     use the new security plugin.
+
+ - Changed <noPtP/> to <ptp>false</ptp>
+
  - Ported to JacORB 1.3.30
    NOTE: You need to copy the new
       config/jacorb.properties.template

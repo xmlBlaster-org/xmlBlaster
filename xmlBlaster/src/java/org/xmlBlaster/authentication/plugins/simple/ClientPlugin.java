@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.simple;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 
@@ -20,10 +20,10 @@ import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
  *    the importMessage() and exportMessage() methods do nothing.
  * @see org.xmlBlaster.authentication.plugins.demo.SecurityQos
  */
-public class ClientHelper implements I_ClientHelper {
-   public static final String ME = "ClientHelper";
+public class ClientPlugin implements I_ClientPlugin {
+   public static final String ME = "ClientPlugin";
 
-   public ClientHelper() {
+   public ClientPlugin() {
    }
 
    public String getType()

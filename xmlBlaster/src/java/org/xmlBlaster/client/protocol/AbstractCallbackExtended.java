@@ -3,14 +3,14 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.4 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.5 2001/09/05 12:21:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -34,7 +34,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    {
    }
 
-   abstract I_ClientHelper getSecurityPlugin();
+   abstract I_ClientPlugin getSecurityPlugin();
 
    /**
     * It parses the string literals passed in the argument list and calls
@@ -53,7 +53,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    public void update(String loginName, String updateKeyLiteral, byte[] content,
                       String updateQoSLiteral) throws XmlBlasterException
    {
-      I_ClientHelper secPlgn = getSecurityPlugin();
+      I_ClientPlugin secPlgn = getSecurityPlugin();
       if (secPlgn != null) {
          updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
          content = secPlgn.importMessage(content);

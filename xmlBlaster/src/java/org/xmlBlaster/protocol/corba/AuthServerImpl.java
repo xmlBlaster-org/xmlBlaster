@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.15 2001/09/05 10:05:32 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.16 2001/09/05 12:21:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -16,6 +16,7 @@ import org.xmlBlaster.protocol.corba.authenticateIdl.*;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.client.LogoutQosWrapper;
 import org.xmlBlaster.engine.xml2java.*;
@@ -144,7 +145,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
 
          // No login using the connect() method ...
-         LoginReturnQoS returnQos = connect(loginQos);
+         ConnectReturnQos returnQos = connect(loginQos);
 
          // Build return handle ...
          ServerRef ref = returnQos.getServerRef();
@@ -173,9 +174,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       }
    }
 
-   private LoginReturnQoS connect(ConnectQos loginQos) throws XmlBlasterException
+   private ConnectReturnQos connect(ConnectQos loginQos) throws XmlBlasterException
    {
-      LoginReturnQoS returnQos = null;
+      ConnectReturnQos returnQos = null;
       String sessionId = null;
 
       StopWatch stop = null; if (Log.TIME) stop = new StopWatch();

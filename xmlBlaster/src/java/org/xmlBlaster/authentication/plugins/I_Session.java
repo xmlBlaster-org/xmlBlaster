@@ -7,7 +7,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * @author  W. Kleinertz
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/05 12:21:26 $)
  */
 
 public interface I_Session {
@@ -17,7 +17,7 @@ public interface I_Session {
     * E.g.: An implementation could include authentication etc.
     * <p/>
     * @param String A qos-literal. The meaning will be defined by the real implementation.
-    * @return String Like the securityQoS param, but the other direcrion.
+    * @return String Like the securityQoS param, but the other direction.
     * @exception XmlBlasterException The initialization failed (key exchange, authentication ... failed)
     */
    public String init(String securityQoS) throws XmlBlasterException;

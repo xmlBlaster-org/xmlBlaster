@@ -3,16 +3,16 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.25 2001/09/04 15:11:37 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.26 2001/09/05 12:21:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.authentication.plugins.InitResultQos;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
@@ -21,6 +21,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
@@ -66,7 +67,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -92,7 +93,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    protected CorbaCallbackServer callback = null;
    protected String loginName = ""; //null;
    private   String passwd = null; //null;
-   protected LoginQosWrapper loginQos = null;
+   protected ConnectQos loginQos = null;
 
    private   String               sessionId = null;
 
@@ -398,7 +399,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param qos       The Quality of Service for this client, you may pass 'null' for default behavior
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, LoginQosWrapper qos) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       login(loginName, passwd, qos, null);
    }
@@ -421,7 +422,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       this.ME = "CorbaConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "login() ...");
@@ -434,7 +435,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       this.passwd=passwd;
 
       if (qos == null)
-         this.loginQos = new LoginQosWrapper();
+         this.loginQos = new ConnectQos();
       else
          this.loginQos = qos;
 
@@ -464,7 +465,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
-   public void connect(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -507,10 +508,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
             xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
          }
          else {
-            String retQos = authServer.connect(loginQos.toXml());
-            InitResultQos wrapper = new InitResultQos(retQos);
-            sessionId = wrapper.getSessionId();
-            String xmlBlasterIOR = wrapper.getServerRef();
+            String tmp = authServer.connect(loginQos.toXml());
+            ConnectReturnQos returnQos = new ConnectReturnQos(tmp);
+            sessionId = returnQos.getSessionId();
+            String xmlBlasterIOR = returnQos.getServerRef().getAddress();
 
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          }

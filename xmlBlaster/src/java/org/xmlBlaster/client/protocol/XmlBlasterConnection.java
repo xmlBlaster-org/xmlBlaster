@@ -31,7 +31,7 @@ import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 import java.applet.Applet;
@@ -84,9 +84,9 @@ import java.util.Iterator;
  * If a client side security plugin is specified in xmlBlaster.properties
  * or on command line, this will be loaded and used here. All xmlBlaster invocations
  * will be intercepted with your supplied plugin.<br />
- * Your plugin must implement the interfaces I_ClientHelper and I_SecurityQos
+ * Your plugin must implement the interfaces I_ClientPlugin and I_SecurityQos
  *
- * @see org.xmlBlaster.authentication.plugins.I_ClientHelper
+ * @see org.xmlBlaster.authentication.plugins.I_ClientPlugin
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see testsuite.org.xmlBlaster.TestFailSave
  *
@@ -141,7 +141,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private Object pollingMonitor = new Object();
 
    /** Client side helper classes to load the authentication xml string */
-   private I_ClientHelper secPlgn = null;
+   private I_ClientPlugin secPlgn = null;
 
    /** This map contains the registered callback interfaces for given subscriptions.
        The key is the subscription ID */
@@ -249,7 +249,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
    }
 
-   I_ClientHelper getSecurityPlugin()
+   I_ClientPlugin getSecurityPlugin()
    {
       return secPlgn;
    }

@@ -5,7 +5,7 @@ import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -36,7 +36,7 @@ public class PluginLoader {
    private  static final String  ME = "SecurityPluginLoader";
    private  String pluginMechanism = null;
    private  String pluginVersion = null;
-   private  I_ClientHelper plugin = null;
+   private  I_ClientPlugin plugin = null;
    private  static final PluginLoader instance = new PluginLoader();
 
    private PluginLoader()
@@ -77,9 +77,9 @@ public class PluginLoader {
    /**
     * Get the currently used plugin
     *
-    * @return I_ClientHelper
+    * @return I_ClientPlugin
     */
-   public I_ClientHelper getCurrentClientPlugin() throws XmlBlasterException
+   public I_ClientPlugin getCurrentClientPlugin() throws XmlBlasterException
    {
       if(plugin!=null) return plugin;
 
@@ -91,10 +91,10 @@ public class PluginLoader {
     * <p/>
     * @param String The type of the plugin, e.g. "a2Blaster"
     * @param String The version of the plugin, e.g. "1.0"
-    * @return I_ClientHelper
+    * @return I_ClientPlugin
     * @exception Exception Thrown if the plugin wasn't loadable or initializable
     */
-   public synchronized I_ClientHelper getClientPlugin(String mechanism, String version) throws XmlBlasterException
+   public synchronized I_ClientPlugin getClientPlugin(String mechanism, String version) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME+".getClientPlugin", "type=" + mechanism + " version=" + version);
       if((pluginMechanism!=null) && (pluginMechanism.equals(mechanism))) {
@@ -118,19 +118,19 @@ public class PluginLoader {
     * @return I_Manager
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   private synchronized I_ClientHelper loadPlugin(String[] param) throws XmlBlasterException
+   private synchronized I_ClientPlugin loadPlugin(String[] param) throws XmlBlasterException
    {
       if(param==null) return null;
       if(param[0]==null) return null;
 
       String[] p = new String[param.length-1];
-      I_ClientHelper clntPlugin = null;
+      I_ClientPlugin clntPlugin = null;
 
       try {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
-         clntPlugin = (I_ClientHelper)cl.newInstance();
-         if (Log.TRACE) Log.trace(ME, "Found I_ClientHelper '"+param[0]+"'");
+         clntPlugin = (I_ClientPlugin)cl.newInstance();
+         if (Log.TRACE) Log.trace(ME, "Found I_ClientPlugin '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
@@ -200,7 +200,7 @@ public class PluginLoader {
       String s = XmlBlasterProperty.get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
       if(s==null) {
          if (mechanism.equals("simple")) // xmlBlaster should run without xmlBlaster.properties
-            s = "org.xmlBlaster.authentication.plugins.simple.ClientHelper";
+            s = "org.xmlBlaster.authentication.plugins.simple.ClientPlugin";
          else
             throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
       }

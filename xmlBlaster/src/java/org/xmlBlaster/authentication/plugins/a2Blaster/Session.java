@@ -12,31 +12,7 @@ import org.a2Blaster.client.api.CorbaConnection;
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2001/09/04 17:25:21 $)
- * Last Changes:
- *    ($Log: Session.java,v $
- *    (Revision 1.4  2001/09/04 17:25:21  ruff
- *    (Renamed InitQos to SecurityQos
- *    (
- *    (Revision 1.3  2001/09/04 11:51:50  ruff
- *    (Integrated Security Framework.
- *    (Now most stuff is working
- *    (
- *    (Revision 1.2  2001/08/30 17:14:49  ruff
- *    (Renamed security stuff
- *    (
- *    (Revision 1.1.2.2  2001/08/22 11:35:42  ruff
- *    (Changed names
- *    (
- *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
- *    (changed naming schema
- *    (
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 10:48:53  kleinertz
- *    (wkl: a2Blaster-plugin added
- *    ()
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2001/09/05 12:21:26 $)
  */
 
 public class Session implements I_Session, I_Subject {

@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 //import org.jutils.JUtilsException;
 
@@ -15,10 +15,10 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  * messages with rot13, we need to decrypt it on the
  * client side with the same algorithm. This is done here.
  */
-public class ClientHelper implements I_ClientHelper {
-   public static final String ME = "ClientHelper";
+public class ClientPlugin implements I_ClientPlugin {
+   public static final String ME = "ClientPlugin";
 
-   public ClientHelper() {
+   public ClientPlugin() {
    }
 
    public String getType()

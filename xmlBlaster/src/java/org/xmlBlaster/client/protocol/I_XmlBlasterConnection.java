@@ -3,14 +3,14 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlasterConnection.java,v 1.5 2001/09/01 09:27:07 ruff Exp $
+Version:   $Id: I_XmlBlasterConnection.java,v 1.6 2001/09/05 12:21:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 
 
 /**
@@ -44,10 +44,10 @@ public interface I_XmlBlasterConnection
     * @param qos The authentication and other informations
     * @param client A handle to your callback if desired or null
     */
-   public void connect(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
+   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
    //public void disconnect(in string sessionId, in serverIdl::XmlType qos)
 
-   public void login(String loginName, String passwd, LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
+   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
 
    public void loginRaw() throws XmlBlasterException, ConnectionException;
 

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.11 2001/09/05 10:05:32 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.12 2001/09/05 12:21:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -14,7 +14,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.client.LogoutQosWrapper;
 
 import java.rmi.RemoteException;
@@ -70,7 +70,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
          ConnectQos connectQos = new ConnectQos(qos_literal);
          connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
 
-         LoginReturnQoS returnQos = authenticate.connect(connectQos);
+         ConnectReturnQos returnQos = authenticate.connect(connectQos);
          if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
          return returnQos.getSessionId();
       }
@@ -82,12 +82,12 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * Login to xmlBlaster.
     * @parameter qos_literal See LoginQosWrapper.java
-    * @return The xml string from LoginReturnQoS.java<br />
-    *         We could return the LoginReturnQoS object as well, but adding
+    * @return The xml string from ConnectReturnQos.java<br />
+    *         We could return the ConnectReturnQos object as well, but adding
     *         attributes to this object would force clients to install the new class
     *         declaration. In future we could use the Jini apporach here.
     * @see org.xmlBlaster.client.LoginQosWrapper
-    * @see org.xmlBlaster.engine.xml2java.LoginReturnQoS
+    * @see org.xmlBlaster.engine.xml2java.ConnectReturnQos
     */
    public String connect(String qos_literal)
                         throws RemoteException, XmlBlasterException
@@ -98,8 +98,8 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         LoginReturnQoS qos = authenticate.connect(connectQos);
-         returnValue = qos.toXml();
+         ConnectReturnQos returnQos = authenticate.connect(connectQos);
+         returnValue = returnQos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {

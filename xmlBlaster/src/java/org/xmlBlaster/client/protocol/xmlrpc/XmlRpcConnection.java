@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.13 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.14 2001/09/05 12:21:27 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -22,7 +22,8 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -52,8 +53,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private String sessionId = null;
    protected String loginName = null;
    private String passwd = null;
-   protected LoginQosWrapper loginQos = null;
-   protected LoginReturnQoS loginReturnQoS = null;
+   protected ConnectQos loginQos = null;
+   protected ConnectReturnQos returnQos = null;
 
    /**
     * Connect to xmlBlaster using XML-RPC.
@@ -136,7 +137,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       this.ME = "XmlRpcConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "Entering login: name=" + loginName);
@@ -148,7 +149,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.loginName = loginName;
       this.passwd = passwd;
       if (qos == null)
-         this.loginQos = new LoginQosWrapper();
+         this.loginQos = new ConnectQos();
       else
          this.loginQos = qos;
 
@@ -162,7 +163,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   public void connect(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -215,9 +216,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via XmlRpc with security plugin" + loginQos.toXml());
             args.addElement(qosStripped);
             sessionId = null;
-            String retQos = (String)getXmlRpcClient().execute("authenticate.connect", args);
-            this.loginReturnQoS = new LoginReturnQoS(retQos);
-            this.sessionId = loginReturnQoS.getSessionId();
+            String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
+            this.returnQos = new ConnectReturnQos(tmp);
+            this.sessionId = returnQos.getSessionId();
          }
          else
          {

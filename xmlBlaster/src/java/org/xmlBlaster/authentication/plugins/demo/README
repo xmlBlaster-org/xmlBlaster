@@ -3,7 +3,7 @@ Check if xmlBlaster.properties contains:
    Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
 
    Security.Client.DefaultPlugin=gui,1.0
-   Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientHelper
+   Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientPlugin
 
 To start the demo invoke:
 

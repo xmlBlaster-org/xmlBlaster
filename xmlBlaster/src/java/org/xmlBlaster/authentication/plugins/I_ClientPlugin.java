@@ -17,7 +17,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p />
  * For every plugin type you need, you need on instance of this class.
  */
-public interface I_ClientHelper {
+public interface I_ClientPlugin {
 
    //public void init(String[] param) throws XmlBlasterException;
 

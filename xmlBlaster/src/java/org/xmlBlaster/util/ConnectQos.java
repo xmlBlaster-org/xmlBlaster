@@ -3,16 +3,17 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.1 2001/09/05 10:05:32 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.2 2001/09/05 12:21:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.QosWrapper;
-import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
@@ -70,24 +71,34 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Passing own sessionId is not yet supported */
    protected String sessionId = null;
 
-   transient protected PluginLoader pMgr;
-   protected I_ClientHelper plugin;
+   protected transient PluginLoader pMgr;
+   protected I_ClientPlugin plugin;
    protected I_SecurityQos securityQos;
-   transient protected String tmpSecurityPluginType = null;
-   transient protected String tmpSecurityPluginVersion = null;
+   protected transient String tmpSecurityPluginType = null;
+   protected transient String tmpSecurityPluginVersion = null;
+
+   /**
+    * The server reference, e.g. the CORBA IOR string or the XML-RPC url
+    * This is returned from XmlBlaster connect() and not used for login
+    */
+   private transient boolean inServerRef = false;
+   private transient ServerRef tmpServerRef = null;
+   protected transient ServerRef[] serverRefArr = null;
+   protected Vector serverRefVec = new Vector();  // <serverRef type="IOR">IOR:000122200...</serverRef>
+
 
    // helper flags for SAX parsing
-   transient private boolean inBurstMode = false;
-   transient private boolean inCompress = false;
-   transient private boolean inPtpAllowed = false;
-   transient private boolean inSecurityService = false;
-   transient private boolean inSession = false;
-   transient private boolean inSessionId = false;
-   transient private boolean inCallback = false;
+   private transient boolean inBurstMode = false;
+   private transient boolean inCompress = false;
+   private transient boolean inPtpAllowed = false;
+   private transient boolean inSecurityService = false;
+   private transient boolean inSession = false;
+   private transient boolean inSessionId = false;
+   private transient boolean inCallback = false;
    
-   transient private CallbackAddress tmpAddr = null;
+   private transient CallbackAddress tmpAddr = null;
    /** <callback type="IOR>IOR:000122200..."</callback> */
-   transient protected CallbackAddress[] addressArr = null;
+   protected transient CallbackAddress[] addressArr = null;
    /** Contains CallbackAddress objects. 
        <callback type="IOR>IOR:000122200..."</callback> */
    protected Vector addressVec = new Vector();
@@ -180,7 +191,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public void setSecurityPluginData(String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
       org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
-      I_ClientHelper plugin = loader.getClientPlugin(mechanism, version);
+      I_ClientPlugin plugin = loader.getClientPlugin(mechanism, version);
       securityQos = plugin.getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
@@ -190,7 +201,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * @param mechanism If null, the current plugin is used
     */
-   protected I_ClientHelper getPlugin(String mechanism, String version) throws XmlBlasterException
+   protected I_ClientPlugin getPlugin(String mechanism, String version) throws XmlBlasterException
    {
       // Performance TODO: for 'null' mechanism every time a new plugin is incarnated
       if (plugin==null || !plugin.getType().equals(mechanism) || !plugin.getVersion().equals(version)) {
@@ -279,6 +290,56 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    public String getSessionId() {
       return sessionId;
+   }
+
+   /**
+    * Accessing the ServerRef addresses of the xmlBlaster server
+    * this may be a CORBA-IOR or email or URL ...
+    * <p />
+    * Only for results of connect() calls (used by clients)
+    * @return An array of ServerRef objects, containing the address and the protocol type
+    *         If no serverRef available, return an array of 0 length
+    */
+   public ServerRef[] getServerRefs()
+   {
+      if (serverRefArr == null) {
+         serverRefArr = new ServerRef[serverRefVec.size()];
+         for (int ii=0; ii<serverRefArr.length; ii++)
+            serverRefArr[ii] = (ServerRef)serverRefVec.elementAt(ii);
+      }
+      return serverRefArr;
+   }
+
+
+   /**
+    * Accessing the ServerRef address of the xmlBlaster server
+    * this may be a CORBA-IOR or email or URL ...
+    * <p />
+    * Only for results of connect() calls (used by clients)
+    * @return The first ServerRef object in the list, containing the address and the protocol type
+    *         If no serverRef available we return null
+    */
+   public ServerRef getServerRef()
+   {
+      if (serverRefArr == null) {
+         serverRefArr = new ServerRef[serverRefVec.size()];
+         for (int ii=0; ii<serverRefArr.length; ii++)
+            serverRefArr[ii] = (ServerRef)serverRefVec.elementAt(ii);
+      }
+      if (serverRefArr.length > 0)
+         return serverRefArr[0];
+
+      return null;
+   }
+
+
+   /**
+    * Adds a server reference
+    */
+   public void setServerRef(ServerRef addr)
+   {
+      serverRefVec.addElement(addr);
+      serverRefArr = null; // reset to be recalculated on demand
    }
 
    /**
@@ -372,6 +433,31 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
 
       //if (Log.TRACE) Log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
+
+      if (name.equalsIgnoreCase("serverRef")) {
+         inServerRef = true;
+         String tmp = character.toString().trim(); // The address (if before inner tags)
+         String type = null;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
+                  type = attrs.getValue(i).trim();
+                  break;
+                }
+            }
+         }
+         if (type == null) {
+            Log.error(ME, "Missing 'serverRef' attribute 'type' in login-qos");
+            type = "IOR";
+         }
+         tmpServerRef = new ServerRef(type);
+         if (tmp.length() > 0) {
+            tmpServerRef.setAddress(tmp);
+            character.setLength(0);
+         }
+         return;
+      }
 
       if (inCallback && !inBurstMode && !inCompress && !inPtpAllowed) {
          String tmp = character.toString().trim(); // The address
@@ -559,6 +645,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
       //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
 
+      if (name.equalsIgnoreCase("serverRef")) {
+         inServerRef = false;
+         String tmp = character.toString().trim(); // The address (if after inner tags)
+         if (tmpServerRef != null) {
+            if (tmp.length() > 0) tmpServerRef.setAddress(tmp);
+            serverRefVec.addElement(tmpServerRef);
+         }
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("callback")) {
          inCallback = false;
          String tmp = character.toString().trim(); // The address (if after inner tags)
@@ -678,7 +775,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append("<qos>\n");
 
       // <securityService ...
-      if(securityQos!=null) sb.append(securityQos.toXml(offset)); // includes the qos of the ClientSecurityHelper
+      if(securityQos!=null) sb.append(securityQos.toXml("   ")); // includes the qos of the ClientSecurityHelper
 
       sb.append(offset + "   <ptp>").append(ptpAllowed).append("</ptp>");
 
@@ -692,12 +789,18 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
          sb.append(ad.toXml("   ")).append("\n");
       }
+
+      for (int ii=0; ii<serverRefVec.size(); ii++) {
+         ServerRef ref = (ServerRef)serverRefVec.elementAt(ii);
+         sb.append(ref.toXml("   ")).append("\n");
+      }
+
       sb.append("</qos>");
 
       return sb.toString();
    }
 
-   /** For testing: java org.xmlBlaster.client.ConnectQos */
+   /** For testing: java org.xmlBlaster.util.ConnectQos */
    public static void main(String[] args)
    {
       try {
@@ -705,21 +808,21 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          ConnectQos qos = new ConnectQos(new CallbackAddress("IOR"));
          I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos("joe", "secret");
          qos.setSecurityQos(securityQos);
-         System.out.println(qos.toXml());
+         System.out.println("Output from manually crafted QoS:\n" + qos.toXml());
 
 
          String xml =
             "<qos>\n" +
-            "   <securityService type=\"gui\" version=\"3.0\">\n" +
+            "   <securityService type=\"simple\" version=\"1.0\">\n" +
             "      <![CDATA[\n" +
             "         <user>aUser</user>\n" +
             "         <passwd>theUsersPwd</passwd>\n" +
             "      ]]>\n" +
             "   </securityService>\n" +
             "   <ptp>true</ptp>\n" +
-            "   <session timeout='3600000' maxSessions='20'>" +
-            "      <sessionId>anId</sessionId>" +
-            "   </session>" +
+            "   <session timeout='3600000' maxSessions='20'>\n" +
+            "      <sessionId>anId</sessionId>\n" +
+            "   </session>\n" +
             "   <callback type='IOR'>\n" +
             "      <PtP>true</PtP>\n" +
             "      IOR:00011200070009990000....\n" +
@@ -735,13 +838,24 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
             "   <offlineQueuing timeout='3600' />\n" +
+            "   <serverRef type='IOR'>\n" +
+            "      IOR:00011200070009990000....\n" +
+            "   </serverRef>\n" +
+            "   <serverRef type='EMAIL'>\n" +
+            "      et@mars.universe\n" +
+            "   </serverRef>\n" +
+            "   <serverRef type='XML-RPC'>\n" +
+            "      http:/www.mars.universe:8080/RPC2\n" +
+            "   </serverRef>\n" +
             "</qos>\n";
 
+         System.out.println("=====Original XML========\n");
+         System.out.println(xml);
          qos = new ConnectQos(xml);
-         System.out.println("=========================\n");
+         System.out.println("=====Parsed and dumped===\n");
          System.out.println(qos.toXml());
          qos.setSecurityPluginData("simple", "1.0", "joe", "secret");
-         System.out.println("=========================\n");
+         System.out.println("=====Added security======\n");
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
