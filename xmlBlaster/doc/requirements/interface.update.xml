@@ -96,7 +96,7 @@
       <pre>
 &lt;qos> &lt;!-- UpdateQos -->
 
-  &lt;state id='OK'/>
+  &lt;state id='OK'/>  &lt;!-- OK,ERASED etc. see Constants.java -->
 
   &lt;sender>Tim&lt;/sender>
 
@@ -141,9 +141,20 @@
          return "&lt;qos/>";
       }
 
-      System.out.println("Received asynchronous message '" + updateKey.getOid() +
-                   "' state=" + updateQos.getState() +
-                   " content=" + new String(content) + " from xmlBlaster");
+      if (updateQos.isErased()) {
+         System.out.println("Message '" + updateKey.getOid() + " is erased");
+         return "&lt;qos/>";
+      }
+
+      if (updateQos.isOk()) {
+         System.out.println("Received asynchronous message '" + updateKey.getOid() +
+                      "' state=" + updateQos.getState() +
+                      " content=" + new String(content) + " from xmlBlaster");
+      }
+      else {
+         System.out.println("Ignoring asynchronous message '" + updateKey.getOid() +
+                      "' state=" + updateQos.getState() + " is not handled");
+      }
       return "&lt;qos/>";
    }
       </pre>
@@ -168,11 +179,13 @@
    <see type="API">org.xmlBlaster.client.protocol.rmi.RmiCallbackServer</see>
    <see type="API">org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer</see>
 
+   <see type="API">org.xmlBlaster.engine.helper.Constants</see>
+
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>

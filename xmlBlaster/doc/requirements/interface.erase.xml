@@ -31,6 +31,11 @@
          <td>return</td><td>array of string</td><td>An array of XML encoded strings containing status and the deleted messages (see EraseRetQos link below)</td>
          </tr>
       </table>
+
+      <p>
+      Note that erasing a message sends to all subscribers an update
+      with the update QoS state id set to ERASED, see HelloWorld4.java as an example.
+      </p>
    </description>
 
 
@@ -97,7 +102,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
