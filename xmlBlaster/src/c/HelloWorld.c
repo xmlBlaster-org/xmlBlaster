@@ -32,10 +32,10 @@ int main(int argc, char** argv)
    connectQos =
             "<qos>"
             " <securityService type='htpasswd'>"
-            "  <![CDATA["
+            /*"  <![CDATA["*/
             "   <user>fritz</user>"
             "   <passwd>secret</passwd>"
-            "  ]]>"
+            /*"  ]]>"*/
             " </securityService>"
             "</qos>";
 
