@@ -111,12 +111,17 @@ string XmlBlasterException::getLang() const
 
 string XmlBlasterException::getMessage() const
 {
-   string ret = errorCodeStr_ + ", node=" + node_ +
-     ", location=" + location_ + ", lang=" + lang_ +
-     "versionInfo=" + versionInfo_ + ", timestamp=" +
-     timestamp_ + ", stackTrace=" + stackTrace_ +
-     ", embeddedMessage=" + embeddedMessage_ + ", transactionInfo=" +
-     transactionInfo_ + ", original message=" + message_;
+   string ret = errorCodeStr_ ;
+   ret += ", node=" + node_;
+   if (getLocation() != "")        ret += ", location=" + getLocation();
+   if (getLang() != "en")          ret += ", lang=" + getLang();
+   if (getVersionInfo() != "")     ret += ", versionInfo=" + getVersionInfo();
+   if (timestamp_ != "")           ret += ", timestamp=" + getTimestamp();
+   if (getStackTrace() != "")      ret += ", stackTrace=" + getStackTrace();
+   if (getEmbeddedMessage() != "") ret += ", embeddedMessage=" + getEmbeddedMessage();
+   if (getTransactionInfo() != "" && getTransactionInfo() !=  "<transactioninfo/>")
+                                   ret += ", transactionInfo=" + getTransactionInfo();
+   ret += ", original message=" + message_;
   return ret;
 }
 
@@ -130,7 +135,7 @@ string XmlBlasterException::getVersionInfo() const
    return versionInfo_;
 }
 
-string XmlBlasterException::getTimestamp()
+string XmlBlasterException::getTimestamp() const
 {
    if (timestamp_ == "") {
       timestamp_ = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
@@ -235,20 +240,19 @@ XmlBlasterException XmlBlasterException::parseFromString(string fromString)
  *   &lt;/exception>
  * </pre>
  */
-string XmlBlasterException::toXml()
+string XmlBlasterException::toXml() const
 {
-   string buf = "<exception errorCode='" + getErrorCodeStr() + "'>\n" +
-      "   <class>c++ client</class>\n" +
-   "   <node>" + getNode() + "</node>\n" +
-   "   <location>" + getLocation() + "</location>\n" +
-   "   <lang>" + getLang() + "</lang>\n" +
-   "   <message><![CDATA[" + getRawMessage() + "]]></message>\n" +
-   "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n" +
-   "   <timestamp>" + getTimestamp() + "</timestamp>\n" +
-   "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n" +
-   "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n" +
-   //"   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n" +
-   "</exception>";
+   string buf = "<exception errorCode='" + getErrorCodeStr() + "'>\n";
+   if (getNode() != "")            buf += "   <node>" + getNode() + "</node>\n";
+   if (getLocation() != "")        buf += "   <location>" + getLocation() + "</location>\n";
+   if (getLang() != "en")          buf += "   <lang>" + getLang() + "</lang>\n";
+   if (getRawMessage() != "")      buf += "   <message><![CDATA[" + getRawMessage() + "]]></message>\n";
+   if (getVersionInfo() != "")     buf += "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n";
+                                   buf += "   <timestamp>" + getTimestamp() + "</timestamp>\n";
+   if (getStackTraceStr() != "")   buf += "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n";
+   if (getEmbeddedMessage() != "") buf += "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n";
+   //                              buf += "   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n";
+   buf += "</exception>";
    return buf;
 }
 

@@ -53,11 +53,11 @@ class Dll_Export XmlBlasterException
    private:
       const std::string errorCodeStr_;
       const std::string node_;
-      const std::string location_;
+      std::string location_;
       const std::string lang_;
       const std::string message_;
       const std::string versionInfo_;
-      std::string timestamp_;
+      mutable std::string timestamp_;
       std::string stackTrace_;
       std::string embeddedMessage_;
       const std::string transactionInfo_;
@@ -72,7 +72,7 @@ class Dll_Export XmlBlasterException
                        const std::string &location,
                        const std::string &lang="en",
                        const std::string &message="",
-                       const std::string &versionInfo="client-c++",
+                       const std::string &versionInfo="@version@",  // is replaced by ant / build.xml to e.g. "0.85c", see org::xmlBlaster::util::Global.getVersion(),
 //                       org::xmlBlaster::util::Timestamp timestamp=0,
                        const std::string &timestampStr="",
                        const std::string &stackTrace="",
@@ -83,7 +83,7 @@ class Dll_Export XmlBlasterException
                        const std::string &node,
                        const std::string &location,
                        const std::string &lang,
-                       const std::string &versionInfo="client-c++",
+                       const std::string &versionInfo="@version@",  // is replaced by ant / build.xml to e.g. "0.85c", see org::xmlBlaster::util::Global.getVersion(),
 //                       org::xmlBlaster::util::Timestamp timestamp=0,
                        const std::string &timestampStr="",
                        const std::string &stackTrace="",
@@ -96,6 +96,7 @@ class Dll_Export XmlBlasterException
 
    std::string getErrorCodeStr() const;
    std::string getNode() const;
+   void setLocation(const std::string& location) { this->location_ = location; }
    std::string getLocation() const;
    std::string getLang() const;
    std::string getMessage() const;
@@ -114,7 +115,7 @@ class Dll_Export XmlBlasterException
    /**
     * org::xmlBlaster::util::Timestamp when exception was thrown
     */
-   std::string getTimestamp();
+   std::string getTimestamp() const;
 
    /**
     * @return The stack trace or null, e.g.
@@ -167,7 +168,7 @@ class Dll_Export XmlBlasterException
     *   &lt;/exception>
     * </pre>
     */
-   std::string toXml();
+   std::string toXml() const;
 
    /**
     * Returns a std::string containing the stack trace if the system and the
