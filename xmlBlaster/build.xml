@@ -417,6 +417,7 @@ TODO
 
    <!-- =================================================================== -->
    <!-- Compile the xmlBlaster.idl file for the CORBA plugin                -->
+   <!-- Uses ${idl}=org.xmlBlaster.protocol.corba package prefix            -->
    <!-- =================================================================== -->
    <target name="java-corba-idl" depends="prepare" description="Compile xmlBlaster.idl to generate Java stubs and skeletons">
       <echo message="Converting idl..."/>
@@ -430,11 +431,12 @@ TODO
          </then>
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
-            <java classname="${idl.class}" classpath="${cp}" fork="false">
-               <arg line="-p ${idl} -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
+            <java classname="${idl.class}" classpath="${cp}" fork="true">
+               <arg line=" -i2jpackage serverIdl:${idl}.serverIdl -i2jpackage clientIdl:${idl}.clientIdl  -i2jpackage authenticateIdl:${idl}.authenticateIdl -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
             </java>
          </else>
       </if>
+      <echo message="${idl.dir}/xmlBlaster.idl done"/>
    </target>
 
    <!-- =================================================================== -->
@@ -631,18 +633,18 @@ TODO
     <!-- Clean xmlBlaster -->
     <jar destfile="${build.dir}/sar/xmlBlaster.jar">
       <zipfileset src="${build.dir}/xmlBlaster.jar"
-	excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
+        excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
     </jar>
     
     <jar destfile="${build.dir}/xmlBlaster.sar">
       <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
-	includes="jboss-service.xml"
-	prefix="META-INF"/>
+        includes="jboss-service.xml"
+        prefix="META-INF"/>
       <fileset dir="${lib.dir}"
-	includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
+        includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
         />
       <fileset dir="${build.dir}/sar"
-	includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
+        includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
         />
     </jar>
     
@@ -666,7 +668,7 @@ TODO
     <!-- Clean xmlBlaster - uncomment this if you do not run the embedded XmlBlaster in the same server
     <jar destfile="${build.dir}/ra/xmlBlaster.jar">
       <zipfileset src="${build.dir}/xmlBlaster.jar"
-	excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
+        excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
     </jar>-->
     
     <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
@@ -975,6 +977,13 @@ TODO
    <!-- Creates html requirements from doc/requirements/ XML files          -->
    <!-- =================================================================== -->
     <target name="requirements" description="Creates html requirements from doc/requirements/ XML files">
+
+      <!-- Create the errorCode listing requirement first: -->
+      <java classname="org.xmlBlaster.util.enum.ErrorCode" classpath="lib/xmlBlaster.jar:${cp}"
+            dir="${xmlblaster_absolute_home}" failonerror="false" fork="true">
+         <arg line="${req.dir}/admin.errorcodes.listing.xml"/>
+      </java>
+
       <!-- create the all.xml file for overview -->
       <fileset id="req.files"
         dir="${req.dir}"
@@ -2218,7 +2227,7 @@ TODO
    </target>
 
    <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
-      <foreach list="LogRedirect,HelloWorld3"
+      <foreach list="RadarTrack,LogRedirect,HelloWorld3"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
       </foreach>
