@@ -35,6 +35,12 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p>
  * NOTE: Message oid starting with "_" is reserved for xmlBlaster plugins.
  * </p>
+ * <p>
+ * NOTE: The application specific tags and their attributes (like AGENT or DRIVER in the above example)
+ * are received as a 'raw' XML ASCII string in the update() method of a client.
+ * If a client wants to look at it she needs to parse it herself, usually by using an XML parser (DOM or SAX).
+ * Some weird people even use regular expressions to do so.
+ * </p>
  * @see org.xmlBlaster.util.key.MsgKeySaxFactory
  */
 public final class MsgKeyData extends KeyData implements java.io.Serializable, Cloneable
