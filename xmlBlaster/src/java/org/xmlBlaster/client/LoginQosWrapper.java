@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.5 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.6 2000/11/12 13:20:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -22,11 +22,16 @@ import java.util.Vector;
  * A typical <b>publish</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
+ *        &lt;noPtP />
  *        &lt;callback type='IOR'>
  *           IOR:10000010033200000099000010....
  *        &lt;/callback>
  *     &lt;/qos>
  * </pre>
+ * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
+ * you don't need to create the <pre>&lt;callback></pre> element.
+ * This is generated automatically from the XmlBlasterConnection class when instantiating
+ * the callback driver.
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */

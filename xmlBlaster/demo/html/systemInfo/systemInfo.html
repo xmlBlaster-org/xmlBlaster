@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
 COMMENT:
-   This page contains a frameset, the 'northFrame' recevies the
+   This page contains a frameset, the 'northFrame' receives the
    data (system infos from our web server) and draws the
    'cpuinfo' and 'meminfo' frames.
 
@@ -32,17 +32,20 @@ AUTHOR:
 
          /**
           * Opens a window which holds the persistent http connection
+          * After the connection is established, the popup window
+          * will call our loginSucceeded() method below. 
           */
          function openCallBack() {
             winOptions = "height=100,width=350,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
             xmlBlasterWindow = window.open("../persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
          }
-         openCallBack();
+         
+         openCallBack(); // Open the popup window now ...
 
 
          /**
-          * Callback from callbackFrame that the persistent http connection
-          * is established.
+          * Callback from xmlBlasterFrame/callbackFrame that the persistent
+          * http connection is established.
           * Now (and not earlier) we may load our application.
           */
          function loginSucceeded(persistentWindow)
@@ -77,7 +80,7 @@ AUTHOR:
           */
          function cleanup()
          {
-            if ((typeof top.xmlBlasterWindow) != "undefined" && 
+            if ((typeof top.xmlBlasterWindow) != "undefined" &&
                 (typeof top.xmlBlasterWindow.location) != "undefined")
                top.xmlBlasterWindow.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=logout";
          }
