@@ -15,7 +15,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine/xmldb
 #------------------------------------------------------------------------------
 SUB_DIRS = dom file cache 
 LOCAL_FILES = \
-      $(CLASS_DIR)/PDOM.class
+      $(CLASS_DIR)/XmlDb.class
 
 #------------------------------------------------------------------------------
 
