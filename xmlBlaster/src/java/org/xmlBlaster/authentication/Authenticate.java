@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.46 2002/02/14 19:07:04 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.47 2002/02/15 19:10:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -351,14 +351,20 @@ final public class Authenticate implements I_Authenticate
 
          I_Manager securityMgr = plgnLdr.getManager(sessionId);
          I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
-         securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
+         sessionSecCtx.importMessage(qos_literal);
 
          ClientInfo clientInfo = resetClientInfo(sessionId, true);
+
          String loginName = clientInfo.getLoginName();
+
+         securityMgr.releaseSession(sessionId, null);
 
          synchronized(loginNameClientInfoMap) {
             loginNameClientInfoMap.remove(loginName);
          }
+
+         if (aomClientInfoMap.size() != loginNameClientInfoMap.size())
+            Log.error(ME, "Inconsistent client maps, aomClientInfoMap.size()=" + aomClientInfoMap.size() + " and loginNameClientInfoMap.size()=" + loginNameClientInfoMap.size());
 
          Log.info(ME, "Client " + loginName + " (sessionId=" + sessionId + ") successfully disconnected!");
          clientInfo = null;
@@ -565,7 +571,8 @@ final public class Authenticate implements I_Authenticate
       }
 
       if (obj == null) {
-         Log.error(ME+".AccessDenied", "Sorry, sessionId is invalid:");
+         Log.error(ME+".AccessDenied", "Sorry, sessionId '" + sessionId + "' is invalid");
+         (new Exception("")).printStackTrace();
          throw new XmlBlasterException("AccessDenied", "Sorry, sessionId is invalid!");
       }
       ClientInfo clientInfo = (ClientInfo)obj;
@@ -629,8 +636,6 @@ final public class Authenticate implements I_Authenticate
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      if (aomClientInfoMap.size() != loginNameClientInfoMap.size())
-         Log.error(ME, "Inconsistent client maps, aomClientInfoMap.size()=" + aomClientInfoMap.size() + " and loginNameClientInfoMap.size()=" + loginNameClientInfoMap.size());
       Iterator iterator = loginNameClientInfoMap.values().iterator();
 
       sb.append(offset + "<Authenticate>");
