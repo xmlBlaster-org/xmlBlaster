@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.6 2002/08/04 17:10:49 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.7 2002/08/10 19:31:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -147,38 +147,41 @@ public class CbConnection implements I_Timeout
 
       boolean isPing = (userData == null);
 
-      synchronized (this) {
-         if (isPing) {
-            timerKey = null;
-            try {
-               if (log.TRACE) log.trace(ME, "Going to ping client callback server ...");
-               String result = ping("");
-            } catch (XmlBlasterException e) {
-               // is handled in ping() itself
-            }
+      if (isPing) {
+         timerKey = null;
+         try {
+            if (log.TRACE) log.trace(ME, "Going to ping client callback server ...");
+            String result = ping("");
+         } catch (XmlBlasterException e) {
+            // is handled in ping() itself
          }
-         else { // reconnect polling
-            try {
-               if (log.TRACE) log.trace(ME, "Going to check if client callback server is available again ...");
-               cbDriver.init(glob, cbAddress);
-            }
-            catch (XmlBlasterException e) {
-               handleTransition(false, false);
-            }
-            try {
-               ping("");
-            }
-            catch (XmlBlasterException e) {
-            }
+      }
+      else { // reconnect polling
+         try {
+            if (log.TRACE) log.trace(ME, "Going to check if client callback server is available again ...");
+            cbDriver.init(glob, cbAddress);
          }
-      } // synchronized
+         catch (XmlBlasterException e) {
+            handleTransition(false, false);
+         }
+         catch (Throwable e) {
+            log.error(ME, "Callback reconnect polling error: " + e.toString());
+            e.printStackTrace();
+            handleTransition(false, false);
+         }
+         try {
+            ping("");
+         }
+         catch (XmlBlasterException e) {
+         }
+      }
    }
 
    /**
     * Send the messages back to the client. 
     * @return The returned string from the client, for oneway updates it is null
     */
-   public synchronized String[] sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
+   public String[] sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "sendUpdate(msg.length=" + msg.length + ", redeliver=" + redeliver + ")"); 
       if (msg.length == 0) { // assert
@@ -278,7 +281,6 @@ public class CbConnection implements I_Timeout
             else if (isDead()) {   // ignore, not possible
                log.warn(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + " for " + msgQueue.getLoginName() + ": We ignore it.");
             }
-
          }
          else { // error
             if (isDead()) {   // ignore, not possible
@@ -304,14 +306,14 @@ public class CbConnection implements I_Timeout
                }
             }
          }
-      }
+      } // synchronized
    }
 
 
    /**
     * Stop all callback drivers of this client.
     */
-   public final synchronized void shutdown() {
+   public final void shutdown() {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       if (timerKey != null) {
          this.cbPingTimer.removeTimeoutListener(timerKey);
@@ -321,7 +323,6 @@ public class CbConnection implements I_Timeout
       state = IS_DEAD;
       if (cbDriver != null) {
          cbDriver.shutdown();
-         cbDriver = null;
       }
    }
 
