@@ -18,6 +18,8 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
@@ -241,7 +243,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       }
 
       try {
-         log.info(ME, "Publishing " + entries.length + " volatile dead letters");
+         if (log.TRACE) log.trace(ME, "Publishing " + entries.length + " volatile dead letters");
          String[] retArr = new String[entries.length];
          PublishQosWrapper pubQos = new PublishQosWrapper();
          pubQos.isVolatile(true);
@@ -255,6 +257,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   continue;
                }
 
+               log.warn(ME, "Generating dead letter oid=" + entry.getMessageUnitWrapper().getUniqueKey() + " from publisher=" + entry.getPublisherName() +
+                            ", can't deliver to=" + entry.getReceiverName());
                StringBuffer buf = new StringBuffer(256);
                buf.append("<key oid='").append(Constants.OID_DEAD_LETTER).append("'><oid>").append(entry.getMessageUnitWrapper().getUniqueKey()).append("</oid></key>");
                msgUnit.setKey(buf.toString());
@@ -966,7 +970,26 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *
     * @see org.xmlBlaster.engine.xml2java.PublishQos
     */
-   public String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public final String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   {
+      return publish(sessionInfo, xmlKey, msgUnit, publishQos, false);
+   }
+
+   /**
+    * Used for cluster internal updates. 
+    */
+   public final String update(SessionInfo sessionInfo, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
+   {
+      //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
+      XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
+      //log.info(ME, "Dump of cluster update(): " + updateQos.toXml());
+      PublishQos qos = new PublishQos(glob, updateQos);
+      MessageUnit msgUnit = new MessageUnit(key.literal(), content, qos.toXml());
+
+      return publish(sessionInfo, key, msgUnit, qos, true);
+   }
+
+   private final String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos, boolean isClusterUpdate) throws XmlBlasterException
    {
       try {
          if (msgUnit == null || publishQos==null || xmlKey==null) {
@@ -974,14 +997,15 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          }
 
-         if (log.CALL) log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' ...");
-         if (log.DUMP) log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQos.toXml());
+         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' ...");
+         if (log.DUMP) log.dump(ME, "Receiving " + (isClusterUpdate?"cluster update ":"") + " message in publish()\n" + xmlKey.literal() + "\n" + publishQos.toXml());
 
          String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
 
          if (! publishQos.isFromPersistenceStore()) {
 
-            publishQos.setSender(sessionInfo.getLoginName());
+            if (publishQos.getSender() == null) // In cluster routing don't overwrite the original sender
+               publishQos.setSender(sessionInfo.getLoginName());
 
             if (!myselfLoginName.equals(sessionInfo.getLoginName())) { // TODO: allow for cluster internal messages?
                int hopCount = publishQos.count(glob.getNodeId());
@@ -1011,18 +1035,20 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
 
                      if (useCluster) { // cluster support - forward message to master
-                        try {
-                           String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                           //Thread.currentThread().dumpStack();
-                           if (ret != null) return ret;
-                        }
-                        catch (XmlBlasterException e) {
-                           if (e.id.equals("ClusterManager.PluginFailed")) {
-                              useCluster = false;
+                        if (!isClusterUpdate) {
+                           try {
+                              String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                              //Thread.currentThread().dumpStack();
+                              if (ret != null) return ret;
                            }
-                           else {
-                              e.printStackTrace();
-                              throw e;
+                           catch (XmlBlasterException e) {
+                              if (e.id.equals("ClusterManager.PluginFailed")) {
+                                 useCluster = false;
+                              }
+                              else {
+                                 e.printStackTrace();
+                                 throw e;
+                              }
                            }
                         }
                      }
@@ -1034,18 +1060,20 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      msgUnitHandler = (MessageUnitHandler)obj;
 
                      if (useCluster) { // cluster support - forward message to master
-                        MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
-                        try {
-                           String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                           //Thread.currentThread().dumpStack();
-                           if (ret != null) return ret;
-                        }
-                        catch (XmlBlasterException e) {
-                           if (e.id.equals("ClusterManager.PluginFailed")) {
-                              useCluster = false;
+                        if (!isClusterUpdate) {
+                           MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                           try {
+                              String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                              //Thread.currentThread().dumpStack();
+                              if (ret != null) return ret;
                            }
-                           else
-                              throw e;
+                           catch (XmlBlasterException e) {
+                              if (e.id.equals("ClusterManager.PluginFailed")) {
+                                 useCluster = false;
+                              }
+                              else
+                                 throw e;
+                           }
                         }
                      }
 
