@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.27 2002/06/15 16:01:58 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.28 2002/06/15 16:57:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -144,7 +144,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public synchronized void deActivate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering deActivate");
-      log.warn(ME, "Implement deActivate()");
+      if (log.TRACE) log.trace(ME, "Implement deActivate()");
    }
 
    /**
