@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $
+Version:   $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -15,9 +15,9 @@ Version:   $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -59,6 +59,7 @@ Global::~Global()
       delete property_;
       delete cbServerPluginManager_;
       delete pingTimer_;
+      delete dispatchManager_;
       logMap_.erase(logMap_.begin(), logMap_.end());
    }
    catch (...) {
