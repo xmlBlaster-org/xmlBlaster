@@ -3,7 +3,7 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.12 2002/06/22 12:29:51 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.13 2002/06/27 11:03:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -24,6 +24,7 @@ import java.util.Vector;
  *        &lt;meta>false&lt;/meta>      &lt;!-- Don't send me the xmlKey meta data on updates -->
  *        &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
  *        &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+ *        &lt;initialUpdate>false&lt;/initialUpdate>;
  *        &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
  *     &lt;/qos>
  * </pre>
@@ -41,6 +42,9 @@ public class SubscribeQosWrapper extends QosWrapper
    private boolean content = true;
 
    private boolean local = true;
+
+   /** send on subscribe an initial update with the current message */
+   private boolean initialUpdate = true;
 
    /** Mime based filter rules */
    private Vector filterVec = null;
@@ -65,6 +69,19 @@ public class SubscribeQosWrapper extends QosWrapper
       this.content = content;
    }
 
+
+   /**
+    * Do we want to have an initial update on subscribe if the message
+    * exists already?
+    *
+    * @return true if initial update wanted
+    *         false if only updates on new publishes are sent
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
+    */
+   public void setInitialUpdate(boolean initialUpdate)
+   {
+      this.initialUpdate = initialUpdate;
+   }
 
    /**
     * false Inhibit the delivery of messages to myself if i have published it.
@@ -113,6 +130,7 @@ public class SubscribeQosWrapper extends QosWrapper
       if (!meta) sb.append("\n   <meta>false</meta>");
       if (!content) sb.append("\n   <content>false</content>");
       if (!local) sb.append("\n   <local>false</local>");
+      if (!initialUpdate) sb.append("\n   <initialUpdate>false</initialUpdate>");
       if (filterVec != null && filterVec.size() > 0) {
          for (int ii=0; ii<filterVec.size(); ii++) {
             AccessFilterQos filter = (AccessFilterQos)filterVec.elementAt(ii);
