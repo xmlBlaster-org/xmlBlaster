@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.32 2002/05/31 09:59:28 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.33 2002/06/15 16:01:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -48,6 +48,7 @@ import java.io.IOException;
 public class XmlRpcDriver implements I_Driver
 {
    private static final String ME = "XmlRpcDriver";
+   private Global glob;
    private LogChannel log;
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
@@ -60,6 +61,8 @@ public class XmlRpcDriver implements I_Driver
    private WebServer webServer = null;
    /** The URL which clients need to use to access this server */
    private String serverUrl = null;
+
+   private java.net.InetAddress inetAddr = null;
 
 
    /**
@@ -101,6 +104,7 @@ public class XmlRpcDriver implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
+      this.glob = glob;
       this.log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
@@ -126,19 +130,25 @@ public class XmlRpcDriver implements I_Driver
             hostname = "localhost";
          }
       }
-      java.net.InetAddress inetAddr = null;
       try {
          inetAddr = java.net.InetAddress.getByName(hostname);
       } catch(java.net.UnknownHostException e) {
          throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-xmlrpc.hostname=<ip>': " + e.toString());
       }
+      serverUrl = "http://" + hostname + ":" + xmlPort + "/";
+   }
 
+   /**
+    * Activate xmlBlaster access through this protocol.
+    */
+   public synchronized void activate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering activate");
       try {
          webServer = new WebServer(xmlPort, inetAddr);
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
-         serverUrl = "http://" + hostname + ":" + xmlPort + "/";
+         //serverUrl = "http://" + hostname + ":" + xmlPort + "/";
          log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
       } catch (IOException e) {
          log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
@@ -146,14 +156,11 @@ public class XmlRpcDriver implements I_Driver
       }
    }
 
-
    /**
-    * Instructs XML-RPC driver to shut down.
-    * <p />
-    * Enforced by interface I_Driver.
+    * Deactivate xmlBlaster access (standby), no clients can connect. 
     */
-   public void shutdown()
-   {
+   public synchronized void deActivate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering deActivate");
       if (webServer != null) {
          webServer.removeHandler("authenticate");
          webServer.removeHandler("xmlBlaster");
@@ -165,6 +172,19 @@ public class XmlRpcDriver implements I_Driver
          log.info(ME, "XML-RPC shutdown, nothing to do.");
    }
 
+   /**
+    * Instructs XML-RPC driver to shut down.
+    * <p />
+    * Enforced by interface I_Driver.
+    */
+   public void shutdown(boolean force)
+   {
+      try {
+         deActivate();
+      } catch (XmlBlasterException e) {
+         log.error(ME, e.toString());
+      }
+   }
 
    /**
     * Command line usage.

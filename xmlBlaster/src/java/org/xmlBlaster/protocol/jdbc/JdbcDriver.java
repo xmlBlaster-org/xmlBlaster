@@ -3,11 +3,11 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.26 2002/06/10 22:33:59 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.27 2002/06/15 16:01:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -44,6 +44,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 {
    private static final String ME = "JdbcDriver";
    private Global glob = null;
+   private LogChannel log = null;
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -53,6 +54,8 @@ public class JdbcDriver implements I_Driver, I_Publish
    /** JDBC connection pooling, a pool for every user */
    private static NamedConnectionPool namedPool = null;
 
+   private String loginName = null;
+   private String passwd = null;
 
    /** Get a human readable name of this driver.
     * <p />
@@ -78,7 +81,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public String getRawAddress()
    {
-      if (Log.TRACE) Log.trace(ME+".getRawAddress()", "No external access address available");
+      if (log.TRACE) log.trace(ME+".getRawAddress()", "No external access address available");
       return null;
    }
 
@@ -91,6 +94,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("jdbc");
       this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
@@ -102,13 +106,22 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       initDrivers();
 
-      // ------------------------------
+      if (log.TRACE) log.trace(ME, "Initialized successfully JDBC driver '" + loginName + "'.");
+   }
+
+   /**
+    * Activate xmlBlaster access through this protocol.
+    */
+   public synchronized void activate() throws XmlBlasterException {
+
+      if (log.CALL) log.call(ME, "Entering activate");
+
       // login and get a session id ...
-      String loginName = glob.getProperty().get("JdbcDriver.loginName", "__sys__jdbc");
-      String passwd = glob.getProperty().get("JdbcDriver.password", "secret");
+      loginName = glob.getProperty().get("JdbcDriver.loginName", "__sys__jdbc");
+      passwd = glob.getProperty().get("JdbcDriver.password", "secret");
 
       if (loginName==null || passwd==null) {
-         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for connect()");
+         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for connect()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for connect()");
       }
 
@@ -123,22 +136,28 @@ public class JdbcDriver implements I_Driver, I_Publish
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
       sessionId = returnQos.getSessionId();
       
-      Log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
+      log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
    }
 
+   /**
+    * Deactivate xmlBlaster access (standby), no clients can connect. 
+    */
+   public synchronized void deActivate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering deActivate");
+      log.warn(ME, "Implement deActivate()");
+   }
 
    /**
     * Instructs jdbc driver to shut down.
     * <p />
     * Enforced by interface I_Driver.
     */
-   public void shutdown()
+   public void shutdown(boolean force)
    {
       try { authenticate.disconnect(sessionId, (new DisconnectQos()).toXml()); } catch(XmlBlasterException e) { }
       namedPool.destroy();
-      Log.info(ME, "JDBC service stopped, resources released.");
+      log.info(ME, "JDBC service stopped, resources released.");
    }
-
 
    /**
     * Command line usage.
@@ -162,7 +181,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void update(String sender, byte[] content)
    {
-      if (Log.CALL) Log.call(ME, "SQL message from '" + sender + "' received");
+      if (log.CALL) log.call(ME, "SQL message from '" + sender + "' received");
       XmlDBAdapterWorker worker = new XmlDBAdapterWorker(sender, content, this, namedPool);
       worker.start();     // In future use callback thread !!!!!
    }
@@ -191,18 +210,18 @@ public class JdbcDriver implements I_Driver, I_Publish
       for (int i = 0; i < numDrivers; i++) {
          try {
             driver = st.nextToken().trim();
-            if (Log.TRACE) Log.trace(ME, "Trying JDBC driver Class.forName('" + driver + "') ...");
+            if (log.TRACE) log.trace(ME, "Trying JDBC driver Class.forName('" + driver + "') ...");
             Class cl = Class.forName(driver);
             java.sql.Driver dr = (java.sql.Driver)cl.newInstance();
             java.sql.DriverManager.registerDriver(dr);
-            Log.info(ME, "Jdbc driver '" + driver + "' loaded.");
+            log.info(ME, "Jdbc driver '" + driver + "' loaded.");
          }
          catch (Throwable e) {
-            Log.warn(ME, "Couldn't initialize driver <" + driver + ">, please check your CLASSPATH");
+            log.warn(ME, "Couldn't initialize driver <" + driver + ">, please check your CLASSPATH");
          }
       }
       if (numDrivers == 0) {
-         Log.warn(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
+         log.warn(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
       }
    }
 }

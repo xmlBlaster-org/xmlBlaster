@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.38 2002/06/07 17:15:33 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.39 2002/06/15 16:01:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -54,7 +54,6 @@ public class CorbaDriver implements I_Driver
    private static org.omg.CORBA.ORB orb = null;
    private Global glob = null;
    private LogChannel log;
-   private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
    private NamingContextExt nc = null;
    private NameComponent [] name = null;
    private String iorFile = null;
@@ -66,6 +65,8 @@ public class CorbaDriver implements I_Driver
    private I_XmlBlaster xmlBlasterImpl = null;
    private org.omg.PortableServer.POA rootPOA = null;
    private org.omg.CORBA.Object authRef = null;
+   /** The URL path over which the IOR can be accessed (via our http bootstrap server) */
+   private final String urlPath = "/AuthenticationService.ior";
 
 
    /** Get a human readable name of this driver */
@@ -98,7 +99,7 @@ public class CorbaDriver implements I_Driver
     * Start xmlBlaster CORBA access.
     * @param args The command line parameters
     */
-   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public synchronized void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
       this.log = glob.getLog("corba");
@@ -108,6 +109,8 @@ public class CorbaDriver implements I_Driver
       initializeOrbEnv(glob,false);
 
       orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
+
+
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
@@ -117,6 +120,22 @@ public class CorbaDriver implements I_Driver
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
          authRef = ((AuthServerPOATie)(authServant))._this(orb);
+      }
+      catch (org.omg.CORBA.COMM_FAILURE e) {
+         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA: " + e.toString());
+      }
+   }
+
+   /**
+    * Activate xmlBlaster access through this protocol.
+    */
+   public synchronized void activate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering activate");
+      try {
          // NOT TIE:
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
          // authRef = rootPOA.servant_to_reference(authServant);
@@ -124,7 +143,7 @@ public class CorbaDriver implements I_Driver
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
 
          // 1) Write IOR to given file
-         String iorFile = glob.getProperty().get("ior.file", (String)null);
+         iorFile = glob.getProperty().get("ior.file", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
@@ -134,8 +153,7 @@ public class CorbaDriver implements I_Driver
 
          // 2) Publish IOR on given port (switch off this feature with '-port 0'
          if (glob.getBootstrapAddress().getPort() > 0) {
-            // TODO: Start this HTTP server in engine.Global and not in the corba driver!!!
-            httpIORServer = new HttpIORServer(glob, glob.getBootstrapAddress().getHostname(), glob.getBootstrapAddress().getPort(), orb.object_to_string(authRef));
+            glob.getHttpServer().registerRequest(urlPath, orb.object_to_string(authRef));
             log.info(ME, "Published AuthServer IOR on " + glob.getBootstrapAddress().getAddress());
          }
 
@@ -216,14 +234,40 @@ public class CorbaDriver implements I_Driver
          } // if useNameService
       }
       catch (org.omg.CORBA.COMM_FAILURE e) {
-         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
+         throw new XmlBlasterException("activateCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA: " + e.toString());
+         throw new XmlBlasterException("activateCorbaFailed", "Could not initialize CORBA: " + e.toString());
       }
       // orbacus needs this
       if (orb.work_pending()) orb.perform_work();
+   }
+
+   /**
+    * Deactivate xmlBlaster access (standby), no clients can connect. 
+    */
+   public synchronized void deActivate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering deActivate");
+
+      glob.getHttpServer().removeRequest(urlPath);
+
+      try {
+         if (nc != null) nc.unbind(name);
+         nc = null;
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         e.printStackTrace();
+      }
+
+      try {
+         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
+         iorFile = null;
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+      }
    }
 
    /**
@@ -331,32 +375,15 @@ public class CorbaDriver implements I_Driver
     * multiplexing, ports are not released when POAs are destroyed, 
     * but when clients exit, or when server-side timouts occur.
     */
-   public void shutdown()
+   public void shutdown(boolean force)
    {
       if (log.CALL) log.call(ME, "Shutting down ...");
-      boolean wait_for_completion = true;
+      boolean wait_for_completion = !force;
 
       try {
-         if (httpIORServer != null) httpIORServer.shutdown();
-      }
-      catch (Throwable e) {
-         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
-         e.printStackTrace();
-      }
-
-      try {
-         if (nc != null) nc.unbind(name);
-      }
-      catch (Throwable e) {
-         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
-         e.printStackTrace();
-      }
-
-      try {
-         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
-      }
-      catch (Throwable e) {
-         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         deActivate();
+      } catch (XmlBlasterException e) {
+         log.error(ME, e.toString());
       }
 
       if (rootPOA != null && authRef != null) {

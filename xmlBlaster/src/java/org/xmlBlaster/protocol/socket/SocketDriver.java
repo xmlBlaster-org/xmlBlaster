@@ -3,11 +3,11 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.17 2002/05/11 09:36:34 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.18 2002/06/15 16:01:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -58,6 +58,7 @@ public class SocketDriver extends Thread implements I_Driver
    private static final String ME = "SocketDriver";
    /** The global handle */
    private Global glob;
+   private LogChannel log;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -133,8 +134,9 @@ public class SocketDriver extends Thread implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering init()");
+      if (log.CALL) log.call(ME, "Entering init()");
       this.glob = glob;
+      this.log = glob.getLog("socket");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
@@ -143,7 +145,7 @@ public class SocketDriver extends Thread implements I_Driver
       socketPort = glob.getProperty().get("socket.port", 7607);
 
       if (socketPort < 1) {
-         Log.info(ME, "Option socket.port set to " + socketPort + ", socket server not started");
+         log.info(ME, "Option socket.port set to " + socketPort + ", socket server not started");
          return;
       }
 
@@ -153,7 +155,7 @@ public class SocketDriver extends Thread implements I_Driver
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
             hostname = addr.getHostName();
          } catch (Exception e) {
-            Log.info(ME, "Can't determine your hostname");
+            log.info(ME, "Can't determine your hostname");
             hostname = "localhost";
          }
       }
@@ -163,10 +165,48 @@ public class SocketDriver extends Thread implements I_Driver
          throw new XmlBlasterException("InitSocketFailed", "The host [" + hostname + "] is invalid, try '-socket.hostname=<ip>': " + e.toString());
       }
 
+      serverUrl = hostname + ":" + socketPort;
+   }
+
+   /**
+    * Activate xmlBlaster access through this protocol.
+    */
+   public synchronized void activate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering activate");
       start(); // Start the listen thread
 
       while (!listenerReady) {
          try { Thread.currentThread().sleep(10); } catch( InterruptedException i) {}
+      }
+   }
+
+   /**
+    * Deactivate xmlBlaster access (standby), no clients can connect. 
+    */
+   public synchronized void deActivate() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering deActivate");
+      running = false;
+
+      boolean closeHack = true;
+      if (listen != null && closeHack) {
+         // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
+         // force closing by invoking server with this temporary client:
+         try {
+            java.net.Socket socket = new Socket(listen.getInetAddress(), socketPort);
+            socket.close();
+         } catch (java.io.IOException e) {
+            log.warn(ME, "shutdown problem: " + e.toString());
+         }
+      }
+
+      try {
+         if (listen != null) {
+            listen.close();
+            listen = null;
+            //log.info(ME, "Socket driver stopped, all resources released.");
+         }
+      } catch (java.io.IOException e) {
+         log.warn(ME, "shutdown problem: " + e.toString());
       }
    }
 
@@ -183,35 +223,35 @@ public class SocketDriver extends Thread implements I_Driver
       try {
          int backlog = glob.getProperty().get("socket.backlog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(socketPort, backlog, inetAddr);
-         Log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
+         log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
          serverUrl = hostname + ":" + socketPort;
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
-            //Log.trace(ME, "New incoming request on port=" + socketPort + " ...");
+            //log.trace(ME, "New incoming request on port=" + socketPort + " ...");
             if (!running) {
-               Log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
+               log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
                break;
             }
             HandleClient hh = new HandleClient(glob, this, accept);
          }
       }
       catch (java.net.UnknownHostException e) {
-         Log.error(ME, "Socket server problem, IP address '" + hostname + "' is invalid: " + e.toString());
+         log.error(ME, "Socket server problem, IP address '" + hostname + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         Log.error(ME, "Socket server problem, port " + hostname + ":" + socketPort + " is not available: " + e.toString());
+         log.error(ME, "Socket server problem, port " + hostname + ":" + socketPort + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
-         Log.info(ME, "Socket " + hostname + ":" + socketPort + " closed successfully: " + e.toString());
+         log.info(ME, "Socket " + hostname + ":" + socketPort + " closed successfully: " + e.toString());
       }
       catch (IOException e) {
-         Log.error(ME, "Socket server problem on " + hostname + ":" + socketPort + ": " + e.toString());
+         log.error(ME, "Socket server problem on " + hostname + ":" + socketPort + ": " + e.toString());
       }
       finally {
          listenerReady = true;
          if (listen != null) {
-            try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
+            try { listen.close(); } catch (java.io.IOException e) { log.warn(ME, "listen.close()" + e.toString()); }
             listen = null;
          }
       }
@@ -221,38 +261,20 @@ public class SocketDriver extends Thread implements I_Driver
    /**
     * Close the listener port, the driver shuts down. 
     */
-   public void shutdown()// throws IOException
+   public void shutdown(boolean force)// throws IOException
    {
-      if (Log.CALL) Log.call(ME, "Entering shutdown");
+      if (log.CALL) log.call(ME, "Entering shutdown");
       
       //System.out.println(org.jutils.runtime.StackTrace.getStackTrace());
 
-      running = false;
-
-      boolean closeHack = true;
-      if (listen != null && closeHack) {
-         // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
-         // force closing by invoking server with this temporary client:
-         try {
-            java.net.Socket socket = new Socket(listen.getInetAddress(), socketPort);
-            socket.close();
-         } catch (java.io.IOException e) {
-            Log.warn(ME, "shutdown problem: " + e.toString());
-         }
-      }
-
       try {
-         if (listen != null) {
-            listen.close();
-            listen = null;
-            //Log.info(ME, "Socket driver stopped, all resources released.");
-         }
-      } catch (java.io.IOException e) {
-         Log.warn(ME, "shutdown problem: " + e.toString());
+         deActivate();
+      } catch (XmlBlasterException e) {
+         log.error(ME, e.toString());
       }
 
       serverUrl = null;
-      Log.info(ME, "Socket driver stopped, all resources released.");
+      log.info(ME, "Socket driver stopped, all resources released.");
    }
 
    /**

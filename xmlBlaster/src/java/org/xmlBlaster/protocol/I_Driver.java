@@ -3,7 +3,7 @@ Name:      I_Driver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_Driver.java,v 1.6 2002/04/08 17:09:27 ruff Exp $
+Version:   $Id: I_Driver.java,v 1.7 2002/06/15 16:01:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -17,7 +17,7 @@ import org.xmlBlaster.authentication.Authenticate;
  * This interface hides the real protocol used to invoke xmlBlaster.
  * <p>
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author ruff@swand.lake.de
  */
 public interface I_Driver
@@ -47,19 +47,32 @@ public interface I_Driver
    public String getRawAddress();
 
    /**
-    * Start xmlBlaster access through this protocol.
+    * Intialize protocol driver. 
+    * <p />
+    * The access address must be available after this init() -> 
+    * driver.getRawAddress() must return a valid adddress for internal use!
+    *
     * @param glob Global handle to access logging, property and commandline args
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException;
 
+   /**
+    * Activate xmlBlaster access through this protocol so that a client can contact us. 
+    */
+   public void activate() throws XmlBlasterException;
+
+   /**
+    * Deactivate xmlBlaster access (standby), no clients can connect. 
+    */
+   public void deActivate() throws XmlBlasterException;
 
    /**
     * Shut down the driver.
     * <p />
     */
-   public void shutdown();
+   public void shutdown(boolean force);
 
 
    /**
