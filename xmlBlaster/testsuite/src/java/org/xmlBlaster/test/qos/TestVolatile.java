@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.3 2002/09/14 23:05:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -95,7 +95,7 @@ public class TestVolatile extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       try {
          EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
-         assertEquals("Erase", 1, arr.length);
+         assertEquals("Erase", 0, arr.length);   // The volatile message schould not exist !!
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.disconnect(null);
