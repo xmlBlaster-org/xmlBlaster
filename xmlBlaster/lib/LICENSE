@@ -228,5 +228,8 @@ All packages allow free use for both commercial and non-commercial applications.
    Version 1.0
    Allows to access xmlBlaster with telnet.
    (CommandHandlerImpl loaded in ConnectionServer.java:160)
+	Switched off CommandHandlerImpl in ConnectionServer.java:160
    Switched off show in ConnectionServer.java:342
+   Switched off ls in ConnectionServer.java:342
    Switched off exec in CommandHandlerImpl.java:101
+	Added shutdown hook.
