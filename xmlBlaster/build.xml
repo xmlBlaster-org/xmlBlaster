@@ -2585,6 +2585,8 @@ TODO
                <case value="1">
                   <copy file="${sqlite.lib.dir}/sqlite.dll" tofile="${lib.dir}/sqlite.dll"/>
                </case>
+               <default>
+               </default>
             </switch>
          </case>
          <default>
