@@ -41,7 +41,7 @@ Start the test suite manually:
 
    For command line output invoke:
 
-      java -Djava.compiler= junit.textui.TestRunner AllTests
+      java -Djava.compiler= junit.textui.TestRunner -noloading AllTests
 
    Start one test without testsuite (and with debugging output on console):
 
@@ -50,11 +50,11 @@ Start the test suite manually:
 
    Test RMI:
 
-      java -Djava.compiler= -Dclient.protocol=RMI junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= -Dclient.protocol=RMI junit.ui.TestRunner -noloading AllTests
 
    Test XML-RPC:
 
-      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.ui.TestRunner -noloading AllTests
 
 
 Building html files with syntax highlighting from java source
