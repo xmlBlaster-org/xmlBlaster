@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.configuration' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='client.configuration' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Description of the available client side configuration</topic>
    <description>
 
@@ -327,7 +327,7 @@ java HelloWorld2 -help
              <plugin refid='queueCACHE'>
                 <attribute id='maxEntries'>200</attribute>
                 <attribute id='entry'>
-                   <attribute id='id'>1046976320188000000></attribute>
+                   <attribute id='id'>1046976320188000000</attribute>
                    <attribute id='type'>publish'</attribute>
                       <!-- client side queued entries -->
                    <attribute id='key'>
@@ -420,6 +420,6 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
 </requirement>
 
