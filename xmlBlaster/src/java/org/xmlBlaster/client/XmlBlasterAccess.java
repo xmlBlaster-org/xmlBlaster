@@ -25,6 +25,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.QueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
