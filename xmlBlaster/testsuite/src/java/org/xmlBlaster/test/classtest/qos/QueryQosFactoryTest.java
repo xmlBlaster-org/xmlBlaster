@@ -164,10 +164,10 @@ public class QueryQosFactoryTest extends TestCase {
       
       try {
          EraseQos eraseQos = new EraseQos(glob);
-         eraseQos.setWantNotify(false);
+         eraseQos.setForceDestroy(true);
          System.out.println("EraseQos: " + eraseQos.toXml());
          QueryQosData qos = factory.readObject(eraseQos.toXml());
-         assertEquals("", false, qos.getWantNotify());
+         assertEquals("", true, qos.getForceDestroy());
       }
       catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
