@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.10 2000/10/22 16:54:33 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.11 2000/10/22 17:48:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -68,7 +68,7 @@ public class ClientGet
          Log.plain("   -passwd             The password [secret].");
          // !!! RmiConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
+         Log.plain("Example: jaco javaclients.rmi.ClientGet -name Jeff\n");
          Log.panic(ME, e.toString());
       }
 
