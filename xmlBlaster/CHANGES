@@ -3,6 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes svn
 ===========
+ o #12706 Added subversion revision number as exception text prefix, for example
+     ex.getMessage()="#12702 Can't load your plugin"
+
+ o #12703 Upgraded ANT from version 1.6.1 to version 1.6.2
+
  o #12696 Added org.xmlBlaster.engine.DeadMessageDumper plugin to dump
    dead messages to hard disk, supports republishing (see javadoc)
 

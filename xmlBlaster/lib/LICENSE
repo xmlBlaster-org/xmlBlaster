@@ -135,11 +135,10 @@ only the SNMP subagent module jax.jar is GPL only!
    only helps if no connection was established)
 
 
-11) ant.jar 1.6.1 from 2004-04-02
-======================================
+11) ant.jar 1.6.2 from 2004-10-26
+=================================
   
   Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
-  (needs parser.jar)
   http://jakarta.apache.org/ant/index.html
   http://jakarta.apache.org/builds/ant/release/
 
