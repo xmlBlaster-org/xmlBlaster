@@ -190,6 +190,19 @@
      If a plugin is defined directly under the <i>xmlBlaster</i> tag, then its definition affects all nodes.
      Definitions under a specific node are stronger (i.e. they will overwrite any definition found under 
      xmlBlaster and affect only the node under which they are defined.
+     <p>
+        If you don't want to load a plugin you simply don't put it in the xml tree. Alternatively you 
+	comment it out according to the xml syntax:
+	<pre>
+<!--
+   <plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>
+   </plugin>
+-->
+	</pre>
+     </p>
      </p>
      The plugin element:<br />
      The plugin tag has the following attributes:
@@ -292,7 +305,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
