@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.2 2000/10/22 20:17:29 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.3 2000/10/22 20:20:24 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -549,7 +549,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public static String usage()
    {
       String text = "\n";
-      text += "XmlRpcConnection 'RMI' options:\n";
+      text += "XmlRpcConnection 'XML-RPC' options:\n";
       text += "   -xmlrpc.port        Specify a port number where xmlBlaster XML-RPC web server listens.\n";
       text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
       text += "   -xmlrpc.hostname    Specify a hostname where the xmlBlaster web server runs.\n";
