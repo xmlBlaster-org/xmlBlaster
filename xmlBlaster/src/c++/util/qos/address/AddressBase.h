@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.3 2003/01/16 14:20:55 johnson Exp $
+Version:   $Id: AddressBase.h,v 1.4 2003/01/16 18:03:56 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,7 +24,7 @@ Version:   $Id: AddressBase.h,v 1.3 2003/01/16 14:20:55 johnson Exp $
 
 #include <string>
 
-//using namespace org::xmlBlaster::util; <-- VC CRASH
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 

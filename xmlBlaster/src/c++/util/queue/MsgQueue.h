@@ -30,7 +30,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <set>
 
 using namespace std;
-//using namespace org::xmlBlaster::util;<-- VC CRASH
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::storage;
 

@@ -137,10 +137,12 @@ string ConnectionsHandler::getProtocol()
    return connection_->getProtocol();
 }
 
+/*
 string ConnectionsHandler::loginRaw()
 {
    return connection_->loginRaw();
 }
+*/
 
 bool ConnectionsHandler::shutdown()
 {

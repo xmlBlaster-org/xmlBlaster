@@ -24,8 +24,8 @@ Comment:   Interface (virtual class)
 
 #include <client/xmlBlasterClient.h>
 
-//using namespace org::xmlBlaster::util;<-- VC CRASH
-//using namespace org::xmlBlaster::util::qos;<-- VC CRASH
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
@@ -68,7 +68,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
       /**
        * Is invoked when we poll for the server, for example after we have lost the connection.
        */
-      virtual string loginRaw() = 0;
+//      virtual string loginRaw() = 0;
 
       virtual bool shutdown() = 0;
 

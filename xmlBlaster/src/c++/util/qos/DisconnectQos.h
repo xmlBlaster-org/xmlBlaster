@@ -3,7 +3,7 @@ Name:      DisconnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.h,v 1.4 2003/01/16 14:20:55 johnson Exp $
+Version:   $Id: DisconnectQos.h,v 1.5 2003/01/16 18:03:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -33,7 +33,7 @@ Version:   $Id: DisconnectQos.h,v 1.4 2003/01/16 14:20:55 johnson Exp $
 #include <string>
 
 using namespace std;
-// using namespace org::xmlBlaster::util; <-- VC CRASH
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

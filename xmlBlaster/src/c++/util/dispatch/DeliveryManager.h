@@ -24,7 +24,7 @@ Comment:   Manager to retrieve the correct delivery protocol
 #include <string>
 // #include <map>
 
-//using namespace org::xmlBlaster::util;<-- VC CRASH
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 

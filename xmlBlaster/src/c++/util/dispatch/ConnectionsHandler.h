@@ -30,7 +30,7 @@ Comment:   Handles the I_XmlBlasterConnections
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
-//using namespace org::xmlBlaster::util; <-- VC CRASH
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
@@ -104,7 +104,7 @@ public:
    /**
     * Is invoked when we poll for the server, for example after we have lost the connection.
     */
-   string loginRaw();
+//   string loginRaw();
 
    bool shutdown();
 

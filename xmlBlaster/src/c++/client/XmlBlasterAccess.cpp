@@ -9,8 +9,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <boost/lexical_cast.hpp>
 
 using namespace boost;
-//using namespace org::xmlBlaster::util; <-- VC CRASH
-//using namespace org::xmlBlaster::util::qos;<-- VC CRASH
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::protocol;
 

@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.10 2003/01/16 10:11:56 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.11 2003/01/16 18:03:57 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -26,7 +26,7 @@ Version:   $Id: TestConnect.cpp,v 1.10 2003/01/16 10:11:56 laghi Exp $
 #include <client/XmlBlasterAccess.h>
 #include <util/qos/ConnectQos.h>
 #include <util/qos/ConnectQosFactory.h>
-#include <client/LoginQosWrapper.h>
+// #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
 #include <util/StopWatch.h>
 #include <util/XmlBlasterException.h>

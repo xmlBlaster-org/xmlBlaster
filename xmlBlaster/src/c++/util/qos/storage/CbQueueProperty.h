@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.3 2003/01/16 14:20:57 johnson Exp $
+Version:   $Id: CbQueueProperty.h,v 1.4 2003/01/16 18:03:56 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -25,7 +25,7 @@ Version:   $Id: CbQueueProperty.h,v 1.3 2003/01/16 14:20:57 johnson Exp $
 #include <string>
 #include <vector>
 
-//using namespace org::xmlBlaster::util; <-- VC CRASH
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {

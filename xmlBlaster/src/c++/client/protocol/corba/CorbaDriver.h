@@ -102,7 +102,7 @@ namespace org {
       ConnectReturnQos connect(const ConnectQos& qos);
       bool disconnect(const DisconnectQos& qos);
       string getProtocol();
-      string loginRaw();
+//      string loginRaw();
       bool shutdown();
       void resetConnection();
       string getLoginName();

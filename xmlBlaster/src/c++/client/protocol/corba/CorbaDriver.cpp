@@ -270,6 +270,7 @@ string CorbaDriver::getProtocol()
    return "IOR";
 }
 
+/*
 string CorbaDriver::loginRaw()
 {
    _COMM_TRY
@@ -277,6 +278,7 @@ string CorbaDriver::loginRaw()
       return getLoginName();
    _COMM_CATCH("::loginRaw", false, false)
 }
+*/
 
 bool CorbaDriver::shutdown()
 {

@@ -36,7 +36,7 @@ namespace org {
 
 
 CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
-  : loginQos_(), 
+  : /* loginQos_(), */
     connectReturnQos_(global), 
     global_(global), 
     log_(global.getLog("corba")),
@@ -267,14 +267,14 @@ CorbaConnection::getAuthenticationService()
                                        "", "", "", "", "");
 }
 
-
+/*
 serverIdl::Server_ptr
 CorbaConnection::login(const string &loginName, const string &passwd,
                        const LoginQosWrapper &qos, I_Callback *client) 
 {
 
   if (log_.CALL) log_.call(me(), "login(" + loginName + ") ...");
-  if ( !CORBA::is_nil(xmlBlaster_ /*.in()*/ )) {
+  if ( !CORBA::is_nil(xmlBlaster_)) {
      string msg = "You are already logged in, returning cached handle";
      msg += " on xmlBlaster";
      log_.warn(me(), msg);
@@ -299,7 +299,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
   loginRaw();
   return serverIdl::Server::_duplicate(xmlBlaster_);
 }
-
+*/
 
 clientIdl::BlasterCallback_ptr
 CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj) 
@@ -318,7 +318,7 @@ CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj)
   return (clientIdl::BlasterCallback_ptr)0;
 }
 
-
+/*
 void 
 CorbaConnection::loginRaw() 
 {
@@ -339,7 +339,7 @@ CorbaConnection::loginRaw()
      throw e;
   }
 }
-
+*/
 
 ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
 {

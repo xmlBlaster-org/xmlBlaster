@@ -24,8 +24,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <util/SaxHandlerBase.h>
 #include <util/StringTrim.h>
 
-
-using namespace org::xmlBlaster::util; //<-- VC CRASH
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace authentication {
 

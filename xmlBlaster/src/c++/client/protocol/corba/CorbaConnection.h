@@ -16,7 +16,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <string>
 #include <vector>
 #include <fstream>
-#include <client/LoginQosWrapper.h>
+// #include <client/LoginQosWrapper.h>
 #include <client/protocol/corba/DefaultCallback.h>
 #include <util/Log.h>
 #include <client/protocol/corba/NameServerControl.h>
@@ -57,7 +57,7 @@ namespace org {
       clientIdl::BlasterCallback_ptr  callback_;
       string                          loginName_;
       string                          passwd_;
-      LoginQosWrapper                 loginQos_;
+//      LoginQosWrapper                 loginQos_;
       int                             numLogins_;
       bool                            orbOwner_;
       DefaultCallback*                defaultCallback_;
@@ -208,8 +208,8 @@ namespace org {
        *                  don't want any.
        * @exception       XmlBlasterException if login fails
        */
-      serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
-                   const LoginQosWrapper &qos, I_Callback *client=0);
+//      serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
+//                   const LoginQosWrapper &qos, I_Callback *client=0);
 
 
       /**
@@ -242,7 +242,7 @@ namespace org {
        * The qos needs to be set up correctly if you wish a callback
        * @exception       XmlBlasterException if login fails
        */
-      void loginRaw();
+//      void loginRaw();
 
 
       /**

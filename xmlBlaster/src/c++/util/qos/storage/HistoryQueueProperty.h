@@ -17,7 +17,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/storage/QueuePropertyBase.h>
 
-//using namespace org::xmlBlaster::util; <-- VC CRASH
+// using namespace org::xmlBlaster::util;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {

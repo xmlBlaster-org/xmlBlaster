@@ -21,9 +21,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 #include <vector>
 
-//using namespace org::xmlBlaster::util;<-- VC CRASH
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::dispatch;
-//using namespace org::xmlBlaster::util::qos;<-- VC CRASH
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::client::protocol;
 
 namespace org { namespace xmlBlaster { namespace client {

@@ -34,8 +34,8 @@ Comment:   Holding filter address string and protocol string
 #include <string>
 
 using namespace std;
-//using namespace org::xmlBlaster::util; <-- VC CRASH
-//using namespace org::xmlBlaster::util::qos; <-- VC CRASH
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

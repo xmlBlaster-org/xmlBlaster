@@ -21,8 +21,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 #include <stddef.h>
 
-//using namespace org::xmlBlaster::util;<-- VC CRASH
-//using namespace org::xmlBlaster::util::qos;<-- VC CRASH
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::protocol;

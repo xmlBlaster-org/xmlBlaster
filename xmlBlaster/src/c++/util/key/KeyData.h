@@ -37,7 +37,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 
 using namespace std;
-//using namespace org::xmlBlaster::util; <-- VC CRASH
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
