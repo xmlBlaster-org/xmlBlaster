@@ -63,7 +63,7 @@ public class TimestampTest extends TestCase {
       for(iThread=0; iThread<n; iThread++) {
          threadArr[iThread] = new Thread() {
             public void run() {
-               setName(""+iThread);
+               super.setName(""+iThread);
                long last = 0L;
                for(int j=0; j<m; j++) {
                   Timestamp ts = new Timestamp();
@@ -71,7 +71,7 @@ public class TimestampTest extends TestCase {
                   assertTrue("Timestamp not ascending or unique", ts.getTimestamp() > last);
                   last = ts.getTimestamp();
                }
-               System.out.println("Thread #" + getName() + " done");
+               System.out.println("Thread #" + super.getName() + " done");
             }
          };
          threadArr[iThread].start();

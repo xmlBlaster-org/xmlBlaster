@@ -172,7 +172,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          MsgUnit[] msgArr = secondConnection.get(
                           "<key oid='__sys__UserList' queryType='EXACT'></key>",
                           "<qos></qos>");
-         assertTrue(msgArr.length == 1);
+         assertTrue("Expected on __sys__UserList", msgArr.length == 1);
          String clients = new String(msgArr[0].getContent());
          log.info(ME, "Current '__sys__UserList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients);
