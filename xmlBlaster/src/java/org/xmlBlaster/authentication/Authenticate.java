@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.31 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.32 2000/07/13 09:45:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -87,19 +87,25 @@ public class Authenticate
    {
       if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + toXml().toString());
 
+      // !=== CHECK PASSWORD HERE IN FUTURE VERSION ====!
+
       ClientInfo clientInfo = getClientInfoByName(loginName);
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
          Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
-         resetClientInfo(clientInfo.getUniqueKey(), false);
+         try {
+            resetClientInfo(clientInfo.getUniqueKey(), false);
+         } catch(XmlBlasterException e) {
+            // fireClientEvent(clientInfo, false); // informs all I_ClientListener
+            // clientInfo.notifyAboutLogout(true);
+            // clientInfo = null;
+         }
          // allowing re-login: if the client crashed without proper logout, she should
          // be allowed to login again, so - first logout the last session (but keep messages in client queue)
          // We need to clean up clientInfo, usually the callback reference is another one, etc.
       }
 
       ClientQoS xmlQoS = new ClientQoS(xmlQoS_literal);
-
-      // !=== CHECK PASSWORD HERE IN FUTURE VERSION ====!
 
       if (sessionId == null || sessionId.length() < 2) {
          sessionId = createSessionId(loginName);
