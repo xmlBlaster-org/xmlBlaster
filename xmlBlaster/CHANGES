@@ -2,6 +2,11 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for x.xxx [xxx, xx xxxx]
 ================================
+  - Behavior change [Juergen Freidling]:
+    xmlBlaster now respects multiple subscriptions
+    on the same message, and will deliver this message multiple times
+    to the same client.
+
   - Bugfixed jutils.jar added:
     * Removed JDBC pool code (does not compile with JDK 1.4)
     * Bugfix for xmlBlaster.properties file in CLASSPATH
