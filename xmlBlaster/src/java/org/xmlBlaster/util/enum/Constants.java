@@ -108,7 +108,7 @@ public class Constants
    /** Type of a history message queue containing references on messages */
    public final static String RELATING_HISTORY = "history";
    /** Message cache */
-   public final static String RELATING_TOPICCACHE = "topic";
+   public final static String RELATING_TOPICCACHE = "msgUnitStore";
 
    /* message queue onOverflow handling, blocking until queue takes messages again (client side) */
    public final static String ONOVERFLOW_BLOCK = "block";
