@@ -15,7 +15,7 @@ and add xmlrpc.jar to your CLASSPATH.
 
 Start the server:
 
-   java.org.xmlBlaster.Main
+   java org.xmlBlaster.Main
 
 Start the xml-rpc proxy:
 
