@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
+Compile:   gcc -Wall -DUSE_MAIN -o callbackServer callbackServer.c
            cl /MT -DUSE_MAIN -D_WINDOWS callbackServer.c ws2_32.lib
 -----------------------------------------------------------------------------*/
 #include <string.h>      // strcat()
@@ -224,5 +224,7 @@ int main(int argc, char** argv)
    initCallbackServer(&data);
 
    shutdownCallbackServer();
+
+   return 0;
 }
 #endif // USE_MAIN
