@@ -23,7 +23,7 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #endif
 
 #ifndef __cplusplus
-#  if !defined(__sun) && !defined(_WINDOWS)
+#  if !defined(__sun) && !defined(_WINDOWS)  /* __GNUC_MINOR__=85 : gcc 2.85 does not like it either: how to define? */
 #    include <stdbool.h>
 #  endif
 #  ifndef __bool_true_false_are_defined
@@ -56,6 +56,9 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #   include <inttypes.h>
 # elif defined(__sun)
     /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
+# elif defined(__hpux)
+  /*typedef long long int64_t;*/
+  /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
 # else
 #   include <stdint.h>  /*-> C99:  uint64_t etc. */
 # endif
