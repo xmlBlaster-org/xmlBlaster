@@ -125,6 +125,13 @@
    All resources are controlled by 'timeout' values (similar to 'leases' in Jini)
    so that no resource leaks can occur with 'miss behaving' clients.
    </p>
+
+   <p>
+   This new callback framework will be queue based with a queue manager,
+   allowing the following additional qualities:<br />
+   - Priorities for messages
+   - Guaranteed sequence of messages
+   </p>
    </changerequest>
 
 
@@ -176,7 +183,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
