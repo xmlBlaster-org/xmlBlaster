@@ -68,10 +68,10 @@ namespace org {
       /** 
        * Called on polling, try to reconnect to server
        */
-      void reconnect(void);
+      void reconnectOnIpLevel(void);
 
       /**
-       * Only used by getInstance()
+       * The only constructor. 
        * @param global
        * @param mutex   org::xmlBlaster::util::Global thread synchronization (to avoid static variable)
        *                

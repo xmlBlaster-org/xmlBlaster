@@ -221,12 +221,17 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
    global_.fillArgs(*argsStructP_);
    try {
       connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
-      connection_->userObject = this; // Transports us to the myUpdate() method
-      connection_->log = myLogger;    // Register our own logging function
-      connection_->logUserP = this;   // Pass ourself to myLogger()
-      if (log_.dump()) {
-         log_.dump(ME, "C properties:");
-         ::dumpProperties(connection_->props);
+      if (connection_) {
+         connection_->userObject = this; // Transports us to the myUpdate() method
+         connection_->log = myLogger;    // Register our own logging function
+         connection_->logUserP = this;   // Pass ourself to myLogger()
+         if (log_.dump()) {
+            log_.dump(ME, "C properties:");
+            ::dumpProperties(connection_->props);
+         }
+      }
+      else {
+         log_.error(ME, "Allocation of C SOCKET library failed");
       }
    } catch_MACRO("::Constructor", true)
 }
@@ -235,9 +240,9 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
  * Called on polling, must be synchronized from outside,
  * throws an exception on failure
  */
-void SocketDriver::reconnect(void)
+void SocketDriver::reconnectOnIpLevel(void)
 {
-   log_.info(ME, "Trying to reconnect to server");
+   log_.info(ME, "Trying to reconnectOnIpLevel to server");
 
    freeResources(true); // Cleanup if old connection exists
 
@@ -391,8 +396,7 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
             throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Please check your configuration to find the server");
          }
          else {
-            reconnect(); // Throws an exception on failure
-            // Happens in ConnectionsHandler.cpp already: ???
+            reconnectOnIpLevel(); // Connects on IP level only, throws an exception on failure
             qos.getSessionQos().setSecretSessionId(secretSessionId_);
          }
       }
