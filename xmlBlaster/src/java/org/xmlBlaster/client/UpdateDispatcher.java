@@ -74,13 +74,19 @@ public final class UpdateDispatcher
     * @return the removed entry of null if subscriptionId is unknown
     */
    public synchronized I_Callback removeCallback(String subscriptionId) {
-      return (I_Callback)callbackMap.remove(subscriptionId);
+      return (I_Callback)this.callbackMap.remove(subscriptionId);
    }
 
+   /**
+    * Get number of callback registrations
+    */
+   public synchronized int size() {
+      return this.callbackMap.size();
+   }
    /**
     * Remove all callback registrations
     */
    public synchronized void clear() {
-      callbackMap.clear();
+      this.callbackMap.clear();
    }
 }
