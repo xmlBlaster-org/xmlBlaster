@@ -115,10 +115,10 @@ void SecurityQos::startElement(const XMLCh* const name, AttributeList& attrs)
       unsigned int ii=0;
       for (ii = 0; ii < len; ii++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(ii), "securityService")) {
-            type_ = trim_.trim(XMLString::transcode(attrs.getValue(ii))); // .trim();
+            type_ = SaxHandlerBase::getStringValue(attrs.getValue(ii));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(ii), "version")) {
-            version_ = trim_.trim(XMLString::transcode(attrs.getValue(ii))); //.trim();
+            version_ = SaxHandlerBase::getStringValue(attrs.getValue(ii));
          }
       }
       character_.erase();
@@ -148,14 +148,18 @@ void SecurityQos::startElement(const XMLCh* const name, AttributeList& attrs)
    log_.call(ME, "endElement");
    if (SaxHandlerBase::caseCompare(name, "user")) {
       inUser_ = false;
-      user_ = trim_.trim(character_.c_str()); // .toString().trim();
+      char *help = trim_.trim(character_.c_str());
+      user_ = help;
+      delete help;
       character_.erase();
       return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "passwd")) {
       inPasswd_ = false;
-      passwd_ = trim_.trim(character_.c_str()); // .toString().trim();
+      char *help = trim_.trim(character_.c_str());
+      passwd_ = help;
+      delete help;
       character_.erase();
       return;
    }

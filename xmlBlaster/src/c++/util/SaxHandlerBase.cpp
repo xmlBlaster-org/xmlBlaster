@@ -259,4 +259,66 @@ SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& 
 }
 
 
+
+
+/**
+ * returns a value (usually from an attribute) as a string
+ */
+string
+SaxHandlerBase::getStringValue(const XMLCh* const value)
+{
+   char* help1   = NULL;
+   char* help2   = NULL;
+   string ret;
+   try {
+      help1 = XMLString::transcode(value);
+      help2 = charTrimmer_.trim(help1);
+      ret.assign(help2);
+   }
+   catch (...) {}
+      delete help1;
+      delete help2;
+      return ret;
+   }
+
+/**
+ * returns a value (usually from an attribute) as an integer
+ */
+int
+SaxHandlerBase::getIntValue(const XMLCh* const value)
+{
+    char* help1   = NULL;
+    char* help2   = NULL;
+    int ret = 0;
+    try {
+       help1 = XMLString::transcode(value);
+       help2 = charTrimmer_.trim(help1);
+       ret = atoi(help2);
+    }
+    catch (...) {}
+    delete help1;
+    delete help2;
+    return ret;
+}
+
+/**
+ * returns a value (usually from an attribute) as a string
+ */
+long
+SaxHandlerBase::getLongValue(const XMLCh* const value)
+{
+   char* help1   = NULL;
+   char* help2   = NULL;
+   long ret = 0l;
+   try {
+      help1 = XMLString::transcode(value);
+      help2 = charTrimmer_.trim(help1);
+      ret = atol(help2);
+   }
+   catch (...) {}
+   delete help1;
+   delete help2;
+   return ret;
+}
+
 #endif

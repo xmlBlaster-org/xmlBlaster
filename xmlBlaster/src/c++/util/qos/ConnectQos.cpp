@@ -127,10 +127,10 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
       int len = attrs.getLength();
       for (int i = 0; i < len; i++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-            callbackType_ = trim_.trim(XMLString::transcode(attrs.getValue(i))); // .trim();
+            callbackType_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
-            sessionId_ = trim_.trim(XMLString::transcode(attrs.getValue(i))); //.trim();
+            sessionId_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
          }
       }
    }
@@ -138,8 +138,11 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
 
 void ConnectQosFactory::endElement(const XMLCh* const name) {
    log_.trace(ME, "endElement");
-   if (log_.TRACE)
-      log_.trace(ME, string("endElement. name:'") + string(XMLString::transcode(name)) + string("' character: '") + character_ + string("'"));
+   if (log_.TRACE) {
+      char *help = XMLString::transcode(name);
+      log_.trace(ME, string("endElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
+      delete help;
+   }
    if (util::XmlQoSBase::endElementBase(name)) return;
 
    if (SaxHandlerBase::caseCompare(name, "securityService")) {
@@ -217,12 +220,10 @@ using namespace org::xmlBlaster::util::qos;
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])
 {
-
     // Init the XML platform
     try
     {
        XMLPlatformUtils::Initialize();
-
        string qos =
        string("<qos>\n") +
        string("   <securityService type='htpasswd' version='1.0'>\n") +

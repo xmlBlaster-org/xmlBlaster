@@ -23,6 +23,8 @@ Comment:   Default handling of Sax callbacks
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
 
+#include <stdlib.h>
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {
@@ -208,6 +210,20 @@ namespace util {
        */
        string getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const;
 
+       /**
+        * returns a value (usually from an attribute) as a string
+        */
+       string getStringValue(const XMLCh* const value);
+
+       /**
+        * returns a value (usually from an attribute) as an integer
+        */
+       int getIntValue(const XMLCh* const value);
+
+       /**
+        * returns a value (usually from an attribute) as a string
+        */
+       long getLongValue(const XMLCh* const value);
    };
 }}} // namespace
 

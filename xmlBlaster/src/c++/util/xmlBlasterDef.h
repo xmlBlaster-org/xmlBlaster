@@ -3,7 +3,7 @@ Name:      xmlBlaster.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.6 2002/12/02 18:54:54 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.7 2002/12/02 21:30:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -11,6 +11,7 @@ Version:   $Id: xmlBlasterDef.h,v 1.6 2002/12/02 18:54:54 laghi Exp $
 
 #ifdef _WINDOWS
 #pragma warning(disable:4786)
+#pragma warning(disable:4251)
 #endif
 
 #include <util/XmlBCfg.h>
@@ -33,6 +34,7 @@ namespace org { namespace xmlBlaster { namespace util {
 #else
 	typedef long long int Timestamp;
 #endif
+
 }}}
 
 #endif

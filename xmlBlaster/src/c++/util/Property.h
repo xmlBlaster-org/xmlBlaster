@@ -4,9 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
 -----------------------------------------------------------------------------*/
-#pragma warning(disable:4251)
-#pragma warning(disable:4786)
-
 #ifndef _UTIL_PROPERTY_H
 #define _UTIL_PROPERTY_H
 
