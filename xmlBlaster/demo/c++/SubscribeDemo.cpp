@@ -2,7 +2,7 @@
 Name:      SubscribeDemo.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Little demo to show how a publish is done
+Comment:   Little demo to show how a subscribe is done
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -92,11 +92,11 @@ int main(int args, char ** argv)
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
    }
-   catch (exception& ex) {
-      cout << " exception: " << ex.what() << endl;
-   }
    catch (bad_exception& ex) {
       cout << "bad_exception: " << ex.what() << endl;
+   }
+   catch (exception& ex) {
+      cout << " exception: " << ex.what() << endl;
    }
    catch (string& ex) {
       cout << "string: " << ex << endl;
