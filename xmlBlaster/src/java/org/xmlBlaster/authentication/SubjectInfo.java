@@ -130,6 +130,10 @@ public final class SubjectInfo implements I_AdminSubject
       this.log = this.glob.getLog("auth");
       String prae = glob.getLogPrefix();
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
+      if (this.subjectName.isSession()) {
+         log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
+         Thread.currentThread().dumpStack();
+      }
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.deliveryStatistic = new DeliveryStatistic();
 
