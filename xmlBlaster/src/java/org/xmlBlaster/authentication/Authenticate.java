@@ -831,7 +831,7 @@ final public class Authenticate implements I_RunlevelListener
     * <br>
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final String toXml() throws XmlBlasterException {
+   public final String toXml() {
       return toXml((String)null);
    }
 
@@ -841,7 +841,7 @@ final public class Authenticate implements I_RunlevelListener
     * @param extraOffset indenting of tags for nice output
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(1000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
