@@ -90,9 +90,11 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
          string oneRes = "<qos><state id='OK'/></qos>";
          if (!forCache) {
             if (boss_) {
-               oneRes = boss_->update(sessionId, *updateKey,
-                             (void*)&msgUnit.content[0], 
-                             msgUnit.content.length(), *updateQos); 
+               int size = msgUnit.content.length();
+               void *content = NULL;
+               if (size > 0) content = (void*)&msgUnit.content[0];
+               if (log_.trace()) log_.trace(me(), "going to invoke client specific update");
+               oneRes = boss_->update(sessionId, *updateKey, content, size, *updateQos); 
                // Call my boss
             }
             else log_.warn(me(), "can not update: no callback defined");
