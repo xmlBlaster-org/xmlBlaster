@@ -92,13 +92,21 @@ CorbaDriver::CorbaDriver(const CorbaDriver& corbaDriver)
      global_(corbaDriver.global_), 
      log_(corbaDriver.log_),
      statusQosFactory_(corbaDriver.global_), 
-     msgQosFactory_(corbaDriver.global_)
+     msgQosFactory_(corbaDriver.global_),
+#    if MICO
+     orbIsThreadSave_(false)
+#    elif TAO
+     orbIsThreadSave_(true)
+#    else
+     orbIsThreadSave_(true)
+#    endif
 {
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
    defaultCallback_ = NULL;
    doRun_           = true;
    mutex_           = Mutex();
+   if (log_.call()) log_.call("CorbaDriver", string("Constructor orbIsThreadSave_=") + lexical_cast<string>(orbIsThreadSave_));
 }
 
 CorbaDriver& CorbaDriver::operator =(const CorbaDriver& /*corbaDriver*/)
@@ -114,24 +122,28 @@ DriverMap& CorbaDriver::getDrivers()
 }
 
 
-CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName, bool isOrbOwner, CORBA::ORB_ptr orb)
+CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName, CORBA::ORB_ptr orb)
 {
    static Mutex mutex;
    static bool  isRunning = false;
    static bool  doRun     = false;
-//       Lock lock(mutex);
    Log& log = global.getLog("corba");
    if (log.call()) log.call("CorbaDriver", string("getInstance for ") + instanceName);
    CorbaDriver*  driver = NULL;
-   DriverMap& driverMap = CorbaDriver::getDrivers();
-   DriverMap::iterator iter = driverMap.find(instanceName);
-   if (iter == driverMap.end()) {
-      if (log.trace()) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
-      driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, isOrbOwner, orb);
-      driverMap.insert(DriverMap::value_type(instanceName, driver));
-      if (!isRunning && (orb == NULL)) driver->start(); // check if this is really what it should be ...
+
+   {
+      Lock lock(mutex);
+      DriverMap& driverMap = CorbaDriver::getDrivers();
+      DriverMap::iterator iter = driverMap.find(instanceName);
+      if (iter == driverMap.end()) {
+         if (log.trace()) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
+         driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, orb);
+         driverMap.insert(DriverMap::value_type(instanceName, driver));
+         if (!driver->orbIsThreadSave() && !isRunning && (orb == NULL))
+            driver->start(); // Start a simulated main loop thread, check if this is really what it should be ...
+      }
+      else driver = (*iter).second;
    }
-   else driver = (*iter).second;
    int count = driver->count_++;
    if (log.trace()) log.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<string>(count));
    return *driver;
@@ -171,23 +183,26 @@ int CorbaDriver::killInstance(const string& instanceName)
 
 void CorbaDriver::run()
 {
-   log_.info(ME, "the corba loop starts now");
+   if (log_.trace()) log_.trace(ME, "the corba loop starts now");
    doRun_ = true;
    if (isRunning_) return;
+   log_.info(ME, "the corba loop starts now");
    isRunning_ = true;
    while (doRun_) {
       {
-         Lock lock(mutex_);
-//         if (log_.trace()) log_.trace(ME, "sweep in running thread");
+         Lock lock(mutex_, orbIsThreadSave_);
+         if (log_.trace()) log_.trace(ME, "sweep in running thread");
          connection_->orbPerformWork();
       }
+      if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
       sleep(20); // sleep 20 milliseconds
+      if (log_.trace()) log_.trace(ME, "waiking up");
    }
    log_.info(ME, "the corba loop has ended now");
    isRunning_ = false;
 }
 
-CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner, CORBA::ORB_ptr orb)
+CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, CORBA::ORB_ptr orb)
    : doRun_(doRun),
      isRunning_(isRunning),
      mutex_(mutex),
@@ -196,13 +211,23 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunn
      global_(global), 
      log_(global.getLog("corba")),
      statusQosFactory_(global), 
-     msgQosFactory_(global)
+     msgQosFactory_(global),
+#    if MICO
+     orbIsThreadSave_(false)
+#    elif TAO
+     orbIsThreadSave_(true)
+#    else
+     orbIsThreadSave_(true)
+#    endif
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
 
+   if (log_.call()) log_.call("CorbaDriver", string("getInstance for ") + instanceName +
+                              " orbIsThreadSave_=" + lexical_cast<string>(orbIsThreadSave_));
+
    _COMM_TRY
-      connection_ = new CorbaConnection(global_, connectionOwner, orb);
+      connection_ = new CorbaConnection(global_, orb);
    _COMM_CATCH("::Constructor", true, false)
 }
 
@@ -218,14 +243,16 @@ CorbaDriver::~CorbaDriver()
 
 void CorbaDriver::initialize(const string& name, I_Callback &client)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       if (defaultCallback_ != NULL) delete defaultCallback_;
       defaultCallback_ = NULL;
       defaultCallback_ =  new DefaultCallback(global_, name, &client, 0);
 //      if (connection_ != NULL) delete connection_;
 //      connection_ = NULL;
+      if (log_.trace()) log_.trace(ME, "Before createCallbackServer");
       connection_->createCallbackServer(defaultCallback_);
+      if (log_.trace()) log_.trace(ME, "After createCallbackServer");
    _COMM_CATCH("::initialize", true, true)
 }
 
@@ -250,7 +277,7 @@ bool CorbaDriver::shutdownCb()
 
 ConnectReturnQos CorbaDriver::connect(const ConnectQos& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       return connection_->connect(qos);
    _COMM_CATCH("::connect", false, false)
@@ -258,7 +285,7 @@ ConnectReturnQos CorbaDriver::connect(const ConnectQos& qos)
 
 bool CorbaDriver::disconnect(const DisconnectQos& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       return connection_->disconnect(qos.toXml());
    _COMM_CATCH("::disconnect", false, false)
@@ -281,7 +308,7 @@ string CorbaDriver::loginRaw()
 
 bool CorbaDriver::shutdown()
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       return connection_->shutdown();
    _COMM_CATCH("::shutdown", false, false)
@@ -308,7 +335,7 @@ bool CorbaDriver::isLoggedIn()
 
 string CorbaDriver::ping(const string& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       return connection_->ping(qos);
    _COMM_CATCH("::ping", false, false)
@@ -316,7 +343,7 @@ string CorbaDriver::ping(const string& qos)
 
 SubscribeReturnQos CorbaDriver::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       string ret = connection_->subscribe(key.toXml(), qos.toXml());
       return SubscribeReturnQos(global_, statusQosFactory_.readObject(ret));
@@ -325,7 +352,7 @@ SubscribeReturnQos CorbaDriver::subscribe(const SubscribeKey& key, const Subscri
 
 vector<MessageUnit> CorbaDriver::get(const GetKey& key, const GetQos& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       return connection_->get(key.toXml(), qos.toXml());
    _COMM_CATCH("::get", false, false)
@@ -334,7 +361,7 @@ vector<MessageUnit> CorbaDriver::get(const GetKey& key, const GetQos& qos)
 vector<UnSubscribeReturnQos>
 CorbaDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       vector<string> tmp = connection_->unSubscribe(key.toXml(), qos.toXml());
       vector<string>::const_iterator iter = tmp.begin();
@@ -349,7 +376,7 @@ CorbaDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 
 PublishReturnQos CorbaDriver::publish(const MessageUnit& msgUnit)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       if (log_.call()) log_.call(ME, "publish");
       string ret = connection_->publish(msgUnit);
@@ -360,7 +387,7 @@ PublishReturnQos CorbaDriver::publish(const MessageUnit& msgUnit)
 
 void CorbaDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       connection_->publishOneway(msgUnitArr);
    _COMM_CATCH("::publishOneway", false, false)
@@ -368,7 +395,7 @@ void CorbaDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
 
 vector<PublishReturnQos> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
 {
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
    _COMM_TRY
       vector<string> tmp = connection_->publishArr(msgUnitArr);
       vector<string>::const_iterator iter = tmp.begin();
@@ -384,7 +411,7 @@ vector<PublishReturnQos> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
 vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& qos)
 {
    _COMM_TRY
-   Lock lock(mutex_);
+   Lock lock(mutex_, orbIsThreadSave_);
       vector<string> tmp = connection_->erase(key.toXml(), qos.toXml());
       vector<string>::const_iterator iter = tmp.begin();
       vector<EraseReturnQos> ret;

@@ -68,6 +68,7 @@ namespace org {
       Log&             log_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
+      bool             orbIsThreadSave_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -75,7 +76,17 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
-      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner = false, CORBA::ORB_ptr orb=NULL);
+      /**
+       * Only used by getInstance()
+       * @param global
+       * @param mutex   Global thread synchronization (to avoid static variable)
+       * @param doRun   Only for internal main loop for single threaded orbs. false stops the loop
+       *                
+       * @param isRunning    Feedback is doRun has stopped
+       * @param instanceName
+       * @param orb
+       */
+      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, CORBA::ORB_ptr orb=NULL);
 
 //      CorbaDriver();
 
@@ -85,13 +96,24 @@ namespace org {
 
       virtual ~CorbaDriver();
 
+      /**
+       * For single threaded CORBA implementations only (like MICO).
+       * One instance (the first) starts a main loop and checks if the
+       * orb has some work to perform (every 20 millis).
+       * In your real application this should be done by your main loop (e.g. from X-Window)
+       * E.g. mico has a helper implementation to register its file descriptors with another main loop.
+       */
       void run();
 
    public:
 
-      static CorbaDriver& getInstance(Global& global, const string& instanceName, bool isOrbOwner=false, CORBA::ORB_ptr orb=NULL);
+      static CorbaDriver& getInstance(Global& global, const string& instanceName, CORBA::ORB_ptr orb=NULL);
 
       static int killInstance(const string& instanceName);
+
+      bool orbIsThreadSave() const {
+         return this->orbIsThreadSave_;
+      }
 
       // methods inherited from I_CallbackServer
       void initialize(const string& name, I_Callback &client);
