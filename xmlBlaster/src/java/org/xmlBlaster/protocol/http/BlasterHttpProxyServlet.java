@@ -145,14 +145,16 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       HttpSession session = req.getSession(true);
       if (actionType.equals("login")) {
          boolean invalidate = Util.getParameter(req, "xmlBlaster.invalidate", true);
-         if (invalidate == true)
+         if (invalidate == true) {
+            log.info(ME, "Entering servlet doGet(), forcing a new sessionId");
             session.invalidate();   // force a new sessionId
+         }
          session = req.getSession(true);
       }
       String sessionId = session.getId();
 
       ME += "-" + sessionId;
-      if (log.TRACE) log.trace(ME, "Processing doGet()");
+      log.info(ME, "Entering servlet doGet() ...");
 
       if (sessionId == null) {
          PrintWriter out = res.getWriter();
@@ -177,7 +179,13 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId, loginName);
 
             ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(glob, loginName, passwd);
-            pushHandler.startPing();
+            if (!session.isNew()) {
+               pushHandler.startPing();
+            }
+            else {
+               log.info(ME, "Login action, browser has not yet joined this sessionId (cookie), so first pings pong may return an invalid sessionId");
+               pushHandler.startPing(); // This is too early here, we need to start the ping thread later?
+            }
 
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
 
@@ -226,6 +234,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          }
 
 
+         //------------------ first request from applet --------------------------
+         else if(actionType.equals("dummyToCreateASessionId")) {
+            log.info(ME, "doGet: dummyToCreateASessionId");
+            PrintWriter out = res.getWriter();
+            out.println(header+"<body text='white' bgcolor='white'>Empty response for your ActionType='dummyToCreateASessionId' " +
+                        System.currentTimeMillis() + "</body></html>");
+            return;
+         }
          //------------------ ready, browser processed last message --------------------------
          // The HttpPushHandler adds javascript 'parent.browserReady();' which
          // is invoked after the browser is ready.
@@ -376,7 +392,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String sessionId = req.getRequestedSessionId();
 
       String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
-      log.info(ME, "Entering BlasterHttpProxy.doPost() servlet");
+      log.info(ME, "Entering servlet doPost() ...");
 
       ProxyConnection proxyConnection = null;
       I_XmlBlasterAccess xmlBlaster = null;
