@@ -58,7 +58,7 @@ import java.util.*;
  * the boolean state access methods for a description
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecylce.html">The engine.message.lifecylce requirement</a>
- * @see org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
+ * @see org.xmlBlaster.test.topic.TestTopicLifeCycle
  * @author xmlBlaster@marcelruff.info
  */
 public final class TopicHandler implements I_Timeout
