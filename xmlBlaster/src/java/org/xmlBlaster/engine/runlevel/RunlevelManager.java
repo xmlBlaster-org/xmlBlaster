@@ -219,6 +219,7 @@ public final class RunlevelManager
          }
       }
       if (log.CALL) log.call(ME, "Leaving changeRunlevel with runlevel = " + toRunlevelStr(currRunlevel)); 
+      this.runlevelListenerSet.clear();
       return numErrors;
    }
 

@@ -69,6 +69,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
    private static boolean firstConnectError = true;
    private Properties pluginProp = null;
+   private boolean dbAdmin = true;
 
 
    /**
@@ -424,6 +425,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
       this.tableNamePrefix = pluginProp.getProperty("tableNamePrefix", this.tableNamePrefix).trim().toUpperCase();
 
+      String tmp = pluginProp.getProperty("dbAdmin", "true").trim();
+      this.dbAdmin = true;
+      if ("false".equalsIgnoreCase(tmp)) this.dbAdmin = false;
+
       if (this.log.DUMP) {
          this.log.dump(ME, "initialize -url                 : " + url);
          this.log.dump(ME, "initialize -user                : " + user);
@@ -433,6 +438,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.log.dump(ME, "initialize -driver list         : " + xmlBlasterJdbc);
          this.log.dump(ME, "initialize -max. waiting Threads:" + this.maxWaitingThreads);
          this.log.dump(ME, "initialize -tableNamePrefix     :" + this.tableNamePrefix);
+         this.log.dump(ME, "initialize -dbAdmin             :" + this.dbAdmin);
       }
 
       // could block quite a long time if the number of connections is big
@@ -711,6 +717,11 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             this.log.error(ME, "dumpMetaData: exception when releasing the connection: " + ex.getMessage());
          }
       }
+   }
+
+
+   public boolean isDbAdmin() {
+      return this.dbAdmin;
    }
 
 

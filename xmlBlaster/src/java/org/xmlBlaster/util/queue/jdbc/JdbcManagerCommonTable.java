@@ -98,7 +98,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String nodesTableName = null;
    private String queuesTableName = null;
    private String entriesTableName = null;
-   private boolean hasAdminPermission = true;
+//   private boolean hasAdminPermission = true;
 
 //   private final int queueIncrement;
    private java.util.HashSet nodesCache;
@@ -352,7 +352,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * checks if all necessary tables exist. If a table does not exist and 'createTable' true, then the 
+    * checks if all necessary tables exist. If a table does not exist and 'createTables' true, then the 
     * table is created.
     * @return boolean 'true' if the tables are all there after the invocation to this method, 'false' if at
     *         least one of the required tables is missing after the invocation to this method.
@@ -883,7 +883,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
 //         if (!this.dbInitialized) {
          if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
-         tablesCheckAndSetup(this.hasAdminPermission);
+//         tablesCheckAndSetup(this.hasAdminPermission);
+         tablesCheckAndSetup(this.pool.isDbAdmin());
          this.dbInitialized = true;
 //         }
       }
