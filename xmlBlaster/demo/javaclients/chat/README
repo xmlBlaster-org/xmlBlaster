@@ -28,7 +28,7 @@ To chat from you multi homed host the another server running xmlBlaster (XMLRPC)
 
 To chat from you multi homed host the another server running xmlBlaster (RMI):
 
-   java javaclients.chat.SimpleChat -loginName RMI -dispatch/clientSide/protocol RMI -dispatch/callback/protocol/rmi/hostname 198.197.24.129 -dispatch/clientside/protocol/rmi/hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -loginName RMI -protocol RMI -dispatch/callback/protocol/rmi/hostname 198.197.24.129 -dispatch/clientside/protocol/rmi/hostname 62.132.140.7
 
 
 Toget help:
