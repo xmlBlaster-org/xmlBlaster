@@ -47,7 +47,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
    </publish>
 
 
-   <!-- QoS when publishing, supported flags (not yet :-) -->
+   <!-- QoS when publishing, supported flags -->
    <publish>
       <qos>
          <sender> <!-- Who published this message (the login name) -->
@@ -78,6 +78,13 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <readonly />     <!-- A final/const message which may not be changed with further updates -->
                           <!-- Default is Read/Write -->
 
+         <route>          <!-- server internal added routing informations -->
+            <node id='bilbo' stratum='2' timestamp='34460239640'/>
+            <node id='frodo' stratum='1' timestamp='34460239661'/>
+            <node id='heron' stratum='0' timestamp='34460239590'/>
+         </route>
+
+         <!-- NOT YET SUPPORTED: START -->
          <defaultContent> <!-- Used content if the content given is null -->
             Empty
          </defaultContent>
@@ -89,6 +96,8 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <alter lang='TCL'> <!-- Allow content manipulation with a scripting language -->
             set content [$key('4711') * 1.2 + $content] <!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
          </alter>
+         <!-- NOT YET SUPPORTED: END -->
+
       </qos>
    </publish>
 
@@ -144,19 +153,32 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <state>          <!-- Server state -->
             EXPIRED       <!-- OK | EXPIRED | ERASED -->
          </state>
+
          <sender>         <!-- The publisher login name of this message -->
             Phillipe
          </sender>
+
          <subscriptionId> <!-- The same id which you got returned from your previous subscribe() call -->
             Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
          </subscriptionId>
+
          <rcvTimestamp nanos='1007764305862000006' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call -->
             2001-12-07 23:31:45.862000006 <!-- The nanos from above human readable -->
          </rcvTimestamp>
+
          <expiration remainingLife='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration -->
                                             <!-- This value is calculated relative to the current time on sending the message from xmlBlaster -->
+
          <queue index='0' of='1'> <!-- If queued messages are flushed on login -->
          </queue>
+
+         <redeliver>0</redeliver> <!-- If > 0, the message is redelivered after a failure -->
+
+         <route>          <!-- server internal added routing informations -->
+            <node id='bilbo' stratum='2' timestamp='34460239640'/>
+            <node id='frodo' stratum='1' timestamp='34460239661'/>
+            <node id='heron' stratum='0' timestamp='34460239590'/>
+         </route>
       </qos>
    </update>
 
@@ -200,6 +222,10 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          </callback>
               <!-- The session id is passed to the client callback server, he can check
               if he trusts this sender, it defaults to the login name of the sender -->
+
+         <callback type='SOCKET'>
+            192.168.1.2:33301
+         </callback>
 
          <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
             <!-- Qualifies the session based queue, with a maximum of 1000 messages
