@@ -2,11 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Current cvs
 ===========
+ o Cluster: Fixed clustered get() to not return message twice
 
  o C++ client: Added UDP datagram support via SOCKET protocol, try
     java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true
-    PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
-    SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
+    C++: PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
+    C++: SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
+    C:   HelloWorldUdp -plugin/socket/useUdpForOneway true
 
  o C++ client: Fixed publishOneway()
 
@@ -784,9 +786,9 @@ Changes for 0.848 [23, May 2003]
       port                    -> bootstrapPort
       socket.port             -> dispatch/connection/plugin/socket/port
       socket.hostname         -> dispatch/connection/plugin/socket/hostname
-      socket.cb.multiThreaded -> dispatch/callback/plugin/socket/multiThreaded
-      socket.threadPrio       -> dispatch/callback/plugin/socket/threadPrio
-      socket.responseTimeout  -> dispatch/callback/plugin/socket/responseTimeout
+      socket.cb.multiThreaded -> dispatch/connection/plugin/socket/multiThreaded
+      socket.threadPrio       -> dispatch/connection/plugin/socket/threadPrio
+      socket.responseTimeout  -> dispatch/connection/plugin/socket/responseTimeout
       socket.responseTimeout  -> plugin/socket/responseTimeout  (server)
       ns                      -> dispatch/connection/plugin/ior/useNameService
       ns                      -> plugin/ior/useNameService  (server)
