@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.12 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.13 2002/06/27 12:53:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -32,8 +32,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubDispatch
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubDispatch
  * </pre>
  */
 public class TestSubDispatch extends TestCase implements I_Callback
@@ -42,7 +42,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
    private final Global glob;
    private boolean messageArrived = false;
 
-   private String publishOid = "dummy";
+   private String publishOid = "dummyTestSubDispatch";
    private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
@@ -204,7 +204,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      Log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...");
       return "";
    }
 
@@ -232,13 +232,6 @@ public class TestSubDispatch extends TestCase implements I_Callback
          }
       }
       messageArrived = false;
-   }
-
-
-   // Helper for inner class
-   private void assertEquals(String a, String b, String c)
-   {
-      super.assertEquals(a, b, c);
    }
 
 
