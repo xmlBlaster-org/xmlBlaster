@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.29 2002/09/10 18:56:15 ruff Exp $
+Version:   $Id: Parser.java,v 1.30 2002/09/11 16:20:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -477,49 +477,51 @@ public class Parser
       // First we extract the first 10 bytes to get the msgLength ...
       int remainLength = NUM_FIELD_LEN;
       int lenRead;
-      {
-         int off = 0;
-         while ((lenRead = in.read(first10, off, remainLength)) != -1) {
+      int msgLength = 0;
+      synchronized (in) {
+         {
+            int off = 0;
+            while ((lenRead = in.read(first10, off, remainLength)) != -1) {
+               remainLength -= lenRead;
+               if (remainLength == 0) break;
+               off += lenRead;
+               //log.info(ME, "Receive: lenRead=" + lenRead + " off=" + off + " remainLength=" + remainLength);
+            }
+         }
+
+         if (lenRead == -1)
+            // if (sock.isClosed()) // since JDK 1.4
+            // throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
+            throw new IOException("Got EOF, lost socket connection");
+
+         try {
+            msgLength = Integer.parseInt((new String(first10, 0, NUM_FIELD_LEN)).trim());
+         }
+         catch (NumberFormatException e) {
+            throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
+         }
+
+         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+         if (msgLength == NUM_FIELD_LEN)
+            return null; // An empty message only contains the header 10 bytes
+         else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
+            throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
+
+
+         // Now we know the msgLength, lets extract the complete message ...
+         if (buf.buf == null || buf.buf.length != msgLength) {
+            buf.buf = null;
+            buf.buf = new byte[msgLength];
+            buf.offset = 0;
+         }
+         buf.offset = NUM_FIELD_LEN;
+         remainLength = msgLength - buf.offset;
+         while ((lenRead = in.read(buf.buf, buf.offset, remainLength)) != -1) {
             remainLength -= lenRead;
             if (remainLength == 0) break;
-            off += lenRead;
-            //log.info(ME, "Receive: lenRead=" + lenRead + " off=" + off + " remainLength=" + remainLength);
+            buf.offset += lenRead;
+            //log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
          }
-      }
-
-      int msgLength = 0;
-      if (lenRead == -1)
-         // if (sock.isClosed()) // since JDK 1.4
-         // throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
-         throw new IOException("Got EOF, lost socket connection");
-
-      try {
-         msgLength = Integer.parseInt((new String(first10, 0, NUM_FIELD_LEN)).trim());
-      }
-      catch (NumberFormatException e) {
-         throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
-      }
-
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got first 10 bytes of total length=" + msgLength);
-      if (msgLength == NUM_FIELD_LEN)
-         return null; // An empty message only contains the header 10 bytes
-      else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
-         throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
-
-
-      // Now we know the msgLength, lets extract the complete message ...
-      if (buf.buf == null || buf.buf.length != msgLength) {
-         buf.buf = null;
-         buf.buf = new byte[msgLength];
-         buf.offset = 0;
-      }
-      buf.offset = NUM_FIELD_LEN;
-      remainLength = msgLength - buf.offset;
-      while ((lenRead = in.read(buf.buf, buf.offset, remainLength)) != -1) {
-         remainLength -= lenRead;
-         if (remainLength == 0) break;
-         buf.offset += lenRead;
-         //log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
       }
 
       if (lenRead == -1)
