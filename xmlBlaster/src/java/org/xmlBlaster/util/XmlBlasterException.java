@@ -281,6 +281,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     * @return The original message text, never null
     */
    public final String getRawMessage() {
+      if (super.getMessage()!=null && super.getMessage().startsWith("#")) {
+         return super.getMessage();
+      }
       String revision = "#" + glob.getRevisionNumber();
       return (super.getMessage()==null) ? revision : revision + " " + super.getMessage();
    }
