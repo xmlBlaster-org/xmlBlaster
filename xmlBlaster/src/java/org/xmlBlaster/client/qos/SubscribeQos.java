@@ -136,6 +136,10 @@ public final class SubscribeQos
     * If set to true (which is default) an erase notification message is sent
     * to the subscriber when the topic is erased.
     * <br />
+    * Note: For exact subscriptions this subscription gets invalid when the topic is erased
+    * and you need to subscribe again. For XPath subscriptions the subscription remains,
+    * if the same topic is created again the Xpath will match and renew the subscription.
+    * <br />
     * The <i>state</i> in the message QoS is set to Constants.STATE_ERASED="ERASED"
     * @param notify true - notify subscriber when the topic is erased (default is true)
     */
