@@ -154,7 +154,7 @@ public class PluginInfo {
    private void parsePropertyValue(String rawString) throws XmlBlasterException {
       if (rawString==null) throw new IllegalArgumentException(ME + ".parsePropertyValue(null)");
 
-      params = new Properties();
+      this.params = new Properties();
       if(rawString!=null) {
          StringTokenizer st = new StringTokenizer(rawString, ",");
          boolean first=true;
@@ -168,9 +168,9 @@ public class PluginInfo {
             int pos = tok.indexOf("=");
             if (pos < 0) {
                log.info(ME, "Accepting param " + tok + " without value (missing '=')");
-               params.put(tok, "");
+               this.params.put(tok, "");
             }
-            params.put(tok.substring(0,pos), tok.substring(pos+1));
+            this.params.put(tok.substring(0,pos), tok.substring(pos+1));
          }
       }
       else
@@ -194,17 +194,20 @@ public class PluginInfo {
     * @return The configuration, never null
     */
    public Properties getParameters() {
-      return params;
+      if (this.params == null) {
+         this.params = new Properties();
+      }
+      return this.params;
    }
 
    public String[] getParameterArr() {
-      String[] arr = new String[params.size()*2];
-      Enumeration e = params.keys();
+      String[] arr = new String[getParameters().size()*2];
+      Enumeration e = this.params.keys();
       int i = 0;
       while(e.hasMoreElements()) {
          String key = (String)e.nextElement();
          arr[i++] = key;
-         arr[i++] = (String)params.get(key);
+         arr[i++] = (String)this.params.get(key);
       }
       return arr;
    }
