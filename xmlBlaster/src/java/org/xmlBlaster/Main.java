@@ -3,11 +3,13 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.3 $
-           $Date: 1999/11/08 22:40:59 $
+           $Revision: 1.4 $
+           $Date: 1999/11/11 12:07:53 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
+import org.xmlBlaster.engine.*;
+import org.xmlBlaster.serverIdl.*;
 import java.io.*;
 import org.omg.CosNaming.*;
 
