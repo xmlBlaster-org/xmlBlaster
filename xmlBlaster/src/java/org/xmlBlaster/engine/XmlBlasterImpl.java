@@ -54,8 +54,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
-   private int MAX_CACHE_KEY = 500; // 0: switched off, default is 500;
-   private int MAX_CACHE_QOS = 500; // 0: switched off, default is 500;
+   // !!!! NOTE: The cache is currently buggy, as the PublishQos.clone() is buggy!!!
+   private int MAX_CACHE_KEY = 0; // 0: switched off, a good value is 500;
+   private int MAX_CACHE_QOS = 0; // 0: switched off, a good value is 500;
    private int CHUNK_TO_REMOVE_KEY = 25;
    private int CHUNK_TO_REMOVE_QOS = 25;
    private HashMap qosCache = new HashMap(200);
