@@ -597,7 +597,6 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
 
 /**
  * Publish a message array in a bulk to the server. 
- * TODO: Is not yet implemented
  * @return The raw XML string array returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
@@ -605,25 +604,54 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
  */
 static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
 {
-   if (msgUnitArr) {;} /* Suppress compiler warning */
-   strncpy0(exception->errorCode, "internal.notImplemented", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-   SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] publishArr() is not implemented, please contact the xmlBlaster mailing list if you need this performance boost", __FILE__, __LINE__);
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_ERROR, __FILE__, exception->message);
-   return 0;
+   size_t i, totalLen;
+   SocketDataHolder responseSocketDataHolder;
+   QosArr *response = 0;
+
+   char *data = encodeMsgUnitArr(msgUnitArr, &totalLen, xb->logLevel >= LOG_DUMP);
+
+   if (checkArgs(xb, "publishArr", exception) == false ) return 0;
+
+   for (i=0; i<msgUnitArr->len; i++)
+      msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
+
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
+                &responseSocketDataHolder, exception) == false) {
+      free(data);
+      return 0;
+   }
+   free(data);
+
+   response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
+   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+
+   return response;
 }
 
 /**
  * Publish oneway a message array in a bulk to the server without receiving an ACK. 
- * TODO: Is not yet implemented
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
 static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
 {
-   if (msgUnitArr) {;} /* Suppress compiler warning */
-   strncpy0(exception->errorCode, "internal.notImplemented", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-   SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] publishOneway() is not implemented, please contact the xmlBlaster mailing list if you need this performance boost", __FILE__, __LINE__);
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_ERROR, __FILE__, exception->message);
+   size_t i, totalLen;
+   SocketDataHolder responseSocketDataHolder;
+
+   char *data = encodeMsgUnitArr(msgUnitArr, &totalLen, xb->logLevel >= LOG_DUMP);
+
+   if (checkArgs(xb, "publishOneway", exception) == false ) return;
+
+   for (i=0; i<msgUnitArr->len; i++)
+      msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
+
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
+                &responseSocketDataHolder, exception) == false) {
+      free(data);
+      return;
+   }
+   free(data);
+   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 }
 
 /**

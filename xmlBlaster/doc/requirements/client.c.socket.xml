@@ -1074,8 +1074,6 @@ build reportShow
 
       <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a></li>
 
-      <li> The methods <code>publishArr()</code> and <code>publishOneway()</code> are not yet implemented,
-           please use the <code>publish()</code> method in the meantime.</li>
       </ul>
       </p>
       <h2>C++ remark</h2>
@@ -1098,7 +1096,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.43 $</revision>
+   <revision>$Revision: 1.44 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
