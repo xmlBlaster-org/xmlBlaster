@@ -86,7 +86,7 @@
   <xmlBlaster>
     ...
 
-     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filesystem.FilePollerPlugin'>
+     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
         <attribute id='directoryName'>/tmp/filePoller</attribute>
         <attribute id='topicName'>poller.test</attribute>
         <attribute id='publishKey'>&lt;![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]&gt;</attribute>
@@ -118,9 +118,12 @@ and here a minimalistic one:
   <xmlBlaster>
     ...
 
-     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filesystem.FilePollerPlugin'>
+     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
         <attribute id='directoryName'>/tmp/filePoller</attribute>
         <attribute id='topicName'>poller.test</attribute>
+        <!-- determines on which level to start/shutdown the plugin and what to do in case of an exception -->
+        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
      </plugin>
    ...
 
