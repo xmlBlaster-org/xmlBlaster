@@ -38,8 +38,10 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  define VSNPRINTF _vsnprintf
 #else
 #  define SNPRINTF snprintf
-#  define VSNPRINTF vsnprintf
+#  define VSNPRINTF vsnprintf    /* stdarg.h */
 #endif
+
+/* #include<stdint.h>  -> C99:  uint64_t etc. */
 
 #ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
 #ifndef __USE_BSD /* gcc -ansi on Linux: */
