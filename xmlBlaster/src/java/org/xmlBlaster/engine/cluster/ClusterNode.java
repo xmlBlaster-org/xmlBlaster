@@ -159,6 +159,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          qos.setIsClusterNode(true);
 
+         // As we forward many subscribes probably accessing the
+         // same message but only want one update.
+         // We cache this update and distribute to all our clients:
+         qos.setDuplicateUpdates(false);
+
          qos.setUserId(connectGlob.getId()); // the login name
          // The password is from the environment -passwd or more specific -passwd[heron]
 
@@ -368,11 +373,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (!isLocalNode())
-         log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
-      else {
+      if (isLocalNode()) {
          log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
          Thread.currentThread().dumpStack();
+      }
+      else {
+         if (log.CALL) log.call(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
       }
 
       // Important: Do authentication of sender:
