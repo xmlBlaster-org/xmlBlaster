@@ -29,6 +29,8 @@ import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -952,7 +954,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * If we lost the connection to xmlBlaster, handle it
     * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
-    *            id="TryingReconnect" if we are in fail save mode and polling for a connection
+    *            id="TryingReconnect" if we are in fail save mode and polling for a connection and have no message recorder switched on
     */
    private synchronized void handleConnectionException(ConnectionException e) throws XmlBlasterException
    {
@@ -971,23 +973,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                driver.init();
                doLoginPolling();
             }
-            /*
-            if (isReconnectPolling) {
-               // Thread.currentThread().dumpStack();
-               throw new XmlBlasterException("TryingReconnect", "Still trying to find " + getServerNodeId() + " again ..."); // Client may hope on reconnect
-            }
-
-            if (numLogins == 0L) {
-               doLoginPolling();
-            }
-            else {
-               log.error(ME, "Lost connection to " + getServerNodeId() + " server: " + e.toString());
-               driver.init();
-               clientProblemCallback.lostConnection(); // notify client
-               doLoginPolling();
-               throw new XmlBlasterException("TryingReconnect", "Trying to find " + getServerNodeId() + " again ..."); // Client may hope on reconnect
-            }
-            */
+         }
+         if (recorder == null) {
+            String text = "No connection to " + getServerNodeId() + " server and no message recorder activated, can't handle your request";
+            log.warn(ME, text);
+            throw new XmlBlasterException("TryingReconnect", text);
          }
       }
       else {
@@ -1301,18 +1291,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
    */
 
-   private final String subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException, IllegalArgumentException
+   private final SubscribeRetQos subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException, IllegalArgumentException
    {
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for subscribe()");
+      String xmlRet;
       if (secPlgn!=null) { // with security Plugin: interceptor
-         return secPlgn.importMessage(
+         xmlRet = secPlgn.importMessage(
                      driver.subscribe(secPlgn.exportMessage(xmlKey),
                                       secPlgn.exportMessage(qos)));
       }
       else { // without security plugin
-         return driver.subscribe(xmlKey, qos);
+         xmlRet = driver.subscribe(xmlKey, qos);
       }
+      return new SubscribeRetQos(glob, xmlRet);
    }
 
    /**
@@ -1355,7 +1347,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see org.xmlBlaster.engine.RequestBroker#subscribe
     */
-   public final String subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
+   public final SubscribeRetQos subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe(with callback) ...");
       if (updateClient == null) {
@@ -1363,12 +1355,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                        " Please use XmlBlasterConnection - constructor with default I_Callback given.";
          throw new XmlBlasterException(ME+".NoCallback", text);
       }
-      String subscriptionId = null;
+      SubscribeRetQos subscribeQos = null;
       synchronized (callbackMap) {
-         subscriptionId = subscribe(xmlKey, qos);
-         callbackMap.put(subscriptionId, cb);
+         subscribeQos = subscribe(xmlKey, qos);
+         callbackMap.put(subscribeQos.getSubscriptionId(), cb);
       }
-      return subscriptionId;
+      return subscribeQos;
    }
 
    /**
@@ -1382,7 +1374,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see org.xmlBlaster.engine.RequestBroker#subscribe
     */
-   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
+   public final SubscribeRetQos subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe() ...");
       try {
@@ -1390,10 +1382,23 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       } catch(XmlBlasterException e) {
          throw e;
       } catch(ConnectionException e) {
-         if (recorder != null) recorder.subscribe(xmlKey, qos);
+         SubscribeRetQos retQos = null;
+         if (recorder != null) {
+            recorder.subscribe(xmlKey, qos);
+            retQos = new SubscribeRetQos(glob, Constants.STATE_OK, getQueuedInfo());
+            // TODO: Generate a unique subscritpionId -> pass to client and later to server as well
+         }
          handleConnectionException(e);
+         if (retQos != null)
+            return retQos;
       }
-      return ""; // never reached, there is always an exception thrown
+      return new SubscribeRetQos(glob, null); // never reached, there is always an exception thrown
+   }
+
+   private final String getQueuedInfo()
+   {
+      return Constants.INFO_QUEUED+"["+getServerNodeId()+"]";
+      // Probably change to only add the server node id for cluster clients
    }
 
 
@@ -1439,8 +1444,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
-    *            id="TryingReconnect" if we are in fail save mode and polling for a connection,
-    #            your message is tailed back and flushed on reconnect
+    *            id="TryingReconnect" if we are in fail save mode and polling for a connection and have no message recorder installed
     */
    public final PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -1461,8 +1465,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (recorder != null) { 
             String oid = getAndReplaceOid(msgUnit);
             recorder.publish(msgUnit);
-            retQos = new PublishRetQos(glob, Constants.STATE_OK);
-            retQos.setStateInfo("QUEUED");
+            retQos = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
             retQos.setOid(oid);
          }
          handleConnectionException(e);
@@ -1654,28 +1657,42 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
+   public final EraseRetQos[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
       if (log.CALL) log.call(ME, "erase() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for erase()");
       try {
+         String[] arr;
          if (secPlgn!=null) {
             String[] result = driver.erase(secPlgn.exportMessage(xmlKey),
                                            secPlgn.exportMessage(qos));
-            return importAll(result);
+            arr = importAll(result);
          }
          else {
-            return driver.erase(xmlKey, qos);
+            arr = driver.erase(xmlKey, qos);
          }
+         EraseRetQos[] qosArr = new EraseRetQos[arr.length];
+         for (int ii=0; ii<qosArr.length; ii++)
+            qosArr[ii] = new EraseRetQos(glob, arr[ii]);
+         return qosArr;
       } catch(XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
       } catch(ConnectionException e) {
-         if (recorder != null) recorder.erase(xmlKey, qos);
+         EraseRetQos retQos = null;
+         if (recorder != null) {
+            recorder.erase(xmlKey, qos);
+            retQos = new EraseRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+         }
          handleConnectionException(e);
+         if (retQos != null) {
+            EraseRetQos[] qosArr = new EraseRetQos[1];
+            qosArr[0] = retQos;
+            return qosArr; // Problem: We don't know which messages are deleted
+         }
       }
-      return dummySArr;
+      return new EraseRetQos[0];
    }
 
 
@@ -1710,9 +1727,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             //not found in cache
             if( units == null ) {
                units = getRaw(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
-               String subId = subscribeRaw(xmlKey, qos); //subscribe to this messages (asynchronous)
-               cache.newEntry(subId, xmlKey, units);     //fill messages to cache
-               log.info(ME, "New entry in cache created (subId="+subId+")");
+               SubscribeRetQos subId = subscribeRaw(xmlKey, qos); //subscribe to this messages (asynchronous)
+               cache.newEntry(subId.getSubscriptionId(), xmlKey, units);     //fill messages to cache
+               log.info(ME, "New entry in cache created (subId="+subId.getSubscriptionId()+")");
             }
          }
          else {
