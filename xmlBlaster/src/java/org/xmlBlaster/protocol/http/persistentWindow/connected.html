@@ -8,7 +8,7 @@
       <!-- link rel="stylesheet" type="text/css" href="/xmlBlaster.css" / -->
    </head>
 
-   <body onLoad="parent.ping()" leftmargin="1" topmargin="0" marginwidth="1" marginheight="0" BGCOLOR="white">
+   <body leftmargin="1" topmargin="0" marginwidth="1" marginheight="0" BGCOLOR="white">
       <table cellspacing="0" cellpadding="0" border="0" width="100%" height="100%">
          <tr>
             <td valign="top">
@@ -17,8 +17,10 @@
             <td valign="top"><p /><br />
                Holding HTTP Connection.<br />
                <font size='-2'>Please do not close.</font><p />
-               <!-- This top.close() crashes sometimes the whole netscape ?! -->
-               <a href="javascript:top.closeLogWindow(); top.close();"><font>Disconnect</font></a>
+
+               <!-- crashes sometimes the whole netscape ?! -->
+               <a href="javascript:top.closeLogWindow(); top.xmlBlasterLogout();"><font>Disconnect</font></a>
+
                <script language="JavaScript1.2">
                   if (top.Log.TRACE == false) {
                      var action = "javascript:top.Log.TRACE=true; this.location.reload()";
