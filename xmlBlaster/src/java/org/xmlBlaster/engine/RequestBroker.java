@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.78 2000/07/13 09:46:42 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.79 2000/07/14 13:07:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.78 $
+ * @version $Revision: 1.79 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -306,7 +306,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       }
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
-      MessageUnit[] msgUnitArr = new MessageUnit[xmlKeyVec.size()];
+      Vector msgUnitVec = new Vector(xmlKeyVec.size());
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
@@ -320,11 +320,18 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
          }
 
-         msgUnitArr[ii] = msgUnitHandler.getMessageUnit().getClone();
-         msgUnitArr[ii].qos = "<qos></qos>";
+         if (msgUnitHandler.isPublishedWithData()) {
+            MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
+            mm.qos = "<qos></qos>"; // !!! GetReturnQos is still missing
+            msgUnitVec.addElement(mm);
+         }
       }
 
-      getMessages += xmlKeyVec.size();
+      MessageUnit[] msgUnitArr = new MessageUnit[msgUnitVec.size()];
+      for (int ii=0; ii<msgUnitArr.length; ii++)
+         msgUnitArr[ii] = (MessageUnit)msgUnitVec.elementAt(ii);
+
+      getMessages += msgUnitArr.length;
       return msgUnitArr;
    }
 
