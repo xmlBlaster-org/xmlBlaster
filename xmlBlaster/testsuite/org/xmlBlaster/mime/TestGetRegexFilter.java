@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.1 2002/06/08 19:59:45 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.2 2002/06/27 12:42:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -37,7 +37,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.mime.TestGetRegexFilter
  * </pre>
  */
 public class TestGetRegexFilter extends TestCase

@@ -3,7 +3,7 @@ Name:      TestPublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestPublishFilter.java,v 1.2 2002/06/15 16:20:51 ruff Exp $
+Version:   $Id: TestPublishFilter.java,v 1.3 2002/06/27 12:42:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -39,7 +39,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.mime.TestPublishFilter
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.mime.TestPublishFilter
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.mime.TestPublishFilter
  * </pre>
  */
 public class TestPublishFilter extends TestCase

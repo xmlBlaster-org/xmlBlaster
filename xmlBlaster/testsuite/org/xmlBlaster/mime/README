@@ -5,4 +5,4 @@ http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.h
 
 Invoke:
 
-    java -Djava.compiler= junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.mime.AllTests
+    java -Djava.compiler= junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.mime.AllTests
