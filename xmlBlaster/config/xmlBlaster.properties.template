@@ -207,8 +207,7 @@ Persistence.Path=${user.home}${file.separator}tmp
 # Persistence.Driver.Type=xmldb
 # Persistence.Driver.Version=xindice
 # Persistence.Driver.Version=eXist
-# Persistence.Path=xmldb:xindice:///db
-# Persistence.Collection=xmlBlaster
+# Persistence.Path=xmldb:xindice:///db/xmlBlaster
 
 #-------------------  Xindice database ------------------------------------------
 # see $XMLBLASTER_HOME/README or list-archive on http://www.xmlBlaster.org for
