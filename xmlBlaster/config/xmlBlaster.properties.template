@@ -134,6 +134,13 @@ PriorizedDispatchPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='s
 
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# MsgDistributor Plugin configuration
+#
+MsgDistributorPlugin[ConsumableQueue][1.0]=org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin
+
+MsgDistributorPlugin/defaultPlugin=undef,1.0
+#MsgDistributorPlugin/defaultPlugin=ConsumableQueue,1.0
 
 #------------------------------------------------------------------------------
 # Server side plugins to store single messages persistently 'msgUnitStore'
