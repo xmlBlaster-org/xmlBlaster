@@ -1843,6 +1843,8 @@ public class Global implements Cloneable
          ret = getProperty().get(prefix + shortKey, ret);
          if (map != null)
             ret = map.getProperty(shortKey, ret);
+         if (ret == null)
+            return null;
          return getProperty().replaceVariableWithException(shortKey, ret);
       }
       catch (JUtilsException ex) {
@@ -1862,7 +1864,7 @@ public class Global implements Cloneable
     */
    public long get(String shortKey, long defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
-      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
          return defaultValue; 
       try {
@@ -1885,7 +1887,7 @@ public class Global implements Cloneable
     */
    public int get(String shortKey, int defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
-      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
          return defaultValue; 
       try {
@@ -1908,7 +1910,7 @@ public class Global implements Cloneable
     */
    public boolean get(String shortKey, boolean defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
-      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
          return defaultValue; 
       try {
@@ -1931,7 +1933,7 @@ public class Global implements Cloneable
     */
    public double get(String shortKey, double defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
-      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
          return defaultValue; 
       try {
