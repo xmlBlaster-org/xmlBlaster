@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.6 2000/10/11 20:47:37 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.7 2001/02/14 01:02:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -32,7 +32,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  *
  * @see ProtoProtoConverter
  */
-public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlaster
+public class XmlBlasterImpl // implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlaster
 {
    private final String ME = "XmlRpc.XmlBlasterImpl";
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
@@ -85,23 +85,36 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    /**
     * @see xmlBlaster.idl
     */
-   public String publish (String sessionId, String xmlKey_literal, Vector msgUnitWrap,
+   public String publish (String sessionId, String xmlKey_literal, byte[] content,
          String publishQoS_literal)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering publish() ...");
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content, publishQoS_literal);
+      return blasterNative.publish(sessionId, msgUnit);
+   }
 
-      MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
+
+   /**
+    * @see xmlBlaster.idl
+    */
+    /*
+   public String publish (String sessionId, String xmlKey_literal, String content,
+         String publishQoS_literal)
+      throws XmlBlasterException
+   {
+      if (Log.CALL) Log.call(ME, "Entering publish() ....");
+
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), publishQoS_literal);
 
       // convert the xml literal strings
       XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
       PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
 
       String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
-      // String retVal = blasterNative.publish(sessionId, msgUnit);
       return retVal;
    }
-
+   */
 
    /**
     * @see xmlBlaster.idl
