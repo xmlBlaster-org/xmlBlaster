@@ -7,7 +7,6 @@ package org.xmlBlaster.util.queuemsg;
 
 import org.jutils.log.LogChannel;
 // import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.PriorityEnum;
@@ -23,7 +22,7 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneable
+public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 {
    private final static String ME = "MsgQueueEntry";
 
@@ -56,7 +55,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneab
    protected final String entryType;
 
    private transient boolean stored = false;
-   private transient boolean swapped = false;
+   //private transient boolean swapped = false;
 
    /** The queue to which this entry belongs (set in the constructors) */
    protected final String uniqueIdString;
@@ -444,30 +443,6 @@ public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneab
     */
    final public boolean isStored() {
       return this.stored;
-   }
-
-   /**
-    * Enforced by I_MapEntry
-    * @return The unique ID as a string (cached for performance)
-    */
-   public String getUniqueIdStr() {
-      return this.uniqueIdString;
-   }
-
-   /**
-    * Enforced by I_Map
-    * @see I_Map#isSwapped()
-    */
-   public boolean isSwapped() {
-      return this.swapped;
-   }
-
-   /**
-    * Enforced by I_Map
-    * @see I_Map#isSwapped(boolean)
-    */
-   public void isSwapped(boolean swapped) {
-      this.swapped = swapped;
    }
 }
 
