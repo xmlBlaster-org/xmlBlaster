@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.9 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.10 2000/03/19 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,9 +24,11 @@ import test.framework.*;
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
  * Manuel is the 'sender' and Ulrike the 'receiver'<br />
- * Ulrike is not on line when Manuel sends the message, and will receive the message
+ * Ulrike is not online when Manuel sends the message, and will receive the message
  * from her queue in the xmlBlaster when she logs in.
  * <p>
+ * A second test checks if there is an Exception thrown, if the receiver
+ * is not logged in and the <ForceQueue> is not set.
  * Invoke examples:<br />
  * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
