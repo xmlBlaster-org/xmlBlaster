@@ -77,7 +77,7 @@ CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
 #------------------------------------------------------------------------------
 # On client side only
 
-# Register the client side protocol plugion to connect to server
+# Register the client side protocol plugin to connect to server
 ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
 ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
 ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
