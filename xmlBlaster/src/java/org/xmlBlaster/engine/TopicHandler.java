@@ -136,7 +136,7 @@ public final class TopicHandler implements I_Timeout
 
    private final Object ADMIN_MONITOR = new Object();
 
-   private I_SubscriptionListener subscriptionListener;
+   private SubscriptionListener subscriptionListener;
 
    /**
     * Use this constructor if a subscription is made on a yet unknown object.
@@ -804,7 +804,7 @@ public final class TopicHandler implements I_Timeout
       sub.addTopicHandler(this);
 
       if (this.subscriptionListener != null) 
-         this.subscriptionListener.onAddSubscriber(sub);
+         this.subscriptionListener.subscriptionAdd(new SubscriptionEvent(sub));
 
       if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getId() + "' has successfully subscribed");
 
@@ -887,8 +887,14 @@ public final class TopicHandler implements I_Timeout
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
 
       if (isDead()) {
-         if (this.subscriptionListener != null) 
-            this.subscriptionListener.onRemoveSubscriber(subs);
+         if (this.subscriptionListener != null) {
+            try {
+               this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "removeSubscriber: an exception occured: " + ex.getMessage());
+            }
+         }
          return subs; // during cleanup process
       }
 
@@ -906,8 +912,14 @@ public final class TopicHandler implements I_Timeout
             }
          }
       }
-      if (this.subscriptionListener != null) 
-         this.subscriptionListener.onRemoveSubscriber(subs);
+      if (this.subscriptionListener != null) { 
+         try {
+            this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "removeSubscriber: an exception occured: " + ex.getMessage());
+         }
+      }
       return subs;
    }
 
@@ -1939,7 +1951,7 @@ public final class TopicHandler implements I_Timeout
       if (this.subscriptionListener != null) {
          SubscriptionInfo[] subs = getSubscriptionInfoArr();
          for (int i=0; i < subs.length; i++)
-            this.subscriptionListener.onAddSubscriber(subs[i]);
+            this.subscriptionListener.subscriptionAdd(new SubscriptionEvent(subs[i]));
       }
    }
    

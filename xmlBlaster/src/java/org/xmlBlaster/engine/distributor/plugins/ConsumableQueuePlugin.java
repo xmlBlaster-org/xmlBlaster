@@ -11,6 +11,7 @@ import java.util.Set;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.SubscriptionEvent;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
@@ -100,10 +101,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    synchronized public void shutdown() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "shutdown");
       SubscriptionInfo[] subs = this.topicHandler.getSubscriptionInfoArr();
-      for (int i=0; i < subs.length; i++) onRemoveSubscriber(subs[i]);
+      for (int i=0; i < subs.length; i++) this.subscriptionRemove(new SubscriptionEvent(subs[i]));
       this.isReady = false;
    }
-
    
    private final DispatchManager getDispatchManager(SubscriptionInfo subscriptionInfo) {
       if (subscriptionInfo == null) {
@@ -130,7 +130,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * Invoked when a subscriber is added to the TopicHandler
     * @param subscriptionInfo
     */
-   synchronized public void onAddSubscriber(SubscriptionInfo subscriptionInfo) {
+   public synchronized void subscriptionAdd(SubscriptionEvent e) 
+      throws XmlBlasterException {
+      SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (this.log.CALL) this.log.call(ME, "onAddSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.addConnectionStatusListener(this);
@@ -142,12 +144,12 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * Invoked when a subscriber is removed from the TopicHandler
     * @param subscriptionInfo
     */
-   synchronized public void onRemoveSubscriber(SubscriptionInfo subscriptionInfo) {
+   synchronized public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
+      SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (this.log.CALL) this.log.call(ME, "onRemoveSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.removeConnectionStateListener(this);
    }
-
 
    /**
     * Event arriving from one DispatchManager telling this plugin it can 
