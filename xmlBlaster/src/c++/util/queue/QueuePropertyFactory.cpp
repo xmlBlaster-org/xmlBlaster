@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.1 2002/12/09 15:25:29 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.2 2002/12/09 23:19:14 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/QueuePropertyFactory.h>
@@ -16,9 +16,29 @@ using boost::lexical_cast;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 QueuePropertyFactory::QueuePropertyFactory(Global& global)
-   : SaxHandlerBase(global)
+   : SaxHandlerBase(global), addressFactory_(global)
 {
+   inAddress_ = false;
+   address_   = NULL;
+   cbAddress_ = NULL;
 }
+
+QueuePropertyFactory::~QueuePropertyFactory()
+{
+   if (address_   != NULL) delete address_;
+   if (cbAddress_ != NULL) delete cbAddress_;
+}
+
+void QueuePropertyFactory::reset(QueuePropertyBase& prop)
+{
+   prop_ = &prop;
+}
+
+QueuePropertyBase& QueuePropertyFactory::getQueueProperty()
+{
+   return *prop_;
+}
+
 
 /**
  * Called for SAX callback start tag
@@ -26,6 +46,32 @@ QueuePropertyFactory::QueuePropertyFactory(Global& global)
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
 void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 {
+   // in case it is inside or entrering an 'address' or 'callbackAddress'
+   if (SaxHandlerBase::caseCompare(name, "address")) {
+      if (address_ != NULL) delete address_;
+      address_ = NULL;
+      address_ = new Address(global_);
+      inAddress_ = true;
+      addressFactory_.reset(*address_);
+      addressFactory_.startElement(name, attrs);
+      return;
+   }
+   if (SaxHandlerBase::caseCompare(name, "callback")) {
+      if (cbAddress_ != NULL) delete cbAddress_;
+      cbAddress_ = NULL;
+      cbAddress_ = new CallbackAddress(global_);
+      inAddress_ = true;
+      addressFactory_.reset(*cbAddress_);
+      addressFactory_.startElement(name, attrs);
+      return;
+   }
+   if (inAddress_) {
+      addressFactory_.startElement(name, attrs);
+      return;
+   }
+
+   // not inside any of the sub-elements
+
    int len = attrs.getLength();
    if (len > 0) {
       int i=0;
@@ -86,14 +132,44 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
 }
 
 
+void QueuePropertyFactory::characters(const XMLCh* const ch, const unsigned int length)
+{
+   if (inAddress_) addressFactory_.characters(ch, length);
+}
+
+/** End element. */
+void QueuePropertyFactory::endElement(const XMLCh* const name)
+{
+   // in case it is inside or entrering an 'address' or 'callbackAddress'
+   if (SaxHandlerBase::caseCompare(name, "address")) {
+      addressFactory_.endElement(name);
+      AddressBase* ptr = new Address(addressFactory_.getAddress());
+      prop_->addressArr_.insert((prop_->addressArr_).begin(), ptr);
+      inAddress_ = false;
+      return;
+   }
+   if (SaxHandlerBase::caseCompare(name, "callback")) {
+      addressFactory_.endElement(name);
+      AddressBase* ptr = new CallbackAddress(addressFactory_.getAddress());
+      prop_->addressArr_.insert((prop_->addressArr_).begin(), ptr);
+      inAddress_ = false;
+      return;
+   }
+   if (inAddress_) {
+      addressFactory_.endElement(name);
+      return;
+   }
+}
+
+
+
+
 QueuePropertyBase&
 QueuePropertyFactory::readQueueProperty(const string& literal, QueuePropertyBase& prop)
 {
-//   if (prop != NULL) {
-      prop_ = &prop;
-      init(literal);
-      return *prop_;
-//   }
+   reset(prop);
+   init(literal);
+   return getQueueProperty();
 }
 
 }}}} // namespaces

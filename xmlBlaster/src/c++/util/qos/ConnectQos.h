@@ -2,7 +2,7 @@
 Name:      ConnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
+Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_QOS_CONNECTQOS_H
@@ -16,6 +16,16 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 #include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
 #include <util/Global.h>
+#include <util/Log.h>
+
+#include <util/cfg/AddressFactory.h>
+#include <util/cfg/Address.h>
+#include <util/cfg/CallbackAddress.h>
+#include <util/queue/QueuePropertyFactory.h>
+#include <util/queue/QueueProperty.h>
+#include <util/queue/CbQueueProperty.h>
+
+#include <vector>
 
 /**
  * <qos>\n") +
@@ -48,23 +58,46 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::cfg;
+using namespace org::xmlBlaster::util::queue;
 
 class Dll_Export ConnectQosData
 {
 private:
-   SecurityQos  securityQos_;
-   SessionQos   sessionQos_;
-   ServerRef    serverRef_;
-   bool         ptp_;
-   bool         isDirty_;
-   string       literal_;
+   Global&     global_;
+   Log&        log_;
+   SecurityQos securityQos_;
+   SessionQos  sessionQos_;
+   ServerRef   serverRef_;
+   bool        ptp_;
+   bool        isDirty_;
 
-   void setLiteral(const string& literal);
+   vector<Address>         addresses_;
+   vector<CallbackAddress> cbAddresses_;
+   vector<QueueProperty>   clientQueueProperties_;
+   vector<CbQueueProperty> cbQueueProperties_;
 
    friend class ConnectQosFactory;
 
+   void copy(const ConnectQosData& data)
+   {
+      securityQos_            = data.securityQos_;
+      sessionQos_             = data.sessionQos_;
+      serverRef_              = data.serverRef_;
+      ptp_                    = data.ptp_;
+      isDirty_                = data.isDirty_;
+      addresses_              = data.addresses_;
+      cbAddresses_            = data.cbAddresses_;
+      clientQueueProperties_  = data.clientQueueProperties_;
+      cbQueueProperties_      = data.cbQueueProperties_;
+   }
+
+
+
 public:
-   ConnectQosData();
+   ConnectQosData(Global& global);
+   ConnectQosData(const ConnectQosData& data);
+   ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;
    string getPtpAsString() const;
    void setPtp(bool ptp);
@@ -77,76 +110,26 @@ public:
    SecurityQos getSecurityQos() const;
    void setServerRef(const ServerRef& serverRef);
    ServerRef getServerRef() const;
-   string toXml() const;
-};
+   string toXml(const string& extraOffset="") const;
 
-/* ----------------------- ConnectQosFactory ---------------------------------*/
+   // methods for queues and addresses ...
+   void setAddress(const Address& address);
+   Address getAddress() const;
 
-class Dll_Export ConnectQosFactory: public util::XmlQoSBase
-{
-private:
-   const string ME;
+   void addCbAddress(const CallbackAddress& cbAddress);
+   CallbackAddress getCbAddress() const;
 
-//   string       sessionId_;
-   SessionQosFactory sessionQosFactory_;
-   string       userId_;
-   SecurityQos* securityQos_;
-   ServerRef*   serverRef_;
-   string       serverRefType_;
-   bool         isPtp_;
+   void addClientQueueProperty(const QueueProperty prop);
+   QueueProperty getClientQueueProperty() const;
 
-   // helper flags for SAX parsing
-   bool inSecurityService_;
-   bool inServerRef_;
-   bool inSession_;
-
-   void prep()
-   {
-      inSecurityService_ = false;
-      inServerRef_       = false;
-      inSession_         = false;
-      serverRefType_     = "";
-      isPtp_             = false;
-      securityQos_       = NULL;
-      serverRef_         = NULL;
-   }
-
-public:
-   ConnectQosFactory(Global& global);
-
-   ~ConnectQosFactory();
-
-   /**
-    * This characters emulates the java version but keep in mind that it is
-    * not the virtual method inherited from DocumentHandler !!
-    */
-   void characters(const XMLCh* const ch, const unsigned int length);
-
-   /**
-    * Start element, event from SAX parser.
-    * <p />
-    * @param name Tag name
-    * @param attrs the attributes of the tag
-    */
-   void startElement(const XMLCh* const name, AttributeList& attrs);
-
-   /**
-    * End element, event from SAX parser.
-    * <p />
-    * @param name Tag name
-    */
-   void endElement(const XMLCh* const name);
-
-   ConnectQosData readObject(const string& qos);
-
-   static string writeObject(const ConnectQosData& qos);
+   void addCbQueueProperty(const CbQueueProperty& prop);
+   CbQueueProperty getCbQueueProperty() const;
 
 };
 
 typedef ConnectQosData ConnectQos;
 
 typedef ConnectQosData ConnectReturnQos;
-
 
 }}}} // namespaces
 

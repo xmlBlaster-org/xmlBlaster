@@ -1,0 +1,113 @@
+/*------------------------------------------------------------------------------
+Name:      ConnectQosFactory.h
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
+------------------------------------------------------------------------------*/
+
+#ifndef _UTIL_QOS_CONNECTQOSFACTORY_H
+#define _UTIL_QOS_CONNECTQOSFACTORY_H
+
+#include <util/xmlBlasterDef.h>
+#include <util/qos/ConnectQos.h>
+#include <authentication/SecurityQosFactory.h>
+
+/**
+ * <qos>\n") +
+ *    <securityService type='htpasswd' version='1.0'>
+ *      <![CDATA[
+ *      <user>joe</user>
+ *      <passwd>secret</passwd>
+ *      ]]>
+ *    </securityService>
+ *    <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
+ *    <ptp>true</ptp>
+ *    <!-- The client side queue: -->
+ *    <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
+ *       <address type='IOR' sessionId='4e56890ghdFzj0'>
+ *          IOR:10000010033200000099000010....
+ *       </address>
+ *    </queue>
+ *    <!-- The server side callback queue: -->
+ *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
+ *       <callback type='IOR' sessionId='4e56890ghdFzj0'>
+ *          IOR:10000010033200000099000010....
+ *          <burstMode collectTime='400' />
+ *       </callback>
+ *    </queue>
+ * </qos>
+ */
+
+
+namespace org { namespace xmlBlaster { namespace util { namespace qos {
+
+using namespace org::xmlBlaster::authentication;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::cfg;
+using namespace org::xmlBlaster::util::queue;
+
+class Dll_Export ConnectQosFactory: public util::SaxHandlerBase
+{
+private:
+   const string         ME;
+   SessionQosFactory    sessionQosFactory_;
+   SecurityQosFactory   securityQosFactory_;
+   QueuePropertyFactory queuePropertyFactory_;
+   AddressFactory       addressFactory_;
+
+   string               userId_;
+   SecurityQos*         securityQos_;
+   ServerRef*           serverRef_;
+   string               serverRefType_;
+   bool                 isPtp_;
+
+   // helper flags for SAX parsing
+   bool inSecurityService_;
+   bool inServerRef_;
+   bool inSession_;
+
+//   ConnectQos connectQos_;
+
+   void prep()
+   {
+      inSecurityService_ = false;
+      inServerRef_       = false;
+      inSession_         = false;
+      serverRefType_     = "";
+      isPtp_             = false;
+      securityQos_       = NULL;
+      serverRef_         = NULL;
+   }
+
+public:
+   ConnectQosFactory(Global& global);
+
+   ~ConnectQosFactory();
+
+   /**
+    * This characters emulates the java version but keep in mind that it is
+    * not the virtual method inherited from DocumentHandler !!
+    */
+   void characters(const XMLCh* const ch, const unsigned int length);
+
+   /**
+    * Start element, event from SAX parser.
+    * <p />
+    * @param name Tag name
+    * @param attrs the attributes of the tag
+    */
+   void startElement(const XMLCh* const name, AttributeList& attrs);
+
+   /**
+    * End element, event from SAX parser.
+    * <p />
+    * @param name Tag name
+    */
+   void endElement(const XMLCh* const name);
+
+   ConnectQosData readObject(const string& qos);
+};
+
+}}}} // namespaces
+
+#endif

@@ -34,7 +34,7 @@ namespace org {
 
 
 CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
-  : loginQos_(), connectReturnQos_(), global_(global), log_(global.getLog("corba"))
+  : loginQos_(), connectReturnQos_(global), global_(global), log_(global.getLog("corba"))
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
@@ -275,7 +275,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
      if (defaultCallback_) delete defaultCallback_;
      defaultCallback_ =  new DefaultCallback(global_, loginName_, client, 0);
      callback_ = createCallbackServer(defaultCallback_);
-     util::CallbackAddress addr("IOR");
+     util::cfg::CallbackAddress addr(global_, "IOR");
      addr.setAddress(orb_->object_to_string(callback_));
      loginQos_.addCallbackAddress(addr);
      if (log_.TRACE) log_.trace(me(), string("Success, exported ") +

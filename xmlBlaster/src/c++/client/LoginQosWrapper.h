@@ -10,7 +10,7 @@ Comment:   Handling one xmlQoS
 
 #include <vector>
 #include <client/QosWrapper.h>
-#include <util/CallbackAddress.h>
+#include <util/cfg/CallbackAddress.h>
 
 /**
  * This class encapsulates the qos of a publish() message.
@@ -30,12 +30,13 @@ Comment:   Handling one xmlQoS
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
 using namespace std;
+using org::xmlBlaster::util::cfg::CallbackAddress;
 
 namespace org { namespace xmlBlaster {
    
    class LoginQosWrapper : public QosWrapper {
          
-      typedef vector<util::CallbackAddress> CallbackVector;
+      typedef vector<CallbackAddress> CallbackVector;
       
    private:
       string me() const {
@@ -80,7 +81,7 @@ namespace org { namespace xmlBlaster {
        * @param callback The object containing the callback address.<br />
        *        To add more callbacks, us the addCallbackAddress() method.
        */
-      LoginQosWrapper(const util::CallbackAddress &callback) 
+      LoginQosWrapper(const CallbackAddress &callback)
          : addressVec_() {
          addCallbackAddress(callback);
          usePtP_ = true;
@@ -119,7 +120,7 @@ namespace org { namespace xmlBlaster {
        * @param callback  An object containing the protocol (e.g. EMAIL) 
        * and the address (e.g. hugo@welfare.org)
        */
-      void addCallbackAddress(const util::CallbackAddress &callback) {
+      void addCallbackAddress(const CallbackAddress &callback) {
          addressVec_.insert(addressVec_.end(), callback);
       }
       
@@ -153,7 +154,7 @@ namespace org { namespace xmlBlaster {
          string offset = "\n   " + extraOffset, sb = "<qos>\n";
          if (!usePtP_) sb += offset + "   <noPtP />";
          for (string::size_type i=0; i<addressVec_.size(); i++) {
-            util::CallbackAddress ad = addressVec_[i];
+            CallbackAddress ad = addressVec_[i];
             sb += ad.toXml("   ") + "\n";
          }
          sb += "</qos>";

@@ -18,9 +18,9 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <client/protocol/corba/DefaultCallback.h>
 #include <util/Log.h>
 #include <client/protocol/corba/NameServerControl.h>
-#include <util/CallbackAddress.h>
+#include <util/cfg/CallbackAddress.h>
 #include <util/MessageUnit.h>
-#include <util/qos/ConnectQos.h>
+#include <util/qos/ConnectQosFactory.h>
 #include <util/Global.h>
 
 #define  SERVER_HEADER generated/xmlBlaster

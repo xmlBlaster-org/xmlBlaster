@@ -3,7 +3,7 @@ Name:      AddressFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.h,v 1.1 2002/12/09 12:26:41 laghi Exp $
+Version:   $Id: AddressFactory.h,v 1.2 2002/12/09 23:19:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -34,6 +34,10 @@ private:
 
 public:
    AddressFactory(Global& global);
+
+   void reset(AddressBase& address);
+
+   AddressBase& getAddress();
 
    /**
     * Called for SAX callback start tag
