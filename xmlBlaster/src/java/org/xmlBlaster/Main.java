@@ -403,7 +403,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                log.info(ME, "xmlBlaster is ready for requests");
          }
       }
-      if (to < from) { // shutdown
+      if (to <= from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_RUNNING_PRE) {
             if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
          }

@@ -99,9 +99,11 @@ public class SignalCatcher implements Runnable
     * @return true on success
     */
    public boolean removeSignalCatcher() {
+
       if (this.thread == null) {
          return false;
       }
+
       //boolean removed = Runtime.getRuntime().removeShutdownHook(this.thread);
       boolean removed = false;
       try {
@@ -166,6 +168,7 @@ public class SignalCatcher implements Runnable
     */
    public void run() {
       if (runDummy) { // Run the Thread to allow the garbage collector to clean it up
+         this.listener = null;
          return;
       }
       if (this.log != null) {
