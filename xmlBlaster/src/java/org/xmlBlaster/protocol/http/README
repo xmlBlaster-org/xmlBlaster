@@ -1,7 +1,5 @@
 This is the framework to allow callbacks from xmlBlaster to browsers.
 
-NOTE: Work is in progress, it is not totally finished.
-
 If you don't have the JSDK (java servlet development kit from Sun)
 installed, this will not compile.
 Just ignore the warnings in this case.
@@ -147,21 +145,21 @@ Config files setup:
             #jaco org.apache.jserv.JServ $properties $1 2>> $log
 
 7) Test it
-   Invoke browser test servlet:
-
-      http://localhost/servlets/BrowserTest
-
-   Start xmlBlaster:
-
-      jaco org.xmlBlaster.Main +trace
-
    Start the Apache and then the servlet engine:
 
       jserv
 
+   Invoke browser test servlet:
+
+      http://localhost/servlets/BrowserTest
+
    Watch log output (if there are problems):
  
       tail -f  /var/log/httpd/jserv.log
+
+   Start xmlBlaster:
+
+      jaco org.xmlBlaster.Main +trace
 
 	Start the callback servlet:
 
