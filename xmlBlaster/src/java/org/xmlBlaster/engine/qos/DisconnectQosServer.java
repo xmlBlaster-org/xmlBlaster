@@ -12,7 +12,7 @@ import org.xmlBlaster.util.qos.DisconnectQosData;
 /**
  * This class encapsulates the qos of a logout() or disconnect()
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
- * @see org.xmlBlaster.test.classtest.DisconnectQosServerTest
+ * @see org.xmlBlaster.test.classtest.DisconnectQosTest
  */
 public class DisconnectQosServer extends DisconnectQosData
 {
