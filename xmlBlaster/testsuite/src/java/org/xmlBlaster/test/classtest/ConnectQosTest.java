@@ -81,6 +81,11 @@ public class ConnectQosTest extends TestCase {
          "      <ptp>false</ptp>\n" +
          "   </callback>\n" +
          */
+         "   <queue relating='connection' type='RAM' version='4.0' maxEntries='22' maxBytes='44'>\n" +
+         "      <address type='XMLRPC'>\n" +
+         "         http:/www.mars.universe:8080/RPC2\n" +
+         "      </address>\n" +
+         "   </queue>\n" +
          "   <queue relating='callback' maxEntries='1600' maxBytes='2000'>\n" +
          "      <callback type='XMLRPC'>\n" +
          "         <ptp>true</ptp>\n" +
@@ -120,6 +125,14 @@ public class ConnectQosTest extends TestCase {
          assertEquals("", false, qos.duplicateUpdates());
 
          {
+            ClientQueueProperty prop = qos.getClientQueueProperty();
+            assertEquals("", 22L, prop.getMaxEntries());
+            assertEquals("", "RAM", prop.getType());
+            assertEquals("", "4.0", prop.getVersion());
+            assertEquals("", 44L, prop.getMaxBytes());
+         }
+
+         {
             CbQueueProperty prop = qos.getSubjectQueueProperty();
             assertEquals("", 1009L, prop.getMaxEntries());
             assertEquals("", "XY", prop.getType());
@@ -142,6 +155,8 @@ public class ConnectQosTest extends TestCase {
             CbQueueProperty prop = qos.getSessionCbQueueProperty();
             assertEquals("", 1600L, prop.getMaxEntries());
          }
+
+         //System.out.println(qos.toXml());
          
          // TODO: check all methods !!!
 
@@ -160,7 +175,7 @@ public class ConnectQosTest extends TestCase {
          public final String getSecurityPluginVersion() throws XmlBlasterException
          */
          AddressBase[] addrArr = qos.getAddresses();
-         assertEquals("", 1, addrArr.length);
+         assertEquals("Address array", 1, addrArr.length);
          Address addr = qos.getAddress();
          //assertEquals("", "http:...", addr.getAddress().trim()); // from client queue property
          assertEquals("", false, qos.isPtpAllowed());
@@ -171,6 +186,44 @@ public class ConnectQosTest extends TestCase {
       }
 
       System.out.println("***ConnectQosTest: testParse [SUCCESS]");
+   }
+
+   public void testParse2() {
+      System.out.println("***ConnectQosTest: testParse2 ...");
+      
+      try {
+         long sessionTimeout = 3600001L;
+         String xml =
+         "<qos>\n" +
+         "  <securityService type='htpasswd' version='1.0'><![CDATA[\n" +
+         "   <user>A-native-client-plugin</user>\n" +
+         "   <passwd>secret</passwd>\n" +
+         "  ]]></securityService>\n" +
+         "  <session name='client/A-native-client-plugin' timeout='86400000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>\n" +
+         "  <queue relating='connection' type='RAM' version='1.0' maxEntries='10000000' maxEntriesCache='1000'>\n" +
+         "   <address type='LOCAL' pingInterval='0' dispatchPlugin='undef'>\n" +
+         "    <burstMode collectTime='0'/>\n" +
+         "   </address>\n" +
+         "  </queue>\n" +
+         " </qos>\n";
+
+         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         ConnectQosData qos = factory.readObject(xml); // parse
+         String newXml = qos.toXml();                  // dump
+         qos = factory.readObject(newXml);             // parse again
+
+         if (log.TRACE) log.trace("ConnectQosTest", "ORIG=\n" + xml + "\n NEW=\n" + newXml);
+         
+         ClientQueueProperty prop = qos.getClientQueueProperty();
+         assertEquals("", "RAM", prop.getType());
+         assertEquals("", "1.0", prop.getVersion());
+         System.out.println(qos.toXml());
+      }
+      catch (XmlBlasterException e) {
+         fail("testParse2 failed: " + e.toString());
+      }
+
+      System.out.println("***ConnectQosTest: testParse2 [SUCCESS]");
    }
 
    public void testClientConnectQos() {
@@ -225,6 +278,7 @@ public class ConnectQosTest extends TestCase {
       testSub.testCredential();
       testSub.testParse();
       testSub.testClientConnectQos();
+      testSub.testParse2();
       //testSub.tearDown();
    }
 }
