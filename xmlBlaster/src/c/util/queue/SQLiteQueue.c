@@ -10,6 +10,7 @@ Compile:
  export LD_LIBRARY_PATH=/opt/sqlite-bin/lib:/home/xmlblast/xmlBlaster/lib
  gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClientC -lpthread
 See:       http://www.sqlite.org/
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>

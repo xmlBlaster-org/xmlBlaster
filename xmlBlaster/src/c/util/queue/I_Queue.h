@@ -52,13 +52,15 @@ typedef struct QueueException {
 /*const int QUEUE_ENTRY_EMBEDDEDTYPE_LEN = 26;*/
 #define QUEUE_ENTRY_EMBEDDEDTYPE_LEN 28
 
+/**
+ * A stuct holding the necessary queue entry informations used by I_Queue. 
+ */
 typedef struct QueueEntry {
-   int64_t uniqueId;
-   int16_t priority;
-   bool isPersistent;
-   /*void *embeddedObject;*/
-   char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN];
-   BlobStruct embeddedBlob; /* blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
+   int64_t uniqueId;        /** The unique key, used for sorting, usually a time stamp [nano sec]. Is assumed to be ascending over time. */
+   int16_t priority;        /** The priority of the queue entry, has higher sorting order than than the time stamp */
+   bool isPersistent;       /** Mark an entry to be persistent, needed for cache implementations, 'T' is true, 'F' is false. 'F' in persistent queue is a swapped transient entry */
+   char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN]; /** A string describing this entry, for example the format of the blob. */
+   BlobStruct embeddedBlob; /** blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } QueueEntry;
 
 /**
@@ -72,7 +74,7 @@ typedef struct QueueEntryStructArr {
 struct I_QueueStruct;
 typedef struct I_QueueStruct I_Queue;
 
-/* Declare function pointers to use in struct to simulate object oriented access */
+/** Declare function pointers to use in struct to simulate object oriented access */
 typedef void  ( * I_QueueInitialize)(I_Queue *queueP, QueueException *exception);
 typedef void  ( * I_QueueShutdown)(I_Queue *queueP, QueueException *exception);
 typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception);
@@ -82,6 +84,11 @@ typedef bool  ( * I_QueueClear)(I_Queue *queueP, QueueException *exception);
 typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, QueueException *exception);
 typedef void  ( * I_QueueLogging)(const char *location, const char *fmt, ...);
 
+/**
+ * Interface for a queue implementation. 
+ * See SQLiteQueue.c for a DB based persistent queue implementation
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html">The client.c.queue requirement</a>
+ */
 struct I_QueueStruct {
   /* public: */
    int argc;
