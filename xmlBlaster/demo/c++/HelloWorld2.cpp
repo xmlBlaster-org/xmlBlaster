@@ -137,9 +137,7 @@ public:
                           eraseRetQos[i].toXml());
          }
 
-         log_.info(ME, "going to sleep for 2 sec and disconnect");
-         org::xmlBlaster::util::thread::Thread::sleep(2000);
-
+         log_.info(ME, "Disconnect, bye.");
          DisconnectQos disconnectQos(global_);
          con.disconnect(disconnectQos);
       }
@@ -151,12 +149,16 @@ public:
    /**
     * Callbacks from xmlBlaster arrive here. 
     */
-   string update(const string& /*sessionId*/, UpdateKey& updateKey, void* /*content*/,
-                 long /*contentSize*/, UpdateQos& updateQos)
+   string update(const string& sessionId, UpdateKey& updateKey,
+                 const unsigned char* content,
+                 long contentSize, UpdateQos& updateQos)
    {
-      log_.info(ME, "update: key: " + updateKey.toXml());
-      log_.info(ME, "update: qos: " + updateQos.toXml());
-      // if (true) throw XmlBlasterException(USER_UPDATE_ERROR, "HelloWorld2", "");
+      string contentStr(reinterpret_cast<char *>(const_cast<unsigned char *>(content)), contentSize);
+      log_.info(ME, "Received update message with secret sessionId '" + sessionId + "':" +
+                    updateKey.toXml() +
+                    "\n content=" + contentStr +
+                    updateQos.toXml());
+      // if (true) throw XmlBlasterException(USER_UPDATE_ERROR, "HelloWorld2", "TEST");
       return "";
    }
 
@@ -174,8 +176,17 @@ int main(int args, char ** argv)
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
-// XmlBlasterAccess::usage();
-// glob.getLog().info("HelloWorld2", "Example: HelloWorld2\n");
+   
+   string intro = "XmlBlaster C++ client " + glob.getVersion() +
+                  ", try option '-help' if you need usage informations.";
+   glob.getLog().info("HelloWorld2", intro);
+
+   if (glob.wantsHelp()) {
+      glob.getLog().info("HelloWorld2", Global::usage());
+      glob.getLog().info("HelloWorld2", "Example: HelloWorld2 -trace true\n");
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+      return 1;
+   }
 
    HelloWorld2 hello(glob);
    hello.execute();
