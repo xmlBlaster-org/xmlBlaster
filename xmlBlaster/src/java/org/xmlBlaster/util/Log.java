@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.15 1999/11/23 13:36:45 ruff Exp $
+Version:   $Id: Log.java,v 1.16 1999/11/23 16:46:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -149,6 +149,7 @@ public class Log
    public final static void panic(String instance, String text)
    {
       log((withXtermEscapeColor) ? panicE : panicX, instance, text);
+      numErrorInvocations++;
       displayStatistics();
       exitLow(1);
    }

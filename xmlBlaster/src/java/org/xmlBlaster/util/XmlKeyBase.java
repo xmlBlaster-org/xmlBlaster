@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.12 1999/11/22 23:05:03 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.13 1999/11/23 16:46:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -20,7 +20,7 @@ import org.w3c.dom.Attr;
 
 
 /**
- * XmlKeyBase. 
+ * XmlKeyBase.
  * <p>
  * All XmlKey's have the same XML minimal structure:<p>
  * <pre>
@@ -88,7 +88,7 @@ public class XmlKeyBase
 
    protected String xmlKey_literal;
 
-   protected org.w3c.dom.Document doc = null;  // the parsed xmlKey_literal DOM
+   protected org.w3c.dom.Document xmlDoc = null;  // the parsed xmlKey_literal DOM
    protected org.w3c.dom.Node rootNode = null; // this is always the <key ...>
    protected String keyOid = null;             // value from attribute <key oid="...">
 
@@ -107,7 +107,7 @@ public class XmlKeyBase
 
 
    /**
-    * Parses given xml string. 
+    * Parses given xml string.
     * USE THIS constructor when publish() is invoked (needs redesign)!
     *
     * @param The original key in XML syntax, for example:<br>
@@ -223,6 +223,16 @@ public class XmlKeyBase
    }
 
 
+   /**
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used
+    */
+   public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
+   {
+      loadDomTree();
+      return xmlDoc;
+   }
+
+
    public final int getQueryType() throws XmlBlasterException
    {
       loadDomTree();
@@ -238,14 +248,14 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used. 
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
     * <p>
     * The keyOid will be set properly if no error occures
     * The rootNode will be set properly if no error occures
     */
    private void loadDomTree() throws XmlBlasterException
    {
-      if (doc != null)
+      if (xmlDoc != null)
          return;       // DOM tree is already loaded
 
       if (keyType == ASCII_TYPE)
@@ -259,7 +269,7 @@ public class XmlKeyBase
       com.jclark.xsl.dom.XMLProcessorImpl xmlProc = RequestBroker.getInstance().getXMLProcessorImpl();
 
       try {
-         doc = xmlProc.load(input);
+         xmlDoc = xmlProc.load(input);
       } catch (java.io.IOException e) {
          Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
          throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
@@ -268,7 +278,7 @@ public class XmlKeyBase
          throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
 
-      org.w3c.dom.Node tmpRootNode = doc.getDocumentElement(); 
+      org.w3c.dom.Node tmpRootNode = xmlDoc.getDocumentElement();
 
       checkForKeyAttr(tmpRootNode);
 
@@ -324,7 +334,7 @@ public class XmlKeyBase
                   if (isPublish) {
                      Log.warning(ME, "Generated key oid=\"" + keyOid + "\" for publish mode seems to be strange");
                   }
-                  else {  
+                  else {
                      if (Log.TRACE) Log.trace(ME, "Generated key oid=\"" + keyOid + "\"");
                   }
                }

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.24 1999/11/23 15:31:43 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.25 1999/11/23 16:46:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -45,7 +45,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    final private Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
-    * For listeners who want to be informed about erase() of messages. 
+    * For listeners who want to be informed about erase() of messages.
     */
    final private Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
 
@@ -183,7 +183,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, subscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
@@ -199,7 +199,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, subscribeQoS);
       MessageUnit[] messageUnitArr = new MessageUnit[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -216,10 +216,15 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
+    * This method does the XPath query. 
+    *
     * @param clientName is only needed for nicer logging output
     * @return Array of matching XmlKey objects (may contain null elements)
+    *
+    * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries 
     */
-   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
+   private Vector parseKeyOid(org.w3c.dom.Document xmlDoc/*, com.sun.xml.tree.XmlDocument xmlDoc*/,
+                              ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
    {
       Vector xmlKeyVec = new Vector();
       String clientName = clientInfo.toString();
@@ -233,7 +238,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          Enumeration nodeIter;
          try {
             if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
-            nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
+            nodeIter = queryMgr.getNodesByXPath(xmlDoc, xmlKey.getQueryString());
          } catch (Exception e) {
             Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
             throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
@@ -350,6 +355,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    private void subscribeToOid(SubscriptionInfo subs) throws XmlBlasterException
    {
+      if (Log.TRACE) Log.trace(ME, "Entering subscribeToOid() ...");
       String uniqueKey = subs.getXmlKey().getUniqueKey();
       MessageUnitHandler messageUnitHandler;
       synchronized(messageContainerMap) {
@@ -377,7 +383,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
+      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, unSubscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null) {
@@ -397,11 +403,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *
     * @see xmlBlaster.idl for comments
     */
-   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   public String publish(ClientInfo clientInfo, MessageUnit messageUnit, XmlQoS xmlQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
-      if (messageUnit == null || qos_literal==null) {
+      if (messageUnit == null || xmlQoS==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
       }
@@ -420,13 +426,44 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       //----- 2. check all known query subscriptions if the new message fits as well
       if (messageUnitHandler.isNewCreated()) {
          messageUnitHandler.setNewCreatedFalse();
-         Log.warning(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
+
+         if (Log.TRACE) Log.trace(ME, "Checking existing query subscriptions if they match with this new one");
+
          Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
+         org.w3c.dom.Document newXmlDoc = xmlKey.getXmlDoc();
+
+         Vector matchingSubsVec = new Vector();
          synchronized (set) {
             Iterator iterator = set.iterator();
             while (iterator.hasNext()) {
-               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               // reuse CODE from subscribe() ...
+
+               SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
+               XmlKey queryXmlKey = existingQuerySubscription.getXmlKey();
+
+               if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
+
+                  Vector matchVec = parseKeyOid(newXmlDoc, clientInfo, queryXmlKey, xmlQoS);
+               
+                  if (matchVec != null && matchVec.size() == 1 && matchVec.elementAt(0) != null) {
+                     if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
+                     SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription.getClientInfo(),
+                                                                  xmlKey,
+                                                                  existingQuerySubscription.getXmlQoS());
+                     matchingSubsVec.addElement(subs);
+                  }
+                  else {
+                     if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " does NOT match the existing query subscription " + queryXmlKey.getUniqueKey());
+                  }
+               }
+               else {
+                  Log.error(ME, "REGEX check for existing query subscriptions is still missing");
+               }
+            }
+
+            // now after closing the synchronized block, me may fire the events
+            // doing it inside the synchronized could cause a deadlock
+            for (int ii=0; ii<matchingSubsVec.size(); ii++) {
+               subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
             }
          }
       }
@@ -444,7 +481,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *
     * @see xmlBlaster.idl for comments
     */
-   public String[] publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
+   public String[] publish(ClientInfo clientInfo, MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish(array) ...");
 
@@ -457,7 +494,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       String[] returnArr = new String[messageUnitArr.length];
       for (int ii=0; ii<messageUnitArr.length; ii++) {
-         returnArr[ii] = publish(messageUnitArr[ii], qos_literal_Arr[ii]);
+         XmlQoS xmlQoS = new XmlQoS(qos_literal_Arr[ii]);
+         returnArr[ii] = publish(clientInfo, messageUnitArr[ii], xmlQoS);
       }
 
       return returnArr;
@@ -511,7 +549,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
+      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, qoS);
       String[] oidArr = new String[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -605,6 +643,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
+      if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent() ...");
       synchronized (subscriptionListenerSet) {
          Iterator iterator = subscriptionListenerSet.iterator();
          while (iterator.hasNext()) {

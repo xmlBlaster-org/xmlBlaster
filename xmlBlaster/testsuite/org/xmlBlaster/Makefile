@@ -18,6 +18,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/ClientOid.class \
 			$(CLASS_DIR)/ClientGet.class \
 			$(CLASS_DIR)/ClientXml.class \
+			$(CLASS_DIR)/ClientSub.class \
 			$(CLASS_DIR)/ClientErase.class
 #------------------------------------------------------------------------------
 
