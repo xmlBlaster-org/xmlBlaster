@@ -199,7 +199,19 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
       if ("attribute".equalsIgnoreCase(name)) {
          this.inAttribute = false;
          if (this.attributeKey != null && this.attributeValue != null) {
-            this.pluginConfig.addAttribute(this.attributeKey, this.attributeValue.toString());
+            String val = this.attributeValue.toString();
+            if (val.startsWith("<![CDATA[")) {  //if (this.wrappedInCDATA) {
+               // Strip CDATA
+               int pos = val.indexOf("<![CDATA[");
+               if (pos >= 0) {
+                  val = val.substring(pos+9);
+               }
+               pos = val.lastIndexOf("]]>");
+               if (pos >= 0) {
+                  val = val.substring(0, pos);
+               }
+            }
+            this.pluginConfig.addAttribute(this.attributeKey, val);
             if (this.wrappedInCDATA) {
                this.pluginConfig.wrapAttributeInCDATA(this.attributeKey);
                this.wrappedInCDATA = false;
