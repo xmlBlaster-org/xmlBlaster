@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12963 better handling of possible interrupted exception in ConnectionPool
+
  o #12961 Added ConnectQos to xml server dump (without security parts)
 
  o #12960 Fixed delay of callback polling after a client reconnect
