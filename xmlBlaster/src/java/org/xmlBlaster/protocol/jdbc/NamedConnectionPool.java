@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.9 2000/09/15 17:16:19 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.10 2000/11/03 19:56:39 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -72,6 +72,9 @@ import java.sql.DriverManager;
  *       if (con!=null) namedPool.release(dbUrl, user, pw, con);
  *    }
  * </pre>
+ * @see         org.jutils.pool.PoolManager
+ * @see         org.jutils.pool.ResourceWrapper
+ * @since       xmlBlaster 0.78
  */
 public class NamedConnectionPool
 {
