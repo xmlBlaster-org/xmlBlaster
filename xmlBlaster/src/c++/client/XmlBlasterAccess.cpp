@@ -247,8 +247,8 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 {
    if (log_.call()) log_.call(ME, "publishOneway");
    if (log_.dump()) {
-      for (int i=0; i < msgUnitArr.size(); i++) {
-             log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+      for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
+         log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    connection_->publishOneway(msgUnitArr);
@@ -258,8 +258,8 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
 {
    if (log_.call()) log_.call(ME, "publishArr");
    if (log_.dump()) {
-      for (int i=0; i < msgUnitArr.size(); i++) {
-             log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+      for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
+         log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    return connection_->publishArr(msgUnitArr);
