@@ -1,57 +1,89 @@
 /*------------------------------------------------------------------------------
-Name:      ClientSub.java
+Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.4 1999/12/08 12:16:18 ruff Exp $
+Comment:   Demo code how to access xmlBlaster using CORBA
+Version:   $Id: ClientRaw.java,v 1.1 1999/12/08 12:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.authenticateIdl.*;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
+import jacorb.naming.NameServer;
+import org.omg.CosNaming.*;
 
 
 /**
+ * Demo code how to access xmlBlaster using CORBA
  * This client tests the method subscribe() with a later publish() with XPath query
  * The subscribe() should be recognized for this later arriving publish()
  * <p>
  * Invoke examples:
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientSub
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientRaw `cat /tmp/NS_Ref`
  *
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientSub -name "Jeff"
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientRaw -name "Jeff" `cat /tmp/NS_Ref`
  */
-public class ClientSub
+public class ClientRaw
 {
+   private org.omg.CORBA.ORB orb = null;
    private Server xmlBlaster = null;
    private static String ME = "Tim";
 
-   public ClientSub(String args[])
+   public ClientRaw(String args[])
    {
-      StopWatch stop = new StopWatch();
+      orb = org.omg.CORBA.ORB.init(args,null);
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
+         AuthServer authServer;
+         String authServerIOR = null;
+
+         if (args.length == 1) {
+            authServerIOR = args[0];  // args[0] is an IOR-string
+         }
+         else if (args.length > 1) {
+            String argv = args[0];
+            if (argv.equals("-name")) {
+               ME = args[1];
+            }
+         }
+
          String loginName = ME;
 
-         //----------- Find orb ----------------------------------
-         CorbaConnection corbaConnection = new CorbaConnection(args);
+         if (authServerIOR != null) {
+            authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+         }
+         else {
+            // asking Name Service CORBA compliant:
+            NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
+            NameComponent [] name = new NameComponent[1];
+            name[0] = new NameComponent();
+            name[0].id = "xmlBlaster-Authenticate";
+            name[0].kind = "MOM";
+
+            authServer = AuthServerHelper.narrow(nc.resolve(name));
+         }
+
+         StopWatch stop = new StopWatch();
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
          org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
+            org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intialize my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new SubCallback(ME));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(ME));
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
 
 
-         //----------- Login to xmlBlaster -----------------------
-         String qos = "<qos></qos>";
-         String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, callback, qos);
+         //----------- Login to the server -----------------------
+         String qos = "";
+         try {
+            String passwd = "some";
+            xmlBlaster = authServer.login(loginName, passwd, callback, qos);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
 
 
          //----------- Subscribe to messages with XPATH -------
@@ -71,7 +103,7 @@ public class ClientSub
          }
 
 
-         Util.delay(2000); // Wait some time ...
+         delay(2000); // Wait some time ...
 
 
          //----------- Construct a message and publish it ---------
@@ -97,8 +129,16 @@ public class ClientSub
          }
 
 
-         Util.ask("logout()");
-         corbaConnection.logout(xmlBlaster);
+         ask("logout()");
+
+
+         //----------- Logout --------------------------------------
+         Log.trace(ME, "Logout ...");
+         try {
+            authServer.logout(xmlBlaster);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
       }
       catch (Exception e) {
           e.printStackTrace();
@@ -107,27 +147,43 @@ public class ClientSub
    }
 
 
+   private void delay(long millis)
+   {
+      try {
+          Thread.currentThread().sleep(millis);
+      }
+      catch( InterruptedException i)
+      {}
+   }
+
+
+   private void ask(String text)
+   {
+      Log.plain(ME, text);
+      Log.plain(ME, "################### Hit a key to continue ###################");
+      try {
+         System.in.read();
+      } catch (java.io.IOException e) {}
+   }
+
+
    public static void main(String args[])
    {
-      new ClientSub(args);
-      Log.exit(ClientSub.ME, "Good bye");
+      new ClientRaw(args);
+      Log.exit(ClientRaw.ME, "Good bye");
    }
-} // ClientSub
+} // ClientRaw
 
 
-
-/**
- * Example for a callback implementation. 
- */
-class SubCallback implements BlasterCallbackOperations
+class RawCallback implements BlasterCallbackOperations
 {
    final String ME;
 
    /**
     * Construct a persistently named object.
     */
-   public SubCallback(java.lang.String name) {
-      this.ME = "SubCallback-" + name;
+   public RawCallback(java.lang.String name) {
+      this.ME = "RawCallback-" + name;
       if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
    }
 
@@ -135,9 +191,9 @@ class SubCallback implements BlasterCallbackOperations
    /**
     * Construct a transient object.
     */
-   public SubCallback() {
+   public RawCallback() {
       super();
-      this.ME = "SubCallback";
+      this.ME = "RawCallback";
       if (Log.CALLS) Log.trace(ME, "Entering constructor without argument");
    }
 
@@ -162,5 +218,5 @@ class SubCallback implements BlasterCallbackOperations
          Log.info(ME, "================== BlasterCallback update END ===============");
       }
    }
-} // SubCallback
+} // RawCallback
 

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.14 1999/12/02 13:59:43 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.15 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -49,7 +49,7 @@ public class ClientInfo
     * <p />
     * @param authInfo the AuthenticationInfo with the login informations for this client
     */
-   public ClientInfo(AuthenticationInfo authInfo)
+   public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
       notifyAboutLogin(authInfo);
@@ -80,7 +80,21 @@ public class ClientInfo
 
 
    /**
-    * Is the client currently logged in? 
+    * This sends the update to the client, or stores it in the client queue. 
+    */
+   public final void sendUpdate(MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
+   {
+      if (isLoggedIn()) {
+         getCallbackDriver().sendUpdate(this, messageUnitWrapper);
+      }
+      else {
+         messageQueue.push(messageUnitWrapper);
+      }
+   }
+
+
+   /**
+    * Is the client currently logged in?
     * @return true yes
     *         false client is not on line
     */
@@ -91,7 +105,7 @@ public class ClientInfo
 
 
    /**
-    * Get notification that the client did a login.
+    * Get notification that the client did a login. 
     * <p />
     * This instance may exist before a login was done, for example
     * when some messages where directly addressed to this client.<br />
@@ -99,31 +113,56 @@ public class ClientInfo
     *
     * @param authInfo the AuthenticationInfo with the login informations for this client
     */
-   public final void notifyAboutLogin(AuthenticationInfo authInfo)
+   public final void notifyAboutLogin(AuthenticationInfo authInfo) throws XmlBlasterException
    {
+      if (authInfo == null) {
+         Log.error(ME, "authInfo==null");
+         return;
+      }
+
       this.authInfo = authInfo;
       this.loginName = authInfo.getLoginName();
 
+      // Get the appropriate callback protocol driver
       if (authInfo.useCorbaCB())
          myCallbackDriver = CallbackCorbaDriver.getInstance();
       else if (authInfo.useEmailCB())
          myCallbackDriver = CallbackEmailDriver.getInstance();
       else if (authInfo.useHttpCB())
          myCallbackDriver = CallbackHttpDriver.getInstance();
+      else {
+         Log.error(ME, "No callback protocol specified");
+         return;
+      }
+
+      // send messages to client, if there are any in the queue
+      if (messageQueue != null) {
+         while (true) {
+            MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
+            if (messageUnitWrapper == null)
+               break;
+            getCallbackDriver().sendUpdate(this, messageUnitWrapper);
+         }
+      }
    }
 
 
    /**
-    * Get notification that the client did a login.
-    * <p />
-    * This instance may exist before a login was done, for example
-    * when some messages where directly addressed to this client.<br />
-    * This notifies about a client login.
-    *
-    * @param authInfo the AuthenticationInfo with the login informations for this client
+    * Get notification that the client did a logout. 
     */
-   public final void notifyAboutLogout()
+   public final void notifyAboutLogout() throws XmlBlasterException
    {
+      if (messageQueue != null) {
+         while (true) {
+            MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
+            if (messageUnitWrapper == null)
+               break;
+            Log.warning(ME, "Logout of client " + toString() + " wich still has messages in the queue");
+            messageUnitWrapper = null;
+         }
+         messageQueue = null;
+      }
+
       this.authInfo = null;
       this.myCallbackDriver = null;
    }

@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.18 1999/12/02 16:48:06 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.19 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -131,7 +131,7 @@ public class MessageUnitHandler
 
 
    /**
-    * Accessing the key of this message. 
+    * Accessing the key of this message.
     * <p />
     * Convenience if the caller is too lazy to catch exceptions
     * @return null
@@ -190,7 +190,7 @@ public class MessageUnitHandler
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, XmlQoS publishQoS) throws XmlBlasterException
+   public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
@@ -347,7 +347,7 @@ public class MessageUnitHandler
          return;
       }
       ClientInfo clientInfo = sub.getClientInfo();
-      clientInfo.getCallbackDriver().sendUpdate(clientInfo, getMessageUnitWrapper());
+      clientInfo.sendUpdate(getMessageUnitWrapper());
    }
 
 

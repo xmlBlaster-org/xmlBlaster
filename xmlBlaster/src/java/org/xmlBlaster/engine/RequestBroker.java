@@ -3,13 +3,14 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.34 1999/12/02 17:05:56 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.35 1999/12/08 12:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
@@ -27,7 +28,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -35,6 +36,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    final private static String ME = "RequestBroker";
 
    private static RequestBroker requestBroker = null; // Singleton pattern
+
+   private Authenticate authenticate = null;          // The authentication service
 
    /**
     * All MessageUnitHandler objects are stored in this map.
@@ -98,6 +101,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       this.clientSubscriptions = ClientSubscriptions.getInstance(this, authenticate);
 
       this.bigXmlKeyDOM = BigXmlKeyDOM.getInstance(this, authenticate);
+
+      this.authenticate = authenticate;
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
@@ -187,7 +192,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
+   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
    {
       Vector xmlKeyVec = null;
       String clientName = clientInfo.toString();
@@ -311,8 +316,12 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Publishing a new message.
     * <p />
+    * PubSub style:<br />
     * If MessageUnit is created from subscribe or the MessageUnit is new, we need to add the
     * DOM here once; XmlKeyBase takes care of that
+    * <p />
+    * PTP style:<br />
+    * Send message directly to all destinations, ignore if same message is known from Pub/Sub style
     *
     * @param clientInfo  The ClientInfo object, describing the publishing client
     * @param messageUnit The CORBA MessageUnit struct
@@ -320,11 +329,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *
     * @see xmlBlaster.idl for comments
     */
-   public String publish(ClientInfo clientInfo, MessageUnit messageUnit, XmlQoS xmlQoS) throws XmlBlasterException
+   public String publish(ClientInfo clientInfo, MessageUnit messageUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
-      if (messageUnit == null || xmlQoS==null) {
+      if (messageUnit == null || publishQoS==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
       }
@@ -335,18 +344,33 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
-      //----- 1. set new value or create the new message:
-      MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit, xmlQoS);
+      if (publishQoS.isPubSubStyle()) {
+         //----- 1. set new value or create the new message:
+         MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit, publishQoS);
 
-      // this gap is not 100% thread save
+         // this gap is not 100% thread save
 
+         //----- 2. check all known query subscriptions if the new message fits as well
+         checkExistingSubscriptions(clientInfo, xmlKey, messageUnitHandler, publishQoS);
 
-      //----- 2. check all known query subscriptions if the new message fits as well
-      checkExistingSubscriptions(clientInfo, xmlKey, messageUnitHandler, xmlQoS);
+         //----- 3. now we can send updates to all interested clients:
+         messageUnitHandler.invokeCallback();
+      }
+      else if (publishQoS.isPTP_Style()) {
+         MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
+         Vector destinations = publishQoS.getDestinations(); // !!! add XPath client query here !!!
 
-
-      //----- 3. now we can send updates to all interested clients:
-      messageUnitHandler.invokeCallback();
+         //-----    Send message to every destination client
+         for (int ii = 0; ii<destinations.size(); ii++) {
+            String loginName = (String)destinations.elementAt(ii);
+            ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(loginName);
+            destinationClient.sendUpdate(messageUnitWrapper);
+         }
+      }
+      else {
+         Log.warning(ME + ".UnsopportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+         throw new XmlBlasterException(ME + ".UnsopportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+      }
 
       return retVal;
    }
@@ -357,7 +381,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * there are any XPath subscriptions pending which match
     */
    private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
-                                  MessageUnitHandler messageUnitHandler, XmlQoS xmlQoS)
+                                  MessageUnitHandler messageUnitHandler, PublishQoS xmlQoS)
                                   throws XmlBlasterException
    {
       if (messageUnitHandler.isNewCreated()) {
@@ -425,8 +449,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       String[] returnArr = new String[messageUnitArr.length];
       for (int ii=0; ii<messageUnitArr.length; ii++) {
-         XmlQoS xmlQoS = new XmlQoS(qos_literal_Arr[ii]);
-         returnArr[ii] = publish(clientInfo, messageUnitArr[ii], xmlQoS);
+         PublishQoS publishQoS = new PublishQoS(qos_literal_Arr[ii]);
+         returnArr[ii] = publish(clientInfo, messageUnitArr[ii], publishQoS);
       }
 
       return returnArr;
@@ -434,7 +458,10 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Store or update a new arrived message.
+    * Store or update a new arrived message. 
+    * <p />
+    * This is used only for publish/subscribe style.<br />
+    * PTP messages are not stored in xmlBlaster
     *
     * @param xmlKey       so the messageUnit.xmlKey_literal is not parsed twice
     * @param messageUnit  containing the new, published data
@@ -442,7 +469,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @return messageUnitHandler MessageUnitHandler object, holding the new MessageUnit
     */
    private MessageUnitHandler setMessageUnit(XmlKey xmlKey, MessageUnit messageUnit,
-                                             XmlQoS publishQoS) throws XmlBlasterException
+                                             PublishQoS publishQoS) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
       boolean messageExisted = false; // to shorten the synchronize block

@@ -3,16 +3,14 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.6 1999/11/23 14:54:40 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.7 1999/12/08 12:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.authenticateIdl.*;
+import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
-import jacorb.naming.NameServer;
-import org.omg.CosNaming.*;
 
 
 /**
@@ -25,81 +23,43 @@ import org.omg.CosNaming.*;
  */
 public class ClientOid
 {
-   private org.omg.CORBA.ORB orb = null;
-   private Server xmlServer = null;
+   private Server xmlBlaster = null;
    private static String ME = "Ben";
 
    public ClientOid(String args[])
    {
-
-      orb = org.omg.CORBA.ORB.init(args,null);
+      StopWatch stop = new StopWatch();
       try {
-         AuthServer authServer;
-         String authServerIOR = null;
-
-         if (args.length == 1) {
-            authServerIOR = args[0];  // args[0] is an IOR-string
-         }
-         else if (args.length > 1) {
-            String argv = args[0];
-            if (argv.equals("-name")) {
-               ME = args[1];
-            }
-         }
-
+         // check if parameter -name <userName> is given at startup of client
+         ME = Args.getArg(args, "-name", ME);
          String loginName = ME;
 
-         if (authServerIOR != null) {
-            authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         }
-         else {
-            // asking Name Service CORBA compliant:
-            NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
-            NameComponent [] name = new NameComponent[1];
-            name[0] = new NameComponent();
-            name[0].id = "xmlBlaster-Authenticate";
-            name[0].kind = "MOM";
-
-            authServer = AuthServerHelper.narrow(nc.resolve(name));
-         }
-
-         StopWatch stop = new StopWatch();
+         //----------- Find orb ----------------------------------
+         CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
          org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
+
 
          // Intializing my Callback interface:
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
-         // callbackTie._orb( orb ); // necessary?
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
          Log.trace(ME, "Exported Callback Server interface" + stop.nice());
-         // A dummy implementation of the Callback is in:
-         //    xmlBlaster/src/java/org/xmlBlaster/clientIdl/BlasterCallbackImpl.java
 
 
+         //----------- Login to xmlBlaster -----------------------
          String qos = "<qos></qos>";
-
-         //----------- Login to the server -----------------------
-         try {
-            String passwd = "some";
-            xmlServer = authServer.login(loginName, passwd, callback, qos);
-         } catch(XmlBlasterException e) {
-            Log.error(ME, "XmlBlasterException: " + e.reason);
-         }
-
-         //------------ Use the returned IOR as Server Reference ------
-         Log.info(ME, "Got xmlBlaster server IOR" + stop.nice());
-
-         Log.trace(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
+         String passwd = "some";
+         xmlBlaster = corbaConnection.login(loginName, passwd, callback, qos);
 
 
          //----------- Subscribe to a message with known oid -------
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          try {
-            xmlServer.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -109,7 +69,7 @@ public class ClientOid
          //----------- Subscribe to a message with known oid -------
          // subscribing twice: this second subscribe is ignored
          try {
-            xmlServer.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -124,13 +84,13 @@ public class ClientOid
          qos = ""; // quality of service
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            xmlServer.publish(msg, qos);
+            xmlBlaster.publish(msg, qos);
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
 
-         delay(); // Wait some time ...
+         Util.delay(1000); // Wait some time ...
 
 
          //----------- Unsubscribe from the message --------
@@ -139,7 +99,7 @@ public class ClientOid
                   "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          stop.restart();
          try {
-            xmlServer.unSubscribe(xmlKey, qos);
+            xmlBlaster.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -152,7 +112,7 @@ public class ClientOid
          String[] qarr = new String[1];
          qarr[0] = "";
          try {
-            String[] returnArr = xmlServer.publishArr(marr, qarr);
+            String[] returnArr = xmlBlaster.publishArr(marr, qarr);
             for (int ii=0; ii<returnArr.length; ii++) {
                Log.info(ME, "   Returned oid=" + returnArr[ii]);
             }
@@ -163,19 +123,13 @@ public class ClientOid
 
 
          //----------- Logout --------------------------------------
-         Log.trace(ME, "Trying logout ...");
-         try {
-            authServer.logout(xmlServer);
-         } catch(XmlBlasterException e) {
-            Log.error(ME, "XmlBlasterException: " + e.reason);
-         }
+         corbaConnection.logout(xmlBlaster);
 
 
          //----------- Trying to send some data after logout -------
          Log.trace(ME, "Sending some new Smiley data after logout ...");
          try {
-            xmlServer.publishArr(marr, qarr);
-
+            xmlBlaster.publishArr(marr, qarr);
          } catch(XmlBlasterException e) {
             Log.info(ME, "XmlBlasterException: " + e.reason);
          }
@@ -183,19 +137,6 @@ public class ClientOid
       catch (Exception e) {
           e.printStackTrace();
       }
-      orb.run();
-   }
-
-   private static final int _delay = 2000;
-
-   private void delay()
-   {
-      try
-      {
-          Thread.currentThread().sleep(_delay);
-      }
-      catch( InterruptedException i)
-      {}
    }
 
 

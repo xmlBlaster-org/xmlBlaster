@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.24 1999/11/30 10:37:35 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.25 1999/12/08 12:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.XmlKey;
+import org.xmlBlaster.engine.PublishQoS;
 import org.xmlBlaster.engine.XmlQoS;
 import org.xmlBlaster.authentication.Authenticate;
 import java.util.*;
@@ -104,8 +105,8 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       ClientInfo clientInfo = authenticate.check();
 
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      String retVal = requestBroker.publish(clientInfo, messageUnit, xmlQoS);
+      PublishQoS publishQoS = new PublishQoS(qos_literal);
+      String retVal = requestBroker.publish(clientInfo, messageUnit, publishQoS);
 
       if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + requestBroker.printOn().toString());
 

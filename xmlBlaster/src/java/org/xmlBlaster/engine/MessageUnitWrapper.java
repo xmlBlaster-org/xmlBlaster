@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.2 1999/12/02 13:59:44 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.3 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,7 +28,7 @@ public class MessageUnitWrapper
 
    private MessageUnit messageUnit;  // The CORBA MessageUnit (raw struct)
    private XmlKey xmlKey;            // the meta data describing this message
-   private XmlQoS publishQoS;        // the flags from the publisher
+   private PublishQoS publishQoS;    // the flags from the publisher
    private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
 
 
@@ -39,7 +39,7 @@ public class MessageUnitWrapper
     * @param messageUnit the CORBA MessageUnit data container
     * @param publishQoS the quality of service
     */
-   public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, XmlQoS publishQoS) throws XmlBlasterException
+   public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
       if (xmlKey == null || messageUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
@@ -110,6 +110,15 @@ public class MessageUnitWrapper
 
 
    /**
+    * Access the flags from the publisher
+    */
+   public final PublishQoS getPublishQoS()
+   {
+      return publishQoS;
+   }
+
+
+   /**
     * This is the unique key of the messageUnit
     */
    public final void setXmlKey(XmlKey xmlKey)
@@ -154,7 +163,7 @@ public class MessageUnitWrapper
    public MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
       MessageUnitWrapper newWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
-      
+
       byte[] oldContent = this.messageUnit.content;
       byte[] newContent = new byte[oldContent.length];
 
@@ -168,7 +177,7 @@ public class MessageUnitWrapper
 
 
    /**
-    * Used by clone() to assign the message content. 
+    * Used by clone() to assign the message content.
     * @param the new MessageUnit.content
     */
    final void setContentRaw(byte[] content)
@@ -178,7 +187,7 @@ public class MessageUnitWrapper
 
 
    /**
-    * Try to find out the approximate memory consumption of this message. 
+    * Try to find out the approximate memory consumption of this message.
     * <p />
     * It counts the message content bytes but NOT the xmlKey, xmlQoS etc. bytes<br />
     * This is because its used for the MessageQueue to figure out
@@ -205,7 +214,7 @@ public class MessageUnitWrapper
       }
 
       // These are references on the original MessageUnitWrapper and consume almost no memory:
-      // size += xmlKey;      
+      // size += xmlKey;
       // size += publishQoS;
       // size += uniqueKey.size() + objectHandlingBytes;
       return size;

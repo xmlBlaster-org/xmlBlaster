@@ -3,7 +3,7 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.2 1999/12/02 13:59:44 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.3 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -53,7 +53,7 @@ public class ClientUpdateQueue
 
 
    /**
-    * Constructs an empty FIFO queue. 
+    * Constructs an empty FIFO queue.
     * @param maxBytes The maximum size for this queue (client quota)
     */
    public ClientUpdateQueue(long maxBytes)
@@ -82,7 +82,7 @@ public class ClientUpdateQueue
       // we need to clone the message, if new updates of the SAME message arrive
       // we need to keep the content of the old message
       MessageUnitWrapper newWrapper = messageUnitWrapper.cloneContent();
-      
+
       synchronized (messageQueue) {
          messageQueue.addFirst(newWrapper);
       }
@@ -101,6 +101,7 @@ public class ClientUpdateQueue
       try {
          synchronized (messageQueue) {
             MessageUnitWrapper messageUnitWrapper = (MessageUnitWrapper)messageQueue.removeLast();
+            if (messageUnitWrapper == null) return null;
             currentBytes -= messageUnitWrapper.getSizeInBytes();
             return messageUnitWrapper;
          }
@@ -112,7 +113,7 @@ public class ClientUpdateQueue
 
 
    /**
-    * Check the available quotas for this client. 
+    * Check the available quotas for this client.
     * <p />
     * @param size in bytes
     * @return true enough memory available

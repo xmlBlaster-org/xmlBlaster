@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.17 1999/12/02 13:59:43 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.18 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -252,7 +252,31 @@ public class Authenticate
     * @return the ClientInfo object<br />
     *         null if not found
     */
-   public ClientInfo getClientInfoByName(String loginName)
+   public final ClientInfo getOrCreateClientInfoByName(String loginName) throws XmlBlasterException
+   {
+      if (loginName == null || loginName.length() < 2) {
+         Log.warning(ME + ".InvalidClientName", "Given loginName='" + loginName + "' is invalid");
+         throw new XmlBlasterException(ME + ".InvalidClientName", "Your given loginName is null or shorter 2 chars, loginName rejected");
+      }
+
+      ClientInfo clientInfo = getClientInfoByName(loginName);
+      if (clientInfo == null) {
+         clientInfo = new ClientInfo(loginName);
+         synchronized(loginNameClientInfoMap) {
+            loginNameClientInfoMap.put(loginName, clientInfo);
+         }
+      }
+
+      return clientInfo;
+   }
+
+
+   /**
+    * Access a clientInfo with the unique login name
+    * @return the ClientInfo object<br />
+    *         null if not found
+    */
+   public final ClientInfo getClientInfoByName(String loginName)
    {
       synchronized(loginNameClientInfoMap) {
          return (ClientInfo)loginNameClientInfoMap.get(loginName);

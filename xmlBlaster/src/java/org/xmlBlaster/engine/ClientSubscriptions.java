@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.6 1999/11/23 15:31:42 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.7 1999/12/08 12:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,7 +21,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.6 1999/11/23 15:31:42 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.7 1999/12/08 12:16:17 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -43,7 +43,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * <br>
     * Used for performing logout.
     * <p>
-    * key   = client.getUniqueKey()
+    * key   = client.getUniqueKey(), the active object map AOM id
     * value = aboMap (Collections.synchronizedMap(new HashMap());)
     *         with SubscriptionInfo objects
     */

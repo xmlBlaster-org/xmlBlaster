@@ -66,17 +66,27 @@ Manual setup of xmlBlaster:
 
 
 5) Try the xmlBlaster server
-   a) Start the xmlBlaster server (jaco is the java wrapper from JacORB):
+   a) Start the xmlBlaster server
+	   - jaco is the java wrapper from JacORB
+		- this uses the built in http server on localhost, port=7609 to pass the server IOR
 
-       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main
 
    b) Start the client (or many of those):
 
-       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml `cat /tmp/NS_Ref` 
+       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet
 
 
    Good. You have done it!
 
+
+   A variant using the xmlBlaster built in http server (localhost / 7609 is default):
+       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 7609
+		 ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet -iorHost localhost -iorPort 7609
+
+	A variant using a file to pass the server IOR:
+       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet -iorFile /tmp/NS_Ref
 
    Variant using a name service and a local web server to publish the name service
    (edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
