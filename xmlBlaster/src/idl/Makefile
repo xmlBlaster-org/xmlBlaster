@@ -6,24 +6,29 @@
 
 
 #------------------------------------------------------------------------------
-include $(XMLBLASTER_HOME)/make/make.h
-OUT_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
+include $(XMLBLASTER_HOME)/Makefile.Include
+OUT_DIR_S = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/serverIdl
+OUT_DIR_C = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/clientIdl
 #------------------------------------------------------------------------------
 
 
-$(OUT_DIR)/Server.java: xmlBlaster.idl
+$(OUT_DIR_S)/Server.java: xmlBlaster.idl
 	$(IDL2JAVA)  -d $(SRC_JAVA_TOP_DIR) xmlBlaster.idl
 
 all: precond idl
 
 precond:
-	$(MKDIR_RECURSIVE) $(OUT_DIR)
+	$(MKDIR_RECURSIVE) $(OUT_DIR_S)
+	$(MKDIR_RECURSIVE) $(OUT_DIR_C)
 
-idl: $(OUT_DIR)/Server.java
+idl: $(OUT_DIR_S)/Server.java
 	@echo -e "\033[1mDONE ............ \033[32;40mAll of $(SRC_JAVA_DIR)\033[0m";
 
 clean:
-	@echo "Removing all in $(OUT_DIR) ..."
-	$(RM) $(OUT_DIR)/*Operations.* $(OUT_DIR)/*Helper* $(OUT_DIR)/*Holder* 
-	$(RM) $(OUT_DIR)/*Stub.* $(OUT_DIR)/*POA*.*
-	$(RM) $(OUT_DIR)/BlasterCallback.java $(OUT_DIR)/Server.java $(OUT_DIR)/XmlBlasterException.java
+	@echo "Removing all in $(OUT_DIR_S) and $(OUT_DIR_C) ..."
+	$(RM) $(OUT_DIR_S)/*Operations.* $(OUT_DIR_S)/*Helper* $(OUT_DIR_S)/*Holder* 
+	$(RM) $(OUT_DIR_S)/*Stub.* $(OUT_DIR_S)/*POA*.*
+	$(RM) $(OUT_DIR_S)/Server.java $(OUT_DIR_S)/XmlBlasterException.java
+	$(RM) $(OUT_DIR_C)/*Operations.* $(OUT_DIR_C)/*Helper* $(OUT_DIR_C)/*Holder* 
+	$(RM) $(OUT_DIR_C)/*Stub.* $(OUT_DIR_C)/*POA*.*
+	$(RM) $(OUT_DIR_C)/BlasterCallback.java

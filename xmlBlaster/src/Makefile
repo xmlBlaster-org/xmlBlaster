@@ -4,7 +4,10 @@
 #Comment:   Makefile for sub directories
 #------------------------------------------------------------------------------
 
-SUB_DIRS = java/org/xmlBlaster/util idl java/org/xmlBlaster
+include $(XMLBLASTER_HOME)/Makefile.Include
 
-include $(XMLBLASTER_HOME)/make/make.h
-include $(XMLBLASTER_HOME)/make/makeSubDirs.h
+SUB_DIRS = idl java/org/xmlBlaster
+
+all: all_SUB_DIRS
+
+clean: clean_SUB_DIRS
