@@ -28,6 +28,7 @@ public class AllTests
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafe.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafePing.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafeAsync.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestXmlBlasterAccessMultiThreaded.class));
       return suite;
    }
 }
