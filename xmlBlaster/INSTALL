@@ -192,7 +192,7 @@ Usage :
 C++ clients with MICO 2.3.0 (http://www.mico.org)
 
 1) Install MICO
-   ./configure
+   ./configure --disable-mini-stl
     make
     make install
 
