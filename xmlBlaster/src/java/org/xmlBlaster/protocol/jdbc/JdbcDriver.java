@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.41 2003/03/22 12:28:05 laghi Exp $
+Version:   $Id: JdbcDriver.java,v 1.42 2003/03/26 08:19:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -164,7 +164,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       // "JDBC" below is the 'callback protocol type', which results in instantiation of the given class:
       CallbackAddress cbAddress = new CallbackAddress(glob, "JDBC");
-      cbAddress.setAddress("org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
+      cbAddress.setAddress("native-NameService:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
 
       // Register the native callback driver
       CallbackJdbcDriver cbDriver = new CallbackJdbcDriver();
