@@ -136,7 +136,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
-    * @param The factory which knows how to serialize and parse me
+    * @param factory The factory which knows how to serialize and parse me
     */
    public MsgQosData(Global glob, I_MsgQosFactory factory) {
       this(glob, factory, null);
@@ -639,7 +639,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @return internal state of the message QoS as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return factory.writeObject(this, extraOffset);
+      return this.factory.writeObject(this, extraOffset);
    }
 
    /**

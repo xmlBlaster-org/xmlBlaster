@@ -3,6 +3,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.MsgUnit;
@@ -64,7 +67,7 @@ public class PtpReceive
          log.info(ME, "Waiting on messages, aborting after " + abortCount + " messages, or hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (receiver != null) { receiver.disconnect(new DisconnectQos()); }
+         if (receiver != null) { receiver.disconnect(new DisconnectQos(glob)); }
       }
    }
 

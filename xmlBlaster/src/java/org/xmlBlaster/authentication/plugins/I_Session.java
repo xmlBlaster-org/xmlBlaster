@@ -61,7 +61,7 @@ public interface I_Session extends I_MsgSecurityInterceptor {
 
    /**
     * The current implementation of the user session handling (especially
-    * {@link org.xmlBlaster.authentication.Authenticate#connect(org.xmlBlaster.util.ConnectQos, String)})
+    * {@link org.xmlBlaster.authentication.Authenticate#connect(org.xmlBlaster.engine.qos.ConnectQosServer, String)})
     * cannot provide a real sessionId when this object is created. Thus, it
     * uses a temporary id first and changes it to the real in a later step.<p>
     * The purpose of this method is to enable this functionality.<p>

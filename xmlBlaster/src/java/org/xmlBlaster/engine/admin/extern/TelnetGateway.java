@@ -15,8 +15,8 @@ import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -53,7 +53,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private boolean isShutdown = true;
 
    private boolean isLogin = false;
-   private ConnectReturnQos connectRetQos = null;
+   private ConnectReturnQosServer connectRetQos = null;
    private String loginName = "";
    private String sessionId = null;
 
@@ -402,8 +402,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use 'connect loginName password'");
       }
 
-      ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
-      connectQos.setSessionTimeout(sessionTimeout);
+      org.xmlBlaster.client.qos.ConnectQos clientConnectQos = new org.xmlBlaster.client.qos.ConnectQos(glob, loginName, passwd);
+      clientConnectQos.setSessionTimeout(sessionTimeout);
+      ConnectQosServer connectQos = new ConnectQosServer(glob, clientConnectQos.getData());
       this.connectRetQos = glob.getAuthenticate().connect(connectQos);
       this.loginName = loginName;
       this.sessionId = connectRetQos.getSessionId();

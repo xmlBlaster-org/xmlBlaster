@@ -15,7 +15,7 @@ import org.xml.sax.Attributes;
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 public class QueueProperty extends QueuePropertyBase
 {

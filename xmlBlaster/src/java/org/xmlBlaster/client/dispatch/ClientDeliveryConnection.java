@@ -15,7 +15,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.dispatch.DeliveryConnection;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;

@@ -6,6 +6,9 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -70,7 +73,7 @@ public class Subscribe implements I_Callback
          try { System.in.read(); } catch(Exception e2) { }
 
          if (con != null) {
-            DisconnectQos dq = new DisconnectQos();
+            DisconnectQos dq = new DisconnectQos(glob);
             con.disconnect(dq);
          }
       }

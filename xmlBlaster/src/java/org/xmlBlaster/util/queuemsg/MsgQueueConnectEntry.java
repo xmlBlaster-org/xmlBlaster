@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queuemsg;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;

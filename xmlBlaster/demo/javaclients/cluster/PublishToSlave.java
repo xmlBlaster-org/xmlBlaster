@@ -8,6 +8,9 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -92,7 +95,7 @@ public class PublishToSlave implements I_Callback
          */
          
          if (con != null) {
-            DisconnectQos dq = new DisconnectQos();
+            DisconnectQos dq = new DisconnectQos(glob);
             con.disconnect(dq);
          }
       }

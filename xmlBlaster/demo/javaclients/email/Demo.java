@@ -2,8 +2,8 @@
 package javaclients.email;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -26,7 +26,7 @@ public class Demo
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", "joe", "secret");
+         ConnectQos qos = new ConnectQos(glob, "joe", "secret");
 
          String receiver = glob.getProperty().get("email.receiver", "xmlblaster@xmlblaster.org");
          CallbackAddress cbAddr =new CallbackAddress(glob, "EMAIL");

@@ -13,8 +13,8 @@ import java.util.Vector;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.Global;
 
@@ -206,8 +206,8 @@ public class EmailParserSAX extends SaxHandlerBase
 
       try {
          if ("connect".equals(qName)) {
-            ConnectQos connectQos = new ConnectQos(this.glob, this.character.toString());
-            ConnectReturnQos ret = this.authenticator.connect(connectQos);
+            ConnectQosServer connectQos = new ConnectQosServer(this.glob, this.character.toString());
+            ConnectReturnQosServer ret = this.authenticator.connect(connectQos);
             this.currentSessionId = ret.getSessionId();
             this.response.append("<connect>\n");
             this.response.append(ret.toXml());

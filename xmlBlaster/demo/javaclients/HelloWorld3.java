@@ -1,9 +1,10 @@
 // xmlBlaster/demo/javaclients/HelloWorld3.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
@@ -23,7 +24,6 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -100,7 +100,7 @@ public class HelloWorld3 implements I_Callback
          EraseQos eq = new EraseQos(glob);
          EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
-         DisconnectQos dq = new DisconnectQos();
+         DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (Exception e) {

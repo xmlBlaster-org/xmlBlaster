@@ -14,12 +14,14 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
-import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
@@ -141,7 +143,7 @@ public class SubjectInfo implements I_AdminSubject
       this.securityCtx = securityCtx;
       this.deliveryStatistic = new DeliveryStatistic();
 
-      this.maxSessions = glob.getProperty().get("session.maxSessions", ConnectQos.DEFAULT_maxSessions);
+      this.maxSessions = glob.getProperty().get("session.maxSessions", SessionQos.DEFAULT_maxSessions);
       if (glob.getId() != null)
          this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
 
@@ -440,9 +442,9 @@ public class SubjectInfo implements I_AdminSubject
    /**
     * @exception Throws XmlBlasterException if max. sessions is exhausted
     */
-   public final void checkNumberOfSessions(ConnectQos qos) throws XmlBlasterException {
-      if (ConnectQos.DEFAULT_maxSessions != qos.getMaxSessions())
-         this.maxSessions = qos.getMaxSessions();
+   public final void checkNumberOfSessions(ConnectQosData qos) throws XmlBlasterException {
+      if (SessionQos.DEFAULT_maxSessions != qos.getSessionQos().getMaxSessions())
+         this.maxSessions = qos.getSessionQos().getMaxSessions();
 
       if (getSessions().length >= this.maxSessions) {
          log.warn(ME, "Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");

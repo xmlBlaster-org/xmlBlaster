@@ -1,9 +1,9 @@
 // xmlBlaster/demo/javaclients/HelloWorldVolatile.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
@@ -91,7 +91,7 @@ public class HelloWorldVolatile implements I_Callback
             log.error("", "Didn't expect an exception in get(): " + e.getMessage());
          }
 
-         DisconnectQos dq = new DisconnectQos();
+         DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (XmlBlasterException e) {

@@ -1,8 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorld2.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;

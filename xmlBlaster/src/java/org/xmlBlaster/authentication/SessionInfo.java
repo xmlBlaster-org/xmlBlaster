@@ -21,8 +21,8 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
@@ -67,7 +67,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private I_Session securityCtx;
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
-   private ConnectQos connectQos;
+   private ConnectQosServer connectQos;
    private Timeout expiryTimer;
    private Timestamp timerKey;
    private final Global glob;
@@ -94,7 +94,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * <p />
     * @param subjectInfo the SubjectInfo with the login informations for this client
     */
-   public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQos connectQos, Global glob)
+   public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQosServer connectQos, Global glob)
           throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("auth");
@@ -105,7 +105,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       }
 
       //String prefix = glob.getLogPrefix();
-      subjectInfo.checkNumberOfSessions(connectQos);
+      subjectInfo.checkNumberOfSessions(connectQos.getData());
 
       synchronized (SessionInfo.class) {
          instanceId = instanceCounter;
@@ -246,7 +246,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       synchronized (this) {
          timerKey = null;
          log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSessionId() + "' is expired, autologout");
-         DisconnectQos qos = new DisconnectQos();
+         DisconnectQosServer qos = new DisconnectQosServer(glob);
          qos.deleteSubjectQueue(true);
          try {
             glob.getAuthenticate().disconnect(getSessionId(), qos.toXml());
@@ -302,7 +302,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       }
    }
 
-   public final ConnectQos getConnectQos() {
+   public final ConnectQosServer getConnectQos() {
       return this.connectQos;
    }
 

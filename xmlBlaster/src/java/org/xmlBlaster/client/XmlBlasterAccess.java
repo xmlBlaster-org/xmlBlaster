@@ -9,9 +9,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
@@ -269,14 +269,14 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
    public String getLoginName() {
       //if (this.connectReturnQos != null)
       //   return this.connectReturnQos.getLoginName();
-      try {
+      //try {
          if (connectQos != null) {
             String nm = connectQos.getSecurityQos().getUserId();
             if (nm != null && nm.length() > 0)
                return nm;
          }
-      }
-      catch (XmlBlasterException e) {}
+      //}
+      //catch (XmlBlasterException e) {}
       return glob.getId(); // "client?";
    }
 
@@ -410,9 +410,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
 
       LogChannel log = glob.getLog(null);
       log.plain("",text);
-      try {
-         log.plain("",new org.xmlBlaster.util.ConnectQos(glob).usage());
-      } catch (XmlBlasterException e) {}
+      //try {
+         log.plain("",new org.xmlBlaster.client.qos.ConnectQos(glob).usage());
+      //} catch (XmlBlasterException e) {}
       log.plain("",new org.xmlBlaster.util.qos.address.Address(glob).usage());
       log.plain("",new org.xmlBlaster.util.qos.storage.QueueProperty(glob,null).usage());
       log.plain("",new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());

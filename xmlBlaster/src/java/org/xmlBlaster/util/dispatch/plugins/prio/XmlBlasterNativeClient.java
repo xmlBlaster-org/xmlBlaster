@@ -9,9 +9,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Address;
@@ -345,7 +345,7 @@ public final class XmlBlasterNativeClient implements I_Callback
 
       /*
       if (this.sessionId != null) {
-         try { authenticate.disconnect(sessionId, (new DisconnectQos()).toXml()); } catch(XmlBlasterException e) { }
+         try { authenticate.disconnect(sessionId, (new DisconnectQos(glob)).toXml()); } catch(XmlBlasterException e) { }
       }
       */
       if (xmlBlasterCon != null) {

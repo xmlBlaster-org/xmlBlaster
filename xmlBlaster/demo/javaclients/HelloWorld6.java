@@ -1,11 +1,13 @@
 // xmlBlaster/demo/javaclients/HelloWorld6.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -20,8 +22,6 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 
 /**
@@ -180,7 +180,7 @@ public class HelloWorld6
                e.printStackTrace();
             }
             
-            con.disconnect(new DisconnectQos());
+            con.disconnect(new DisconnectQos(glob));
          }
       }
    }

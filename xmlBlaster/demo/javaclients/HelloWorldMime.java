@@ -2,9 +2,6 @@
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.I_Callback;
@@ -14,6 +11,9 @@ import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -97,7 +97,7 @@ public class HelloWorldMime implements I_Callback
          EraseQos eq = new EraseQos(glob);
          EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
-         DisconnectQos dq = new DisconnectQos();
+         DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (Exception e) {

@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    xmlBlaster@marcelruff.info
-Version:   $Id: xmlBlaster.idl,v 1.12 2002/12/18 12:39:08 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.13 2003/01/05 23:06:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -352,7 +352,7 @@ module authenticateIdl
        * @return qos      information like sessionId, keys, ...
        * @exception XmlBlasterException if the login fails
        * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
-       * @see             ConnectQos.java Javadoc description
+       * @see             ConnectQosSaxFactory.java Javadoc description
        * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html" target="others">the interface.connect requirement</a>
        */
       serverIdl::XmlType connect(in serverIdl::XmlType qos)

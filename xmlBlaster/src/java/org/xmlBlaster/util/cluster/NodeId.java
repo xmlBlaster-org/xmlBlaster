@@ -22,6 +22,9 @@ public final class NodeId implements Comparable, java.io.Serializable
       setId(id);
    }
 
+   /**
+    * @return e.g. "heron" (/node/heron/... is stripped)
+    */
    public final String getId() {
       return id;
    }
@@ -48,6 +51,9 @@ public final class NodeId implements Comparable, java.io.Serializable
       }
    }
 
+   /**
+    * @see #getId()
+    */
    public final String toString() {
       return getId();
    }

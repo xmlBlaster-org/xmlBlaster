@@ -11,9 +11,9 @@ import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -48,7 +48,7 @@ public class AuthenticateImpl
 
    /**
     * Do login to xmlBlaster.
-    * @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQos,String)
+    * @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQosServer,String)
     * @deprecated Use connect() instead
     * @return The secret sessionId as a raw string
     */
@@ -66,7 +66,7 @@ public class AuthenticateImpl
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      ConnectQos connectQos = new ConnectQos(glob, qos_literal);
+      ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
       I_SecurityQos securityQos = connectQos.getSecurityQos();
 
 
@@ -79,7 +79,7 @@ public class AuthenticateImpl
       }
          
 
-      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
       if (log.TIME) log.time(ME, "Elapsed time in login()" + stop.nice());
       return returnQos.getSessionId();
    }
@@ -96,16 +96,16 @@ public class AuthenticateImpl
    public String logout(String sessionId) throws XmlBlasterException
    {
    if (log.CALL) log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
-      authenticate.disconnect(sessionId, (new DisconnectQos()).toXml());
+      authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml());
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
    /**
     * Login to xmlBlaster.
-    * @param qos_literal See ConnectQos.java
+    * @param qos_literal See ConnectQosServer.java
     * @return The xml string from ConnectReturnQos.java<br />
-    * @see org.xmlBlaster.util.ConnectQos
-    * @see org.xmlBlaster.util.ConnectReturnQos
+    * @see org.xmlBlaster.engine.qos.ConnectQosServer
+    * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
     */
    public String connect(String qos_literal) throws XmlBlasterException
    {
@@ -113,8 +113,8 @@ public class AuthenticateImpl
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      ConnectQos connectQos = new ConnectQos(glob, qos_literal);
-      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
+      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
       returnValue = returnQos.toXml();
 
       returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");

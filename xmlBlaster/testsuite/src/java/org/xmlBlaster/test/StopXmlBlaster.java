@@ -6,8 +6,8 @@ Comment:   Stop xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test;
 
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.MsgUnit;
 

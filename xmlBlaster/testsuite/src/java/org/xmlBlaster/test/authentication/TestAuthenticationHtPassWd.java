@@ -1,7 +1,12 @@
 package org.xmlBlaster.test.authentication;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;

@@ -4,6 +4,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.MsgUnit;
 

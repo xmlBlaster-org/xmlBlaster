@@ -98,7 +98,7 @@
                <li><pre>public I_Manager getManager()</pre>
                    Returns the responsible <code>I_Manager</code>.</li>
                <li><pre>public void changeSessionId(String sessionId) throws XmlBlasterException</pre>
-                   Because the current implementation of <code>org.xmlBlaster.authentication.Authenticate#connect(org.xmlBlaster.util.ConnectQos, String)</code>
+                   Because the current implementation of <code>org.xmlBlaster.authentication.Authenticate#connect(org.xmlBlaster.util.qos.ConnectQos, String)</code>
                    cannot provide a correct session id when an object of <code>I_Session</code> is instantiated,
                    the id must be changed later. Therefore <code>I_Session</code> provides this method.</li>
                <li><pre>public String getSessionId()</pre>

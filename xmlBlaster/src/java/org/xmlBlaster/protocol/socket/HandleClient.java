@@ -10,8 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -198,7 +198,7 @@ public class HandleClient extends Executor implements Runnable
                // receive() processes all invocations, only connect()/disconnect() we do locally ...
                if (receive(receiver) == false) {
                   if (MethodName.CONNECT == receiver.getMethodName()) {
-                     ConnectQos conQos = new ConnectQos(driver.getGlobal(), receiver.getQos());
+                     ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
                      Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
                      this.ME += "-" + this.loginName;
@@ -218,7 +218,7 @@ public class HandleClient extends Executor implements Runnable
                         driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well
                      }
 
-                     ConnectReturnQos retQos = authenticate.connect(conQos);
+                     ConnectReturnQosServer retQos = authenticate.connect(conQos);
                      this.sessionId = retQos.getSessionId();
                      receiver.setSessionId(retQos.getSessionId()); // executeResponse needs it
 

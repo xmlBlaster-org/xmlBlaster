@@ -5,6 +5,9 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -82,7 +85,7 @@ public class Latency implements I_Callback
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait a second to receive update()
 
-         DisconnectQos dq = new DisconnectQos();
+         DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (Exception e) {

@@ -13,7 +13,7 @@
    <%@ page import = "org.jutils.text.StringHelper" %>
    <%@ page import = "org.xmlBlaster.client.protocol.XmlBlasterConnection" %>
    <%@ page import = "org.xmlBlaster.client.I_Callback" %>
-   <%@ page import = "org.xmlBlaster.util.ConnectQos" %>
+   <%@ page import = "org.xmlBlaster.client.qos.ConnectQos" %>
    <%@ page import = "org.xmlBlaster.client.key.UpdateKey" %>
    <%@ page import = "org.xmlBlaster.client.qos.UpdateQos" %>
    <%@ page import = "org.xmlBlaster.client.key.GetKey" %>

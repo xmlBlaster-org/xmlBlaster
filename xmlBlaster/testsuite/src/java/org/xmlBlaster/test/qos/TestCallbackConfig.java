@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.5 2002/12/20 16:33:14 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.6 2003/01/05 23:08:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,8 +12,8 @@ import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -104,7 +104,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
          if (con != null) {
             EraseReturnQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
-            con.disconnect(new DisconnectQos());
+            con.disconnect(new DisconnectQos(glob));
          }
       }
       catch (Exception e) {

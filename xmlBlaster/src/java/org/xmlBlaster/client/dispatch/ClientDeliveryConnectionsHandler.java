@@ -17,7 +17,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
@@ -67,7 +67,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
             returnQos[ii] = new PublishReturnQos(glob, statRetQos);
          }
          else if (MethodName.CONNECT == entries[ii].getMethodName()) {
-            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)entries[ii]).getConnectQos());
+            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)entries[ii]).getConnectQos().getData());
             if (connectReturnQos.getSessionName() == null) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                   "Please provide a public session ID to support polling for xmlBlaster without an initial connection. " +

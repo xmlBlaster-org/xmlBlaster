@@ -1,9 +1,9 @@
 // xmlBlaster/demo/javaclients/PtpSend.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
@@ -98,7 +98,7 @@ public class PtpSend
          log.error(ME, "Houston, we have a problem: " + e.toString());
       }
       finally {
-         if (sender != null) { sender.disconnect(new DisconnectQos()); }
+         if (sender != null) { sender.disconnect(new DisconnectQos(glob)); }
       }
    }
 

@@ -22,6 +22,8 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
@@ -135,6 +137,7 @@ public class Global implements Cloneable
 
    protected I_MsgKeyFactory msgKeyFactory;
    protected I_QueryKeyFactory queryKeyFactory;
+   protected I_ConnectQosFactory connectQosFactory;
    protected I_MsgQosFactory msgQosFactory;
    protected I_QueryQosFactory queryQosFactory;
    protected I_StatusQosFactory statusQosFactory;
@@ -777,6 +780,7 @@ public class Global implements Cloneable
          g.bootstrapAddress = null;
          g.clientSecurityLoader = null;
          g.recorderPluginManager = null;
+         g.connectQosFactory = this.connectQosFactory;
          g.msgQosFactory = this.msgQosFactory;
          g.queryQosFactory = this.queryQosFactory;
          g.statusQosFactory = this.statusQosFactory;
@@ -834,6 +838,20 @@ public class Global implements Cloneable
          }
       }
       return this.queryKeyFactory;
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from connect() and connect-return messages.
+    */
+   public final I_ConnectQosFactory getConnectQosFactory() {
+      if (this.connectQosFactory == null) {
+         synchronized (this) {
+            if (this.connectQosFactory == null) {
+               this.connectQosFactory = new ConnectQosSaxFactory(this);
+            }
+         }
+      }
+      return this.connectQosFactory;
    }
 
    /**

@@ -83,8 +83,8 @@ public String connect(String qos_literal)
       A typical Java client code:
       </p>
       <pre>
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 ...
 
 ConnectQos qos = new ConnectQos(glob, "william", "secretPwd");
@@ -115,14 +115,14 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
    </configuration>
 
    <see type="REQ">interface</see>
-   <see type="API">org.xmlBlaster.util.ConnectQos</see>
+   <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.AuthenticateImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.AuthServerImpl</see>
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>This uses the Disconnect but does not test it yet</comment>

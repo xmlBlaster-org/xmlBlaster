@@ -1,11 +1,11 @@
 // xmlBlaster/demo/javaclients/HelloWorld4.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -165,7 +165,7 @@ public class HelloWorld4
                e.printStackTrace();
             }
             
-            con.disconnect(new DisconnectQos());
+            con.disconnect(new DisconnectQos(glob));
          }
       }
    }

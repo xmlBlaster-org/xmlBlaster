@@ -3,7 +3,11 @@ package org.xmlBlaster.test.classtest;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -26,7 +30,7 @@ import junit.framework.*;
  * TODO: http://xmlunit.sourceforge.net/
  * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.ConnectQosTest
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.util.qos.ConnectQosData
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html" target="others">the interface.connect requirement</a>
  */
 public class ConnectQosTest extends TestCase {
@@ -94,20 +98,23 @@ public class ConnectQosTest extends TestCase {
          "   </serverRef>\n" +
          "</qos>\n";
 
-         ConnectQos qos = new ConnectQos(glob, xml); // parse
-         String newXml = qos.toXml();                // dump
-         qos = new ConnectQos(glob, newXml);         // parse again
 
-         log.info("ConnectQosTest", "ORIG=\n" + xml + "\n NEW=\n" + newXml);
+         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         ConnectQosData qos = factory.readObject(xml); // parse
+         String newXml = qos.toXml();                  // dump
+         qos = factory.readObject(newXml);             // parse again
 
-         assertEquals("sessionTimeout failed", sessionTimeout, qos.getSessionTimeout());
-         assertEquals("", "/node/avalon/client/joe/2", qos.getSessionName().getAbsoluteName());
-         assertEquals("", true, qos.hasPublicSessionId());
-         assertEquals("", 2L, qos.getPublicSessionId());
-         assertEquals("", sessionTimeout, qos.getSessionTimeout());
-         assertEquals("", 27, qos.getMaxSessions());
-         assertEquals("", true, qos.clearSessions());
-         assertEquals("", "xyz", qos.getSessionId());
+         if (log.TRACE) log.trace("ConnectQosTest", "ORIG=\n" + xml + "\n NEW=\n" + newXml);
+
+         SessionQos sessionQos = qos.getSessionQos();
+         assertEquals("sessionTimeout failed", sessionTimeout, sessionQos.getSessionTimeout());
+         assertEquals("", "/node/avalon/client/joe/2", sessionQos.getSessionName().getAbsoluteName());
+         assertEquals("", true, sessionQos.hasPublicSessionId());
+         assertEquals("", 2L, sessionQos.getPublicSessionId());
+         assertEquals("", sessionTimeout, sessionQos.getSessionTimeout());
+         assertEquals("", 27, sessionQos.getMaxSessions());
+         assertEquals("", true, sessionQos.clearSessions());
+         assertEquals("", "xyz", sessionQos.getSessionId());
 
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", true, qos.isClusterNode());
@@ -155,6 +162,21 @@ public class ConnectQosTest extends TestCase {
       System.out.println("***ConnectQosTest: testParse [SUCCESS]");
    }
 
+   public void testClientConnectQos() {
+      System.out.println("***ConnectQosTest: testClientConnectQos ...");
+      /*
+      try {
+         ConnectQos qos = new ConnectQos(glob);
+
+         // test missing !!!
+      }
+      catch (XmlBlasterException e) {
+         fail("testClientConnectQos failed: " + e.toString());
+      }
+      */
+      System.out.println("***ConnectQosTest: testClientConnectQos [SUCCESS]");
+   }
+
    public void testCredential() {
       System.out.println("***ConnectQosTest: testCredential ...");
       String loginName = "avalon";
@@ -168,10 +190,10 @@ public class ConnectQosTest extends TestCase {
       
       try {
          Global g = glob.getClone(args);
-         ConnectQos qos = new ConnectQos(g.getId(), g);
+         ConnectQos qos = new ConnectQos(g);
          qos.setUserId(g.getId());
          assertEquals("Wrong user id", loginName, qos.getSecurityQos().getUserId());
-         assertTrue("Wrong password", qos.toXml("").indexOf(passwd) > 0);
+         assertTrue("Wrong password, expected '" + passwd + "': " + qos.toXml(), qos.toXml().indexOf(passwd) > 0);
          //System.out.println("ConnectQos=" + qos.toXml(""));
       }
       catch (XmlBlasterException e) {
@@ -189,7 +211,9 @@ public class ConnectQosTest extends TestCase {
    {
       ConnectQosTest testSub = new ConnectQosTest("ConnectQosTest");
       testSub.setUp();
+      testSub.testCredential();
       testSub.testParse();
+      testSub.testClientConnectQos();
       //testSub.tearDown();
    }
 }

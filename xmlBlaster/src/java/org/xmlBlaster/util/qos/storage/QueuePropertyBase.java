@@ -19,7 +19,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML syntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 public abstract class QueuePropertyBase implements Cloneable
 {

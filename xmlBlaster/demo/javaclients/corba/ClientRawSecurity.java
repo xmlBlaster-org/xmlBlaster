@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.13 2002/11/26 12:36:28 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.14 2003/01/05 23:06:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 
 import org.omg.CosNaming.*;
 

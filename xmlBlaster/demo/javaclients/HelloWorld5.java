@@ -3,11 +3,11 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -113,8 +113,8 @@ public class HelloWorld5
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (sender != null) { sender.disconnect(new DisconnectQos()); }
-         if (receiver != null) { receiver.disconnect(new DisconnectQos()); }
+         if (sender != null) { sender.disconnect(new DisconnectQos(glob)); }
+         if (receiver != null) { receiver.disconnect(new DisconnectQos(glob)); }
       }
    }
 

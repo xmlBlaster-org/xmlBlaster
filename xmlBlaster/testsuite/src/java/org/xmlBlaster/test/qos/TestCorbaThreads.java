@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.3 2002/12/18 13:16:17 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.4 2003/01/05 23:08:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;

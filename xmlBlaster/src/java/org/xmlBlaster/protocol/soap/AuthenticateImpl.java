@@ -11,9 +11,9 @@ import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.util.qos.DisconnectQos;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
@@ -48,10 +48,10 @@ public class AuthenticateImpl
 
    /**
     * Login to xmlBlaster.
-    * @param qos_literal See ConnectQos.java
+    * @param qos_literal See ConnectQosServer.java
     * @return The xml string from ConnectReturnQos.java<br />
-    * @see org.xmlBlaster.util.ConnectQos
-    * @see org.xmlBlaster.util.ConnectReturnQos
+    * @see org.xmlBlaster.engine.qos.ConnectQosServer
+    * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
     */
    public String connect(String qos_literal) throws XmlBlasterException {
       String returnValue = null, returnValueStripped = null;
@@ -59,7 +59,7 @@ public class AuthenticateImpl
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
       try {
-         ConnectQos connectQos = new ConnectQos(glob, qos_literal);
+         ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
          if (authenticate != null) {
             ConnectReturnQos returnQos = authenticate.connect(connectQos);
             returnValue = returnQos.toXml();

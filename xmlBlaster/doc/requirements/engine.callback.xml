@@ -175,8 +175,8 @@
    <example lang="Java">
    This shows the hardcoded callback configuration of a connect() QoS for Java clients:
    <![CDATA[
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
    ...
@@ -276,7 +276,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
    <see type="API">org.xmlBlaster.util.qos.address.CallbackAddress</see>
    <see type="API">org.xmlBlaster.util.qos.storage.QueueProperty</see>
-   <see type="API">org.xmlBlaster.util.ConnectQos</see>
+   <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
    <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.test.qos.TestCallbackConfig</see>
    <see type="REQ">engine.queue</see>
@@ -286,7 +286,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

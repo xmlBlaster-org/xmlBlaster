@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.9 2002/12/18 13:50:57 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.10 2003/01/05 23:06:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -24,8 +24,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.MsgUnit;
@@ -48,6 +48,7 @@ public class Transceiver implements I_Callback
 {
 
    private static final String ME = "Transceiver";
+   private final Global glob;
    private final LogChannel log;
    private BridgeContext        bridgeContext        = null;
    private JSVGCanvasExtended   canvas               = null;
@@ -95,6 +96,7 @@ public class Transceiver implements I_Callback
     */
    public Transceiver (Global glob, JSVGCanvasExtended canvas)
    {
+      this.glob = glob;
       this.log = glob.getLog("batik");
       log.trace(ME, "constructor with Global");
       this.canvas = canvas;
@@ -154,7 +156,7 @@ public class Transceiver implements I_Callback
     */
    public void disconnect ()
    {
-      this.xmlBlasterConnection.disconnect(new DisconnectQos());
+      this.xmlBlasterConnection.disconnect(new DisconnectQos(glob));
    }
 
 

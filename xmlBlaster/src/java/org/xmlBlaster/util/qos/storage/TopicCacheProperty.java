@@ -14,7 +14,7 @@ import org.xml.sax.Attributes;
  * Helper class holding properties of the MsgUnit storage. 
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 public class TopicCacheProperty extends QueuePropertyBase
 {

@@ -34,9 +34,9 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
@@ -132,28 +132,28 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private boolean disconnectInProgress = false;
 
    /** The driver, e.g. Corba/Rmi/XmlRpc */
-   private I_XmlBlasterConnection driver = null;
+   private I_XmlBlasterConnection driver;
    /** The callback server, e.g. Corba/Rmi/XmlRpc */
-   private I_CallbackServer cbServer = null;
+   private I_CallbackServer cbServer;
 
    /** Holding the current returned QoS from the connect() call */
-   private ConnectReturnQos connectReturnQos = null;
+   private ConnectReturnQos connectReturnQos;
 
    /** queue all the messages, and play them back through interface I_InvocationRecorder */
-   private I_InvocationRecorder recorder = null;
+   private I_InvocationRecorder recorder;
 
    /** This interface needs to be implemented by the client in fail save mode
        The client gets notified about abnormal connection loss or reconnect */
-   private I_ConnectionProblems clientProblemCallback = null;
+   private I_ConnectionProblems clientProblemCallback;
 
    /** Used to callback the clients update() method */
-   private I_Callback updateClient = null;
+   private I_Callback updateClient;
 
    /** true if we are in fails save mode and polling for xmlBlaster */
    private boolean isReconnectPolling = false;
 
    /** Store the connection configuration and parameters */
-   private ConnectQos connectQos = null;
+   private ConnectQos connectQos;
 
    /** Number of retries if connection cannot directly be established */
    private int retries = -1;
@@ -162,9 +162,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private boolean noConnect = false;
 
    /** Handle on the ever running ping thread.Only switched on in fail save mode */
-   private PingThread pingThread = null;
+   private PingThread pingThread;
 
-   private LoginThread loginThread = null;
+   private LoginThread loginThread;
 
    /** Remember the number of successful logins */
    private long numLogins = 0L;
@@ -951,8 +951,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          if (this.connectReturnQos != null) {
             // Remember sessionId for reconnects ...
-            this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
-            this.connectQos.setSessionName(this.connectReturnQos.getSessionName());
+            this.connectQos.getSessionQos().setSessionId(this.connectReturnQos.getSessionId());
+            this.connectQos.getSessionQos().setSessionName(this.connectReturnQos.getSessionName());
          }
 
          if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
@@ -1089,14 +1089,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             return nm;
       }
 
-      try {
+      //try {
          if (connectQos != null) {
             String nm = connectQos.getSecurityQos().getUserId();
             if (nm != null && nm.length() > 0)
                return nm;
          }
-      }
-      catch (XmlBlasterException e) {}
+      //}
+      //catch (XmlBlasterException e) {}
 
       return glob.getId(); // "client?";
    }
@@ -1108,7 +1108,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public boolean logout()
    {
       if (log.CALL) log.call(ME, "logout() ...");
-      return disconnect(new DisconnectQos());
+      return disconnect(new DisconnectQos(glob));
    }
 
    /**
@@ -1300,7 +1300,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                   flushPublishOnewaySet();
                }
             }
-            disconnect(new DisconnectQos(), flush, false, true);
+            disconnect(new DisconnectQos(glob), flush, false, true);
          }
          return driver.shutdown();
       } catch(Exception e) {
@@ -1470,7 +1470,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                subscribeUniqueCounter++;
                String absoluteName = (this.connectReturnQos!=null) ? this.connectReturnQos.getSessionName().getAbsoluteName() : (String)null;
                if (absoluteName == null) {
-                  absoluteName = (this.connectQos!=null) ? ((this.connectQos.getSessionName() != null) ? this.connectQos.getSessionName().getAbsoluteName() : (String)null) : (String)null;
+                  absoluteName = (this.connectQos!=null) ? ((this.connectQos.getSessionQos().getSessionName() != null) ? this.connectQos.getSessionQos().getSessionName().getAbsoluteName() : (String)null) : (String)null;
                }
                if (absoluteName == null) {
                   absoluteName = getServerNodeId() + "/client/" + getLoginName();
@@ -2208,9 +2208,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       LogChannel log = glob.getLog(null);
       log.plain("",text);
-      try {
+      //try {
          log.plain("",new ConnectQos(glob).usage());
-      } catch (XmlBlasterException e) {}
+      //} catch (XmlBlasterException e) {}
       log.plain("",new Address(glob).usage());
       log.plain("",new QueueProperty(glob,null).usage());
       log.plain("",new CallbackAddress(glob).usage());

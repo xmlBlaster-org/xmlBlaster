@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.38 2002/12/20 16:32:35 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.39 2003/01/05 23:06:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -16,9 +16,9 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 
 import java.util.StringTokenizer;
 
@@ -147,11 +147,12 @@ public class JdbcDriver implements I_Driver, I_Publish
       cbRegistrationKey = cbAddress.getType() + cbAddress.getAddress();
       glob.addNativeCallbackDriver(cbRegistrationKey, cbDriver); // tell that we are the callback driver as well
 
-      ConnectQos connectQos = new ConnectQos(glob, cbAddress);
+      org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
+      connectQos.addCallbackAddress(cbAddress);
       connectQos.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
-      connectQos.setSessionTimeout(0L);
+      connectQos.getSessionQos().setSessionTimeout(0L);
 
-      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      ConnectReturnQosServer returnQos = authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
       sessionId = returnQos.getSessionId();
 
       log.info(ME, "Started successfully JDBC driver with loginName=" + loginName);
@@ -173,7 +174,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    public void shutdown(boolean force)
    {
       if (sessionId != null) {
-         try { authenticate.disconnect(sessionId, (new DisconnectQos()).toXml()); } catch(XmlBlasterException e) { }
+         try { authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
       }
       namedPool.destroy();
       log.info(ME, "JDBC service stopped, resources released.");

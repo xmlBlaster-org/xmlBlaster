@@ -8,8 +8,8 @@ package org.xmlBlaster.test.authentication;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -156,7 +156,7 @@ public class TestLogin extends TestCase implements I_Callback
          }
       }
 
-      DisconnectQos qos = new DisconnectQos();
+      DisconnectQos qos = new DisconnectQos(glob);
       qos.clearSessions(true);
       callbackConnection.disconnect(qos);
       secondConnection.disconnect(qos);

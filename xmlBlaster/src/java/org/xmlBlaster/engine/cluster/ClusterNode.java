@@ -11,14 +11,17 @@ import org.xmlBlaster.engine.Global;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -155,7 +158,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             callback.setSessionId(createCbSessionId());
          this.cbSessionId = callback.getSessionId();
 
-         ConnectQos qos = new ConnectQos(glob.getId(), connectGlob);
+         ConnectQosData qos = new ConnectQosData(connectGlob, glob.getNodeId());
 
          qos.setIsClusterNode(true);
 
@@ -169,8 +172,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          qos.setAddress(addr);      // use the configured access properties
          qos.addCallbackAddress(callback); // we want to receive update()
-         qos.setSessionTimeout(0L); // session lasts forever
-         qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
+         qos.getSessionQos().setSessionTimeout(0L); // session lasts forever
+         qos.getSessionQos().clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
          try {
             log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
@@ -181,7 +184,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             }
             if (log.DUMP) log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
-            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this);
+            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(new ConnectQos(glob, qos), this);
          }
          catch(XmlBlasterException e) {
             log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());

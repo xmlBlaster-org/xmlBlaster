@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.25 2002/12/20 16:32:33 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.26 2003/01/05 23:06:13 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -16,11 +16,11 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.qos.address.ServerRef;
 
@@ -149,11 +149,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       try {
          // Extend qos to contain security credentials ...
-         ConnectQos loginQos = new ConnectQos(glob, qos_literal);
+         ConnectQosServer loginQos = new ConnectQosServer(glob, qos_literal);
          loginQos.setSecurityPluginData(null, null, loginName, passwd);
 
          // No login using the connect() method ...
-         ConnectReturnQos returnQos = connect(loginQos);
+         ConnectReturnQosServer returnQos = connect(loginQos);
 
          // Build return handle ...
          ServerRef ref = returnQos.getServerRef();
@@ -181,7 +181,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public String connect(String qos_literal) throws XmlBlasterException
    {
       try {
-         return connect(new ConnectQos(glob, qos_literal)).toXml();
+         return connect(new ConnectQosServer(glob, qos_literal)).toXml();
       } catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
@@ -198,9 +198,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       return "";
    }
 
-   private ConnectReturnQos connect(ConnectQos loginQos) throws XmlBlasterException
+   private ConnectReturnQosServer connect(ConnectQosServer loginQos) throws XmlBlasterException
    {
-      ConnectReturnQos returnQos = null;
+      ConnectReturnQosServer returnQos = null;
       String sessionId = null;
 
       StopWatch stop = null; if (log.TIME) stop = new StopWatch();
@@ -224,7 +224,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
          org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
          String serverIOR = orb.object_to_string(xmlBlaster);
-         returnQos.setServerRef(new ServerRef("IOR", serverIOR));
+         returnQos.addServerRef(new ServerRef("IOR", serverIOR));
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw CorbaDriver.convert(e); // transform native exception to Corba exception
@@ -254,7 +254,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering logout()");
-      disconnect(getSessionId(xmlServer), (new DisconnectQos()).toXml());
+      disconnect(getSessionId(xmlServer), (new DisconnectQosServer(glob)).toXml());
    }
 
 

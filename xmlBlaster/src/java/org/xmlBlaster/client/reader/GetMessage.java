@@ -3,7 +3,7 @@ Name:      GetMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to get from command line a message
-Version:   $Id: GetMessage.java,v 1.6 2002/12/20 15:29:06 ruff Exp $
+Version:   $Id: GetMessage.java,v 1.7 2003/01/05 23:03:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 

@@ -1,13 +1,17 @@
 package org.xmlBlaster.test.memoryleak;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.MsgUnit;
 
 import java.io.*;
 
@@ -83,7 +87,7 @@ public class Volatile
       finally {
          log.info(ME, "Success, hit a key to logout and exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
-         con.disconnect(new DisconnectQos());
+         con.disconnect(new DisconnectQos(glob));
       }
    }
 

@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.22 2002/12/20 16:32:39 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.23 2003/01/05 23:06:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -15,9 +15,9 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 
 
 
@@ -118,10 +118,11 @@ public class NativeDriver implements I_Driver
       // "NativeDemo" below is the 'callback protocol type', which results in instantiation of given the class:
       CallbackAddress callback = new CallbackAddress(glob, "NativeDemo");
       callback.setAddress("org.xmlBlaster.protocol.nativ.CallbackNativeDriver");
-      ConnectQos connectQos = new ConnectQos(glob, null,null,loginName,passwd);
+      org.xmlBlaster.client.qos.ConnectQos connectQos =
+          new org.xmlBlaster.client.qos.ConnectQos(glob, loginName, passwd);
       connectQos.addCallbackAddress(callback);
-      connectQos.setSessionTimeout(0L);
-      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      connectQos.getSessionQos().setSessionTimeout(0L);
+      ConnectReturnQosServer returnQos = authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
       sessionId = returnQos.getSessionId();
    }
 
@@ -165,7 +166,7 @@ public class NativeDriver implements I_Driver
    public void shutdown(boolean force)
    {
       log.info(ME, "Shutting down native driver ...");
-      try { authenticate.disconnect(sessionId, (new DisconnectQos()).toXml()); } catch(XmlBlasterException e) { }
+      try { authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
    }
 
 
