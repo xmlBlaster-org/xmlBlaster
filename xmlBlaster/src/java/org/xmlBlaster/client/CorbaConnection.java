@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.8 1999/12/13 12:18:54 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.9 1999/12/13 12:29:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -49,6 +49,15 @@ public class CorbaConnection
    private String loginName = null;
    private String qos = null;
 
+
+   /**
+    * CORBA client access to xmlBlaster (default behavior). 
+    */
+   public CorbaConnection()
+   {
+      args = new String[0];  // dummy
+      orb = org.omg.CORBA.ORB.init(args, null);
+   }
 
    /**
     * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
@@ -328,7 +337,7 @@ public class CorbaConnection
 
 
    /**
-    * Login to the server, providing you own BlasterCallback implementation. 
+    * Login to the server, providing you own BlasterCallback implementation.
     * <p />
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
@@ -360,7 +369,7 @@ public class CorbaConnection
 
 
    /**
-    * Login to the server, using the default BlasterCallback implementation. 
+    * Login to the server, using the default BlasterCallback implementation.
     * <p />
     * You need to implement the I_Callback interface, which informs you about arrived
     * messages with its update() method
@@ -486,7 +495,7 @@ public class CorbaConnection
 
 
 /**
- * Example for a callback implementation. 
+ * Example for a callback implementation.
  * <p />
  * You can use this default callback handling with your clients,
  * but if you need other handling of callbacks, take a copy
@@ -512,7 +521,7 @@ class DefaultCallback implements BlasterCallbackOperations
 
    /**
     * This is the callback method invoked from the server
-    * informing the client in an asynchronous mode about new messages. 
+    * informing the client in an asynchronous mode about new messages.
     * <p />
     * You don't need to use this little method, but it nicely converts
     * the raw CORBA BlasterCallback.update() with raw Strings and arrays
