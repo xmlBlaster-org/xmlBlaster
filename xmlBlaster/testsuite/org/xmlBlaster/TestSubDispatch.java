@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.13 2002/06/27 12:53:49 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.14 2002/07/05 07:14:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -54,6 +54,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
 
    private SubscribeRetQos subscribeRetQos = null; // declare here to allow inner class access
 
+   private String assertInUpdate = null;
 
    /**
     * Constructs the TestSubDispatch object.
@@ -191,10 +192,12 @@ public class TestSubDispatch extends TestCase implements I_Callback
       testSubscribeXPath();
       Util.delay(1000L);                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
+      assertTrue(assertInUpdate, assertInUpdate == null);
 
       testPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
+      assertTrue(assertInUpdate, assertInUpdate == null);
    }
 
    /**
@@ -204,6 +207,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
+      assertInUpdate = "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...";
       Log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...");
       return "";
    }
