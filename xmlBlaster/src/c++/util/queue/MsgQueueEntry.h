@@ -10,6 +10,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/Timestamp.h>
 #include <util/MessageUnit.h>
+#include <util/MethodName.h>
 #include <util/qos/ConnectQos.h>
 #include <client/qos/PublishQos.h>
 #include <client/qos/PublishReturnQos.h>
@@ -37,6 +38,14 @@ class I_ConnectionsHandler;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
+/**
+ * Holds arbitrary raw data and its length
+ */
+typedef struct {
+   size_t dataLen;
+   char *data;
+} BlobHolder;
+
 class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
@@ -62,19 +71,34 @@ public:
 
     /**
      * Constructor suited for operations like publishes
+     * @param embeddedType Describes the type of serialization of the embedded object to be able
+     *        to restore it later, something like "MSG_RAW|publish"
      */
-    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::MessageUnit& msgUnit, const std::string& type="publish", int priority=5, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global,
+                  const org::xmlBlaster::util::MessageUnit& msgUnit,
+                  const std::string& embeddedType,
+                  int priority,
+                  bool persistent);
 
     /**
      * Constructor suited for operations like connect
      */
-    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::ConnectQos& connectQos, const std::string& type="connect", int priority=9, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global,
+                  const org::xmlBlaster::util::qos::ConnectQos& connectQos,
+                  const std::string& embeddedType,
+                  int priority,
+                  bool persistent);
 
 
     /**
      * Constructor suited for operations like subscribe and unSubscribe
      */
-    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::QueryKeyData& queryKeyData, const org::xmlBlaster::util::qos::QueryQosData& queryQosData, const std::string& type="subscribe", int priority=9, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global,
+                  const org::xmlBlaster::util::key::QueryKeyData& queryKeyData,
+                  const org::xmlBlaster::util::qos::QueryQosData& queryQosData,
+                  const std::string& embeddedType,
+                  int priority,
+                  bool persistent);
 
 
     virtual ~MsgQueueEntry();
@@ -187,14 +211,14 @@ public:
     * gets the content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
     */
-   virtual void* getEmbeddedObject() = 0;
+   virtual const void* getEmbeddedObject() const = 0;
 
    /**
-    * gets the type of the object embedded in this entry.
-    * @return String the identifier which tells the I_EntryFactory how to
+    * gets the embeddedType of the object embedded in this entry.
+    * @return String in namespace MethodName, the identifier which tells the I_EntryFactory how to
     *         deserialize this entry.
     */
-   std::string getEmbeddedType() const;
+   virtual std::string getEmbeddedType() const;
 
    /**
     * Return a human readable identifier for logging output.
