@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.13 2000/11/09 23:34:43 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.14 2000/11/16 09:26:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -160,7 +160,7 @@ public class CorbaDriver implements I_Driver
                Log.info(ME, "Published AuthServer IOR to naming service");
             }
             catch (XmlBlasterException e) {
-               Log.warn(ME + ".NoNameService", "Can't access naming service: " + e.toString());
+               Log.warn(ME + ".NoNameService", e.reason);
                nc = null;
                if (iorPort > 0) {
                   Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
@@ -279,7 +279,7 @@ public class CorbaDriver implements I_Driver
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
          if (nameServiceObj == null) {
-            Log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
+            //Log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
