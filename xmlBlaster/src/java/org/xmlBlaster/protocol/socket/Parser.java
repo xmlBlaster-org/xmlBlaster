@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.38 2003/05/14 12:50:25 ruff Exp $
+Version:   $Id: Parser.java,v 1.39 2003/05/23 11:38:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -588,7 +588,7 @@ public class Parser
 
       lenUnzipped = toInt0(buf, -1);
       if (lenUnzipped != -1) {
-         log.warn(ME, "Ignoring given unzipped message length");
+         if (log.TRACE) log.trace(ME, "Ignoring given unzipped message length of size " + lenUnzipped);
       }
 
       String qos = null;
