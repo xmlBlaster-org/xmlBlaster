@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.23 2000/02/20 17:38:49 ruff Exp $
+Version:   $Id: Main.java,v 1.24 2000/02/24 22:00:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -101,34 +101,37 @@ public class Main
          }
 
          // 3) Publish IOR to a naming service
-         try {
-            NamingContext nc = getNamingService();
-            NameComponent [] name = new NameComponent[1];
-            name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
-            name[0].id = "xmlBlaster-Authenticate";
-            name[0].kind = "MOM";
+         boolean useNameService = Args.getArg(args, "-ns", true);  // default is to publish myself to the naming service
+         if (useNameService) {
+            try {
+               NamingContext nc = getNamingService();
+               NameComponent [] name = new NameComponent[1];
+               name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
+               name[0].id = "xmlBlaster-Authenticate";
+               name[0].kind = "MOM";
 
-            nc.bind(name, authRef);
-            Log.info(ME, "Published AuthServer IOR to naming service");
-         }
-         catch (XmlBlasterException e) {
-            Log.info(ME, "AuthServer IOR is not published to naming service");
-         } catch (org.omg.CORBA.COMM_FAILURE e) {
-            if (iorPort > 0) {
-               Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                            e.toString() +
-                            "\nYou don't need the naming service, i'll switch to builtin http IOR download");
+               nc.bind(name, authRef);
+               Log.info(ME, "Published AuthServer IOR to naming service");
             }
-            else if (iorFile != null) {
-               Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                            e.toString() +
-                            "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
-            }
-            else {
-               usage();
-               Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                            e.toString() +
-                            "\n\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+            catch (XmlBlasterException e) {
+               Log.info(ME, "AuthServer IOR is not published to naming service");
+            } catch (org.omg.CORBA.COMM_FAILURE e) {
+               if (iorPort > 0) {
+                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                               e.toString() +
+                               "\nYou don't need the naming service, i'll switch to builtin http IOR download");
+               }
+               else if (iorFile != null) {
+                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                               e.toString() +
+                               "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
+               }
+               else {
+                  usage();
+                  Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                               e.toString() +
+                               "\n\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+               }
             }
          }
 
@@ -285,6 +288,8 @@ public class Main
       Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
       Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
       Log.plain(ME, "                       Default is port 7609, the port -1 switches this feature off.");
+      Log.plain(ME, "   -ns false           Don't publish the IOR to a naming service.");
+      Log.plain(ME, "                       Default is to publish the IOR to a naming service.");
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
