@@ -314,35 +314,34 @@ public final class ClusterManager implements I_RunlevelListener
       if (destination.getDestination().getNodeId() == null)
          return null;
 
+      // First check if a specific not local nodeId is given
       ClusterNode clusterNode = getClusterNode(destination.getDestination().getNodeId());
       if (log.TRACE) log.trace(ME, "PtP message '" + msgUnit.getLogId() + "' destination " + destination.getDestination() +
-                   " trying node " + ((clusterNode==null)?"null":clusterNode.getId()));
+                   " trying node " + ((clusterNode==null)?"null":clusterNode.getId()) +
+                   " isNodeIdExplicitlyGiven=" + destination.getDestination().isNodeIdExplicitlyGiven());
 
-      if (clusterNode == null) {
-         ClusterNode[] clusterNodes = getClusterNodes();
-         // Not very intelligent routing algorithm:
-         // We just take an arbitrary node to forward the PtP message
-         // Need to be redesigned with plugin interface (TODO !!!)
-         // Should work for clusters with less than three nodes
-         for(int i=0; i<clusterNodes.length; i++) {
-            if (clusterNodes[i].isLocalNode()) {
-               continue;
-            }
-            clusterNode = clusterNodes[i];
-            break;
-         }
-         if (clusterNode == null) {
-            String text = "Cluster node '" + destination.getDestination() + "' is not known, message '" + msgUnit.getLogId() + "' is lost";
-            log.warn(ME, text);
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, text);
-         }
-      }
-
-      if (clusterNode.isLocalNode()) {
-         if (log.TRACE) log.trace(ME, "PtP message '" + msgUnit.getLogId() +
+      if (clusterNode != null && clusterNode.isLocalNode()) {
+         if (destination.getDestination().isNodeIdExplicitlyGiven()) {
+            if (log.TRACE) log.trace(ME, "PtP message '" + msgUnit.getLogId() +
                          "' destination " + destination.getDestination() + " destination cluster node reached");
-         return null;
+            return null; // handle locally
+         }
       }
+
+      if (clusterNode != null && destination.getDestination().isNodeIdExplicitlyGiven()) {
+         if (log.TRACE) log.trace(ME, "PtP message '" + msgUnit.getLogId() +
+                        "' destination " + destination.getDestination() + " remote destination cluster node found");
+      }
+      else {
+         // Ask the plugin
+         NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit, destination);
+         if (nodeDomainInfo == null)
+            return null;
+         clusterNode =  nodeDomainInfo.getClusterNode();
+      }
+
+      if (clusterNode.isLocalNode())
+         return null;
 
       I_XmlBlasterAccess con = clusterNode.getXmlBlasterAccess();
       if (con == null) {
@@ -602,11 +601,16 @@ public final class ClusterManager implements I_RunlevelListener
       }
    }
 
+   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
+      return getConnection(publisherSession, msgUnit, null);
+   }
+
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
+    * @param destination For PtP, else null
     * @return null if local node, otherwise access other node with <code>nodeDomainInfo.getClusterNode().getI_XmlBlasterAccess()</code>
     */
-   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
+   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit, Destination destination) throws XmlBlasterException {
       if (!postInitialized) {
          // !!! we need proper run level initialization
          if (log.TRACE) log.trace(ME, "Entering getConnection(" + msgUnit.getLogId() + "), but clustering is not ready, handling in local node");
@@ -687,8 +691,15 @@ public final class ClusterManager implements I_RunlevelListener
             if (log.TRACE) log.trace(ME, "Using local node for message, no master mapping rules are known.");
          }
          else {
-            log.info(ME, "No master found for message '" + msgUnit.getLogId() + "' mime='" +
+            if (destination == null) {
+               log.info(ME, "No master found for message '" + msgUnit.getLogId() + "' mime='" +
                          msgUnit.getContentMime() + "' domain='" + msgUnit.getDomain() + "', using local node.");
+            }
+            else {
+               if (log.TRACE) log.trace(ME, "No master found for PtP message '" + msgUnit.getLogId() + "' mime='" +
+                         msgUnit.getContentMime() + "' domain='" + msgUnit.getDomain() + "', using local node.");
+            
+            }
          }
          return null;
       }
@@ -713,7 +724,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
       else {
-         if (log.TRACE) log.info(ME, "Using master node '" + nodeDomainInfo.getClusterNode().getId() + "' for message '"
+         if (log.TRACE) log.trace(ME, "Using master node '" + nodeDomainInfo.getClusterNode().getId() + "' for message '"
                + msgUnit.getLogId() + "' domain='" + msgUnit.getDomain() + "'");
       }
 

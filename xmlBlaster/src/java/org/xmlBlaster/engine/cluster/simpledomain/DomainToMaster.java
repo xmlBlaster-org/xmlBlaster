@@ -141,12 +141,21 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     */
    public NodeDomainInfo getMasterId(NodeDomainInfo nodeDomainInfo, MsgUnit msgUnit) throws XmlBlasterException {
 
+      QueryKeyData[] keyMappings = nodeDomainInfo.getKeyMappings();  // These are the key based queries
+
       if (msgUnit.getQosData() instanceof MsgQosData) {
          MsgQosData qos = (MsgQosData)msgUnit.getQosData();
          if (qos.isPtp()) {
-            log.info(ME, "Checking if PtP message shall be forwarded to other cluster node");
-            log.error(ME, "PtP cluster support is not implemented");
-            return null;
+            // We check the domain of each MsgUnit entry (PtP messages may use a static topic just for communication channel)
+            for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
+               if (keyMappings[ii].getDomain().equals("*") || keyMappings[ii].getDomain().equals(msgUnit.getKeyData().getDomain())) {
+                  if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() +
+                           "' stratum=" + nodeDomainInfo.getStratum() + " for PtP message '" + msgUnit.getLogId() +
+                           "' domain='" + msgUnit.getKeyData().getDomain() + "'.");
+                  return nodeDomainInfo;
+               }
+            }
+            // The following query checks are only useful for PtP messages if the XmlKey for each MsgUnit in a topic remains same!
          }
       }
 
@@ -170,8 +179,6 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          }
       }
       */
-
-      QueryKeyData[] keyMappings = nodeDomainInfo.getKeyMappings();  // These are the key based queries
 
       // Now check if we are master
       ClusterNode clusterNode = null;
