@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -14,12 +14,16 @@ import org.xmlBlaster.clientIdl.*;
 
 
 /**
- * This client tests the method get().
+ * This client shows how to send/receive messages using a unique message name (oid).
  * <p>
- * Invoke examples:
+ * It uses the callback implementation in the external file BlasterCallbackImpl.java.
+ * <p>
+ * Invoke examples:<br />
+ * <pre>
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientOid
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientOid -name "Jeff"
+ * </pre>
  */
 public class ClientOid
 {

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.2 1999/12/13 12:53:03 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.3 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -16,11 +16,13 @@ import org.xmlBlaster.clientIdl.*;
 
 
 /**
- * Client implementation of the callback. 
+ * Client implementation of the callback.
  * <p />
- * YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT<br />
+ * YOU MAY USE THIS AS YOUR CALLBACK IMPLEMENTATION, JUST TAKE A COPY OF IT.
+ * <p />
  * Note that there is a default Callback implementation in CorbaConnect.java which is
- * usually sufficient, so you don't really need to implement the callback code yourself.
+ * usually sufficient, so you don't really need to implement the callback code yourself.<br />
+ * see ClientXml.java for an example how to use the DefaultCallback.
  * <p />
  */
 //public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.2 1999/12/13 12:53:03 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.3 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -18,15 +18,17 @@ import org.xmlBlaster.clientIdl.*;
 
 /**
  * This client tests the method subscribe()/publish() with XML syntax key
- * and XPath query.
+ * and XPath query using the DefaultCallback implementation.
  * <p>
- * This is a nice example using the DefaultCallback implementation from CorbaConnection.java
- * which calls the update() method using I_Callback interface when messages arrive
+ * It is a nice example using the DefaultCallback implementation from CorbaConnection.java
+ * which calls the update() method using I_Callback interface when messages arrive.
  * <p>
- * Invoke examples:
+ * Invoke examples:<br />
+ * <pre>
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml -name "Jeff"
+ * </pre>
  */
 public class ClientXml implements I_Callback
 {
@@ -151,7 +153,7 @@ public class ClientXml implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (update() from I_Callback) invoked from class CorbaConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

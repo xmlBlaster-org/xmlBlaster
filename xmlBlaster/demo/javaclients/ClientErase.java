@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -16,12 +16,16 @@ import org.omg.CosNaming.*;
 
 
 /**
- * This client tests the method erase()
- *
- * Invoke examples:
+ * This client demonstrates the method erase().
+ * <p>
+ * It doesn't implement a Callback server.
+ * <p>
+ * Invoke examples:<br />
+ * <pre>
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientErase
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientErase -name "Jeff"
+ * </pre>
  */
 public class ClientErase
 {

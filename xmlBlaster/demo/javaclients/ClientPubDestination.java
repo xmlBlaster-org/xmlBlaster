@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -21,8 +21,10 @@ import org.xmlBlaster.clientIdl.*;
  * Note that the two clients (client logins) are simulated in this class.<br />
  * Manuel is the 'sender' and Ulrike the 'receiver'
  * <p>
- * Invoke example:
+ * Invoke examples:<br />
+ * <pre>
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientPubDestination
+ * </pre>
  */
 public class ClientPubDestination
 {
@@ -213,7 +215,7 @@ public class ClientPubDestination
 
 
 /**
- * Example for a callback implementation.
+ * Example for a callback implementation, used by the demo ClientPubDestination.
  */
 class PubDestinationCallback implements BlasterCallbackOperations
 {
@@ -222,7 +224,7 @@ class PubDestinationCallback implements BlasterCallbackOperations
    private final String loginName;
 
    /**
-    * Construct a persistently named object.
+    * Construct the callback
     */
    public PubDestinationCallback(java.lang.String name, ClientPubDestination boss)
    {

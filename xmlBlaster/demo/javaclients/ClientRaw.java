@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.2 1999/12/13 14:04:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -16,14 +16,17 @@ import org.omg.CosNaming.*;
 
 
 /**
- * Demo code how to access xmlBlaster using CORBA
- * This client tests the method subscribe() with a later publish() with XPath query
+ * Demo code how to access xmlBlaster using CORBA, step by step without any client helper classes.
+ * <p>
+ * It uses the method subscribe() with a later publish() with XPath query.<br />
  * The subscribe() should be recognized for this later arriving publish()
  * <p>
- * Invoke examples:
+ * Invoke examples:<br />
+ * <pre>
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientRaw `cat /tmp/NS_Ref`
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientRaw -name "Jeff" `cat /tmp/NS_Ref`
+ * </pre>
  */
 public class ClientRaw
 {
@@ -175,6 +178,9 @@ public class ClientRaw
 } // ClientRaw
 
 
+/**
+ * Example for a callback implementation, used by the demo ClientRaw.
+ */
 class RawCallback implements BlasterCallbackOperations
 {
    final String ME;

@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.3 1999/12/09 13:28:35 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.4 1999/12/13 14:05:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -13,9 +13,9 @@ import java.awt.event.*;
 
 
 /**
- * Start xmlBlaster with a stop button. 
+ * Start xmlBlaster with a stop button.
  * <p />
- * A little AWT button pops up, where you can stop the xmlBlaster
+ * A little AWT button pops up, where you can stop the xmlBlaster<br />
  * The available start parameters are similar to Main
  * @see Main
  */
