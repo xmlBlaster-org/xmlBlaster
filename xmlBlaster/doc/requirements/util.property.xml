@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='util.property' type='NEW' prio='LOW' status="CLOSED">
+   <topic>XmlBlaster provides a property file to allow a simple configuration</topic>
+   <description>
+      The xmlBlaster.properties file allows to customize the behavior of xmlBlaster.
+      It is searched in the following locations:
+      1) In $HOME
+      2) In $XMLBLASTER_HOME
+      3) Local directory
+      4) Fallback: \xmlBlaster oder /usr/local/xmlBlaster
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 02 24</date>
+   <revision>$Revision: 1.1 $</revision>
+   <fix status="CLOSED">
+      <name>ruff@swand.lake.de</name>
+      <comment>
+      The property file is used everywhere in the xmlBlaster code.
+      The modules test their property variables in their own test cases.
+      </comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestAll</test>
+   </fix>
+</requirement>
+
