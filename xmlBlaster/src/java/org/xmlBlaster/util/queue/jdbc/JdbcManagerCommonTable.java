@@ -65,6 +65,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * The names of such tables are constituted by the tableNamePrefix (which defaults to 'XB') plus the 
  * nodesTableName
  * 
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html">The queue.jdbc.commontable requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  *

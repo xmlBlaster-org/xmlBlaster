@@ -35,6 +35,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 /**
  * A Pool of connections to the database to be used for a persistent queue. To
  * keep genericity, queries and update strings are read from properties.
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html">The queue.jdbc.commontable requirement</a>
  */
 public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static String ME = "JdbcConnectionPool";

@@ -38,6 +38,7 @@ import java.util.Properties;
  * Persistence queue implementation on a DB based on JDBC.
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html">The queue.jdbc.commontable requirement</a>
  */
 public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugin, I_Map
 {
