@@ -77,6 +77,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
      setenv CLASSPATH ${JacORB_LIB}/jacorb.jar:${CLASSPATH}:
 
     You can do this automatically from your startup shell script.
