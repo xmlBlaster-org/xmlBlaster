@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.31 2002/06/16 13:50:35 ruff Exp $
+Version:   $Id: Global.java,v 1.32 2002/06/16 15:12:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -232,12 +232,13 @@ public class Global implements Cloneable
 
    /**
    * Changes the given loglevel to given state. 
+   * <p />
+   * See org.jutils.init.Property#toBool(boolean) at www.jutils.org
    *
    * @param logLevel e.g. "trace" or "trace[core]"
    * @param bool A string like "true" or "false"
    * @return true/false to witch bool was parsed
    * @exception XmlBlasterException if your bool is strange
-   * @see org.jutils.init.Property#toBool(boolean)
    */
    public boolean changeLogLevel(String logLevel, String bool) throws XmlBlasterException {
       try {

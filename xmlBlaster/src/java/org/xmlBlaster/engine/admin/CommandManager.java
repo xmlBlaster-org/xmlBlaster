@@ -154,7 +154,8 @@ public final class CommandManager implements I_RunlevelListener
    }
 
    /**
-    * @return The return status or null if not set. 
+    * @return The SetReturn object:<br />
+    *         setReturn.returnString contains the actually set value or is null if not set. 
     */
    public synchronized final SetReturn set(String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
