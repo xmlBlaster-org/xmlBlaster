@@ -26,8 +26,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/qos/MsgQosFactory.h>
 #include <util/key/MsgKeyFactory.h>
 
-#define  SERVER_HEADER generated/xmlBlaster
-#include <client/protocol/corba/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h>  // client side headers
 #include COSNAMING
 
 using namespace std;

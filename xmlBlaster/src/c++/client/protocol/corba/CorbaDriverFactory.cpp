@@ -30,13 +30,7 @@ CorbaDriverFactory::CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb)
      drivers_(),
      mutex_(),
      getterMutex_(),
-#    if MICO
-     orbIsThreadSafe_(false)
-#    elif TAO
-     orbIsThreadSafe_(true)
-#    else
-     orbIsThreadSafe_(true)
-#    endif
+     orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    if (log_.call()) 
       log_.call("CorbaDriver", string("Constructor orbIsThreadSafe_=") + lexical_cast<string>(orbIsThreadSafe_));

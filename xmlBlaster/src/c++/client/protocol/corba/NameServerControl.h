@@ -16,8 +16,7 @@ using namespace org::xmlBlaster::util;
 #  include <algorithm>
 #endif
 
-#define CLIENT_HEADER generated/xmlBlaster
-#include <client/protocol/corba/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h> // client side headers
 #include COSNAMING
 
 #include <util/StringStripper2.h>

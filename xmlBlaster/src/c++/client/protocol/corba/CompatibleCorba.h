@@ -9,8 +9,6 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _COMPATIBLECORBA_H
 #define _COMPATIBLECORBA_H
 
-#define BUILD_INCLUDE(NAME, POST) NAME ## POST
-
 /*
  * Implementor specific macros (for includes etc.)
  */
@@ -19,8 +17,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                      OMNIORB (Nils.Nilson@in-gmbh.de)
  ******************************************************************/
 #ifdef  OMNIORB
-#define CLIENT_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
-#define SERVER_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
+#define ORB_IS_THREAD_SAFE        true
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlaster.h>
+#else
+#  include <generated/xmlBlaster.h> // client side include header
+#endif
 #define CORBA_HEADER              <omniORB4/CORBA.h>
 //#define CORBA_HEADER              <omniORB3/CORBA.h>
 #define COSCONTAINEMENT           <not_implemented.h>
@@ -47,8 +49,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                      ORBACUS (OB-4.03)
  ******************************************************************/
 #ifdef  ORBACUS
-#define CLIENT_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
-#define SERVER_INCLUDE(NAME)      BUILD_INCLUDE(NAME, _skel.h)
+#define ORB_IS_THREAD_SAFE        true
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlaster_skel.h>
+#else
+#  include <generated/xmlBlaster.h> // client side include header
+#endif
 #define CORBA_HEADER              <OB/CORBA.h>
 #define COSCONTAINEMENT           <not_implemented.h>
 #define COSOBJECTIDENTITY         <not_implemented.h>
@@ -73,8 +79,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                     MICO (ver. 2.3.1)
  *****************************************************************/
 #ifdef  MICO
-#define CLIENT_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
-#define SERVER_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
+#define ORB_IS_THREAD_SAFE        false
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlaster.h>
+#else
+#  include <generated/xmlBlaster.h> // client side include header
+#endif
 #define CORBA_HEADER              <CORBA.h>
 #define COSCONTAINEMENT           <mico/CosContainment.h>
 #define COSOBJECTIDENTITY         <mico/CosObjectIdentity.h>
@@ -99,8 +109,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                     TAO (ver. 2.3.1)
  *****************************************************************/
 #ifdef  TAO
-#define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, C.h)>
-#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.hh)>
+#define ORB_IS_THREAD_SAFE        true
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlasterS.h>
+#else
+#  include <generated/xmlBlasterC.h> // client side include header
+#endif
 #define CORBA_HEADER              <tao/corba.h>
 #define COSCONTAINEMENT           <not_implemented.h> // what is this ??
 #define COSOBJECTIDENTITY         <not_implemented.h>
@@ -126,8 +140,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                     ORBIX 2000 (ver. 2.0 )
  *****************************************************************/
 #ifdef ORBIX
-#define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, .h)>
-#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.h)>
+#define ORB_IS_THREAD_SAFE        true
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlasterS.h>
+#else
+#  include <generated/xmlBlaster.h> // client side include header
+#endif
 #define CORBA_HEADER              <omg/orb.hh> 
 #define COSCONTAINEMENT           <not_implemented.h>
 #define COSOBJECTIDENTITY         <not_implemented.h>
@@ -156,17 +174,4 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 #endif // _COMPATIBLECORBA_H
 
-/*#ifdef   SERVER_HEADER
-#define  SERVER_INCLUDE2  <SERVER_INCLUDE(SERVER_HEADER)>
-#include SERVER_INCLUDE2
-#undef   SERVER_HEADER
-#endif
-*/
- // #include <generated/xmlBlaster.h>
-/*#ifdef   CLIENT_HEADER
-#define  CLIENT_INCLUDE2  <CLIENT_INCLUDE(CLIENT_HEADER)>
-#include CLIENT_INCLUDE2
-#undef   CLIENT_HEADER
-#endif
-*/
 const char* to_string(const CORBA::Exception &ex);

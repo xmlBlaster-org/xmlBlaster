@@ -16,17 +16,9 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <client/qos/UpdateQos.h>
 #include <util/key/MsgKeyFactory.h>
 #include <util/qos/MsgQosFactory.h>
-#define  SERVER_HEADER generated/xmlBlaster
+#define  SERVER_HEADER 1 // does #include <generated/xmlBlasterS.h> with CompatibleCorba.h, OMNIORB: use -Wbh=.h to force this extension
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
-#ifdef TAO
-  #include "generated/xmlBlasterC.h"
-  #include "generated/xmlBlasterS.h"
-#else
-  #include <generated/xmlBlaster.h>	 // OMNIORB: use -Wbh=.h to force this extension
-#endif
-
-
 using namespace std;
 
 using namespace org::xmlBlaster::util;
