@@ -1,24 +1,27 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
 
-Changes for 0.71 [Jan. 2000]
-============================
+Changes for 0.71 [Jan.20 2000]
+==============================
 
-   - Added MOM slide show, see http://www.xmlBlaster.org
+   - Added the incredible MOM slide show, see http://www.xmlBlaster.org
 
    - Added SubscribeKeyWrapper.java SubscribeQosWrapper.java as client helper
-	  to help to hide raw XML ASCII strings
+     to help to hide raw XML ASCII strings
 
    - Added simple persistent store (file based)
-	  Needs to be configured in $HOME/xmlBlaster.properties
+     Needs to be configured in $HOME/xmlBlaster.properties
 
    - Added a xmlBlaster.properties file (should be placed into $HOME).
+     see xmlBlaster/xmlBlaster.properties.template as a base to start with
 
-	- Renamed file names from ...QoS... to ...Qos...
+   - Renamed file names from ...QoS... to ...Qos...
 
-	- Added a file feeder (publishes files as message to xmlBlaster)
+   - Added a file feeder PublishFile.java (publishes files as message to xmlBlaster)
 
-	- Added usage text, invoke at command line with -? option
+   - Added some help to xmlBlaster/doc/programming-guide.lyx (still ugly)
 
-	- Small changes here and there
+   - Added usage text, invoke at command line with -? option
+
+   - Small changes here and there
 
