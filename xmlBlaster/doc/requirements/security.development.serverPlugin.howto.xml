@@ -369,4 +369,8 @@
 </description>
 <example>
 </example>
+<see type="API">org.xmlBlaster.authentication.plugins.I_Manager</see>
+<see type="API">org.xmlBlaster.authentication.plugins.I_Session</see>
+<see type="API">org.xmlBlaster.authentication.plugins.I_Subject</see>
+<see type="API">org.xmlBlaster.authentication.plugins.I_SecurityQos</see>
 </requirement>
