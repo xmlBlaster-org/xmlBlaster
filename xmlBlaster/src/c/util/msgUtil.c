@@ -120,13 +120,12 @@ char *getStackTrace(int maxNumOfLines)
 }
 
 /**
- * Todo, currently it is rounded to seconds
- * TODO: Not implemented on Windows!!!
+ * Todo, on UNIX currently it is rounded to seconds
  */
 void sleepMillis(long millis)
 {
 #ifdef _WINDOWS
-   printf("ERROR: sleep(%ld) is not implemented on Windows", millis);
+   Sleep(millis);
 #else
    if (millis < 1000)
       millis = 1000;
