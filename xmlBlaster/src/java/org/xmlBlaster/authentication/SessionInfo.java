@@ -234,7 +234,7 @@ public class SessionInfo implements I_Timeout
          this.dispatchManager.shutdown();
       this.subjectInfo = null;
       // this.securityCtx = null; We need it in finalize() getSecretSessionId()
-      this.connectQos = null;
+      // this.connectQos = null;
       this.expiryTimer = null;
    }
 
@@ -308,8 +308,12 @@ public class SessionInfo implements I_Timeout
     * Put the given message entry into the queue
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
-      if (!hasCallback())
-         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
+      if (!hasCallback()) {
+         if (log.TRACE) log.trace(ME, "Queing PtP message without having configured a callback to the client, the client needs to reconnect with a valid callback address later");
+         //if (!connectQos.getSessionName().isPubSessionIdUser()) { // client has specified its own publicSessionId (> 0)
+         //   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
+         //}
+      }
       this.sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
    }
 
@@ -426,6 +430,9 @@ public class SessionInfo implements I_Timeout
       sb.append(offset).append("<SessionInfo id='").append(getId()).append("' timeout='").append("'>");
       if (hasCallback()) {
          sb.append(this.dispatchManager.toXml(extraOffset+Constants.INDENT));
+      }
+      else {
+         sb.append(offset).append(Constants.INDENT).append("<DispatchManager id='NULL'/>");
       }
       if (this.sessionQueue != null) {
          sb.append(this.sessionQueue.toXml(extraOffset+Constants.INDENT));
