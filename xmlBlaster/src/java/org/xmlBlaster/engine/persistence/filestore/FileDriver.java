@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.7 2001/01/30 14:24:16 freidlin Exp $
+Version:   $Id: FileDriver.java,v 1.8 2002/02/08 00:48:15 goetzger Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
@@ -85,6 +85,26 @@ public class FileDriver implements I_PersistenceDriver
          throw new XmlBlasterException(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
 
+   }
+
+
+     /**
+    * initialises an instance of the filedriver plugin
+    * <p />
+    * @param param  aditional parameter for the filedriver plugin
+    */
+   public final void init(String[] param) throws XmlBlasterException {
+      if (Log.TRACE) Log.trace(ME, "Not neccessary!");
+
+   }
+
+
+     /**
+    * Closes the instance of the filedriver plugin
+    * <p />
+    */
+   public final void shutdown() throws XmlBlasterException {
+      if (Log.TRACE) Log.trace(ME, "Not neccessary!");
    }
 
 
@@ -205,6 +225,36 @@ public class FileDriver implements I_PersistenceDriver
       FileUtil.deleteFile(path, oid + XMLKEY_TOKEN);
       FileUtil.deleteFile(path, oid);
       FileUtil.deleteFile(path, oid + XMLQOS_TOKEN);
+   }
+
+
+     /**
+    * gives the type of the driver
+    * <p />
+    * @return the type of the driver
+    */
+   public String getType() {
+      return null; // TODO !!!
+   }
+
+
+     /**
+    * gives the version of the driver
+    * <p />
+    * @return the version of the driver
+    */
+   public String getVersion() {
+      return null; // TODO !!!
+   }
+
+
+     /**
+    * gives the name of the driver
+    * <p />
+    * @return the name of the driver
+    */
+   public String getName() {
+      return ME;
    }
 
 

@@ -1,27 +1,16 @@
 package org.xmlBlaster.authentication.plugins;
 
+import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
- *
- *
- * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/08 22:23:11 $)
+ * @author  kleinerz
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/02/08 00:48:14 $)
  */
 
-public interface I_Manager
+public interface I_Manager extends I_Plugin
 {
-   /**
-    * This method is called by the PluginManager.
-    * <p/>
-    * @param String[] Some arguments from xmlBlaster.properties.
-    */
-   public void init(String[] options) throws XmlBlasterException;
-
-   public String getType();
-   public String getVersion();
-
    // --- session handling ----------------------------------------------------
 
    // querySubjects(String query, String syntax)

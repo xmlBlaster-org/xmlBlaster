@@ -140,66 +140,60 @@ LogFormat.Time=MEDIUM
 
 
 #------------------- Global setting for the persistence -----------------------
-# FileDrivers are for the xmlBlaster persistence: 
-#   org.xmlBlaster.engine.persistence.filestore.FileDriver        (Filestore)
-#   org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver (dbXML/Xindice)
-#   org.xmlBlaster.engine.persistence.mudb.MuDbDriver             (MessageUnit database)
 #
+# supported and implemented tpyes and versions of persistence plugins:
+#
+#         || Type                |
+#         || filestore | xmldb   |
+# ========++===========+=========+
+# Version || 1.0       | xindice |
+#         ||           |         |
+#         ||           |         |
+#
+
 # Lazy recover (not at server startup but on demand) is not yet supported.
 Persistence.LazyRecovery=true
-# Persitence Driver
-Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
-# Persistence.Driver=org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver
 
-#-------------------  dbXML database ------------------------------------------
+Persistence.Driver.Type=filestore
+Persistence.Driver.Version=1.0
+Persistence.Path=${user.home}${file.separator}tmp
+
+# Persistence.Driver.Type=xmldb
+# Persistence.Driver.Version=xindice
+# Persistence.Driver.Version=eXist
+# Persistence.Path=xmldb:xindice:///db
+# Persistence.Collection=xmlBlaster
+
+#-------------------  Xindice database ------------------------------------------
 # see $XMLBLASTER_HOME/README or list-archive on http://www.xmlBlaster.org for
 # more details
-# This persistence layer needs Xindice(dbXML) from http://www.dbXML.org installed and running
+# This persistence Layer needs Xindice from http://www.dbXML.org installed and running
 #
-# developed with release 1.04b
+# developed with release 'Xindice 1.0rc1 (DarkHorse)'
 #
 # Collection needs to be created manually by:
-# dbxmladmin ac -c /db -n xmlBlaster
+# xindiceadmin ac -c /db -n xmlBlaster
 # see http://www.dbXML.org for more details
+# see http://xml.apache.org/xindice for more details ???
 #
 #	Setting up your desired CollectionPath
-#	default is xmldb:dbxml:///db
-Persistence.Path=xmldb:dbxml:///db
+#	default is xmldb:xindice:///db
+#Persistence.Path=xmldb:xindice:///db
 #	Setting up your desired CollectionName
 #	default is xmlBlaster
-Persistence.Collection=xmlBlaster
+#Persistence.Collection=xmlBlaster
 #
-#	Sets the Driver of the dbXML Database Implementation
-#       default is org.dbxml.client.xmldb.DatabaseImpl
+#	Sets the Driver of the Xindice Database Implementation
+#       default is org.apache.xindice.client.xmldb.DatabaseImpl
 #	!! Leave it, as long as you don't know what you're doing !!
-Persistence.dbXmlDriver=org.dbxml.client.xmldb.DatabaseImpl
-
+#Persistence.xindiceDriver=org.apache.xindice.client.xmldb.DatabaseImpl
+#	Sets the xindiceFilterClasss of the Xindice Database Implementation
+#       default is org.apache.xindice.core.filer.BTreeFiler
+#	!! Leave it, as long as you don't know what you're doing !!
+#Persistence.xindiceFilterClass=org.apache.xindice.core.filer.BTreeFiler
 #
 #-------------------  Filestore database --------------------------------------
-# Path where to store the the messages
-Persistence.Path=${user.home}${file.separator}tmp
-#-------------------  MessageUnit database ------------------------------------
-#
-#   Setup your Cachesize in byte default is 2MB
-#mudb.Cachesize=1000000
-#
-#   Setup max size of a message in byte default is 5kbyte
-#mudb.Messagesize=100
-#
-#   Setup the Isolation Level. Overview on the possible lock modes:
-#   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
-#   "serializable" to the strongest level (4).
-#
-#                  ANSI    Dirty   Non Repreatable  Phantom Read
-#     LOCK                 Read    Read
-#     ----------------------------------------------------------
-#     UNCOMMITED    0       X           X               X
-#     COMMITED      1       -           X               X
-#     REPEATABLE    2       -           -               X
-#     SERIALIZABLE  3       -           -               -
-#
-#   Example for UNCOMMITED:
-#mudb.Isolationslevel=0
+# at the moment 'nothing'.
 #------------------------------------------------------------------------------
 
 

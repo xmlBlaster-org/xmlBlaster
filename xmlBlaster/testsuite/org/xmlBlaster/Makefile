@@ -24,6 +24,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestLoginLogoutEvent.class \
     $(CLASS_DIR)/TestPersistence.class \
     $(CLASS_DIR)/TestPersistence2.class \
+    $(CLASS_DIR)/TestPersistenceXMLDB.class \
     $(CLASS_DIR)/TestVolatile.class \
     $(CLASS_DIR)/TestPtD.class \
     $(CLASS_DIR)/TestPtDQueue.class \
@@ -40,7 +41,6 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestGet.class \
     $(CLASS_DIR)/TestUnSub.class \
     $(CLASS_DIR)/TestInvocationRecorder.class \
-    $(CLASS_DIR)/TestMuDb.class \
     $(CLASS_DIR)/TestSubManyClients.class \
     $(CLASS_DIR)/TestSubLostClient.class \
     $(CLASS_DIR)/TestAll.class

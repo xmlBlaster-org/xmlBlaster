@@ -1,5 +1,6 @@
 package org.xmlBlaster.authentication.plugins;
 
+import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -18,12 +19,14 @@ import java.util.StringTokenizer;
  * @version 1.0
  */
 
-public class PluginManager {
+public class PluginManager extends PluginManagerBase {
    private static final String                ME = "SecurityPluginManager";
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.Manager";
-   private static       PluginManager          me = null;
+   private static       PluginManager         me = null;
    private              Authenticate        auth = null;
-   private              Hashtable       managers = new Hashtable(); // currently loaded plugins
+
+   /** To protect the singleton */
+   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
 
    public PluginManager() {
       if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true)) {
@@ -39,9 +42,12 @@ public class PluginManager {
     * @return PluginManager
     */
    public static PluginManager getInstance() {
-      if (me!=null) return me;
-
-      me = new PluginManager();
+      if (me == null) { // avoid 'expensive' synchronized
+         synchronized (SYNCHRONIZER) {
+            if (me == null)
+               me = new PluginManager();
+         }
+      }
       return me;
    }
 
@@ -102,36 +108,31 @@ public class PluginManager {
    }
 
    /**
+   * @return The name of the property in xmlBlaster.property, e.g. "Security.Server.Plugin"
+   * for "Security.Server.Plugin[simple][1.0]"
+   */
+   protected String getPluginPropertyName() {
+      return "Security.Server.Plugin";
+   }
+
+
+   /**
+    * @return please return your default plugin classname or null if not specified
+    */
+   public String getDefaultPluginName() {
+      return "org.xmlBlaster.authentication.plugins.simple.Manager";
+   }
+
+
+   /**
     * Tries to return an instance of the default security manager, which simulates
     * the old xmlBlaster behavior.
     *
     */
    public I_Manager getDummyManager() {
-      I_Manager securityManager = (I_Manager)managers.get(defaultPluginName);
-      if (securityManager!=null) return securityManager;
-
-      try {
-         String[] defPlgn={defaultPluginName};
-         securityManager = loadPlugin(defPlgn);
-      } catch(XmlBlasterException e) {}
-
-      return securityManager;
+      return (I_Manager)super.getDummyPlugin();
    }
 
-
-   /**
-    * Check if the requested plugin is supported.
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return boolean true, if supported. else -> false
-    */
-   public boolean isSupported(String type, String version) {
-      // currently just a dummy implementation
-      // thus, it's impossible the switch the default security manager off
-
-      return true;
-   }
 
    /**
     * Resolve type and version to the plugins name
@@ -140,37 +141,15 @@ public class PluginManager {
     * @param String The version of the requested plugin.
     * @return String The name of the requested plugin.
     */
-   private String[] choosePlugin(String type, String version) throws XmlBlasterException
+   protected String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
-      String[] pluginData=null;
-      String rawString;
-
-      if (isSupported(type, version)) {
-         rawString = XmlBlasterProperty.get("Security.Server.Plugin["+type+"]["+version+"]", (String)null);
-         if (rawString==null) {
-            if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true) == false){
-               throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
-            }
-            else {
-               rawString = defaultPluginName;
-            }
-         }
-         if(rawString!=null) {
-            Vector tmp = new Vector();
-            StringTokenizer st = new StringTokenizer(rawString, ",");
-            while(st.hasMoreTokens()) {
-               tmp.addElement(st.nextToken());
-            }
-            //pluginData = (String[])tmp.toArray();
-            pluginData=new String[tmp.size()];
-            for(int i=0;i<tmp.size();i++) {
-               pluginData[i]=(String)tmp.elementAt(i);
-            }
+      if (type == null || type.equals("simple")) {
+         if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true) == false){
+            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
          }
       }
-      if (pluginData[0].equalsIgnoreCase("")) pluginData = null;
 
-      return pluginData;
+      return super.choosePlugin(type, version);
    }
 
    /**
@@ -182,45 +161,8 @@ public class PluginManager {
     * @return I_Manager
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   private I_Manager loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
+   protected I_Manager loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
-      // separate parameter and plugin name
-      String[] param= new String[pluginNameAndParam.length-1];
-      String pluginName = pluginNameAndParam[0];
-      System.arraycopy(pluginNameAndParam,1,param,0,pluginNameAndParam.length-1);
-
-      I_Manager manager = null;
-      try {
-         if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + pluginName + "') ...");
-         Class cl = java.lang.Class.forName(pluginName);
-         manager = (I_Manager)cl.newInstance();
-         if (Log.TRACE) Log.trace(ME, "Found I_Manager '" + pluginName + "'");
-      }
-      catch (IllegalAccessException e) {
-         Log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
-         throw new XmlBlasterException(ME+".NoClass", "The Plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
-      }
-      catch (SecurityException e) {
-         Log.error(ME, "No right to access the plugin class or initializer '" + pluginName + "'");
-         throw new XmlBlasterException(ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'");
-      }
-      catch (Throwable e) {
-         Log.error(ME, "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
-         throw new XmlBlasterException(ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
-      }
-
-      // Initialize the plugin
-      if (manager != null) {
-         try {
-            manager.init(param);
-            Log.info(ME, "Plugin '" + pluginName + "' successfully initialized!");
-         } catch (XmlBlasterException e) {
-            //Log.error(ME, "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
-            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
-         }
-      }
-      managers.put(pluginName, manager);
-
-      return manager;
+      return (I_Manager)super.instantiatePlugin(pluginNameAndParam);
    }
 }

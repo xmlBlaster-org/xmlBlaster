@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.97 2002/01/23 08:00:02 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.98 2002/02/08 00:48:15 goetzger Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -20,6 +20,7 @@ import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
+import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 
 
 import java.util.*;
@@ -33,7 +34,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.97 $
+ * @version $Revision: 1.98 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -42,6 +43,8 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    public static long publishedMessages = 0L;
    /** Total count of accessed messages via get() */
    public static long getMessages = 0L;
+
+   private PersistencePluginManager pluginManager = null;
 
    private static final String ME = "RequestBroker";
 
@@ -191,6 +194,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       if (persistenceDriver == null) {
 
+         /*
          String driverClass = XmlBlasterProperty.get("Persistence.Driver", "org.xmlBlaster.engine.persistence.filestore.FileDriver");
 
          if (driverClass == null) {
@@ -213,8 +217,22 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e1.toString());
             usePersistence = false;
             return (I_PersistenceDriver)null;
+         } */
+         String pluginType    = XmlBlasterProperty.get("Persistence.Driver.Type", "filestore");
+         String pluginVersion = XmlBlasterProperty.get("Persistence.Driver.Version", "1.0");
+
+         try {
+            pluginManager = PersistencePluginManager.getInstance();
+            persistenceDriver = pluginManager.getPlugin(pluginType, pluginVersion);
+         } catch (Exception e) {
+            Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate [" + pluginType + "][" + pluginVersion +"]: " + e.toString());
+            e.printStackTrace();
+            usePersistence = false;
+            return (I_PersistenceDriver)null;
          }
-         Log.info(ME, "Loaded persistence driver '" + driverClass + "'");
+
+         //Log.info(ME, "Loaded persistence driver '" + persistenceDriver.getName() + "[" + pluginType + "][" + pluginVersion +"]'");
+         Log.info(ME, "Loaded persistence driver '[" + pluginType + "][" + pluginVersion +"]'");
       }
       return persistenceDriver;
    }

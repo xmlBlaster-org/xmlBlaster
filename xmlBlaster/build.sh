@@ -32,11 +32,8 @@ CLASSPATH=lib/batik/batik-util.jar:$CLASSPATH
 CLASSPATH=lib/batik/batik-xml.jar:$CLASSPATH
 
 CLASSPATH=lib/Xindice/xalan-2.0.1.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/xerces-1.4.3.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/openorb-1.2.0.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/juggernaut-1.0.jar:$CLASSPATH
+CLASSPATH=lib/Xindice/xindice.jar:$CLASSPATH
 CLASSPATH=lib/Xindice/xmldb.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/dbXML.jar:$CLASSPATH
 
 ALL_ENV=`env`
 MY_DEF=""

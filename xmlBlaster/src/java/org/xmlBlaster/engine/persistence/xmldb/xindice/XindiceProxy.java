@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------------
-Name:      XMLDBProxy.java
+Name:      XindiceProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Code for a XML:DB Proxy
-Version:   $Id: XMLDBProxy.java,v 1.2 2002/01/14 01:02:46 goetzger Exp $
+Comment:   Code for a Xindice Proxy
+Version:   $Id: XindiceProxy.java,v 1.2 2002/02/08 00:48:18 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine.persistence.xmldb;
+package org.xmlBlaster.engine.persistence.xmldb.xindice;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -17,46 +17,115 @@ import org.xmldb.api.modules.*;
 import org.xmldb.api.DatabaseManager;
 
 // For the XMLDB specific CollectionManager service
-import org.dbxml.client.xmldb.services.*;
-import org.dbxml.xml.dom.*;
+import org.apache.xindice.client.xmldb.services.*;
+import org.apache.xindice.xml.dom.*;
+
+// for starting Xindice ebedded
+import org.apache.xindice.server.Xindice;
+import org.apache.xindice.server.Kernel;
 
 /**
- * This class provides the connection to XML:DB-databases like  Xindice (former dbXML) or eXist.
+ * This class provides the connection to Xindice (former dbXML) which is a XML:DB-database.
  * <p />
- * There is on driver ready for testing, XindiceDriver.
  *
  * @author $Author: goetzger $
  */
-public class XMLDBProxy {
+public class XindiceProxy {
 
-   private static final String ME = "XMLDBProxy";
+   private static final String ME = "XindiceProxy";
 
-   private Collection col = null;
-   private String colPath = null;
-   private boolean isOpen = false;
+   // private static Xindice Xdb = null; // instance of Xindice Database
 
-   private String dbXmlDriver = null;
-   private String dbXmlFilterClass = null;
+   private Collection col = null; // instance of collection
+   private String colPath = null; // path to collection
+   private boolean isOpen = false; // is db open?
+   // private boolean isRunning = false; // is Xindice running?
+
+   private String xindiceDriver = null;
+   private String xindiceFilterClass = null;
 
    /**
-    * Constructs and opens the XMLDBProxy object.
+    * Constructs and opens the XindiceProxy object.
     *
-    * It gets the driverclass and the dbXMLDriver from xmlBlaster.properties, if desired.
+    * It gets the driverclass and the XindiceDriver from xmlBlaster.properties, if desired.
     * <br />
     * CAUTION: This Proxy is under development, it may not be used for production environment!
     * <br />
     */
-   public XMLDBProxy() {
-      if (Log.CALL) Log.call(ME, "Constructor for XMLDBProxy");
-      Log.warn(ME, "* * * This Proxy is under development, it may not be used for production environment! * * *");
+   public XindiceProxy()
+   {
+      if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy");
 
-      dbXmlDriver = XmlBlasterProperty.get("Persistence.dbXmlDriver", "org.dbxml.client.xmldb.DatabaseImpl");
-      dbXmlFilterClass = XmlBlasterProperty.get("Persistence.dbXmlFilterClass", "org.dbxml.core.filer.BTreeFiler");
+      xindiceDriver = XmlBlasterProperty.get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
+      xindiceFilterClass = XmlBlasterProperty.get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
 
-      if (Log.TRACE) Log.trace(ME, "dbXmlDriver " + dbXmlDriver);
-      if (Log.TRACE) Log.trace(ME, "dbXmlFilterClass " + dbXmlFilterClass);
+      // start the db here, if it's not running already
+      // this.startXindice();
 
-   } // end of  public XMLDBProxy()
+      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
+      if (Log.TRACE) Log.trace(ME, "xindiceFilterClass " + xindiceFilterClass);
+   } // end of  public XindiceProxy()
+
+   /**
+    * Constructs and opens the XindiceProxy object and opens the collection.
+    *
+    * It gets the driverclass and the XindiceDriver from xmlBlaster.properties, if desired.
+    * <br />
+    * CAUTION: This Proxy is under development, it may not be used for production environment!
+    * <br />
+    * @param path The Path of the collection i.e. xmldb:xindice:///db/xmlBlaster
+    */
+   public XindiceProxy(String path)  throws XmlBlasterException
+   {
+      if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy, using path: " + path);
+
+      xindiceDriver = XmlBlasterProperty.get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
+      xindiceFilterClass = XmlBlasterProperty.get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
+
+      // start the db her, if it's not running already
+      // this.startXindice();
+
+      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
+      if (Log.TRACE) Log.trace(ME, "xindiceFilterClass " + xindiceFilterClass);
+
+      openCollection(path);
+
+   } // end of  public XindiceProxy()
+
+   /*
+   private void startXindice()
+   {
+      if (Log.CALL) Log.call(ME, "startXindice");
+
+      if (isRunning) {
+         Log.error(ME, "Cannot start Xindice, it's running already!");
+         return;
+        }
+      Xdb = new Xindice();
+
+      //System.out.println();
+      Log.info(ME, Xdb.Title+" "+Xdb.Version+" ("+Xdb.Codename+")");
+      //System.out.println();
+      new Kernel("Xindice/system.xml");
+
+      isRunning = true;
+   } // end of startXindice
+   */
+
+   /*
+   private void shutdownXindice()
+   {
+      if (Log.CALL) Log.call(ME, "shutdownXindice");
+
+      if (!isRunning) {
+         Log.error(ME, "Cannot shutdown Xindice, it's not running!");
+         return;
+        }
+
+      isRunning = false;
+
+   } // end of startXindice
+   */
 
    /**
     * Allows to create a collection
@@ -68,8 +137,8 @@ public class XMLDBProxy {
     * <p />
     * @param colName The Name of the collection
     */
-   public void createCollection(String colName) throws XmlBlasterException {
-
+   public void createCollection(String colName) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "createCollection");
       String colConfig = null;
 
@@ -79,24 +148,22 @@ public class XMLDBProxy {
         }
 
       try {
-         CollectionManager service =
-            (CollectionManager) col.getService("CollectionManager", "1.0");
+         CollectionManager service = (CollectionManager) col.getService("CollectionManager", "1.0");
 
          colConfig =
             "<collection compressed='true' name='" + colName + "'>" +
-            "   <filer class='" + dbXmlFilterClass + "' gzip='true'/>" +
+            "   <filer class='" + xindiceFilterClass + "' gzip='true'/>" +
             "</collection>";
 
          service.createCollection(colName, DOMParser.toDocument(colConfig));
 
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
-      } catch (org.dbxml.server.dbXMLException e2) {
-         throw new XmlBlasterException( "org.dbxml.server.dbXMLException occured", e2.toString() );
+      } catch (org.apache.xindice.util.XindiceException e2) {
+         throw new XmlBlasterException( "org.apache.xindice.util.XindiceException occured", e2.toString() );
       }
 
       if (Log.TRACE) Log.trace(ME, "Collection '" + colName + "' created using '" + colConfig + "'");
-
    } // end of public createCollection()
 
    /**
@@ -109,8 +176,8 @@ public class XMLDBProxy {
     * <p />
     * @param colName The Name of the collection
     */
-   public void deleteCollection(String colName) throws XmlBlasterException {
-
+   public void deleteCollection(String colName) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "deleteCollection");
 
       if (!isOpen) {
@@ -119,9 +186,7 @@ public class XMLDBProxy {
         }
 
       try {
-         CollectionManager service =
-            (CollectionManager) col.getService("CollectionManager", "1.0");
-
+         CollectionManager service = (CollectionManager) col.getService("CollectionManager", "1.0");
          service.dropCollection(colName);
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
@@ -138,9 +203,10 @@ public class XMLDBProxy {
     * <p />
     * This method stops with an Log.error, if the database is open already.
     * <p />
-    * @param path The Path of the collection i.e. xmldb:dbxml:///db/xmlBlaster
+    * @param path The Path of the collection i.e. xmldb:xindice:///db/xmlBlaster
     */
-   public void openCollection(String path) throws XmlBlasterException {
+   public void openCollection(String path) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "invoking openCollection: " + path);
       this.setCollection(path);
       this.openCollection();
@@ -154,11 +220,11 @@ public class XMLDBProxy {
     * <p />
     * This method stops with an Log.error, if the database is open already.
     */
-   public void openCollection() throws XmlBlasterException {
-
+   public void openCollection() throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "openCollection");
-      //if (Log.TRACE) Log.trace(ME, "colPath " + colPath);
-      //if (Log.TRACE) Log.trace(ME, "dbXmlDriver " + dbXmlDriver);
+      if (Log.TRACE) Log.trace(ME, "colPath " + colPath);
+      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
 
       if (isOpen) {
          Log.error(ME, "Cannot open collection, collection is open already!");
@@ -166,12 +232,16 @@ public class XMLDBProxy {
         }
 
       try {
-         Class c = Class.forName(dbXmlDriver);
+         Class c = Class.forName(xindiceDriver);
+        //Log.info(ME, "Here I am 1");
          Database database = (Database) c.newInstance();
+        //Log.info(ME, "Here I am 2");
          DatabaseManager.registerDatabase(database);
+        //Log.info(ME, "Here I am 3");
          col = DatabaseManager.getCollection(colPath);
-
+        //Log.info(ME, "Here I am 4");
       } catch (XMLDBException e1) {
+         e1.printStackTrace();
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       } catch (java.lang.ClassNotFoundException e2) {
          throw new XmlBlasterException( "ClassNotFoundException occured ", e2.toString() );
@@ -194,8 +264,8 @@ public class XMLDBProxy {
     * <p />
     * This method stops with an Log.error, if the database isn't open already.
     */
-   public void closeCollection() throws XmlBlasterException {
-
+   public void closeCollection() throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "closeCollection");
 
       if (!isOpen) {
@@ -211,7 +281,6 @@ public class XMLDBProxy {
          if (Log.TRACE) Log.trace(ME, "Collection closed");
          isOpen = false;
       }
-
    } // end of closeCollection()
 
    /**
@@ -222,8 +291,8 @@ public class XMLDBProxy {
     * <p />
     * This method stops with an Log.error, if the database isn't open already.
     */
-   public void listCollection() throws XmlBlasterException {
-
+   public void listCollection() throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "listCollections:");
 
       if (!isOpen) {
@@ -239,32 +308,28 @@ public class XMLDBProxy {
             for ( int i=0 ; i < colArray.length ; i++ ) {
                 Log.info(ME, "\t - " + colArray[i] );
             }
-
             Log.info(ME, "Total collections: " + colArray.length);
          }
          else {
-            Log.error(ME, "Collection not found ");
+            Log.error(ME, "Collection not found");
          }
-
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       }
-
    } // end of listCollection()
 
    /**
     * Allows to set the name of the collection
     *
     * <p />
-    * @param path The Path of the collection i.e. xmldb:dbxml:///db/xmlBlaster
+    * @param path The Path of the collection i.e. xmldb:xindice:///db/xmlBlaster
     */
-   public void setCollection(String path) {
-
+   public void setCollection(String path)
+   {
       if (Log.CALL) Log.call(ME, "setCollection");
 
       if (Log.TRACE) Log.trace(ME, "path = " + path);
       colPath = path;
-
    } // end of setCollection()
 
    /**
@@ -274,8 +339,8 @@ public class XMLDBProxy {
     * <p />
     * @return The Name of the collection
     */
-   public String getCollection() {
-
+   public String getCollection()
+   {
       if (Log.CALL) Log.call(ME, "getCollection");
 
       if (!isOpen) {
@@ -283,7 +348,6 @@ public class XMLDBProxy {
          return "";
         }
       return colPath;
-
    } // end of getCollection()
 
    /**
@@ -297,10 +361,10 @@ public class XMLDBProxy {
     * @param data The data to be stored
     * @param id The unique id of the stored data
     */
-   public void addDocument(String data, String id) throws XmlBlasterException {
-
+   public void addDocument(String data, String id) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "addDocument");
-      if (Log.TRACE) Log.info(ME, "Add document '" + colPath + "/" + data + "' as: " + id );
+      if (Log.TRACE) Log.info(ME, "Add document   '" + colPath + "/" + data + "' as: " + id );
 
       if (!isOpen) {
          Log.error(ME, "Cannot add document, collection needs to be opened first!");
@@ -318,7 +382,6 @@ public class XMLDBProxy {
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       }
-
    } // end of addDocument()
 
    /**
@@ -332,8 +395,8 @@ public class XMLDBProxy {
     * @param id The unique id of the stored data
     * @return The stored data belonging to the id, null otherwise
     */
-   public String retrieveDocument(String id) throws XmlBlasterException {
-
+   public String retrieveDocument(String id) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "retrieveDocument key='" + id +"'");
 
       if (!isOpen) {
@@ -361,7 +424,6 @@ public class XMLDBProxy {
       }
 
       return ret;
-
    } // end of retrieveDocument()
 
    /**
@@ -374,8 +436,8 @@ public class XMLDBProxy {
     * <p />
     * @param id The unique id of the document to delete
     */
-   public void deleteDocument(String id) throws XmlBlasterException {
-
+   public void deleteDocument(String id) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "deleteDocument");
 
       if (!isOpen) {
@@ -393,7 +455,6 @@ public class XMLDBProxy {
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       }
-
    } // end of deleteDocument()
 
    /**
@@ -406,8 +467,8 @@ public class XMLDBProxy {
     * <p />
     * @return String[] Array containing the id's (unique key's) of all stored data
     */
-   public String[] listDocuments() throws XmlBlasterException {
-
+   public String[] listDocuments() throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "listDocuments");
 
       if (!isOpen) {
@@ -424,9 +485,7 @@ public class XMLDBProxy {
       }
 
       return docArray;
-
    } // end of listDocuments()
 
-
-}; // end of public class XMLDBProxy {
+}; // end of public class XindiceProxy {
 

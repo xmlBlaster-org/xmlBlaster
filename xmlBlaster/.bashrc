@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.94 2002/01/15 22:06:31 goetzger Exp $
+# $Id: .bashrc,v 1.95 2002/02/08 00:48:11 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -84,13 +84,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "${BLACK_LTGREEN}   XMLBLASTER_HOME=${XMLBLASTER_HOME}  ${ESC}"
 
    # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
-   # using release 1.04b; from http://www.dbxml.org
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/dbXML.jar:${CLASSPATH}
+   # using Xindice 1.0rc1 (DarkHorse); cvs from http://www.dbxml.org
    CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xmldb.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/juggernaut-1.0.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/openorb-1.2.0.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xerces-1.4.3.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xalan-2.0.1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xindice.jar:${CLASSPATH}
 
 
    #a2Blaster - authentication and authorisation service
