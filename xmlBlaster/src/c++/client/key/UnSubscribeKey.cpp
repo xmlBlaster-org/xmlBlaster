@@ -65,6 +65,16 @@ string UnSubscribeKey::getQueryString() const
    return queryKeyData_.getQueryString();
 }
 
+void UnSubscribeKey::setDomain(const string& domain)
+{
+   queryKeyData_.setDomain(domain);
+}
+
+string UnSubscribeKey::getDomain() const
+{
+   return queryKeyData_.getDomain();
+}
+
 string UnSubscribeKey::toXml(const string& extraOffset) const
 {
    return queryKeyData_.toXml(extraOffset);

@@ -71,6 +71,21 @@ public:
    std::string getQueryString() const;
 
    /**
+    * Set the domain for this message, can be used for a simple grouping of
+    * messages to their master node with xmlBlaster clusters. 
+    * @param The domain, any chosen std::string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    *         defaults to "" where the local xmlBlaster instance is the master of the message.
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
+    */
+   void setDomain(const std::string& domain);
+
+   /**
+    * Access the domain setting
+    * @return A domain std::string or null
+    */
+   std::string getDomain() const;
+
+   /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
