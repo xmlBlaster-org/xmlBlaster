@@ -70,6 +70,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    private final static int UNDEF = -1;
    private final static int ALIVE = 0;
+   private final static int PRE_EXPIRED = 4;
    private final static int EXPIRED = 1;
    private final static int DESTROYED = 2;
    private final static int PRE_DESTROYED = 3;
@@ -505,11 +506,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          if (lifeTime > -1) {
             long timeout = getMsgQosData().getRemainingLife();
             if (timeout <= 0L) {
-               this.state = PRE_DESTROYED;
+               this.state = PRE_EXPIRED;
                timeout = 1L;
-               // timeout(null); Will deadlock if called by constructor // switch to EXPIRED or DESTROYED
+               //this.state = PRE_DESTROYED;
+               //timeout = 1L;
+               //timeout(null); // Will deadlock if called by constructor // switch to EXPIRED or DESTROYED
                // We span the timer to fire later and destroy us from another thread 
             }
+            //else//!!!!!!!!!!!!!!
             this.timerKey = this.destroyTimer.addTimeoutListener(this, timeout, null);
                //this.glob.getLog("core").info(ME, "Register msg for expiration in " + org.jutils.time.TimeHelper.millisToNice(timeout));
          }
@@ -519,7 +523,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     */
    public boolean isExpired() {
-      return this.state == EXPIRED;
+      return this.state == EXPIRED || this.state == PRE_EXPIRED;
    }
 
    private void toExpired() throws XmlBlasterException {
@@ -529,7 +533,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
-         if (isExpired()) {
+         if (this.state == EXPIRED) {
             return;
          }
          this.state = EXPIRED;
