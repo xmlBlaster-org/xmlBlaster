@@ -54,7 +54,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    
    /**
     * Triggered by persistent store (JDBC) on lost connection
-    * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener#disconnected()
+    * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionListener#disconnected()
     */
    public void storageUnavailable(int oldStatus) {
       this.log.call(ME, "storageUnavailable");
