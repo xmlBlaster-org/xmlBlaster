@@ -512,6 +512,15 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    }
 
    /**
+    * @return A current snapshot (thread save etc)
+    */
+   private DeliveryManagerEntry[] getDeliveryManagerEntryArr() {
+     synchronized (this) {
+        return (DeliveryManagerEntry[])this.deliveryManagerEntryMap.values().toArray(new DeliveryManagerEntry[this.deliveryManagerEntryMap.size()]);
+      }
+   }
+
+   /**
     * Deregister a delivery manager. 
     * @see I_MsgDeliveryInterceptor#shutdown(DeliveryManager)
     */ 
@@ -535,7 +544,16 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          if (isShutdown) return;
 
          glob.getProperty().removePropertyChangeListener(configPropertyKey, this);
+
+         DeliveryManagerEntry[] arr = getDeliveryManagerEntryArr();
+         for(int i=0; i<arr.length; i++) {
+            shutdown(arr[i].getDeliveryManager());
+         }
+         if (this.deliveryManagerEntryMap.size() > 0) {
+            log.error(ME, "Internal cleanup error in deliveryManagerEntryMap");
+         }
          this.deliveryManagerEntryMap.clear();
+         
          this.xmlBlasterClient.shutdown(this);
          isShutdown = true;
       }
