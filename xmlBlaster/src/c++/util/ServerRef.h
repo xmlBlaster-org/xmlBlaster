@@ -10,7 +10,7 @@ Comment:   Holding serverRef address std::string and protocol std::string to
  * Helper class holding serverRef address std::string and protocol std::string.
  * <p />
  * Holds example a CORBA "IOR:00012..." std::string
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
@@ -58,7 +58,7 @@ public:
 
    /**
     * Returns the protocol type.
-    * @return e.g. "EMAIL" or "IOR"
+    * @return e.g. "SOCKET" or "IOR"
     */
    std::string getType() const;
 

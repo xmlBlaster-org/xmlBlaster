@@ -119,7 +119,7 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay)
       TimeoutMap::iterator iter = timeoutMap_.find(key);
       if (iter == timeoutMap_.end()) {
           // throw the exception here ...
-         // throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+         // throw XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
          log_.error(ME, "The timeout handle '" + lexical_cast<std::string>(key) + "' is unknown, no timeout refresh done");
          return -1; // temporarly. Change this once exception is thrown
       }
