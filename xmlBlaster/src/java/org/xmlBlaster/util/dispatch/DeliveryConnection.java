@@ -189,7 +189,8 @@ abstract public class DeliveryConnection implements I_Timeout
          }
       }
 
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "This exception is never reached");
+      Thread.currentThread().dumpStack();
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "This exception is never reached" + toXml(""));
    }
 
    /**
@@ -283,7 +284,7 @@ abstract public class DeliveryConnection implements I_Timeout
          if (isDead()) {   // ignore, not possible
             log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": We ignore it.");
             //Thread.currentThread().dumpStack();
-            return;
+            throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + state.toString(), throwable);
          }
 
          if (toReconnected && oldState == ConnectionStateEnum.UNDEF) { //startup
