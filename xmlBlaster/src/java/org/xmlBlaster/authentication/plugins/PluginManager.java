@@ -194,7 +194,7 @@ public class PluginManager {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + pluginName + "') ...");
          Class cl = java.lang.Class.forName(pluginName);
          manager = (I_Manager)cl.newInstance();
-         Log.info(ME, "Found I_Manager '" + pluginName + "'");
+         if (Log.TRACE) Log.trace(ME, "Found I_Manager '" + pluginName + "'");
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");

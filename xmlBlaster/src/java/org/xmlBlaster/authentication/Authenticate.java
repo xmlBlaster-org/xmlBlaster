@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.37 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.38 2001/09/01 08:29:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -94,6 +94,7 @@ public class Authenticate
     * @param sessionId The user session ID if generated outside, otherwise null
     * @return The sessionId on successful login
     * @exception XmlBlasterException Access denied
+    * @deprecated Use init()
     */
    public String login(String loginName, String passwd,
                        String xmlQoS_literal, String sessionId)

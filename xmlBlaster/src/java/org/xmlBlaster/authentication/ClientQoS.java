@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.15 2001/08/31 15:24:19 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.16 2001/09/01 08:27:49 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 
 /**
- * Handling of login() quality of services.
+ * Parsing of login() quality of services.
  * <p />
  * QoS Informations sent from the client to the server via the login() method<br />
  * They inform the server about client preferences and wishes
