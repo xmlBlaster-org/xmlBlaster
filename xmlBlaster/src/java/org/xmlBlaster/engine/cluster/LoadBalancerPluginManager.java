@@ -3,13 +3,15 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.11 2002/08/23 21:29:45 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.12 2002/08/26 09:10:47 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 
@@ -50,22 +52,11 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
     * @return The load balancer for this type and version or null if none is specified
     */
    public I_LoadBalancer getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
-      I_LoadBalancer filterPlugin = null;
-      String[] pluginNameAndParam = null;
+      return (I_LoadBalancer)getPluginObject(type, version);
+   }
 
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         filterPlugin = (I_LoadBalancer)managers.get(pluginNameAndParam[0]);
-         if (filterPlugin!=null) return filterPlugin;
-         filterPlugin = loadPlugin(pluginNameAndParam);
-      }
-      else {
-         //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
-      }
-
-      return filterPlugin;
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {
+      ((I_LoadBalancer)plugin).initialize(glob, clusterManager);
    }
 
    /**
@@ -81,22 +72,5 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
     */
    public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
-   }
-
-
-   /**
-    * Loads the plugin. 
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.engine.cluster.simpledomain.RoundRobin<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_LoadBalancer
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_LoadBalancer loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
-   {
-      I_LoadBalancer i = (I_LoadBalancer)super.instantiatePlugin(pluginNameAndParam);
-      i.initialize(glob, clusterManager);
-      return i;
    }
 }

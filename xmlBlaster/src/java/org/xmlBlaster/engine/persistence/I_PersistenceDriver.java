@@ -7,7 +7,7 @@ Comment:   Interface hiding the real callback protocol
 package org.xmlBlaster.engine.persistence;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -33,16 +33,7 @@ import java.util.Enumeration;
  */
 public interface I_PersistenceDriver extends I_Plugin
 {
-     /**
-    * initialises an instance of the persistence plugin
-    * <p />
-    * The protocol for storing is implemented in the derived class
-    * @param param  aditional parameter for the persistence plugin
-    */
-//   public void init(String param) throws XmlBlasterException;
-
-
-     /**
+   /**
     * Closes the instance of the persistence plugin
     * <p />
     * The protocol for storing is implemented in the derived class

@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.MessageUnit;

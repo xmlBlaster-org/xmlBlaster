@@ -30,7 +30,7 @@ public class Manager implements I_Manager{
    }
 
    /**
-    * @see org.xmlBlaster.util.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
     */
    public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
       if (Log.CALL) Log.call(ME, "init()");

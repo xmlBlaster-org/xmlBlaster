@@ -10,7 +10,9 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -67,22 +69,6 @@ public class CbProtocolManager extends PluginManagerBase
    }
 
    /**
-    * Load the callback drivers from xmlBlaster.properties,
-    * here we only store the class objects into a hashtable.
-    * <p />
-    * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP, RMI).
-    * <p />
-    * Default is support for IOR, XML-RPC, RMI and the JDBC service (ODBC bridge)
-    * <p />
-    * This is done once and than cached in the static protocols Hashtable.
-    */
-   public final void initCbDrivers() {
-      //if (glob.getProperty().get("CbProtocolPlugin[RMI][1.0]", (String)null) == null)
-      //   glob.getProperty().set("CbProtocolPlugin[RMI][1.0]", "org.xmlBlaster.protocol.rmi.CallbackRmiDriver");
-   }
-
-   /**
     * Creates a new instance of the given protocol driver type. 
     * <p />
     * You need to call cbDriver.init(glob, cbAddress) on it.
@@ -102,15 +88,15 @@ public class CbProtocolManager extends PluginManagerBase
     * @return The plugin for this type and version or null if none is specified
     */
    public I_CallbackDriver getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Creating instance of " + getPluginPropertyName(type, version));
+      if (log.CALL) log.call(ME+".getPlugin()", "Creating instance of " + createPluginPropertyKey(type, version));
 
-      String[] pluginNameAndParam = choosePlugin(type, version);
-
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1)
-         return (I_CallbackDriver)super.instantiatePlugin(pluginNameAndParam);
-
-      return null;
+      // We need a new instance every time! (no caching in base class)
+      PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
+      I_CallbackDriver driver = (I_CallbackDriver)super.instantiatePlugin(pluginInfo);
+      return driver;
    }
+
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {}
 
    public void activateCbDrivers() throws XmlBlasterException {
       if (log.TRACE) log.trace(ME, "Don't know how to activate the callback drivers, they are created for each client and session separately");

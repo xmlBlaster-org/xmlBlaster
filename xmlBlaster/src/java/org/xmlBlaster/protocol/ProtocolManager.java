@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.6 2002/08/23 21:24:55 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.7 2002/08/26 09:09:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -12,7 +12,9 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -158,37 +160,11 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
     * @return The load balancer for this type and version or null if none is specified
     */
    public I_Driver getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
-      I_Driver driver = null;
-      String[] pluginNameAndParam = null;
-
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         driver = (I_Driver)managers.get(pluginNameAndParam[0]);
-         if (driver!=null) return driver;
-         driver = loadPlugin(pluginNameAndParam);
-      }
-      else {
-         //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
-      }
-
-      return driver;
+      return (I_Driver)getPluginObject(type, version);
    }
 
-   /**
-    * Loads the plugin. 
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.engine.cluster.simpledomain.RoundRobin<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_LoadBalancer
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_Driver loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException {
-      I_Driver i = (I_Driver)super.instantiatePlugin(pluginNameAndParam);
-      i.init(glob, glob.getAuthenticate(), glob.getAuthenticate().getXmlBlaster());
-      return i;
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException {
+      ((I_Driver)plugin).init(glob, glob.getAuthenticate(), glob.getAuthenticate().getXmlBlaster());
    }
 
    private void activateDrivers() throws XmlBlasterException {
@@ -304,7 +280,6 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
             initDrivers();
-            cbProtocolManager.initCbDrivers();
             glob.getHttpServer(); // incarnate allow http based access (is currently only used by CORBA)
          }
          if (to == RunlevelManager.RUNLEVEL_CLEANUP) {

@@ -13,9 +13,12 @@ import org.a2Blaster.Environment;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/04/19 11:05:45 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/08/26 09:10:05 $)
  * Last Changes:
  *    ($Log: Manager.java,v $
+ *    (Revision 1.4  2002/08/26 09:10:05  ruff
+ *    (Ported to redesigned plugin framework
+ *    (
  *    (Revision 1.3  2002/04/19 11:05:45  ruff
  *    (Changed plugin framework to pass util.Global to plugins
  *    (Changed manager to be no singleton any more
@@ -60,7 +63,7 @@ public class Manager implements I_Manager{
     * Initialize the Manager.
     * <p/>
     * @param XmlBlasterException
-    * @see org.xmlBlaster.util.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
     */
    public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
       if (Log.CALL) Log.call(ME+".init()", "-------START--------\n");

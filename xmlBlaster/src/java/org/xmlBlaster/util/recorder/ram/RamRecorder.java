@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.7 2002/06/03 17:25:43 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.8 2002/08/26 09:08:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -13,7 +13,7 @@ import org.jutils.JUtilsException;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.Constants;
@@ -103,7 +103,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    /**
     * This method is called by the PluginManager.
     * <p />
-    * @see org.xmlBlaster.util.I_Plugin#init(Global,String[])
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(Global,String[])
     */
    public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
       // see ../demo/ContentLenFilter.java for an example

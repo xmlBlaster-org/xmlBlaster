@@ -9,7 +9,7 @@ package org.xmlBlaster.util.recorder.file;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -163,7 +163,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    /**
     * This method is called by the PluginManager.
     * <p />
-    * @see org.xmlBlaster.util.I_Plugin#init(Global,String[])
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(Global,String[])
     */
    public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
       // see ../demo/ContentLenFilter.java for an example

@@ -8,7 +8,7 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.engine.cluster.simpledomain;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;

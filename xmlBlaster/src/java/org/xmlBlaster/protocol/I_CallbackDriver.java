@@ -8,7 +8,7 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;

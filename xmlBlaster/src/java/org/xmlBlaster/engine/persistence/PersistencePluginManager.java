@@ -3,14 +3,16 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.9 2002/07/13 12:07:39 goetzger Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.10 2002/08/26 09:10:48 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -56,28 +58,10 @@ public class PersistencePluginManager extends PluginManagerBase
     * @exception XmlBlasterException Thrown if to suitable security manager has been found.
     */
    public I_PersistenceDriver getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
-      I_PersistenceDriver persistencePlugin = null;
-      String[] pluginNameAndParam = null;
-
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if((pluginNameAndParam!=null) &&
-         (pluginNameAndParam[0]!=null) &&
-         (!pluginNameAndParam.equals("")))
-      {
-         persistencePlugin = (I_PersistenceDriver)managers.get(pluginNameAndParam[0]);
-         if (persistencePlugin!=null) return persistencePlugin;
-
-         persistencePlugin = loadPlugin(pluginNameAndParam);
-      }
-      else {
-         throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
-      }
-
-      return persistencePlugin;
+      return (I_PersistenceDriver)getPluginObject(type, version);
    }
 
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {}
 
    /**
     * Check if the requested plugin is supported.
@@ -107,20 +91,5 @@ public class PersistencePluginManager extends PluginManagerBase
     */
    public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
-   }
-
-
-   /**
-    * Loads a persistence plugin
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_PersistenceDriver
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_PersistenceDriver loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
-   {
-      return (I_PersistenceDriver)super.instantiatePlugin(pluginNameAndParam);
    }
 }

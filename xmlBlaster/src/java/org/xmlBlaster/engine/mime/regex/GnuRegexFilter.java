@@ -7,7 +7,7 @@ Comment:   Support check of message content with regular expressions.
 package org.xmlBlaster.engine.mime.regex;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.Constants;

@@ -3,13 +3,13 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.8 2002/06/15 16:05:31 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.9 2002/08/26 09:10:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.I_Plugin;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.Constants;

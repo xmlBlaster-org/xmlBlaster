@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.13 2002/06/22 12:40:42 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.14 2002/08/26 09:10:48 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -11,7 +11,9 @@ package org.xmlBlaster.engine.mime;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.engine.RunlevelManager;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
@@ -54,6 +56,17 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       glob.getRunlevelManager().addRunlevelListener(this);
    }
 
+   /** Called from base class after creation */
+   public void postInstantiate(I_Plugin plugin_, PluginInfo pluginInfo) {
+      I_PublishFilter plugin = (I_PublishFilter)plugin_;
+      plugin.initialize(glob);
+      if (pluginMap.get(plugin.getName()) != null)
+         log.warn(ME, "Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
+         
+      pluginMap.put(plugin.getName(), plugin);
+      if (log.TRACE) log.trace(ME, "Instantiated publish filter plugin '" + plugin.getName() + "'");
+   }
+
    /**
     * Instantiate all given plugins from xmlBlaster.properties. 
     * <p />
@@ -73,15 +86,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
             String type = key.substring(0, key.indexOf(":"));
             String version = key.substring(key.indexOf(":")+1);
             I_PublishFilter plugin = (I_PublishFilter)getPluginObject(type, version);
-            if (plugin != null) {
-               plugin.initialize(glob);
-               if (pluginMap.get(plugin.getName()) != null)
-                  log.warn(ME, "Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
-                  
-               pluginMap.put(plugin.getName(), getPluginObject(type, version));
-               if (log.TRACE) log.trace(ME, "Instantiated publish filter plugin '" + plugin.getName() + "'");
-            }
-            else {
+            if (plugin == null) {
                log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
             }
          }

@@ -3,14 +3,16 @@ Name:      RecorderPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for queuing of tail back messages
-Version:   $Id: RecorderPluginManager.java,v 1.4 2002/06/02 21:18:46 ruff Exp $
+Version:   $Id: RecorderPluginManager.java,v 1.5 2002/08/26 09:08:19 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
@@ -55,23 +57,21 @@ public class RecorderPluginManager extends PluginManagerBase {
    public I_InvocationRecorder getPlugin(String type, String version, String fn, long maxEntries,
              I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
+      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + createPluginPropertyKey(type, version));
       I_InvocationRecorder plugin = null;
-      String[] pluginNameAndParam = null;
 
-      pluginNameAndParam = choosePlugin(type, version);
+      PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
 
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         plugin = (I_InvocationRecorder)managers.get(pluginNameAndParam[0]);
-         if (plugin!=null) return plugin;
-         plugin = loadPlugin(pluginNameAndParam);
-         plugin.initialize(glob, fn, maxEntries, serverCallback, clientCallback);
-      }
-      else {
-         //throw new XmlBlasterException(ME+".notSupported","The requested invocation recorder isn't supported!");
-      }
+      plugin = (I_InvocationRecorder)managers.get(pluginInfo.getClassName());
+      if (plugin!=null) return plugin;
+
+      plugin = loadPlugin(pluginInfo);
+      plugin.initialize(glob, fn, maxEntries, serverCallback, clientCallback);
 
       return plugin;
+   }
+
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {
    }
 
    /**
@@ -107,7 +107,7 @@ public class RecorderPluginManager extends PluginManagerBase {
     * @return I_InvocationRecorder
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   protected I_InvocationRecorder loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException {
-      return (I_InvocationRecorder)super.instantiatePlugin(pluginNameAndParam);
+   protected I_InvocationRecorder loadPlugin(PluginInfo pluginInfo) throws XmlBlasterException {
+      return (I_InvocationRecorder)super.instantiatePlugin(pluginInfo);
    }
 }

@@ -3,13 +3,15 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.16 2002/06/19 10:27:40 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.17 2002/08/26 09:10:48 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -49,27 +51,18 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
    /**
     * Return a specific MIME based message filter plugin. 
     * <p/>
+    * It is returned from cache if loaded already.
+    * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
     * @return The AccessFilter for this type and version or null if none is specified
     */
    public I_AccessFilter getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
-      I_AccessFilter filterPlugin = null;
-      String[] pluginNameAndParam = null;
+      return (I_AccessFilter)getPluginObject(type, version);
+   }
 
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         filterPlugin = (I_AccessFilter)managers.get(pluginNameAndParam[0]);
-         if (filterPlugin!=null) return filterPlugin;
-         filterPlugin = loadPlugin(pluginNameAndParam);
-      }
-      else {
-         //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
-      }
-
-      return filterPlugin;
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {
+      ((I_AccessFilter)plugin).initialize(glob);
    }
 
    /**
@@ -90,22 +83,6 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       }
       return null;
    }
-
-
-   /**
-    * Loads a persistence plugin. 
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.engine.mime.demo.DemoFilter<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_AccessFilter
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_AccessFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
-   {
-      return (I_AccessFilter)super.instantiatePlugin(pluginNameAndParam);
-   }
-
 
 // here are extensions for MIME based plugin selection:
 

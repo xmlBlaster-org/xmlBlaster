@@ -1,6 +1,8 @@
 package org.xmlBlaster.authentication.plugins;
 
-import org.xmlBlaster.util.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,7 +40,7 @@ public class PluginManager extends PluginManagerBase {
          log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
       }
       
-      String key = getPluginPropertyName(defaultPluginType, defaultPluginVersion);
+      String key = createPluginPropertyKey(defaultPluginType, defaultPluginVersion);
       if (glob.getProperty().get(key, (String)null) == null) {
          try { glob.getProperty().set(key, defaultPluginName); } catch(Exception e) { log.warn(ME, e.toString()); }
       }
@@ -62,26 +64,12 @@ public class PluginManager extends PluginManagerBase {
     * @exception XmlBlasterException Thrown if to suitable security manager has been found.
     */
    public I_Manager getManager(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getManager()", "Loading SecurityManager type=" + type + " version=" + version);
-      I_Manager securityManager = null;
-      String[] pluginNameAndParam = null;
-
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if((pluginNameAndParam!=null) &&
-         (pluginNameAndParam[0]!=null) &&
-         (!pluginNameAndParam.equals("")))
-      {
-         securityManager = (I_Manager)managers.get(pluginNameAndParam[0]);
-         if (securityManager!=null) return securityManager;
-
-         securityManager = loadPlugin(pluginNameAndParam);
+      if (type.equals("simple")) {
+         if (glob.getProperty().get("Security.Server.allowSimpleDriver", false) == false){
+            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the simple security manager!");
+         }
       }
-      else {
-         throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
-      }
-
-      return securityManager;
+      return (I_Manager)getPluginObject(type, version);
    }
 
    /**
@@ -101,6 +89,8 @@ public class PluginManager extends PluginManagerBase {
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       return sessionSecCtx.getManager();
    }
+
+   public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {}
 
    /**
    * @return The name of the property in xmlBlaster.property, e.g. "Security.Server.Plugin"
@@ -135,40 +125,7 @@ public class PluginManager extends PluginManagerBase {
     * the old xmlBlaster behavior.
     *
     */
-   public I_Manager getDummyManager() {
+   public I_Manager getDummyManager() throws XmlBlasterException {
       return (I_Manager)super.getDummyPlugin();
-   }
-
-
-   /**
-    * Resolve type and version to the plugins name
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return String The name of the requested plugin.
-    */
-   protected String[] choosePlugin(String type, String version) throws XmlBlasterException
-   {
-      if (type.equals("simple")) {
-         if (glob.getProperty().get("Security.Server.allowSimpleDriver", false) == false){
-            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
-         }
-      }
-
-      return super.choosePlugin(type, version);
-   }
-
-   /**
-    * Loads a security manager.
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_Manager
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_Manager loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
-   {
-      return (I_Manager)super.instantiatePlugin(pluginNameAndParam);
    }
 }

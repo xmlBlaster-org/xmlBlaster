@@ -3,14 +3,14 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.4 2002/08/25 15:16:01 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.5 2002/08/26 09:09:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.classloader.PluginClassLoaderFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -189,7 +189,7 @@ public class SoapDriver implements I_Driver
       else {
          // Examine the CLASSPATH where we are loaded from and guess
          // that the home path is in ../demo/soap
-         String rootPath = ClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
+         String rootPath = PluginClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
          String homePath = ".";
          if (rootPath != null) homePath = rootPath + "..";
          String sawHome = homePath + File.separator + "demo" + File.separator + "soap";
@@ -207,7 +207,7 @@ public class SoapDriver implements I_Driver
       if (System.getProperty("saw.home") == null && // only if saw.home is null soapanywhere looks at CONFIG_SYSTEM_PROPERTY
           System.getProperty(CONFIG_SYSTEM_PROPERTY) == null) {
 
-         String rootPath = ClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
+         String rootPath = PluginClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
          String confPath = null;
          if (rootPath != null) {    // our xmlBlaster specific location
             confPath = rootPath + ".." + File.separator + "config" + File.separator + "config.xml";
