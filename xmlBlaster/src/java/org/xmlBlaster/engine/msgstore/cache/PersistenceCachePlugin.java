@@ -408,7 +408,8 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
       synchronized (this) {
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
          //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
-         if (numSwapped() > 0) {
+
+         if (numSwapped() > 0 || this.persistentStore.getNumOfEntries() > this.transientStore.getNumOfEntries() ) {
             java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
 
             I_MapEntry[] ramEntries = this.transientStore.getAll();
