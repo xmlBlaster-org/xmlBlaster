@@ -8,7 +8,7 @@ To run this demo do the following:
 
 
 - Start xmlBlaster:
-  
+
   ${JAVA_WRAP} org.xmlBlaster.MainGUI
 
      or
@@ -18,7 +18,12 @@ To run this demo do the following:
 
 - Start the xml-rpc client from this directory
 
- java -Dsax.driver=com.sun.xml.parser.Parser javaclients.xmlrpc.XmlRpcHttpClient < demo.xml
+ java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml
+
+
+Note: There is a helper class in src/java/org/xmlBlaster/client/protocol/xmlrpc
+called XmlBlasterProxy.java which clients can use. It wraps the 'low level'
+xml-rpc invokation.
 
 
 enjoy it !
