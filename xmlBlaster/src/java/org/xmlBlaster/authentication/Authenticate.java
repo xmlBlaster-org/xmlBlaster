@@ -224,6 +224,7 @@ final public class Authenticate implements I_RunlevelListener
                   connectQos.getSessionQos().setSecretSessionId(secretSessionId);
                }
 
+               // fireClientUpdateQosEvent(info, connectQos);
                info.updateConnectQos(connectQos);
 
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
@@ -328,8 +329,10 @@ final public class Authenticate implements I_RunlevelListener
             synchronized(this.sessionInfoMap) {
                this.sessionInfoMap.put(secretSessionId, sessionInfo);
             }
-            subjectInfo.notifyAboutLogin(sessionInfo);
 
+            connectQos.getSessionQos().setSecretSessionId(secretSessionId);
+            connectQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
+            subjectInfo.notifyAboutLogin(sessionInfo);
             fireClientEvent(sessionInfo, true);
          } // synchronized(subjectInfo)
 
@@ -679,6 +682,23 @@ final public class Authenticate implements I_RunlevelListener
             cli.sessionWillBeRemoved(event);
          }
          event = null;
+      }
+   }
+
+   /**
+    * Used to fire an event if a client does a change of the ConnectQosServer
+    * (normally used to update the secretSessionId)
+    */
+   public void fireClientUpdateQosEvent(SessionInfo sessionInfo, ConnectQosServer qos) throws XmlBlasterException
+   {
+      synchronized (clientListenerSet) {
+         if (clientListenerSet.size() == 0) return;
+
+         Iterator iterator = clientListenerSet.iterator();
+         while (iterator.hasNext()) {
+            I_ClientListener cli = (I_ClientListener)iterator.next();
+            cli.clientQosUpdated(sessionInfo, qos);
+         }
       }
    }
 

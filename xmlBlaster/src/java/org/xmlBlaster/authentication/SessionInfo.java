@@ -333,6 +333,7 @@ public class SessionInfo implements I_Timeout
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
          this.dispatchManager.notifyAboutNewEntry();
       }
+      this.glob.getRequestBroker().get
    }
 
    /**
