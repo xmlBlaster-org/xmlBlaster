@@ -1,38 +1,64 @@
 #********************************************************************
-# Wrapper parameters
-# Chagne the text XMLBLASTER_HOMNE to the xmlBlaster directory
+# Wrapper Properties
+# You need to set XMLBLASTER_HOME to use this file
+# Then install the Windows service with
+#
+#   cd %XMLBLASTER_HOME%\conf
+#   wrapper -i %XMLBLASTER_HOME%\conf\wrapper.conf
+#
+#   net start|stop xmlBlaster
+#
 #********************************************************************
 # Java Application
-wrapper.java.command=java
+wrapper.java.command=%JAVA_HOME%/bin/java
 
-# Java Main class
-wrapper.java.mainclass=org.xmlBlaster.MainSvc
+# We force the current working directory to find all property and SSL files
+wrapper.working.dir=%XMLBLASTER_HOME%/conf
+
+# Java Main class.  This class must implement the WrapperListener interface
+#  or guarantee that the WrapperManager class is initialized.  Helper
+#  classes are provided to do this for you.  See the Integration section
+#  of the documentation for details.
+wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
-wrapper.java.classpath.1=XMLBLASTER_HOME/lib/xmlBlaster.jar
-wrapper.java.classpath.2=XMLBLASTER_HOME/lib/wrapper.jar
+# SQLServer JDBC driver: http://www.microsoft.com/sql/downloads/default.asp
+# Default for SQLServer jar files is "\Program Files\Microsoft SQL Server 2000 Driver for JDBC"
+# See file:///C:/Program%20Files/Microsoft%20SQL%20Server%202000%20Driver%20for%20JDBC/Help/jdbcsqlsrv3.html#914985
+# static char odbc_trusted[] = "DSN=WinWald;Trusted_Connection=Yes";
+set.MSSQLSERVER_JAR=%XMLBLASTER_HOME%/lib
+wrapper.java.classpath.1=%XMLBLASTER_HOME%/lib/wrapper.jar
+wrapper.java.classpath.2=%JAVA_HOME%/lib/tools.jar
+wrapper.java.classpath.3=%MSSQLSERVER_JAR%\msbase.jar;%MSSQLSERVER_JAR%\mssqlserver.jar;%MSSQLSERVER_JAR%\msutil.jar
+wrapper.java.classpath.4=%XMLBLASTER_HOME%/lib/xmlBlaster.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
-wrapper.java.library.path.1=XMLBLASTER_HOME/lib
+wrapper.java.library.path.1=%XMLBLASTER_HOME%/lib
 
-# Java Additional Parameters
-#wrapper.java.additional.1=
+# Java Additional Parameters, can be used by xmlBlaster like ${XMLBLASTER_HOME}
+# Currently these settings are not used:
+wrapper.java.additional.1=-DXMLBLASTER_HOME=%XMLBLASTER_HOME%
+#wrapper.java.additional.2=-Dprop=TRUE
 
 # Initial Java Heap Size (in MB)
-wrapper.java.initmemory=16
+wrapper.java.initmemory=6
 
 # Maximum Java Heap Size (in MB)
-wrapper.java.maxmemory=64
+wrapper.java.maxmemory=400
 
-# Application parameters.  Add parameters as needed starting from 1
-#wrapper.app.parameter.1=
-
-# Port which the native wrapper code will attempt to connect to
-wrapper.port=1777
+wrapper.app.parameter.1=org.xmlBlaster.Main
+wrapper.app.parameter.2=-useKeyboard
+wrapper.app.parameter.3=false
+wrapper.app.parameter.4=-propertyFile
+wrapper.app.parameter.5=%XMLBLASTER_HOME%/conf/xmlBlaster.properties
+wrapper.app.parameter.6=-pluginsFile
+wrapper.app.parameter.7=%XMLBLASTER_HOME%/conf/xmlBlasterPlugins.xml
+wrapper.app.parameter.8=-logDevice file
+wrapper.app.parameter.9=-logFile %XMLBLASTER_HOME%/logs/xmlBlasterServer.log
 
 #********************************************************************
-# Wrapper Logging parameters
+# Wrapper Logging Properties
 #********************************************************************
 # Format of output for the console.  (See docs for formats)
 wrapper.console.format=PM
@@ -41,7 +67,7 @@ wrapper.console.format=PM
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile=XMLBLASTER_HOME/wrapper.log
+wrapper.logfile=%XMLBLASTER_HOME%/logs/wrapper.log
 
 # Format of output for the log file.  (See docs for formats)
 wrapper.logfile.format=LPTM
@@ -53,25 +79,19 @@ wrapper.logfile.loglevel=INFO
 #  the log is rolled. Size is specified in bytes.  The default value
 #  of 0, disables log rolling.  May abbreviate with the 'k' (kb) or
 #  'm' (mb) suffix.  For example: 10m = 10 megabytes.
-wrapper.logfile.maxsize=0
+wrapper.logfile.maxsize=2m
 
 # Maximum number of rolled log files which will be allowed before old
 #  files are deleted.  The default value of 0 implies no limit.
-wrapper.logfile.maxfiles=0
+wrapper.logfile.maxfiles=10
 
 # Log Level for sys/event log output.  (See docs for log levels)
 wrapper.syslog.loglevel=NONE
 
 #********************************************************************
-# Wrapper Unix daemon parameters
+# Wrapper NT Service Properties
 #********************************************************************
-# File to write process ID to
-wrapper.pidfile=/var/run/testwrapper.pid
-
-#********************************************************************
-# Wrapper NT Service parameters
-#********************************************************************
-# WARNING - Do not modify any of these parameters when an application
+# WARNING - Do not modify any of these properties when an application
 #  using this configuration file has been installed as a service.
 #  Please uninstall the service before modifying this section.  The
 #  service can then be reinstalled.
@@ -80,19 +100,21 @@ wrapper.pidfile=/var/run/testwrapper.pid
 wrapper.ntservice.name=xmlBlaster
 
 # Display name of the service
-wrapper.ntservice.displayname=xmlBlaster
+wrapper.ntservice.displayname=XmlBlaster
 
 # Description of the service
-wrapper.ntservice.description=xmlBlaster
+wrapper.ntservice.description=http://www.xmlBlaster.org xmlBlaster MOM server
 
 # Service dependencies.  Add dependencies as needed starting from 1
-wrapper.ntservice.dependency.1=
+# Forstware: Start SQLServer first: MSSQLSERVER
+wrapper.ntservice.dependency.1=MSSQLSERVER
 
 # Mode in which the service is installed.  AUTO_START or DEMAND_START
 wrapper.ntservice.starttype=AUTO_START
 
-# Priority at which the service is run.  NORMAL, LOW, HIGH, or
-#  REALTIME
-wrapper.ntservice.process_priority=NORMAL
+# Allow the service to interact with the desktop.
+wrapper.ntservice.interactive=false
 
-
+#wrapper.ntservice.account
+#wrapper.ntservice.password
+#wrapper.ntservice.process_priority
