@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13142 DbWatcher - MD5ChangeDetector.java: Bugfix to do MD5 calculation on
+   resultSet.getString(i) instead of resultSet.getObject(i).
+
+ o #13141 DbWatcher.java: Added NPE check in shutdown(), trimming config settings, using
+   new select() variant.
+
+ o #13140 Added NPE check in DbPool.java, added new select() variant in I_DbPool.java
+
  o #13136 Bugfix SOCKET callback driver
    Bugfix for isAlive() detection, had impact on failsave reconnect behavior
    from xmlBlaster server callback to client. Happened only when both remained alive
