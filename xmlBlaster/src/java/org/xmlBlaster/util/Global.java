@@ -1369,7 +1369,7 @@ public class Global implements Cloneable
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
-   public synchronized JdbcManager getJdbcQueueManager(StorageId queueId)
+   public synchronized JdbcManager getJdbcQueueManager(StorageId queueId /*, Properties pluginProperties*/)
       throws XmlBlasterException {
 
       String location = ME + "/Queue '" + queueId + "'";

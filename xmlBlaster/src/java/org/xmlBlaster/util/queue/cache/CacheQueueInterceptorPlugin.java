@@ -14,7 +14,8 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
-import org.xmlBlaster.util.plugin.I_Plugin;
+// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
@@ -30,7 +31,7 @@ import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_ConnectionListener
+public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_ConnectionListener
 {
    private String ME;
    private LogChannel log;
@@ -39,7 +40,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    boolean isDown = true;
    private StorageId queueId;
    private I_QueuePutListener putListener;
-   private java.util.Properties pluginProperties;  // plugins via I_Plugin
+//   private java.util.Properties pluginProperties;  // plugins via I_Plugin
 
    private I_Queue transientQueue;
    private I_Queue persistentQueue;
@@ -56,7 +57,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    private boolean storeNewPersistentRecovery = false;
    /** object used to control the swapping performance */
    private CacheControlParam controlParam;
-
+   private PluginInfo pluginInfo;
 
    /**
     * @see I_ConnectionListener#disconnected()
@@ -113,12 +114,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    {
       if (this.isDown) {
 
-         if (this.pluginProperties == null) {
-            this.pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
-         }
+  	 java.util.Properties pluginProperties = null;
+         if (this.pluginInfo != null) pluginProperties = this.pluginInfo.getParameters();
+
+         if (pluginProperties == null) 
+            pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
 
          this.property = null;
-//         Global glob = this.property.getGlobal();
          glob = ((QueuePropertyBase)userData).getGlobal();
          this.log = glob.getLog("queue");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
@@ -127,9 +129,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
-
          //instantiate and initialize the underlying queues
-         String defaultTransient = this.pluginProperties.getProperty("transientQueue", "RAM,1.0").trim();
+         String defaultTransient = pluginProperties.getProperty("transientQueue", "RAM,1.0").trim();
          if (defaultTransient.startsWith(getType())) {
             log.error(ME,"Cache queue configured with transientQueue=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
@@ -138,7 +139,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          //log.error(ME, "Debug only: " + this.transientQueue.toXml(""));
          
          try {
-            String defaultPersistent = this.pluginProperties.getProperty("persistentQueue", "JDBC,1.0").trim();
+            String defaultPersistent = pluginProperties.getProperty("persistentQueue", "JDBC,1.0").trim();
             if (defaultPersistent.startsWith(getType())) {
                log.error(ME,"Cache queue configured with persistentQueue=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
@@ -967,7 +968,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      this.pluginProperties = pluginInfo.getParameters();
+      this.pluginInfo = pluginInfo;
+//      this.pluginProperties = pluginInfo.getParameters();
    }
 
    /**
@@ -981,6 +983,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * @return "1.0"
     */
    public String getVersion() { return "1.0"; }
+
+   /**
+    * Enforced by I_StoragePlugin
+    * @return the pluginInfo object.
+    */
+   public PluginInfo getInfo() { return this.pluginInfo; }
 
    /**
     * destroys all the resources associated to this queue. Even the persistent

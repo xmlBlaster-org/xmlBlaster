@@ -102,8 +102,13 @@ public interface I_Queue
     */
    ArrayList getEntries() throws XmlBlasterException;
 
+   // This is not true: Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
+
    /**
-    * Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
+    * Puts one queue entry on top of the queue. It does not wait. If the queue is ALREADY full at the time of
+    * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
+    * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
+    *
     * @param msgQueueEntry the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'true' the put will not inform the
     *        QueuePutListener that a put occurred.
@@ -117,7 +122,10 @@ public interface I_Queue
       throws XmlBlasterException;
 
    /**
-    * Puts given queue entries on top of the queue, possibly waiting indefinitely until it is accepted.
+    * Puts one queue entry on top of the queue. It does not wait. If the queue is ALREADY full at the time of
+    * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
+    * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
+    *
     * @param msgQueueEntries the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'true' the put will not inform the
     *        QueuePutListener that a put occurred.

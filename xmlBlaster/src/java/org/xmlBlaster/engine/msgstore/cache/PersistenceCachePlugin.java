@@ -12,7 +12,8 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.jdbc.I_ConnectionListener;
-import org.xmlBlaster.util.plugin.I_Plugin;
+// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
@@ -27,13 +28,13 @@ import java.util.ArrayList;
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
-public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
+public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionListener, I_Map
 {
    private String ME;
    private Global glob;
    private LogChannel log;
 
-   private java.util.Properties pluginProperties; // properties via I_Plugin
+//   private java.util.Properties pluginProperties; // properties via I_Plugin
    private QueuePropertyBase property;            // properties via I_Map
    boolean isDown = true;
    private StorageId queueId;
@@ -41,6 +42,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
    private I_Map transientStore;
    private I_Map persistentStore;
    private boolean isConnected = false;
+   private PluginInfo pluginInfo = null;
 
    /*
     * this boolean is set only under the time a recovery after having reconnected
@@ -108,10 +110,10 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     */
    public void initialize(StorageId uniqueQueueId, Object userData) throws XmlBlasterException {
       if (this.isDown) {
-
-         if (this.pluginProperties == null) {
-            this.pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
-         }
+         java.util.Properties pluginProperties = null;
+         if (this.pluginInfo != null) pluginProperties = this.pluginInfo.getParameters();
+         if (pluginProperties == null)
+            pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
 
          this.property = null;
          this.glob = (org.xmlBlaster.engine.Global)((QueuePropertyBase)userData).getGlobal();
@@ -131,7 +133,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
 
          //instantiate and initialize the underlying queues
 
-         String defaultTransient = this.pluginProperties.getProperty("transientMap", "RAM,1.0").trim();
+         String defaultTransient = pluginProperties.getProperty("transientMap", "RAM,1.0").trim();
          if (defaultTransient.startsWith(getType())) {
             log.error(ME,"Cache storage configured with transientMap=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
@@ -140,7 +142,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
          if (log.TRACE) log.trace(ME, "Created transient part:" + this.transientStore.toXml(""));
          
          try {
-            String defaultPersistent = this.pluginProperties.getProperty("persistentMap", "JDBC,1.0").trim();
+            String defaultPersistent = pluginProperties.getProperty("persistentMap", "JDBC,1.0").trim();
             if (defaultPersistent.startsWith(getType())) {
                log.error(ME,"Cache storage configured with persistentMap=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
@@ -642,7 +644,8 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      this.pluginProperties = pluginInfo.getParameters();
+//      this.pluginProperties = pluginInfo.getParameters();
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -656,6 +659,12 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @return "1.0"
     */
    public String getVersion() { return "1.0"; }
+
+   /**
+    * Enforced by I_StoragePlugin
+    * @return the pluginInfo object.
+    */
+   public PluginInfo getInfo() { return this.pluginInfo; }
 
    /**
     * destroys all the resources associated to this queue. Even the persistent

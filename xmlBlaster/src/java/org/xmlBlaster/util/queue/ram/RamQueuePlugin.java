@@ -18,7 +18,8 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
-import org.xmlBlaster.util.plugin.I_Plugin;
+// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 import java.util.Comparator;
@@ -38,7 +39,7 @@ import java.util.ListIterator;
  * @see <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">The concurrent library</a>
  * @author xmlBlaster@marcelruff.info
  */
-public final class RamQueuePlugin implements I_Queue, I_Plugin
+public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 {
    private String ME = "RamQueuePlugin";
    private StorageId storageId;       // e.g. "history:/node/heron/12345"
@@ -56,6 +57,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    private long sizeInBytes = 0L;
    private long persistentSizeInBytes = 0L;
    private long numOfPersistentEntries = 0L;
+   private PluginInfo pluginInfo = null;
 
    /**
     * Is called after the instance is created.
@@ -730,7 +732,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -744,8 +746,14 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
     * @return "1.0"
     */
    public String getVersion() { return "1.0"; }
-}
 
+
+   /**
+    * Enforced by I_StoragePlugin
+    * @return the pluginInfo object.
+    */
+   public PluginInfo getInfo() { return this.pluginInfo; }
+}
 
 /**
  * Sorts the messages

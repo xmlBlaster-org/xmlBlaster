@@ -9,7 +9,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.plugin.I_Plugin;
+// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -27,7 +28,7 @@ import java.util.Map;
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  * @author xmlBlaster@marcelruff.info
  */
-public final class MapPlugin implements I_Map, I_Plugin
+public final class MapPlugin implements I_Map, I_StoragePlugin
 {
    private String ME = "MapPlugin";
    private StorageId mapId;
@@ -39,6 +40,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    private long sizeInBytes;
    private long persistentSizeInBytes;
    private long numOfPersistentEntries;
+   private PluginInfo pluginInfo;
 
    /**
     * Is called after the instance is created.
@@ -292,7 +294,8 @@ public final class MapPlugin implements I_Map, I_Plugin
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+//      java.util.Properties props = pluginInfo.getParameters();
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -306,6 +309,12 @@ public final class MapPlugin implements I_Map, I_Plugin
     * @return "1.0"
     */
    public String getVersion() { return "1.0"; }
+
+   /**
+    * Enforced by I_StoragePlugin
+    * @return the pluginInfo object.
+    */
+   public PluginInfo getInfo() { return this.pluginInfo; }
 
    /**
     * java org.xmlBlaster.engine.msgstore.ram.MapPlugin

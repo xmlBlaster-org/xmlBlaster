@@ -33,4 +33,5 @@ public interface I_Plugin
 
    public String getType();
    public String getVersion();
+
 }

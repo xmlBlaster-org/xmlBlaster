@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------------------			      
+/*------------------------------------------------------------------------------                              
 Name:      JdbcQueuePlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
@@ -15,7 +15,8 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
-import org.xmlBlaster.util.plugin.I_Plugin;
+// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
@@ -26,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 
 /**
@@ -33,7 +35,7 @@ import java.util.ArrayList;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
+public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
 {
    private String ME;
    private StorageId storageId;
@@ -52,6 +54,49 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
    /** Monitor object used to synchronize the count of sizes */
    private Object modificationMonitor = new Object();
+   private PluginInfo pluginInfo = null;
+
+   /**
+    * Check is storage is big enough for entry
+    * @param mapEntry may not be null
+    * @return null There is space (otherwise the error text is returned)
+    */
+   private String spaceLeft(long numOfEntries, long sizeInBytes) {
+      
+      // allow one owerload only ...
+      numOfEntries = 0L;
+      sizeInBytes  = 0L;
+
+      if (this.property == null) {
+         return "Storage framework is down, current settings are" + toXml("");
+      }
+
+      if ((numOfEntries + getNumOfEntries()) > getMaxNumOfEntries())
+         return "Queue overflow (number of entries), " + getNumOfEntries() +
+                " entries are in queue, try increasing property '" +
+                this.property.getPropName("maxMsg") + "' and '" +
+                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
+
+      if ((sizeInBytes + getNumOfBytes()) > getMaxNumOfBytes())
+         return "Queue overflow, " + getMaxNumOfBytes() +
+                " bytes are in queue, try increasing property '" + 
+                this.property.getPropName("maxBytes") + "' and '" +
+                this.property.getPropName("maxBytesCache") + "', current settings are" + toXml("");
+      return null;
+   }
+
+   /**
+    * Calculates the size in bytes of all entries in the array.
+    */
+/*
+   private long calculateSizeInBytes(I_QueueEntry[] entries) {
+      long sum = 0L;
+      for (int i=0; i<entries.length; i++) {
+         sum += entries[i].getSizeInBytes();
+      }
+      return sum;
+   }
+*/
 
    /**
     * Is called after the instance is created.
@@ -70,7 +115,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.ME = this.getClass().getName() + "-" + uniqueQueueId;
             this.storageId = uniqueQueueId;
 
-            this.manager = this.glob.getJdbcQueueManager(this.storageId);
+            this.manager = this.glob.getJdbcQueueManager(this.storageId /*, this.pluginProperties*/);
             this.manager.setUp();
 
             this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
@@ -193,10 +238,15 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
     */
    private boolean put(I_Entry entry) throws XmlBlasterException
    {
+/*
       if (getNumOfEntries_() > getMaxNumOfEntries()) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, "put: the maximum number of entries reached." +
                    " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
+*/
+      String exTxt = null;
+      if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
 
       synchronized (this.modificationMonitor) {
          if (getNumOfBytes_() > getMaxNumOfBytes()) {
@@ -235,10 +285,15 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
          return this.putListener.put(queueEntries);
       }
 
+/*
       if (getNumOfEntries_() > getMaxNumOfEntries()) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, "put[]: the maximum number of entries reached." +
                    " Number of entries=" + this.numOfEntries + " maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
+*/
+      String exTxt = null;
+      if ((exTxt=spaceLeft(queueEntries.length, /*calculateSizeInBytes(queueEntries)*/ 0L)) != null)
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
 
       synchronized (this.modificationMonitor) {
          if (getNumOfBytes_() > getMaxNumOfBytes()) {
@@ -923,7 +978,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -937,6 +992,12 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
     * @return "1.0"
     */
    public String getVersion() { return "1.0"; }
+
+   /**
+    * Enforced by I_StoragePlugin
+    * @return the pluginInfo object.
+    */
+   public PluginInfo getInfo() { return this.pluginInfo; }
 
    /**
     * Cleans up the current queue (it deletes all the entries and frees the
