@@ -33,9 +33,9 @@
             else {
                // Response to servlet that we are alive ...
                if (Log.TRACE) Log.trace("Received ping '" + state + "', sending pong back to servlet");
-               // Sending the state is for debugging only (or for proxies to let it through?)
+               // Force a reload, is necessary for MSIE5, otherwise its refreshed from the browser cache
                self.frames["pingFrame"].location.reload(true);
-               // self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
+               // Sending the state is for debugging and for proxies to let it through (not a similar request)
                self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
             if ((typeof pingTimeoutHandler) != "undefined")
