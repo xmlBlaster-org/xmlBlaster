@@ -51,13 +51,11 @@ public final class SessionQos implements java.io.Serializable, Cloneable
    /** The node id to which we want to connect */
    private NodeId nodeId = null;
 
-   private final boolean stripAbsoluteName;
-
    /**
     * Constructor for client side. 
     */
    public SessionQos(Global glob) {
-      this(glob, null, true);
+      this(glob, null);
    }
    
    /**
@@ -65,19 +63,9 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     * @param nodeId The the unique cluster node id, supports configuration per node
     */
    public SessionQos(Global glob, NodeId nodeId) {
-      this(glob, nodeId, false);
-   }
-
-   /**
-    * Constructor for cluster server. 
-    * @param nodeId The the unique cluster node id, supports configuration per node
-    * @param stripAbsoluteName true to strip the global part of the sessionName on toXml()
-    */
-   public SessionQos(Global glob, NodeId nodeId, boolean stripAbsoluteName) {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = glob.getLog(null);
       this.nodeId = nodeId;
-      this.stripAbsoluteName = stripAbsoluteName;
       initialize();
    }
 
@@ -99,7 +87,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
          setSecretSessionId(glob.getProperty().get("session.secretSessionId["+nodeId+"]", getSecretSessionId()));
       }
 
-      this.sessionName = new SessionName(glob, sessionNameStr);
+      this.sessionName = new SessionName(glob, nodeId, sessionNameStr);
       //if (log.TRACE) log.trace(ME, "sessionName =" + sessionName.getRelativeName() + " absolute=" + sessionName.getAbsoluteName());
 
       {
@@ -269,10 +257,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
 
       sb.append(offset).append("<session");
       if (getSessionName() != null) {
-         if (this.stripAbsoluteName)
-            sb.append(" name='").append(getSessionName().getRelativeName()).append("'"); // ordinary clients
-         else
-            sb.append(" name='").append(getSessionName().getAbsoluteName()).append("'"); // cluster node clients
+         sb.append(" name='").append(getSessionName().getAbsoluteName()).append("'");
       }
       if (this.sessionTimeout.isModified()) {
          sb.append(" timeout='").append(getSessionTimeout()).append("'");
