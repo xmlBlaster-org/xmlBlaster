@@ -290,7 +290,7 @@ int main(int args, char ** argv)
        <tr>
        <td>5</td>
        <td>SunOS 5.8</td>
-       <td><a href="http://wwws.sun.com/software/download/index.html">Sun WorkShop 6 update 2 C++ 5.3 compiler</a></td>
+       <td><a href="http://wwws.sun.com/software/download/index.html" target="others">Sun WorkShop 6 update 2 C++ 5.3 compiler</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.iona.com/" target="others">Orbix 2000 2.0</a></td>
@@ -302,7 +302,7 @@ int main(int args, char ** argv)
 
        <tr>
        <td>6</td>
-       <td><a href="http://wwws.sun.com/software/download/index.html">SunOS 5.8 sparc</a></td>
+       <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
        <td>CC: Forte Developer 7 C++ 5.4 2002/03/09</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.843</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
@@ -440,6 +440,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
 </requirement>
 
