@@ -708,9 +708,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
-    * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle</pre>
+    * Invoke: java org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle -startEmbedded false
     */
    public static void main(String args[]) {
       TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
