@@ -1,5 +1,14 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
+
+Changes for 0.75 [???, 2000]
+==============================
+   - Allow clients to ping xmlBlaster, to test reliable the connection.
+	  The xmlBlaster.idl was extended with a ping() method.
+	  Java clients may use CorbaConnection.java to automatically test ping
+	  the connection.
+
+
 Changes for 0.74 [Feb.29, 2000]
 ==============================
    - New XML based requirements framework.

@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.failsave.ping' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      Allow clients to ping xmlBlaster, to test reliable the connection.
+   </topic>
+   <description>
+      The xmlBlaster interface has a ping method. This allows checking the CORBA connection.
+      The CorbaConnection class uses this ping (if in fail save mode) and
+      starts login polling if the ping fails.
+      Use method CorbaConnection.initFailSave() to activate the ping feature
+      and set the ping interval
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 02 29</date>
+   <revision>$Revision: 1.1 $</revision>
+   <fix status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSavePing.testFailSave()</test>
+   </fix>
+</requirement>
+
