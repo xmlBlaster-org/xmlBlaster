@@ -138,7 +138,7 @@ Else add it manually.
                 classname="${idl.class}"
                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
-    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java"/>
+    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java, **/OracleSqlFactory.java"/>
 
     <javac
                 srcdir="${build.src}/xmlBlaster"
