@@ -1,0 +1,91 @@
+The Java package structure for xmlBlaster
+=========================================
+
+- The 'impl' section is the implementation of xmlBlaster
+
+- The 'interf' section is what a client is seeing,
+  the different protocols are the only way to access xmlBlaster
+
+- The 'client' section are utilities which a Java based client
+  needs always again,
+  it may be helping client developers to use this toolbox
+  to access xmlBlaster.
+  XmlBlaster itself doesn't use any classes from here
+
+- The 'util' section contains general helper classes
+  They may be used by anybody.
+  
+
+
+org.xmlBlaster + impl -+- broker -+- qos
+               |       |          |
+               |       |          +- persistence -+- filestore
+               |       |          |               |
+               |       |          |               +- xmldb
+               |       |          |
+               |       |          +- transaction -+- jts
+               |       |          |
+               |       |          +- routing
+               |       |
+               |       +- login --+- native
+               |       |          |
+               |       |          +- ldap (delegation)
+               |       |          |
+               |       |          +- jdbc (delegation)
+               |       |
+               |       +- acl ----+- native
+               |                  |
+               |                  +- ldap (delegation)
+               |                  |
+               |                  +- jdbc (delegation)
+               |        
+               +- interf -+- corba -+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- rmi ---+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- native-+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- email -+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- wap ---+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- http --+- broker
+               |          |         |
+               |          |         +- login
+               |          |         |
+               |          |         +- acl  
+               |          |
+               |          +- ftp ---+- broker
+               |                    |
+               |                    +- login
+               |                    |
+               |                    +- acl  
+               |
+               +- client -+- helper
+               |          |
+               |          +- xml
+               |
+               |
+               +- util -+- log
+                        |
+                        +- xml
