@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13163 DbWatcher - Fixed INSERT reporting
+
+ o #13161 DbWatcher - Fixed DROP message to contain correct colGroupValue
+
  o #13159 DbWatcher - Fixed NPE when no dataConverter is configured
 
  o #13157 Changed C++ compilation to use SOCKET protocol as default
