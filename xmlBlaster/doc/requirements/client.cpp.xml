@@ -496,6 +496,7 @@ See <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/client/protocol/corba/
 Please <a href="mailto:xmlBlaster-devel@xmlBlaster.org">let us know</a> if you successfully compiled and ran the testsuite with other combinations.
 Particularly interesting it would be the INTEL compiler on Linux and Windows and Solaris with the GCC Compiler.
 </p>
+<h2>Check to the version</h2>
 <p>
 To check which version your shared library is (UNIX only) try one of the following:
 </p>
@@ -518,6 +519,30 @@ Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp
 cd xmlBlaster/src/c++/util
 cvs log Global.cpp
 </pre>
+
+        <h2>How to create the Doxygen documentation</h2>
+        <p>The C++ code is commented to suit the Doxygen tool from
+        <a href="http://www.doxygen.org" target="others">http://www.doxygen.org</a> and the
+        generated <a href="http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/index.html" target="others">
+        C++ API documentation is available online</a>.
+        </p>
+        
+        <p>
+        If you want to generate the documentation yourself 
+        you need to install Doxygen and GraphViz as described in their manuals.
+        Than create the documentation like that:
+        </p>
+        <pre>
+cd $XMLBLASTER_HOME/src/c++/doc
+
+doxygen Doxyfile
+        </pre>
+        <p>Now you can point your browser on 
+           <i>$XMLBLASTER_HOME/doc/doxygen/cpp/html/index.html</i> to view the documentation.
+        </p>
+        <p>After setting <tt>export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/c/man:$XMLBLASTER_HOME/doc/doxygen/cpp/man</tt>
+        you are ready to read the manual pages with for example <tt>'man XmlBlasterAccess'</tt> or <tt>'man 3 Global'</tt>.
+        </p>
    </configuration>
 
    <see type="API" lang="CPP">HelloWorld2</see>
@@ -535,6 +560,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.30 $</revision>
+   <revision>$Revision: 1.31 $</revision>
 </requirement>
 

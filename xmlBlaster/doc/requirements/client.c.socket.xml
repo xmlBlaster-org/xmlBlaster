@@ -1055,7 +1055,7 @@ Solaris:
          </tr>
          </table>
 
-         <h3>Testing</h3>
+         <h2>Testing</h2>
          <p>
          The testsuite resides in <i>xmlBlaster/testsuite/src/c</i> to compile it
          use ant:
@@ -1075,6 +1075,22 @@ build reportShow
         And go for a cup of coffee as the complete testsuite will run.
         </p>
 
+        <h2>How to create the Doxygen documentation</h2>
+        <p>The C code is commented to suit the Doxygen tool from <a href="http://www.doxygen.org" target="others">http://www.doxygen.org</a>.
+        You need to install Doxygen and GraphViz as described in their manuals to
+        create the html or pdf documentation and additionally man pages:
+        </p>
+        <pre>
+cd $XMLBLASTER_HOME/src/c/doc
+
+doxygen Doxyfile
+        </pre>
+        <p>Now you can point your browser on 
+           <i>$XMLBLASTER_HOME/doc/doxygen/c/html/index.html</i> to view the documentation.
+        </p>
+        <p>After setting <tt>export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/c/man:$XMLBLASTER_HOME/doc/doxygen/c++/man</tt>
+        you are ready to read the manual pages with for example <tt>man XmlBlasterAccessUnparsed</tt>.
+        </p>
    </configuration>
 
    <todo type='HTML'>
@@ -1122,7 +1138,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.51 $</revision>
+   <revision>$Revision: 1.52 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
