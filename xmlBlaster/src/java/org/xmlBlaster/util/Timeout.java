@@ -217,7 +217,12 @@ public class Timeout extends Thread
     * Refresh a listener before the timeout happened.<p />
     * 
     * NOTE: The returned timeout handle is different from the original one.<p />
-    * 
+    *
+    * NOTE: If you are not shure if the key has elapsed already try this:
+    * <pre>
+    *  timeout.removeTimeoutListener(timeoutHandle);
+    *  timeoutHandle = timeout.addTimeoutListener(this, "1000L", "UserData");
+    * </pre>
     * @param      key 
     *             The timeout handle you received by a previous 
     *             addTimeoutListener() call.<br />
@@ -227,7 +232,7 @@ public class Timeout extends Thread
     * @return     A new handle which you can use to unregister with 
     *             removeTimeoutListener()
     * @exception  XmlBlasterException 
-    *             if key is invalid
+    *             if key is null or unknown or invalid because timer elapsed already
     */
    public final Timestamp refreshTimeoutListener(Timestamp key, long delay) 
       throws XmlBlasterException
