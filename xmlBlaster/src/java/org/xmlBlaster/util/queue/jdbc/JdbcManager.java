@@ -1580,7 +1580,7 @@ public class JdbcManager implements I_ConnectionListener {
          System.out.println("setProperty error: " + e.toString());
       }
 
-      StorageId id = new StorageId("cb", "dummy");
+      StorageId id = new StorageId(org.xmlBlaster.util.enum.Constants.RELATING_CALLBACK, "dummy");
       JdbcManager manager = glob.getJdbcQueueManager(id);
       return manager.cleanUp(id.getStrippedId(), true);
    }
