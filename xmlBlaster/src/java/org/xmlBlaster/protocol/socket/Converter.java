@@ -3,7 +3,7 @@ Name:      Converter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter class for raw socket messages
-Version:   $Id: Converter.java,v 1.2 2002/02/13 15:24:36 ruff Exp $
+Version:   $Id: Converter.java,v 1.3 2002/02/13 15:38:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -104,7 +104,7 @@ public class Converter
             throw new IOException("Can't read expected string '" + byteArray.toString()+ "' to its end");
          byteArray.write(val);
       }
-      System.out.println("Reading string '" + byteArray.toString() + "'");
+      //System.out.println("Reading string '" + byteArray.toString() + "'");
       return byteArray.toString();
    }
 }

@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.2 2002/02/13 15:24:36 ruff Exp $
+Version:   $Id: Parser.java,v 1.3 2002/02/13 15:38:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -165,8 +165,6 @@ public class Parser extends Converter
 
          version = readNext(in) - 48;
          
-         dump(); // !!!
-
          requestId = toString(in);
          methodName = toString(in);
          sessionId = toString(in);
@@ -333,24 +331,28 @@ public class Parser extends Converter
       }
    }
 
-   private void dump() {
-      System.out.println("msgLength=" + msgLength);
-      System.out.println("checksum=" + checksum);
-      System.out.println("compressed=" + compressed);
-      System.out.println("type=" + type);
-      System.out.println("byte4=" + byte4);
-      System.out.println("byte5=" + byte5);
-      System.out.println("version=" + version);
-      System.out.println("requestId=" + requestId);
-      System.out.println("methodName=" + methodName);
-      System.out.println("sessionId=" + sessionId);
-      System.out.println("lenUnzipped=" + lenUnzipped);
-      System.out.println("checkSumResult=" + checkSumResult);
-      System.out.println("index=" + index);
-
+   private String dump() {
+      StringBuffer buffer = new StringBuffer(256);
+      buffer.append("msgLength=" + msgLength);
+      buffer.append(", checksum=" + checksum);
+      buffer.append(", compressed=" + compressed);
+      buffer.append(", type=" + type);
+      buffer.append(", byte4=" + byte4);
+      buffer.append(", byte5=" + byte5);
+      buffer.append(", version=" + version);
+      buffer.append(", requestId=" + requestId);
+      buffer.append(", methodName=" + methodName);
+      buffer.append(", sessionId=" + sessionId);
+      buffer.append(", lenUnzipped=" + lenUnzipped);
+      buffer.append(", checkSumResult=" + checkSumResult);
+      buffer.append(", index=" + index);
+      return buffer.toString();
    }
 
-   private void dump(byte[] arr) {
+   /**
+    * @return The stringified message, null bytes are replaced by '*'
+    */
+   public static String toLiteral(byte[] arr) {
       StringBuffer buffer = new StringBuffer(arr.length+10);
       byte[] dummy = new byte[1];
       for (int ii=0; ii<arr.length; ii++) {
@@ -361,30 +363,44 @@ public class Parser extends Converter
             buffer.append(new String(dummy));
          }
       }
-      System.out.println(">"+buffer.toString()+"<");
+      return buffer.toString();
    }
 
 
    /** java org.xmlBlaster.protocol.socket.Parser */
    public static void main( String[] args ) {
       try {
-         Parser parser = new Parser();
-         parser.setType(Parser.INVOKE_TYPE);
-         parser.setRequestId("7711");
-         parser.setMethodName(XmlBlasterImpl.PUBLISH);
-         parser.setSessionId("oxf6hZs");
-         parser.setChecksum(false);
-         parser.setCompressed(false);
-         MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
-         parser.addMessage(msg);
+         byte[] rawMsg = null;
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.INVOKE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
+            parser.addMessage(msg);
 
-         ByteArray out = parser.createStream();
-         parser.dump(out.toByteArray());
+            ByteArray out = parser.createStream();
+            rawMsg = out.toByteArray();
+            String send = toLiteral(rawMsg);
+            System.out.println("Created and ready to send: \n>" + send + "<");
+         }
 
-         Parser receiver = new Parser();
-         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-         receiver.parse(in);
-         receiver.dump();
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            ByteArray outReceive = receiver.createStream();
+            String receive = toLiteral(outReceive.toByteArray());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println("SUCCESS");
+            else
+               System.out.println("FAILURE");
+         }
       }
       catch(Throwable e) {
          e.printStackTrace();
