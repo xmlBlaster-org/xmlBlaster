@@ -72,12 +72,10 @@ public class TestSessionReconnect extends TestCase
    private EmbeddedXmlBlaster serverThread = null;
    private String sessionNameSub = "TestSessionReconnectSubscriber";
    private XmlBlasterConnection conSub;
-   private boolean connectedSub = false;
    private MsgInterceptor updateInterceptorSub;
 
    private String sessionNamePub = "TestSessionReconnectPublisher";
    private XmlBlasterConnection conPub;
-   private MsgInterceptor updateInterceptorPub;
 
    /** For Junit */
    public TestSessionReconnect() {
@@ -156,14 +154,14 @@ public class TestSessionReconnect extends TestCase
 
          log.info(ME, "============ STEP 2: Start publisher");
          conPub = new XmlBlasterConnection(glob);
-         ConnectQos qosPub = new ConnectQos(glob);
+         ConnectQos qosPub = new ConnectQos(glob, sessionNamePub, passwd);
          ConnectReturnQos crqPub = conPub.connect(qosPub, null);  // Login to xmlBlaster, no updates
          log.info(ME, "Connect success as " + crqPub.getSessionName());
 
          log.info(ME, "============ STEP 3: Stop subscriber callback");
          conSub.shutdownCb();
 
-         log.info(ME, "============ STEP 4: Stop subscriber callback");
+         log.info(ME, "============ STEP 4: Publish messages");
          int numPub = 8;
          MsgUnit[] sentArr = new MsgUnit[numPub];
          PublishReturnQos[] sentQos = new PublishReturnQos[numPub];
@@ -205,7 +203,7 @@ public class TestSessionReconnect extends TestCase
 
          assertEquals("", 0, updateInterceptorSub.count()); // The first login session should not receive anything
 
-         assertEquals("", 8, updateInterceptorSub2.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         assertEquals("", numPub, updateInterceptorSub2.waitOnUpdate(2000L, oid, Constants.STATE_OK));
          updateInterceptorSub2.compareToReceived(sentArr, secretCbSessionId2);
          updateInterceptorSub2.compareToReceived(sentQos);
 
