@@ -256,6 +256,19 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
+    * Check if we currently have an open connection to this node. 
+    * @return Always true for the local node
+    */
+   public boolean isAlive() throws XmlBlasterException {
+      if (isLocalNode())
+         return true;
+      I_XmlBlasterAccess con = getXmlBlasterAccess();
+      if (con != null)
+         return con.isAlive();
+      return false;
+   }
+
+   /**
     * Is this node usable. 
     * @return true if we are logged in or are polling for the node<br />
     *         false if the node should not be used
@@ -273,11 +286,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *         2 -> The node is not allowed to use<br />
     */
    public int getConnectionState() throws XmlBlasterException {
-      if (isConnected())
+      if (!isConnected()) // connect() was not yet called
+         return 2;
+
+      if (isAlive())
          return 0;
-      if (isPolling())
+      else if (isPolling())
          return 1;
-      return 2;
+      else
+         return 2;
    }
 
    /**
