@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='interface.disconnect' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Disconnecting from xmlBlaster</topic>
+   <description>
+      <p>
+      The <b>disconnect()</b> method allows to logout from xmlBlaster.
+      </p>
+      <p>
+      Method detail (CORBA IDL notation):
+      </p>
+      <pre>
+   typedef string XmlType;
+
+   void disconnect(in string sessionId, in serverIdl::XmlType qos)
+                      raises (serverIdl::XmlBlasterException);
+      </pre>
+         
+      <table border="1">
+         <tr>
+         <td>Parameter</td><td>Type</td><td>Description</td>
+         </tr>
+         <tr>
+         <td>sessionId</td><td>string</td><td>The sessionId you got on connect to authenticate yourself</td>
+         </tr>
+         <tr>
+         <td>qos</td><td>string</td><td>The XML encoded Quality of Service (QoS)</td>
+         </tr>
+      </table>
+
+      <p>Quality of service (QoS) features:</p>
+      <table border="1">
+         <tr>
+            <td>QoS</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Impl</td>
+         </tr>
+         <tr>
+            <td>clearSessions</td>
+            <td>false</td>
+            <td>Allows to kill all other login sessions of this user on logout</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>deleteSubjectQueue</td>
+            <td>true</td>
+            <td>Kills the subject queue when last session of a user logs out</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+
+   </description>
+
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is an example QoS:
+      </p>
+   <table border="1"><tr><td>
+   <pre>
+&lt;qos>
+  &lt;deleteSubjectQueue>true&lt;/deleteSubjectQueue>
+  &lt;clearSessions>false&lt;/clearSessions>
+&lt;/qos>
+   </pre>
+   </td></tr></table>
+   </example>
+
+   <example lang="XmlRpc" type="HTML">
+      <p>
+      This is the XmlRpc server interface variant:
+      </p>
+      <pre>
+   public String disconnect(final String sessionId, String qos_literal)
+                            throws XmlBlasterException
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code:
+      </p>
+      <pre>
+   import org.xmlBlaster.util.DisconnectQos;
+   ...
+
+   DisconnectQos qos = new DisconnectQos();
+
+   qos.clearSessions(true);
+
+   con.disconnect(qos);
+      </pre>
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="REQ">interface</see>
+   <see type="API">org.xmlBlaster.util.DisconnectQos</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 26</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>This uses the Disconnect but does not test it yet</comment>
+      <test tool="SUITE">authentication.TestLogout</test>
+   </testcase>
+</requirement>
+
