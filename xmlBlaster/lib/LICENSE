@@ -133,8 +133,8 @@ All packages allow free use for both commercial and non-commercial applications.
    to avoid XML parser conflict.
 
 
-11) ant.jar 1.5alpha
-====================
+11) ant.jar 1.5alpha from 2002-03-30
+====================================
   Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
   (needs parser.jar)
   http://jakarta.apache.org/ant/index.html
@@ -168,8 +168,10 @@ All packages allow free use for both commercial and non-commercial applications.
   Based upon C source code written by Eric Young, eay@psych.uq.oz.au
 
 
-15) cpptasks.jar & ant-contrib.jar, cvs from Jan 10, 2002
+15) cpptasks.jar & ant-contrib.jar, cvs from Mar 30, 2002
 =========================================================
+  cpptasks.jar     cvs from Jan 10, 2002
+  ant-contrib.jar  cvs from Mar 30, 2002
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
   See http://sourceforge.net/projects/ant-contrib/
