@@ -671,10 +671,15 @@ int main(int argc, char** argv)
    </configuration>
 
    <todo type='HTML'>
-      <h3>This is beta release is considered stable, but we need to:</h3>
+      <h3>This beta release is considered stable, but we need to:</h3>
       <p>
       <ul>
-      <li> Adding mutex to every function call</li>
+      <li> Adding mutex to every function call?<br />
+      Currently you can have many
+      connections to xmlBlaster from one client where each connection may
+      be used by a different thread. But running multi threads on one connection
+      instance is currently not synchronized, this design decision is pending.
+      If you have such a case just add your own mutex to the function calls.</li>
 
       <li> Invoking xmlBlaster from within the callback thread (in update() function)
         will deadlock (i believe so).
@@ -711,6 +716,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 </requirement>
 
