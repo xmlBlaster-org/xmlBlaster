@@ -47,8 +47,6 @@ importPackage(Packages.org.xmlBlaster.util);
    var glob;    // the 'stack' (local data) of one client connection
    var log;     // log to file or console
 
-
-   
    /**
     * The function which returns a generated user name which should be unique within
     * the same xmlBlaster server.
@@ -59,21 +57,6 @@ importPackage(Packages.org.xmlBlaster.util);
    
 
    /**
-    * This function has been added to force batik to update.
-    * Without it the screen does not update, probably because
-    * batik only updates when an event has been fired
-    * (xmlBlaster updates come in asynchroneously and do not generate a dom event).
-    */
-   function fireClickEvent() {
-     var evt = doc.createEvent("MouseEvents");
-     evt.initEvent("click", true, true);
-
-     var el = doc.getElementById("0");
-     el.dispatchEvent(evt);
-   }
-
-
-   /**
     * This is the method which is invoked by the XmlBlaster object when
     * a message matches a subscription
     */
@@ -81,13 +64,10 @@ importPackage(Packages.org.xmlBlaster.util);
       var root = Xparse(new String(content));
       var element = root.contents[0];
       var id = element.contents[0].contents[0].value;
-      log.info(ME, "Receiving chess move " + id);
       var transform = element.contents[1].contents[0].value;
       var el = doc.getElementById(id);
       el.setAttribute("transform", transform);
-
-      // hack to update the screen in batik ...
-      setTimeout('fireClickEvent()', 1);
+      log.info(ME, "Handled chess move from server!!");
       return "";
    }
   
@@ -104,7 +84,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var y   = dy;
    
       if (pos > -1) {
-         buf = buf.substring(pos+10, buf.length()-1);  // e.g. '150,300'
+         buf = buf.substr(pos+10, buf.length-1);  // e.g. '150,300'
          var A = new Array();
          A = buf.split(',');
          x += parseInt(A[0], 10);
@@ -125,8 +105,7 @@ importPackage(Packages.org.xmlBlaster.util);
                     transform + "</transform></chess>";
       return content;
    }
-        
-
+   
    /**
     * Called when opening this document, this function establishes a connection to
     * xmlBlaster, makes a login and a subscription to the messages it is insterested in.
@@ -159,7 +138,7 @@ importPackage(Packages.org.xmlBlaster.util);
       log = glob.getLog("svg");
       var connectQos = new ConnectQos(glob, getUser(), "secret");
 
-      xmlBlaster.connect(connectQos, new JavascriptCallback(this));
+      xmlBlaster.connect(connectQos, new JavascriptCallback(window));
 
       var key = new String("<key oid='' queryType='XPATH'>//chess</key>");
       var qos = new String("<qos/>");
