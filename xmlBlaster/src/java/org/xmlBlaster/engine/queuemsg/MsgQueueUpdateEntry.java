@@ -35,7 +35,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
       this.subscriptionId = subscriptionId;
       this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
-      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
+      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
    /**
@@ -153,6 +153,11 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       sb.append(offset).append(" isExpired='").append(isExpired()).append("'");
       sb.append(" isDestroyed='").append(isDestroyed()).append("'");
       sb.append(" state='").append(getState()).append("'");
+      {
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+            if (msgUnitWrapper != null)
+               sb.append(offset).append(msgUnitWrapper.toXml(extraOffset+Constants.INDENT));
+      }
       sb.append("/>");
       return sb.toString();
    }
