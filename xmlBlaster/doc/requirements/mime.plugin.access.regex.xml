@@ -72,6 +72,10 @@
       on 'b'.
       </p>
       <p>
+      Don't forget to put your query in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
+      in your query string.
+      </p>
+      <p>
       This is a code snippet in Java with the get() method:
       </p>
       <pre>
@@ -129,7 +133,7 @@
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

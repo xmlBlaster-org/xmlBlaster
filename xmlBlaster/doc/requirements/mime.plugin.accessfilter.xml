@@ -84,12 +84,13 @@
       <p>
       </p>
    </description>
-   <example lang="Java">
+   <example lang="Java" type="HTML">
+      <p>
+      <b>These is an example key and QoS of a subscribe() invocation:</b>
+      </p>
+
+      <pre>
 <![CDATA[
-
-These is an example key and QoS of a subscribe() invocation:
-============================================================
-
    <key oid='' queryType='XPATH'>
       //StockData
    </key>
@@ -103,13 +104,20 @@ These is an example key and QoS of a subscribe() invocation:
          sex
       </filter>
    </qos>
-
-All messages containing the xml meta information element <StockData/> are
-selected.
-Those message are further filtered to not contain the word 'sex' and to
-have a content shorter then 8 kBytes.
-
 ]]>
+      </pre>
+
+      <p>
+      All messages containing the xml meta information element &lt;StockData/> are
+      selected.<br />
+      Those message are further filtered to not contain the word 'sex' and to
+      have a content shorter then 8 kBytes.
+      </p>
+
+      <p>
+      Don't forget to put your query string in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
+      in your query string.
+      </p>
    </example>
    <configuration where="server">
       <p>
@@ -126,7 +134,7 @@ have a content shorter then 8 kBytes.
    <see type="REQ">mime.plugin.publishfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
