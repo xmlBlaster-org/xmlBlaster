@@ -24,7 +24,7 @@ import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
-import org.xmlBlaster.engine.msgstore.TopicsStorePluginManager;
+import org.xmlBlaster.engine.msgstore.TopicStorePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 
@@ -56,7 +56,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private ProtocolManager protocolManager;
 
    private MsgUnitStorePluginManager msgStorePluginManager;
-   private TopicsStorePluginManager topicsStorePluginManager;
+   private TopicStorePluginManager topicStorePluginManager;
 
    private CommandManager commandManager;
    private boolean useAdminManager = true;
@@ -295,14 +295,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return msgStorePluginManager;
    }
 
-   public final TopicsStorePluginManager getTopicsStorePluginManager() {
-      if (topicsStorePluginManager == null) {
-         synchronized (TopicsStorePluginManager.class) {
-            if (topicsStorePluginManager == null)
-               topicsStorePluginManager = new TopicsStorePluginManager(this);
+   public final TopicStorePluginManager getTopicStorePluginManager() {
+      if (topicStorePluginManager == null) {
+         synchronized (TopicStorePluginManager.class) {
+            if (topicStorePluginManager == null)
+               topicStorePluginManager = new TopicStorePluginManager(this);
          }
       }
-      return topicsStorePluginManager;
+      return topicStorePluginManager;
    }
 
    /**

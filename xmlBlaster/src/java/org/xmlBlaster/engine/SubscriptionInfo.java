@@ -97,6 +97,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       }
 
       getSubscriptionId(); // initialize the unique id this.uniqueKey
+      ME += "-" + this.uniqueKey ;
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
