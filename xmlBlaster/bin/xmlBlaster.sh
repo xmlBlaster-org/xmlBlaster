@@ -23,11 +23,36 @@ else
     ECHO=echo
 fi
 
-
 if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
-   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
-   exit 1
+   # resolve links - $0 may be a softlink
+   PRG="$0"
+
+   while [ -h "$PRG" ] ; do
+     ls=`ls -ld "$PRG"`
+     link=`expr "$ls" : '.*-> \(.*\)$'`
+     if expr "$link" : '.*/.*' > /dev/null; then
+       PRG="$link"
+     else
+       PRG=`dirname "$PRG"`/"$link"
+     fi
+   done
+
+   PRGDIR=`dirname "$PRG"`
+   XMLBLASTER_HOME=${PRGDIR}/..
+    
+   if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
+      ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+      ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+      exit 1
+   fi
+
+   echo "Using XMLBLASTER_HOME=$XMLBLASTER_HOME"
+
+   if [ ! -d ${XMLBLASTER_HOME} ] ; then
+      ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+      ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+      exit 1
+   fi
 fi
 
 if [ ! -d ${XMLBLASTER_HOME} ] ; then
