@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='cluster' type='NEW' prio='HIGH' status="OPEN">
+<requirement id='cluster' type='NEW' prio='HIGH' status="INWORK">
    <topic>Multiple xmlBlaster instances can build a cluster following the master/slave paradigm</topic>
    <description>
       <p>
@@ -32,7 +32,7 @@
       </p></center>
       <p>
       In this example we have three xmlBlaster instances running, each of them has
-      a unique ID, here the names <i>golan</i>, <i>heron</i> and <i>avalon</i>.
+      a unique cluster node ID, here the names <i>golan</i>, <i>heron</i> and <i>avalon</i>.
       </p>
       <p>
       Each of the nodes have an arbitrary number of clients attached. The clients
@@ -46,7 +46,7 @@
       Clustering in our sense covers the following topics:
       </h3>
       <ol>
-      <li><h4>Scalability (Load balancing):</h4><br />
+      <li><h4>Scalability:</h4><br />
       An xmlBlaster server instance allows to have any number of slave xmlBlaster server instances
       for specific message types. These slaves can have further slaves again.
       This allows distributing messages to an almost unlimited number of clients.
@@ -86,6 +86,16 @@
       caches "RUGBY_NEWS" as well.
       </p>
       </li>
+      <li><h4>Load balancing:</h4><br />
+      An xmlBlaster cluster allows to have more than one master server for
+      a specific message type. The master nodes are <i>mirrored</i> instances
+      for those messages.
+      Published messages reach all master nodes.
+      Subscribed messages are retrieved using a load balance algorithm.
+      <p>
+      <img src="cluster.loadbalance.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
+      </p>
+      </li>
       </ol>
 
       <hr />
@@ -94,33 +104,86 @@
       <h3>
       Implementation overview:
       </h3>
+      
       <p>
-      If multiple xmlBlaster servers are running, every message is assigned to exactly one
-      master server. The different xmlBlaster servers login to each other like other clients
-      and act as slave to messages which they are not master from.
+      We have to code and manage two logical mapping functionalities:
       </p>
+      <ol>
+         <li><h4>Find out who is the master of a message</h4><br />
+         We have a message and need to map it to a master.
+         The decision can be based on any information in the message.
+         As a default we supply a domain based approach:
+         An XML attribute <i>domain</i> is used with the
+         message &lt;key> tag, for example:<br />
+         <pre>&lt;key domain='STOCK_EXCHANGE'/></pre>
+         The domain based approach maps domain names to cluster node IDs.
+         Please see the examples below.
+         </li>
+         <li><h4>Map a cluster node ID to the physical xmlBlaster instance</h4><br />
+         After step 1. we need to find out how to reach the physical xmlBlaster instance.
+         We have its cluster node ID and need to get the CORBA IOR, XmlRpc URL,
+         RMI registry entry or the socket to be able to communicate.
+         </li>
+      </ol>
+      
+      <br />
       <p>
+      The cluster specific features are
+      </p>
+            
+      <ul>
+      <li>Multi xmlBlaster instances<br />
+      If multiple xmlBlaster servers are running, every message is assigned to exactly one
+      master server (if no load balancing is switched on).
+      The different xmlBlaster servers login to each other like other clients
+      and act as slave to messages which they are not master from.
+      </li>
+
+      <li>Connections between xmlBlaster instances<br />
       This login is done in 'lazy' mode. As soon as a client requests a message
       for which the local server is not master, this server does a login to the master
       and subscribes the message from there. The message is than cached locally and further
       local requests from clients are handled locally.
       An adjustable expire date clears the cached message.
-      </p>
-      <p>
+      </li>
+
+      <li>Routing of published messages<br />
       If a message is published from a data source to a slave server, the message is routed directly
       to the master server (which may be a slave as well, forwarding the message to the real master).
       If the master server is currently offline, it is queued
       for this 'client' until it logs in.
-      </p>
+      </li>
 
-      <ul>
+      <li>Plugin interface for master discovery<br />
+      XmlBlaster supplies a plugin interface for your own logic to identify the master cluster node id.
+      The default implementation uses the
+      <pre>&lt;key domain='RUGBY'></pre> attribute (see examples below).
+      </li>
+
+      <li>Plugin interface for load balancing logic<br />
+      XmlBlaster supplies a plugin interface for the load balancing logic.
+      The default load balancing logic uses the round robin approach.
+      </li>
+
       <li>Default master<br />
-      The 
+      The xmlBlaster node is domain master for its directly connected clients
+      as a default. If a client is publishing/subscribing etc. without an
+      explicitly specified domain, the messages are handled in the local
+      xmlBlaster instance (as if no cluster is existing).
+      If domain='NO_DEFAULT' is set another node is searched which
+      accepts default messages.
       </li>
       <li>Master unknown<br />
       If a node receives a messages and can't find the master,
       the message is accepted and queued for the master.
       If later a master appears the messages are flushed.
+      </li>
+      <li>Multiple masters for same domain<br />
+      If multiple nodes acquire the master mode for a certain domain
+      there are to approaches.<br />
+      Messages which are published are sent to all masters.<br />
+      Messages which are accessed with get() or subscribe() are handled
+      by the load balancing algorithm. The default implementation is a round robin.
       </li>
       </ul>
    </description>
@@ -188,13 +251,13 @@
 
       <key oid='football.49.results' domain='football'/>
 
-   One or many domains are mapped to a cluster master name.
-   The 
+   One or many domains are mapped to a cluster node ID (the master name).
       ]]>
    </example>
    <author>ruff@swand.lake.de</author>
+   <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
