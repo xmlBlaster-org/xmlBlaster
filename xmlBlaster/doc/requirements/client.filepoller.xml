@@ -33,7 +33,7 @@
                   locking: If 'lockExtention' is specified in the plugin configuration, then this mechanism
                   will be activated. To be used correctly before putting a file into the directory on which
                   the poller is listening, you have to put a file with the same name but ending with what
-                  has been specified in 'lockExtention'. Suppose <i>lockExtention='.lck'</i> and you want to 
+                  has been specified in 'lockExtention'. Suppose <i>lockExtention='*.lck'</i> and you want to 
                   publish the content of a file called <i>someFile.gif</i>. Then you first must put a file
                   called <i>someFile.gif.lck</i> on the directory, thereafter you can put <i>someFile.gif</i>
                   and when you want to make it publish just remove <i>someFile.gif.lck</i>. At that point the
@@ -51,6 +51,7 @@
                </li>
             </ul>
          </li>
+>>>>>>> .r13028
 
          <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
              specific file, or if an IO exception occurs when reading a file or trying to delete or move
@@ -83,18 +84,15 @@
         <attribute id='publishKey'>&gt;![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]&lt;</attribute>
         <attribute id='publishQos'>&gt;![CDATA[<qos/>]]&lt;</attribute>
         <attribute id='connectQos'></attribute>
-        <attribute id='maximumFileSize'>-1L</attribute>
-        <attribute id='delaySinceLastFileChange'>10000L</attribute>
-        <attribute id='pollInterval'>2000L</attribute>
+        <attribute id='maximumFileSize'>-1</attribute>
+        <attribute id='delaySinceLastFileChange'>10000</attribute>
+        <attribute id='pollInterval'>2000</attribute>
         <attribute id='loginName'></attribute>
         <attribute id='password'></attribute>
-
         <attribute id='sent'></attribute>
         <attribute id='discarded'></attribute>
         <attribute id='fileFilter'></attribute>
-        <attribute id='lockExtention'>.lck</attribute>
-
-
+        <attribute id='lockExtention'>*.lck</attribute>
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
         <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
      </plugin>

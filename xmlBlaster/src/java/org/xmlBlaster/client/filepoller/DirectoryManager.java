@@ -44,7 +44,10 @@ public class DirectoryManager {
    /** all files matching the filter will be processed. Null means everything will be processed */
    private FileFilter fileFilter;
    /** if set, then files will only be published when the lock-file has been removed. */
-   private String lockExtention;
+   private FileFilter lockExtention;
+   /** convenience for performance: if lockExtention is '*.gif', then this will be '.gif' */
+   private String lockExt; 
+   
    private Set lockFiles;
    
    public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention) throws XmlBlasterException {
@@ -61,7 +64,14 @@ public class DirectoryManager {
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".constructor", "the directory '" + directoryName + "' is null");
       this.sentDirectory = initDirectory(this.directory, "sent", sent);
       this.discardedDirectory = initDirectory(this.directory, "discarded", discarded);
-      this.lockExtention = lockExtention;
+      if (lockExtention != null) {
+         String tmp = lockExtention.trim();
+         if (!tmp.startsWith("*.")) {
+            throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, ME, "lockExtention must start with '*.' and be of the kind '*.lck'");
+         }
+         this.lockExtention = new FilenameFilter(this.global, tmp);
+         this.lockExt = tmp.substring(1); // '*.gif' -> '.gif' 
+      }
       this.lockFiles = new HashSet();
    }
 
@@ -116,8 +126,9 @@ public class DirectoryManager {
     * @throws XmlBlasterException
     */
    private Map getNewFiles(File directory) throws XmlBlasterException {
-      if (this.lockExtention != null) // reset lockFile set
+      if (this.lockExtention != null) { // reset lockFile set
          this.lockFiles.clear();
+      }
       
       if (!directory.canRead())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".scan", "I don't have rights to read from '" + directory.getName() + "'");
@@ -126,19 +137,33 @@ public class DirectoryManager {
       File[] files = directory.listFiles(this.fileFilter);
       if (files == null || files.length == 0)
          return new HashMap();
+      if (this.lockExtention != null) {
+         // and then retrieve all lock files (this must be done after having got 'files' to avoid any gaps
+         File[] lckFiles = directory.listFiles(this.lockExtention);
+         if (lckFiles != null) {
+            for (int i=0; i < lckFiles.length; i++) {
+               String name = null;
+               try {
+                  name = lckFiles[i].getCanonicalPath();
+               }
+               catch (IOException ex) {
+                  throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".getNewFiles", " could not get the canonical name of file '" + files[i].getName() + "'");
+               }
+               int pos = name.lastIndexOf(this.lockExt);
+               if (pos < 0) 
+                  throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, ME, "can not handle lckExtention '*" + this.lockExt + "'");
+               this.lockFiles.add(name.substring(0, pos));
+            }
+         }
+      }
+      
       Map map = new HashMap(files.length);
       for (int i=0; i < files.length; i++) {
          try {
             String name = files[i].getCanonicalPath();
             if (files[i].isFile()) {
-               if (this.lockExtention != null && name.endsWith(this.lockExtention)) {
-                  int pos = name.length() - this.lockExtention.length();
-                  String strippedName = name.substring(0, pos);
-                  this.lockFiles.add(strippedName);
-               }
-               else {
+               if (this.lockExtention == null || (!this.lockFiles.contains(name) && !name.endsWith(this.lockExt)))
                   map.put(name, files[i]);
-               }
             }
          }
          catch (IOException ex) {

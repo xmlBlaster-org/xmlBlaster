@@ -330,8 +330,8 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("directoryName", this.dirName);
 
       int maximumSize = 10000;
-      long delaySinceLastChange = 1000L;
-      long pollInterval = 500L;
+      long delaySinceLastChange = 400L;
+      long pollInterval = 200L;
       prop.put("maximumFileSize", "" + maximumSize);
       prop.put("delaySinceLastFileChange", "" + delaySinceLastChange);
       prop.put("pollInterval", "" + pollInterval);
@@ -430,10 +430,20 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       PluginProperties prop = new PluginProperties();
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
-      prop.put("lockExtention", ".lck");
+      prop.put("lockExtention", "*.lck");
       doPublish(prop, deliverDat, deliverGif, absSubPath);
    }
 
+   public void testSimplePublishWithFilterLockMode() {
+      boolean deliverDat = false;
+      boolean deliverGif = true;
+      boolean absSubPath = true;
+      PluginProperties prop = new PluginProperties();
+      prop.put("fileFilter", "*.gif");
+      prop.put("lockExtention", "*.lck");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+   
    /*
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
@@ -443,7 +453,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("loginName", "");
       prop.put("password", "");
       prop.put("fileFilter", "");
-      prop.put("lockExtention", ".lck");
+      prop.put("lockExtention", "*.lck");
 */
 
    private boolean compareContent(byte[] buf1, byte[] buf2) {
@@ -466,9 +476,10 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       try {
          File lock = null;
          if (lockExt != null) {
-            lock = new File(filename + lockExt);
+            String tmp = filename + lockExt.substring(1);
+            lock = new File(tmp);
             boolean ret = lock.createNewFile();
-            assertTrue("could not create lock file '" + filename + lockExt + "'", ret);
+            assertTrue("could not create lock file '" + tmp + "'", ret);
             int upd = this.updateInterceptor.waitOnUpdate(timeToWait);
             assertEquals("when writing lock file should not update", 0, upd);
          }
@@ -480,9 +491,17 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          FileOutputStream fos = new FileOutputStream(filename);
          fos.write(buf);
          fos.close();
+         
+         if (lockExt != null) {
+            int upd = this.updateInterceptor.waitOnUpdate(timeToWait);
+            assertEquals("when still locked by lockfile should not update", 0, upd);
+            File tmp = new File(filename);
+            assertTrue("file '" + filename + "' should still exist since lock file exists", tmp.exists());
+         }
+         
          if (lock != null) {
             boolean ret = lock.delete();
-            assertTrue("could not remove lock file '" + filename + lockExt + "'", ret);
+            assertTrue("could not remove lock file '" + filename + lockExt.substring(1) + "'", ret);
          }
          return buf;
       }
@@ -582,6 +601,10 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
 
       test.setUp();
       test.testPublishWithMoveRelativeLockMode();
+      test.tearDown();
+
+      test.setUp();
+      test.testSimplePublishWithFilterLockMode();
       test.tearDown();
    }
 }

@@ -149,6 +149,7 @@
      <attribute id='maximumFileSize'>10000000</attribute>
      <attribute id='delaySinceLastFileChange'>10000</attribute>
      <attribute id='pollInterval'>2000</attribute>
+     <attribute id='lockExtention'>*.lck</attribute>
      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
