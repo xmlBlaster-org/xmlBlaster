@@ -220,7 +220,7 @@ final public class Authenticate implements I_Authenticate
          ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
          returnQos.setSessionId(sessionId); // securityInfo is not coded yet !
 
-         Log.info(ME, "Successful login for client " + subjectCtx.getName());
+         Log.info(ME, "Successful login for client " + subjectCtx.getName() + ", " + subjectInfo.getNumSessions() + " sessions are in use.");
          if (Log.DUMP) Log.dump(ME, toXml());
          if (Log.DUMP) Log.dump(ME, "Returned QoS:\n" + returnQos.toXml());
          if (Log.CALL) Log.call(ME, "Leaving connect()");
