@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.2 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.3 2000/02/25 13:50:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -29,12 +29,12 @@ import test.framework.*;
  */
 public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
 {
-   private Server xmlBlaster = null;
+   Server xmlBlaster; // !!! remove in this test
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
    private String subscribeOid;
-   private String publishOid = "ReadonlyMessage";
+   private String publishOid = "AMessage";
    private CorbaConnection senderConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
@@ -66,7 +66,14 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       try {
          senderConnection = new CorbaConnection(); // Find orb
-         senderConnection.initFailSave(this, 1000, 1000);
+
+         // Setup fail save handling ...
+         long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
+         int retries = 3;           // -1 == forever
+         int maxMessages = 1000;
+         senderConnection.initFailSave(this, retryInterval, retries, maxMessages);
+
+         // and do the login ...
          String passwd = "secret";
          String qos = "<qos></qos>";
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
@@ -85,17 +92,16 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    protected void tearDown()
    {
-      String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                      "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                      "</key>";
+      Log.info(ME, "Entering tearDown(), test is finished");
+      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 
@@ -113,7 +119,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -137,11 +143,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "'>\n</key>";
       String content = "" + counter;
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
-      PublishQosWrapper qosWrapper = new PublishQosWrapper();
-      qosWrapper.setReadonly();
-      String qos = qosWrapper.toXml(); // == "<qos><Readonly /></qos>"
+      PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
 
-      publishOid = xmlBlaster.publish(msgUnit, qos);
+      publishOid = senderConnection.publish(msgUnit, qosWrapper.toXml());
       Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
       assert("returned publishOid == null", publishOid != null);
@@ -162,11 +166,14 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
          }
          catch(XmlBlasterException e) {
-            if (e.id.equals("TryingConnect"))
-               Log.warning(ME, "Lost connection");
+            if (e.id.equals("TryingReconnect"))
+               Log.warning(ME, e.id + " exception: Lost connection, my connection layer is polling");
+            else if (e.id.equals("NoConnect"))
+               assert("Lost connection, my connection layer is not polling", false);
             else
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               assert("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
+         Util.delay(10000L);    // Wait some time
       }
    }
 
@@ -179,7 +186,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public void reConnected()
    {
-      Log.info(ME, "We were lucky, reconnected to xmlBlaster");
+      Log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
    }
 
@@ -192,7 +199,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public void lostConnection()
    {
-      Log.warning(ME, "Lost connection to xmlBlaster");
+      Log.warning(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
    }
 
 
