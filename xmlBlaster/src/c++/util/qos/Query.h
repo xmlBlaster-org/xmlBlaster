@@ -15,6 +15,8 @@ Comment:   Holding a query string and a prepared query object.
 #include <util/xmlBlasterDef.h>
 #include <string>
 
+using namespace std;
+
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 class Dll_Export Query 

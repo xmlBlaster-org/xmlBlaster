@@ -46,6 +46,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 extern Dll_Export const bool DEFAULT_isVolatile;
 extern Dll_Export const bool DEFAULT_isDurable;
 extern Dll_Export const bool DEFAULT_forceUpdate;
+extern Dll_Export const bool DEFAULT_forceDestroy;
+
 // extern Dll_Export const bool DEFAULT_readonly;
 
 typedef vector<RouteInfo> RouteVector;
