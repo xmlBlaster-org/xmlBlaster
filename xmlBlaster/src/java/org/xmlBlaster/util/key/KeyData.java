@@ -45,8 +45,8 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
    protected transient final String serialData; // can be null - in this case use toXml() - original without generated oid
    /** value from attribute <key oid="..."> */
    private String oid;
-   /** The default content MIME type is null */
-   public transient static final String CONTENTMIME_DEFAULT = null; // "text/plain";
+   /** The default content MIME type is "text/plain" */
+   public transient static final String CONTENTMIME_DEFAULT = "text/plain";
    /** value from attribute <key oid="" contentMime="..."> */
    private String contentMime = CONTENTMIME_DEFAULT;
    /** value from attribute <key oid="" contentMimeExtended="..."> */
