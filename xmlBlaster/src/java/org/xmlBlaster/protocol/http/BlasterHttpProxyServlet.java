@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.15 2000/05/06 16:40:39 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.16 2000/05/06 20:33:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -21,23 +21,19 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 /**
  * This servlet doesn't leave the doGet() method after an invocation
- * keeping a permanent http connection.
+ * keeping a permanent http connection. 
  * <p />
- * With the doPost() method you may login/logout to xmlBlaster, and
- * do your work with publish/subscribe etc.<br />
- * With the doGet() method you receive your instant callbacks.
+ * With the doGet() method you may login/logout to xmlBlaster, and
+ * receive your instant callbacks.<br />
+ * With the doPost() you can invoke publish/subscribe etc.<br />
  * <p />
  * The logging output is redirected to the normal servlet log file.
  * If you use Apache/Jserv, look into /var/log/httpd/jserv.log
  * <p />
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
- * <p />
- * TODO:
- *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
- *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -62,10 +58,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
    }
 
 
-
-
    /**
-    * GET request from the browser. 
+    * GET request from the browser, usually to do an initial login. 
     * <p />
     * Used for login and for keeping a permanent http connection.
     * <br />
@@ -75,6 +69,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
     * It is important that this login servlet generates the sessionId
     * and no other servlet generates one - so call other servlets *after*
     * successful login.
+    * <p />
+    * Example:<br />
+    *  <code>index.html?ActionType=login&loginName=karl&passwd=secret</code>
     */
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
