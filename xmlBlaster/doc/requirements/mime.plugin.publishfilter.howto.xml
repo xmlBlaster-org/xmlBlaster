@@ -78,6 +78,27 @@ public void init(String[] options) throws XmlBlasterException {
 For an example look at the code of PublishLenChecker.java (link below).
 ]]>
    </example>
+
+   <configuration>
+      <p>
+      This parameter registers the plugin with xmlBlaster.
+      </p>
+      <table border="1">
+         <tr>
+            <td>MimePublishPlugin[myPlugin][1.0]</td>
+            <td>myPlugin.mycomp.com
+            </td>
+            <td>
+            Give your plugin a nice name, and use this in the first bracket,
+            and give your plugin a version number which you add in the second bracket.<br />
+            Than pass the class name of your plugin as the property value.<br />
+            The name/version must be the same which you returned for I_Plugin.getType() and I_Plugin.getVersion().
+            </td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
    <see type="API">org.xmlBlaster.engine.mime.I_PublishFilter</see>
    <see type="API">org.xmlBlaster.engine.mime.demo.PublishLenChecker</see>
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
@@ -85,7 +106,7 @@ For an example look at the code of PublishLenChecker.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
