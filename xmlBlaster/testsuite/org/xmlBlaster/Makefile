@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = classtest clustertest query xmldb authentication mime snmp jdbc
+SUB_DIRS = classtest clustertest query xmldb authentication mime snmp jdbc stress
 #LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
