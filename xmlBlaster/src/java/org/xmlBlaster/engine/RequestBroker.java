@@ -883,10 +883,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          }
       }
 
-      // Now the MessageUnit exists, subscribe to it
-      boolean newSubscribed = msgUnitHandler.addSubscriber(subs);
+      subs.incrSubscribeCounter();
 
-      if (!newSubscribed) return;         // client had already subscribed
+      // Now the MessageUnit exists, subscribe to it -> fires update to client
+      msgUnitHandler.addSubscriber(subs);
 
       fireSubscribeEvent(subs);  // inform all listeners about this new subscription
    }
@@ -1542,7 +1542,6 @@ synchronized (this) {
    }
 
    final void fireSubscribeEvent(SubscriptionInfo subscriptionInfo) throws XmlBlasterException  {
-      subscriptionInfo.incrSubscribeCounter();
       fireSubscriptionEvent(subscriptionInfo, true);
    }
 

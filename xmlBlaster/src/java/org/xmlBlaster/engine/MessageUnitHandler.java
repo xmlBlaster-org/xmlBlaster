@@ -282,12 +282,12 @@ public class MessageUnitHandler
    /**
     * A client subscribed to this message, multiple subscriptions from
     * the same client are OK.
-    *
-    * @return true new subscription added <br />
-    *         false client had already subscribed
     */
-   public boolean addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
+   public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
+      if (sub.getSubscribeCounter() > 1)
+         return;
+
       Object oldOne;
       synchronized(subscriberMap) {
          oldOne = subscriberMap.put(sub.getUniqueKey(), sub);
@@ -303,7 +303,7 @@ public class MessageUnitHandler
          handleCallbackFailed(removeSet);
       }
 
-      return true;
+      return;
    }
 
    /**
