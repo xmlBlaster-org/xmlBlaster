@@ -4,29 +4,19 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.client.qos.PublishQos;
-
 import org.xmlBlaster.util.queuemsg.DummyEntry;
-import org.xmlBlaster.util.enum.PriorityEnum;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 import java.util.Hashtable;
 
 import junit.framework.*;
@@ -223,7 +213,9 @@ public class CacheQueueTest extends TestCase {
       // set up the queues ....
 
       // every content is 80 bytes which gives an entry size of 100 bytes (80+20)
+      long entrySize = 100;
 
+      String lastSuccessfulLocation = "";
       long maxNumOfBytesCache[] = {700L, 10000L};
       long maxNumOfBytes[] = {700L, 50000L};
       int numOfTransientEntries[] = { 2, 50, 200};
@@ -274,8 +266,8 @@ public class CacheQueueTest extends TestCase {
                      try {
 
                         refQueue.clear();
-                        transientNumOfBytes = 100 * numOfTransientEntries[it];
-                        persistentNumOfBytes =100 * numOfPersistentEntries[id];
+                        transientNumOfBytes = entrySize * numOfTransientEntries[it];
+                        persistentNumOfBytes =entrySize * numOfPersistentEntries[id];
                         // prepare the inputs .
                         Hashtable[] inputTable = new Hashtable[3];
                         for (int i=0; i < 3; i++) inputTable[i] = new Hashtable();
@@ -289,7 +281,7 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < transients.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), entrySize, persistent);
                            transients[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
@@ -297,7 +289,7 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < persistentEntries.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), entrySize, persistent);
                            persistentEntries[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
@@ -305,10 +297,13 @@ public class CacheQueueTest extends TestCase {
                         // do the test here ....
                         assertEquals(ME + " number of persistent entries is wrong ", 0L, refQueue.getNumOfPersistentEntries());
                         assertEquals(ME + " number of entries is wrong ", 0L, refQueue.getNumOfEntries());
-                        for (int i=0; i < transients.length; i++)
+                        for (int i=0; i < transients.length; i++) {
+                           lastSuccessfulLocation = "transientEntries put #" + i;
                            refQueue.put(transients[i], false);
+                        }
                         assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, refQueue.getNumOfEntries());
                         for (int i=0; i < persistentEntries.length; i++) {
+                           lastSuccessfulLocation = "persistentEntries put #" + i;
                            refQueue.put(persistentEntries[i], false);
                         }
                         assertEquals(ME + " number of entries after putting transients is wrong ", persistentEntries.length + transients.length, refQueue.getNumOfEntries());
@@ -330,7 +325,7 @@ public class CacheQueueTest extends TestCase {
                         int mustEntries = inputTable[0].size() + inputTable[1].size() + inputTable[2].size();
 
 
-                        long totNumOfBytes = 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]);
+                        long totNumOfBytes = entrySize * (numOfPersistentEntries[id]+numOfTransientEntries[it]);
                         this.log.trace(ME, "total number of bytes: " + totNumOfBytes + " maxNumOfBytes: " + maxNumOfBytes[is]);
                         this.log.trace(ME, "entries must be: " + mustEntries);
 
@@ -353,7 +348,7 @@ public class CacheQueueTest extends TestCase {
                      }
                      catch(XmlBlasterException e) {
                         log.dump(ME, "Exception (might be ok): " + e.toString());
-                        assertTrue("Overflow is not allowed " + refQueue.toXml("") + "total number of bytes " + 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
+                        assertTrue("Overflow is not allowed on location '"+ lastSuccessfulLocation + "' " + refQueue.toXml("") + "total number of bytes " + entrySize*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], entrySize*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
                         log.info(ME, "SUCCESS: Exception is OK: " + e.toString());
                      }
                   }
@@ -388,6 +383,7 @@ public class CacheQueueTest extends TestCase {
       long maxNumOfBytes = 50000L;
       int numOfTransientEntries = 200;
       int numOfPersistentEntries =  200;
+      long entrySize = 100L;
 
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxEntries(2000L);
@@ -413,8 +409,8 @@ public class CacheQueueTest extends TestCase {
       int entries2 = 10;
 
       this.queue.clear();
-      transientNumOfBytes = 100 * numOfTransientEntries;
-      persistentNumOfBytes =100 * numOfPersistentEntries;
+      transientNumOfBytes = entrySize * numOfTransientEntries;
+      persistentNumOfBytes = entrySize * numOfPersistentEntries;
 
       DummyEntry[] entries = new DummyEntry[numOfEntries];
       PriorityEnum prio = PriorityEnum.toPriorityEnum(4);
@@ -422,7 +418,7 @@ public class CacheQueueTest extends TestCase {
       boolean persistent = false;
       for (int i=0; i < numOfEntries; i++) {
          persistent = (i % 2) == 0; // even are persistent uneven are transient
-         entries[i] = new DummyEntry(glob, prio, this.queue.getStorageId(), 80, persistent);
+         entries[i] = new DummyEntry(glob, prio, this.queue.getStorageId(), entrySize, persistent);
       }
 
       // do the test here ....
