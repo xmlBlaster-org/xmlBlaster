@@ -68,18 +68,18 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   
 
    /**
-   * maxEntries will not be used as the filesize can grow at will
    * File name is:
    * <pre>
    *   Persistence.Path=${user.home}${file.separator}tmp
    *   recorder.path=${Persistence.Path}${file.separator}fileRecorder
    *
    *   The file name is
-   *       tailback-${cluster.node.id}.frc
+   *       tailback-[clientClusterNodeId]-[serverClusterNodeId].frc
    *
    *   For example:
-   *      /home/michelle/tmp/fileRecorder/tailback-heron.frc
+   *      /home/michelle/tmp/fileRecorder/tailback-heron-to-avalon.frc
    * </pre>
+   * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder requirement</a>
    */
    public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
    {
@@ -115,7 +115,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          log.error(ME,"Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
          throw new XmlBlasterException(ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
       }
-      log.info(ME, "FileRecorder is ready, tail back messages are stored in '" + fileName + "'");
+      if (maxEntries < 0)
+         log.info(ME, "FileRecorder is ready, unlimited tail back messages are stored in '" + fileName + "'");
+      else
+         log.info(ME, "FileRecorder is ready, max=" + maxEntries + " tail back messages are stored in '" + fileName + "'");
    }
 
    /**
