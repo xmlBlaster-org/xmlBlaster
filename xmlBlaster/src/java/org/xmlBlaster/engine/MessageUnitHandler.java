@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.37 2000/12/12 08:52:31 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.38 2000/12/28 14:53:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -172,7 +172,7 @@ public class MessageUnitHandler
       for (int ii=0; ii<arr.length; ii++)
          requestBroker.fireSubscriptionEvent(arr[ii], false);
 
-      Log.warn(ME, "No subscribed client notifiction about message erase() yet implemented");
+      Log.warn(ME, "No subscribed client notification about message erase() yet implemented");
 
       subscriberMap.clear();
       // subscriberMap = null;    is final, can't assign null
