@@ -131,10 +131,10 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
 void DefaultCallback::updateOneway(const char* sessionId,
                       const serverIdl::MessageUnitArr& msgUnitArr) PING_THROW_SPECIFIER
 {
-   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<std::string>(msgUnitArr.length()) + " message ..."); }
+   if (log_.call()) { log_.call(me(), "Receiving updateOneway of " + lexical_cast<std::string>(msgUnitArr.length()) + " message ..."); }
    
    if (msgUnitArr.length() == 0) {
-      log_.warn(me(), "Entering update() with 0 messages");
+      log_.warn(me(), "Entering updateOneway() with 0 messages");
       return;
    }
 
@@ -151,7 +151,7 @@ void DefaultCallback::updateOneway(const char* sessionId,
             log_.error(me(), string(e.message) );
          }
 
-         if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
+         if (log_.trace()) log_.trace(me(), "Received oneway message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
 
          if (boss_) {
             boss_->update(sessionId, *updateKey,
