@@ -2227,7 +2227,7 @@ TODO
    </target>
 
    <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
-      <foreach list="RadarTrack,LogRedirect,HelloWorld3"
+      <foreach list="LogRedirect,HelloWorld3"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
       </foreach>
