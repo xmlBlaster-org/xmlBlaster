@@ -64,7 +64,7 @@
      <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jar">SystemInfo.jar</a></li>
    </ul>
    </p>
-   And you can then run the application.
+   And you can then run the application (check/adjust the URL in SystemInfo.jad before).
    <p>
    If you are not that lucky of having such a device you still can try this demo out by using an
    emulator. You can download sun's j2me development kit which allows you to compile the 
@@ -83,6 +83,21 @@
    and an application similar to this should appear:<br/>
    <center><img src="j2meDemo.jpg" name="j2meDemo" align="center" border="1"/></center>
    </p>   
+   <p>   
+   NOTE: If you want to deploy it on your own Webserver you need to add the
+   URL which points to the <code>SystemInfo.jar</code> file and to the servlet which
+   forwards the requests to the xmlBlaster server:
+   <pre>
+   build -DJ2ME_HOME=/opt/WTK2.1 
+         -DMIDlet-Jar-URL=http://myServer/j2me/SystemInfo.jar
+         -DMIDlet-servletUrl=http://myServer:8080/xmlBlaster/AppletServlet
+       j2me
+   </pre>
+   and copy the <code>xmlBlaster/demo/j2me/SystemInfo.jar</code> file to be available there.
+   The above URL will be added to the <code>xmlBlaster/demo/j2me/SystemInfo.jad</code> file.<br />
+   The servlet is created with the <code>deploy_war</code> task, see the configuration
+   in <code>xmlBlaster/demo/http/WEB-INF/web.xml</code>.
+   </p>
    </example>
 
    <example type="HTML">
@@ -133,7 +148,7 @@ http://localhost:8080/xmlBlaster/AppletServlet
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 04 01</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
