@@ -18,6 +18,7 @@ Comment:   The client driver for the socket protocol
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
 #include <util/key/MsgKeyFactory.h>
+#include <util/plugin/I_Plugin.h>
 //#include <util/Global.h>    // For org::xmlBlaster::util::ArgsStruct_T argsStruct_
 /* Don't include this in this header to avoid dependency: */
 //#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
@@ -36,9 +37,10 @@ namespace org {
    namespace protocol {
     namespace socket {
 
-   class Dll_Export SocketDriver 
+   class Dll_Export SocketDriver
       : public virtual org::xmlBlaster::client::protocol::I_CallbackServer, 
-        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection
+        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection,
+        public virtual org::xmlBlaster::util::plugin::I_Plugin
    {
    friend class SocketDriverFactory; // To be able to create a SocketDriver instance
 
@@ -137,9 +139,23 @@ namespace org {
       static std::string usage();
       // Exception conversion ....
       org::xmlBlaster::util::XmlBlasterException
-        convertFromSocketException(const struct ::ExceptionStruct & ex);
+        convertFromSocketException(const struct ::ExceptionStruct & ex) const;
       static struct ::ExceptionStruct
         convertToSocketException(org::xmlBlaster::util::XmlBlasterException& ex);
+
+      /**
+       * Get the name of the plugin. 
+       * @return "SOCKET"
+       * @enforcedBy I_Plugin
+       */
+      std::string getType() { static std::string type = "SOCKET"; return type; }
+
+      /**
+       * Get the version of the plugin. 
+       * @return "1.0"
+       * @enforcedBy I_Plugin
+       */
+      std::string getVersion() { static std::string version = "1.0"; return version; }
    };
 
 }}}}} // namespaces
