@@ -292,7 +292,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * @see I_XmlBlasterAccess#initCbServer(String, String, String)
+    * @see I_XmlBlasterAccess#initCbServer(String, CallbackAddress)
     */
    public I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException {
       if (callbackAddress == null)
