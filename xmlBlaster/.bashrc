@@ -154,9 +154,12 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    fi
 
    #jdbc
-   CLASSPATH=${XMLBLASTER_HOME}/lib/mysql-connector-java-3.0.8-stable-bin.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/mysql-connector-java-3.0.6-stable-bin.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.2dev-1.2.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/classes12.zip:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}
+
+   CLASSPATH=${XMLBLASTER_HOME}/lib/ldbc.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}
 
    if [ -f ${XMLBLASTER_HOME}/lib/postgresql.jar ]; then
@@ -174,6 +177,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-java.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-logging.jar
+
+   # apache's Base64 encoding (for XmlBlasterApplet) and utils (for token)
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-codec.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-lang-2.0.jar
 
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
