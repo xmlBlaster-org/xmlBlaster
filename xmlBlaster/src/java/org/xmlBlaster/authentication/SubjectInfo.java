@@ -151,7 +151,7 @@ public class SubjectInfo implements I_AdminSubject
 
    public boolean isShutdown()
    {
-      return this.isShutdown();
+      return this.isShutdown;
    }
 
    public void shutdown()
@@ -358,6 +358,12 @@ public class SubjectInfo implements I_AdminSubject
     */
    public final void notifyAboutLogin(SessionInfo sessionInfo) throws XmlBlasterException
    {
+      if (isShutdown()) { // disconnect() and connect() are not synchronized, so this can happen
+         String text = "SubjectInfo is shutdown, try to login again";
+         Thread.currentThread().dumpStack();
+         log.error(ME, text);
+         throw new XmlBlasterException(ME, text);
+      }
       if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSessionId() + ")");
       sessionMap.put(sessionInfo.getSessionId(), sessionInfo);
 
@@ -383,6 +389,12 @@ public class SubjectInfo implements I_AdminSubject
     */
    public final void notifyAboutLogout(String sessionId, boolean clear) throws XmlBlasterException
    {
+      if (isShutdown()) { // disconnect() and connect() are not synchronized, so this can happen
+         String text = "SubjectInfo is shutdown, no logout";
+         Thread.currentThread().dumpStack();
+         log.error(ME, text);
+         throw new XmlBlasterException(ME, text);
+      }
       if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + sessionId + ", " + clear + ")");
       sessionMap.remove(sessionId);
 
