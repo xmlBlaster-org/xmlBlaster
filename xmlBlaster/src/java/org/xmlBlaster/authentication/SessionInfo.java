@@ -7,11 +7,14 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import org.jutils.log.LogChannel;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.SessionMsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Timestamp;
@@ -20,7 +23,6 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Log;
 
 
 
@@ -49,7 +51,8 @@ public class SessionInfo implements I_Timeout
    private ConnectQos connectQos;
    private Timeout expiryTimer;
    private Timestamp timerKey = null;
-   private Global glob;
+   private final Global glob;
+   private final LogChannel log;
 
    /**
     * All MessageUnit which shall be delivered to the current session of the client
@@ -68,9 +71,11 @@ public class SessionInfo implements I_Timeout
    public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQos connectQos, Global glob)
           throws XmlBlasterException
    {
+      this.glob = glob;
+      this.log = this.glob.getLog("auth");
       if (securityCtx==null) {
          String tmp = "SessionInfo(securityCtx==null); A correct security manager must be set.";
-         Log.error(ME+".illegalArgument", tmp);
+         log.error(ME+".illegalArgument", tmp);
          throw new XmlBlasterException(ME+".illegalArgument", tmp);
       }
       
@@ -80,19 +85,18 @@ public class SessionInfo implements I_Timeout
          instanceId = instanceCounter;
          instanceCounter++;
       }
-      if (Log.CALL) Log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
-      this.glob = glob;
+      if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
       this.sessionQueue = new SessionMsgQueue("session:"+securityCtx.getSessionId(), this, connectQos.getSessionCbQueueProperty(), glob);
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
-         Log.info(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
+         log.info(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
          timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else
-         Log.info(ME, "Session for " + getLoginName() + " lasts forever, requested expiry timer was 0");
+         log.info(ME, "Session for " + getLoginName() + " lasts forever, requested expiry timer was 0");
    }
 
    public void finalize()
@@ -102,12 +106,12 @@ public class SessionInfo implements I_Timeout
          timerKey = null;
       }
 
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collected " + getSessionId());
+      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSessionId());
    }
 
    public void shutdown()
    {
-      if (Log.CALL) Log.call(ME, "shutdown() of session " + getSessionId());
+      if (log.CALL) log.call(ME, "shutdown() of session " + getSessionId());
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
@@ -130,7 +134,7 @@ public class SessionInfo implements I_Timeout
             timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
          }
          else {
-            //Log.info(ME, "Refreshing expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
+            //log.info(ME, "Refreshing expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
             timerKey = this.expiryTimer.refreshTimeoutListener(timerKey, connectQos.getSessionTimeout());
          }
       }
@@ -145,24 +149,39 @@ public class SessionInfo implements I_Timeout
    {
       synchronized (this) {
          timerKey = null;
-         Log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSessionId() + "' is expired, autologout");
+         log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSessionId() + "' is expired, autologout");
          DisconnectQos qos = new DisconnectQos();
          qos.deleteSubjectQueue(true);
          try {
             glob.getAuthenticate().disconnect(getSessionId(), qos.toXml());
          } catch (XmlBlasterException e) {
-            Log.error(ME, "Internal problem with disconnect: " + e.toString());
+            log.error(ME, "Internal problem with disconnect: " + e.toString());
          }
       }
+   }
+
+   /**
+    * Is the given address the same as our?
+    */
+   public final boolean hasAddress(CallbackAddress addr)
+   {
+      if (addr == null) return false;
+      CallbackAddress[] arr = getSessionQueue().getProperty().getCallbackAddresses();
+      for (int ii=0; arr!=null && ii<arr.length; ii++) {
+         // if (arr[ii].isSameAddress(addr))
+         if (arr[ii].equals(addr))
+            return true;
+      }
+      return false;
    }
 
    /**
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Session of client [" + getLoginName() + "] queing message");
+      if (log.CALL) log.call(ME, "Session of client [" + getLoginName() + "] queing message");
       if (entry == null) {
-         Log.error(ME+".Internal", "Can't queue null message");
+         log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
       }
 
