@@ -21,7 +21,9 @@ import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.*;
 
 
@@ -66,10 +68,12 @@ final public class Authenticate implements I_Authenticate
     */
    final private Set clientListenerSet = Collections.synchronizedSet(new HashSet());
 
+   /** The singleton handle for this xmlBlaster server */
+   private final I_XmlBlaster xmlBlasterImpl;
 
    /**
     */
-   public Authenticate(Global global)
+   public Authenticate(Global global) throws XmlBlasterException
    {
       this.glob = global;
       this.log = this.glob.getLog("auth");
@@ -79,11 +83,20 @@ final public class Authenticate implements I_Authenticate
       this.glob.setAuthenticate(this);
       plgnLdr = new PluginManager(global);
       plgnLdr.init(this);
+      xmlBlasterImpl = new XmlBlasterImpl(this);
    }
 
    public Global getGlobal()
    {
       return this.glob;
+   }
+
+   /**
+    * Access the xmlBlaster singleton.
+    */
+   public I_XmlBlaster getXmlBlaster()
+   {
+      return xmlBlasterImpl;
    }
 
    public String login(String loginName, String passwd,
