@@ -33,6 +33,7 @@ private:
    long sleep;
    int numPublish;
    string oid;
+   string domain;
    string clientTags;
    string contentStr;
    PriorityEnum priority;
@@ -104,6 +105,7 @@ void PublishDemo::initEnvironment()
    sleep = global_.getProperty().get("sleep", 1000L);
    numPublish = global_.getProperty().get("numPublish", 1);
    oid = global_.getProperty().get("oid", string("Hello"));
+   domain = global_.getProperty().get("domain", string(""));
    clientTags = global_.getProperty().get("clientTags", ""); // "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
    contentStr = global_.getProperty().get("content", "Hi-%counter");
    priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
@@ -146,6 +148,7 @@ void PublishDemo::initEnvironment()
    log_.info(ME, " Pub/Sub settings");
    log_.info(ME, "   -numPublish     " + lexical_cast<string>(numPublish));
    log_.info(ME, "   -oid            " + lexical_cast<string>(oid));
+   log_.info(ME, "   -domain         " + lexical_cast<string>(domain));
    log_.info(ME, "   -clientTags     " + clientTags);
    if (contentSize >= 0) {
       log_.info(ME, "   -content        [generated]");
@@ -215,6 +218,9 @@ void PublishDemo::publish()
 
       PublishKey key(global_, oid, "text/xml", "1.0");
       key.setClientTags(clientTags);
+      if (domain != "")  key.setDomain(domain);
+      if (i==0) log_.info(ME, "PublishKey: " + key.toXml());
+
       PublishQos pq(global_);
       pq.setPriority(priority);
       pq.setPersistent(persistent);
