@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.8 2002/05/30 09:32:29 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.9 2002/06/02 22:39:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -206,7 +206,7 @@ module serverIdl
        * @see addListener in Java event model
        * @see addObserver in Java observer pattern
        */
-      string subscribe(in XmlType xmlKey, in XmlType qos)
+      XmlType subscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -250,7 +250,7 @@ module serverIdl
        *         for further publishing to the same MessageUnit<br>
        *         Rejected Messages will contain an empty string ""
        */
-      string publish(in MessageUnit msgUnit)
+      XmlType publish(in MessageUnit msgUnit)
                                           raises(XmlBlasterException);
 
       /**
@@ -291,7 +291,7 @@ module serverIdl
        * Erase a MessageUnit
        * @return String array with the key oid's which are deleted
        */
-      StringArr erase(in XmlType xmlKey, in XmlType qos)
+      XmlTypeArr erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
