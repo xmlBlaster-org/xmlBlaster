@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.15 2002/05/26 20:16:17 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.16 2002/05/30 16:34:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -17,9 +17,12 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.callback.CbInfo;
+import org.xmlBlaster.engine.callback.CbManager;
+import org.xmlBlaster.engine.callback.CbConnection;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.callback.CbWorker;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 
 import java.util.Comparator;
 import EDU.oswego.cs.dl.util.concurrent.BoundedPriorityQueue;
@@ -32,10 +35,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 {
    private String ME = "MsgQueue";
    private String name;
+   private String loginName = "";
    protected CbQueueProperty property;
    protected final Global glob;
    private final CbWorkerPool cbWorkerPool;
-   protected CbInfo cbInfo = null;
+   private final CbManager cbManager;
    protected final LogChannel log;
    private final Timeout burstModeTimer;
    private Timestamp timerKey = null;
@@ -43,6 +47,8 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    /** Contains how many callbacks failed */
    private int errorCounter = 0;
    private boolean isShutdown = false;
+   private boolean isSessionQueue = false;
+   private boolean isSubjectQueue = false;
 
 
    /**
@@ -52,13 +58,29 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public MsgQueue(String queueName, CbQueueProperty prop, Global glob) throws XmlBlasterException
    {
       super(prop.getMaxMsg(), new MsgComparator());
+      if (queueName == null || prop == null || glob == null) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("Illegal arguments in MsgQueue constructor: queueName=" + queueName);
+      }
       this.glob = glob;
       this.log = glob.getLog("cb");
       this.ME = "MsgQueue:" + queueName;
       this.name = queueName;
+
+      if (this instanceof SessionMsgQueue) {
+         isSessionQueue = true;
+      }
+      else if (this instanceof SubjectMsgQueue) {
+         isSubjectQueue = true;
+      }
+      else {
+         log.error(ME, "Subclass not supported");
+      }
+
       this.cbWorkerPool = glob.getCbWorkerPool();
       this.burstModeTimer = glob.getBurstModeTimer();
-      setProperty(prop);
+      this.property = prop;
+      this.cbManager = new CbManager(glob, this, prop.getCallbackAddresses());
    }
 
    public void finalize()
@@ -71,9 +93,30 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       if (log.TRACE) log.trace(ME, "finalize - garbage collected");
    }
 
+   public final boolean isSessionQueue() {
+      return isSessionQueue;
+   }
+   
+   public final boolean isSubjectQueue() {
+      return isSubjectQueue;
+   }
+
+   /** For verbose logging */
+   public final String getLoginName() { 
+      if (loginName == null || loginName.length() < 1) {
+         if (this instanceof SessionMsgQueue) {
+            loginName = ((SessionMsgQueue)this).getSessionInfo().getLoginName();
+         }
+         else if (this instanceof SubjectMsgQueue) {
+            loginName = ((SubjectMsgQueue)this).getSubjectInfo().getLoginName();
+         }
+      }
+      return loginName;
+   }
+
    public void shutdown()
    {
-      log.info(ME, "Entering shutdown(" + super.size() + ")");
+      if (log.TRACE) log.trace(ME, "Entering shutdown(" + super.size() + ")");
       //Thread.currentThread().dumpStack();
       synchronized (this) {
          if (super.size() > 0) {
@@ -87,12 +130,19 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          this.burstModeTimer.removeTimeoutListener(timerKey);
          timerKey = null;
       }
+      cbManager.shutdown();
+
       // this.log = null;
       // this.cbWorkerPool = null;
       // this.burstModeTimer = null;
       // this.name = null; We need it in finalize()
       // this.glob = null;     We need glob for dead letter recovery
       // this.property = null; We need the props for dead letter recovery
+   }
+
+   /** Is never null */
+   public final CbManager getCbManager() {
+      return this.cbManager;
    }
 
    /**
@@ -134,7 +184,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          //if (log.TRACE) log.trace(ME, "oid=" + msgs[ii].getMessageUnitWrapper().getUniqueKey() + " EnqueueCounter=" + msgs[ii].getMessageUnitWrapper().getEnqueueCounter() + " isVolatile=" + msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile());
          if (msgs[ii].getMessageUnitWrapper().getEnqueueCounter() == 0 &&
                msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile()) {
-            if (this instanceof SessionMsgQueue) {
+            if (isSessionQueue) {
                SessionMsgQueue q = (SessionMsgQueue)this;
                try {
                   glob.getRequestBroker().eraseVolatile(q.getSessionInfo(), msgs[ii].getMessageUnitWrapper().getMessageUnitHandler());
@@ -231,23 +281,20 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    {
       if (prop != null) {
          this.property = prop;
-         CallbackAddress[] addr = this.property.getCallbackAddresses();
-         if (addr.length > 1) {
-            log.error(ME, "Ignoring multiple callback address");
+         if (this.property.getCallbackAddresses().length > 0) {
+            log.info(ME, "New queue settings: " + this.property.getSettings());
+            cbManager.initialize(property.getCallbackAddresses());
          }
-         if (addr.length > 0) {
-            log.info(ME, "Queue settings: " + this.property.getSettings());
-         }
-         cbInfo = new CbInfo(glob, addr);
       }
    }
 
    /**
-    * @return The cbInfo instance or null
+    * Set new callback addresses, typically after a session login/logout
     */
-   public final CbInfo getCbInfo()
+   public void setCbAddresses(CallbackAddress[] addr) throws XmlBlasterException
    {
-      return this.cbInfo;
+      this.property.setCallbackAddresses(addr);
+      cbManager.initialize(addr);
    }
 
    /**
@@ -322,16 +369,17 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          throw new XmlBlasterException(ME, "Illegal null argument fir putMsgs()");
       }
       if (isShutdown) {
-         log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
-         Thread.currentThread().dumpStack();
+         log.warn(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
+         //Thread.currentThread().dumpStack();
          handleFailure(msg);
          return;
       }
+
       try {
          //synchronized (this) {
             if (msg.length + size() > property.getMaxMsg()) {
                if (property.onOverflowBlock()) {
-                  if (this instanceof SessionMsgQueue) {
+                  if (isSessionQueue) {
                      SessionMsgQueue q = (SessionMsgQueue)this;
                      log.warn(ME, "Adding " + msg.length + " messages, queue of client " + q.getSessionInfo().getLoginName() + " will block since max capacity " + property.getMaxMsg() + " reached");
                   }
@@ -370,44 +418,57 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          return;
       }
       //if (log.CALL) log.call(ME, "Entering activateCallbackWorker()  cbWorkerIsActive=" + cbWorkerIsActive);
-      CallbackAddress addr = property.getCurrentCallbackAddress();
+
+      CbConnection cbConnection = cbManager.getDeadCbConnection();
+      if (this.errorCounter > 0 && cbConnection != null) {
+         CallbackAddress addr = cbConnection.getCbAddress();
+         if (addr.getRetries() != -1 && this.errorCounter > addr.getRetries()) {
+            burstModeTimer.removeTimeoutListener(timerKey);
+            log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client " +
+                          getLoginName() + ", producing now dead letters.");
+
+            handleFailure(null);
+
+            disconnectSession(cbConnection);
+
+            shutdown();
+            return;
+         }
+         long delay = addr.getDelay();
+         if (delay > 0L) {
+            synchronized (this) {
+               if (timerKey == null) {
+                  log.info(ME, "Starting error recovery timer with " + delay + " msec, retry #" + this.errorCounter + " of " + addr.getRetries());
+                  timerKey = burstModeTimer.addTimeoutListener(this, delay, null);
+               }
+            }
+            return;
+         }
+      }
+      else if (this.errorCounter > 0) {
+         burstModeTimer.removeTimeoutListener(timerKey);
+         log.warn(ME, "Can't send message back to client " + getLoginName() + ", producing now dead letters.");
+
+         handleFailure(null);
+
+         // disconnectSession(cbConnection);
+
+         shutdown();
+         return;
+      }
+      else if (cbConnection != null) { // Unexpected dead addresses
+         log.error(ME, "Internal problem errorCounter=" + this.errorCounter + " addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()));
+         Thread.currentThread().dumpStack();
+      }
+
+      CallbackAddress addr = cbManager.getAliveCbAddress();
       if (addr != null) {
          // TODO: A SubjectQueue may have many sessions to send the messages, here we use the collectTime of the first!!!!
          // We would need to add a worker for each callback to allow specifying distinct collectTimes
          // Possibly this 'bug' is not important enough to change the code.
-
-         if (this.errorCounter > 0) {
-            if (addr.getRetries() != -1 && this.errorCounter > addr.getRetries()) {
-               burstModeTimer.removeTimeoutListener(timerKey);
-               log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
-
-               handleFailure(null);
-
-               if (this instanceof SessionMsgQueue) {
-                  SessionMsgQueue q = (SessionMsgQueue)this;
-                  log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
-                  glob.getAuthenticate().disconnect(q.getSessionId(), null);
-               }
-               else
-                  log.error(ME, "Recovery handling is not coded yet");
-
-               shutdown();
-               return;
-            }
-            long delay = addr.getDelay();
-            if (delay > 0L) {
-               synchronized (this) {
-                  if (timerKey == null) {
-                     log.info(ME, "Starting error recovery timer with " + delay + " msec, retry #" + this.errorCounter + " of " + addr.getRetries());
-                     timerKey = burstModeTimer.addTimeoutListener(this, delay, null);
-                  }
-               }
-               return;
-            }
-         }
-
          long collectTime = addr.getCollectTime(); // burst mode if > 0L
          //log.info(ME, "Entering activateCallbackWorker() collectTime=" + collectTime + " cbWorkerIsActive=" + cbWorkerIsActive);
+
          if (collectTime > 0L) {
             synchronized (this) {
                if (timerKey == null) {
@@ -422,6 +483,38 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       }
       else {
          if (log.TRACE) log.trace(ME, "No callback address available");
+      }
+   }
+
+   public void disconnectSession(CbConnection cbConnection) throws XmlBlasterException
+   {
+      if (isSessionQueue) {
+         SessionMsgQueue q = (SessionMsgQueue)this;
+         log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
+         glob.getAuthenticate().disconnect(q.getSessionId(), null);
+      }
+      else if (isSubjectQueue) {
+         if (cbConnection != null) {
+            SubjectMsgQueue subq = (SubjectMsgQueue)this;
+            SubjectInfo subjectInfo = subq.getSubjectInfo();
+            SessionInfo sessionInfo = subjectInfo.findSessionInfo(cbConnection.getCbAddress());
+            if (sessionInfo == null) {
+               log.error(ME, "Internal error in subjectQueue, sessionInfo is unknown, recovery handling failed");
+               Thread.currentThread().dumpStack();
+            }
+            if (log.TRACE) log.trace(ME, "Found sessionId=" + sessionInfo.getSessionId() + " for broken callback address=" + cbConnection.getCbAddress().getName());
+            log.warn(ME, "Callback server is lost, killing login session '" + sessionInfo.getInstanceId() + "' of client " + subjectInfo.getLoginName() + ".");
+            glob.getAuthenticate().disconnect(sessionInfo.getSessionId(), null);
+         }
+         else {
+            log.error(ME, "Internal error in subjectQueue, sessionInfo is unknown, can't autologout client");
+            Thread.currentThread().dumpStack();
+         }
+      }
+      else {
+         log.error(ME, "Internal error, messageQueue type is unknown, recovery handling is not coded yet");
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "Internal error, messageQueue type is unknown, recovery handling is not coded yet");
       }
    }
 
@@ -457,7 +550,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       sb.append(offset).append("<MsgQueue name='").append(name).append("'>");
       sb.append(property.toXml(extraOffset+"   "));
       //sb.append(cbWorkerPool.toXml(extraOffset+"   "));
-      sb.append(cbInfo.toXml(extraOffset+"   "));
+      sb.append(cbManager.toXml(extraOffset+"   "));
       sb.append(offset).append("   <cbWorkerIsActive>").append(cbWorkerIsActive).append("</cbWorkerIsActive>");
       sb.append(offset).append("</MsgQueue>");
 
