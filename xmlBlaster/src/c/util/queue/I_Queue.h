@@ -146,5 +146,11 @@ Dll_Export extern I_Queue *createQueue(int argc, const char* const* argv, I_Queu
  */
 Dll_Export extern void freeQueue(I_Queue *queueP);
 
+extern Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr);
+extern Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr);
+extern Dll_Export void freeQueueEntryData(QueueEntry *queueEntry);
+extern Dll_Export void freeQueueEntry(QueueEntry *queueEntry);
+extern Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDumpLen);
+extern Dll_Export char *queueEntryToXml(QueueEntry *queueEntry);
 #endif /* I_QUEUE_I_Queue_h */
 
