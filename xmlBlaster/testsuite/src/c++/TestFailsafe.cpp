@@ -294,6 +294,7 @@ public:
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       Lock lock(updateMutex_);
+      if (log_.trace()) log_.trace(ME, "update: session: " + sessionId);
       if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());
       if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
