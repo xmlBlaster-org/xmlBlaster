@@ -36,36 +36,41 @@
             <th>Command</th>
             <th>Return</th>
             <th>Description</th>
+            <th>Implemented</th>
          </tr>
          <tr>
-            <td>get /node/?numNodes</td>
+            <td>get ?numNodes</td>
             <td><pre>
-/node/?numNodes=5
+/node/heron/?numNodes=5
             </pre></td>
             <td>The separator between the key and the value is '='
             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>get client/*/?uptime</td>
             <td><pre>
-/node/client/joe/?uptime=345600
-/node/client/jack/?uptime=19500
-/node/client/averell/?uptime=19500
+/node/heron/client/joe/?uptime=345600
+/node/heron/client/jack/?uptime=19500
+/node/heron/client/averell/?uptime=19500
             </pre></td>
             <td>The query matched three users, the lines are seperated by cr and lf
+            (Wildcards are currently not supported)
             </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>get /node/heron/?clientList</td>
+            <td>get ?clientList</td>
             <td><pre>
 /node/heron/?clientList=joe,jack,
    averell,william
             </pre></td>
             <td>The clientList is one attribute, containing the list of known clients
             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>get /node/heron/msg/?Hello</td>
+            <td>get msg/?Hello</td>
             <td>
                <pre><![CDATA[
 <xmlBlaster>
@@ -77,6 +82,30 @@
             </td>
             <td>The query returns exactly one message
             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>get msg/?__sys__UserList</td>
+            <td>
+               <pre><![CDATA[
+<xmlBlaster>
+  <key oid='__sys__UserList'>
+  <content>
+  joe
+  jack
+  averell
+  </content>
+  <qos>
+   <state id='OK'/>
+   <sender>admin</sender>
+   <rcvTimestamp nanos='1291'/>
+  </qos>
+</xmlBlaster>
+               ]]></pre>
+            </td>
+            <td>The query returns exactly one message
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
 
@@ -277,7 +306,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
