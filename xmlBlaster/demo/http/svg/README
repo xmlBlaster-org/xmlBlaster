@@ -18,3 +18,20 @@ document.svg0.getWindow().varName should work in both browsers.
 
 Access Javascript from HTML in SVG:
 window.document.embeds.embedName.getWindow().functionName()
+
+
+
+
+
+Mozilla http://www.mozilla.org/projects/svg/
+Bitflash http://www.bitflash.com/
+Apache Batik SVG browser http://xml.apache.org/batik/svgviewer.html
+CSIRO Pocket SVG Viewer http://www.cmis.csiro.au/sis/SVGpocket.htm
+IBM SVGView http://www.alphaworks.ibm.com/tech/svgview
+KDDI Labs JaMaPS http://www.jamaps.org/JaMaPS/English/JaMaPSindex.html
+Koala Jackaroo http://www-sop.inria.fr/koala/jackaroo/
+Gentlemedia http://www.gentlemedia.com/
+eSVG http://www.embedding.net/
+ZoomOn http://zoomon.com/
+
+
