@@ -47,6 +47,10 @@ public final class EraseQos
       this.queryQosData.setWantNotify(notify);
    }
 
+   public void setForceDestroy(boolean forceDestroy) {
+      this.queryQosData.setForceDestroy(forceDestroy);
+   }
+
    /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
