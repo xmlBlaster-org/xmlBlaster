@@ -62,7 +62,8 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      set CLASSPATH=%XMLBLASTER_HOME%/demo;%CLASSPATH%
      set CLASSPATH=%XMLBLASTER_HOME%/lib/omquery.jar;%CLASSPATH%
      set CLASSPATH=%XMLBLASTER_HOME%/lib/xtdash.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/xml.jar;%CLASSPATH%
+     set CLASSPATH=%XMLBLASTER_HOME%/lib/parser.jar;%CLASSPATH%
+     set CLASSPATH=%XMLBLASTER_HOME%/lib/jaxp.jar;%CLASSPATH%
      set CLASSPATH=%XMLBLASTER_HOME%/lib/servlet-2.0.jar;%CLASSPATH%
      set CLASSPATH=%XMLBLASTER_HOME%/lib/test.jar;%CLASSPATH%
      set CLASSPATH=%JacORB_LIB%/jacorb.jar;%CLASSPATH%
