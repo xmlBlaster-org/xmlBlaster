@@ -1295,8 +1295,7 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             //-----    Send message to every destination client
             for (int ii = 0; ii<destinationList.size(); ii++) {
                Destination destination = (Destination)destinationList.get(ii);
-               if (log.TRACE) log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
-               log.info(ME, "Delivering message to destination [" + destination.getDestination() + "]");
+               if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destination.getDestination() + "]");
 
                if (useCluster) {
                   if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
