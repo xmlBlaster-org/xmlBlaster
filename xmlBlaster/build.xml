@@ -2477,7 +2477,7 @@ TODO
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${build.src.c.dir}/socket" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util" includes="*.c"/>
-         <!-- fileset dir="${build.src.c.dir}/util/queue" includes="*.c"/ -->
+         <fileset dir="${build.src.c.dir}/util/queue" includes="*.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
 
          <includepath location="${build.src.c.dir}" />
 
@@ -2493,20 +2493,29 @@ TODO
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="PthreadDraftVersion" value="10" if="sun" />
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
          </defineset>
 
-         <linker name="gcc"  if="use-gcc" />
+         <linker name="gcc"  if="use-gcc">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         </linker>
 
-         <linker name="icc"  if="use-icc" />
+         <linker name="icc"  if="use-icc">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
            <syslibset libs="ws2_32" />
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
-         <linker name="bcc"  if="use-bcc" />
+         <linker name="bcc"  if="use-bcc">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         </linker>
 
          <linker name="CC"  if="use-CC">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
          </linker>
@@ -2568,6 +2577,7 @@ TODO
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
          </defineset>
 
          <linker name="gcc" if="use-gcc">
