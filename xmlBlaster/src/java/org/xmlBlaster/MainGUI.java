@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.49 2002/05/11 09:36:19 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.50 2002/06/10 22:43:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -713,7 +713,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          String loginName = glob.getProperty().get("__sys__GuiQuery.loginName", "__sys__GuiQuery");
          String passwd = glob.getProperty().get("__sys__GuiQuery.password", "secret");
          ConnectQos con = new ConnectQos(authenticate.getGlobal());
-         con.setSecurityPluginData("simple", "1.0", loginName, passwd);
+         con.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
          sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
          */
          unsecureSessionInfo = authenticate.unsecureCreateSession("__sys__GuiQuery");
