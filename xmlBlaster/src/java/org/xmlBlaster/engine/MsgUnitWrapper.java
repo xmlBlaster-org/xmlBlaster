@@ -50,7 +50,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 {
    private transient final String ME;
    private transient final Global glob;
-   private transient int referenceCounter;      // recalculate after swap from persistence
+   private transient int referenceCounter;      // is swapped to persistence as well
    private transient final long uniqueId;
    private transient final String uniqueIdStr;  // cache uniqueId as String
    private transient final StorageId storageId; // the unique cache name
@@ -84,7 +84,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, (String)null);
+      this(glob, msgUnit, storageId, 0, (String)null);
+   }
+
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter) throws XmlBlasterException {
+      this(glob, msgUnit, storageId, referenceCounter, (String)null);
    }
 
    /**
@@ -93,13 +97,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     *         ServerEntryFactory.ENTRY_TYPE_MSG_XML Dump strings as XML ASCII (which is smaller, faster, portable -> and therefor default)<br />
     *         ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL Dump object with java.io.Serializable
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, String embeddedType) throws XmlBlasterException {
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter, String embeddedType) throws XmlBlasterException {
       this.glob = glob;
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
       }
       this.msgUnit = msgUnit;
       this.storageId = storageId;
+      this.referenceCounter = referenceCounter;
       this.embeddedType = (embeddedType == null) ? ServerEntryFactory.ENTRY_TYPE_MSG_XML : embeddedType;
       //this.uniqueId = getKeyOid()+getMsgQosData().getRcvTimestamp();
       if (getMsgQosData().getRcvTimestamp() == null) {
@@ -224,16 +229,16 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 
    /**
     * The embedded object. 
-    * Object[] = { this.msgUnit }  or<br />
+    * Object[] = { this.msgUnit, new Integer(this.referenceCounter) }  or<br />
     * qos.toXml, key.toXml, contentBytes
     */
    public Object getEmbeddedObject() {
       if (this.embeddedType.equals(ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL)) {
-         Object[] obj = { this.msgUnit };
+         Object[] obj = { this.msgUnit, new Integer(this.referenceCounter) };
          return obj;
       }
       else {
-         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(), this.msgUnit.getContent() };
+         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(), this.msgUnit.getContent(), new Integer(this.referenceCounter) };
          return obj;
       }
    }
