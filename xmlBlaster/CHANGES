@@ -18,7 +18,8 @@ Changes for 0.xxx [xxxx-xx-xx] (cvs only)
    Please use new xmlBlaster.properties.template
 
  o Protected core authentication against unwanted access by
-   plugin developers and native client developers
+   plugin developers and native client developers, see
+   AuthenticateProtector.java, SubjectInfoProtector.java, SessionInfoProtector.java
 
  o Bugfix for queue plugin configuration transport in QoS, e.g.
      -queue/connection/defaultPlugin RAM,1.0
