@@ -18,6 +18,9 @@ BUGS:
 
 
 DONE:
+  - Incompatible change of ConnectQos:
+    - The constructor expects now a Global instance as the
+      first argument (you can pass null).
 
   - Incompatible change of command line options:
     -client.failSave.retryInterval   ->  -delay
