@@ -12,7 +12,7 @@ Compile it (make all) and start it like that:
 
     whereat the argument for key is a XPATH expression of your subscription.
 
- 2. java javaclients.SimpleReaderGui
+ 2. java javaclients.simplereader.SimpleReaderGui
     
     opens a little SwingUI.
 
