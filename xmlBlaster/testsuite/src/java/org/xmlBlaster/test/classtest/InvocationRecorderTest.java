@@ -16,9 +16,9 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.client.qos.PublishQos;
 
@@ -49,11 +49,11 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    /*
-   public void testMessageUnitWrapper() {
+   public void testMsgUnitWrapper() {
       try {
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
-         MessageUnit msgUnit = new MessageUnit("<key oid='aaaa'/>", "Hi".getBytes(), "<qos/>");
-         MessageUnitWrapper wr = new MessageUnitWrapper(global, global.getRequestBroker(),
+         MsgUnit msgUnit = new MsgUnit("<key oid='aaaa'/>", "Hi".getBytes(), "<qos/>");
+         MsgUnitWrapper wr = new MsgUnitWrapper(global, global.getRequestBroker(),
                                                      new XmlKey(glob, msgUnit.getKey(), true),
                                                      msgUnit,
                                                      new PublishQos(glob, msgUnit.getQos())); 
@@ -76,7 +76,7 @@ public class InvocationRecorderTest extends TestCase {
          Tester tester = new Tester();
 
          long maxEntries = 1000L;
-         recorder.initialize(glob, "test.txt", maxEntries, tester, tester);
+         recorder.initialize(glob, "test.txt", maxEntries, tester); //, tester);
 
          {
             MethodName methodName = MethodName.SUBSCRIBE;
@@ -122,7 +122,7 @@ public class InvocationRecorderTest extends TestCase {
             log.info(ME, "Testing '" + methodName + "' ...");
             stopWatch = new StopWatch();
             for (int ii=0; ii<maxEntries; ii++) {
-               MessageUnit msgUnit = new MessageUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
+               MsgUnit msgUnit = new MsgUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
                recorder.publish(msgUnit);
             }
             recorder.pullback(0, 0, 0);
@@ -136,9 +136,9 @@ public class InvocationRecorderTest extends TestCase {
             log.info(ME, "Testing '" + methodName + "' ...");
             stopWatch = new StopWatch();
             for (int ii=0; ii<maxEntries; ii++) {
-               MessageUnit[] msgs = new MessageUnit[2];
-               msgs[0] = new MessageUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
-               msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
+               MsgUnit[] msgs = new MsgUnit[2];
+               msgs[0] = new MsgUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
+               msgs[1] = new MsgUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                recorder.publishOneway(msgs);
             }
             recorder.pullback(0, 0, 0);
@@ -152,9 +152,9 @@ public class InvocationRecorderTest extends TestCase {
             log.info(ME, "Testing '" + methodName + "' ...");
             stopWatch = new StopWatch();
             for (int ii=0; ii<maxEntries; ii++) {
-               MessageUnit[] msgs = new MessageUnit[2];
-               msgs[0] = new MessageUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
-               msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
+               MsgUnit[] msgs = new MsgUnit[2];
+               msgs[0] = new MsgUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
+               msgs[1] = new MsgUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                recorder.publishArr(msgs);
             }
             recorder.pullback(0, 0, 0);
@@ -176,14 +176,15 @@ public class InvocationRecorderTest extends TestCase {
             numErase = 0;
          }
 
+         /*
          {
             MethodName methodName = MethodName.UPDATE;
             log.info(ME, "Testing '" + methodName + "' ...");
             stopWatch = new StopWatch();
             for (int ii=0; ii<maxEntries; ii++) {
-               MessageUnit[] msgs = new MessageUnit[2];
-               msgs[0] = new MessageUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
-               msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
+               MsgUnit[] msgs = new MsgUnit[2];
+               msgs[0] = new MsgUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
+               msgs[1] = new MsgUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                recorder.update("dummy", msgs);
             }
             recorder.pullback(0, 0, 0);
@@ -197,9 +198,9 @@ public class InvocationRecorderTest extends TestCase {
             log.info(ME, "Testing '" + methodName + "' ...");
             stopWatch = new StopWatch();
             for (int ii=0; ii<maxEntries; ii++) {
-               MessageUnit[] msgs = new MessageUnit[2];
-               msgs[0] = new MessageUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
-               msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
+               MsgUnit[] msgs = new MsgUnit[2];
+               msgs[0] = new MsgUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
+               msgs[1] = new MsgUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                recorder.updateOneway("dummy", msgs);
             }
             recorder.pullback(0, 0, 0);
@@ -207,6 +208,7 @@ public class InvocationRecorderTest extends TestCase {
             assertEquals("Wrong number of "+methodName, maxEntries, numUpdateOneway);
             numUpdateOneway = 0;
          }
+         */
 
          //assertEquals("XPath is different", xmlKey.getQueryString(), xpath);
          System.out.println("***InvocationRecorderTest: testPlayback [SUCCESS]");
@@ -232,13 +234,13 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, "testOverflow.txt", maxQueueSize, tester, tester);
+         recorder.initialize(glob, "testOverflow.txt", maxQueueSize, tester); //, tester);
 
          {
             MethodName methodName = MethodName.PUBLISH;
             log.info(ME, "Testing '" + methodName + "' ...");
             for (int ii=0; ii<maxInvoke; ii++) {
-               MessageUnit msgUnit = new MessageUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
+               MsgUnit msgUnit = new MsgUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
                try {
                   log.info(ME, "Publish ii=" + ii);
                   recorder.publish(msgUnit);
@@ -263,9 +265,9 @@ public class InvocationRecorderTest extends TestCase {
             MethodName methodName = MethodName.PUBLISH; // PUBLISH_ARR;
             log.info(ME, "Testing '" + methodName + "' ...");
             for (int ii=0; ii<maxInvoke; ii++) {
-               MessageUnit[] msgs = new MessageUnit[2];
-               msgs[0] = new MessageUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
-               msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
+               MsgUnit[] msgs = new MsgUnit[2];
+               msgs[0] = new MsgUnit("<key oid='"+methodName+"'/>", "Ha-"+ii, "<qos/>");
+               msgs[1] = new MsgUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                try {
                   recorder.publishArr(msgs);
                   if (ii >= maxQueueSize)
@@ -311,14 +313,14 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, (String)null, maxQueueSize, tester, tester);
+         recorder.initialize(glob, (String)null, maxQueueSize, tester); //, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARDOLDEST);
 
          {
             MethodName methodName = MethodName.PUBLISH;
             log.info(ME, "Testing '" + methodName + "' ...");
             for (int ii=0; ii<maxInvoke; ii++) {
-               MessageUnit msgUnit = new MessageUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
+               MsgUnit msgUnit = new MsgUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
                try {
                   recorder.publish(msgUnit);
                }
@@ -356,14 +358,14 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, (String)null, maxQueueSize, tester, tester);
+         recorder.initialize(glob, (String)null, maxQueueSize, tester); //, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARD);
 
          {
             MethodName methodName = MethodName.PUBLISH;
             log.info(ME, "Testing '" + methodName + "' ...");
             for (int ii=0; ii<maxInvoke; ii++) {
-               MessageUnit msgUnit = new MessageUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
+               MsgUnit msgUnit = new MsgUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
                try {
                   recorder.publish(msgUnit);
                }
@@ -390,7 +392,7 @@ public class InvocationRecorderTest extends TestCase {
    /**
     * This plays the role of a user of the recoder
     */
-   class Tester implements I_XmlBlaster, I_CallbackRaw
+   class Tester implements I_XmlBlaster//, I_CallbackRaw
    {
       public SubscribeReturnQos subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
          assertEquals("Wrong message key", "<key oid='subscribe'/>", xmlKey);
@@ -399,11 +401,11 @@ public class InvocationRecorderTest extends TestCase {
          return null;
       }
       
-      public org.xmlBlaster.engine.helper.MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
+      public org.xmlBlaster.util.MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
          assertEquals("Wrong message key", "<key oid='get'/>", xmlKey);
          assertEquals("Wrong message qos", "<qos/>", qos);
          numGet++;
-         return new org.xmlBlaster.engine.helper.MessageUnit[0];
+         return new org.xmlBlaster.util.MsgUnit[0];
       }
       
       public UnSubscribeReturnQos[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
@@ -413,8 +415,9 @@ public class InvocationRecorderTest extends TestCase {
          return null;
       }
       
-      public PublishReturnQos publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException {
-         assertEquals("Wrong message key", "<key oid='publish'/>", msgUnit.getKey());
+      public PublishReturnQos publish(org.xmlBlaster.util.MsgUnit msgUnit) throws XmlBlasterException {
+         //log.error(ME, "Received '" + msgUnit.getKey().trim() + "' from\n" + msgUnit.toXml() );
+         assertEquals("Wrong message key", "<key oid='publish'/>", msgUnit.getKey().trim());
          if (testDiscardOldest)
             assertEquals("Wrong message content", "Ho-"+(numPublish+2), msgUnit.getContentStr());
          else
@@ -424,28 +427,29 @@ public class InvocationRecorderTest extends TestCase {
          return null;
       }
       
-      public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) {
+      public void publishOneway(org.xmlBlaster.util.MsgUnit[] msgUnitArr) {
          assertEquals("Wrong message array length", 2, msgUnitArr.length);
 
-         assertEquals("Wrong message key", "<key oid='publishOneway'/>", msgUnitArr[0].getKey());
+         assertEquals("Wrong message key", "<key oid='publishOneway'/>", msgUnitArr[0].getKey().trim());
          assertEquals("Wrong message content", "Ha-"+numPublishOneway, msgUnitArr[0].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[0].getQos());
 
-         assertEquals("Wrong message key", "<key oid='publishOneway'/>", msgUnitArr[1].getKey());
+         assertEquals("Wrong message key", "<key oid='publishOneway'/>", msgUnitArr[1].getKey().trim());
          assertEquals("Wrong message content", "Hu-"+numPublishOneway, msgUnitArr[1].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[1].getQos());
 
          numPublishOneway++;
       }
 
-      public PublishReturnQos[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {
+      public PublishReturnQos[] publishArr(org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException {
          assertEquals("Wrong message array length", 2, msgUnitArr.length);
 
-         assertEquals("Wrong message key", "<key oid='"+ MethodName.PUBLISH + "'/>", msgUnitArr[0].getKey()); // PUBLISH_ARR
+         //log.error(ME, "Received '" + msgUnitArr[0].getKey().trim() + "' from\n" + msgUnitArr[0].toXml() );
+         assertEquals("Wrong message key", "<key oid='"+ MethodName.PUBLISH + "'/>", msgUnitArr[0].getKey().trim()); // PUBLISH_ARR
          assertEquals("Wrong message content", "Ha-"+numPublishArr, msgUnitArr[0].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[0].getQos());
 
-         assertEquals("Wrong message key", "<key oid='"+ MethodName.PUBLISH + "'/>", msgUnitArr[1].getKey());  // PUBLISH_ARR
+         assertEquals("Wrong message key", "<key oid='"+ MethodName.PUBLISH + "'/>", msgUnitArr[1].getKey().trim());  // PUBLISH_ARR
          assertEquals("Wrong message content", "Hu-"+numPublishArr, msgUnitArr[1].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[1].getQos());
 
@@ -461,15 +465,16 @@ public class InvocationRecorderTest extends TestCase {
          return new EraseReturnQos[0];
       }
 
-      public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {
+      /*
+      public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException {
          assertEquals("Wrong message array length", 2, msgUnitArr.length);
          assertEquals("Wrong cbSessionId", "dummy", cbSessionId);
 
-         assertEquals("Wrong message key", "<key oid='update'/>", msgUnitArr[0].getKey());
+         assertEquals("Wrong message key", "<key oid='update'/>", msgUnitArr[0].getKey().trim());
          assertEquals("Wrong message content", "Ha-"+numUpdate, msgUnitArr[0].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[0].getQos());
 
-         assertEquals("Wrong message key", "<key oid='update'/>", msgUnitArr[1].getKey());
+         assertEquals("Wrong message key", "<key oid='update'/>", msgUnitArr[1].getKey().trim());
          assertEquals("Wrong message content", "Hu-"+numUpdate, msgUnitArr[1].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[1].getQos());
 
@@ -477,20 +482,21 @@ public class InvocationRecorderTest extends TestCase {
          return new String[0];
       }
       
-      public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) {
+      public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr) {
          assertEquals("Wrong message array length", 2, msgUnitArr.length);
          assertEquals("Wrong cbSessionId", "dummy", cbSessionId);
 
-         assertEquals("Wrong message key", "<key oid='updateOneway'/>", msgUnitArr[0].getKey());
+         assertEquals("Wrong message key", "<key oid='updateOneway'/>", msgUnitArr[0].getKey().trim());
          assertEquals("Wrong message content", "Ha-"+numUpdateOneway, msgUnitArr[0].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[0].getQos());
 
-         assertEquals("Wrong message key", "<key oid='updateOneway'/>", msgUnitArr[1].getKey());
+         assertEquals("Wrong message key", "<key oid='updateOneway'/>", msgUnitArr[1].getKey().trim());
          assertEquals("Wrong message content", "Hu-"+numUpdateOneway, msgUnitArr[1].getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[1].getQos());
 
          numUpdateOneway++;
       }
+      */
    }
 
    protected void tearDown() {
