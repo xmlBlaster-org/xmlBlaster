@@ -114,7 +114,7 @@ have a content shorter then 8 kBytes.
    <configuration where="server">
       <p>
       For coding and configuration of plugins please read the
-      requirement mime.plugin.a.howto (see link below)
+      requirement mime.plugin.access.howto (see link below)
       </p>
    </configuration>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
@@ -122,9 +122,10 @@ have a content shorter then 8 kBytes.
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">util.property.env</see>
+   <see type="REQ">mime.plugin.publishfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

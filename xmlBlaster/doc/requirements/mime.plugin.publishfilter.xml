@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='mime.plugin.publishfilter' type='NEW' prio='HIGH' status='INWORK'>
+   <topic>XmlBlaster has a MIME based plugin interface to filter, check or manipulate published messages</topic>
+   <description>
+      <p>
+      XmlBlaster allows you to publish messages.
+      Sometimes you may need to check messages before you accept them. Another use case
+      could be that you want to manipulate message contents when they arrive at xmlBlaster.
+      </p>
+      <p>
+      These are use cases where you may want to write a little plugin, allowing to
+      intercept messages when they are published to xmlBlaster.
+      With such a plugin you are able to add some business logic natively to the otherwise generic
+      xmlBlaster core.
+      </p>
+      <img src="mimePublishFilter.gif" border="0" title="XmlBlaster publish MIME plugin example" alt="Example how to use the publish MIME plugin" />
+      <p>
+      As a plugin coder, you have to implement two interfaces
+      <ul>
+         <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
+         <li>I_PublishFilter: Which forces you to implement the intercept() method</li>
+      </ul>
+      This is simple and straight forward (see requirement mime.plugin.publishfilter.howto).
+      </p>
+      <p>
+      Filter Features:
+      </p>
+      <ul>
+      <li>MIME based plugin selection<br />
+      The plugin you code has to supply MIME types which it can handle. Only messages of this
+      mime type are directed to the plugin. The mime type "*" registers the plugin for
+      all message MIME types.
+      </li>
+      <li>The filter intercepts published messages<br />
+      When a client invokes publish() to send a message to xmlBlaster, the message
+      calls the appropriate plugin when it arrives in the server.
+      This happens before xmlBlaster stores or processes it.
+      </li>
+      <li>Allowed actions with a message<br />
+      You may do following actions with the new message:
+      <ol>
+         <li>Accept the message<br />
+            Return values null, "" or "OK" accept the message</li>
+         <li>Reject the message<br />
+            All other returned strings will reject the message and send
+            the given string back to the publisher. For example a return value
+            like "REJECTED" will be delivered as "&lt;qos>&lt;state>REJECTED&lt;/state>&lt;/qos>"
+            to the publisher, which is the return value of the publish() invocation.</li>
+         <li>Modify the message<br />
+            The plugin may manipulate the content of the message if desired,
+            delivering changed content to xmlBlaster. Changing of the key or qos is not allowed,
+            as the problems which may ocure are not analyzed yet.</li>
+      </ol>
+      </li>
+      <li>Multiple filters per subscription<br />
+      Multiple filter plugins can be specified for each published message.
+      They are sequentially executed and if
+      one filter rejects (the intercept() method returns no "" or "OK") the message
+      is not accepted. The filters are logically AND connected.
+      </li>
+      </ul>
+      <p>
+      </p>
+   </description>
+   <example lang="Java">
+<![CDATA[
+
+These is an example publish() method invocation:
+================================================
+
+   <key oid='LongMessage'/>
+   content="veeerrrrrylongcooontenttttttt"
+   <qos/>
+
+As the message is too long for our plugin, the plugin.intercept() method
+returns "TOOLONG".
+xmlBlaster rejects the messages and returns for this publish()
+
+   <qos><state>TOOLONG</state><qos>
+
+If you return strings containing '<' characters, please
+embrace your return value with a CDATA section.
+]]>
+   </example>
+   <configuration where="server">
+      <p>
+      For coding and configuration of plugins please read the
+      requirement mime.plugin.publishfilter.howto (see link below)
+      </p>
+   </configuration>
+   <see type="API">org.xmlBlaster.engine.mime.I_PublishFilter</see>
+   <see type="API">org.xmlBlaster.engine.mime.demo.PublishLenFilter</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="REQ">mime.plugin.publishfilter.howto</see>
+   <see type="REQ">util.property.env</see>
+   <see type="REQ">mime.plugin.accessfilter</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 03 14</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPublishFilter</test>
+   </testcase>
+</requirement>
+
