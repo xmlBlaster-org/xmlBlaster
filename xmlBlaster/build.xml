@@ -99,10 +99,10 @@ Else add it manually.
   <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar"/>
 
   <property name="src.cpp.dir" value="./src/c++"/>
-  <property name="MICO_HOME" value="/opt/local/mico"/>
-  <property name="MICO_VER" value="2.3.5"/>
-  <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src1_6_0"/>
+  <property name="CORBACPP_VER" value="2.3.6"/>
+  <property name="CORBACPP_HOME" value="/opt/local/mico"/>
   <property name="XMLCPP_VER" value="1_6_0"/>
+  <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -298,6 +298,7 @@ Else add it manually.
   <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
   <!-- =================================================================== -->
   <target name="deploy_war">
+     <echo message="Please run 'build.sh all' before if you have changed some code"/>
      <mkdir dir="${build.war}"/>
      <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
      <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
@@ -422,12 +423,12 @@ Else add it manually.
      <!-- A typical idl CORBA compile:
        /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
      -->
-     <exec dir="${src.cpp.dir}/generated" executable="${MICO_HOME}/bin/idl" os="Linux">
+     <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl" os="Linux">
         <arg line="--poa"/>
         <arg line="--c++-suffix cpp"/>
         <arg line="../../../${idl.dir}/xmlBlaster.idl"/>
      </exec>
-     <!-- exec dir="${src}" executable="${MICO_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+     <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
 
 
      <!-- A typical compile:
@@ -448,7 +449,7 @@ Else add it manually.
         <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
         <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
         <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${MICO_HOME}/include" />
+        <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
         <defineset>
            <define name="MICO" value="1" />
@@ -469,14 +470,14 @@ Else add it manually.
          objdir="build/obj">
         <fileset dir="${testsuite.dir}/c++" includes="TestGet.cpp"/>
         <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${MICO_HOME}/include" />
+        <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
         <defineset>
            <define name="MICO" value="1" />
         </defineset>
         <libset>
            <libs>????</libs>
-            <fileset dir="${MICO_HOME}/lib" includes="*mico${MICO_VER}.*" />
+            <fileset dir="${CORBACPP_HOME}/lib" includes="*mico${CORBACPP_VER}.*" />
         </libset>
         <compilerarg value="-Wall" />
         <compilerarg value="-Wstrict-prototypes" />
