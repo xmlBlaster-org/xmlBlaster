@@ -34,7 +34,7 @@
                // Response to servlet that we are alive ...
                Log.warning("Received ping '" + state + "', sending pong back to servlet");
                // Sending the state is for debugging only (or for proxies to let it through?)
-               //self.frames["pingFrame"].location.reload(true);
+               self.frames["pingFrame"].location.reload(true);
                // self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
                self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
