@@ -10,27 +10,27 @@
 
     <h3>JBoss</h3>
     <p>Since it has only been tested on JBoss, we describe only features in the context of a JBoss install.</p>
-    <p>The mbean is - ironically - distrubuted in a J2EE ear archive. This is because the 3.0 classloading in JBoss only has scoped classloading for ear:s. This will change in the future.</p>
-    <p>To install the server, copy the ear file to the deploy directoy of JBoss, e.g. <code>lib/xmlBlaster-sar.ear ../jboss-3.0.3RC1/server/default/deploy/</code>. You must however do some more things:</p>
+    <p>The mbean is distrubuted in a JBoss service archive. To install the server, copy the xmlBlaster.sar file to the deploy directoy of JBoss, e.g. <code>lib/xmlBlaster.sar server/default/deploy/</code>. You must however do some more things:</p>
     <ul>
      <li>JBoss uses an older version of concurrent.jar, therefore the concurrent.jar in xmlBlaster must be copyed over the JBoss version in the top lin directory of the JBoss distribution.</li>
      <li>If using an RMIDriver, a SecurityManager must be installed. For this to work a java.security.policy file must be specifyed when starting JBoss, eg, <code>sh run.sh -Djava.security.policy=../server/default/conf/server.policy</code></li>
-     <li>It is not possible to manipulate the runlevels in XmlBlaster to a halt or stop, since that will invoke System.exit which will take down the whole JBoss server to.</li>
-     <li>It is currently no possible to "hot-redeploy" the XmlBlaster ear by copying a new version over the old because XmlBlaster does not close all its open sockes before it returns controll to the closing thread, which means it will not be possible to restart all the drivers.</li>
    </ul>
    </description>
    <configuration>
     <p>Configuration of the server (for JBoss) is possible to do in two places:</p>
     <ul>
-     <li>In the jboss-service.xml embedded in the sar-file (in the ear-file).</li>
+     <li>In the jboss-service.xml embedded in the sar-file.</li>
      <li>In a xmlBlaster.properties file</li>
     </ul>
-   <p>There is only a small subset of all possible configurations you may set in the jboss-service.xml. The most important is the PropertyFileName attribute. It is <b>important</b> to note that the loading of the property file does not follow normal xmlBlaster conventions: first, the propert file name specifyed is first looked up in the current context class loader. Only if it is not found there will it be searched the normal way. Second: the property file has the last say, it will overwrite any system properties or attributes set in the jboss-service.xml file.</p>
-   <p>It is also important to note that many of the default values in XmlBlaster is not possible to use with JBoss, since the reaources are already in use in JBposs. The XmlBlaster ear file contains a default xmlBlaster.properties file which contains non standard XmlBlaster values for some importand properties. To chane these open the ear, and then the sar and edit either the embeddes xmlBlaster.properties or specify a new PropertyFileName in jboss-service.xml.</p>
+   <p>There is only a small subset of all possible configurations you may set in the jboss-service.xml. The most important is the PropertyFileName attribute. It is <b>important</b> to note that the loading of the property file does not follow normal xmlBlaster conventions: first, the property file name specifyed is first looked up in the current context class loader. Only if it is not found there will it be searched the normal way. Second: the property file has the last say, it will overwrite any system properties or attributes set in the jboss-service.xml file. This embedded version does also not use the standard xmlBlasterPlugins.xml, but a striped one. If you want to ad drivers to your configuration, you must edit the one embedded in xmlBlaster.sar.</p>
+   <p>It is also important to note that many of the default values in XmlBlaster is not possible to use with JBoss, since the resources are already in use in JBoss. The XmlBlaster sar file contains a default xmlBlaster.properties file which contains non standard XmlBlaster values for some importand properties. To chane these open the sar and edit either the embedded xmlBlaster.properties or specify a new PropertyFileName in jboss-service.xml.</p>
+    <p>In the default configuration all persistence is turned of beacuse of
+      incompatibilities with the XmlBlaster requirements on HSQLDB and the
+      version in JBoss 3.0.</p>
    </configuration>
    <see type="LOCAL">../../src/java/org/xmlBlaster/j2ee/jmx</see>
    <see>org.xmlBlaster.j2ee.jmx.XmlBlasterService</see>
    <author>pra@tim.se</author>
-   <date>2002 09 19</date>
-   <revision>$Revision: 1.1 $</revision>
+   <date>2003 09 08</date>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>

@@ -12,7 +12,7 @@
     <p>The adapter is distributed in the archive xmlBlasterK2.rar. This is the archive you should deploy in your J2EE server. You may edit the ra.xml inside it if you want to configure it, or use the vendor specific way of doing it. </p>
 
     <h3>JBoss</h3>
-    <p>To install it in JBoss 3.0 you should copy xmlBlasterK2.rar into the deployment directory. You also have to create a *-service.xml file. There is an example of this in the source distribution, see further down.</p>
+    <p>To install it in JBoss 3.0 you should copy xmlBlasterK2.rar into the deployment directory. You also have to create a *-service.xml file. There is an example of this in the source distribution, see further down. The default will build the resource adapter without including xmlBlaster.jar in the archive, beacuse of JBoss problematic classloading behaviour. Change in build.xml if you need it embedded or place in JBoss global classpath.</p>
    </description>
    <example lang="XML" type="HTML">
     <p>To use the resource adapter from a bean you need to configure it in the deployment descriptors. In ejb-jar.xml you need to add something like this:</p>
@@ -42,5 +42,5 @@
    <see type="LOCAL">../../demo/javaclients/j2ee/k2</see>
    <author>pra@tim.se</author>
    <date>2002 09 16</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
