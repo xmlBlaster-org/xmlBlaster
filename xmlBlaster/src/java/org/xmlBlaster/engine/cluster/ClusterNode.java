@@ -19,7 +19,7 @@ import java.util.Iterator;
  * <p />
  * It collects the node informations from NodeInfo.java, NodeDomainInfo.java and NodeStateInfo.java
  */
-public final class ClusterNode
+public final class ClusterNode implements java.lang.Comparable
 {
    private final String ME;
    private final Global glob;
@@ -147,6 +147,14 @@ public final class ClusterNode
     */
    public void setAvailable(boolean available) {
       this.available = available;
+   }
+
+   /**
+    * Needed for TreeSet and MapSet, implements Comparable. 
+    */
+   public int compareTo(Object obj)  {
+      ClusterNode n = (ClusterNode)obj;
+      return getId().compareTo(n.getId());
    }
 
    /**

@@ -13,8 +13,11 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.cluster.I_LoadBalancer;
 import org.xmlBlaster.engine.cluster.NodeInfo;
+import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
+import java.util.Set;
+import java.util.Iterator;
 
 /**
  * Implements dummy load balancing for xmlBlaster using round robin approach. 
@@ -26,6 +29,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
    private final String ME = "RoundRobin";
    private Global glob;
    private Log log;
+   private int counter = 0;
 
    /**
     * This is called after instantiation of the plugin 
@@ -87,8 +91,36 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       return "RoundRobin";
    }
 
-   public XmlBlasterConnection getConnection(NodeInfo[] nodeInfoArr) throws XmlBlasterException {
-      Log.error(ME, "getConnection not implemented");
-      return null;
+   /**
+    * We determine which xmlBlaster node to choose with a simple counter. 
+    * <p />
+    * @param clusterNodeSet A set containing ClusterNode objects, the possible xmlBlaster nodes.
+    *                       Is never null, but may have a size of 0.
+    * @return The chosen clusterNode to handle the message or null
+    */
+   public synchronized ClusterNode getClusterNode(Set clusterNodeSet) throws XmlBlasterException {
+      if (clusterNodeSet.size() == 0) {
+         log.warn(ME, "Empty clusterNodeSet, using local node");
+         return glob.getClusterManager().getMyClusterNode(); // handle locally
+      }
+
+      if (counter >= clusterNodeSet.size()) // counter is our RoundRobin approach
+         counter = 0;
+
+      Iterator it = clusterNodeSet.iterator();
+      int ii=0;
+      while (it.hasNext()) {
+         Object obj = it.next();
+         if (ii == counter) {
+            ClusterNode clusterNode = (ClusterNode)obj;
+            log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + clusterNodeSet.size() + " nodes");
+            counter++;
+            return clusterNode;
+         }
+         ii++;
+      }
+
+      log.warn(ME, "Can't find master, using local node");
+      return glob.getClusterManager().getMyClusterNode(); // handle locally
    }
 }

@@ -19,6 +19,8 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector;
@@ -43,9 +45,7 @@ public final class ClusterManager
 
    private final MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
    private final LoadBalancerPluginManager loadBalancerPluginManager;
-
-   public final String pluginDomainMapperType;
-   public final String pluginDomainMapperVersion;
+   private final I_LoadBalancer loadBalancer;
 
    public final String pluginLoadBalancerType;
    public final String pluginLoadBalancerVersion;
@@ -60,13 +60,19 @@ public final class ClusterManager
       this.glob = glob;
       this.log = this.glob.getLog();
 
-      this.pluginDomainMapperType = this.glob.getProperty().get("cluster.domainMapper.type", "DomainToMaster");
-      this.pluginDomainMapperVersion = this.glob.getProperty().get("cluster.domainMapper.version", "1.0");
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
+      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
+      loadBalancer = loadBalancerPluginManager.getPlugin(
+                this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
+      if (loadBalancer == null) {
+         String tmp = "No load balancer plugin type='" + this.pluginLoadBalancerType + "' version='" + this.pluginLoadBalancerVersion + "' found, clustering switched off";
+         Log.error(ME, tmp);
+         throw new XmlBlasterException(ME, tmp);
+      }
+
       this.clusterNodeMap = new HashMap();
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob, this);
-      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
 
       if (this.glob.getNodeId() == null)
          this.log.error(ME, "Node ID is still unknown");
@@ -79,7 +85,7 @@ public final class ClusterManager
          Map nodeMap = glob.getProperty().get(env[ii], (Map)null);
          if (nodeMap != null) {
             Iterator iter = nodeMap.keySet().iterator();
-            log.info(ME, "Found -" + env[ii] + " with " + nodeMap.size() + " array size, ii=" + ii);
+            if (log.TRACE) log.trace(ME, "Found -" + env[ii] + " with " + nodeMap.size() + " array size, ii=" + ii);
             while (iter.hasNext()) {
                String nodeIdName = (String)iter.next();       // e.g. "heron" from "cluster.node.master[heron]=..."
                String xml = (String)nodeMap.get(nodeIdName);  // The "<clusternode>..." xml ASCII string for heron
@@ -133,6 +139,13 @@ public final class ClusterManager
          log.info(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
       else
          log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster address available");
+   }
+
+   /**
+    * Return myself
+    */
+   public ClusterNode getMyClusterNode() {
+      return this.myClusterNode;
    }
 
    /**
@@ -237,45 +250,64 @@ public final class ClusterManager
    }
 
    /**
-    * @return null if plugins not found
+    * Get connection to the master node (or a node at a closer stratum to the master). 
+    * @return null if local node
     */
    public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + ")");
 
-      I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
-                         this.pluginDomainMapperType, this.pluginDomainMapperVersion, // "DomainToMaster", "1.0"
-                         msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
-      if (domainMapper == null) {
-         Log.warn(ME, "No domain mapping plugin found, clustering switched off");
+      // Search all other cluster nodes to find the masters of this message ...
+
+      Set masterSet = new TreeSet(); // Contains the ClusterNode objects which match this message
+
+      Iterator it = getClusterNodeMap().values().iterator();
+      // for each cluster node ...
+      while (it.hasNext()) {
+         ClusterNode clusterNode = (ClusterNode)it.next();
+         Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
+
+         // for each domain mapping rule ...
+         while (domains.hasNext()) {
+            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)domains.next();
+            I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
+                               nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
+                               msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
+            if (domainMapper == null) {
+               Log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() + "' found, ignoring rule '" + nodeDomainInfo.getQuery() +
+                            "' for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() + "'");
+               continue;
+            }
+
+            // Now invoke the plugin to find out who is the master ...
+            ClusterNode master = domainMapper.getMasterId(nodeDomainInfo, msgWrapper);
+            if (master != null) {
+               masterSet.add(master);
+               break; // found one
+            }
+         }
+      }
+
+      if (masterSet.size() < 1) {
+         Log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         return null;
+      }
+      if (masterSet.size() > 1) {
+         Log.info(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+      }
+
+      ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet);
+
+      if (clusterNode == null) {
+         log.error(ME, "Message '" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'" +
+                   "has no master, message is lost (implementation to handle this case is missing)!");
          return null;
       }
 
-      NodeId nodeId = domainMapper.getMasterId(msgWrapper);
-      ClusterNode clusterNode = getClusterNode(nodeId);
+      log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
+               + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
 
-      if (clusterNode.isLocalNode()) {
-         log.info(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is at master");
-         return null;
-      }
-
-      log.info(ME, "Found node '" + nodeId.getId() + "' which maps to message oid='"
-               + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() +
-               "', looking for master connection ...");
-
-      I_LoadBalancer balancer = loadBalancerPluginManager.getPlugin(
-                this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
-      if (balancer == null) {
-         Log.warn(ME, "No load balancer plugin found, clustering switched off");
-         return null;
-      }
-
-      /* !!!
-      XmlBlasterConnection con = balancer.getConnection(clusterNode);
-      XmlBlasterConnection con = (XmlBlasterConnection)connectionMap.get(nodeId.getId());
-      if (con != null)
-         return con;
-      */
-      return null;
+      return clusterNode.getXmlBlasterConnection();
    }
 
    public final XmlBlasterConnection getConnection(NodeId nodeId) {

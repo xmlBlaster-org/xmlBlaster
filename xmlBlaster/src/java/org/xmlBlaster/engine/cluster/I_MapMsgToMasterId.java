@@ -52,8 +52,9 @@ public interface I_MapMsgToMasterId
     * Find out who is the master of the provided message. 
     * <p />
     * Here you code your clustering logic.
+    * @param nodeDomainInfo The mapping rule to find the master
     * @param msgWrapper The message
     * @return The node id which is master of the message, you should always return a valid node id
     */
-   public NodeId getMasterId(MessageUnitWrapper msgWrapper) throws XmlBlasterException;
+   public ClusterNode getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException;
 }

@@ -17,7 +17,6 @@ import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
-import org.xmlBlaster.engine.cluster.NodeId;
 
 import java.util.Iterator;
 
@@ -46,7 +45,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       this.glob = glob;
       this.log = glob.getLog();
       this.clusterManager = clusterManager;
-      log.info(ME, "Mapper is initialized");
+      log.info(ME, "The simple domain based master mapper plugin is initialized");
    }
 
    /**
@@ -128,42 +127,36 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    /**
     * Find out who is the master of the provided message. 
     * @param msgWrapper The message
-    * @return The node id which is master of the message, you should always return a valid node id
+    * @return The node which is master of the message, you should always return a valid ClusterNode
     */
-   public NodeId getMasterId(MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+   public ClusterNode getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
 
-      if (msgWrapper.getXmlKey().isDefaultDomain()) {
-         return glob.getNodeId(); // the local node is the master
+      if (msgWrapper.getXmlKey().isDefaultDomain()) { // if no domain is specified -> local node is master
+         if (log.TRACE) log.trace(ME, "message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is handled by local node");
+         return glob.getClusterManager().getMyClusterNode(); // the local node is the master
       }
 
-      // Search all other cluster nodes to find the master of this message ...
+      XmlKey preparedQuery = (XmlKey)nodeDomainInfo.getPreparedQuery();
 
-      Iterator it = clusterManager.getClusterNodeMap().values().iterator();
-      // for each cluster node ...
-      while (it.hasNext()) {
-         ClusterNode clusterNode = (ClusterNode)it.next();
-         Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
-
-         // for each domain mapping rule ...
-         while (domains.hasNext()) {
-            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)domains.next();
-            XmlKey preparedQuery = (XmlKey)nodeDomainInfo.getPreparedQuery();
-
-            if (preparedQuery == null) { // The first time we need to parse the query string, and cache it
-               String query = nodeDomainInfo.getQuery().trim();
-               log.info(ME, "Parsing user supplied domain to master mapping query '" + query + "'");
-               preparedQuery = new XmlKey(query);
-               nodeDomainInfo.setPreparedQuery(preparedQuery);
-            }
-
-            // Now check if we are master
-            if (preparedQuery.getDomain().equals(msgWrapper.getXmlKey().getDomain())) {
-               return nodeDomainInfo.getNodeId(); // Found the master
-            }
+      if (preparedQuery == null) { // The first time we need to parse the query string, and cache it
+         String query = nodeDomainInfo.getQuery().trim();
+         log.info(ME, "Parsing user supplied domain to master mapping query='" + query + "'");
+         try {
+            preparedQuery = new XmlKey(glob, query);
+         } catch(Throwable e) {
+            log.warn(ME, "Parsing user supplied domain to master mapping query='" + query + "' failed, we ignore it: " + e.toString());
+            return null;
          }
+         nodeDomainInfo.setPreparedQuery(preparedQuery);
       }
 
-      log.warn(ME, "Can't find a master for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "', setting local node as master");
-      return glob.getNodeId(); // the local node is the master
+      // Now check if we are master
+      if (preparedQuery.getDomain().equals(msgWrapper.getXmlKey().getDomain())) {
+         log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "', setting local node as master");
+         return nodeDomainInfo.getClusterNode(); // Found the master
+      }
+
+      log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+      return null; // This clusternode is not the master
    }
 }

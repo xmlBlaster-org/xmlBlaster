@@ -43,7 +43,7 @@ public final class NodeDomainInfo
    /** The version of the plugin */
    public static final String DEFAULT_version = "1.0";
    private String version;
-   private String query = null;
+   private String query = "";
 
    private Object preparedQuery = null;
 
@@ -62,11 +62,27 @@ public final class NodeDomainInfo
    }
 
    /**
+    * Access my manager
+    * @return The clusterNode which takes care of me
+    */
+   public ClusterNode getClusterNode() {
+      return clusterNode;
+   }
+
+   /**
     * Convenience method, delegates to clusterNode.getNodeId(). 
     * @return My node id object
     */
    public NodeId getNodeId() {
       return clusterNode.getNodeId();
+   }
+
+   /**
+    * Convenience method, delegates to clusterNode.getNodeId().getId(). 
+    * @return My node id String
+    */
+   public String getId() {
+      return getNodeId().getId();
    }
 
    /**
@@ -92,13 +108,16 @@ public final class NodeDomainInfo
     * @param query The master query, e.g. "&lt;key domain='RUGBY'>" to select RUGBY messages
     */
    public final void setQuery(String query) {
-      this.query = query;
+      if (query == null)
+         this.query = "";
+      else
+         this.query = query;
       this.preparedQuery = null;
    }
 
    /**
     * Returns the query, the syntax is depending on what your plugin supports.
-    * @return e.g. "&lt;key domain='RUGBY'>"
+    * @return e.g. "&lt;key domain='RUGBY'>", is never null
     */
    public final String getQuery() {
       return query;
@@ -199,7 +218,7 @@ public final class NodeDomainInfo
          String tmp = character.toString().trim(); // The query
          if (tmp.length() > 0)
             setQuery(tmp);
-         if (getQuery() == null)
+         if (getQuery() == null || getQuery().length() < 1)
             glob.getLog().error(ME, "<master> contains no query data to map messages to their master node");
          character.setLength(0);
       }

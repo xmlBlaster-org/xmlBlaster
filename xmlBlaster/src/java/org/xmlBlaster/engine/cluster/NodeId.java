@@ -15,7 +15,7 @@ import org.xmlBlaster.util.Log;
  * @since 0.79e
  * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
  */
-public final class NodeId
+public final class NodeId implements Comparable
 {
    private static final String ME = "NodeId";
 
@@ -38,6 +38,14 @@ public final class NodeId
    public String toString() {
       return getId();
    }
-   
+ 
+   /**
+    * Needed for use in TreeSet and TreeMap, enforced by java.lang.Comparable
+    */
+   public int compareTo(Object obj)  {
+      NodeId n = (NodeId)obj;
+      return toString().compareTo(n.toString());
+   }
+  
    private String id;
 }
