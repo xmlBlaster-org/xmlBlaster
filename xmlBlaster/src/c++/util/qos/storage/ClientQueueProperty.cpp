@@ -94,7 +94,7 @@ using namespace org::xmlBlaster::util::qos::address;
          addressArr_.push_back(a);
       }
       // otherwise get the last one added
-      AddressBase *ab = addressArr_.begin();
+      AddressBase *ab = &(*addressArr_.begin());
       Address *a = reinterpret_cast<Address*>(ab);
       return *a;
    }
