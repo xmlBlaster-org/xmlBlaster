@@ -11,7 +11,7 @@ Howto start the Perl/XmlRpc demo:
     xmlBlaster logs this url on your console)
 
       cd xmlBlaster/demo/perl/xmlrpc
-      perl  hello.perl  http://myhost:8080
+      perl  hello.pl  http://myhost:8080
 
 
 Thats it!
