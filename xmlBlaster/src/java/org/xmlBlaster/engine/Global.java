@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.2 2002/03/13 16:41:11 ruff Exp $
+Version:   $Id: Global.java,v 1.3 2002/04/16 12:12:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.cluster.ClusterManager;
 
 
 /**
@@ -27,14 +28,12 @@ public final class Global extends org.xmlBlaster.util.Global
    private Authenticate authenticate = null;
    /** the xmlBlaster core class */
    private RequestBroker requestBroker = null;
-
-
+   private ClusterManager clusterManager;
    private Timeout burstModeTimer;
    private Timeout sessionTimer;
    private Timeout messageTimer;
 
    private CbWorkerPool cbWorkerPool;
-
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -51,6 +50,19 @@ public final class Global extends org.xmlBlaster.util.Global
    public Global(String[] args)
    {
       super(args);
+   }
+
+   /**
+    * The instance which manages myself in a cluster environment. 
+    */
+   public final ClusterManager getClusterManager(){
+      if (this.clusterManager == null) {
+         synchronized(this) {
+            if (this.clusterManager == null)
+               this.clusterManager = new ClusterManager(this);
+         }
+      }
+      return this.clusterManager;
    }
 
    /**
