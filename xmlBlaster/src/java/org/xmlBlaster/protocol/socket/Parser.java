@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.25 2002/08/03 10:13:55 ruff Exp $
+Version:   $Id: Parser.java,v 1.26 2002/09/05 12:06:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -465,7 +465,9 @@ public class Parser
 
       int msgLength = 0;
       if (lenRead == -1)
-         throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
+         // if (sock.isClosed()) // since JDK 1.4
+         // throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
+         throw new IOException("Got EOF, lost socket connection");
 
       try {
          msgLength = Integer.parseInt((new String(first10, 0, NUM_FIELD_LEN)).trim());
