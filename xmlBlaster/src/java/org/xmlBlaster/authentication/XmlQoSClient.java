@@ -3,7 +3,7 @@ Name:      XmlQoSClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSClient.java,v 1.2 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: XmlQoSClient.java,v 1.3 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -19,14 +19,8 @@ public class XmlQoSClient extends org.xmlBlaster.util.XmlQoSBase
 {
    private String ME = "XmlQoSClient";
 
-   public XmlQoSClient(String xmlQoS_literal)
+   public XmlQoSClient(String xmlQoS_literal) throws XmlBlasterException
    {
       super(xmlQoS_literal);
-   }
-
-
-   public XmlQoSClient()
-   {
-      super("");
    }
 }

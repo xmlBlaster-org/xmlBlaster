@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.15 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.16 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -272,7 +272,7 @@ public class XmlKeyBase
 
       String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
 
-      if (!nodeName.equals("key")) {
+      if (!nodeName.equalsIgnoreCase("key")) {
          Log.error(ME+".WrongRootNode", "The root node must be named \"key\"");
          throw new XmlBlasterException(ME+".WrongRootNode", "The root node must be named \"key\"");
       }
@@ -286,7 +286,7 @@ public class XmlKeyBase
          for (int i = 0; i < attributeCount; i++) {
             Attr attribute = (Attr)attributes.item(i);
 
-            if (attribute.getNodeName().equals("oid")) {
+            if (attribute.getNodeName().equalsIgnoreCase("oid")) {
                String val = attribute.getNodeValue();
                if (val.length() < 1) {
                   keyOid = generateKeyOid();
@@ -304,13 +304,13 @@ public class XmlKeyBase
                }
             }
 
-            if (!isPublish && attribute.getNodeName().equals("queryType")) {
+            if (!isPublish && attribute.getNodeName().equalsIgnoreCase("queryType")) {
                String val = attribute.getNodeValue();
-               if (val.equals("EXACT"))
+               if (val.equalsIgnoreCase("EXACT"))
                   queryType = EXACT_QUERY;
-               else if (val.equals("XPATH"))
+               else if (val.equalsIgnoreCase("XPATH"))
                   queryType = XPATH_QUERY;
-               else if (val.equals("REGEX"))
+               else if (val.equalsIgnoreCase("REGEX"))
                   queryType = REGEX_QUERY;
                else {
                   Log.warning(ME+".UnknownQueryType", "Unknown queryType " + val + ", setting default to EXACT");

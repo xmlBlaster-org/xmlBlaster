@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.10 1999/11/23 14:54:40 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.11 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -92,7 +92,7 @@ public class ClientXml
             String passwd = "some";
             xmlBlaster = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
          String publishOid = "";
@@ -113,12 +113,12 @@ public class ClientXml
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
+               Log.trace(ME, "Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
+               Log.error(ME, "Punlishing failed, XmlBlasterException: " + e.reason);
             }
-            Log.trace(ME, "Publishing done" + stop.nice());
          }
 
 
@@ -129,11 +129,11 @@ public class ClientXml
                   "</key>";
          stop.restart();
          try {
-            xmlBlaster.subscribe(xmlKey, qos);
+            publishOid = xmlBlaster.subscribe(xmlKey, qos);
+            Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
          }
-         Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
 
          delay(2000); // Wait some time ...
 
@@ -143,10 +143,10 @@ public class ClientXml
          stop.restart();
          try {
             xmlBlaster.unSubscribe(xmlKey, qos);
+            Log.info(ME, "Unsubscribe done" + stop.nice());
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.reason);
          }
-         Log.info(ME, "Unsubscribe done" + stop.nice());
 
 
          //----------- Subscribe to the previous message XPATH -------
@@ -158,10 +158,10 @@ public class ClientXml
          stop.restart();
          try {
             xmlBlaster.subscribe(xmlKey, qos);
+            Log.trace(ME, "Subscribe done, there should be a Callback");
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "subscribe failed, XmlBlasterException: " + e.reason);
          }
-         Log.trace(ME, "Subscribe done, there should be a Callback");
 
          delay(2000); // Wait some time ...
 
@@ -179,10 +179,10 @@ public class ClientXml
                stop.restart();
                try {
                   String str = xmlBlaster.publish(messageUnit, "");
+                  Log.trace(ME, "Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
-                  Log.warning(ME, "XmlBlasterException: " + e.reason);
+                  Log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);
                }
-               Log.trace(ME, "Publishing done" + stop.nice());
             }
          }
 
@@ -193,8 +193,9 @@ public class ClientXml
          Log.trace(ME, "Logout ...");
          try {
             authServer.logout(xmlBlaster);
+            Log.trace(ME, "logout done" + stop.nice());
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
       }
       catch (Exception e) {

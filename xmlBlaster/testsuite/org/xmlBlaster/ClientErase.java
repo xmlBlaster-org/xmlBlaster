@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.2 1999/11/29 18:39:21 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.3 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -98,7 +98,7 @@ public class ClientErase
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -109,7 +109,7 @@ public class ClientErase
 
          //----------- erase() the previous message OID -------
          {
-            Log.trace(ME, "get() using the exact oid ...");
+            Log.trace(ME, "erase() using the exact oid ...");
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";

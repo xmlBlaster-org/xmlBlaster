@@ -3,7 +3,7 @@ Name:      XmlQoSUpdate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSUpdate.java,v 1.3 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: XmlQoSUpdate.java,v 1.4 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -19,14 +19,8 @@ public class XmlQoSUpdate extends org.xmlBlaster.util.XmlQoSBase
 {
    private String ME = "XmlQoSUpdate";
 
-   public XmlQoSUpdate(String xmlQoS_literal)
+   public XmlQoSUpdate(String xmlQoS_literal) throws XmlBlasterException
    {
       super(xmlQoS_literal);
-   }
-
-
-   public XmlQoSUpdate()
-   {
-      super("");
    }
 }

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.3 1999/11/23 14:54:40 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.4 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -98,7 +98,7 @@ public class ClientGet
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -147,7 +147,7 @@ public class ClientGet
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);

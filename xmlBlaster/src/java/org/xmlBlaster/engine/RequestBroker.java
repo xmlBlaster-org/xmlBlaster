@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.31 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.32 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,7 +27,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -143,6 +143,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
@@ -207,12 +208,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
 
+      if (Log.TRACE) Log.trace(ME, "Found " + ((xmlKeyVec == null) ? 0 : xmlKeyVec.size()) + " matching subscriptions");
+
       return xmlKeyVec == null ? new Vector() : xmlKeyVec;
    }
 
 
    /**
-    * Try to access the XmlKey by its oid. 
+    * Try to access the XmlKey by its oid.
     *
     * @param oid == XmlKey.uniqueKey
     * @return the XmlKey object if found in the Map<br />
@@ -224,12 +227,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       if (messageUnitHandler == null) {
          return null;
       }
-      return messageUnitHandler.getXmlKey();
+      return messageUnitHandler.getXmlKeyOrNull();
    }
 
 
    /**
     * @param oid == XmlKey:uniqueKey
+    * @return null if not found
     */
    public final MessageUnitHandler getMessageHandlerFromOid(String oid)
    {
@@ -269,14 +273,16 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       // Now the MessageUnit exists, subscribe to it
-      messageUnitHandler.addSubscriber(subs);
+      boolean newSubscribed = messageUnitHandler.addSubscriber(subs);
+
+      if (!newSubscribed) return;         // client had already subscribed
 
       fireSubscriptionEvent(subs, true);  // inform all listeners about this new subscription
    }
 
 
    /**
-    * Incoming un subscribe request from a client. 
+    * Incoming un subscribe request from a client.
     * <p>
     * @param clientInfo
     *
@@ -303,7 +309,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Publishing a new message. 
+    * Publishing a new message.
     * <p />
     * If MessageUnit is created from subscribe or the MessageUnit is new, we need to add the
     * DOM here once; XmlKeyBase takes care of that
@@ -467,10 +473,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
-            xmlKeyExact = xmlKey;
+
+         if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
+            Log.warning(ME, "Unsubscribe on a unknkown message is ignored: oid=" + xmlKey.getUniqueKey());
+            continue;
+         }
 
          MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+
          oidArr[ii] = messageUnitHandler.getUniqueKey();
          try {
             fireMessageEraseEvent(clientInfo, messageUnitHandler);
@@ -505,7 +515,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked on successfull client login (interface ClientListener)
+    * Invoked on successful client login (interface ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
@@ -525,7 +535,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Adds the specified subscription listener to receive subscribe/unsubscribe events
+    * Adds the specified subscription listener to receive subscribe/unSubscribe events
     */
    public void addSubscriptionListener(SubscriptionListener l) {
       if (l == null) {
@@ -578,7 +588,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Adds the specified messageErase listener to receive subscribe/unsubscribe events
+    * Adds the specified messageErase listener to receive subscribe/unSubscribe events
     */
    public void addMessageEraseListener(MessageEraseListener l) {
       if (l == null) {

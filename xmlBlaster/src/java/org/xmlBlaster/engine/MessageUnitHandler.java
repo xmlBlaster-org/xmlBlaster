@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.17 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.18 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -54,7 +54,7 @@ public class MessageUnitHandler
 
 
    /**
-    * Use this constructor if a subscription is made on a yet unknown object. 
+    * Use this constructor if a subscription is made on a yet unknown object.
     * <p />
     * @param requestBroker
     * @param uniqueKey The unique XmlKey-oid from the subscribe() call
@@ -76,7 +76,7 @@ public class MessageUnitHandler
 
 
    /**
-    * Use this constructor if a yet unknown object is fed by method publish(). 
+    * Use this constructor if a yet unknown object is fed by method publish().
     * <p />
     * @param requestBroker
     * @param a MessageUnitWrapper containing the CORBA MessageUnit data container
@@ -98,9 +98,20 @@ public class MessageUnitHandler
 
    /**
     * Accessing the wrapper object of the MessageUnit
+    * @return true a MessageUnit object is published, so you may do updates<br />
+    *         false this handler holds subscriptions only, no message content is yet known
+    */
+   public final boolean isPublishedWithData()
+   {
+      return messageUnitWrapper != null;
+   }
+
+
+   /**
+    * Accessing the wrapper object of the MessageUnit
     * @return MessageUnitWrapper object
     */
-   public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
+   final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (messageUnitWrapper == null) {
          Log.error(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null, there was not yet any message published, only subscription exists on this unpublished message");
@@ -116,6 +127,24 @@ public class MessageUnitHandler
    public final XmlKey getXmlKey() throws XmlBlasterException
    {
       return getMessageUnitWrapper().getXmlKey();
+   }
+
+
+   /**
+    * Accessing the key of this message. 
+    * <p />
+    * Convenience if the caller is too lazy to catch exceptions
+    * @return null
+    */
+   public final XmlKey getXmlKeyOrNull()
+   {
+      if (!isPublishedWithData())
+         return null;
+      try {
+         return getMessageUnitWrapper().getXmlKey();
+      } catch (Exception e) {
+         return null;
+      }
    }
 
 
@@ -152,8 +181,8 @@ public class MessageUnitHandler
 
 
    /**
-    * Setting update of a new content. 
-    * 
+    * Setting update of a new content.
+    *
     * @param xmlKey      The XmlKey object, derived from messageUnit.xmlKey string
     * @param messageUnit The CORBA MessageUnit struct
     * @param publishQoS  Quality of Service, flags to control the publishing
@@ -198,8 +227,11 @@ public class MessageUnitHandler
 
    /**
     * A client subscribed to this message
+    *
+    * @return true new subscription added <br />
+    *         false client had already subscribed
     */
-   public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
+   public boolean addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
       Object oldOne;
       synchronized(subscriberMap) {
@@ -212,6 +244,7 @@ public class MessageUnitHandler
          //No exception, since it would cancel other subscription requests as well
          //-> the client is not informed about ignored duplicate subscriptions
          //throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
+         return false;
       }
 
       sub.addMessageUnitHandler(this);
@@ -219,6 +252,7 @@ public class MessageUnitHandler
       if (Log.TRACE) Log.trace(ME, "You have successfully subscribed to " + uniqueKey);
 
       invokeCallback(sub);
+      return true;
    }
 
 
@@ -253,7 +287,7 @@ public class MessageUnitHandler
 
 
    /**
-    * What is the MIME type of this message content? 
+    * What is the MIME type of this message content?
     * <p />
     * @return the MIME type of the MessageUnit.content
     */
@@ -308,8 +342,8 @@ public class MessageUnitHandler
     */
    public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
-      if (messageUnitWrapper == null) {
-         Log.error(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
+      if (!isPublishedWithData()) {
+         if (Log.TRACE) Log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return;
       }
       ClientInfo clientInfo = sub.getClientInfo();
@@ -381,7 +415,7 @@ public class MessageUnitHandler
             sb.append(subs.printOn(extraOffset + "   ").toString());
          }
       }
-      
+
       sb.append(offset + "   <handlerIsNewCreated>" + handlerIsNewCreated + "</handlerIsNewCreated>");
       sb.append(offset + "</MessageUnitHandler>\n");
       return sb;

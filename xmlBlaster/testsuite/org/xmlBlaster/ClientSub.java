@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.2 1999/11/30 11:19:48 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.3 1999/12/02 16:48:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -127,7 +127,7 @@ public class ClientSub
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               String publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               String publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
