@@ -39,7 +39,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    protected int redeliverCounter = 0;
 
    /** The unique creation timestamp (unique in a Global of a virtual machine) */
-   private final Timestamp uniqueIdTimestamp;
+   protected final Timestamp uniqueIdTimestamp;
 
    /** The message priority, see Constants.java */
    protected final PriorityEnum priority;
@@ -103,7 +103,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Enforced by I_QueueEntry
     * @return The priority of this message as int (see PriorityEnum.java)
     */
-   public final int getPriority() {
+   public int getPriority() {
       return this.priority.getInt();
    }
 
@@ -126,7 +126,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Enforced by I_QueueEntry
     * @param nano seconds
     */
-   public final long getUniqueId() {
+   public long getUniqueId() {
       return this.uniqueIdTimestamp.getTimestamp();
    }
 
@@ -134,7 +134,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * The unique creation timestamp (unique in a Global of a virtual machine)
     * @param nano seconds
     */
-   public final Long getUniqueIdLong() {
+   public Long getUniqueIdLong() {
       return this.uniqueIdTimestamp.getTimestampLong();
    }
 
