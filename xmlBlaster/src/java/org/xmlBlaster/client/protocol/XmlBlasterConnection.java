@@ -244,7 +244,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (this.glob.init(args) != 0) {
          usage();
       }
-      this.serverNodeId = glob.getProperty().get("server.node.id", "xmlBlaster");
+      this.serverNodeId = glob.getId();
+      /*
+      this.serverNodeId = glob.getProperty().get("server.node.id", (String)null);
+      if (this.serverNodeId == null)
+         this.serverNodeId = glob.getProperty().get("cluster.node.id", "xmlBlaster");  // fallback
+      */
    }
 
    /**
