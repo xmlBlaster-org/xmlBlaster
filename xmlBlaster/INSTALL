@@ -86,20 +86,25 @@ For developers
 
 
 -------------------------------------------------------------------------
-C++ Clients with MICO 2.3.0 (http://www.mico.org)
+C++ clients with MICO 2.3.0 (http://www.mico.org)
 
-1) Install mico
+1) Install MICO
    ./configure
    make
 	 make install
 
-2) cd ${XMLBLASTER_HOME}/src/idl
-   ${MICO_HOME}/idl/idl --poa --no-boa xmlBlaster.idl
+2) Set the environment variable to point to MICO (needed for the Makefile)
+   export MICO_HOME=/usr/local/mico
+
+3) cd ${XMLBLASTER_HOME}/testsuite/c++
+   and follow the intructions in ${XMLBLASTER_HOME}/testsuite/c++/README
 
 
 -------------------------------------------------------------------------
-COPE 0.50_51: Perl for xmlBlaster (http://www.lunatech.com/research/corba/cope/)
+Perl clients with COPE 0.50_51 (http://www.lunatech.com/research/corba/cope/)
 You need MICO first
+AWARE: The current COPE Version 0.50_51 has problems with oneway methods
+       which raise exceptions, so it will not work with xmlBlaster for the moment
 
 1) get Exception-0.97_01A.tgz (ftp://ftp.matematik.su.se/pub/teke.)
 
