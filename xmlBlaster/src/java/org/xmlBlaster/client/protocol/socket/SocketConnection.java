@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.10 2002/02/16 16:33:44 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.11 2002/02/16 16:48:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -270,9 +270,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          initSocketClient();
 
-         if (client != null) {
-            // start the socket callback thread here (to receive callbacks)
-            this.cbReceiver = new SocketCallbackImpl(this, client);
+         // start the socket sender and callback thread here
+         this.cbReceiver = new SocketCallbackImpl(this, client);
+         if (client != null) { // We want to receive callbacks:
              // We set our IP:port just for information, it is not actively used by xmlBlaster:
             loginQos.addCallbackAddress(new CallbackAddress("SOCKET", getLocalAddress()));
          }
@@ -585,6 +585,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public String update(MessageUnit[] arr) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update()");
+      if (client == null) {
+         Log.warn(ME, "Ignoring callback message, client is not interested in it");
+         return "<qos><state>OK</state></qos>";
+      }
       if (arr != null) {
          for (int ii=0; ii<arr.length; ii++) {
             client.update(getLoginName(), arr[ii].getXmlKey(), arr[ii].getContent(), arr[ii].getQos());
