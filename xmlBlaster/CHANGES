@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+
+Changes for 0.x [200x-xx-xx]
+============================
+
+ o Fixed to rethrow XmlBLasterException from inside SAX parsing
+
 Changes for 0.9 [2004-02-23]
 ============================
 
