@@ -179,14 +179,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       StringTokenizer tokenizer = new StringTokenizer(errorCodesTxt, ":");
       this.errCodes = new int[tokenizer.countTokens()];
       int nmax = tokenizer.countTokens();
+
+      String token = null;
       for (int i=0; i < nmax; i++) {
          try {
-            this.errCodes[i] = Integer.parseInt(tokenizer.nextToken().trim());
+            token = tokenizer.nextToken().trim();
+            this.errCodes[i] = Integer.parseInt(token);
          }
          catch (Exception ex) {
             this.errCodes[i] = -1;
+            this.log.warn(ME, "error while parsing. '" + token + "' probably not an integer: ");
          }
       }
+
       if (this.log.DUMP) this.log.dump(ME, "Constructor: num of error codes: "  + nmax);
 
       this.nodesTableName = this.tableNamePrefix + 
@@ -210,11 +215,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (XmlBlasterException ex) {
-         this.log.warn(ME, "ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'");
+         this.log.warn(ME, "ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'. Reason :" + ex.getMessage());
          return false;
       }
       finally {
-      	 try {
+         try {
             if (conn != null) this.pool.releaseConnection(conn);
          }
          catch (XmlBlasterException e) {
@@ -243,7 +248,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return true;
       }
       catch (SQLException ex) {
-         this.log.warn(ME, "ping to DB failed. DB may be down");
+         this.log.warn(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
          return false;
       }
       finally {
@@ -763,7 +768,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
-               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped");
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped. Reason: " + ex.toString());
             }
          }
 
@@ -777,7 +782,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
-               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.queuesTableName + "', it probably is already dropped");
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.queuesTableName + "', it probably is already dropped. Reason " + ex.toString());
             }
          }
 
@@ -791,7 +796,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
-               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped");
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped. Reason " + ex.toString());
             }
          }
       }
@@ -808,7 +813,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
          }
-      	 finally {
+         finally {
             this.pool.releaseConnection(conn);
          }
       }
@@ -817,7 +822,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (doSetupNewTables) setUp();
       }
       catch (SQLException ex) {
-         this.log.error(ME, "SQLException occured when cleaning up the table"); 
+         this.log.error(ME, "SQLException occured when cleaning up the table. Reason " + ex.toString()); 
       }
       return count;
    }
@@ -885,7 +890,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          Connection conn = null;
          try {
-   	    conn = this.pool.getConnection();
+            conn = this.pool.getConnection();
             handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems");
          }
          finally {
@@ -1078,7 +1083,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          Connection conn = null;
          try {
-   	    conn = this.pool.getConnection();
+            conn = this.pool.getConnection();
             handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex);
          }
          finally {
@@ -1277,7 +1282,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             conn = this.pool.getConnection();
             handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
-      	 }
+         }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
          }

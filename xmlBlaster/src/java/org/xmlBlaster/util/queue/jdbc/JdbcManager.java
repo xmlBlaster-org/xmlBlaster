@@ -163,12 +163,15 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       StringTokenizer tokenizer = new StringTokenizer(errorCodesTxt, ":");
       this.errCodes = new int[tokenizer.countTokens()];
       int nmax = tokenizer.countTokens();
+      String token = null;
       for (int i=0; i < nmax; i++) {
          try {
-            this.errCodes[i] = Integer.parseInt(tokenizer.nextToken().trim());
+            token = tokenizer.nextToken().trim();
+            this.errCodes[i] = Integer.parseInt(token);
          }
          catch (Exception ex) {
             this.errCodes[i] = -1;
+            this.log.warn(ME, "error while parsing. '" + token + "' probably not an integer: ");
          }
       }
       if (this.log.DUMP) this.log.dump(ME, "Constructor: num of error codes: "  + nmax);
@@ -191,6 +194,65 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener entry) {
       synchronized (this.listener) {
          return this.listener.remove(entry) != null;
+      }
+   }
+
+
+   /**
+    * pings the jdbc connection to check if the DB is up and running. It returns
+    * 'true' if the connection is OK, false otherwise. The ping is done by invocation 
+    */
+   public boolean ping() {
+      Connection conn = null;
+      try {
+         conn = this.pool.getConnection();
+         boolean ret = ping(conn);
+         return ret;
+      }
+      catch (XmlBlasterException ex) {
+         this.log.warn(ME, "ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'. Reason :" + ex.getMessage());
+         return false;
+      }
+      finally {
+         try {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
+         catch (XmlBlasterException e) {
+            this.log.error(ME, "ping: releaseConnection failed: " + e.getMessage());
+         }
+      }
+   }
+
+
+   /**
+    * pings the jdbc connection to check if the DB is up and running. It returns
+    * 'true' if the connection is OK, false otherwise. The ping is done by invocation 
+    */
+// isClosed() does not work
+   private boolean ping(Connection conn) {
+      if (this.log.CALL) this.log.call(ME, "ping");
+      if (conn == null) return false; // this could occur if it was not possible to create the connection
+
+      Statement st = null;
+      try {
+         // conn.isClosed();
+         st = conn.createStatement();
+//          st.execute(""); <-- this will not work on ORACLE (fails)
+         st.execute("SELECT count(*) from " + this.tablesTxt);
+         if (this.log.TRACE) this.log.trace(ME, "ping successful");
+         return true;
+      }
+      catch (SQLException ex) {
+         this.log.warn(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
+         return false;
+      }
+      finally {
+         try {
+            if (st != null) st.close();
+         }
+         catch (Exception e) {
+            this.log.warn(ME, "ping exception when closing the statement " + e.toString());
+         }
       }
    }
 
@@ -236,10 +298,10 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
    }
 
    /**
-    * @see #handleSQLException(String, SQLException, String)
+    * @see #handleSQLException(Connection, String, SQLException, String)
     */
-   protected final boolean handleSQLException(String location, SQLException ex) {
-      return handleSQLException(location, ex, null);
+   protected final boolean handleSQLException(Connection conn, String location, SQLException ex) {
+      return handleSQLException(conn, location, ex, null);
    }
 
    /**
@@ -247,28 +309,15 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
     * connection has been broken it will inform the connection pool.
     * @param location where the exception occured.
     * @param ex the exception which has to be handled.
-    * @param trace additional information to put in the logetLogId(tableName, storageId, "getEntries")gging trace.
+    * @param trace additional information to put in the logetLogId(tableName, storageId, "getEntries") logging trace.
     * @return boolean true if it was a communication exception
     * 
     */
-   protected final boolean handleSQLException(String location, SQLException ex, String trace) {
-      int err = ex.getErrorCode(), i=0;
+   protected final boolean handleSQLException(Connection conn, String location, SQLException ex, String trace) {
       boolean ret = false;
 
-      // postgres hack (since postgres does not return error codes other than 0)
-      if (ex.getMessage().startsWith("FATAL"))
-         ret = true;
-      else {
-         for (i=0; i < this.errCodes.length; i++) {
-            if (this.errCodes[i] == err) break;
-         }
-         ret = (i < this.errCodes.length);
-      }
-
-      if (this.log.TRACE) this.log.trace(ME, location + ": error code=" + ex.getErrorCode() + " SQL state=" + ex.getSQLState());
-      if (trace != null && trace.length() > 0) {
-         if (this.log.TRACE) this.log.trace(ME, location + ": additional info: " + trace);
-      }
+      if (conn != null) ret = !ping(conn);
+      else ret = !ping();
 
       if (ret) {
          this.log.error(ME, location + ": the connection to the DB has been lost. Going in polling modus");
@@ -276,7 +325,6 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       }
       return ret;
    }
-
 
    /**
     * It searches first in the USEDTABLES for an entry. If none is found
@@ -340,7 +388,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return associatedTableName;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(queueName, null, "getTable"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, null, "getTable"), ex);
          throw ex;
       }
       finally {
@@ -383,7 +431,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return rs.getLong(1);
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfBytes"), ex);
+         handleSQLException(conn, getLogId(tableName, null, "getNumOfBytes"), ex);
          throw ex;
       }
       finally {
@@ -432,7 +480,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       }
       catch (SQLException ex) {
          if (conn != null) conn.rollback();
-         handleSQLException(getLogId(strippedQueueName, null, "releaseTable"), ex);
+         handleSQLException(conn, getLogId(strippedQueueName, null, "releaseTable"), ex);
          throw ex;
       }
       finally {
@@ -495,7 +543,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return !freetablesExists;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(null, null, "createInitialTables"), ex, "SQL request giving problems: " + req);
+         handleSQLException(query != null ? query.conn : null, getLogId(null, null, "createInitialTables"), ex, "SQL request giving problems: " + req);
          throw ex;
       }
       finally {
@@ -525,7 +573,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return numOfTables;
       }
       catch (SQLException ex) {
-         handleSQLException("addFreeTables", ex);
+         handleSQLException(conn, "addFreeTables", ex);
          throw ex;
       }
    }
@@ -548,7 +596,14 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          }
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(null, null, "setUp"), ex, "Table name giving Problems");
+         Connection conn = null;
+         try {
+            conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems");
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -738,7 +793,14 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return update(req);
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "deleteAllTransient"), ex);
+         Connection conn = null;
+         try {
+            conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(tableName, null, "deleteAllTransient"), ex);
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -860,7 +922,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          this.log.warn(getLogId(tableName, null, "addEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() +
                   "': " + ex.toString() + ", error code=" + ex.getErrorCode() + " SQL state=" + ex.getSQLState());
-         if (handleSQLException(getLogId(tableName, null, "addEntry"), ex)) throw ex;
+         if (handleSQLException(conn, getLogId(tableName, null, "addEntry"), ex)) throw ex;
          //Thread.currentThread().dumpStack();
          ret = false;
       }
@@ -868,7 +930,6 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          if (preStatement != null) preStatement.close();
          if (conn != null) this.pool.releaseConnection(conn);
       }
-
       return ret;
    }
 
@@ -964,7 +1025,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getAndDeleteLowest"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getAndDeleteLowest"), ex);
          throw ex;
       }
       finally {
@@ -1058,7 +1119,14 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return count;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "deleteEntries"), ex);
+         Connection conn = null;
+         try {
+            conn = this.pool.getConnection();
+            handleSQLException(conn, getLogId(tableName, null, "deleteEntries"), ex);
+         }
+         finally {
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
          throw ex;
       }
    }
@@ -1126,7 +1194,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
 
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "deleteFirstEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, null, "deleteFirstEntries"), ex);
          throw ex;
       }
       finally {
@@ -1167,7 +1235,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getEntriesByPriority"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getEntriesByPriority"), ex);
          throw ex;
       }
       finally {
@@ -1208,7 +1276,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getEntriesBySamePriority"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getEntriesBySamePriority"), ex);
          throw ex;
       }
       finally {
@@ -1244,7 +1312,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1280,7 +1348,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getEntriesWithLimit"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getEntriesWithLimit"), ex);
          throw ex;
       }
       finally {
@@ -1326,7 +1394,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
 
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId, "getEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, storageId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1359,7 +1427,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, null, "getNumOfEntries"), ex);
          throw ex;
       }
       finally {
@@ -1390,7 +1458,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, null, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1422,7 +1490,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(tableName, null, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1456,7 +1524,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          return (ret > 0);
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "createQueueTable"), ex);
+         handleSQLException(conn, getLogId(tableName, null, "createQueueTable"), ex);
          throw ex;
       }
 
@@ -1523,7 +1591,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          }
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(queueName, null, "cleanUp"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, null, "cleanUp"), ex);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(queueName, null, "cleanUp"), "cleanUp: SQLException when retrieving the list of tables", ex);
       }
       finally {
@@ -1545,9 +1613,17 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
             count++;
          }
          catch (Exception ex) {
-            if (ex instanceof SQLException)
-               handleSQLException(getLogId(queueName, null, "cleanUp"), (SQLException)ex);
-            this.log.error(getLogId(queueName, null, "cleanUp"), "Could not delete queue '" + name + "'");
+            if (ex instanceof SQLException) {
+               Connection conn = null;
+               try {
+                  conn = this.pool.getConnection();
+                  handleSQLException(conn, getLogId(queueName, null, "cleanUp"), (SQLException)ex);
+               }
+               finally {
+                  if (conn != null) this.pool.releaseConnection(conn);
+               }
+            }
+            this.log.error(getLogId(queueName, null, "cleanUp"), "Could not delete queue '" + name + "' : "  + ex.toString());
          }
       }
 

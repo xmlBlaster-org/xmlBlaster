@@ -133,7 +133,8 @@ public class JdbcQueueTest extends TestCase {
       QueuePropertyBase prop = null;
       try {
          // test initialize()
-         this.queue.destroy();
+//         this.queue.destroy();
+         this.queue.shutdown();
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
