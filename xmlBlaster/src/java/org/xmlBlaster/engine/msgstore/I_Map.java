@@ -58,11 +58,12 @@ public interface I_Map extends I_StorageProblemNotifier
    
    /**
     * Adds one entry and automatically increments the reference counter. 
+    * Note: If an entry existed already (0 is returned), it is NOT updated in storage
+    *
     * @param msgMapEntry the entry
     * @throws XmlBlasterException in case an error occurs. Possible causes of
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
     * @return Number of new entries added: 0 if entry existed, 1 if new entry added
-    *         Note: If an entry existed already (0 is returned), it is NOT updated in storage
     */
    int put(I_MapEntry mapEntry) throws XmlBlasterException;
 
@@ -70,6 +71,14 @@ public interface I_Map extends I_StorageProblemNotifier
     * @return the number of elements erased.
     */
    int remove(final I_MapEntry mapEntry) throws XmlBlasterException;
+
+   /**
+    * Remove the oldest entry. 
+    * 'Oldest' is defined in the context of the implementation to support an
+    * efficient cache, typically it is the LRU (last recent used) entry.
+    * @return the removed entry
+    */
+   I_MapEntry removeOldest() throws XmlBlasterException;
 
    /**
     * Removes all the transient entries (the ones which have the flag 'persistent'
