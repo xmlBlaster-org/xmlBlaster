@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.3 2002/11/26 18:02:03 laghi Exp $
+Version:   $Id: Timestamp.h,v 1.4 2002/11/27 10:53:40 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -50,13 +50,8 @@ namespace org { namespace xmlBlaster { namespace util {
    class TimestampFactory {
       
    private:
-      Timestamp nanoCounter_;
-      Timestamp milliCounter_;
-      Timestamp lastSeconds_;
+      Timestamp lastTimestamp_;
       boost::mutex *getterMutex_;
-
-      /** Cache for string representation */
-      string strFormat_; //  = null;
 
       /**
        * The default constructor is made private to implement the singleton
@@ -72,7 +67,6 @@ namespace org { namespace xmlBlaster { namespace util {
       const Timestamp MILLION;
       const Timestamp BILLION;
 
-
       /**
        * The method to call to get the singleton Timestamp object.
        */
@@ -83,7 +77,13 @@ namespace org { namespace xmlBlaster { namespace util {
        * @param delay the time in milliseconds from now the return value has to point to.
        * @exception RuntimeException on overflow (never happens :-=)
        */
-      Timestamp getTimestamp(long delay=0);
+      Timestamp getTimestamp();
+
+      /**
+       * Sleeps for the time specified in the delay argument. This is a portable
+       * way of sleeping for the specified amount of time.
+       */
+      void sleep(Timestamp nanoSecondDelay);
    };
 
 }}}; // namespace

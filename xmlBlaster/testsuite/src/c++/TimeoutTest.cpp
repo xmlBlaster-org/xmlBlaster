@@ -9,7 +9,7 @@ Comment:   Testing the Timeout Features
 #include <iostream>
 #include <string>
 
-#include <unistd.h>
+// #include <unistd.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -43,11 +43,13 @@ public:
       cout << ME << " testTimeout(): the timeout will now be started" << endl;
       timeoutObject->start();
       cout << ME << " testTimeout(): the timeout will now be triggered" << endl;
-      timeoutObject->addTimeoutListener(this, 1000, NULL);
+      timeoutObject->addTimeoutListener(this, 2000, NULL);
       cout << ME << " testTimeout: timeout triggered. Waiting to be fired (sould happen in 1 second" << endl;
 //      timeoutObject->join();
-      usleep(10000000);
-      std::cout << ME << " after joining" << std::endl;
+      Timestamp delay = 10000;
+      delay *= 1000000;
+      TimestampFactory::getInstance().sleep(delay);
+      std::cout << ME << " after waiting to complete" << std::endl;
    }
 
    void setUp(int args=0, char *argc[]=0) {
