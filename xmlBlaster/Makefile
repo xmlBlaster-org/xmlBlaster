@@ -83,7 +83,7 @@ javadoc:
 jar:
 	(	\
 	   cd ${CLASS_TOP_DIR}; \
-		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients; \
+		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy; \
 	)
 
 
