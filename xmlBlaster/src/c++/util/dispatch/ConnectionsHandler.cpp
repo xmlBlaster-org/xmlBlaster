@@ -478,7 +478,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
  
             Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
             if (sessionId != lastSessionId) {
-               log_.info(ME, string("When reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
+               log_.trace(ME, string("When reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
             }
  
             if (doFlush) {
@@ -556,8 +556,10 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 
    connectReturnQos_ = new ConnectReturnQos(*connectQos_);
 
+   /* Michele thinks we should not queue the ConnectQos
    ConnectQueueEntry entry(global_, *connectQos_);
    queue_->put(entry);
+   */
    enum States oldState = status_;
    status_ = POLLING;
    if ( connectionProblemsListener_ ) {
@@ -716,7 +718,7 @@ ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
       connectReturnQos_ = NULL;
    }
    connectReturnQos_ = new ConnectReturnQos(retQos);
-   log_.info(ME, string("::connectRaw: successfully connected with sessionId = '") + connectReturnQos_->getSessionQos().getSecretSessionId() + "'");
+   log_.info(ME, string("Successfully connected with sessionId = '") + connectReturnQos_->getSessionQos().getSecretSessionId() + "'");
    connectQos_->getSessionQos().setSecretSessionId(connectReturnQos_->getSessionQos().getSecretSessionId());
    return *connectReturnQos_;
 }
