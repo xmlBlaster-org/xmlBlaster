@@ -9,7 +9,7 @@
 <body>
 
 <!--   <p class=sideend>
-      Last updated $Date: 2003/05/20 20:10:24 $ $Author: ruff $
+      Last updated $Date: 2003/05/20 20:15:49 $ $Author: ruff $
    </p>-->
    <p class=sitetitel>Guidelines for XmlBlaster core developers</p>
 
@@ -48,11 +48,12 @@
       <tr>
          <td>
          <p class=celltitel><a NAME="testing"></a>Testing - for every feature, a test case.<p />
-            We have a test suite for xmlBlaster, you find it under xmlBlaster/testsuite/src/java/org/xmlBlaster/qos.<br />
+            We have a test suite for xmlBlaster, you find it under 
+            xmlBlaster/testsuite/src/java/org/xmlBlaster/test.<br />
             Please add a test case there for everything you code.<p />
             Because many people develop xmlBlaster, and you develop for the world,
             we need a full automatic test suite.<p />
-            Like this, before committing changes, we type 'make test', and if the
+            Like this, before committing changes, run the tests, and if the
             test suite shows 'green' we can sleep well.<p />
             Believe it or not, this is a MUCH more relaxed developing style.
             Imagine you make changes or enhancements in somebody else code. You dare
