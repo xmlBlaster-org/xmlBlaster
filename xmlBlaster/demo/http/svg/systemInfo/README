@@ -1,0 +1,72 @@
+There's a complete example on the Adobe SVG Preview site in the 
+Transformations tutorial.  Here's an overview:
+
+Using JavaScript on an HTML page to interact with a SVG graphic
+
+1. There are several ways to get a reference to the desired SVG 
+graphic on the page.
+a.  Get a reference to the first SVGDocument on the page
+   var svgdoc = document.embeds[0].getSVGDocument();
+
+   (embeds[0] is the first plugin,  and embeds[1] is the second 
+plugin, etc.)
+   or
+b. Get a reference to the SVG graphic named "SVGtoScale"
+   var svgdoc = document.embeds["SVGtoScale"].getSVGDocument();
+
+   The embeded plugin must be named on the HTML page as in:
+   <EMBED SRC="Scale2.svg" WIDTH="250" HEIGHT="200" NAME="SVGtoScale">
+
+2.  Once you have a reference to svgdoc, get a reference to the 
+desired element in the SVG graphic.  In this case "AreaToMove"
+   var svgobj = svgdoc.getElementById("AreaToMove");
+
+   Snippet from the SVG file:
+   <g id ="AreaToMove" >
+<rect x="20" y="20" width="80" height="80"
+      style="fill:yellow; stroke:red; stroke-width:1px" />
+<text x="30" y="30" style="font-size:10">Move this area.</text>
+</g>
+
+3.  Get the entries from the Form field(s) on the HTML page.
+   var xPixels = document.formName.fieldNameX.value;
+   var yPixels = document.formName.fieldNameY.value;
+
+4.  Apply a transform (for example) to the element named "AreaToMove"
+   svgobj.setAttribute('transform','translate(' + xPixels + " " 
++ yPixels +')');
+
+
+------------------------------------------------------------
+Examples of changing attributes using JavaScript:   
+var svgdoc = document.embeds[0].getSVGDocument();
+var svgobj = svgdoc.getElementById("AreaToChange");
+   svgobj.setAttribute('transform','scale(' + scaleAmount +')');
+   svgobj.setAttribute('transform','translate(' + xPixels  +" "+ 
+yPixels +')');
+   etc.
+
+Examples of changing properties from external JavaScript
+var svgdoc = document.embeds[0].getSVGDocument();
+var svgobj = svgdoc.getElementById("AreaToChange");
+var svgstyle = svgobj.getStyle();
+   svgstyle.setProperty ('fill-opacity', 1);
+   svgstyle.setProperty('fill','#33FF66');
+   svgstyle.setProperty('stroke', '#0000FF');
+   svgstyle.setProperty('stroke-width', '5');      
+   etc.
+
+Examples of changing text and its properties from external Javascript
+var svgdoc = document.embeds[0].getSVGDocument();
+var svgobj = svgdoc.getElementById("AreaToChange");
+var text_element = svgdoc.getElementById('TextElement');
+var first_child = text_element.getFirstChild();
+first_child.setData ("The New Text");
+
+var svgstyle = text_element.getStyle();
+   svgstyle.setProperty('fill', '#33FF66');
+   svgstyle.setProperty(font-family, 'Verdana');
+   svgstyle.setProperty(font-size, '24');
+   etc.
+
+
