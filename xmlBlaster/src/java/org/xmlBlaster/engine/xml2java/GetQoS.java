@@ -3,13 +3,14 @@ Name:      GetQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQoS.java,v 1.7 2002/03/28 10:00:47 ruff Exp $
+Version:   $Id: GetQoS.java,v 1.8 2002/05/06 07:26:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
@@ -24,6 +25,7 @@ import java.util.Vector;
 public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private static String ME = "GetQoS";
+   private final Global glob;
 
    private transient AccessFilterQos tmpFilter = null;
    protected Vector filterVec = null;                         // To collect the filter when sax parsing
@@ -33,8 +35,9 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a publish() call.
     */
-   public GetQoS(String xmlQoS_literal) throws XmlBlasterException
+   public GetQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
+      this.glob = glob;
       if (Log.CALL) Log.call(ME, "Creating GetQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
@@ -69,7 +72,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if (name.equalsIgnoreCase("filter")) {
          inFilter = true;
-         tmpFilter = new AccessFilterQos();
+         tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
             if (filterVec == null) filterVec = new Vector();
@@ -158,7 +161,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
             "</qos>\n";
          System.out.println("=====Original XML========\n");
          System.out.println(xml);
-         qos = new GetQoS(xml);
+         qos = new GetQoS(new Global(args), xml);
          System.out.println("=====Parsed and dumped===\n");
          System.out.println(qos.toXml());
       }
