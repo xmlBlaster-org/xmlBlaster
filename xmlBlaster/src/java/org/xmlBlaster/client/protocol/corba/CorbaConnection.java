@@ -285,6 +285,14 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       address = (address == null) ? new Address(glob) : address;
 
       try {
+         // 0) Check if programmer has given the IOR hardcoded
+         if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
+            String authServerIOR = address.getRawAddress();
+            this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+            if (this.verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string in Address.getRawAddress()");
+            return this.authServer;
+         }
+
          // 1) check if argument -IOR at program startup is given "-dispatch/connection/plugin/ior/iorString"
          String authServerIOR = address.getEnv("iorString", (String)null).getValue();
          if (authServerIOR != null) {
