@@ -3,6 +3,17 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
+  - Added complete demo code how to access xmlBlaster
+    from C using XmlRpc
+	 Read xmlBlaster/demo/c/xmlrpc/README
+
+  - Added String return value for RMI and XmlRpc for
+    callback update() method, current return expected is
+      "<qos><state>OK</state></qos>"
+	   "<qos><state>ERROR</state></qos>"
+	 TODO: Add String update() to Java client helper classes
+	 TODO: Change CORBA oneway update() to String update()
+
   - Added OS independend C++ compile support with ant
 
   - Reduced necessary environment settings to
