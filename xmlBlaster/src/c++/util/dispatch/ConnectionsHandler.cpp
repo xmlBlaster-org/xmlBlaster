@@ -35,6 +35,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
    retries_            = -1;
    currentRetry_       = 0;
    timestamp_          = 0;
+   pingIsStarted_      = false;
 }
 
 ConnectionsHandler::~ConnectionsHandler()
@@ -81,8 +82,8 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
    status_ = CONNECTED;
-   // start the ping 
-   timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+   // start the ping if in failsafe, i.e. if delay > 0
+   startPinger();
    return *connectReturnQos_;
 }
 
@@ -99,23 +100,18 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
       return false;
    }
 
-   int i = 0;
-   while (i < retries_ || retries_ < 0) {
-      try {
-         bool ret = connection_->disconnect(qos);
-         status_ = DEAD;
-         return ret;
+   try {
+      return connection_->disconnect(qos);
+      status_ = DEAD;
+   }   
+   catch (XmlBlasterException& ex) {
+      if ( ex.isCommunication() ) {
+         status_ = POLLING;
+	 startPinger();
       }
-      catch (XmlBlasterException &ex) {
-         i++;
-         log_.warn(ME, string("disconnect: exception on trial ") + lexical_cast<string>(i) + " of " + lexical_cast<string>(retries_));
-         Thread::sleep(connectQos_->getAddress().getDelay());
-      }
+      throw ex;
    }
-   if (status_ == CONNECTED) status_ = DEAD;
-   throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "disconnect");
 }
-
 
 string ConnectionsHandler::getProtocol()
 {
@@ -183,6 +179,7 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          status_ = POLLING;
+         startPinger();
       }
       throw ex;
    }
@@ -204,6 +201,7 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          status_ = POLLING;
+	 startPinger();
       }
       throw ex;
    }
@@ -226,6 +224,7 @@ vector<UnSubscribeReturnQos>
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          status_ = POLLING;
+	 startPinger();
       }
       throw ex;
    }
@@ -247,6 +246,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          status_ = POLLING;
+	 startPinger();
          return queuePublish(msgUnit);
       }
       else throw ex;
@@ -273,6 +273,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
       if ( ex.isCommunication() ) {
          status_ = POLLING;
          for (size_t i=0; i < msgUnitArr.size(); i++) queuePublish(msgUnitArr[i]);
+	 startPinger();
       }
       else throw ex;
    }
@@ -304,6 +305,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 	 for (size_t i=0; i < msgUnitArr.size(); i++) {
 	    retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
 	 }
+         startPinger();
 	 return retQos;
       }
       else throw ex;
@@ -327,6 +329,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          status_ = POLLING;
+	 startPinger();
       }
       throw ex;
    }
@@ -341,6 +344,7 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 void ConnectionsHandler::timeout(void *userData)
 {
   Lock lock(connectionMutex_);
+  pingIsStarted_ = false;
   timestamp_ = 0;
   if ( log_.CALL ) log_.call(ME, "ping timeout occured");
   if (status_ == CONNECTED) { // then I am pinging
@@ -348,9 +352,7 @@ void ConnectionsHandler::timeout(void *userData)
      try {
         if (connection_) {
 	   connection_->ping("<qos/>");
-	   long pingInterval = 10000;
-	   if (connectQos_) pingInterval = connectQos_->getAddress().getPingInterval();
-	   timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+           startPinger();
         }
      }
      catch (XmlBlasterException& ex) {
@@ -369,9 +371,7 @@ void ConnectionsHandler::timeout(void *userData)
 	if (connectionProblems_) {
 	   connectionProblems_->toPolling();
 	}
-	long retryDelay = 1000;
-        if (connectQos_) retryDelay = connectQos_->getAddress().getDelay();
-	timestamp_ = global_.getPingTimer().addTimeoutListener(this, retryDelay, NULL);
+        startPinger();
      }
      return;
   }
@@ -397,20 +397,13 @@ void ConnectionsHandler::timeout(void *userData)
 		 log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
 	      }
 	   }
-	
-           long pingInterval = 10000;
-           if (connectQos_) pingInterval = connectQos_->getAddress().getPingInterval();
-           if ( log_.TRACE ) log_.trace(ME, "ping timeout: re-spanning the timer");
-           timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+           startPinger();	
         }
      }
      catch (XmlBlasterException ex) {
         currentRetry_++;
 	if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
-  	   long retryDelay = 1000;
-           if (connectQos_) retryDelay = connectQos_->getAddress().getDelay();
-           if ( log_.TRACE ) log_.trace(ME, "ping timeout: retry nr. " + lexical_cast<string>(currentRetry_) + " of " + lexical_cast<string>(retries_) + " retry delay: " + lexical_cast<string>(retryDelay));
-	   timestamp_ = global_.getPingTimer().addTimeoutListener(this, retryDelay, NULL);
+           startPinger();
 	}
 	else {
 	   status_ = DEAD;
@@ -479,6 +472,7 @@ long ConnectionsHandler::flushQueueUnlocked()
 	 catch (XmlBlasterException &ex) {
 	   if (ex.isCommunication()) {
 	      status_ = POLLING;
+	      startPinger();
 	      connection_->shutdown();
 	   }
 	   queue_->randomRemove(entries.begin(), iter);
@@ -510,6 +504,30 @@ MsgQueue ConnectionsHandler::getCopyOfQueue(bool eraseOriginalQueueEntries)
    return ret;
 }
 
+
+bool ConnectionsHandler::startPinger()
+{
+   if (pingIsStarted_) return false;
+
+   long delay        = 10000;
+   long pingInterval = 0;
+   if ( connectQos_ ) {
+      delay        = connectQos_->getAddress().getDelay();
+      pingInterval = connectQos_->getAddress().getPingInterval();
+   }
+   else {
+      ConnectQos tmp(global_);
+      delay        = tmp.getAddress().getDelay();
+      pingInterval = tmp.getAddress().getPingInterval();
+   }
+   if (delay > 0 && pingInterval > 0) {
+      long delta = delay;
+      if (status_ == CONNECTED) delta = pingInterval;
+      timestamp_ = global_.getPingTimer().addTimeoutListener(this, delta, NULL);
+      pingIsStarted_ = true;
+   }
+   return true;
+}
 
 
 }}}} // namespaces

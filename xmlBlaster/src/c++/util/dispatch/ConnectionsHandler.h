@@ -59,6 +59,7 @@ private:
    int                     currentRetry_;
    Timestamp               timestamp_;
    MsgQueue*               queue_;
+   bool                    pingIsStarted_;
 
 public:
    ConnectionsHandler(Global& global, DeliveryManager& deliveryManager);
@@ -145,6 +146,7 @@ protected:
    /** only used inside the class to avoid deadlock */
    long flushQueueUnlocked();
    PublishReturnQos queuePublish(const MessageUnit& msgUnit);
+   bool startPinger();
 
 };
 
