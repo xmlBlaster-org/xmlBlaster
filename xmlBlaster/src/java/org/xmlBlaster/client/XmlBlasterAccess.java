@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -207,7 +208,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses());
 
-               log.info(ME, "Switching to synchronous delivery mode ...");
+               if (log.TRACE) log.trace(ME, "Switching to synchronous delivery mode ...");
                this.deliveryManager.trySyncMode(true);
 
                if (this.updateListener != null) { // Start a default callback server using same protocol
@@ -221,11 +222,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
             }
             catch (XmlBlasterException e) {
-               shutdown(null, false, true, true);
+               disconnect(null);
                throw e;
             }
             catch (Throwable e) {
-               shutdown(null, false, true, true);
+               disconnect(null);
                throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
             }
          }
@@ -239,6 +240,17 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
          log.info(ME, "Successful login as " + getId());
+
+         if (this.clientQueue.getNumOfEntries() > 0) {
+            long num = this.clientQueue.getNumOfEntries();
+            log.info(ME, "Sending now our " + num + " client side queued tail back messages");
+            this.deliveryManager.switchToASyncMode();
+            while (this.clientQueue.getNumOfEntries() > 0) {
+               try { Thread.currentThread().sleep(20L); } catch( InterruptedException i) {}
+            }
+            log.info(ME, (num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
+            this.deliveryManager.switchToSyncMode();
+         }
       }
       else {
          if (this.connectionListener != null) {
@@ -326,32 +338,31 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Logout from the server.
-    * <p />
-    * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
-   public boolean disconnect(DisconnectQos qos) {
-      return disconnect(qos, true, true, true);
-   }
-
-   /**
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
-    */
-   public synchronized boolean disconnect(DisconnectQos disconnectQos, boolean flush, boolean shutdown, boolean shutdownCb) {
-      if (log.CALL) log.call(ME, "disconnect() ...");
-
+   public synchronized boolean disconnect(DisconnectQos disconnectQos) {
       if (!isConnected()) {
          log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
          return false;
       }
 
-      return shutdown(disconnectQos, flush, shutdown, shutdownCb);
+      if (disconnectQos == null)
+         disconnectQos = new DisconnectQos(glob);
+
+      if (!disconnectQos.getClearClientQueueProp().isModified()) {
+         boolean clearClientQueue = true;
+         if (this.connectQos != null) {
+            if (this.connectQos.getSessionName().isPubSessionIdUser())
+               clearClientQueue = false;  // Keep tail back messages
+         }
+         disconnectQos.clearClientQueue(clearClientQueue);
+      }
+
+      return shutdown(disconnectQos);
    }
 
-   private synchronized boolean shutdown(DisconnectQos disconnectQos, boolean flush, boolean shutdown, boolean shutdownCb) {
+   private synchronized boolean shutdown(DisconnectQos disconnectQos) {
       if (this.disconnectInProgress) {
          log.warn(ME, "Calling disconnect again is ignored, you are in shutdown progress already");
          return false;
@@ -359,13 +370,22 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
       this.disconnectInProgress = true;
 
-      if (isConnected()) {
-         if (disconnectQos == null)
-            disconnectQos = new DisconnectQos(glob);
+      if (disconnectQos == null)
+         disconnectQos = new DisconnectQos(glob);
 
-         long remainingEntries = this.deliveryManager.getQueue().getNumOfEntries();
-         if (remainingEntries > 0)
-            log.warn(ME, "You called disconnect(). Please note that there are " + remainingEntries + " unsent invocations/messages in the queue");
+      if (isConnected()) {
+
+         if (this.clientQueue != null) {
+            long remainingEntries = this.clientQueue.getNumOfEntries();
+            if (remainingEntries > 0) {
+               if (disconnectQos.clearClientQueue())
+                  log.warn(ME, "You called disconnect(). Please note that there are " + remainingEntries +
+                               " unsent invocations/messages in the queue which are discarded now.");
+               else
+                  log.info(ME, "You called disconnect(). Please note that there are " + remainingEntries +
+                               " unsent invocations/messages in the queue which are sent on next connect of the same client with the same public session ID.");
+            }
+         }
 
          String[] subscriptionIdArr = this.updateDispatcher.getSubscriptionIds();
          for (int ii=0; ii<subscriptionIdArr.length; ii++) {
@@ -386,7 +406,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.clientQueue != null) {
             try {
                MsgQueueDisconnectEntry entry = new MsgQueueDisconnectEntry(this.glob, this.clientQueue.getStorageId(), disconnectQos);
-               queueMessage(entry);
+               queueMessage(entry);  // disconnects are always transient
                log.info(ME, "Successful disconnect from " + getServerNodeId());
             } catch(Throwable e) {
                e.printStackTrace();
@@ -399,11 +419,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          this.synchronousCache.clear();
       }
 
-      if (this.clientQueue != null) {
+      if (this.clientQueue != null && disconnectQos.clearClientQueue()) {
          this.clientQueue.clear();
       }
 
-      if (shutdown) {
+      if (disconnectQos.shutdownDispatcher()) {
          if (this.deliveryManager != null) {
             this.deliveryManager.shutdown();
             this.deliveryManager = null;
@@ -413,7 +433,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          }
       }
 
-      if (shutdownCb && this.cbServer != null) {
+      if (disconnectQos.shutdownCbServer() && this.cbServer != null) {
          try {
             this.cbServer.shutdown();
             this.cbServer = null;
@@ -745,7 +765,27 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public void toAlive(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
       if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
-      if (this.connectInProgress) return;
+      if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
+         log.info(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE +
+                      " connectInProgress=" + this.connectInProgress +
+                      " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
+      }
+      if (this.connectInProgress) {
+         deliveryManager.trySyncMode(true);
+         if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
+            try {
+               MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();
+               if (entry.getMethodName() == MethodName.CONNECT) {
+                  this.clientQueue.remove();
+                  log.info(ME, "Removed queued connect message, our new connect has precedence");
+               }
+            }
+            catch (XmlBlasterException e) {
+               log.error(ME, "Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
+            }
+         }
+         return;
+      }
       if (this.connectionListener != null) {
          this.connectionListener.reachedAlive(oldState, this);
       }
