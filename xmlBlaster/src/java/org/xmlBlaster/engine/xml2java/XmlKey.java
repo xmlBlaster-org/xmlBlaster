@@ -341,7 +341,7 @@ public final class XmlKey
     * @return true if this message key matches the query
     */
    public final boolean match(QueryKeyData queryKey) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "DEBUG ONLY Trying query=" + queryKey.toXml() + "\non key=" + literal());
+      if (log.TRACE) log.trace(ME, "Trying query=" + queryKey.toXml() + "\non key=" + literal());
       if (queryKey.isDomain()) {
          if (queryKey.getDomain() == null) {
             log.warn(ME, "Your query is of type DOMAIN but you have not specified a domain: " + queryKey.toXml());
