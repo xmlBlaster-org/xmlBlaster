@@ -27,6 +27,7 @@ public class QueueProperty extends QueuePropertyBase
     */
    public QueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
+      setRelating(Constants.RELATING_CLIENT);
       initialize();
    }
 
@@ -45,22 +46,7 @@ public class QueueProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-
-      super.initialize();
-
-      // Set the queue properties
-      setMaxMsg(glob.getProperty().get("queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxSize(glob.getProperty().get("queue.maxSize", DEFAULT_sizeDefault));
-      setExpires(glob.getProperty().get("queue.expires", DEFAULT_maxExpires));
-      setOnOverflow(glob.getProperty().get("queue.onOverflow", DEFAULT_onOverflow));
-      setOnFailure(glob.getProperty().get("queue.onFailure", DEFAULT_onFailure));
-      if (nodeId != null) {
-         setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
-         setMaxSize(glob.getProperty().get("queue.maxSize["+nodeId+"]", getMaxSize()));
-         setExpires(glob.getProperty().get("queue.expires["+nodeId+"]", getExpires()));
-         setOnOverflow(glob.getProperty().get("queue.onOverflow["+nodeId+"]", getOnOverflow()));
-         setOnFailure(glob.getProperty().get("queue.onFailure["+nodeId+"]", getOnFailure()));
-      }
+      super.initialize(""); // change to "client"
    }
 
    /**
@@ -97,15 +83,7 @@ public class QueueProperty extends QueuePropertyBase
     * Get a usage string for the connection parameters
     */
    public final String usage() {
-      String text = "";
-      text += "Control client side fail save queue properties (message recorder):\n";
-      text += "   -queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
-      text += "                       0 switches recording of invocations off.\n";
-      text += "                       -1 sets it to unlimited.\n";
-      text += "   -queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
-      text += "   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " [" + DEFAULT_onOverflow + "]\n";
-      text += "   -queue.onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
-      return text;
+      return super.usage("Control client side fail save queue properties (message recorder):");
    }
 
    /** For testing: java org.xmlBlaster.engine.helper.QueueProperty */
