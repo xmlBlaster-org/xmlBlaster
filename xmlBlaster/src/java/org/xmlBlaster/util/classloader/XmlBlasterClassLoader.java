@@ -40,15 +40,7 @@ public class XmlBlasterClassLoader extends URLClassLoader {
       }
 
       Class clazz = findLoadedClass(name);
-      if (clazz == null) {
-         try {
-            clazz = findSystemClass (name);
-            if (log.TRACE) log.trace(ME, "Using class loader from system classes for " + name+ ":");
-         } catch (Exception e) {
-            // Ignore these exceptions.
-         }
-      }
-      else {
+      if (clazz != null) {
          if (log.TRACE) log.trace(ME, "Using specific class loader from cache for " + name+ ":");
       }
 
