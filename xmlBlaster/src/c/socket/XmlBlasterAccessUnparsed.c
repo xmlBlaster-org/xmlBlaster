@@ -874,13 +874,14 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
          cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
          xa->threadCounter--;
+         pthread_attr_destroy(&attr);
          return;
       }
 
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
 
-      pthread_attr_destroy (&attr);
+      pthread_attr_destroy(&attr);
    }
 
    if (xa->lowLevelAutoAck) {
