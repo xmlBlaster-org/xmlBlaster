@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.8 1999/11/22 22:14:59 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.9 1999/11/23 10:44:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,16 +20,16 @@ public class ClientXml
    private Server xmlBlaster = null;
    private String ME = "Tim";
 
-   public ClientXml(String args[]) 
-   { 
+   public ClientXml(String args[])
+   {
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
          String authServerIOR = null;
 
          if (args.length == 1) {
-            authServerIOR = args[0];  // args[0] is an IOR-string 
-         } 
+            authServerIOR = args[0];  // args[0] is an IOR-string
+         }
          else if (args.length > 1) {
             String argv = args[0];
             if (argv.equals("-name")) {
@@ -65,7 +65,7 @@ public class ClientXml
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa = 
+         org.omg.PortableServer.POA poa =
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intializing my Callback interface:
@@ -190,7 +190,7 @@ public class ClientXml
       catch (Exception e) {
           e.printStackTrace();
       }
-      orb.run();
+      //orb.run();
    }
 
 
@@ -239,7 +239,7 @@ public class ClientXml
    }
 
 
-   public static void main(String args[]) 
+   public static void main(String args[])
    {
       new ClientXml(args);
    }
