@@ -176,7 +176,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    fi
    export CLASSPATH
 
-   PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
+   PATH=${PATH}:${XMLBLASTER_HOME}/bin:${XMLBLASTER_HOME}/testsuite/src/c/bin:${XMLBLASTER_HOME}/testsuite/src/c++/bin:${XMLBLASTER_HOME}/demo/c/socket/bin:${XMLBLASTER_HOME}/demo/c++/bin
    export PATH
 
    alias cdj='cd $JUTILS_HOME/src/java/org/jutils'
