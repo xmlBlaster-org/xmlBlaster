@@ -1227,6 +1227,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       sb.append(offset).append("<CacheQueueInterceptorPlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
+      sb.append("' maxEntriesCache='").append(this.transientQueue.getMaxNumOfEntries());
+      sb.append("' maxBytesCache='").append(this.transientQueue.getMaxNumOfBytes());
+      sb.append("' maxEntries='").append(getMaxNumOfEntries());
+      sb.append("' maxBytes='").append(getMaxNumOfBytes());
       sb.append("' numOfEntries='").append(getNumOfEntries());
       sb.append("' numOfBytes='").append(getNumOfBytes());
       sb.append("'>");

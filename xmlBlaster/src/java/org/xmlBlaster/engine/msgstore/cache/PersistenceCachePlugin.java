@@ -694,6 +694,10 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       sb.append(offset).append("<PersistenceCachePlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
+      sb.append("' maxEntriesCache='").append(this.transientStore.getMaxNumOfEntries());
+      sb.append("' maxBytesCache='").append(this.transientStore.getMaxNumOfBytes());
+      sb.append("' maxEntries='").append(getMaxNumOfEntries());
+      sb.append("' maxBytes='").append(getMaxNumOfBytes());
       sb.append("' numOfEntries='").append(getNumOfEntries());
       sb.append("' numOfBytes='").append(getNumOfBytes());
       sb.append("'>");
