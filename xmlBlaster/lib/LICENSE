@@ -56,13 +56,17 @@ All packages allow free use for both commercial and non-commercial applications.
 
 4) junit.jar
 ============
-   JUNIT 3.7 testsuite from Kent Beck and Erich Gamma
+   JUNIT 3.7-cvs testsuite from Kent Beck and Erich Gamma
 
    http://www.junit.org/
 
    Please read the
       ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
    file for more informations.
+   CVS version from Thu Jun 27, 2002 with modified
+	  junit/runner/excluded.properties
+   Added line
+     excluded.9=org.apache.crimson.*
 
 
 5) collections.jar
