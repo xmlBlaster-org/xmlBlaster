@@ -16,6 +16,20 @@
      loads your configuration settings (like the installation path of your CORBA library or XML parser)
      from build.properties. See the configuration example below how to set up build.properties.
      </p>
+     <p>
+     The cpptasks support many compilers on many platforms (like OS 390/400, SUN, HP, IBM, g++, intel, borland, VC++),
+     our build.xml is tested currently on Linux and Windows.
+     If you use an exotic platform please check cpptasks if this is supported
+     and extend build.xml to your needs (feedback is welcome).
+     </p>
+     <p>
+     Cory has added autoconf support but currently this support is outdated and
+     needs reanimation, see <a href="http://www.xmlBlaster.org/xmlBlaster/config/README.autoconf">xmlBlaster/config/README.autoconf</a>.
+     </p>
+     <p>
+     You may as well compile the client library with any other compile tool like
+     jam, but currently there is no such support in the xmlBlaster distribution.
+     </p>
 
      <p>To use the C++ client library several libraries are needed.
         <ul>
@@ -153,6 +167,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 </requirement>
 
