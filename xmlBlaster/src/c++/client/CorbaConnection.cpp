@@ -424,10 +424,10 @@ namespace org { namespace xmlBlaster {
       string me="";
       log.plain(me, "");
       log.plain(me, "Client connection options:");
-      log.plain(me, "  -ior                The IOR string.");
-      log.plain(me, "  -iorHost            The host where to find xmlBlaster [localhost]");
-      log.plain(me, "  -iorPort            The port where xmlBlaster publishes its IOR [7609]");
-      log.plain(me, "  -iorFile <fileName> A file with the xmlBlaster IOR.");
+      log.plain(me, "  -ior <IOR:00...>    The IOR string of the xmlBlaster-authentication server.");
+      log.plain(me, "  -iorHost <host>     The host where to find xmlBlaster [localhost]");
+      log.plain(me, "  -iorPort <port>     The port where xmlBlaster publishes its IOR [7609]");
+      log.plain(me, "  -iorFile <fileName> A file with the xmlBlaster-authentication server IOR.");
       log.plain(me, "  -ns <true/false>    Try to access xmlBlaster through a naming service [true]");
       log.plain(me, "");
    }
