@@ -160,6 +160,8 @@ Config files setup:
    Start the serlvet runtime manually on your xterm (command prompt):
 
       - switch off the automatic starting in jserv.conf:
+		  (you can start jserv manually or use the automatic startup with apache
+		  both runs fine)
          ApJServManual on
 
          ApJServLogFile /var/log/httpd/mod_jserv.log
