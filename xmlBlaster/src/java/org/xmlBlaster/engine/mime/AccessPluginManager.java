@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.2 2002/04/05 19:14:45 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.3 2002/04/16 20:42:30 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -59,7 +59,7 @@ public class AccessPluginManager extends PluginManagerBase {
     * @return The AccessFilter for this type and version or null if none is specified
     */
    public I_AccessFilter getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
+      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
       I_AccessFilter filterPlugin = null;
       String[] pluginNameAndParam = null;
 
