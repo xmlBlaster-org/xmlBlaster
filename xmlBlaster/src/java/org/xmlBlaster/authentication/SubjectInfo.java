@@ -425,30 +425,14 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
    /**
     * PtP mode: If the qos is set to forceQueuing the message is queued.
-    * @param msgUnit The message
+    * @param msgUnit The message. Only called in sync mode on publish (TopicHandler)
     * @param destination The Destination object of the receiver
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Queuing message for destination " + entry.getReceiver());
       if (log.DUMP) log.dump(ME, "Putting PtP message to queue: " + entry.toXml(""));
-
-      int countForwarded = forwardToSessionQueue(entry);
-
-      if (countForwarded <= 0) {
-         if (entry.getReceiver().isSession()) {
-            if (log.TRACE) log.trace(ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, throwing exception");
-            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION_SESSION, ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message is not delivered");
-         }
-         log.warn(ME, "No login session which accepts PtP messages is available for client '" + entry.getReceiver().getAbsoluteName() +
-                      "', queueing message '" + entry.getLogId() + "'");
-         try {
-            this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-            forwardToSessionQueue();
-         }
-         catch (Throwable e) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't process PtP message", e);
-         }
-      }
+      this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+      forwardToSessionQueue();
    }
 
    /**
@@ -466,7 +450,14 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (log.TRACE) log.trace(ME, "Trying to forward " + this.subjectQueue.getNumOfEntries() + " messages in subject queue to session queue ...");
       while (true) {
          try {
-            entry = (MsgQueueUpdateEntry)this.subjectQueue.peek(); // none blocking
+            try {
+               entry = (MsgQueueUpdateEntry)this.subjectQueue.peek(); // non-blocking
+            }
+            catch (Throwable ex) {
+               this.log.error(ME, "forwardToDestinationQueue: can't get entry from subject queue when trying to forward it to session queue " + ex.getMessage());
+               // TODO toDead from the subject may be necessary to avoid looping
+               break;
+            }
             if (entry == null)
                break;
             int countForwarded = forwardToSessionQueue(entry);
@@ -477,32 +468,20 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
             else if (countForwarded == -1) { // There are sessions but they don't want PtP
                break;
             }
-            else {
-               // We need to escape the while(true), (handle a msg to a pubSessionId which is unknown):
-               String message = "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getLogId() + "' is not delivered";
-               MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
-               XmlBlasterException e = new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, message);
-               MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, e);  // this.subjectQueue
-               getMsgErrorHandler().handleErrorSync(msgErrorInfo);
-               // !!!
-               //this.glob.getRequestBroker().deadMessage(msgQueueEntries, null, message);
-
-               this.subjectQueue.removeRandom(entry); // Remove the entry
-               //XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
-               //    "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getId() + "' is not delivered");
-               //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, ex);
-            }
-         }
-         catch(XmlBlasterException e) {
-            String id = (entry == null) ? "" : entry.getKeyOid();
-            log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue: " + e.getMessage());
-            break;
          }
          catch(Throwable e) {
-            String id = (entry == null) ? "" : entry.getKeyOid();
-            log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue: " + e.toString());
-            e.printStackTrace();
-            break;
+            MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
+            MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, e);  // this.subjectQueue
+            getMsgErrorHandler().handleError(msgErrorInfo);
+ 
+            try {
+               this.subjectQueue.removeRandom(entry); // Remove the entry
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "forwardToDestinationQueue: can't empty queue when removing '" + entry.getLogId() + "' " + ex.getMessage());
+               // TODO toDead from the subject may be necessary to avoid looping
+               break;
+            }
          }
       }
 
@@ -517,47 +496,34 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
    /**
     * Forward the given message to session queue.
-    * @return Number of session queues this message is forwarded to
-    *         or 0 if not delivered at all,
+    * @return Number of session queues this message is forwarded to.
     *         -1 if not delivered because the available sessions don't want PtP
+    * @throws XmlBlasterException if not delivered at all.
     */
-   private final int forwardToSessionQueue(MsgQueueEntry entry) {
+   private final int forwardToSessionQueue(MsgQueueEntry entry) throws XmlBlasterException {
 
       if (getSessions().length < 1) return 0;
 
       int countForwarded = 0;
-      boolean hasPtpNotAllowed = false;
 
       SessionName destination = entry.getReceiver();
 
+
       // send to a specific session ...
-      if (destination.isSession()) { 
-         SessionInfo sessionInfo = getSession(destination);
-         if (sessionInfo != null) {
-            if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
-                          this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
-                          " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
-                          " size=" + sessionInfo.getSessionQueue().getNumOfEntries());
-            try {
-               sessionInfo.queueMessage(entry);
-               return 1;
-            }
-            catch (Throwable e) {
-               log.warn(ME, "Can't deliver message with session '" + sessionInfo.getId() + "': " + e.toString());
-            }
-         }
-         log.warn(ME, "Can't forward msg " + entry.getLogId() + " from " +
-                     this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
-                     " to unknown session '" + entry.getReceiver().getAbsoluteName() + "'");
-         return 0;
+      
+      if (destination.isSession()) {
+         String tmp = "Can't forward msg " + entry.getLogId() + " from " +
+                      this.subjectQueue.getStorageId() + " size=" + 
+                      this.subjectQueue.getNumOfEntries() + " to unknown session '" + 
+                      entry.getReceiver().getAbsoluteName() + "'"; 
+         log.warn(ME, tmp);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
 
       // ... or send to ALL sessions
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         if (!sessionInfo.getConnectQos().isPtpAllowed())
-            hasPtpNotAllowed = true;
          if (sessionInfo.getConnectQos().isPtpAllowed() && sessionInfo.hasCallback()) {
             if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
                           this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
@@ -576,7 +542,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (countForwarded > 0) {
          return countForwarded;
       }
-      return (hasPtpNotAllowed) ? -1 : 0;
+      return -1;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {

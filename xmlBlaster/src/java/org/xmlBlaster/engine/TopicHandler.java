@@ -598,7 +598,7 @@ public final class TopicHandler implements I_Timeout
    /**
     * Forward PtP messages
     */
-   public void forwardToDestinations(SessionInfo publisherSessionInfo,
+   private void forwardToDestinations(SessionInfo publisherSessionInfo,
       MsgUnitWrapper cacheEntry, PublishQosServer publishQos)
       throws XmlBlasterException {
       // NOTE: cluster forwarded PtP destinations are removed already from this list:
@@ -614,87 +614,98 @@ public final class TopicHandler implements I_Timeout
          }
 
          SessionInfo receiverSessionInfo = null;
-         boolean destinationIsSession = destination.getDestination().isSession();
+         SessionName destinationSessionName = destination.getDestination();
+         boolean destinationIsSession = destinationSessionName.isSession();
          boolean sessionExists = false;
          boolean forceQueing = destination.forceQueuing();
-         boolean wantsPtP = true;
+         boolean wantsPtP = true; // TODO if destination never has looged in spam would be possible!  
 
-         SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
-         boolean subjectExists = destinationClient != null;
-         boolean cbQueueOverflow = false;
-         boolean severeError = false;
+         synchronized (authenticate) {
+            SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
+            boolean subjectExists = destinationClient != null;
+            // boolean cbQueueOverflow = false;
+            // boolean severeError = false;
 
-         if (destinationIsSession) {
-            receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
-            sessionExists = receiverSessionInfo != null;
+            if (destinationIsSession) {
+               receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
+               sessionExists = receiverSessionInfo != null;
 
-            if (sessionExists) {
-               wantsPtP = receiverSessionInfo.getConnectQos().isPtpAllowed();
-               subjectExists = true;
-            }
-         }
-
-         // case 2
-         if (!wantsPtP) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
-                receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
-                "' is rejected");
-         }
-
-         // Row 1 in table 
-         if (forceQueing && destinationIsSession && !sessionExists) {
-            destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-
-            MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
-                    cacheEntry,
-                    destinationClient.getSubjectQueue().getStorageId(),
-                    destination.getDestination(),
-                    Constants.SUBSCRIPTIONID_PtP);
-            destinationClient.queueMessage(msgEntrySubject);
-         } else if (forceQueing && destinationIsSession && sessionExists) {
-            MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
-                    cacheEntry,
-                    receiverSessionInfo.getSessionQueue().getStorageId(),
-                    destination.getDestination(),
-                    Constants.SUBSCRIPTIONID_PtP);
-
-            try {
-               receiverSessionInfo.queueMessage(msgEntry);
-            } catch (XmlBlasterException ex) {
-               if (ex.getErrorCodeStr().startsWith("resource.overflow")) {
-                  destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-
-                  MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
-                          cacheEntry, destinationClient.getSubjectQueue().getStorageId(),
-                          destination.getDestination(), Constants.SUBSCRIPTIONID_PtP);
-                  destinationClient.queueMessage(msgEntrySubject);
-               } else {
-                   throw ex;
+               if (sessionExists) {
+                  wantsPtP = receiverSessionInfo.getConnectQos().isPtpAllowed();
+                  subjectExists = true;
                }
             }
-         }
-         // 3 + 6 (force queing ignored since same reaction for both)
-         else if (!destinationIsSession) {
-            destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
 
-            MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
-                    destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                    Constants.SUBSCRIPTIONID_PtP);
-            destinationClient.queueMessage(msgEntrySubject);
-         }
-         // case 5
-         else if (!forceQueing && destinationIsSession && sessionExists) {
-            MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
-                    receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
-                    Constants.SUBSCRIPTIONID_PtP);
-            receiverSessionInfo.queueMessage(msgEntry);
-         }
-         // case 7         
-         else if (!forceQueing && !subjectExists) {
-            String tmp = "Sending PtP message to '" + destination.getDestination() + "' failed, message is lost.";
-            log.warn(ME, tmp);
-            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
-                " Client is not logged in and <destination forceQueuing='true'> is not set");
+            // case 2
+            if (!wantsPtP) { // no spam
+               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
+                   receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
+                   "' is rejected");
+            }
+
+            // Row 1 in table 
+            if (forceQueing && destinationIsSession && !sessionExists) {
+               /*
+               destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
+
+               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
+                       cacheEntry,
+                       destinationClient.getSubjectQueue().getStorageId(),
+                       destination.getDestination(),
+                       Constants.SUBSCRIPTIONID_PtP);
+               destinationClient.queueMessage(msgEntrySubject);
+               */
+               receiverSessionInfo = authenticate.unsecureCreateSession(destinationSessionName);
+               sessionExists = receiverSessionInfo != null;
+            } 
+
+            if (forceQueing && destinationIsSession && sessionExists) {
+               MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
+                       cacheEntry,
+                       receiverSessionInfo.getSessionQueue().getStorageId(),
+                       destination.getDestination(),
+                       Constants.SUBSCRIPTIONID_PtP);
+
+               // try {
+                  receiverSessionInfo.queueMessage(msgEntry);
+               /*
+               }      
+               catch (XmlBlasterException ex) {
+                  if (ex.getErrorCodeStr().startsWith("resource.overflow")) {
+                     destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
+
+                     MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob,
+                             cacheEntry, destinationClient.getSubjectQueue().getStorageId(),
+                             destination.getDestination(), Constants.SUBSCRIPTIONID_PtP);
+                     destinationClient.queueMessage(msgEntrySubject);
+                  } 
+                  else throw ex;
+               }
+               */
+            }
+            // 3 + 6 (force queing ignored since same reaction for both)
+            else if (!destinationIsSession && (forceQueing || !forceQueing && subjectExists)) {
+               destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
+
+               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
+                       destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
+                       Constants.SUBSCRIPTIONID_PtP);
+               destinationClient.queueMessage(msgEntrySubject);
+            }
+            // case 5
+            else if (!forceQueing && destinationIsSession && sessionExists) {
+               MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
+                       receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
+                       Constants.SUBSCRIPTIONID_PtP);
+               receiverSessionInfo.queueMessage(msgEntry);
+            }
+            // case 7         
+            else if (!forceQueing && !subjectExists) {
+               String tmp = "Sending PtP message to '" + destination.getDestination() + "' failed, message is lost.";
+               log.warn(ME, tmp);
+               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
+                   " Client is not logged in and <destination forceQueuing='true'> is not set");
+            }
          }
       }
    }
