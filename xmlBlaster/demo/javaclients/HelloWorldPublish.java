@@ -76,7 +76,7 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  * If erase=false the message is not erase at the end, if disconnect=false we don't logout at the end.
  * </p>
  * <p>
- * You can add '%counter' to the clientTags or the content string, each occurence will be replaced
+ * You can add '%counter' to the clientTags or the content string, each occurrence will be replaced
  * by the current message number.
  * </p>
  * @see javaclients.HelloWorldSubscribe
