@@ -103,7 +103,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          sq.setWantLocal(false);
          sq.setWantInitialUpdate(true);
          HistoryQos historyQos = new HistoryQos(this.global);
-         historyQos.setNumEntries(-1);
+         historyQos.setNumEntries(1);
          sq.setHistoryQos(historyQos);
          this.subscribeReturnQos = this.access.subscribe(sk, sq);
       }
@@ -138,6 +138,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    synchronized public void figureChanged(FigureChangeEvent e) {
+      if (e.getFigure() instanceof Drawing) return;
       super.figureChanged(e);
       if (this.doRecord) {
          publish(e.getFigure(), false);
@@ -188,6 +189,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    synchronized public Figure add(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "add");
+      if (figure instanceof Drawing) return figure;
       if (this.doRecord) {
          String timestamp = "" + (new Timestamp()).getTimestampLong();
          String figureId = (String)figure.getAttribute("FigureId");
@@ -224,6 +226,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    synchronized public Figure orphan(Figure figure) {
       if (this.log.CALL) this.log.call(ME, "orphan");
+      if (figure instanceof Drawing) return figure;
       if (this.doRecord) {
          try {
             // the removing is handled by the timeout
