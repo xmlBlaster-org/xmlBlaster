@@ -70,7 +70,10 @@ if ! [ ${JacORB_HOME} ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
-		export PATH=${JacORB_HOME}/bin:${PATH}
+		PATH=${JacORB_HOME}/bin:${PATH}
+		export PATH
+		CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
+		export CLASSPATH
    else
       echo -e ""
       echo -e "$BLACK_RED   Please set environment variable JacORB_HOME                       $ESC"
