@@ -10,7 +10,7 @@ package org.xmlBlaster.engine;
 /**
  * Listens on run level change events, for example shutdown is runlevel 0, up and running is runlevel 10. 
  * <p>
- * @see org.xmlBlaster.engine.Constants
+ * @see org.xmlBlaster.engine.helper.Constants
  * @author Marcel Ruff
  * @since 0.79f
  */
