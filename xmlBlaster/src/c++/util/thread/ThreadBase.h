@@ -97,7 +97,7 @@ public:
 
    bool isRunning() const
    {
-      return thread_;
+      return (thread_ != NULL);
    }
 
 };
