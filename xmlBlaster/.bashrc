@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.73 $
+# $Revision: 1.74 $
 #-----------------------------------------------------------
 
 
@@ -149,8 +149,13 @@ if [ ${JAVA_HOME:=""} != "" ] ; then
          # JDK 1.2
          ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
          if [ ! -f ${ORB_PROPS} ]; then
-            cp ${XMLBLASTER_HOME}/orb.properties ${ORB_PROPS}
-            ${ECHO} "$BLACK_RED   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
+            cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
+				RESULT=$?
+				if [ ${RESULT} = "0" ]; then
+               ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
+				else
+               ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
+				fi
          fi
          # If copy failed (missing permissions?)
          # if [ $? -ne 0 ] ;  then

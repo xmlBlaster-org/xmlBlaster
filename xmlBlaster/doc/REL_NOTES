@@ -16,6 +16,8 @@ Changes for 0.79 [?, ? 2000]
 
   - Moved jacorb.properties.template to config directory
 
+  - Moved orb.properties to config directory
+
 Changes for 0.78 [Jul, 14 2000]
 ==============================
   - Added generic database access from James to xmlBlaster core.
