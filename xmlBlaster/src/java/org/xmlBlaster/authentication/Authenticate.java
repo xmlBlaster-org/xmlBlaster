@@ -111,7 +111,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    {
       Thread.currentThread().dumpStack();
       log.error(ME, "login() not implemented");
-      throw new XmlBlasterException(ME, "login() not implemented");
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "login() not implemented and deprecated");
    }
 
    /**
