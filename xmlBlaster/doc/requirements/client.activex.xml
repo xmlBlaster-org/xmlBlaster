@@ -673,14 +673,14 @@ Catch e As SystemException
    <see type="REQ">interface</see>
    <see type="REQ">client.script</see>
    <see type="API">org.xmlBlaster.client.activex.XmlScriptAccess</see>
-   <see type="INTERNET">http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html</see>
+   <see type="INTERNET" label="Sun ActiveX bridge guide">http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html</see>
    <see type="INTERNET">http://forum.java.sun.com/forum.jsp?forum=40</see>
    <see type="INTERNET" label="VisualBasic 6 hints">http://www-106.ibm.com/developerworks/websphere/WASInfoCenter/infocenter/wasee_content/xjb/concepts/cxjmdinv.htm</see>
-   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/activex/README</see>
+   <see type="INTERNET" label="Bean implementation">http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/activex</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/activex</see>
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 </requirement>
 
