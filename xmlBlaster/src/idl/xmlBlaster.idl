@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.27 1999/11/30 10:36:54 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.28 1999/12/01 15:40:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -167,6 +167,7 @@ module serverIdl
     *
     * RELATED DESIGN PATTERNS:
     *   @see JMS - Java Message Service, http://java.sun.com/products/jms/
+    *   @see JMQ - A reference implementation of JMS, http://www.sun.com/workshop/jmq/
     *   @see JNDI - Java Naming & Directory Interface, www.javasoft.com/products/jndi
     *   @see Observer Pattern, Gamma et.al
     *   @see CORBA Property Service, http://www.omg.org

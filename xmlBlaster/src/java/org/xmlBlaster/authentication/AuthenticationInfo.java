@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.1 1999/11/30 09:29:31 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.2 1999/12/01 15:40:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ public class AuthenticationInfo
 
 
    /**
-    * This Object is constructed by the client login call 
+    * This Object is constructed by the client login call
     */
    public AuthenticationInfo(String uniqueKey, String loginName, String passwd,
                        BlasterCallback callback,
@@ -46,7 +46,8 @@ public class AuthenticationInfo
    }
 
    /**
-    *
+    * The CORBA callback reference of the client. 
+    * @return BlasterCallback The client callback implementation
     */
    public final BlasterCallback getCB() throws XmlBlasterException
    {
@@ -69,6 +70,7 @@ public class AuthenticationInfo
 
 
    /**
+    * The unique Client ID in HEX format, to be able to dump it
     * @return the uniqueKey in hex notation for dumping it (readable form)
     */
    public String getUniqueKeyHex() throws XmlBlasterException
@@ -78,6 +80,7 @@ public class AuthenticationInfo
 
 
    /**
+    * 
     */
    public String toString()
    {

@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.14 1999/11/30 09:29:31 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.15 1999/12/01 15:40:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -24,9 +24,8 @@ import jacorb.poa.util.POAUtil;
 
 
 /**
- * Authenticate.
- *
- * Authenticate a client via login<br>
+ * Authenticate a client via login. 
+ * <p>
  * The login method serves as a factory for a xmlBlaster.Server Reference
  */
 public class Authenticate
@@ -98,6 +97,8 @@ public class Authenticate
     * This allows:<br>
     * - Identification of the client thru its unique IOR<br>
     * - Only a few threads are enough to serve many clients
+    *
+    * @param The CORBA interface implementing object
     */
    private Authenticate(AuthServerImpl authServerImpl)
    {
@@ -150,26 +151,27 @@ public class Authenticate
 
 
    /**
-    * Authentication of a client
-    *
+    * Authentication of a client. 
+    * <p>
     * @param xmlQoS_literal
     *     <pre>
-    *        <client>
-    *           <compress type='gzip'>
+    *        &lt;client>
+    *           &lt;compress type='gzip'>
     *              1000
-    *           </compress>
-    *           <queue>
-    *              <size>
+    *           &lt;/compress>
+    *           &lt;queue>
+    *              &lt;size>
     *                 1000
-    *              </size>
-    *              <timeout>
+    *              &lt;/size>
+    *              &lt;timeout>
     *                 3600
-    *              </timeout>
-    *           </queue>
-    *        </client>
+    *              &lt;/timeout>
+    *           &lt;/queue>
+    *        &lt;/client>
     *     </pre>
     * @param callback The Callback interface of the client
     * @return The xmlBlaster.Server interface
+    * @exception XmlBlasterException Access denied
     */
    public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
                        BlasterCallback callback, String callbackIOR,
@@ -206,7 +208,9 @@ public class Authenticate
 
 
    /**
-    * Logout of a client
+    * Logout of a client. 
+    * <p>
+    * @exception XmlBlasterException If client is unknown
     */
    public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
    {
@@ -249,6 +253,7 @@ public class Authenticate
 
 
    /**
+    * Used to fire an event if a client does a login / logout
     */
    private final void fireClientEvent(ClientInfo clientInfo, boolean login) throws XmlBlasterException
    {
@@ -266,14 +271,14 @@ public class Authenticate
 
 
    /**
-    * Use this method to check a clients authentication. 
+    * Use this method to check a clients authentication.
     * <p>
-    * This method can only be called from a invoked xmlBlaster-server
+    * This method can only be called from an invoked xmlBlaster-server
     * method (like subscribe()), because only there the
     * unique POA 'active object identifier' is available to identify the caller.
     *
     * @return ClientInfo - if the client is OK
-    * @exception Access denied
+    * @exception XmlBlasterException Access denied
     */
    public ClientInfo check() throws XmlBlasterException
    {

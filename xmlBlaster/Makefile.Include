@@ -49,7 +49,7 @@ endif
 RMIC=  rmic -d $(CLASS_TOP_DIR)
 
 JAVA=  java
-JAVADOC= javadoc -author -version -J-ms39m -J-mx40m
+JAVADOC= javadoc -author -version -private -J-ms39m -J-mx40m
 
 MAKE=make
 
