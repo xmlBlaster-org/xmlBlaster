@@ -95,6 +95,18 @@
 
    con.disconnect(qos);
       </pre>
+      <p>
+      The java client library has a client side tail back queue which queues
+      messages if the connection to the server is unavailable.
+      If a client queue contains entries the default behavior
+      on disconnect is depending on the public session ID. If the client
+      uses a login name with a specified public session ID the queue entries
+      are kept so if the client reconnects later with the same public session ID
+      the messages in the queue are sent.
+      If the public session ID was arbitrary chosen by the xmlBlaster server
+      the queue entries are discarded.<br />
+      You can control this behavior with <i>qos.clearClientQueue(true/false);</i>
+      </p>
    </example>
 
    <configuration>
@@ -106,7 +118,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>This uses the Disconnect but does not test it yet</comment>
