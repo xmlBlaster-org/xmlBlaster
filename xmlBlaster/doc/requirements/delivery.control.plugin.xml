@@ -62,7 +62,7 @@
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
          <li>I_MsgDeliveryInterceptor: Which forces you to implement some methods which allows you to control the message flow</li>
       </ul>
-      This is simple and straight forward (see requirement delivery.control.plugin.howto).
+      This is simple and straight forward (see requirement delivery.plugin.priorizedDelivery).
       </p>
       <p>
       Note that this is only an example what you can do. The status message and priority configuration
@@ -113,17 +113,17 @@
       </table>
       <!-- p>
       For coding and configuration of plugins please read the
-      requirement delivery.control.plugin.howto (see link below)
+      requirement delivery.plugin.priorizedDelivery (see link below)
       </p -->
    </configuration>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor</see>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
-   <see type="REQ">delivery.control.plugin.howto</see>
+   <see type="REQ">delivery.plugin.priorizedDelivery</see>
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 10 30</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
