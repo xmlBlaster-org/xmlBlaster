@@ -157,6 +157,17 @@ public class NamedConnectionPool
    }
 
    /**
+    * Use this method to destroy the given JDBC connection.
+    */
+   void eraseConnection(String dbUrl, String dbUser, String dbPasswd, Connection con) throws XmlBlasterException {
+      UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
+      if (pool != null) {
+         if (log.TRACE) log.trace(ME, "erase(" + dbUrl + ", " + dbUser + ") con=" + con);
+         pool.erase(con);
+      }
+   }
+
+   /**
     * Destroy the JDBC connection pool from a specific user.
     * The driver remains.
     * @param The UnnamedConnectionPool object
@@ -256,7 +267,7 @@ public class NamedConnectionPool
       /**
        * @param boss           My manager
        * @param eraseUnusedPoolTimeout This pool is erased after given millis without activity of the owning user<br />
-       *                       0 switches it off
+       *                       0 switches it off, -1 looks into env JdbcPool.eraseUnusedPoolTimeout setting (and defaults to one hour)
        * @param maxInstances   Max. number of resources in this pool.
        *                       -1 uses default of 20 (xmlBlaster.properties)<br />
        * @param busyToIdleTimeout Max. busy time of this resource in milli seconds<br />
@@ -283,8 +294,11 @@ public class NamedConnectionPool
          this.dbPasswd = dbPasswd;
          this.eraseUnusedPoolTimeout = eraseUnusedPoolTimeout;
 
-         if (eraseUnusedPoolTimeout == -1)
-            eraseUnusedPoolTimeout = glob.getProperty().get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disapears for one hour, delete his pool
+         if (this.eraseUnusedPoolTimeout == -1)
+            this.eraseUnusedPoolTimeout = glob.getProperty().get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disappears for one hour, delete his pool
+         if (this.eraseUnusedPoolTimeout > 0 && this.eraseUnusedPoolTimeout < 1000L)
+            this.eraseUnusedPoolTimeout = 1000L; // minimum
+
          if (maxInstances == -1)
             maxInstances = glob.getProperty().get("JdbcPool.maxInstances", 20); // Max. number of connections
          if (busyToIdle == -1)
@@ -292,13 +306,13 @@ public class NamedConnectionPool
          if (idleToErase == -1)
             idleToErase = glob.getProperty().get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
 
-         maxResourceExhaustRetries = glob.getProperty().get("JdbcPool.maxResourceExhaustRetries", 5);
+         this.maxResourceExhaustRetries = glob.getProperty().get("JdbcPool.maxResourceExhaustRetries", 5);
          resourceExhaustSleepGap = glob.getProperty().get("JdbcPool.resourceExhaustSleepGap", 1000);   // milli
 
          poolManager = new PoolManager(ME, this, maxInstances, busyToIdle, idleToErase);
-         if (eraseUnusedPoolTimeout > 10L)
+         if (this.eraseUnusedPoolTimeout >= 1000L)
             synchronized(timeoutHandle) {
-               timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
+               timeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
             }
       }
 
@@ -338,6 +352,8 @@ public class NamedConnectionPool
          }
          catch (Exception e) {
             log.error(ME, "System Exception in close JDBC connection: " + e.toString());
+            // For example Oracle throws this if you have shutdown Oracle in the mean time:
+            // System Exception in close JDBC connection: java.sql.SQLException: Io exception: End of TNS data channel
          }
       }
 
@@ -351,9 +367,9 @@ public class NamedConnectionPool
          while (true) {
             try {
                synchronized(meetingPoint) {
-                  if (eraseUnusedPoolTimeout > 10L) {
+                  if (this.eraseUnusedPoolTimeout > 200L) {
                      synchronized(timeoutHandle) {
-                        timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, eraseUnusedPoolTimeout);
+                        timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, this.eraseUnusedPoolTimeout);
                      }
                   }
                   ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
@@ -362,8 +378,8 @@ public class NamedConnectionPool
                }
             }
             catch (JUtilsException e) {
-               if (e.id.equals("ResourceExhaust") && ii < maxResourceExhaustRetries) {
-                  if (ii == 0) log.warn(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+               if (e.id.equals("ResourceExhaust") && ii < this.maxResourceExhaustRetries) {
+                  if (ii == 0) log.warn(ME, "Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                   Sleeper.sleep(resourceExhaustSleepGap);
                   ii++;
                }
@@ -387,13 +403,26 @@ public class NamedConnectionPool
             }
          }
          catch (JUtilsException e) {
+            Thread.currentThread().dumpStack();
             log.error(ME, "Caught exception in release(): " + e.toString());
             throw new XmlBlasterException(e);
          }
       }
 
       /**
-       * Timeout callback enforced by I_Timeout.
+       * Destroy a JDBC connection (from busy or idle to undef). 
+       */
+      void erase(Connection con) throws XmlBlasterException {
+         if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
+         if (log.TRACE) log.trace(ME, "Entering erase '" + dbUrl + "', '" + dbUser + "' conId=" + con);
+         synchronized(meetingPoint) {
+            poolManager.erase(""+con);
+         }
+      }
+
+      /**
+       * Timeout callback enforced by I_Timeout. 
+       * Destroys pool of a user with all its connections
        */
       public void timeout(java.lang.Object o)
       {
@@ -401,8 +430,11 @@ public class NamedConnectionPool
          synchronized(meetingPoint) {
             if (poolManager.getNumBusy() != 0) {
                log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
-               synchronized(timeoutHandle) {
-                  timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
+               if (this.eraseUnusedPoolTimeout > 200L) {
+                  synchronized(timeoutHandle) {
+                     timeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
+                     //[Aug 12, 2002 9:32:11 PM WARN  UnnamedConnectionPool] Can't destroy pool from 'jdbc:oracle:thin:@localhost:1521:DEKRA', 'mrf', he seems to be busy working on his database.
+                  }
                }
                return;
             }
@@ -418,6 +450,7 @@ public class NamedConnectionPool
       void destroy() {
          synchronized(meetingPoint) {
             if (poolManager != null) {
+               if (log.TRACE) log.trace(ME, "Destroying pool: " + poolManager.toXml());
                poolManager.destroy();
                poolManager = null;
             }
@@ -434,7 +467,7 @@ public class NamedConnectionPool
       {
          StringBuffer buf = new StringBuffer(256);
          String offset = "\n   ";
-         buf.append(offset).append("<").append(ME).append(" url='").append(dbUrl).append("' user='").append(dbUser).append("' eraseUnusedPoolTimeout='").append(eraseUnusedPoolTimeout).append("'>");
+         buf.append(offset).append("<").append(ME).append(" url='").append(dbUrl).append("' user='").append(dbUser).append("' this.eraseUnusedPoolTimeout='").append(this.eraseUnusedPoolTimeout).append("'>");
          if (poolManager != null)
             buf.append(poolManager.toXml("      "));
          else
