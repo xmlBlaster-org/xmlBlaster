@@ -46,6 +46,11 @@ If you use 'xmlBlaster/.bashrc', login again to include xmlBlaster.jar into
 your CLASSPATH.
 Else add it manually.
 
+TODO
+  Probably we should split the build file and integrate with a master
+  file, see:
+   ftp://www6.software.ibm.com/software/developer/library/j-tools4xp.pdf
+
 ============================================================================ -->
 
 <project default="usage" basedir=".">
