@@ -364,14 +364,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    public synchronized boolean disconnect(DisconnectQos disconnectQos) {
-      /*  Commented out to have access to shutdown() even
-          if we are not connected (to free database in persistent queue)
-
-      if (!isConnected()) {
+      // Relaxed check to allow shutdown of database without successful connection
+      if (this.connectQos == null /*!isConnected()*/) {
          log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
          return false;
       }
-      */
 
       if (disconnectQos == null)
          disconnectQos = new DisconnectQos(glob);
