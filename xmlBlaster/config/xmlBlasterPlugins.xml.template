@@ -34,6 +34,24 @@
       <action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
    </plugin>
 
+   <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative.java -->
+<!--
+   <plugin id='HelloWorldNative' className='javaclients.HelloWorldNative'>
+      <action do='LOAD' onStartupRunlevel='9' sequence='5' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='6' sequence='4'/>
+   </plugin>
+-->
+
+   <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative2.java -->
+<!--
+   <plugin id='HelloWorldNative2' className='javaclients.HelloWorldNative2'>
+      <attribute id='loginName'>nativeClient2</attribute>
+      <attribute id='topicName'>aNativeTopic2</attribute>
+      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+   </plugin>
+-->
+
 <!--
    <plugin id='SOAP' className='org.xmlBlaster.protocol.soap.SoapDriver'>
       <attribute id='classpath'>soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar</attribute>
