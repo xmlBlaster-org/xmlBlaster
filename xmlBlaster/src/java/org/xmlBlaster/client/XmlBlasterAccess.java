@@ -64,9 +64,13 @@ import org.xmlBlaster.client.I_ConnectionHandler;
 import java.util.HashMap;
 
 /**
+ * This is the default implementation of the java client side remote access to xmlBlaster. 
  * <p>
- * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
- * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
+ * It hides a client side queue, the client side dispatcher framework for polling
+ * or pinging the server and some more features.
+ * </p>
+ * <p>
+ * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended.
  * </p>
  */
 public final class XmlBlasterAccess extends AbstractCallbackExtended
@@ -104,6 +108,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * Create an xmlBlaster accessor. 
     * Please don't create directly but use the factory instead:
     * <pre>
+    *   import org.xmlBlaster.util.Global;
+    *   ...
     *   final Global glob = new Global(args);
     *   final I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
     * </pre>
@@ -156,24 +162,6 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Login to xmlBlaster
-    * <pre>
-    *  ConnectQos qos = new ConnectQos(glob);
-    *
-    *  // Example how to configure fail safe settings
-    *  Address addr = new Address(glob);
-    *  addr.setDelay(2000L);
-    *  addr.setRetries(-1);
-    *  addr.setMaxEntries(2000);
-    *  addr.setPingInterval(5000L);
-    *  qos.addAddress(addr);
-    *
-    * </pre>
-    * @param qos Your configuration desire
-    * @param updateListener If not null a callback server will be created and 
-    *        callback messages will be routed to your updateListener.update() method. 
-    * @param ConnectReturnQos with all informations, never null
-    * @exception On connection failure
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
@@ -319,24 +307,15 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * Logout from the server.
     * <p />
     * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
-    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection#disconnect(DisconnectQos, boolean, boolean, boolean)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    public boolean disconnect(DisconnectQos qos) {
       return disconnect(qos, true, true, true);
    }
 
    /**
-    * Logout from the server. 
-    * <p>
-    * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
-    * Note that this kills the server ping thread as well (if in fail save mode)
-    * </p>
-    * @param qos The disconnect quality of service
-    * @param flush Flushed pending publishOneway() messages if any
-    * @param shutdown shutdown lowlevel connection as well (e.g. CORBA connection)
-    * @param shutdownCb shutdown callback server as well (if any was established)
-    * @return <code>true</code> successfully logged out<br />
-    *         <code>false</code> failure on logout
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    public synchronized boolean disconnect(DisconnectQos disconnectQos, boolean flush, boolean shutdown, boolean shutdownCb) {

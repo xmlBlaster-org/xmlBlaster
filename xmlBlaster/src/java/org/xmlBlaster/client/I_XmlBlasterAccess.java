@@ -141,12 +141,18 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Logout from the server.
     * <p />
     * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
-    * @see org.xmlBlaster.client.XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
+    * @param disconnectQos Describe the desired behavior on disconnect
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
     */
-   boolean disconnect(DisconnectQos qos);
+   boolean disconnect(DisconnectQos disconnectQos);
 
    /**
-    * Note that this contains no information about the current connection state. 
+    * Has the connect() method successfully passed? 
+    * <p>
+    * Note that this contains no information about the current connection state
+    * of the protocol layer. 
+    * </p>
     * @return true If the connection() method was invoked without exception
     * @see I_ConnectionHandler#isAlive()
     * @see I_ConnectionHandler#isPolling()
@@ -221,6 +227,13 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    //SubscribeReturnQos subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
+    * Subscribe to messages. 
+    * <p>
+    * The messages are delivered asynchronous with the update() method. 
+    * </p>
+    * @param subscribeKey Which message topics to retrieve
+    * @param subscribeQos Control the behavior and further filter messages with mime based filter plugins
+    * @see org.xmlBlaster.client.I_Callback#update(String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos) throws XmlBlasterException;
@@ -267,18 +280,27 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException;
 
    /**
+    * Subscribe to messages. 
+    * @param xmlKey Which message topics to retrieve
+    * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
     */
    SubscribeReturnQos subscribe(String xmlKey, String xmlQos, I_Callback cb) throws XmlBlasterException;
 
    //MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
+    * Get synchronous messages. 
+    * @param getKey Which message topics to retrieve
+    * @param getQos Control the behavior and further filter messages with mime based filter plugins
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">interface.get requirement</a>
     */
    MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
    //UnSubscribeReturnQos[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
+    * Cancel subscription. 
+    * @param unSubscribeKey Which messages to cancel
+    * @param unSubscribeQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
     */
    UnSubscribeReturnQos[] unSubscribe(UnSubscribeKey unSubscribeKey, UnSubscribeQos unSubscribeQos) throws XmlBlasterException;
@@ -290,12 +312,16 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    //Rename publishArr() to publish
    //PublishReturnQos[] publish(org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException;
    /**
+    * Publish messages. 
+    * @param msgUnitArr The messages to send to the server
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
 
    //EraseReturnQos[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
+    * @param eraseKey The topics to erase
+    * @param eraseQos Control the erase behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
     */
    EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException;
