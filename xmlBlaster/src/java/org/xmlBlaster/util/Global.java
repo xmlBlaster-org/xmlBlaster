@@ -53,6 +53,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 
 import java.util.Properties;
@@ -1368,8 +1369,9 @@ public class Global implements Cloneable
     * where the important requirement here is that it contains a ':' character.
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
+    * @deprecated you should use getJdbcQueueManager(String,String,PluginInfo) instead
     */
-   public synchronized JdbcManager getJdbcQueueManager(StorageId queueId /*, Properties pluginProperties*/)
+   public synchronized JdbcManager getJdbcQueueManager(StorageId queueId)
       throws XmlBlasterException {
 
       String location = ME + "/Queue '" + queueId + "'";
@@ -1417,6 +1419,74 @@ public class Global implements Cloneable
       }
       return manager;
    }
+
+
+   // this is the new one still under testing
+   /**
+    * Returns a JdbcManager for a specific queue. It strips the queueId to
+    * find out to which manager it belongs. If such a manager does not exist
+    * yet, it is created and initialized.
+    * A queueId must be of the kind: cb:some/id/or/someother
+    * where the important requirement here is that it contains a ':' character.
+    * text on the left side of the separator (in this case 'cb') tells which
+    * kind of queue it is: for example a callback queue (cb) or a client queue.
+    */
+   public synchronized JdbcManager getJdbcQueueManager(PluginInfo pluginInfo)
+      throws XmlBlasterException {
+
+      String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
+      if (this.jdbcQueueManagers == null) this.jdbcQueueManagers = new Hashtable();
+
+      String managerName = pluginInfo.getTypeVersion();
+
+      Object obj = this.jdbcQueueManagers.get(managerName);
+      JdbcManager manager = null;
+      if (obj == null) {
+         JdbcConnectionPool pool = new JdbcConnectionPool();
+         try {
+            pool.initialize(this, pluginInfo);
+            manager = new JdbcManager(pool, getEntryFactory(managerName));
+            pool.setConnectionListener(manager);
+            manager.setUp();
+            if (log.TRACE) log.trace(ME, "Created JdbcManager instance for storage plugin configuration '" + managerName + "'");
+         }
+         catch (ClassNotFoundException ex) {
+            this.log.error(location, "getJdbcQueueManager class not found: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager class not found", ex);
+         }
+         catch (SQLException ex) {
+            if (this.log.TRACE) this.log.trace(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager SQL exception", ex);
+         }
+
+         this.jdbcQueueManagers.put(managerName, manager);
+      }
+      else manager = (JdbcManager)obj;
+
+      try {
+         if (!manager.getPool().isInitialized()) {
+            manager.getPool().initialize(this, managerName + ".queue.persistent");
+            if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
+         }
+      }
+      catch (ClassNotFoundException ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: sql exception when initializing the connection pool", ex);
+      }
+      return manager;
+   }
+
+
+
+
+
+
+
+
+
+
 
 
    /**

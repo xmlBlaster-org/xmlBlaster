@@ -11,6 +11,7 @@ package org.xmlBlaster.util.queue.jdbc;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -200,6 +201,8 @@ public class JdbcConnectionPool implements I_Timeout {
     * <li>prefix.driverName DEFAULTS TO "org.postgresql.Driver"</li> <li>prefix.connectionPoolSize "DEFAULTS TO 5"</li>
     * <li>prefix.url DEFAULTS TO "jdbc:postgresql://localhost/test"</li> <li>prefix.user DEFAULTS TO "postgres"</li>
     * <li>prefix.password  DEFAULTS TO ""</li> </ul>
+    *
+    * @deprecated you should use initialize(Global, PluginInfo) instead
     */
    public synchronized void initialize(Global glob, String prefix)
       throws ClassNotFoundException, SQLException, XmlBlasterException {
@@ -292,6 +295,150 @@ public class JdbcConnectionPool implements I_Timeout {
          throw ex;
       }
       this.log.info(ME, "Connections for group '" + prefix + "' to DB '" + url + "' successfully established.");
+   }
+
+   /**
+    * Is called after the instance is created. It reads the needed properties,
+    * sets the driver and then connects to the database as many times as
+    * specified in the properties. <p/>
+    * Note that prefix is the string which identifies a certain database.
+    * It is called prefix because it is the prefix in the xmlBlaster.properties
+    * for the properties bound to the database.<br> A pool instance is created
+    * for every such database. For example if you want the history queue (the
+    * queue which stores the published messages) on a different database than
+    * the callback queues, then you could define different databases.
+    *
+    * <li>prefix.driverName DEFAULTS TO "org.postgresql.Driver"</li> <li>prefix.connectionPoolSize "DEFAULTS TO 5"</li>
+    * <li>prefix.url DEFAULTS TO "jdbc:postgresql://localhost/test"</li> <li>prefix.user DEFAULTS TO "postgres"</li>
+    * <li>prefix.password  DEFAULTS TO ""</li> </ul>
+    */
+   public synchronized void initialize(Global glob, PluginInfo pluginInfo)
+      throws ClassNotFoundException, SQLException, XmlBlasterException {
+      this.glob = glob;
+      this.log = this.glob.getLog("jdbc");
+      if (this.log.CALL) this.log.call(ME, "initialize. Used Plugin type and version: " + pluginInfo.getTypeVersion());
+
+      if (this.initialized) return;
+
+      // could these also be part of the properties specific to the invoking plugin ?
+      org.jutils.init.Property prop = glob.getProperty();
+      String xmlBlasterJdbc = prop.get("JdbcDriver.drivers", "org.postgresql.Driver:sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:oracle.jdbc.driver.OracleDriver");
+
+      // in xmlBlaster.properties file we separate the drivers with a ',' but
+      // in the system properties they should be separated with ':' so it may
+      // be time to change that in our properties
+      //(THIS IS NOT NEEDED ANYMORE (fixed 2002-10-07 Michele)
+      // xmlBlasterJdbc = xmlBlasterJdbc.replace(',', ':');
+
+      System.setProperty("jdbc.drivers", xmlBlasterJdbc);
+
+      // Default is:
+      //   queue.persistent.url=jdbc:postgresql://localhost/test
+      // This has precedence: 
+      //   cb.queue.persistent.url=jdbc:postgresql://localhost/test
+      //   client.queue.persistent.url=jdbc:postgresql://localhost/test
+
+      java.util.Properties pluginProp = pluginInfo.getParameters();
+
+      // the old generic properties (for the defaults) outside the plugin 
+      this.url = prop.get("queue.persistent.url", "jdbc:postgresql://localhost/test");
+      this.user = prop.get("queue.persistent.user", "postgres");
+      this.password = prop.get("queue.persistent.password", "");
+      this.capacity = prop.get("queue.persistent.connectionPoolSize", 5);
+      this.connectionBusyTimeout = prop.get("queue.persistent.connectionBusyTimeout", 60000L);
+      this.maxWaitingThreads = prop.get("queue.persistent.maxWaitingThreads", 200);
+      // these should be handled by the JdbcManager
+      this.tableAllocationIncrement = prop.get("queue.persistent.tableAllocationIncrement", 10);
+      this.tableNamePrefix = prop.get("queue.persistent.tableNamePrefix", "XMLBLASTER").toUpperCase();
+
+      // the property settings specific to this plugin type / version
+      url = pluginProp.getProperty("url", this.url);
+      user = pluginProp.getProperty("user", this.user);
+      password = pluginProp.getProperty("password", this.password);
+
+      String help = pluginProp.getProperty("connectionPoolSize", "" + this.capacity);
+      try {
+         this.capacity = Integer.parseInt(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'connectionPoolSize' plugin-property is not parseable: '" + help + "' will be using the default '" + this.capacity + "'");
+      }
+
+      help = pluginProp.getProperty("connectionBusyTimeout", "" + this.connectionBusyTimeout);
+      try {
+         this.connectionBusyTimeout = Long.parseLong(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'connectionBusyTimeout' plugin-property is not parseable: '" + help + "' will be using the default '" + this.connectionBusyTimeout + "'");
+      }
+
+      help = pluginProp.getProperty("maxWaitingThreads", "" + this.maxWaitingThreads);
+      try {
+         this.maxWaitingThreads = Integer.parseInt(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'maxWaitingThreads' plugin-property is not parseable: '" + help + "' will be using the default '" + this.maxWaitingThreads + "'");
+      }
+
+      // these should be handled by the JdbcManager
+      help = pluginProp.getProperty("tableAllocationIncrement", "" + this.tableAllocationIncrement);
+      try {
+         this.tableAllocationIncrement = Integer.parseInt(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'tableAllocationIncrement' plugin-property is not parseable: '" + help + "' will be using the default '" + this.tableAllocationIncrement + "'");
+      }
+
+      this.tableNamePrefix = pluginProp.getProperty("tableNamePrefix", this.tableNamePrefix).trim().toUpperCase();
+
+      if (this.log.DUMP) {
+         this.log.dump(ME, "initialize -type/version is     : '" + pluginInfo.getTypeVersion() + "'");
+         this.log.dump(ME, "initialize -url                 : " + url);
+         this.log.dump(ME, "initialize -user                : " + user);
+         this.log.dump(ME, "initialize -password            : " + password);
+         this.log.dump(ME, "initialize -max number of conn  : " + this.capacity);
+         this.log.dump(ME, "initialize -conn busy timeout   : " + this.connectionBusyTimeout);
+         this.log.dump(ME, "initialize -driver list         : " + xmlBlasterJdbc);
+         this.log.dump(ME, "initialize -max. waiting Threads:" + this.maxWaitingThreads);
+      }
+
+      // could block quite a long time if the number of connections is big
+      // or if the connection to the DB is slow.
+      try {
+         // initializing and establishing of connections to DB ...
+         this.connections = new Connection[this.capacity];
+         for (int i = 0; i < this.capacity; i++) {
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
+            this.currentIndex = i;
+            this.connections[i] = DriverManager.getConnection(url, user, password);
+         }
+         this.connectionLost = false;
+         parseMapping(prop);
+         this.initialized = true;
+      }
+      catch (SQLException ex) {
+         if (firstConnectError) {
+            firstConnectError = false;
+            this.log.error(ME, "exception when connecting to DB, error code : '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+            this.log.info(ME, "diagnostics: initialize -type/version is     : '" + pluginInfo.getTypeVersion() + "'");
+            this.log.info(ME, "diagnostics: initialize -url                 : '" + url + "'");
+            this.log.info(ME, "diagnostics: initialize -user                : '" + user + "'");
+            this.log.info(ME, "diagnostics: initialize -password            : '" + password + "'");
+            this.log.info(ME, "diagnostics: initialize -max number of conn  : '" + this.capacity + "'");
+            this.log.info(ME, "diagnostics: initialize -conn busy timeout   : '" + this.connectionBusyTimeout + "'");
+            this.log.info(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
+            this.log.info(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
+         }
+         else {
+            if (this.log.TRACE) this.log.trace(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+         }
+
+         // clean up the connections which might have been established
+         // even if it probably won't help that much ...
+         for (int i = 0; i < this.currentIndex; i++) disconnect(i);
+         throw ex;
+      }
+      this.log.info(ME, "Connections for plugin type/version '" + pluginInfo.getTypeVersion() + "' to DB '" + url + "' successfully established.");
    }
 
 
