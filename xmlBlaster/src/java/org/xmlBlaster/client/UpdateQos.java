@@ -10,8 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.cluster.RouteInfo;
-import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.PriorityEnum;
 
@@ -556,7 +556,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          sb.append(offset).append("   <redeliver>").append(getRedeliver()).append("</redeliver>");
       }
 
-      org.xmlBlaster.engine.cluster.RouteInfo[] routes = getRouteNodes();
+      org.xmlBlaster.util.cluster.RouteInfo[] routes = getRouteNodes();
       if (routes.length > 0) {
          sb.append(offset).append("<route>");
          for (int ii=0; ii<routes.length; ii++)
