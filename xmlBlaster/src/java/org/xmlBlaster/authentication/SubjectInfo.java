@@ -443,7 +443,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * we return 0 without doing anything.
     * @return number of messages taken from queue and forwarded
     */
-   private final long forwardToSessionQueue() {
+   synchronized private final long forwardToSessionQueue() {
 
       if (getSessions().length < 1 || this.subjectQueue.getNumOfEntries() < 1) return 0;
 
@@ -510,10 +510,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
       SessionName destination = entry.getReceiver();
 
-
-      // send to a specific session ...
-      
       if (destination.isSession()) {
+         // send to a specific session, it should never happen to have such messages in the subject queue ...
          String tmp = "Can't forward msg " + entry.getLogId() + " from " +
                       this.subjectQueue.getStorageId() + " size=" + 
                       this.subjectQueue.getNumOfEntries() + " to unknown session '" + 
@@ -535,8 +533,11 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                sessionInfo.queueMessage(entry);
                countForwarded++;
             }
+            catch (XmlBlasterException e) {
+               if (log.TRACE) log.trace(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.getMessage());
+            }
             catch (Throwable e) {
-               log.warn(ME, "Can't deliver message with session '" + sessionInfo.getId() + "': " + e.toString());
+               log.warn(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.toString());
             }
          }
       }
