@@ -1,1 +1,23 @@
-http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto-python.html
+Fredrik Lundh has provided an excellent XML-RPC library for Python.
+   http://www.pythonware.com/products/xmlrpc/
+
+To install, download the latest version. You can either stick the *.py files in the same directory as your Python code, or you can install
+them in your system's Python directory.
+
+RedHat 6.2 users can type the following:
+
+    $ mkdir xmlrpclib-0.9.8
+    $ cd xmlrpclib-0.9.8
+    $ unzip ../xmlrpc-0.9.8-990621.zip
+    $ python
+    >>> import xmlrpclib
+    >>> import xmlrpcserver
+    >>> Control-D
+    $ su -c 'cp *.py *.pyc /usr/lib/python1.5/'
+
+We import two of the *.py files to trick Python into compiling them. Users of other platforms should consult their Python
+documentation.
+
+For more Python examples, see the article XML-RPC: It Works Both Ways on the O'Reilly Network.
+
+[Text from http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto-python.html]
