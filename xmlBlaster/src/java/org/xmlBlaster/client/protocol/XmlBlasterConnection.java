@@ -26,11 +26,12 @@ import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
@@ -39,7 +40,6 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Timestamp;
@@ -1241,7 +1241,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             driver.unSubscribe(xmlKey, qos);
          }
          synchronized (callbackMap) {
-            XmlKey key = new XmlKey(xmlKey);
+            XmlKeyBase key = new XmlKeyBase(xmlKey);
             callbackMap.remove(key.getUniqueKey());
          }
       } catch(XmlBlasterException e) {
