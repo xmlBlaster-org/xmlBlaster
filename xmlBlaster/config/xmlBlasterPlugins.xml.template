@@ -14,7 +14,12 @@
    </plugin>
 
    <!--============= PROTOCOL PLUGINS ================-->
-   <!-- ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver -->
+   <!-- Current implizit constraint:
+        The protocol plugins must be started in
+        run level <= 3 to support the ClusterManager
+        See ClusterManager.java:runlevelChange() -> postInit()
+    -->
+
    <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='3' sequence='2' 
               onFail='resource.configuration.pluginFailed'/>
