@@ -153,6 +153,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
             for (i=0; i<num; i++) {
                if (xa->callbackP->isShutdown)
                   break;
+               /*pthread_yield(0);*/
                sleepMillis(interval);
                if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                    "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for callback thread to join. %d/%d", interval, i, num);
