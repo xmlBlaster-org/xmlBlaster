@@ -1488,12 +1488,17 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // Process the message
          publishReturnQos = topicHandler.publish(sessionInfo, msgUnit, publishQos);
 
-         if (publishReturnQos != null)
-            return publishReturnQos.toXml(); // Use the return value of the cluster master node
+         if (publishReturnQos == null) {  // assert only
+            StatusQosData qos = new StatusQosData(glob);
+            qos.setKeyOid(msgKeyData.getOid());
+            qos.setState(Constants.STATE_OK);
+            publishReturnQos = new PublishReturnQos(glob, qos);
+            publishReturnQos.getData().setRcvTimestamp(publishQos.getRcvTimestamp());
+            log.error(ME, "Internal: did not excpect to build a PublishReturnQos, but message '" + msgKeyData.getOid() + "' is processed correctly");
+            Thread.currentThread().dumpStack();
+         }
 
-         StringBuffer buf = new StringBuffer(160);
-         buf.append("<qos><state id='").append(Constants.STATE_OK).append("'/><key oid='").append(msgKeyData.getOid()).append("'/></qos>");
-         return buf.toString();
+         return publishReturnQos.toXml(); // Use the return value of the cluster master node
       }
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, "Throwing execption in publish: " + e.toXml()); // Remove again
