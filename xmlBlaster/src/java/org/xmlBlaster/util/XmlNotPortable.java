@@ -3,7 +3,7 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.2 2002/01/02 21:07:56 laghi Exp $
+Version:   $Id: XmlNotPortable.java,v 1.3 2002/04/19 10:58:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -25,6 +25,32 @@ public class XmlNotPortable
          ((org.apache.crimson.tree.XmlDocument)document).write(out/*, encoding*/);
       }
       else {
+        /* NEW: xerces 2x (=IBM xml4j 4.0.1)   2002-04-18
+        -> samples/dom/GetElementsByTagName.java shows how to dump XML our self
+        -> samples/dom/Writer.java shows how to dump XML our self
+           or use this Apache specific code:
+
+        else if (document instanceof org.apache.xerces.dom.DocumentImpl) {
+            import  org.apache.xml.serialize.OutputFormat;
+            import  org.apache.xml.serialize.Serializer;
+            import  org.apache.xml.serialize.SerializerFactory;
+            import  org.apache.xml.serialize.XMLSerializer;
+
+            ...
+            import  org.w3c.dom.Document;
+            Document doc= ...
+            ...
+
+            OutputFormat    format  = new OutputFormat( doc );   //Serialize DOM
+            StringWriter  stringOut = new StringWriter();        //Writer will be a String
+            XMLSerializer    serial = new XMLSerializer( stringOut, format );
+            serial.asDOMSerializer();                            // As a DOM Serializer
+
+            serial.serialize( doc.getDocumentElement() );
+
+            System.out.println( "STRXML = " + stringOut.toString() ); //Spit out DOM as a String
+         */
+
          /*
          // import java.io.IOException;
          // import java.io.StringWriter;
