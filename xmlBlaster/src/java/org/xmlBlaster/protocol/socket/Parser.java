@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.1 2002/02/12 21:40:47 ruff Exp $
+Version:   $Id: Parser.java,v 1.2 2002/02/13 15:24:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -141,68 +141,81 @@ public class Parser extends Converter
     */
    public void parse(InputStream inputStream) throws XmlBlasterException {
 
+      index = 0L;
       try {
          for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
             Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli ...");
             org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          BufferedInputStream in = new BufferedInputStream(inputStream);
-         //while (in.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
 
          msgLength = toLong(in);
 
-         checksum = (in.read() > 0);
-         compressed = (in.read() > 0);
+         checksum = (readNext(in) > 0);
+         compressed = (readNext(in) > 0);
 
          byte[] dummy = new byte[1];
-         dummy[0] = (byte)in.read();
+         dummy[0] = (byte)readNext(in);
          type = new String(dummy);
 
-         //type = Integer.toString(in.read()); Gives mit "82" instead of "R"
+         //type = Integer.toString(readNext(in)); Gives mit "82" instead of "R"
 
-         byte4 = (byte)in.read();
-         byte5 = (byte)in.read();
+         byte4 = (byte)readNext(in);
+         byte5 = (byte)readNext(in);
 
-         version = in.read() - 48;
+         version = readNext(in) - 48;
          
-         /*
+         dump(); // !!!
+
          requestId = toString(in);
          methodName = toString(in);
          sessionId = toString(in);
 
          lenUnzipped = toLong0(in, -1);
-         checkSum = toLong0(in, -1);
-         */
+
+         String qos = null;
+         String xmlKey = null;
+         byte[] content = null;
+         for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
+            qos = toString(in);
+            MessageUnit msgUnit = new MessageUnit(null, null, qos);
+            addMessage(msgUnit);
+            if (index >= msgLength) break;
+
+            msgUnit.setKey(toString(in));
+            if (index >= msgLength) break;
+
+            msgUnit.setContent(toByte(in));
+            if (index >= msgLength) break;
+         }
+
+         if (checksum)
+            checkSumResult = toLong0(in, -1);
 
          in.close();
-         /*
-         BufferedReader iStream = null;
-         DataOutputStream oStream = null;
-         try {
-            iStream = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-            oStream = new DataOutputStream(sock.getOutputStream());
-
-            String clientRequest = iStream.readLine();
-            iStream.readLine(); // "\r\n"
-
-
-
-            java.io.InputStream nsis = nsURL.openStream();
-            byte[] bytes = new byte[4096];
-            java.io.ByteArray bos = new java.io.ByteArray();
-            int numbytes;
-            while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
-               bos.write(bytes, 0, (numbytes > 4096) ? 4096 : numbytes);
-            }
-            nsis.close();
-            String ior = bos.toString();
-            */
       }
       catch(IOException e) {
+         e.printStackTrace();
          String text = "Received message corrupted and lost.";
          Log.warn(ME, text + " " + e.toString());
          throw new XmlBlasterException(ME, text);
       }
+   }
+
+
+   /**
+    * Calculates the length of user data including null bytes and len field
+    */
+   private long getUserDataLen() {
+      long len=0L;
+      if (msgVec == null) return len;
+      for (int ii=0; ii<msgVec.size(); ii++) {
+         MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
+         len += unit.size() + 3;   // three null bytes
+         String tmp = ""+unit.getContent().length;
+         len += tmp.length();
+      }
+      return len;
    }
 
    /**
@@ -235,6 +248,11 @@ public class Parser extends Converter
     *
     *  qos      key    len   content
     *  +-----*---------*-----*----------+
+    *
+    *  An example is ('*' mark a null byte):
+    *
+    *  "        83**I**17711*publish*oxf6hZs**<qos></qos>*<key oid='hello'/>*11*Hello world"
+    *
     * </pre>
     */
    public ByteArray createStream() throws XmlBlasterException {
@@ -246,7 +264,11 @@ public class Parser extends Converter
       }
 
       try {
-         ByteArray out = new ByteArray(512);
+         long len = getUserDataLen() + 100;
+         if (len > Integer.MAX_VALUE)
+            throw new IllegalArgumentException("Message size is limited to " + Integer.MAX_VALUE + " bytes");
+         ByteArray out = new ByteArray((int)len);
+
          out.write(EMPTY10, 0, EMPTY10.length); // Reserve 10 bytes at the beginning ...
 
          out.write((checksum)?(byte)65:0); // 'A'
@@ -298,7 +320,7 @@ public class Parser extends Converter
             out.insert(pos+EMPTY10.length-checkSumResultB.length, checkSumResultB);
          }
 
-         // Finally we know the 
+         // Finally we know the overall length, write it to the header:
          msgLength = out.size();
          byte[] msgLengthB = new String(""+msgLength).getBytes();
          out.insert(EMPTY10.length - msgLengthB.length, msgLengthB);
@@ -321,15 +343,32 @@ public class Parser extends Converter
       System.out.println("version=" + version);
       System.out.println("requestId=" + requestId);
       System.out.println("methodName=" + methodName);
+      System.out.println("sessionId=" + sessionId);
       System.out.println("lenUnzipped=" + lenUnzipped);
       System.out.println("checkSumResult=" + checkSumResult);
+      System.out.println("index=" + index);
+
    }
+
+   private void dump(byte[] arr) {
+      StringBuffer buffer = new StringBuffer(arr.length+10);
+      byte[] dummy = new byte[1];
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii] == 0)
+            buffer.append("*");
+         else {
+            dummy[0] = arr[ii];
+            buffer.append(new String(dummy));
+         }
+      }
+      System.out.println(">"+buffer.toString()+"<");
+   }
+
 
    /** java org.xmlBlaster.protocol.socket.Parser */
    public static void main( String[] args ) {
       try {
          Parser parser = new Parser();
-         String test = "        82  R  112\\0publish\\0eZ64bfgHj\\0\\041<qos></qos>\\0<key oid='hello'/>\\0Hello world";
          parser.setType(Parser.INVOKE_TYPE);
          parser.setRequestId("7711");
          parser.setMethodName(XmlBlasterImpl.PUBLISH);
@@ -340,9 +379,12 @@ public class Parser extends Converter
          parser.addMessage(msg);
 
          ByteArray out = parser.createStream();
+         parser.dump(out.toByteArray());
+
+         Parser receiver = new Parser();
          ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-         parser.parse(in);
-         parser.dump();
+         receiver.parse(in);
+         receiver.dump();
       }
       catch(Throwable e) {
          e.printStackTrace();

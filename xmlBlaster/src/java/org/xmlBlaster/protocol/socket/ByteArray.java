@@ -11,8 +11,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Derived from Suns ByteArrayOutputStream, added method insert(). 
- *
+ * <b>
+ * Derived from Suns ByteArrayOutputStream,
+ * added method insert() and toByteArray(int len). 
+ * Removed synchronized - this is not thread save anymore but better
+ * performing!
+ * </b>
+ * <br />
+ * <br />
  * This class implements an output stream in which the data is 
  * written into a byte array. The buffer automatically grows as data 
  * is written to it. 
@@ -64,6 +70,17 @@ public class ByteArray extends OutputStream {
     }
 
     /**
+     * Get from current position the len bytes
+     */
+    public byte[] toByteArray(int len) {
+        
+        byte newbuf[] = new byte[len];
+        System.arraycopy(buf, count, newbuf, 0, len);
+        count += len;
+        return newbuf;
+    }
+
+    /**
      * Insert byte at position
      */
     public void insert(int index, byte b) {
@@ -91,7 +108,7 @@ public class ByteArray extends OutputStream {
      *
      * @param   b   the byte to be written.
      */
-    public synchronized void write(int b) {
+    public void write(int b) {
         int newcount = count + 1;
         if (newcount > buf.length) {
             byte newbuf[] = new byte[Math.max(buf.length << 1, newcount)];
@@ -110,7 +127,7 @@ public class ByteArray extends OutputStream {
      * @param   off   the start offset in the data.
      * @param   len   the number of bytes to write.
      */
-    public synchronized void write(byte b[], int off, int len) {
+    public void write(byte b[], int off, int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
             ((off + len) > b.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
@@ -135,7 +152,7 @@ public class ByteArray extends OutputStream {
      * @param      out   the output stream to which to write the data.
      * @exception  IOException  if an I/O error occurs.
      */
-    public synchronized void writeTo(OutputStream out) throws IOException {
+    public void writeTo(OutputStream out) throws IOException {
         out.write(buf, 0, count);
     }
 
@@ -147,7 +164,7 @@ public class ByteArray extends OutputStream {
      *
      * @see     java.io.ByteArrayInputStream#count
      */
-    public synchronized void reset() {
+    public void reset() {
         count = 0;
     }
 
@@ -159,7 +176,7 @@ public class ByteArray extends OutputStream {
      * @return  the current contents of this output stream, as a byte array.
      * @see     java.io.ByteArray#size()
      */
-    public synchronized byte toByteArray()[] {
+    public byte[] toByteArray() {
         byte newbuf[] = new byte[count];
         System.arraycopy(buf, 0, newbuf, 0, count);
         return newbuf;
