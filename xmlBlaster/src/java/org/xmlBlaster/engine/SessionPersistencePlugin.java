@@ -117,7 +117,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             QueryQosData qosData = this.queryQosFactory.readObject(qos);
             boolean initialUpdates = qosData.getInitialUpdateProp().getValue();
             if (initialUpdates) {
-               qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "false"));
+               qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "true"));
                qosData.setWantInitialUpdate(false);               
             }
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
@@ -232,9 +232,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    }
 
    private void addSession(SessionInfo sessionInfo) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "addSession '" + sessionInfo.getId() + "'");
+
       ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
-      
       if (connectQosData.getPersistentProp() == null || !connectQosData.getPersistentProp().getValue()) return;
       
       // is it a remote connect or from a recovery ?
@@ -336,7 +335,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          ClientProperty prop = subscribeQosData.getClientProperty(ORIGINAL_INITIAL_UPDATES);
          if (prop != null) {
             subscribeQosData.getClientProperties().remove(ORIGINAL_INITIAL_UPDATES);
-            subscribeQosData.setWantInitialUpdate(true);
+            // TODO to do it here is too early since after a runlevel change it does not recognize if coming from recovery 
+            // subscribeQosData.setWantInitialUpdate(true);
          }
       }
    }
