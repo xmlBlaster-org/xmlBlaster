@@ -3,7 +3,7 @@ Name:      DeliveryWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: DeliveryWorkerPool.java,v 1.4 2002/12/25 22:37:16 ruff Exp $
+Version:   $Id: DeliveryWorkerPool.java,v 1.5 2003/03/22 12:28:11 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
@@ -12,8 +12,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
-//import org.xmlBlaster.engine.I_RunlevelListener;
-//import org.xmlBlaster.engine.RunlevelManager;
+//import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+//import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.jutils.runtime.Sleeper;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;

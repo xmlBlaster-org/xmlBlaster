@@ -175,5 +175,6 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
    public void shutdown() {
    }
+
 }
 

@@ -261,6 +261,7 @@ TODO
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
       <echo message="         -DADD_TINYSQL=true    add tinySQL JDBC dBase driver support [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
+      <echo message="         -DADD_PLUGINPROP=[xml file] Adds your customized xmlBlasterPlugins.xml file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
       <echo message="   clean       --> cleans up the class directory"/>
@@ -315,7 +316,7 @@ TODO
       <echo message="   ${script} all"/>
       <echo message="   ${script} -Ddebug=off -DJVM.target=1.1 all"/>
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
-      <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true -DADD_PROP=mystuff/xmlBlaster.properties  dist-client"/>
+      <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml dist-client"/>
       <echo message="   ${script} -verbose cpp-lib"/>
       <echo message=""/>
       <echo message=""/>
@@ -412,6 +413,7 @@ TODO
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
+      <copy file="./config/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
       <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
@@ -432,7 +434,7 @@ TODO
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,manifest.xmlBlaster,*.xml"/>
+           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,manifest.xmlBlaster,*.xml"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
@@ -535,7 +537,7 @@ TODO
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**/*.*,javaclients/**/*.class,javaclients/**/*.gif,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,Ptp*,Latency*,DomQuery*,doc/requirements/*"/>
+           includes="org/**/*.*,javaclients/**/*.class,javaclients/**/*.gif,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,xmlBlasterPlugins.xml,*.properties,Hello*,Ptp*,Latency*,DomQuery*,doc/requirements/*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
 
@@ -976,6 +978,7 @@ TODO
       <property name="ADD_TINYSQL" value="false"/>
       <property name="ADD_XML_PARSER" value="true"/>
       <property name="ADD_PROP" value="default"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties (to configure MoM) -->
+      <property name="ADD_PLUGINPROP" value="default"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterProperties.xml (to configure MoM) -->
       <property name="ADD_POLICY" value="default"/> <!-- e.g. -DADD_POLICY=myclient/xmlBlaster.policy (for RMI security) -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
 
@@ -1073,6 +1076,18 @@ TODO
             <copy file="${ADD_PROP}" tofile="${dist.dir}/config/xmlBlaster.properties.template" overwrite="yes"/>
          </default>
       </switch>
+      <switch value="${ADD_PLUGINPROP}">
+         <case value="default">
+            <echo message="Using default xmlBlasterPlugins.xml" />
+            <copy file="config/xmlBlasterPlugins.xml.template" tofile="${dist-classes.dir}/xmlBlasterPlugins.xml"/>
+            <copy file="config/xmlBlasterPlugins.xml.template" tofile="${dist.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
+         </case>
+         <default>
+            <echo message="Using ${ADD_PLUGINPROP}" />
+            <copy file="${ADD_PLUGINPROP}" tofile="${dist-classes.dir}/xmlBlasterPlugins.xml" overwrite="yes"/>
+            <copy file="${ADD_PLUGINPROP}" tofile="${dist.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
+         </default>
+      </switch>
       <switch value="${ADD_POLICY}">
          <case value="default">
             <echo message="Using default xmlBlaster.policy" />
@@ -1151,6 +1166,7 @@ TODO
       <property name="ADD_SNMP" value="true"/>
       <property name="ADD_XML_PARSER" value="false"/>
       <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
+      <property name="ADD_PLUGINPROP" value="false"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterPlugins.xml -->
       <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
 
@@ -1214,6 +1230,16 @@ TODO
             <echo message="Using ${ADD_PROP} -> ${dist.dir}/config/*.properties*" />
             <copy file="${ADD_PROP}" tofile="${dist-client.dir}/config/xmlBlaster.properties.template" overwrite="yes"/>
             <copy file="config/jacorb.properties.template" tofile="${dist-client.dir}/config/jacorb.properties.template" overwrite="yes"/>
+         </default>
+      </switch>
+      <switch value="${ADD_PLUGINPROP}">
+         <case value="false">
+            <echo message="Using default xmlBlasterPlugins.xml" />
+            <copy file="config/xmlBlasterPlugins.xml.template" tofile="${dist-client.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
+         </case>
+         <default>
+            <echo message="Using ${ADD_PLUGINPROP} -> ${dist.dir}/config/*.xml*" />
+            <copy file="${ADD_PLUGINPROP}" tofile="${dist-client.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
          </default>
       </switch>
       <switch value="${ADD_MANIFEST}">

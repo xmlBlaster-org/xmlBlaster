@@ -72,6 +72,8 @@ import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 import java.util.*;
 import java.io.*;

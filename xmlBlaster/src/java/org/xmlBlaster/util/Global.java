@@ -56,6 +56,8 @@ import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 
 import java.util.Properties;
@@ -162,8 +164,11 @@ public class Global implements Cloneable
    protected static int counter = 0;
 
    /** a hastable keeping all JdbcManager objects: one per DB */
-   protected Hashtable jdbcQueueManagers = null;
-   protected Hashtable jdbcQueueManagersCommonTable = null;
+   protected Hashtable jdbcQueueManagers;
+   protected Hashtable jdbcQueueManagersCommonTable;
+
+   private PluginManagerBase pluginManager;
+   private PluginRegistry pluginRegistry;
 
    /**
     * Constructs an initial Global object.
@@ -1807,6 +1812,35 @@ public class Global implements Cloneable
    public boolean isServer() {
       return false;
    }
+
+   /**
+    * Returns the plugin manager used by the run level manager. All other specific
+    * Managers extend this class and reference the cache on this instance.
+    */
+   public PluginManagerBase getPluginManager() {
+      if (this.pluginManager == null) {
+         synchronized(this) {
+            if (this.pluginManager == null)
+               this.pluginManager = new PluginManagerBase(this);
+         }
+      }
+      return this.pluginManager;
+   }
+
+
+   /**
+    * Returns the plugin registry.
+    */
+   public PluginRegistry getPluginRegistry() {
+      if (this.pluginRegistry == null) {
+         synchronized(this) {
+            if (this.pluginRegistry == null)
+               this.pluginRegistry = new PluginRegistry(this);
+         }
+      }
+      return this.pluginRegistry;
+   }
+
 
    /**
     * Command line usage.

@@ -209,4 +209,5 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well
       if (log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");
    }
+
 }

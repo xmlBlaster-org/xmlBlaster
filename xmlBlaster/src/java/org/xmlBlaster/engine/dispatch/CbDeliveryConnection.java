@@ -69,7 +69,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
       this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
 
       if (this.cbDriver == null) { // instantiate the callback plugin ...
-         this.cbDriver = ((org.xmlBlaster.engine.Global)glob).getProtocolManager().getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
+         this.cbDriver = ((org.xmlBlaster.engine.Global)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
          if (this.cbDriver == null)
             throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + address.getType() + "' is not supported");
       }
@@ -185,7 +185,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
    /**
     * Stop all callback drivers of this client.
     */
-   public final void shutdown() {
+   public final void shutdown() throws XmlBlasterException {
       super.shutdown();
       glob.removeNativeCallbackDriver(cbKey);
       if (this.cbDriver != null) {

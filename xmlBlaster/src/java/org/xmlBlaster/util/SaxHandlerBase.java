@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.22 2003/02/20 18:57:55 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.23 2003/03/22 12:28:11 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -23,6 +23,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.ext.LexicalHandler;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 
 /**
@@ -50,6 +51,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     */
    protected String xmlLiteral;
 
+   private boolean useLexicalHandler = false;
 
    /**
     * Constructs an new object.
@@ -64,6 +66,16 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog(null);
       if (log.CALL) log.trace(ME, "Creating new SaxHandlerBase");
+   }
+
+
+   /*
+    * This method parses the XML InputSource using the SAX parser.
+    * @param xmlLiteral The XML string
+    */
+   public void init(InputSource xmlSource) throws XmlBlasterException
+   {
+      parse(xmlSource);
    }
 
    /*
@@ -83,10 +95,27 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    }
 
    /**
+    * activates/deactivates the lexical handler. This can be used to get also the CDATA events
+    */
+   public void setUseLexicalHandler(boolean useLexicalHandler) {
+      this.useLexicalHandler = useLexicalHandler;
+   }
+
+   public boolean getUseLexicalHandler() {
+      return this.useLexicalHandler;
+   }
+
+
+   private void parse(String xmlData) throws XmlBlasterException {
+      parse(new InputSource(new StringReader(xmlData)));
+   }
+
+
+   /**
     * Does the actual parsing
     * @param xmlData Quality of service in XML notation
     */
-   private void parse(String xmlData) throws XmlBlasterException {
+   private void parse(InputSource xmlData) throws XmlBlasterException {
       try {
          SAXParserFactory spf = glob.getSAXParserFactory();
          boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
@@ -101,7 +130,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
          /*
          final boolean useLexicalHandler = true; // switch on to get CDATA events
-         if (useLexicalHandler) {
+         */
+         if (this.useLexicalHandler) {
             try {
                parser.setProperty("http://xml.org/sax/properties/lexical-handler", this); // register for startCDATA() etc. events
             }
@@ -112,9 +142,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
                log.warn(ME, "The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
             }
          }
-         */
 
-         parser.parse(new InputSource(new StringReader(xmlData)));
+         parser.parse(xmlData);
       }
       catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
          if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
@@ -133,7 +162,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
             log.trace(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
             e.printStackTrace();
          }
-         throw new XmlBlasterException(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".parse()",
+            "Error while SAX parsing: " + location + ":\n" + xmlData, e);
       }
       finally {
          locator = null;

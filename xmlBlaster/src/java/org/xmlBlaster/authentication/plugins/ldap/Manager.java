@@ -87,4 +87,8 @@ public class Manager implements I_Manager {
          return (I_Session)sessions.get(id);
       }
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
+
 }

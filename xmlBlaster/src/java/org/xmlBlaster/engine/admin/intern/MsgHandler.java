@@ -206,4 +206,5 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    public void shutdown() {
       if (log.TRACE) log.trace(ME, "Shutdown ignored, nothing to do");
    }
+
 } // end of class MsgHandler

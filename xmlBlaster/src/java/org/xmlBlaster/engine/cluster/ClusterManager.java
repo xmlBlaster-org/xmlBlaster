@@ -14,8 +14,8 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.I_RunlevelListener;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
@@ -199,6 +199,7 @@ public final class ClusterManager implements I_RunlevelListener
    private void initClusterNode() throws XmlBlasterException {
       this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId(), this.sessionInfo);
       this.addClusterNode(this.myClusterNode);
+/*
       I_Driver[] drivers = glob.getProtocolManager().getPublicProtocolDrivers();
       for (int ii=0; ii<drivers.length; ii++) {
          I_Driver driver = drivers[ii];
@@ -206,9 +207,22 @@ public final class ClusterManager implements I_RunlevelListener
          addr.setAddress(driver.getRawAddress());
          this.myClusterNode.getNodeInfo().addAddress(addr);
       }
-
       if (drivers.length > 0) {
          if (log.TRACE) log.trace(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
+      }
+*/
+      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfType("protocol");
+      for (int i=0; i < drivers.size(); i++) {
+         I_Driver driver = (I_Driver)drivers.get(i);
+         String rawAddr = driver.getRawAddress();
+         if (rawAddr != null) {
+            Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
+            addr.setAddress(rawAddr);
+            this.myClusterNode.getNodeInfo().addAddress(addr);
+         }
+      }
+      if (drivers.size() > 0) {
+         if (log.TRACE) log.trace(ME, "Setting " + drivers.size() + " addresses for cluster node '" + getId() + "'");
       }
       else {
          Thread.currentThread().dumpStack();
@@ -657,11 +671,11 @@ public final class ClusterManager implements I_RunlevelListener
       */
    }
 
-   public void shutdown(boolean force) {
+   public void shutdown() {
       if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
          ClusterNode[] clusterNodes = getClusterNodes();
          for(int i=0; i<clusterNodes.length; i++) {
-            clusterNodes[i].shutdown(force);
+            clusterNodes[i].shutdown();
          }
          this.clusterNodesCache = null;
          this.clusterNodeMap.clear();
@@ -777,7 +791,7 @@ public final class ClusterManager implements I_RunlevelListener
       }
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            shutdown(force);
+            shutdown();
          }
       }
    }

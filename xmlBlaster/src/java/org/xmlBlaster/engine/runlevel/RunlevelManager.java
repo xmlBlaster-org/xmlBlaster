@@ -3,11 +3,13 @@ Name:      RunlevelManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine;
+package org.xmlBlaster.engine.runlevel;
 
 import org.jutils.log.LogChannel;
 import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
@@ -16,8 +18,11 @@ import org.xmlBlaster.authentication.Authenticate;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.Collections;
 import java.util.Iterator;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_Plugin;
 
 
 /**
@@ -32,7 +37,6 @@ public final class RunlevelManager
    private final Global glob;
    private final LogChannel log;
    private int currRunlevel = 0;
-   private int instanceCounter = 0;
 
    public static final int RUNLEVEL_HALTED_PRE = -1;
    public static final int RUNLEVEL_HALTED = 0;
@@ -58,6 +62,7 @@ public final class RunlevelManager
     */
    private final Set runlevelListenerSet = Collections.synchronizedSet(new HashSet());
 
+
    /**
     * One instance of this represents one xmlBlaster server. 
     * <p />
@@ -65,10 +70,9 @@ public final class RunlevelManager
     */
    public RunlevelManager(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("core");
-      instanceCounter++;
-      this.ME = "RunlevelManager"/* + instanceCounter*/ + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Incarnated run level manager #" + instanceCounter);
+      this.log = glob.getLog("runlevel");
+      this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
+      if (log.CALL) log.call(ME, "Incarnated run level manager");
    }
 
    /**
@@ -84,8 +88,8 @@ public final class RunlevelManager
    public void initPluginManagers() throws XmlBlasterException {
       // TODO: This should be configurable
       new Authenticate(glob);
-      glob.getProtocolManager(); // force incarnation
-      if (log.CALL) log.call(ME, "Initialized run level manager #" + instanceCounter);
+      // glob.getProtocolManager(); // force incarnation
+      if (log.CALL) log.call(ME, "Initialized run level manager");
    }
 
    /**
@@ -176,7 +180,6 @@ public final class RunlevelManager
          throw new XmlBlasterException(ME, text);
       }
 
-
       if (from < to) { // startup
          for (int ii=from; ii<=to; ii++) {
             int dest = ii+1;
@@ -226,6 +229,64 @@ public final class RunlevelManager
          if (runlevelListenerSet.size() == 0)
             return numErrors;
          listeners = (I_RunlevelListener[])runlevelListenerSet.toArray(DUMMY_ARR);
+      }
+
+      TreeSet pluginSet = null;
+      if (from < to) {
+         pluginSet = this.glob.getPluginHolder().getStartupSequence(this.glob.getStrippedId(), from, to-1);
+         if (this.log.CALL) this.log.call(ME, "fireRunlevelEvent. the size of the plugin set is '" + pluginSet.size() + "'");
+         Iterator iter = pluginSet.iterator();
+         while (iter.hasNext()) {
+            PluginConfig pluginConfig = (PluginConfig)iter.next();
+   	    if (pluginConfig == null) 
+               this.log.warn(ME, "fireRunlevelEvent. the pluginConfig object is null");
+            else {
+               if (this.log.DUMP) this.log.dump(ME, "fireRunlevelEvent " + pluginConfig.toXml());
+            }
+            try {
+               PluginInfo pluginInfo = pluginConfig.getPluginInfo();
+               if (this.log.CALL) {
+                  if (pluginInfo != null) {
+   	             this.log.call(ME,"fireRunlevelEvent pluginInfo object: " + pluginInfo.getId() + " classname: " + pluginInfo.getClassName());
+                  }
+                  else this.log.call(ME, "fireRunlevelEvent: the pluginInfo is null");
+               }
+               this.glob.getPluginManager().getPluginObject(pluginInfo);
+               this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' loaded");
+            }
+            catch (Throwable ex) {
+               ErrorCode code = pluginConfig.getUpAction().getOnFail();
+               if (code == null) {
+                  this.log.warn(ME, ".fireRunlevelEvent. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               }
+               else {
+                  throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  ".fireRunlevelEvent. Exception when loading the plugin '" + pluginConfig.getId() + "'", ex);
+               }
+            }
+         }
+      }
+      else {
+         pluginSet = this.glob.getPluginHolder().getShutdownSequence(this.glob.getStrippedId(), to+1, from);
+         Iterator iter = pluginSet.iterator();
+         while (iter.hasNext()) {
+            PluginConfig pluginConfig = (PluginConfig)iter.next();
+            try {
+               PluginInfo pluginInfo = pluginConfig.getPluginInfo();
+               I_Plugin plugin = this.glob.getPluginManager().getPluginObject(pluginInfo);
+               plugin.shutdown();
+               this.glob.getPluginManager().removeFromPluginCache(pluginInfo.getId());
+               this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' shutdown");
+            }
+            catch (Throwable ex) {
+               ErrorCode code = pluginConfig.getDownAction().getOnFail();
+               if (code == null) {
+                  this.log.warn(ME, ".fireRunlevelEvent. Exception when shutting down the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               }
+               else {
+                  throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  ".fireRunlevelEvent. Exception when shutting down the plugin '" + pluginConfig.getId() + "'", ex);
+               }
+            }
+         }
       }
 
       for (int ii=0; ii<listeners.length; ii++) {

@@ -25,8 +25,8 @@ import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.RunlevelManager;
-import org.xmlBlaster.engine.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.*;
 

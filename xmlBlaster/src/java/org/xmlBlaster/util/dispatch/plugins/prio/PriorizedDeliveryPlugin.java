@@ -543,7 +543,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
 
    /**
     */ 
-   public void shutdown(boolean force) {
+   public void shutdown() throws XmlBlasterException {
       synchronized (this) {
          if (isShutdown) return;
 

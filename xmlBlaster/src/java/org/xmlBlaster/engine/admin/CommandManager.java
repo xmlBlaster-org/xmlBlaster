@@ -10,9 +10,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Map;
@@ -220,7 +220,7 @@ public final class CommandManager implements I_RunlevelListener
       return help();
    }
 
-   public void shutdown(boolean force) {
+   public void shutdown() {
       if (this.externMap != null && this.externMap.size() > 0) {
          I_ExternGateway[] arr = (I_ExternGateway [])this.externMap.values().toArray(new I_ExternGateway[this.externMap.size()]);
          for (int ii=0; ii<arr.length; ii++) {
@@ -267,7 +267,7 @@ public final class CommandManager implements I_RunlevelListener
 
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            shutdown(force);
+            shutdown();
          }
       }
    }

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.41 2003/01/18 16:57:23 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.42 2003/03/22 12:27:53 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -211,7 +211,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public void resetConnection()
    {
       if (log.TRACE) log.trace(ME, "SocketClient is re-initialized, no connection available");
-      this.shutdown();
+      try {
+         shutdown();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+      }
    }
 
 
@@ -371,7 +376,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Shut down the callback server.
     * Is called by logout()
     */
-   public boolean shutdown()
+   public void shutdown() throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering shutdown of callback server");
       if (this.cbReceiver != null) {
@@ -382,7 +387,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      return true;
    }
 
    /**

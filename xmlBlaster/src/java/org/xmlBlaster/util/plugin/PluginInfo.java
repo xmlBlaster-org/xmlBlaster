@@ -9,6 +9,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * Holds data about a plugin (immutable). 
@@ -17,14 +18,14 @@ import java.util.Enumeration;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class PluginInfo {
-
+   private Global glob;
    private LogChannel log;
    private String ME;
 
-   /** e.g. "ProtocolPlugin" */
+   /** e.g. "ProtocolPlugin" */ // can be removed ...
    private String propertyName;
    /** e.g. "ProtocolPlugin[IOR][1.0]" */
-   private String propertyKey;
+   private String propertyKey;   // can be removed ...
 
    /** e.g. "IOR" */
    private String type;
@@ -36,6 +37,21 @@ public class PluginInfo {
    /** key/values from "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100" */
    private Properties params;
    private Object userData;
+
+   public PluginInfo(Global glob, String type, String className, Properties params) {
+      ME = "PluginInfo-" + type;
+      this.glob = glob;
+      this.log = glob.getLog("core");
+      if (this.log.CALL) this.log.call(ME, "constructor type='" + type + "' className='" + className + "'");
+      this.type = type;
+      this.className = className;
+      this.params = params;
+      this.version = "1.0"; // for the moment. Later remove this
+   }
+
+   public String getId() {
+      return getTypeVersion();
+   }
 
    /**
     * @param manager can be null if you only want to parse typeVersion
@@ -113,6 +129,7 @@ public class PluginInfo {
     */
    private void init(Global glob, I_PluginManager manager, String type_, String version_,
                      ContextNode contextNode) throws XmlBlasterException {
+      this.glob = glob;
       log = glob.getLog("plugin");
       this.type = type_;
       this.version = (version_ == null) ? "1.0" : version_;
@@ -174,7 +191,7 @@ public class PluginInfo {
          }
       }
       else
-         throw new XmlBlasterException(ME, "Missing plugin configuration for property " + propertyKey + ", please check your settings");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".parsePropertyValue", "Missing plugin configuration for property " + propertyKey + ", please check your settings");
    }
 
    /**
@@ -200,7 +217,7 @@ public class PluginInfo {
       return this.params;
    }
 
-   public String[] getParameterArr() {
+   private String[] getParameterArr() {
       String[] arr = new String[getParameters().size()*2];
       Enumeration e = this.params.keys();
       int i = 0;

@@ -226,4 +226,5 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       xmlRpcClient = null;
       if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
+
 }

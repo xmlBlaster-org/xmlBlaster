@@ -64,7 +64,12 @@ public class WorkerThread extends Thread
          else {
             log.error(ME, "Shutting down because of: " + e.toString());
          }
-         cbHandler.getSocketConnection().shutdown();
+         try {
+            cbHandler.getSocketConnection().shutdown();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "run() could not shutdown correctly. " + ex.getMessage());
+         }
       }
    }
 }

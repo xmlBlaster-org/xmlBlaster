@@ -3,7 +3,7 @@ Name:      RecorderPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for queuing of tail back messages
-Version:   $Id: RecorderPluginManager.java,v 1.10 2002/12/31 15:47:37 ruff Exp $
+Version:   $Id: RecorderPluginManager.java,v 1.11 2003/03/22 12:28:15 laghi Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -61,7 +61,7 @@ public class RecorderPluginManager extends PluginManagerBase {
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
 
       try {
-         plugin = (I_InvocationRecorder)getFromPluginCache(pluginInfo.getClassName());
+         plugin = (I_InvocationRecorder)getFromPluginCache(pluginInfo.getId());
          if (plugin!=null) return plugin;
 
          plugin = loadPlugin(pluginInfo);

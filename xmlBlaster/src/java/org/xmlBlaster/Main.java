@@ -17,11 +17,13 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.protocol.I_Driver;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-
 
 /**
  * Main class to invoke the xmlBlaster server.
@@ -432,7 +434,13 @@ public class Main implements I_RunlevelListener, I_Main
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "   -h                  Show the complete usage.");
       log.plain(ME, "");
-      try { log.plain(ME, glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
+//      try { log.plain(ME, glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
+      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfType("protocol");
+      for (int i=0; i < drivers.size(); i++) {
+         I_Driver driver = (I_Driver)drivers.get(i);
+         log.plain(ME, driver.usage());
+      }
+
       log.plain(ME, "");
       log.plain(ME, org.xmlBlaster.engine.cluster.ClusterManager.usage());
       log.plain(ME, "");

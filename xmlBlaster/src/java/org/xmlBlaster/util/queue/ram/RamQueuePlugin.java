@@ -795,5 +795,6 @@ class MsgComparator implements Comparator
       I_QueueEntry d2 = (I_QueueEntry)o2;
       return d1.compare(d2);
    }
+
 }
 

@@ -15,6 +15,7 @@ import org.xmlBlaster.util.classloader.PluginClassLoader;
 
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.net.URL;
 
@@ -27,11 +28,12 @@ import java.net.URL;
  *       org.xmlBlaster.engine.mime.demo.ContentLenFilter,\
  *       DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20,classpath=mime.jar
  * </pre>
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author W. Kleinertz (wkl) H. Goetzger
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-abstract public class PluginManagerBase implements I_PluginManager{
+public class PluginManagerBase implements I_PluginManager {
 
    private static String ME = "PluginManagerBase";
    private Hashtable pluginCache; // currently loaded plugins  (REMOVE???)
@@ -39,7 +41,7 @@ abstract public class PluginManagerBase implements I_PluginManager{
    private final LogChannel log;
    public final static String NO_PLUGIN_TYPE = "undef";
 
-   protected PluginManagerBase(org.xmlBlaster.util.Global glob) {
+   public PluginManagerBase(org.xmlBlaster.util.Global glob) {
       this.glob = glob;
       this.log = glob.getLog("classloader");
    }
@@ -95,44 +97,46 @@ abstract public class PluginManagerBase implements I_PluginManager{
       if (log.CALL) log.call(ME+".getPluginObject()", "Loading plugin " + pluginInfo.toString());
       I_Plugin plug = null;
 
-      if (pluginInfo.ignorePlugin())
-         return null;
+      if (pluginInfo.ignorePlugin()) return null;
 
       synchronized (this) {
-         // check in hash if plugin is instanciated already
-         plug = getFromPluginCache(pluginInfo.getClassName());
+         // check in hash if plugin is instantiated already
+         plug = this.glob.getPluginRegistry().getPlugin(pluginInfo.getId());
          if (plug!=null) return plug;
-
          // not in hash, instantiate plugin
-         plug = instantiatePlugin(pluginInfo, true);
+         plug = instantiatePluginFirstPhase(pluginInfo, true);
       }
-
-      return plug;
+      if (plug == null) return null;
+      synchronized(plug) {
+         return instantiatePluginSecondPhase(plug, pluginInfo);
+      }
    }
 
-   public I_Plugin getFromPluginCache(String className) {
-      if (className == null) return null;
-      if (this.pluginCache == null) return null;
-      return (I_Plugin)this.pluginCache.get(className);
+   public I_Plugin getFromPluginCache(String id) {
+      if (id == null) return null;
+      return this.glob.getPluginRegistry().getPlugin(id);
    }
 
-   public I_Plugin removeFromPluginCache(String className) {
-      if (this.pluginCache == null) return null;
-      return (I_Plugin)this.pluginCache.remove(className);
+   public I_Plugin removeFromPluginCache(String id) {
+      if (id == null) return null;
+      return this.glob.getPluginRegistry().unRegister(id);
    }
 
    /**
     * Is called after a plugin in instantiated, allows the base class to do specific actions.
     * Is NOT called when plugin got from cache.
     */
-   abstract protected void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException;
+   protected void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException {
+   }
 
    /**
     * @param type can be null
     * @param version can be null
     * @return please return your default plugin classname or null if not specified
     */
-   abstract public String getDefaultPluginName(String type, String version);
+   public String getDefaultPluginName(String type, String version) {
+      return null;
+   }
 
    /**
     * Tries to return an instance of the default plugin.
@@ -145,7 +149,9 @@ abstract public class PluginManagerBase implements I_PluginManager{
    * @return The name of the property in xmlBlaster.property, e.g. "Security.Server.Plugin"
    * for "Security.Server.Plugin[simple][1.0]"
    */
-   abstract protected String getPluginPropertyName();
+   protected String getPluginPropertyName() {
+      return null;
+   }
 
    public String getName() {
       return getPluginPropertyName();
@@ -185,10 +191,19 @@ abstract public class PluginManagerBase implements I_PluginManager{
     */
    protected I_Plugin instantiatePlugin(PluginInfo pluginInfo, boolean usePluginCache) throws XmlBlasterException
    {
+      I_Plugin plugin = instantiatePluginFirstPhase(pluginInfo, usePluginCache);
+      if (plugin != null) {
+         return instantiatePluginSecondPhase(plugin, pluginInfo);
+      }
+      return null;
+   }
+
+
+   private I_Plugin instantiatePluginFirstPhase(PluginInfo pluginInfo, boolean usePluginCache) 
+      throws XmlBlasterException {
       // separate parameter and plugin name
 
-      if (pluginInfo.ignorePlugin())
-         return null;
+      if (pluginInfo.ignorePlugin()) return null;
 
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
@@ -207,6 +222,10 @@ abstract public class PluginManagerBase implements I_PluginManager{
            Class cl = java.lang.Class.forName(pluginName);
            plugin = (I_Plugin)cl.newInstance();
          }
+         if (usePluginCache) {
+            this.glob.getPluginRegistry().register(pluginInfo.getId(), plugin);
+         }
+         return plugin;
       }
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, "instantiatePlugin for() '" + pluginName + "' failed: " + e.getMessage());
@@ -225,25 +244,20 @@ abstract public class PluginManagerBase implements I_PluginManager{
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
       }
+   }
 
+
+   private I_Plugin instantiatePluginSecondPhase(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException {
       // Initialize the plugin
-      if (plugin != null) {
-         try {
-            plugin.init(glob, pluginInfo);
-            postInstantiate(plugin, pluginInfo);
-            if (log.TRACE) log.trace(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
-            //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
-         } catch (XmlBlasterException e) {
-            //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
-         }
+      try {
+         plugin.init(glob, pluginInfo);
+         postInstantiate(plugin, pluginInfo);
+         if (log.TRACE) log.trace(ME, "Plugin '" + pluginInfo.getId() + " successfully initialized.");
+         //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
+      } catch (XmlBlasterException e) {
+         //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
       }
-
-      if (usePluginCache) {
-         if (this.pluginCache == null) this.pluginCache = new Hashtable();
-         this.pluginCache.put(pluginName, plugin);
-      }
-
       return plugin;
    }
 
@@ -260,4 +274,5 @@ abstract public class PluginManagerBase implements I_PluginManager{
       if (this.pluginCache != null)
          this.pluginCache.clear();
    }
+
 }

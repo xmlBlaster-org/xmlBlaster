@@ -177,6 +177,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    public void shutdown() {
    }
    
+
    /**
     * Get a dom document for message, from cache or create a new one.
     */

@@ -88,4 +88,7 @@ public class Manager implements I_Manager{
       // throw new XmlBlasterException(ME + ".unknownSubject", "There is no user called " + name);
       return new Subject(glob, name); // dummy implementation
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
 }

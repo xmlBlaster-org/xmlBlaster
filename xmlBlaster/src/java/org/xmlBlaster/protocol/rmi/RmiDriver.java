@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.32 2003/03/13 15:54:03 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.33 2003/03/22 12:28:08 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -22,6 +22,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.Naming;
 import java.rmi.AlreadyBoundException;
 
+import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * RmiDriver class to invoke the xmlBlaster server using RMI.
@@ -131,7 +132,29 @@ public class RmiDriver implements I_Driver
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
+      throws XmlBlasterException {
+      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      if (engineGlob == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+      try {
+         Authenticate authenticate = engineGlob.getAuthenticate();
+         if (authenticate == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
+         }
+         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         if (xmlBlasterImpl == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
+         }
+         init(glob, authenticate, xmlBlasterImpl);
+         activate();
+      }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
+      }
    }
 
    /**
@@ -252,8 +275,7 @@ public class RmiDriver implements I_Driver
    /**
     *  Instructs RMI to shut down.
     */
-   public void shutdown(boolean force)
-   {
+   public void shutdown() throws XmlBlasterException {
       if (log.TRACE) log.trace(ME, "Shutting down RMI driver ...");
 
       if (isActive) {

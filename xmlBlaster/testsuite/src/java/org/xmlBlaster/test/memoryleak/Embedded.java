@@ -10,7 +10,7 @@ import org.jutils.runtime.ThreadLister;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 import org.xmlBlaster.test.Util;
 

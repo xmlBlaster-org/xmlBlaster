@@ -113,7 +113,7 @@ import java.util.Collections;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see org.xmlBlaster.test.qos.TestFailSave
  *
- * @author $Author: ruff $
+ * @author $Author: laghi $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
@@ -1309,7 +1309,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             }
             disconnect(new DisconnectQos(glob), flush, false, true);
          }
-         return driver.shutdown();
+         driver.shutdown();
+         return true;
       } catch(Exception e) {
          log.warn(ME, e.toString());
          e.printStackTrace();

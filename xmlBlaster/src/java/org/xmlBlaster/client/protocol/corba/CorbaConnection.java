@@ -634,7 +634,12 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       if (log.CALL) log.call(ME, "disconnect() ...");
 
       if (xmlBlaster == null) {
-         shutdown();
+         try {
+            shutdown();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+         }
          // Thread leak !!!
          // orb.shutdown(true);
          // orb = null;
@@ -666,7 +671,12 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          e.printStackTrace();
       }
 
-      shutdown();
+      try {
+         shutdown();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+      }
       // Thread leak !!!
       // orb.shutdown(true);
       // orb = null;
@@ -678,7 +688,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Shut down the callback server.
     * Is called by logout()
     */
-   public boolean shutdown() {
+   public void shutdown() throws XmlBlasterException {
       if (this.authServer != null) {
          this.authServer._release();
          this.authServer = null;
@@ -687,7 +697,6 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          this.xmlBlaster._release();
          this.xmlBlaster = null;
       }
-      return true;
    }
 
    /**
@@ -823,7 +832,6 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e);
       }
    }
-
 
    /**
     * Command line usage.

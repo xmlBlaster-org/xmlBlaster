@@ -43,7 +43,7 @@ logFile[corba]=mylogfile.corba
 
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/11/07 13:10:26 $
+ * @version $Revision: 1.2 $ $Date: 2003/03/22 12:28:12 $
  */
 
 public class FileLogDeviceFactory implements I_LogDeviceFactory {
@@ -80,4 +80,8 @@ public class FileLogDeviceFactory implements I_LogDeviceFactory {
          return null;
       }
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
+
 }

@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.56 2003/03/05 11:34:24 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.57 2003/03/22 12:28:04 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -29,6 +29,7 @@ import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
 
+import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * CorbaDriver class to invoke the xmlBlaster server using CORBA.
@@ -100,8 +101,31 @@ public class CorbaDriver implements I_Driver
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
+      throws XmlBlasterException {
+      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      if (engineGlob == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+      try {
+         Authenticate authenticate = engineGlob.getAuthenticate();
+         if (authenticate == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
+         }
+         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         if (xmlBlasterImpl == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
+         }
+         init(glob, authenticate, xmlBlasterImpl);
+         activate();
+      }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
+      }
    }
+
 
    /**
     * Get the address how to access this driver. 
@@ -499,11 +523,8 @@ public class CorbaDriver implements I_Driver
     * multiplexing, ports are not released when POAs are destroyed, 
     * but when clients exit, or when server-side timouts occur.
     */
-   public void shutdown(boolean force)
-   {
+   public void shutdown() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Shutting down ...");
-      boolean wait_for_completion = !force;
-
       try {
          deActivate();
       } catch (XmlBlasterException e) {

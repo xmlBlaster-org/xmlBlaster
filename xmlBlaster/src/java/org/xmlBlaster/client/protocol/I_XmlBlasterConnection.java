@@ -77,7 +77,7 @@ public interface I_XmlBlasterConnection
     */
    //public boolean logout();
 
-   public boolean shutdown();
+   public void shutdown() throws XmlBlasterException;
 
    /** Reset the driver on problems */
    public void resetConnection();

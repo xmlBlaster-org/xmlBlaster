@@ -166,4 +166,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       log.warn(ME, "Can't find master, using local node");
       return null; // handle locally: clusterManager.getMyClusterNode();
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
 }

@@ -282,7 +282,13 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             args.addElement((qos==null)?" ":qos.toXml()); // qos
             this.xmlRpcClient.execute("authenticate.disconnect", args);
          }
-         shutdown();
+
+         try {
+            shutdown();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "disconnect() could not shutdown properly. " + ex.getMessage());
+         }
          resetConnection();
          return true;
       }
@@ -293,7 +299,12 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          log.warn(ME+".logout", "xml-rpc exception: " + extractXmlBlasterException(glob, e).toString());
       }
 
-      shutdown();
+      try {
+         shutdown();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "disconnect() could not shutdown properly. " + ex.getMessage());
+      }
       resetConnection();
       return false;
    }
@@ -303,9 +314,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Shut down. 
     * Is called by logout()
     */
-   public boolean shutdown()
+   public void shutdown() throws XmlBlasterException
    {
-      return true;
    }
 
 

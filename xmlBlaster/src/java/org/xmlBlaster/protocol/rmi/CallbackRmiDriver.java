@@ -208,4 +208,5 @@ public class CallbackRmiDriver implements I_CallbackDriver
       callbackAddress = null;
       if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
+
 }

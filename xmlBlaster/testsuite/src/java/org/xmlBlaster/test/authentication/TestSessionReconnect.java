@@ -37,7 +37,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;

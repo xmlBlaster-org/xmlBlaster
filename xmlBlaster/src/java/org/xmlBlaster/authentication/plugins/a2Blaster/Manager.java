@@ -138,4 +138,8 @@ public class Manager implements I_Manager{
       if (log.CALL) log.call(ME+".changeSecretSessionId(...)", "-------END-------\n");
    }
 
+
+   public void shutdown() throws XmlBlasterException {
+   }
+
 }

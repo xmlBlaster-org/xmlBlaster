@@ -16,7 +16,7 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
-import org.xmlBlaster.protocol.ProtocolManager;
+import org.xmlBlaster.protocol.CbProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
@@ -26,7 +26,10 @@ import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
-
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
+import org.xmlBlaster.engine.runlevel.PluginHolder;
 
 import java.util.*;
 import java.io.IOException;
@@ -54,7 +57,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
 
-   private ProtocolManager protocolManager;
+   private CbProtocolManager cbProtocolManager;
 
    private StoragePluginManager topicStorePluginManager;
 
@@ -64,6 +67,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private MomClientGateway momClientGateway = null;
 
    private MsgFileDumper msgFileDumper;
+
+   private PluginHolder pluginHolder;
 
 
    public void shutdown() {
@@ -89,6 +94,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public Global() {
       super();
       initThis();
+      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       //Thread.currentThread().dumpStack();
    }
 
@@ -98,12 +104,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     */
    public Global(String[] args) {
       init(args);
+      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       //Thread.currentThread().dumpStack();
    }
 
    public Global(Properties p) {
       super(p);
       initThis();
+      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       // The util.Global base class can't initiliaze it, as this class is initialized later and overwrites with null
    }
 
@@ -117,6 +125,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
       initThis();
       utilGlob.setId(getId()); // Inherit backwards the cluster node id
+      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       //Thread.currentThread().dumpStack();
    }
 
@@ -131,6 +140,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
       initThis();
       utilGlob.setId(getId()); // Inherit backwards the cluster node id
+      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       //Thread.currentThread().dumpStack();
    }
 
@@ -294,16 +304,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize protocol manager (to administer CORBA/RMI etc. plugins).
+    * Initialize cb protocol manager (to administer CORBA/RMI etc. plugins).
     */
-   public final ProtocolManager getProtocolManager() throws XmlBlasterException {
-      if (this.protocolManager == null) {
+   public final CbProtocolManager getCbProtocolManager() throws XmlBlasterException {
+      if (this.cbProtocolManager == null) {
          synchronized(this) {
-            if (this.protocolManager == null)
-               this.protocolManager = new ProtocolManager(this);
+            if (this.cbProtocolManager == null)
+               this.cbProtocolManager = new CbProtocolManager(this);
          }
       }
-      return this.protocolManager;
+      return this.cbProtocolManager;
    }
 
    public final StoragePluginManager getStoragePluginManager() {
@@ -547,6 +557,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+            getHttpServer(); // incarnate allow http based access (is currently only used by CORBA)
          }
          if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
          }
@@ -559,6 +570,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            shutdownHttpServer(); // should be an own Plugin ?
             shutdown();
          }
       }
@@ -617,6 +629,23 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public boolean isServer() {
       return true;
    }
+
+   /**
+    * gets the object holding all configuration information for the plugins (both for
+    * statically loaded plugins (by the run level manager) and dynamically loaded 
+    * plugins (such plugins loaded on client request).
+    */
+   public PluginHolder getPluginHolder() throws XmlBlasterException {
+      if (this.pluginHolder != null) return this.pluginHolder;
+      synchronized(this) {
+        if (this.pluginHolder == null) {
+           PluginHolderSaxFactory factory = new PluginHolderSaxFactory(this);
+           this.pluginHolder = factory.readConfigFile();
+         }
+         return this.pluginHolder;
+      }
+   }
+
 
    /**
     * Command line usage.

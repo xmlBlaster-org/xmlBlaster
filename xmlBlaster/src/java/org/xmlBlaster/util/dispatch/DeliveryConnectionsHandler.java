@@ -270,7 +270,12 @@ abstract public class DeliveryConnectionsHandler
    private final void removeDeliveryConnection(DeliveryConnection con) {
       if (log.CALL) log.call(ME, "removeDeliveryConnection(" + con.getName() + ") ...");
       synchronized (conList) {
-         con.shutdown();
+         try {
+            con.shutdown();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "removeDeliveryConnection() could not shutdown properly. " + ex.getMessage());
+         }
          conList.remove(con);
       }
       updateState();
@@ -358,7 +363,12 @@ abstract public class DeliveryConnectionsHandler
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
-            ((DeliveryConnection)conList.get(ii)).shutdown();
+            try {
+               ((DeliveryConnection)conList.get(ii)).shutdown();
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "shutdown() could not shutdown properly. " + ex.getMessage());
+            }
          }
          conList.clear();
       }

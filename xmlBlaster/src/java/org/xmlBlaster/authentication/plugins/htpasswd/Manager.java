@@ -93,5 +93,9 @@ public class Manager implements I_Manager {
       }
    }
 
+   public void shutdown() throws XmlBlasterException {
+   }
+
+
 }//class Manager
 

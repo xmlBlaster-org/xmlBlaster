@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.7 2003/01/22 14:03:03 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.8 2003/03/22 12:28:10 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -231,10 +231,10 @@ public class EmbeddedXmlBlaster
     * @param force Ignore exceptions during change, currently only force == true is supported
     * @return numErrors
     * @exception XmlBlasterException for invalid run level
-    * @see org.xmlBlaster.engine.RunlevelManager#changeRunlevel(int, boolean)
+    * @see org.xmlBlaster.engine.runlevel.RunlevelManager#changeRunlevel(int, boolean)
     */
    public int changeRunlevel(String newRunlevel, boolean force) throws XmlBlasterException {
-      int numErrors = getMain().getGlobal().getRunlevelManager().changeRunlevel(org.xmlBlaster.engine.RunlevelManager.RUNLEVEL_STANDBY, force);
+      int numErrors = getMain().getGlobal().getRunlevelManager().changeRunlevel(org.xmlBlaster.engine.runlevel.RunlevelManager.RUNLEVEL_STANDBY, force);
       return numErrors;
    }
 

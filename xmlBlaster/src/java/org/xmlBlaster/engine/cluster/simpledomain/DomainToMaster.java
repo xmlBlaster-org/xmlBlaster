@@ -246,4 +246,8 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
 
       return null; // This clusternode is not the master
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
+
 }

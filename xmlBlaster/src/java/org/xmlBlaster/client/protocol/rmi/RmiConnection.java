@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.30 2003/01/18 16:57:21 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.31 2003/03/22 12:27:51 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -312,7 +312,12 @@ public class RmiConnection implements I_XmlBlasterConnection
          e.printStackTrace();
       }
 
-      shutdown();
+      try {
+         shutdown();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "disconnect: could not shutdown properly. " + ex.getMessage());
+      }
       resetConnection();
       return false;
    }
@@ -322,9 +327,8 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Shut down.
     * Is called by logout()
     */
-   public boolean shutdown()
+   public void shutdown() throws XmlBlasterException
    {
-      return true;
    }
 
 

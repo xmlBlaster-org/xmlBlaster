@@ -369,7 +369,7 @@ abstract public class DeliveryConnection implements I_Timeout
    /**
     * Stop all remote connections. 
     */
-   public void shutdown() {
+   public void shutdown() throws XmlBlasterException {
       state = ConnectionStateEnum.DEAD;
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       if (timerKey != null) {

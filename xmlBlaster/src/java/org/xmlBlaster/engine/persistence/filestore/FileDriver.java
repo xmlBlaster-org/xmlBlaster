@@ -280,8 +280,6 @@ public class FileDriver implements I_PersistenceDriver
 
    }
 
-
-
    /** Invoke:  jaco org.xmlBlaster.engine.persistence.FileDriver */
    public static void main(String args[])
    {

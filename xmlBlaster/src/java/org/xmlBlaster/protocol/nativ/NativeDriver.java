@@ -3,13 +3,14 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.24 2003/01/18 17:08:06 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.25 2003/03/22 12:28:06 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -18,7 +19,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
-
+import org.xmlBlaster.authentication.Authenticate;
 
 
 /**
@@ -83,8 +84,31 @@ public class NativeDriver implements I_Driver
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
+      throws XmlBlasterException {
+      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      if (engineGlob == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+      try {
+         Authenticate authenticate = engineGlob.getAuthenticate();
+         if (authenticate == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
+         }
+         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         if (xmlBlasterImpl == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
+         }
+         init(glob, authenticate, xmlBlasterImpl);
+         activate();
+      }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
+      }
    }
+
 
    /**
     * Get the address how to access this driver. 
@@ -163,8 +187,7 @@ public class NativeDriver implements I_Driver
     * <p />
     * Enforced by interface I_Driver.
     */
-   public void shutdown(boolean force)
-   {
+   public void shutdown() throws XmlBlasterException {
       log.info(ME, "Shutting down native driver ...");
       try { authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
    }

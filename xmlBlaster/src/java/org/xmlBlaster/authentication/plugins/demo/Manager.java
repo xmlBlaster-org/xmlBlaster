@@ -124,4 +124,8 @@ public class Manager implements I_Manager{
    PluginGUI getGUI() {
       return frame;
    }
+
+   public void shutdown() throws XmlBlasterException {
+   }
+
 }

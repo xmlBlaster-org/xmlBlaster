@@ -3,14 +3,14 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.17 2003/01/03 17:11:28 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.18 2003/03/22 12:27:58 laghi Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.engine.I_RunlevelListener;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -189,7 +189,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       return defaultPluginName;
    }
 
-   public void shutdown(boolean force) {
+   public void shutdown() {
       Iterator iterator = pluginMap.values().iterator();
       while (iterator.hasNext()) {
          I_PublishFilter plugin = (I_PublishFilter)iterator.next();
@@ -225,7 +225,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       }
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            shutdown(force);
+            shutdown();
          }
       }
    }

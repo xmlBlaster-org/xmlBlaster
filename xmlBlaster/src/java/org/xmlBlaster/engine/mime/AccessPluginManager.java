@@ -13,8 +13,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.I_RunlevelListener;
-import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.enum.Constants;
 
 import java.util.Map;
@@ -215,7 +215,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       return false;
    }
 
-   public void shutdown(boolean force) {
+   public void shutdown() {
       Iterator iterator = accessFilterMap.values().iterator();
       while (iterator.hasNext()) {
          I_AccessFilter plugin = (I_AccessFilter)iterator.next();
@@ -250,7 +250,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       }
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            shutdown(force);
+            shutdown();
          }
       }
    }

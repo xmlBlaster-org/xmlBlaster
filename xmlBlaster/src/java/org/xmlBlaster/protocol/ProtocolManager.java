@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.12 2002/12/29 13:04:25 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.13 2003/03/22 12:28:02 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -18,6 +18,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -206,7 +208,7 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
    private void shutdownDrivers(boolean force) throws XmlBlasterException {
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         driver.shutdown(force);
+         driver.shutdown();
       }
    }
 

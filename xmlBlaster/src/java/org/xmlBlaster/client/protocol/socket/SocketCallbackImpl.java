@@ -121,7 +121,12 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          catch(Throwable e) {
             if (running == true) {
                log.error(ME, "Closing connection to server: " + e.toString());
-               sockCon.shutdown();
+               try {
+                  sockCon.shutdown();
+               }
+               catch (XmlBlasterException ex) {
+                  this.log.error(ME, "run() could not shutdown correctly. " + ex.getMessage());
+               }
                // Exceptions ends nowhere but terminates the thread
             }
          }

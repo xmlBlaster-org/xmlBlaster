@@ -193,7 +193,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    /**
     * Stop all callback drivers of this client.
     */
-   public final void shutdown() {
+   public final void shutdown() throws XmlBlasterException {
       super.shutdown();
       if (driver != null) {
          driver.shutdown();

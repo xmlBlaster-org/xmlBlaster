@@ -3,13 +3,14 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.11 2002/12/20 16:32:41 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.12 2003/03/22 12:28:08 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -109,7 +110,29 @@ public class SoapDriver implements I_Driver
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
+      throws XmlBlasterException {
+      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      if (engineGlob == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+      try {
+         Authenticate authenticate = engineGlob.getAuthenticate();
+         if (authenticate == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
+         }
+         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         if (xmlBlasterImpl == null) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
+         }
+         init(glob, authenticate, xmlBlasterImpl);
+         activate();
+      }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
+      }
    }
 
    /**
@@ -301,7 +324,7 @@ public class SoapDriver implements I_Driver
     * <p />
     * Enforced by interface I_Driver.
     */
-   public void shutdown(boolean force)
+   public void shutdown()
    {
       try {
          deActivate();

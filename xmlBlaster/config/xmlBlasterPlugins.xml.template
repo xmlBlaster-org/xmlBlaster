@@ -1,0 +1,139 @@
+<xmlBlaster>
+   <!-- A typical plugin which is loaded by client request -->
+
+   <!-- ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver -->
+   <plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+   </plugin>
+
+   <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver  -->
+   <plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2'/> 
+      <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
+   </plugin>
+
+   <!-- ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
+<!--
+   <plugin id='protocol:XML-RPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='3' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
+   </plugin>
+-->
+   <!-- ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver -->
+   <plugin id='protocol:RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='4' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
+   </plugin>
+
+   <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
+<!--
+   <plugin id='protocol:JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='5' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='1'/>   
+   </plugin>
+-->
+   <!-- ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,
+        classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar -->
+<!--
+   <plugin id='protocol:SOAP' className='org.xmlBlaster.protocol.soap.SoapDriver'>
+      <attribute id='classpath'>soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar</attribute>
+      <action do='LOAD' onStartupRunlevel='3' sequence='6' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='6'/>   
+   </plugin>
+-->
+
+   <!-- ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver -->
+<!--
+   <plugin id='protocol:NATIVE' className='org.xmlBlaster.protocol.nativ.NativeDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='10' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='6'/>   
+   </plugin>
+-->
+
+
+   <plugin id='dispatch:priority'
+           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+           jar='/tmp/my.jar'>
+      <attribute id='config'>
+         <![CDATA[
+         <msgDispatch defaultStatus='64k' defaultAction='send'>
+         <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'>
+            <action do='send'  ifPriority='7-9'/>
+            <action do='queue'  ifPriority='2-6'/>
+         </onStatus>
+         <onStatus oid='_bandwidth.status' content='2M'>
+            <action do='send'  ifPriority='0-9'/>
+         </onStatus>
+         </msgDispatch>
+         ]]>
+      </attribute>
+   </plugin>
+
+   <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+      <attribute id='transientQueue'>queue:RAM</attribute>
+      <attribute id='persistentQueue'>queue:JDBC</attribute>
+   </plugin>
+   
+   <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
+
+   <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+      <attribute id='transientQueue'>storage:RAM</attribute>
+      <attribute id='persistentQueue'>storage:JDBC</attribute>
+   </plugin>
+   
+   <plugin id='storage:RAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
+   
+   <!-- and here the declarations which are specific to the given nodes -->
+   <node id='heron'>
+      <plugin id='protocol:SOCKET:admin' 
+              className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <attribute id='port'>69000</attribute>
+      </plugin>
+     
+      <!-- /node/heron/plugin/protocol:SOCKET:users/attribute/port=6901 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/onStartupRunlevel=3 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/sequence=5 -->
+      <plugin id='protocol:SOCKET:users' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <attribute id='port'>6901</attribute>
+         <action do='LOAD' onStartupRunlevel='3' sequence='5' onFail='resource.configuration.pluginFailed'/>
+         <action do='STOP' onShutdownRunlevel='2' sequence='4'/>
+      </plugin>
+     
+      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+     
+      <plugin id='storage:JDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+    </node> <!-- heron -->
+ 
+    <node id='avalon'>
+       ...
+      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+	 <attribute id='tableNamePrefix'>AVALON_</attribute>
+      </plugin>
+      ...
+    </node>
+</xmlBlaster>
+

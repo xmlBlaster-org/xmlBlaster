@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Listens on run level changes
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine;
+package org.xmlBlaster.engine.runlevel;
 
 
 /**
  * Listens on run level change events, for example shutdown is runlevel 0, up and running is runlevel 9. 
  * <p>
  * Implement this interface if you want to receive run level change events.
- * @see org.xmlBlaster.engine.RunlevelManager
+ * @see org.xmlBlaster.engine.runlevel.RunlevelManager
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
  * @author Marcel Ruff
  * @since 0.79f

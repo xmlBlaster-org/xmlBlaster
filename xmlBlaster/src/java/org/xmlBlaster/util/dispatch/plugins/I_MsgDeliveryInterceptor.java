@@ -90,7 +90,7 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStateListener
     * Shutdown the implementation, sync with data store
     * @param true: force shutdown, don't flush everything
     */ 
-   public void shutdown(boolean force);
+   public void shutdown() throws XmlBlasterException;
 
    /**
     * @return true if shutdown

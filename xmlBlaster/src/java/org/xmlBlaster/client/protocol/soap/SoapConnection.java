@@ -268,13 +268,12 @@ public class SoapConnection implements I_XmlBlasterConnection
     * Shut down. 
     * Is called by logout()
     */
-   public boolean shutdown() {
+   public void shutdown() throws XmlBlasterException {
       if (this.soapClient != null) {
          // TODO: 
          // ((SOAPHTTPConnection)this.soapClient).closeConnection();
          this.soapClient = null;
       }
-      return true;
    }
 
    /**
