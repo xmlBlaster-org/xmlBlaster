@@ -58,6 +58,7 @@ public final class OrbInstanceFactory
     */
    private synchronized static Properties initializeOrbEnv(Global glob, boolean forCB)
    {
+      glob = (glob == null) ? Global.instance() : glob;
       LogChannel log = glob.getLog("corba");
       final String ME = "OrbInstanceFactory";
       Properties props = new Properties();
