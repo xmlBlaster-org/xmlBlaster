@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.47 2000/05/16 20:57:36 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.48 2000/05/18 17:21:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.48 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -84,7 +84,7 @@ public class CorbaConnection implements ServerOperations
    private long retryInterval;
 
    /** Number of retries if connection cannot directly be established */
-   private int retries;
+   private int retries = -1;
 
    /** communicate from LoginThread back to CorbaConnection that we give up */
    private boolean noConnect = false;
