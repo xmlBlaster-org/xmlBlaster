@@ -369,8 +369,10 @@ void CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implO
      if (log_.trace()) log_.trace(me(), "Trying narrowing POA ...");
      poa_ = PortableServer::POA::_narrow(obj.in());
      PortableServer::POAManager_var poa_mgr = poa_->the_POAManager();
+     // _this() incarnates with the servant ...
      callback_ = implObj->_this();
-     callbackIOR_ = orb_->object_to_string(callback_);
+     CORBA::String_var tmp = orb_->object_to_string(callback_);
+     callbackIOR_ = tmp;
      poa_mgr->activate();
      while (orb_->work_pending()) orb_->perform_work();
      return;
