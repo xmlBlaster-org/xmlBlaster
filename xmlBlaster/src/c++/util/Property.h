@@ -31,6 +31,21 @@ namespace util {
    private:
       MapType properties_;
       
+      /**
+       * Replace all ${...} variables in value. 
+       * @param key The property key
+       * @param value the corresponding value
+       * @param env If true the environment is scanned as well
+       */
+      std::string replaceVariable(const std::string &key, const std::string &value, bool env);
+
+      /**
+       * Set a property without replacing ${...} variables in value. 
+       */
+      bool setProperty_(const std::string &name, const std::string &value,
+                       bool overwrite=true);
+
+
    protected:
       /**
        * returns true if the line is a comment, or if it is empty. Returns
@@ -78,8 +93,8 @@ namespace util {
        * The default constructor allocate the storage
        * std::map for the properties and parses the command line properties.<p />
        * NOTE: You have to call loadPropertyFile() separatly
-		 * @param args Length of argv
-	 	 * @param argv The command line arguments, for example "-protocol SOCKET"
+                 * @param args Length of argv
+                 * @param argv The command line arguments, for example "-protocol SOCKET"
        */
       Property(int args=0, const char * const argv[]=0) : properties_() {
 
@@ -94,7 +109,7 @@ namespace util {
        * Initialize with the given key/value std::map. 
        * NOTE: You have to call loadPropertyFile() separately
        * @param propertyMap A std::map which contains key and values pairs,
-	    *                    for example key="protocol" and value="SOCKET"
+            *                    for example key="protocol" and value="SOCKET"
        */
       Property(MapType propMap);
 
@@ -117,6 +132,12 @@ namespace util {
          properties_.erase(properties_.begin(), properties_.end());
       }
 
+      /**
+       * Replace all ${...} variables in value. 
+       * @param env If true the environment is scanned as well
+       */
+      void replaceVariables(bool env);
+
       const MapType& getPropertyMap() const {
          return properties_;
       }
@@ -127,6 +148,8 @@ namespace util {
        * If you specify overwrite=true (the default) then the properties read
        * from the file are inserted into the properties even if a property 
        * with the same name has been defined earlier. 
+       * <p />
+       * Note: The ${...} tokens are not replaced in this method
        */
       int readPropertyFile(const std::string &filename, bool overwrite=true);
       

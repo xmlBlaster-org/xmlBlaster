@@ -8,9 +8,12 @@
 #include <util/lexical_cast.h>
 #include <util/PropertyDef.h>
 #include <util/Constants.h>
+#include <util/StringTrim.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+
+#define  MAX_NEST 50
 
 Property::Property(MapType propMap) : properties_(propMap) {
 }
@@ -36,23 +39,26 @@ Property::loadCommandLineProps(int args,
             //if (name == "h" || name == "help" || name == "?" ) {
             value = (count < nmax-1) ? argv[count+1] : "";
             if (value == ""/* || value.find(prefix) == 0*/) { // A property without a value -> we set it to true, for example --help
-               if (setProperty(name, "true")) ret++;
+               if (setProperty_(name, "true")) ret++;
             }
             else {
                count++;
                //std::cout << "readPropertyCommandLine: " << name << "=" << value << std::endl;
-               if (setProperty(name, value)) ret++;
+               if (setProperty_(name, value)) ret++;
             }
          }
          else { // java style: prop1=val1
             pair<const string, string> propPair(getPair(name));
-            if (setProperty(propPair.first, propPair.second)) ret++;
+            if (setProperty_(propPair.first, propPair.second)) ret++;
          }
       }
       count++;
    }
 //   if (count > 0)
 //      std::cout << "Successfully read " << (count-1)/2 << " command line arguments" << std::endl;
+   if (ret > 0) {
+      replaceVariables(true);
+   }
    return ret;
 }
 
@@ -104,18 +110,13 @@ Property::loadPropertyFile()
        num = readPropertyFile(path + FILE_SEP + filename, false);
      }
    }
+   if (num > 0) {
+      replaceVariables(true);
+   }
 }
 
 
-/**
- * Reads the file specified in filename. If the name is not valid, or if
- * the system can not write to the specified file, then -1 is returned.
- * If you specify overwrite=true (the default) then the properties read
- * from the file are inserted into the properties even if a property 
- * with the same name has been defined earlier. 
- */
-int 
-Property::readPropertyFile(const string &filename, bool overwrite) 
+int Property::readPropertyFile(const string &filename, bool overwrite) 
 {
    ifstream in(filename.c_str());
    string  line;
@@ -127,7 +128,7 @@ Property::readPropertyFile(const string &filename, bool overwrite)
          pair<const string, string> valuePair(getPair(line));
          if ((valuePair.first != "") && (valuePair.second != "")) {
             //std::cout << "readPropertyFile: " << valuePair.first << "=" << valuePair.second << std::endl;
-            if (setProperty(valuePair.first, valuePair.second, overwrite))
+            if (setProperty_(valuePair.first, valuePair.second, overwrite))
                count++;
          }
       }
@@ -261,8 +262,21 @@ Property::getStringProperty(const string &name, const string &def,
 }
 
 
-bool 
-Property::setProperty(const string &name, const string &value,
+// private
+bool Property::setProperty_(const string &name, const string &value,
+                      bool overwrite) 
+{
+   pair<const string, string> valuePair(name, value);
+   MapType::iterator iter = properties_.find(name);
+   if (iter != properties_.end()) {
+      if (overwrite) (*iter).second = name;
+      else return false;
+   }
+   else properties_.insert(valuePair);
+   return true;                                                                                                                                         
+}
+
+bool Property::setProperty(const string &name, const string &value,
                       bool overwrite) 
 {
    pair<const string, string> valuePair(name, value);
@@ -332,4 +346,54 @@ std::string Property::toXml(const std::string& extraOffset)
    sb += "</Property>";
    return sb;
 }
+
+void Property::replaceVariables(bool env) {
+   MapType::const_iterator it;
+   for (it=properties_.begin(); it!=properties_.end(); ++it) {
+      const string& key = (*it).first;
+      const string& value = (*it).second;
+      const string newValue = replaceVariable(key, value, env);
+      if (value != newValue) {
+         properties_[key] = newValue;
+      }
+   }
+}
+
+string Property::replaceVariable(const string &key, const string &valueOrig, bool env) {
+   //if (replaceVariables == false)
+   //   return value;
+   string value = valueOrig;
+   string origValue = value;
+   string tok = "${";
+   string endTok = "}";
+   for (int ii = 0;; ii++) {
+      string::size_type from = value.find(tok);
+      if (from != string::npos) {
+         string::size_type to = value.find(endTok, from);
+         if (to == string::npos) {
+            //std::cout << "Property.InvalidVariable: Invalid variable '" << value.substr(from) << "', expecting ${} syntax." << std::endl;
+         }
+         string sub = value.substr(from, to + endTok.size() - from); // "${XY}"
+         string subKey = sub.substr(tok.size(), sub.length() - endTok.size() - tok.size()); // "XY"
+         string subValue = getProperty(subKey, env);
+         if (subValue.empty()) {
+            //if (verbose>=2) std::cout << "Property: Unknown variable " << sub << " is not replaced" << std::endl;
+            return value;
+         }
+         value = StringTrim::replaceAll(value, sub, subValue);
+      }
+      else {
+         //if (ii > 0 && verbose>=2) {
+         //   std::cout << "Property: Replacing '" << key << "=" << origValue << "' to '" << value << "'" << std::endl;
+         //}
+         return value;
+      }
+      if (ii > MAX_NEST) {
+         //if (verbose>=1) std::cout << "Property: Maximum nested depth of " << MAX_NEST << " reached for variable '" << getProperty(key, env) << "'." << std::endl;
+         return value;
+      }
+   }
+}
+
+
 #endif 
