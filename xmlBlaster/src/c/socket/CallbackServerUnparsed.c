@@ -24,7 +24,7 @@ static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
 static int initCallbackServer(CallbackServerUnparsed *cb);
 static int isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
-static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseFp);
+static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr);
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
@@ -43,7 +43,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->useThisSocket = useThisSocket;
    cb->initCallbackServer = initCallbackServer;
    cb->isListening = isListening;
-   /* cb->shutdown = shutdownCallbackServer; */
+   cb->shutdown = shutdownCallbackServer;
    cb->reusingConnectionSocket = false; /* is true if we tunnel callback through the client connection socket */
    cb->debug = false;
    cb->hostCB = "localhost";
@@ -97,16 +97,16 @@ void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
    }
 }
 
-static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseFp) {
+static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp) {
    int i;
-   if (responseFp == 0) {
+   if (responseEventFp == 0) {
       return false;
    }
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
       if (cb->responseListener[i].requestId == 0) {
          cb->responseListener[i].userP = userP;
          cb->responseListener[i].requestId = requestId;
-         cb->responseListener[i].responseFp = responseFp;
+         cb->responseListener[i].responseEventFp = responseEventFp;
          if (cb->debug) printf("[CallbackServerUnparsed] addResponseListener(requestId=%s)\n", requestId);
          return true;
       }
@@ -265,7 +265,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
          if (listener != 0) {
             /* This is a response for a request (no callback for us) */
             ResponseListener *r = removeResponseListener(cb, socketDataHolder.requestId);
-            listener->responseFp(r->userP, &socketDataHolder);
+            listener->responseEventFp(r->userP, &socketDataHolder);
             freeXmlBlasterBlobContent(&socketDataHolder.blob);
             if (cb->debug) printf("[CallbackServerUnparsed] Dispatched requestId '%s' to response listener\n", socketDataHolder.requestId);
             continue;
@@ -431,12 +431,14 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
-   int i;
    if (!cb->reusingConnectionSocket) {
       return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
 
-   free(cb->hostCB);
+   if (cb->hostCB != 0) {
+      free(cb->hostCB);
+      cb->hostCB = 0;
+   }
 
    closeAcceptSocket(cb);
 
@@ -450,6 +452,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
       if (cb->debug) printf("[CallbackServerUnparsed] Closed listener socket\n");
    }
 
+   /*
    for(i=0; i<10; i++) {
       if (cb->isShutdown) {
          return;
@@ -458,6 +461,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
       sleep(1);
    }
    printf("[CallbackServerUnparsed] WARNING: Thread has not died after 10 sec\n");
+   */
 }
 
 const char *callbackServerRawUsage()

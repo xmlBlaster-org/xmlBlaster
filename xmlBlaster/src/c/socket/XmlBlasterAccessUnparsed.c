@@ -66,6 +66,7 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->isConnected = isConnected;
    xa->debug = false;
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
+   xa->callbackThreadId = 0;
 #  ifdef _WINDOWS
    xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
    xa->responseCond = PTHREAD_COND_INITIALIZER;
@@ -92,15 +93,29 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
 
 void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 {
+   int retVal;
+
    if (xa->debug) printf("[XmlBlasterAccessUnparsed] freeXmlBlasterAccessUnparsed()\n");
    if (xa->connectionP != 0) {
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       xa->connectionP = 0;
    }
    if (xa->callbackP != 0) {
+      xa->callbackP->shutdown(xa->callbackP);
+      if (xa->callbackThreadId != 0) {
+         retVal = pthread_join(xa->callbackThreadId, 0);
+         if (retVal != 0) {
+            printf("[XmlBlasterAccessUnparsed] join problem return value is %d\n", retVal);
+         }
+         else {
+            if (xa->debug) printf("[XmlBlasterAccessUnparsed] join succeded\n");
+         }
+         xa->callbackThreadId = 0;
+      }
       freeCallbackServerUnparsed(xa->callbackP);
       xa->callbackP = 0;
    }
+
    free(xa);
 }
 
@@ -113,7 +128,6 @@ void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
 {
    int threadRet = 0;
-   pthread_t tid;
 
    if (xa->isInitialized) {
       return true;
@@ -142,7 +156,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
    xa->connectionP->postSendEvent_userP = xa;
 
    /* thread blocks on socket listener */
-   threadRet = pthread_create(&tid, 0, (cbFp)xa->callbackP->initCallbackServer, xa->callbackP);
+   threadRet = pthread_create(&xa->callbackThreadId, 0, (cbFp)xa->callbackP->initCallbackServer, xa->callbackP);
    if (threadRet != 0) {
       printf("[XmlBlasterAccessUnparsed] ERROR: Creating thread failed with error number %d", threadRet);
       freeCallbackServerUnparsed(xa->callbackP);
@@ -253,6 +267,7 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
    msgRequestInfo->blob.data = xa->responseBlob.data;
 
    xa->responseBlob.dataLen = 0;
+   xa->responseBlob.data = 0; /* msgRequestInfo->blob.data is now responsible to free() the data */
    
    return msgRequestInfo;
 }
@@ -417,199 +432,199 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
  */
 int main(int argc, char** argv)
 {
-   int iarg;
-   char *response = (char *)0;
-   /*
-    * callbackSessionId:
-    * Is created by the client and used to validate callback messages in update. 
-    * This is sent on connect in ConnectQos.
-    * (Is different from the xmlBlaster secret session ID)
-    */
-   const char *callbackSessionId = "topSecret";
-   XmlBlasterException xmlBlasterException;
-   XmlBlasterAccessUnparsed *xa = 0;
-   bool debug = false;
+   int ii;
+   int numTests = 1;
+   for (ii=0; ii<numTests; ii++) {
+      int iarg;
+      char *response = (char *)0;
+      /*
+       * callbackSessionId:
+       * Is created by the client and used to validate callback messages in update. 
+       * This is sent on connect in ConnectQos.
+       * (Is different from the xmlBlaster secret session ID)
+       */
+      const char *callbackSessionId = "topSecret";
+      XmlBlasterException xmlBlasterException;
+      XmlBlasterAccessUnparsed *xa = 0;
+      bool debug = false;
 
-   printf("[client] Try option '-help' if you need usage informations\n");
+      printf("[client] Try option '-help' if you need usage informations\n");
 
-   for (iarg=0; iarg < argc; iarg++) {
-      if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
-         char usage[XMLBLASTER_MAX_USAGE_LEN];
-         const char *pp =
-         "\n  -debug               true/false [false]"
-         "\n\nExample:"
-         "\n  XmlBlasterAccessUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
-         printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
-         exit(1);
+      for (iarg=0; iarg < argc; iarg++) {
+         if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
+            char usage[XMLBLASTER_MAX_USAGE_LEN];
+            const char *pp =
+            "\n  -debug               true/false [false]"
+            "\n\nExample:"
+            "\n  XmlBlasterAccessUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
+            printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
+            exit(1);
+         }
       }
-   }
 
-   for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-debug") == 0)
-         debug = !strcmp(argv[++iarg], "true");
-   }
+      for (iarg=0; iarg < argc-1; iarg++) {
+         if (strcmp(argv[iarg], "-debug") == 0)
+            debug = !strcmp(argv[++iarg], "true");
+      }
 
-   xa = getXmlBlasterAccessUnparsed(argc, argv);
-   if (xa->initialize(xa, myUpdate) == false) {
-      printf("[client] Connection to xmlBlaster failed, please start the server or check your configuration\n");
-      freeXmlBlasterAccessUnparsed(xa);
-      exit(1);
-   }
-
-   {  /* connect */
-      char connectQos[2048];
-      char callbackQos[1024];
-         sprintf(callbackQos,
-                "<queue relating='callback' maxEntries='100'>"
-                "  <callback type='SOCKET' sessionId='%s'>"
-                "    socket://%s:%d"
-                "  </callback>"
-                "</queue>", callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
-      sprintf(connectQos,
-             "<qos>"
-             " <securityService type='htpasswd' version='1.0'>"
-             "  <![CDATA["
-             "   <user>fritz</user>"
-             "   <passwd>secret</passwd>"
-             "  ]]>"
-             " </securityService>"
-             "%s"
-             "</qos>", callbackQos);
-
-      response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
-         printf("[client] Caught exception during connect errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+      xa = getXmlBlasterAccessUnparsed(argc, argv);
+      if (xa->initialize(xa, myUpdate) == false) {
+         printf("[client] Connection to xmlBlaster failed, please start the server or check your configuration\n");
          freeXmlBlasterAccessUnparsed(xa);
          exit(1);
       }
-      free(response);
-      printf("[client] Connected to xmlBlaster, do some tests ...\n");
-   }
 
+      {  /* connect */
+         char connectQos[2048];
+         char callbackQos[1024];
+            sprintf(callbackQos,
+                   "<queue relating='callback' maxEntries='100'>"
+                   "  <callback type='SOCKET' sessionId='%s'>"
+                   "    socket://%s:%d"
+                   "  </callback>"
+                   "</queue>", callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+         sprintf(connectQos,
+                "<qos>"
+                " <securityService type='htpasswd' version='1.0'>"
+                "  <![CDATA["
+                "   <user>fritz</user>"
+                "   <passwd>secret</passwd>"
+                "  ]]>"
+                " </securityService>"
+                "%s"
+                "</qos>", callbackQos);
 
-   response = xa->ping(xa, 0);
-   if (response == (char *)0) {
-      printf("[client] ERROR: Pinging a connected server failed\n");
-   }
-   else {
-      printf("[client] Pinging a connected server, response=%s\n", response);
-      free(response);
-   }
-
-   { /* subscribe ... */
-      const char *key = "<key oid='HelloWorld'/>";
-      const char *qos = "<qos/>";
-      printf("[client] Subscribe message 'HelloWorld' ...\n");
-      response = xa->subscribe(xa, key, qos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
-         printf("[client] Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
+         response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception during connect errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+         free(response);
+         printf("[client] Connected to xmlBlaster, do some tests ...\n");
       }
-      printf("[client] Subscribe success, returned status is '%s'\n", response);
-      free(response);
-   }
 
-   {  /* publish ... */
-      MsgUnit msgUnit;
-      printf("[client] Publishing message 'HelloWorld' ...\n");
-      msgUnit.key = "<key oid='HelloWorld'/>";
-      msgUnit.content = "Some message payload";
-      msgUnit.contentLen = strlen("Some message payload");
-      msgUnit.qos = "<qos><persistent/></qos>";
-      response = xa->publish(xa, &msgUnit, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
-         printf("[client] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
+
+      response = xa->ping(xa, 0);
+      if (response == (char *)0) {
+         printf("[client] ERROR: Pinging a connected server failed\n");
       }
-      printf("[client] Publish success, returned status is '%s'\n", response);
-      free(response);
-   }
-
-   {  /* unSubscribe ... */
-      const char *key = "<key oid='HelloWorld'/>";
-      const char *qos = "<qos/>";
-      printf("[client] UnSubscribe message 'HelloWorld' ...\n");
-      response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
-      if (response) {
-         printf("[client] Unsubscribe success, returned status is '%s'\n", response);
+      else {
+         printf("[client] Pinging a connected server, response=%s\n", response);
          free(response);
       }
-      else {
-         printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
-      }
-   }
 
-   {  /* get synchnronous ... */
-      size_t i;
-      const char *key = "<key queryType='XPATH'>//key</key>";
-      const char *qos = "<qos/>";
-      MsgUnitArr *msgUnitArr;
-      printf("[client] Get synchronous messages with XPath '//key' ...\n");
-      msgUnitArr = xa->get(xa, key, qos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
-         printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
-      }
-      if (msgUnitArr != (MsgUnitArr *)0) {
-         for (i=0; i<msgUnitArr->len; i++) {
-            char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content, msgUnitArr->msgUnitArr[i].contentLen);
-            const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ? " ..." : "";
-            printf("\n[client] Received message#%u/%u:\n"
-                   "-------------------------------------"
-                   "%s\n <content>%.100s%s</content>%s\n"
-                   "-------------------------------------\n",
-                   i+1, msgUnitArr->len,
-                   msgUnitArr->msgUnitArr[i].key,
-                   contentStr, dots,
-                   msgUnitArr->msgUnitArr[i].qos);
-            free(contentStr);
+      { /* subscribe ... */
+         const char *key = "<key oid='HelloWorld'/>";
+         const char *qos = "<qos/>";
+         printf("[client] Subscribe message 'HelloWorld' ...\n");
+         response = xa->subscribe(xa, key, qos, &xmlBlasterException);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
          }
-         freeMsgUnitArr(msgUnitArr);
+         printf("[client] Subscribe success, returned status is '%s'\n", response);
+         free(response);
       }
-      else {
-         printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
+
+      {  /* publish ... */
+         MsgUnit msgUnit;
+         printf("[client] Publishing message 'HelloWorld' ...\n");
+         msgUnit.key = "<key oid='HelloWorld'/>";
+         msgUnit.content = "Some message payload";
+         msgUnit.contentLen = strlen("Some message payload");
+         msgUnit.qos = "<qos><persistent/></qos>";
+         response = xa->publish(xa, &msgUnit, &xmlBlasterException);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+         printf("[client] Publish success, returned status is '%s'\n", response);
+         free(response);
+      }
+
+      {  /* unSubscribe ... */
+         const char *key = "<key oid='HelloWorld'/>";
+         const char *qos = "<qos/>";
+         printf("[client] UnSubscribe message 'HelloWorld' ...\n");
+         response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
+         if (response) {
+            printf("[client] Unsubscribe success, returned status is '%s'\n", response);
+            free(response);
+         }
+         else {
+            printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+      }
+
+      {  /* get synchnronous ... */
+         size_t i;
+         const char *key = "<key queryType='XPATH'>//key</key>";
+         const char *qos = "<qos/>";
+         MsgUnitArr *msgUnitArr;
+         printf("[client] Get synchronous messages with XPath '//key' ...\n");
+         msgUnitArr = xa->get(xa, key, qos, &xmlBlasterException);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+         if (msgUnitArr != (MsgUnitArr *)0) {
+            for (i=0; i<msgUnitArr->len; i++) {
+               char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content, msgUnitArr->msgUnitArr[i].contentLen);
+               const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ? " ..." : "";
+               printf("\n[client] Received message#%u/%u:\n"
+                      "-------------------------------------"
+                      "%s\n <content>%.100s%s</content>%s\n"
+                      "-------------------------------------\n",
+                      i+1, msgUnitArr->len,
+                      msgUnitArr->msgUnitArr[i].key,
+                      contentStr, dots,
+                      msgUnitArr->msgUnitArr[i].qos);
+               free(contentStr);
+            }
+            freeMsgUnitArr(msgUnitArr);
+         }
+         else {
+            printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+      }
+
+
+      {  /* erase ... */
+         const char *key = "<key oid='HelloWorld'/>";
+         const char *qos = "<qos/>";
+         printf("[client] Erasing message 'HelloWorld' ...\n");
+         response = xa->erase(xa, key, qos, &xmlBlasterException);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
+         printf("[client] Erase success, returned status is '%s'\n", response);
+         free(response);
+      }
+
+      if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
+         printf("[client] Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
          exit(1);
       }
-   }
 
-
-   {  /* erase ... */
-      const char *key = "<key oid='HelloWorld'/>";
-      const char *qos = "<qos/>";
-      printf("[client] Erasing message 'HelloWorld' ...\n");
-      response = xa->erase(xa, key, qos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
-         printf("[client] Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-         xa->disconnect(xa, 0, &xmlBlasterException);
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
-      }
-      printf("[client] Erase success, returned status is '%s'\n", response);
-      free(response);
-   }
-
-   if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
-      printf("[client] Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
       freeXmlBlasterAccessUnparsed(xa);
-      exit(1);
    }
-
-   freeXmlBlasterAccessUnparsed(xa);
-#  ifndef _WINDOWS  /* I don't know which library to include for sleep() on Windows */
-   printf("[client] Sleeping 2 sec.\n");
-   sleep(2);
-#  endif
    printf("[client] Good bye.\n");
    exit(0);
 }

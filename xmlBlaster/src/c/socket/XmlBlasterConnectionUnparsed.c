@@ -277,7 +277,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       requestInfo.blob.data = blob.data;
       requestInfoP = xb->preSendEvent(xb->preSendEvent_userP, &requestInfo, exception);
       if (*exception->message != 0) {
-         if (xb->debug) printf("[XmlBlasterConnectionUnparsed] Re-throw exception from postSendEvent errorCode=%s message=%s\n", exception->errorCode, exception->message);
+         if (xb->debug) printf("[XmlBlasterConnectionUnparsed] Re-throw exception from preSendEvent errorCode=%s message=%s\n", exception->errorCode, exception->message);
          return false;
       }
       if (requestInfoP == 0) {
@@ -347,7 +347,8 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          responseHolder->version = XMLBLASTER_VERSION;
          strncpy0(responseHolder->requestId, requestIdStr, MAX_REQUESTID_LEN);
          strncpy0(responseHolder->methodName, methodName, MAX_METHODNAME_LEN);
-         blobcpyAlloc(&responseHolder->blob, requestInfoP->blob.data, requestInfoP->blob.dataLen);
+         responseHolder->blob.dataLen = requestInfoP->blob.dataLen;
+         responseHolder->blob.data = requestInfoP->blob.data;     /* The responseHolder is now responsible to free(responseHolder->blob.data) */
          if (xb->debug) printf("[XmlBlasterConnectionUnparsed] requestId '%s' returns dataLen=%d\n", requestIdStr, requestInfoP->blob.dataLen);
       }
       else {
