@@ -3,14 +3,15 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.7 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: Util.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
-import org.xmlBlaster.util.XmlBlasterProperty;
+
+import java.util.Vector;
 
 
 /**
@@ -20,29 +21,31 @@ public class Util
 {
    private final static String ME = "Util";
 
+   /**
+    * If you want to start a second xmlBlaster instances
+    * set environment that the ports don't conflict
+    */
+   public static String[] getOtherServerPorts(int serverPort) {
+      Vector vec = getOtherServerPortVec(serverPort);
+      return (String[])vec.toArray(new String[0]);
+   }
 
    /**
     * If you want to start a second xmlBlaster instances
     * set environment that the ports don't conflict
     */
-   public static String[] getOtherServerPorts(int serverPort)
-   {
-      String[] args = new String[8];
-      args[0] = "-port";        // For all protocol we may use set an alternate server port
-      args[1] = "" + serverPort;
-      args[2] = "-socket.port";
-      args[3] = "" + (serverPort-1);
-      args[4] = "-rmi.registryPort";
-      args[5] = "" + (serverPort-2);
-      args[6] = "-xmlrpc.port";
-      args[7] = "" + (serverPort-3);
-      /*
-         Vector vec = new Vector();
-         vec.addElement("-port");
-         vec.addElement(""+serverPort);
-         return (String[])vec.toArray(new String[0]);
-      */
-      return args;
+   public static Vector getOtherServerPortVec(int serverPort) {
+      // For all protocol we may use set an alternate server port
+      Vector vec = new Vector();
+      vec.addElement("-port");
+      vec.addElement(""+serverPort);
+      vec.addElement("-socket.port");
+      vec.addElement(""+(serverPort-1));
+      vec.addElement("-rmi.registryPort");
+      vec.addElement(""+(serverPort-2));
+      vec.addElement("-xmlrpc.port");
+      vec.addElement(""+(serverPort-3));
+      return vec;
    }
 
    /**
@@ -65,7 +68,7 @@ public class Util
    public static void resetPorts()
    {
       try {
-         XmlBlasterProperty.addArgs2Props(getDefaultServerPorts());
+         Global.instance().getProperty().addArgs2Props(getDefaultServerPorts());
       } catch(org.jutils.JUtilsException e) {
          Log.error(ME, e.toString());
       }

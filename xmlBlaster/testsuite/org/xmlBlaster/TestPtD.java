@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.26 2002/05/09 11:54:54 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.27 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,7 +13,6 @@ import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;

@@ -3,23 +3,22 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.16 2002/05/09 11:54:53 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.17 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.InvocationRecorder;
+import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.InvocationRecorder;
-import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.client.I_CallbackRaw;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -41,6 +40,7 @@ import junit.framework.*;
 public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, I_CallbackRaw
 {
    private static String ME = "TestInvocationRecorder";
+   private final Global glob;
 
    private InvocationRecorder recorder = null;
 
@@ -63,9 +63,10 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * <p />
     * @param testName  The name used in the test suite
     */
-   public TestInvocationRecorder(String testName)
+   public TestInvocationRecorder(Global glob, String testName)
    {
        super(testName);
+       this.glob = glob;
    }
 
 
@@ -241,7 +242,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestInvocationRecorder("test"));
+       suite.addTest(new TestInvocationRecorder(new Global(), "test"));
        return suite;
    }
 
@@ -251,12 +252,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestInvocationRecorder testSub = new TestInvocationRecorder("test");
+      TestInvocationRecorder testSub = new TestInvocationRecorder(new Global(args), "test");
       testSub.setUp();
       testSub.test();
       testSub.tearDown();

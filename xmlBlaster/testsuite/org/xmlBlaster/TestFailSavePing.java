@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.18 2002/05/09 11:54:52 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.19 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,6 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ServerThread;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;

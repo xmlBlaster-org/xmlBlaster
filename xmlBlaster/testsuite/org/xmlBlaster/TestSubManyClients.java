@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.10 2002/05/09 11:54:57 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.11 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,7 +13,6 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -82,7 +81,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       super(testName);
       this.glob = glob;
       this.oneName = loginName;
-      numClients = XmlBlasterProperty.get("numClients", 10);
+      numClients = glob.getProperty().get("numClients", 10);
    }
 
 

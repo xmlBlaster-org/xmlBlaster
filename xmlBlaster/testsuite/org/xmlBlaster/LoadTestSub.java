@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.30 2002/05/09 11:54:50 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.31 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,6 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -93,7 +92,7 @@ public class LoadTestSub extends TestCase implements I_Callback
             burstModePublish = numPublish;
          if ((numPublish % burstModePublish) != 0)
             Log.error(ME, "numPublish should by dividable by publish.burstMode");
-         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " cb.burstMode.collectTime=" + XmlBlasterProperty.get("cb.burstMode.collectTime", 0L));
+         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " cb.burstMode.collectTime=" + glob.getProperty().get("cb.burstMode.collectTime", 0L));
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -325,12 +324,12 @@ public class LoadTestSub extends TestCase implements I_Callback
          Log.exit(ME, "Syn    Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
       }
 
-      int numPublish = XmlBlasterProperty.get("numPublish", 5000);
-      int burstModePublish = XmlBlasterProperty.get("publish.burstMode", 1);
-      boolean publishOneway = XmlBlasterProperty.get("publish.oneway", false);
+      int numPublish = glob.getProperty().get("numPublish", 5000);
+      int burstModePublish = glob.getProperty().get("publish.burstMode", 1);
+      boolean publishOneway = glob.getProperty().get("publish.oneway", false);
 
-      LoadTestSub testSub = new LoadTestSub(glob, "LoadTestSub", XmlBlasterProperty.get("name", "Tim"),
-                                            XmlBlasterProperty.get("passwd", "secret"),
+      LoadTestSub testSub = new LoadTestSub(glob, "LoadTestSub", glob.getProperty().get("name", "Tim"),
+                                            glob.getProperty().get("passwd", "secret"),
                                             numPublish, burstModePublish, publishOneway);
       testSub.setUp();
       testSub.testManyPublish();

@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.6 2002/05/09 11:54:58 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.7 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -38,7 +37,7 @@ import junit.framework.*;
 public class TestVolatile extends TestCase implements I_Callback
 {
    private final static String ME = "TestVolatile";
-   private Global glob = null;
+   private final Global glob;
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloVolatile";
@@ -54,9 +53,10 @@ public class TestVolatile extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestVolatile(String testName)
+   public TestVolatile(Global glob, String testName)
    {
        super(testName);
+       this.glob = glob;
    }
 
 
@@ -224,7 +224,7 @@ public class TestVolatile extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestVolatile("testVolatile"));
+       suite.addTest(new TestVolatile(new Global(), "testVolatile"));
        return suite;
    }
 
@@ -240,12 +240,7 @@ public class TestVolatile extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestVolatile testSub = new TestVolatile("TestVolatile");
+      TestVolatile testSub = new TestVolatile(new Global(args), "TestVolatile");
       testSub.setUp();
       testSub.testVolatile();
       testSub.tearDown();

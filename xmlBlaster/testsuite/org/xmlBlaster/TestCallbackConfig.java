@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.7 2002/05/09 11:54:51 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,6 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -36,7 +35,7 @@ import junit.framework.*;
 public class TestCallbackConfig extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
-
+   private final Global glob;
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -53,9 +52,10 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestCallbackConfig(String testName, String name)
+   public TestCallbackConfig(Global glob, String testName, String name)
    {
        super(testName);
+       this.glob = glob;
        this.name = name;
    }
 
@@ -180,7 +180,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestCallbackConfig("testCbSessionId", "Tim"));
+       suite.addTest(new TestCallbackConfig(new Global(), "testCbSessionId", "Tim"));
        return suite;
    }
 
@@ -194,12 +194,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestCallbackConfig testSub = new TestCallbackConfig("TestCallbackConfig", "Tim");
+      TestCallbackConfig testSub = new TestCallbackConfig(new Global(args), "TestCallbackConfig", "Tim");
       testSub.setUp();
       testSub.testCbSessionId();
       testSub.tearDown();

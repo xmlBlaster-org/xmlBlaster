@@ -3,16 +3,13 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.8 2002/05/09 11:54:58 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.9 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -45,6 +42,7 @@ import junit.framework.*;
 public class TestSubMulti extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
 
    private String publishOid = "";
    private XmlBlasterConnection con;
@@ -63,9 +61,10 @@ public class TestSubMulti extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubMulti(String testName, String loginName)
+   public TestSubMulti(Global glob, String testName, String loginName)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -79,7 +78,7 @@ public class TestSubMulti extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         con = new XmlBlasterConnection(); // Find orb
+         con = new XmlBlasterConnection(glob);
          String passwd = "secret";
          con.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
@@ -230,7 +229,7 @@ public class TestSubMulti extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubMulti("testPublishAfterSubscribeXPath", loginName));
+       suite.addTest(new TestSubMulti(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
@@ -246,12 +245,7 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestSubMulti testSub = new TestSubMulti("TestSubMulti", "Tim");
+      TestSubMulti testSub = new TestSubMulti(new Global(args), "TestSubMulti", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();

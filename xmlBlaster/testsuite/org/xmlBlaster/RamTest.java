@@ -3,15 +3,15 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.16 2002/05/09 11:54:51 ruff Exp $
+Version:   $Id: RamTest.java,v 1.17 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
 
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -41,6 +41,7 @@ import junit.framework.*;
 public class RamTest extends TestCase
 {
    private static String ME = "Tim";
+   private final Global glob;
    private StopWatch stopWatch = null;
 
    private String publishOid = "";
@@ -59,9 +60,10 @@ public class RamTest extends TestCase
     * @param loginName The name to login to the xmlBlaster
     * @param numPublish The number of messages to send
     */
-   public RamTest(String testName, String loginName, int numPublish)
+   public RamTest(Global glob, String testName, String loginName, int numPublish)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.numPublish = numPublish;
    }
@@ -207,7 +209,7 @@ public class RamTest extends TestCase
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        int numMsg = 100;
-       suite.addTest(new RamTest("testManyPublish", loginName, numMsg));
+       suite.addTest(new RamTest(new Global(), "testManyPublish", loginName, numMsg));
        return suite;
    }
 
@@ -225,13 +227,9 @@ public class RamTest extends TestCase
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      int numPublish = XmlBlasterProperty.get("numPublish", 1000);
-      RamTest testSub = new RamTest("RamTest", "Tim", numPublish);
+      Global glob = new Global(args);
+      int numPublish = glob.getProperty().get("numPublish", 1000);
+      RamTest testSub = new RamTest(glob, "RamTest", "Tim", numPublish);
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();

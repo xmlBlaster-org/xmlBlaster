@@ -3,13 +3,12 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.22 2002/05/09 11:54:53 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.23 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;

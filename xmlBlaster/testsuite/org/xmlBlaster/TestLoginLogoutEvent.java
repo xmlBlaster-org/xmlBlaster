@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.16 2002/05/09 11:54:53 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.17 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -45,7 +44,7 @@ import junit.framework.*;
 public class TestLoginLogoutEvent extends TestCase implements I_Callback
 {
    private static String ME = "TestLoginLogoutEvent";
-   private Global glob = null;
+   private final Global glob;
 
    private XmlBlasterConnection firstConnection;
    private String firstName;
@@ -68,9 +67,10 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     * @param firstName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   public TestLoginLogoutEvent(String testName, String firstName, String secondName)
+   public TestLoginLogoutEvent(Global glob, String testName, String firstName, String secondName)
    {
        super(testName);
+       this.glob = glob;
        this.firstName = firstName;
        this.secondName = secondName;
    }
@@ -83,11 +83,10 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      if (glob == null) glob = new Global();
       try {
-         firstConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
+         firstConnection = new XmlBlasterConnection(glob); // Find orb
+         ConnectQos qos = new ConnectQos(glob, firstName, passwd);
+         firstConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -114,7 +113,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
       }
 
-      firstConnection.logout();
+      firstConnection.disconnect(null);
    }
 
 
@@ -241,7 +240,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestLoginLogoutEvent("testLoginLogout", "Tim", "Joe"));
+       suite.addTest(new TestLoginLogoutEvent(new Global(), "testLoginLogout", "Tim", "Joe"));
        return suite;
    }
 
@@ -257,12 +256,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestLoginLogoutEvent testSub = new TestLoginLogoutEvent("TestLoginLogoutEvent", "Tim", "Joe");
+      TestLoginLogoutEvent testSub = new TestLoginLogoutEvent(new Global(args), "TestLoginLogoutEvent", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();
       testSub.tearDown();

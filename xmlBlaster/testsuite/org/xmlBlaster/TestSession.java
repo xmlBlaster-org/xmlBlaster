@@ -3,15 +3,12 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.6 2002/05/09 11:54:55 ruff Exp $
+Version:   $Id: TestSession.java,v 1.7 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -41,7 +38,7 @@ import junit.framework.*;
 public class TestSession extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
-
+   private final Global glob;
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -52,9 +49,10 @@ public class TestSession extends TestCase implements I_Callback
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestSession(String testName, String name)
+   public TestSession(Global glob, String testName, String name)
    {
        super(testName);
+       this.glob = glob;
        this.name = name;
    }
 
@@ -83,8 +81,8 @@ public class TestSession extends TestCase implements I_Callback
       Log.info(ME, "testZeroSessions() ...");
       try {
          Log.info(ME, "Connecting ...");
-         XmlBlasterConnection con = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(null, name, passwd);
+         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob, name, passwd);
          qos.setMaxSessions(-16);
          con.connect(qos, this); // Login to xmlBlaster
          assertTrue("Connecting with zero sessions should not be possible", false);
@@ -108,8 +106,8 @@ public class TestSession extends TestCase implements I_Callback
          for (int ii=0; ii<numLogin; ii++) {
             try {
                Log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
-               con[ii] = new XmlBlasterConnection();
-               ConnectQos qos = new ConnectQos(null, name, passwd);
+               con[ii] = new XmlBlasterConnection(glob);
+               ConnectQos qos = new ConnectQos(glob, name, passwd);
                qos.setMaxSessions(maxSessions);
                con[ii].connect(qos, this); // Login to xmlBlaster
                if (ii >= maxSessions)
@@ -330,11 +328,12 @@ public class TestSession extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSession("testZeroSessions", "Tim"));
-       suite.addTest(new TestSession("testSessionOverflow", "Tim"));
-       suite.addTest(new TestSession("testSessionTimeout", "Tim"));
-       suite.addTest(new TestSession("testSessionTimeoutRespan", "Tim"));
-       suite.addTest(new TestSession("testClearSession", "Tim"));
+       Global glob = new Global();
+       suite.addTest(new TestSession(glob, "testZeroSessions", "Tim"));
+       suite.addTest(new TestSession(glob, "testSessionOverflow", "Tim"));
+       suite.addTest(new TestSession(glob, "testSessionTimeout", "Tim"));
+       suite.addTest(new TestSession(glob, "testSessionTimeoutRespan", "Tim"));
+       suite.addTest(new TestSession(glob, "testClearSession", "Tim"));
        return suite;
    }
 
@@ -347,12 +346,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestSession testSub = new TestSession("TestSession", "Tim");
+      TestSession testSub = new TestSession(new Global(args), "TestSession", "Tim");
       testSub.setUp();
       testSub.testZeroSessions();
       testSub.testSessionOverflow();

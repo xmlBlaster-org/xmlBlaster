@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.30 2002/05/09 11:54:52 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.31 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,6 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ServerThread;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.I_Callback;
@@ -101,7 +100,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
          /* Old way:
          // Setup fail save handling ...
-         long retryInterval = 4000L; // XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
+         long retryInterval = 4000L; // glob.getProperty().get("Failsave.retryInterval", 4000L);
          int retries = -1;           // -1 == forever
          long pingInterval = 0L;     // switched off
          int maxMessages = 1000;
@@ -114,10 +113,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       }
       catch (XmlBlasterException e) {
           Log.warn(ME, "setUp() - login failed");
+          fail("setUp() - login faile");
       }
       catch (Exception e) {
           Log.error(ME, "setUp() - login failed: " + e.toString());
           e.printStackTrace();
+          fail("setUp() - login faile");
       }
    }
 

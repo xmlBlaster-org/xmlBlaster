@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.23 2002/05/09 11:54:52 ruff Exp $
+Version:   $Id: TestGet.java,v 1.24 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,6 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.GetQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -167,7 +166,7 @@ public class TestGet extends TestCase
     */
    public void testGetMany()
    {
-      int num = XmlBlasterProperty.get("numTries", 5);
+      int num = glob.getProperty().get("numTries", 5);
       Log.info(ME, "Get " + num + " not existing messages ...");
       String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       String qos = "<qos></qos>";

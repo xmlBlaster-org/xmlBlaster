@@ -16,6 +16,7 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster class tests");
+      suite.addTest(new TestSuite(classtest.GlobalTest.class));
       suite.addTest(new TestSuite(classtest.XmlKeySaxTest.class));
       return suite;
    }

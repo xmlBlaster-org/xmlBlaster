@@ -7,7 +7,6 @@ Comment:   Start all tests
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.jutils.JUtilsException;
 import junit.framework.*;
 
@@ -31,10 +30,10 @@ public class TestAll
       TestSuite suite= new TestSuite();
 
       //System.out.println("\n\n========= TESTING CORBA ==========\n");
-      //try { XmlBlasterProperty.set("client.protocol", "SOCKET"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { XmlBlasterProperty.set("client.protocol", "IOR"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { XmlBlasterProperty.set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { XmlBlasterProperty.set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "SOCKET"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "IOR"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       suite.addTest(TestCorbaThreads.suite());
       suite.addTest(TestSession.suite());
       suite.addTest(TestLogin.suite());

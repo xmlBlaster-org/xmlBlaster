@@ -3,14 +3,14 @@ Name:      REvParsing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Comparison between RegExp and XML-Parsing.
-Version:   $Id: REvParsing.java,v 1.3 2001/02/12 00:10:42 ruff Exp $
+Version:   $Id: REvParsing.java,v 1.4 2002/05/11 10:07:55 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.query;
 
 import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.jutils.JUtilsException;
 import org.jutils.time.StopWatch;
 import org.jutils.init.Args;
@@ -32,16 +32,18 @@ import gnu.regexp.*;
 public class REvParsing extends DefaultHandler
 {
    static private final String ME ="REvParsing";
+   private final Global glob;
    String xmlInstance = "";
    String uri = "";
    Vector oids = new Vector();
    int countOids = 0;
 
-   public REvParsing()
+   public REvParsing(Global glob)
    {
+      this.glob = glob;
       countOids = 0; // Set Oid-Counter zero;
       try{
-         uri = XmlBlasterProperty.get("f",(String)null);
+         uri = glob.getProperty().get("f",(String)null);
          if(uri==null)
             usage();
          xmlInstance = FileUtil.readAsciiFile(uri);
@@ -98,7 +100,7 @@ public class REvParsing extends DefaultHandler
       try
       {
          SAXParser saxParser = factory.newSAXParser();
-         saxParser.parse(new File(uri), new REvParsing() );
+         saxParser.parse(new File(uri), new REvParsing(glob) );
       } catch (SAXParseException spe) {
       } catch (SAXException sxe) {
       } catch (ParserConfigurationException pce) {
@@ -123,13 +125,13 @@ public class REvParsing extends DefaultHandler
 
    public static void main(String[] arg)
    {
-      try {
-         XmlBlasterProperty.init(arg);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(arg) != 0) {
+         usage();
+         Log.panic(ME, "Bye");
       }
 
-      REvParsing repa = new REvParsing();
+      REvParsing repa = new REvParsing(glob);
       // RegExp-Test
       repa.testRE();
 
@@ -138,7 +140,7 @@ public class REvParsing extends DefaultHandler
    }
 
 
-   public void usage()
+   public static void usage()
    {
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Invoke:");

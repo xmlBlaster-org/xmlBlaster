@@ -3,16 +3,13 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.13 2002/05/09 11:54:58 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.14 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -39,6 +36,7 @@ import junit.framework.*;
 public class TestSubXPath extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
    private boolean messageArrived = false;
 
    private String publishOid = "";
@@ -57,9 +55,10 @@ public class TestSubXPath extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubXPath(String testName, String loginName)
+   public TestSubXPath(Global glob, String testName, String loginName)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -233,7 +232,7 @@ public class TestSubXPath extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubXPath("testPublishAfterSubscribeXPath", loginName));
+       suite.addTest(new TestSubXPath(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
@@ -249,12 +248,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestSubXPath testSub = new TestSubXPath("TestSubXPath", "Tim");
+      TestSubXPath testSub = new TestSubXPath(new Global(args), "TestSubXPath", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();

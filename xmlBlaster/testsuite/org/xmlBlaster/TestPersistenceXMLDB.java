@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.6 2002/05/09 11:54:54 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.7 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -129,7 +128,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
       args[0] = "-port";
       args[1] = "" + Global.XMLBLASTER_PORT;
       try {
-         XmlBlasterProperty.addArgs2Props(args);
+         glob.getProperty().addArgs2Props(args);
       } catch(org.jutils.JUtilsException e) {
          assertTrue(e.toString(), false);
       }
@@ -241,13 +240,13 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
     */
    void checkContent(boolean checkContent)
    {
-      String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
+      String driverClass = glob.getProperty().get("Persistence.Driver", (String)null);
       if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver")) {
          Log.info(ME, "Sorry, can't check persistence store, only checks for Xindice is implemented");
          return;
       }
 
-      String path = XmlBlasterProperty.get("Persistence.Path", (String)null);
+      String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
          Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
          return;

@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.7 2002/05/09 11:54:51 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,6 @@ import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -35,8 +34,7 @@ import junit.framework.*;
 public class TestCallback extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
-   private Global glob = null;
-
+   private final Global glob;
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -52,9 +50,10 @@ public class TestCallback extends TestCase implements I_Callback
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestCallback(String testName, String name)
+   public TestCallback(Global glob, String testName, String name)
    {
        super(testName);
+       this.glob = glob;
        this.name = name;
    }
 
@@ -186,7 +185,7 @@ public class TestCallback extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestCallback("testCallbackFailure", "Tim"));
+       suite.addTest(new TestCallback(new Global(), "testCallbackFailure", "Tim"));
        return suite;
    }
 
@@ -200,12 +199,7 @@ public class TestCallback extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestCallback testSub = new TestCallback("TestCallback", "Tim");
+      TestCallback testSub = new TestCallback(new Global(args), "TestCallback", "Tim");
       testSub.setUp();
       testSub.testCallbackFailure();
       testSub.tearDown();

@@ -23,7 +23,6 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
@@ -215,13 +214,13 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    void checkContent(boolean checkContent)
    {
-      String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
+      String driverClass = glob.getProperty().get("Persistence.Driver", (String)null);
       if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.filestore.FileDriver")) {
          Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
-      String path = XmlBlasterProperty.get("Persistence.Path", (String)null);
+      String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
          Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
          return;

@@ -3,13 +3,12 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.10 2002/05/09 11:54:58 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.11 2002/05/11 10:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
