@@ -95,6 +95,7 @@ them at need.
     <echo message="   demo        --> generates the demo.jar file"/>
     <echo message="   testsuite   --> generates the testsuite.jar file"/>
     <echo message="   all         --> generates the xmlBlaster.jar, demo.jar, and testsuite.jar file"/>
+    <echo message="   javadocs    --> generates the javadoc documentation"/>
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
     <echo message="   clean       --> cleans up the directory"/>
     <echo message=""/>
@@ -188,6 +189,7 @@ them at need.
   <!-- Creates the core javadoc documentation                              -->
   <!-- =================================================================== -->
   <target name="javadocs" depends="xmlBlaster">
+    <mkdir dir="${javadoc.dir}"/>
 	<javadoc packagenames="org.xmlBlaster.*"
 		sourcepath="${src.dir}"
 		classpath="${classpath}"
