@@ -29,7 +29,7 @@ public class XmlBlasterClassLoader extends URLClassLoader {
    }
 
    public Class loadClass(String name) throws ClassNotFoundException {
-
+      //debugState(name);
       ClassLoader parent = getClass().getClassLoader();
 
       if (!useXmlBlasterClassloader) {
@@ -72,4 +72,29 @@ public class XmlBlasterClassLoader extends URLClassLoader {
             return clazz;
       }
    } // end of loadClass
+
+   public void appendURL(URL url) {
+      addURL(url);
+   }
+
+   /**
+    * Helper for debugging classpath.
+    */
+   private void debugState(String name) {
+     log.trace(ME,"Looking up class: " + name);
+     log.trace(ME,"Local path is: " + getURLPath());
+     
+   }
+
+   String getURLPath() {
+      URL[] urls = getURLs();
+      StringBuffer buff = new StringBuffer();
+      if (urls != null && urls.length > 0) {
+         for (int i = 0;i<urls.length;i++) {
+            buff.append(urls[i].toString()).append(";");
+         }
+      }
+      return buff.toString();
+
+   }
 }
