@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.32 2002/09/12 11:57:32 ruff Exp $
+Version:   $Id: Parser.java,v 1.33 2002/09/14 23:10:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -126,11 +126,6 @@ public class Parser
    /** Holding MessageUnit objects which acts as a holder for the method arguments */
    private Vector msgVec;
 
-   /** Set debug level */
-   public int SOCKET_DEBUG=0;
-
-   protected long index = 0L;
-
    // create only once, for low level parsing
    //private ByteArray byteArray = new ByteArray(256);
    private Buf buf = new Buf();
@@ -165,7 +160,6 @@ public class Parser
     * This method allows to reuse a Parser instance. 
     */
    public void initialize() {
-      index = 0L;
       //msgLength = -1;
       checksum = false;
       compressed = false;
@@ -472,7 +466,7 @@ public class Parser
     */
    public final Buf readOneMsg(InputStream in) throws IOException
    {
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Entering readOneMsg(), waiting on inputStream");
+      if (log.TRACE) log.trace(ME, "Entering readOneMsg(), waiting on inputStream");
 
       // First we extract the first 10 bytes to get the msgLength ...
       int remainLength = NUM_FIELD_LEN;
@@ -501,7 +495,7 @@ public class Parser
             throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
          }
 
-         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+         if (log.TRACE) log.trace(ME, "Got first 10 bytes of total length=" + msgLength);
          if (msgLength == NUM_FIELD_LEN)
             return null; // An empty message only contains the header 10 bytes
          else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
@@ -540,6 +534,7 @@ public class Parser
     * This method blocks until a message arrives
     */
    public final void parse(InputStream in) throws IOException {
+      if (log.CALL) log.call(ME, "Entering parse()");
 
       initialize();
 
@@ -590,7 +585,7 @@ public class Parser
          msgUnit.setKey(toString(buf));
          if (buf.offset >= buf.buf.length) break;
 
-         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Getting messageUnit content index=" + index);
+         if (log.TRACE) log.trace(ME, "Getting messageUnit #" + ii);
          msgUnit.setContent(toByte(buf));
 
          if (buf.offset >= buf.buf.length) break;
@@ -604,7 +599,7 @@ public class Parser
          throw new IOException(str);
       }
 
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "messageUnit OK index=" + index);
+      if (log.TRACE) log.trace(ME, "Leaving parse(), message successfully parsed");
    }
 
    /**
@@ -809,7 +804,7 @@ public class Parser
       return new String(buf.buf, startOffset, buf.offset-startOffset);
    }
 
-   private String dump() {
+   public final String dump() {
       StringBuffer buffer = new StringBuffer(256);
       buffer.append("msgLength=" + buf.buf.length);
       buffer.append(", checksum=" + checksum);
@@ -823,7 +818,6 @@ public class Parser
       buffer.append(", sessionId=" + sessionId);
       buffer.append(", lenUnzipped=" + lenUnzipped);
       buffer.append(", checkSumResult=" + checkSumResult);
-      buffer.append(", index=" + index);
       return buffer.toString();
    }
 
@@ -831,7 +825,15 @@ public class Parser
     * Get the raw messages as a string, for tests and for dumping only
     * @return The stringified message, null bytes are replaced by '*'
     */
-   public static String toLiteral(byte[] arr) {
+   public final String toLiteral() throws XmlBlasterException {
+      return Parser.toLiteral(createRawMsg());
+   }
+
+   /**
+    * Get the raw messages as a string, for tests and for dumping only
+    * @return The stringified message, null bytes are replaced by '*'
+    */
+   public static final String toLiteral(byte[] arr) {
       StringBuffer buffer = new StringBuffer(arr.length+10);
       byte[] dummy = new byte[1];
       for (int ii=0; ii<arr.length; ii++) {
