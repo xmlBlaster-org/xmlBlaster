@@ -28,7 +28,7 @@ You need JDK 2 or better to run xmlBlaster.
 3) If you want to compile the stuff, the CLASSPATH has to
    point to jar files, to the sources (.java) and to the binaries (.class):
 
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes:${XMLBLASTER_HOME}/src/java
+     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
