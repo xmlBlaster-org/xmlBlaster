@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.53 2000/10/10 20:45:36 ruff Exp $
+Version:   $Id: Main.java,v 1.54 2000/10/11 07:47:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -51,6 +51,8 @@ import java.util.*;
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
  * <code>   jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true</code>
+ *
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class Main
 {
@@ -63,6 +65,8 @@ public class Main
    private Vector protocols = new Vector();
    /** command line arguments */
    private String[] args = null;
+   /** Version string, please change for new releases (4 digits) */
+   private String version = "0.79";
 
    /**
     * true: If instance created by control panel<br />
@@ -127,10 +131,10 @@ public class Main
          Log.info(ME, Memory.getStatistic());
 
          if (controlPanel == null) {
-            Log.info(ME, "#####################################");
-            Log.info(ME, "# xmlBlaster is ready for requests  #");
-            Log.info(ME, "# press <?> and <enter> for options #");
-            Log.info(ME, "#####################################");
+            Log.info(ME, "##########################################");
+            Log.info(ME, "# xmlBlaster " + version + " is ready for requests  #");
+            Log.info(ME, "# press <?> and <enter> for options      #");
+            Log.info(ME, "##########################################");
          }
          else
             Log.info(ME, "xmlBlaster is ready for requests");
@@ -358,7 +362,7 @@ public class Main
     */
    private void usage()
    {
-      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "-----------------------" + version + "-------------------------------");
       Log.plain(ME, "jaco org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "   -h                  Show the complete usage.");
