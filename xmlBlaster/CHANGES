@@ -1,5 +1,15 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o XmlBlaster cluster now support unSubscribe() routing
+
+ o Changed subscription ID to be cluster wide unique
+
+ o Bugfix cluster setup: Catching forever looping PtP messages
+   in a clustered environment
+
+ o Bugfix for corrupted PublishQos, occurring
+   since 0.85c
+
  o C-client: Fixed gcc warnings on IBM s390 (with Linux)
    for printf() and sscanf() with %u and size_t
 
