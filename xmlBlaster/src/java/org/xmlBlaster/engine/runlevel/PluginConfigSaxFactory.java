@@ -41,7 +41,9 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    private StringBuffer attributeValue;
    private boolean inAction = false;
    private boolean inAttribute = false;
-   private boolean wrappedInCDATA = false;
+   private boolean wrappedInCDATA = false; // for example: <attribute id='publishQos'><![CDATA[ bla ]]></attribute>
+   private boolean embeddedCDATA = false;  // for example: <attribute id='publishQos'><qos><![CDATA[<expiration lifeTime='4000'/>]]></qos></attribute>
+   private int subTagCounter;
 
    /**
     * Can be used as singleton. 
@@ -156,6 +158,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
       }
 
       if (this.inAttribute) {
+         this.subTagCounter++;
          this.attributeValue.append("<").append(name);
          for (int i=0; i<attrs.getLength(); i++) {
             this.attributeValue.append(" ").append(attrs.getLocalName(i)).append("='").append(attrs.getValue(i)).append("'");
@@ -170,6 +173,10 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    public void startCDATA() {
       if (this.log.CALL) this.log.call(ME, "startCDATA");
       this.wrappedInCDATA = true;
+      if (this.subTagCounter > 0) {
+         this.attributeValue.append("<![CDATA[");
+         this.embeddedCDATA = true;
+      }
    }
 
    /**
@@ -198,10 +205,11 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
       }
       if ("attribute".equalsIgnoreCase(name)) {
          this.inAttribute = false;
+         this.subTagCounter = 0;
          if (this.attributeKey != null && this.attributeValue != null) {
             String val = this.attributeValue.toString();
             if (val.startsWith("<![CDATA[")) {  //if (this.wrappedInCDATA) {
-               // Strip CDATA
+               // Strip CDATA if ampersand '&lt;![CDATA[' was used instead of '<![CDATA[':
                int pos = val.indexOf("<![CDATA[");
                if (pos >= 0) {
                   val = val.substring(pos+9);
@@ -222,7 +230,12 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          return;
       }   
       if (this.inAttribute) {
+         if (this.embeddedCDATA) {
+            this.attributeValue.append("]]>");
+            this.embeddedCDATA = false;
+         }
          this.attributeValue.append("</"+name+">");
+         this.subTagCounter--;
       }
    }
 
