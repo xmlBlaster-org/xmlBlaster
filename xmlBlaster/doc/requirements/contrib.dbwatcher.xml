@@ -317,19 +317,24 @@ SELECT * FROM TEST_POLL ORDER BY CAR;
 &lt;/plugin></font>
   </pre>
   <p>
-  We register the plugin with the <tt>plugin</tt> tag and give it a unique name <font color="gray">(gray)</font>.<br />
-  Further we need to setup the database access <font color="blue">(blue)</font> and the xmlBlaster access <font color="green">(green)</font>.
-  In this case we want a separate topic for each CAR entry (<tt>changeDetector.groupColName=CAR</tt>),
-  we detect a change on table <tt>TEST_POLL</tt> with the query
-  <tt>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL</tt>
-  and all changed rows since the last query are processed with
-  <tt>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR</tt>
-  and published to topics depending on the current car, for example <tt>db.test_poll.event.Fiat</tt> <font color="red">(red)</font>.<br />
-  The plugin is configured to poll every 10 seconds with <tt>alertScheduler.pollInterval=10000</tt> <font color="orange">(orange)</font>.
+  <ul>
+    <li>We register the plugin with the <tt>plugin</tt> tag and give it a unique name <font color="gray">(gray)</font>.</li>
+    <li>We need to setup the database access <font color="blue">(blue)</font>.</li>
+    <li>We need to setup the xmlBlaster access <font color="green">(green)</font>.</li>
+    <li>The plugin is configured to poll every 10 seconds with <tt>alertScheduler.pollInterval=10000</tt> <font color="orange">(orange)</font>.</li>
+    <li>In this case we want a separate topic for each CAR entry (<tt>changeDetector.groupColName=CAR</tt>),
+        we detect a change on table <tt>TEST_POLL</tt> with the query
+        <tt>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL</tt>
+        and all changed rows since the last query are processed with
+        <tt>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR</tt>
+        and published to topics depending on the current car, for example <tt>db.test_poll.event.Fiat</tt> <font color="red">(red)</font>.</li>
+    <li>NOTE: The <tt>ORDER BY CAR</tt> is a must to get events for each car change.</li>
+  </ul>
   </p>
 
-  <p>To see what messages are published start a client<br />
-  <tt>java javaclients.HelloWorldSubscribe -xpath //key -maxContentLength 1000</tt>
+  <p>To see what messages are published start the server and a client<br />
+  <tt>java org.xmlBlaster.Main -trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin] true</tt><br />
+  <tt>java javaclients.HelloWorldSubscribe -xpath //key -maxContentLength 1000</tt><br />
   and press one time enter to subscribe to all messages.</p>
 
   <p>These are the three messages you receive on startup:</p>
