@@ -72,7 +72,7 @@
       <p>
       The following figure shows the session naming conventions.
       </p>
-      <br />
+      <br /><a NAME="naming"></a>
       <img src="SessionNamingConvention.gif" border="0" title="Session naming convention" alt="Session naming convention" />
       <br />
       <p>
@@ -506,7 +506,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -c
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
