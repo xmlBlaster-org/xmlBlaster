@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Java client API change:
+   The ConnectQos constructor can now throw an XmlBlasterException if loading of
+   SecurityPlugin fails
+
  o htpassed authentication:
    - The password files are not trimmed (leading and trailing spaces are removed)
    - We now support startWith() and endsWith() in mode 'Security.Server.Plugin.htpasswd.allowPartialUsername=true'
@@ -74,6 +78,8 @@ Changes cvs
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
       o Removed namespace from header: Clients now may need to add
          using namespace org::xmlBlaster::util::qos;
+   - SecurityQos constructor now accepts the security plugin name
+   - Fixed reading of default client name
    - Fixed setting default SecurtiyQos userId from SessionName
    - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
