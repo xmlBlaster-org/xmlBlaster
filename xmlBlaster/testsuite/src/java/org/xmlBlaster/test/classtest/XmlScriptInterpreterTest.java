@@ -7,7 +7,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.classtest;
 
 import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -36,7 +37,10 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
    protected LogChannel log;
    protected XmlScriptInterpreter interpreter;
    private TestAccessor accessor;
+   private ByteArrayOutputStream out;
+   private HashMap attachments;
 
+   
    public class TestAccessor extends XmlBlasterAccess {
       
       private boolean doRemoteCalls;
@@ -127,19 +131,21 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
          if (this.doRemoteCalls) return super.disconnect(qos);
          return false;
       }
-
    }
-
 
    public XmlScriptInterpreterTest(String name) {
-      this(new Global(), System.out, name);
+      this(new Global(), name);
    }
 
-   public XmlScriptInterpreterTest(Global global, OutputStream out, String name) {
+   public XmlScriptInterpreterTest(Global global, String name) {
       super(name);
       boolean doRemoteCalls = false;
       this.accessor = new TestAccessor(global, doRemoteCalls);
-      this.interpreter = new XmlScriptInterpreter(global, this.accessor, out, out, null); 
+      this.out = new ByteArrayOutputStream();
+      this.attachments = new HashMap();
+      String contentRef = "QmxhQmxhQmxh"; // this is used in testPublishArr
+      this.attachments.put("attachment1", contentRef);
+      this.interpreter = new XmlScriptInterpreter(global, this.accessor, out, out, this.attachments); 
       XMLUnit.setIgnoreWhitespace(true);
    }
 
@@ -228,10 +234,12 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qosRef = "<qos><priority>HIGH</priority></qos>";
       String contentRef = "<some><content>Hello World</content><qos></qos><key><key><qos><qos></qos></qos></key></key></some>";
       
-      String cmd = "<xmlBlaster><publish>" + keyRef + "<content>" + contentRef + "</content>" + 
+      String cmd = "<xmlBlaster id='xxyyzz'><publish>" + keyRef + "<content>" + contentRef + "</content>" + 
                    qosRef + "</publish></xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
+
+      this.out.reset();
       this.interpreter.parse(in);
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
@@ -239,18 +247,21 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       this.log.info(ME, "testPublish: qos: '" + qos + "' '" + qosRef + "'");
       this.log.info(ME, "testPublish: key: '" + key + "' '" + keyRef + "'");
       this.log.info(ME, "testPublish: content: '" + content + "' and should be '" + contentRef);
-
       assertXMLEqual(keyRef, key);
       assertXMLEqual(qosRef, qos);
       assertEquals(contentRef, content);   
+      String response = new String(this.out.toByteArray());
+      this.log.info(ME, "testPublish: response: '" + response + "'");
+      assertXpathExists("/xmlBlasterResponse[@id='xxyyzz']", response);
    }
 
    protected void testPublishArr() throws Exception {
       String keyRef = "<key oid='MyMessageOid' contentMime='text/xml'/>";
       String qosRef = "<qos><priority>HIGH</priority></qos>";
-      String contentRef = "Hello World";
+      String contentRef = "QmxhQmxhQmxh"; // this is in the attachment
+      String contentShould = "BlaBlaBla";
       
-      String cmd = "<xmlBlaster><publishArr><message>" + keyRef + "<content>" + contentRef + "</content>" + 
+      String cmd = "<xmlBlaster><publishArr><message>" + keyRef + "<content link='attachment1' encoding='base64'>" + "</content>" + 
                    qosRef + "</message></publishArr></xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
@@ -264,7 +275,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
 
       assertXMLEqual(keyRef, key);
       assertXMLEqual(qosRef, qos);
-      assertEquals(contentRef, content);   
+      assertEquals(contentShould, content);   
    }
 
    protected void testDisconnect() throws Exception {
@@ -349,7 +360,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
     {
        try {
           Global global = new Global(args);
-          XmlScriptInterpreterTest test = new XmlScriptInterpreterTest(global, System.out, "XmlScriptInterpreterTest");
+          XmlScriptInterpreterTest test = new XmlScriptInterpreterTest(global, "XmlScriptInterpreterTest");
           test.setUp();
           test.testConnect();
           test.testSubscribe();

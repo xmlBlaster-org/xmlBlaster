@@ -36,6 +36,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
 
 /**
@@ -185,15 +186,12 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * @return
     */
    protected String writeElementStart(String qName, Attributes attr) {
-      this.link = null;
       StringBuffer buf = new StringBuffer("<");
       buf.append(qName);
       int nmax = attr.getLength();
       for (int i=0; i < nmax; i++) {
          String name = attr.getQName(i);
          String value = attr.getValue(i);
-         if ("content".equals(qName))
-            if ("link".equalsIgnoreCase(name)) this.link = value;
          buf.append(' ');
          buf.append(name);
          buf.append("='");
@@ -213,6 +211,12 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       this.inQos = 0;
       this.inKey = 0;
       this.inContent = 0;
+      try {
+         this.out.flush();
+      }
+      catch (IOException ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".parse: could not flush the output stream: original message: '" + ex.getMessage() + "'");
+      }
       this.init(new InputSource(in));
    }
 
@@ -276,10 +280,13 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
       if ("content".equals(qName)) {
          this.inContent++;
+         this.link = null;
          this.content = new StringBuffer();
          String type = atts.getValue("type");
          String encoding = atts.getValue("encoding");
          this.contentData = new EncodableData(this.glob, "content", null, type, encoding);
+         String tmp = atts.getValue("link");
+         if (tmp != null && tmp.length() > 0) this.link = tmp;
          // this.content.append(this.writeElementStart(qName, atts));
          return;
       }
@@ -298,7 +305,10 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
 
       if ("xmlBlaster".equals(qName)) {
-         this.response = new StringBuffer("<xmlBlasterResponse>\n");
+         String id = atts.getValue("id");
+         this.response = new StringBuffer("<xmlBlasterResponse");
+         if (id != null) this.response.append(" id='").append(id).append("'");         
+         this.response.append(">\n");
          return;
       }
    }
@@ -335,7 +345,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
                if (tmp != null) ret = tmp.toXml("  ");
                else ret = "";
             }
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- connect -- -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
             this.response.append("\n<connect>");
             this.response.append(ret);
             this.response.append("\n</connect>\n");
@@ -347,7 +357,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.qos.length() < 1) this.qos.append("<qos />");
             DisconnectQosServer disconnectQos = new DisconnectQosServer(this.glob, this.qos.toString());
             boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQos.getData()));
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- disconnect -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
             this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
             flushResponse();
             return;
@@ -358,7 +368,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             MsgUnit msgUnit = buildMsgUnit();
             if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
             PublishReturnQos ret = this.access.publish(msgUnit);
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publish -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
             this.response.append("\n<publish>");
             // this.response.append("  <messageId>");
             if (ret != null) this.response.append(ret.toXml("  "));
@@ -377,7 +387,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
                msgs[i] = (MsgUnit)this.messageList.get(i);
             }
             PublishReturnQos[] ret = this.access.publishArr(msgs);
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publishArr -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
             this.response.append("\n<publishArr>");
             if (ret != null) {
                for (int i=0; i < ret.length; i++) {
@@ -395,7 +405,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.qos.length() < 1) this.qos.append("<qos />");
             if (this.key.length() < 1) this.key.append("<key />");
             SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- subscribe -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
             this.response.append("\n<subscribe>");
             // this.response.append("  <subscribeId>");
             if (ret != null) this.response.append(ret.toXml("    "));
@@ -410,7 +420,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.key.length() < 1) this.key.append("<key />");
             
             UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- unSubscribe -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
             this.response.append("\n<unSubscribe>");
             if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
             this.response.append("\n</unSubscribe>\n");
@@ -423,7 +433,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.qos.length() < 1) this.qos.append("<qos />");
             if (this.key.length() < 1) this.key.append("<key />");
             EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- erase -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
             this.response.append("\n<erase>");
             if (ret != null) {
                for (int i=0; i < ret.length; i++) {
@@ -441,7 +451,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.qos.length() < 1) this.qos.append("<qos />");
             if (this.key.length() < 1) this.key.append("<key />");
             MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- get -- -- -- -- -- -- -- -- -- -- -- -->");
+            this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
             this.response.append("\n<get>");
             this.response.append("\n  <message>");
             if (ret != null) {
@@ -492,9 +502,17 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          currentContent = this.contentData.getBlobValue(); 
       else {
          if (this.attachments != null && this.attachments.containsKey(this.link)) {
-            currentContent = (byte[])this.attachments.get(this.link);
+            Object obj = this.attachments.get(this.link);
+            if (obj instanceof String) {
+               this.contentData.setValueRaw((String)obj);
+               currentContent = this.contentData.getBlobValue();
+            }
+            else {
+               currentContent = (byte[])obj;
+            }
          }
          else {
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "buildMsgUnit: the attachment '" + this.link + "' was not found");
             // throw exception
          }
       }
