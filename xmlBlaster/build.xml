@@ -1087,7 +1087,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
-   <target name="docs" depends="xmlBlaster,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
+   <target name="docs" depends="xmlBlaster,javadocs-client,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
    </target>
    <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete,whitepaper-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
    </target>
@@ -1123,7 +1123,7 @@ TODO
       <!-- sourcefiles="${demo.dir}/HelloWorld.java,${demo.dir}/HelloWorld2.java,${demo.dir}/HelloWorld3.java,${demo.dir}/HelloWorld4.java,${demo.dir}/HelloWorld5.java,${demo.dir}/HelloWorld6.java" -->
       <javadoc packagenames="org.xmlBlaster.client.*,org.xmlBlaster.util.*,javaclients,http.*,html.*"
                sourcefiles="${demo.dir}/HelloWorld.java"
-               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}"
+               sourcepath="${src.java.dir}:${demo.dir}"
                excludepackagenames="org.xmlBlaster.util.servlet,org.xmlBlaster.util.recorder.*,org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
                classpath="${cp}"
                maxmemory="256m"
