@@ -13,6 +13,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -61,6 +62,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /** uniqueId used to store this in queue */
    private long persitenceId = -1L; 
 
+   private QueryKeyData originalKey;
 
    /**
     * Use this constructor for an exact subscription.
@@ -68,7 +70,8 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     * @param keyData     The message meta info
     * @param qos         This may be a SubscribeQosServer or a UnSubscribeQosServer instance
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos) throws XmlBlasterException {
+   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos, QueryKeyData originalKey) throws XmlBlasterException {
+      this.originalKey = originalKey;
       init(glob, sessionInfo, keyData, qos);
    }
 
@@ -78,7 +81,8 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     * @param querySub    The XPATH query subscription which is has us as a child
     * @param keyData     The matching key for the above querySub
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
+   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData, QueryKeyData orginalKey) throws XmlBlasterException {
+      this.originalKey = orginalKey;
       this.querySub = querySub;
       init(glob, sessionInfo, keyData, querySub.getQueryQosData());
    }
@@ -504,4 +508,9 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    public String getCreationTimestamp() {
       return org.jutils.time.TimeHelper.getDateTimeDump(this.creationTime);
    }
+   
+   public QueryKeyData getOriginalKeyData() {
+      return this.originalKey;
+   }
+
 }

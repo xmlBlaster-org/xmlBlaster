@@ -750,8 +750,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     *                If no match is found, an empty string "" is returned.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
-   String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException
-   {
+   String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
@@ -773,7 +772,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
          SubscriptionInfo subsQuery = null;
          if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-            subsQuery = new SubscriptionInfo(glob, sessionInfo, xmlKey, subscribeQos.getData());
+            subsQuery = new SubscriptionInfo(glob, sessionInfo, xmlKey, subscribeQos.getData(), xmlKey);
             returnOid = subsQuery.getSubscriptionId(); // XPath query
             fireSubscribeEvent(subsQuery);
          }
@@ -801,11 +800,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
             if (subs == null) {
                if (subsQuery != null) {
-                  subs = new SubscriptionInfo(glob, sessionInfo, subsQuery, xmlKeyExact);
+                  subs = new SubscriptionInfo(glob, sessionInfo, subsQuery, xmlKeyExact, xmlKey);
                   subsQuery.addSubscription(subs);
                }
                else
-                  subs = new SubscriptionInfo(glob, sessionInfo, xmlKeyExact, subscribeQos.getData());
+                  subs = new SubscriptionInfo(glob, sessionInfo, xmlKeyExact, subscribeQos.getData(), xmlKey);
             }
 
             subscribeToOid(subs, false);                // fires event for subscription
@@ -1712,6 +1711,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
                SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
                KeyData queryXmlKey = existingQuerySubscription.getKeyData();
+               QueryKeyData origKey = existingQuerySubscription.getOriginalKeyData();
                if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
                   log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
                   continue;
@@ -1721,7 +1721,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                // ... check if the new message matches ...
                if (keyDom.match(xpath) == true) {
                   SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(),
-                                                existingQuerySubscription, keyDom.getKeyData());
+                                                existingQuerySubscription, keyDom.getKeyData(), origKey);
                   existingQuerySubscription.addSubscription(subs);
                   matchingSubsVec.addElement(subs);
                }

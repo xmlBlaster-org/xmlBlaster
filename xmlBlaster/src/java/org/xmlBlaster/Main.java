@@ -10,7 +10,6 @@ import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
-import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -179,7 +178,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
       if (!useKeyboard) {
          while (true) {
-            try { Thread.currentThread().sleep(100000000L);
+            try { Thread.sleep(100000000L);
             } catch(InterruptedException e) { log.warn(ME, "Caught exception: " + e.toString()); }
          }
          /*
@@ -290,7 +289,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                   try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.error(ME, e.toString()); }
                }
                else
-                  log.info(ME, "Current runlevel is " + runlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()));
+                  log.info(ME, "Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()));
             }
             else if (line.toLowerCase().startsWith("d")) {
                try {

@@ -63,10 +63,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionEntry entry = (SessionEntry)entries[i];
             ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
             ConnectQosServer qos = new ConnectQosServer(this.global, data, isInternal);
+            this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' qos='" + qos.toXml() + "'");
             this.global.getAuthenticate().connect(qos);
          }
          else {
-            throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the queue should be either of type 'MsgQueueSubscribeEntry' or 'MsgQueueConnectEntry' but is of type'" + entries[i].getClass().getName() + "'");
+            throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the storage should be of type 'SessionEntry' but is of type'" + entries[i].getClass().getName() + "'");
          }
       }
    }
@@ -79,11 +80,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             // do connect
             SubscribeEntry entry = (SubscribeEntry)entries[i];
             String sessionId = entry.getSessionId();
-            this.log.trace(ME, "recoverSubscriptions: for entry '" + entry.getLogId());
+            this.log.trace(ME, "recoverSubscriptions: for entry '" + entry.getLogId() + "' key='" + entry.getKey() + "' qos='" + entry.getQos() + "'");
             this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), entry.getQos());
          }
          else {
-            throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the queue should be either of type 'MsgQueueSubscribeEntry' or 'MsgQueueConnectEntry' but is of type'" + entries[i].getClass().getName() + "'");
+            throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSubscriptions: the entry in the storage should be of type 'SubscribeEntry'but is of type'" + entries[i].getClass().getName() + "'");
          }
       }
    }
@@ -228,9 +229,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.addSession(sessionInfo);         
       }
 
-      QueryKeyData subscribeKeyData = (QueryKeyData)subscriptionInfo.getKeyData();
+      QueryKeyData subscribeKeyData = subscriptionInfo.getOriginalKeyData();
       SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getSecretSessionId());
-      this.sessionStore.put(entry);
+      this.subscribeStore.put(entry);
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.13 2003/09/10 07:58:51 antman Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.14 2004/02/02 22:13:29 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -11,7 +11,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.I_Main;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
-import org.xmlBlaster.client.key.SubscribeKey;
 
 import java.net.URLClassLoader;
 
@@ -54,7 +53,7 @@ public class EmbeddedXmlBlaster
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
       while(!serverThread.isReady()) {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}
       }
       glob.getLog(glob.getId()).info(ME, "Server is up and ready");
       return serverThread;
@@ -85,7 +84,7 @@ public class EmbeddedXmlBlaster
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
       while(!serverThread.isReady()) {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}
       }
       glob.getLog(glob.getId()).info(ME, "Server is up and ready.");
       return serverThread;
@@ -109,7 +108,7 @@ public class EmbeddedXmlBlaster
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
       while(!serverThread.isReady()) {
-         try { Thread.currentThread().sleep(200L); }
+         try { Thread.sleep(200L); }
          catch( InterruptedException i) {
             glob.getLog(glob.getId()).info(ME, "Server has been interrupted.");
          }
@@ -163,7 +162,7 @@ public class EmbeddedXmlBlaster
                   break;
                if (this.xmlBlasterMain.isHalted())
                   break;
-               try { Thread.currentThread().sleep(100L); }
+               try { Thread.sleep(100L); }
                catch( InterruptedException i) {
                   log.info(ME, "Server has been interrupted");
                }
