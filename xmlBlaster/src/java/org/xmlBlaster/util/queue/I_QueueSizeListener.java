@@ -16,8 +16,9 @@ public interface I_QueueSizeListener {
    
    
    /**
-    * This event is sent everytime a change in entries has occured in the
-    * queue. It is invoked after the change has taken place.
+    * This event is sent every time a change in entries has occurred in the
+    * queue. It is invoked after the change has taken place. 
+    * It allows for example to generate threshold alarms.
     * 
     * @param numEntries the number of entries in the queue after the
     *        change has taken place
