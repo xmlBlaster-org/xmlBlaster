@@ -162,6 +162,7 @@ TODO
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
    <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
    <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
+   <property name="OMNIORB_LIBS" value="omniORB4,omnithread" /> <!-- The necessary libs for omniORB C++ clients -->
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
    <property name="src.c.dir" value="./src/c"/>
@@ -1411,7 +1412,7 @@ TODO
             <property name="idl.cmd" value="${CORBACPP_HOME}/bin/x86_win32/omniidl.exe" />
          </default>
       </switch>
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.hh" value="true">
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.h" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
       <if><equals arg1="${idlBuild.done}" arg2="true" />
@@ -1421,7 +1422,7 @@ TODO
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-bcxx -Wbh=.h"/>
+               <arg line="-bcxx -Wbh=.h -Wbs=.cpp"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
@@ -1595,7 +1596,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/.." /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
+         <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO, OMNIORB -->
          <sysincludepath location="${src.cpp.dir}/generated" /> <!-- ORBACUS -->
 
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
@@ -1653,6 +1654,9 @@ TODO
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- OMNIORB -->
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- ORBACUS -->
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
@@ -1761,6 +1765,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/include" if="OMNIORB" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${src.cpp.dir}/generated" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
@@ -1784,6 +1789,7 @@ TODO
 
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
@@ -1802,6 +1808,9 @@ TODO
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- OMNIORB-->
+            <libset dir="${CORBACPP_HOME}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- ORBACUS-->
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
@@ -1832,6 +1841,9 @@ TODO
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- OMNIORB -->
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
