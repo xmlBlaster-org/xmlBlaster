@@ -124,7 +124,7 @@ MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledo
 #------------------------------------------------------------------------------
 # Customize invocation recorder to queue tail back messages
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.recorder.html
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsave.html
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html
 RecorderPlugin[FileRecorder][1.0]=org.xmlBlaster.util.recorder.file.FileRecorder
 RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 #------------------------------------------------------------------------------
@@ -221,20 +221,20 @@ Persistence.Path=${user.home}${file.separator}tmp
 # see http://www.dbXML.org for more details
 # see http://xml.apache.org/xindice for more details ???
 #
-#	Setting up your desired CollectionPath
-#	default is xmldb:xindice:///db
+#       Setting up your desired CollectionPath
+#       default is xmldb:xindice:///db
 #Persistence.Path=xmldb:xindice:///db
-#	Setting up your desired CollectionName
-#	default is xmlBlaster
+#       Setting up your desired CollectionName
+#       default is xmlBlaster
 #Persistence.Collection=xmlBlaster
 #
-#	Sets the Driver of the Xindice Database Implementation
+#       Sets the Driver of the Xindice Database Implementation
 #       default is org.apache.xindice.client.xmldb.DatabaseImpl
-#	!! Leave it, as long as you don't know what you're doing !!
+#       !! Leave it, as long as you don't know what you're doing !!
 #Persistence.xindiceDriver=org.apache.xindice.client.xmldb.DatabaseImpl
-#	Sets the xindiceFilterClasss of the Xindice Database Implementation
+#       Sets the xindiceFilterClasss of the Xindice Database Implementation
 #       default is org.apache.xindice.core.filer.BTreeFiler
-#	!! Leave it, as long as you don't know what you're doing !!
+#       !! Leave it, as long as you don't know what you're doing !!
 #Persistence.xindiceFilterClass=org.apache.xindice.core.filer.BTreeFiler
 #
 #-------------------  Filestore database --------------------------------------

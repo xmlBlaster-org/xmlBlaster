@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.failsave.ping' type='NEW' prio='LOW' status="CLOSED">
+<requirement id='client.failsafe.ping' type='NEW' prio='LOW' status="CLOSED">
    <topic>
       Allows Java clients to ping xmlBlaster, to test reliable the connection.
    </topic>
@@ -42,7 +42,7 @@
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 29</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

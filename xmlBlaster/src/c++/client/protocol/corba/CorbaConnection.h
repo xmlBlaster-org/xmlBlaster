@@ -3,7 +3,7 @@ Name:      CorbaConnection.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
-           without caching and without failsave mode.
+           without caching and without failsafe mode.
 Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 

@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.cluster.NodeId;
  *
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.SessionNameTest
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsave.html">The client.failsave requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">The client.failsafe requirement</a>
  */
 public final class SessionName implements java.io.Serializable
 {

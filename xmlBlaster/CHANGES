@@ -56,7 +56,7 @@ Changes for 0.8x [xxx, xx 200x]
       org.xmlBlaster.util.MsgUnit
 
  o Introduced SessionName.java for unified naming of clients, see
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsave.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsafe.html
 
  o TODO: Helma-XmlRpc throws XmlBlasterException.toString() back
    to the client, many informations are missing.

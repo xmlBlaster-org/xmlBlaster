@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.failsave' type='NEW' prio='LOW' status="INWORK">
+<requirement id='client.failsafe' type='NEW' prio='LOW' status="INWORK">
    <topic>
       XmlBlasterConnection is a helper class for Java clients which supports
       polling for xmlBlaster and record/playback of messages during lost connections.
@@ -108,7 +108,7 @@
       </h2>
       <p>
       The following figure illustrates typical environments where a client must
-      find its server and recover failsave from lost connections.
+      find its server and recover failsafe from lost connections.
       </p>
       <br />
       <img src="FailsaveConnectionInClusterEnvironment.gif" border="0" title="Failsave client connection in cluster environments" alt="Failsave client connection in cluster environments" />
@@ -437,7 +437,7 @@ catch (XmlBlasterException e) {
    </configuration>
 
    <see type="REQ">queue</see>
-   <see type="REQ">client.failsave.ping</see>
+   <see type="REQ">client.failsafe.ping</see>
    <see type="REQ">cluster</see>
    <see type="REQ">util.recorder</see>
    <see type="REQ">util.recorder.persistence</see>
@@ -445,7 +445,7 @@ catch (XmlBlasterException e) {
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.27 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

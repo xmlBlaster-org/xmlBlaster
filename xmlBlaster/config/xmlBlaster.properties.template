@@ -218,7 +218,7 @@ MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledo
 #------------------------------------------------------------------------------
 # Customize invocation recorder to queue tail back messages
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.recorder.html
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsave.html
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html
 RecorderPlugin[FileRecorder][1.0]=org.xmlBlaster.util.recorder.file.FileRecorder
 RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 #------------------------------------------------------------------------------

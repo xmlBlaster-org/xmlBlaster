@@ -248,7 +248,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode USER_CONFIGURATION = new ErrorCode("user.configuration",
          "Login to xmlBlaster failed due to configuration problems.",
          new ResourceInfo[] {
-            new ResourceInfo(ResourceInfo.REQ, "client.failsave", "client.failsave"),
+            new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
          }
       );
