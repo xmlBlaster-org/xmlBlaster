@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.4 2002/05/01 21:40:24 ruff Exp $
+Version:   $Id: TestSession.java,v 1.5 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -84,7 +84,7 @@ public class TestSession extends TestCase implements I_Callback
       try {
          Log.info(ME, "Connecting ...");
          XmlBlasterConnection con = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(null, name, passwd);
          qos.setMaxSessions(-16);
          con.connect(qos, this); // Login to xmlBlaster
          assert("Connecting with zero sessions should not be possible", false);
@@ -109,7 +109,7 @@ public class TestSession extends TestCase implements I_Callback
             try {
                Log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
                con[ii] = new XmlBlasterConnection();
-               ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+               ConnectQos qos = new ConnectQos(null, name, passwd);
                qos.setMaxSessions(maxSessions);
                con[ii].connect(qos, this); // Login to xmlBlaster
                if (ii >= maxSessions)
@@ -153,7 +153,7 @@ public class TestSession extends TestCase implements I_Callback
       try {
          try {
             con = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+            ConnectQos qos = new ConnectQos(null, name, passwd);
             qos.setSessionTimeout(timeout);
             con.connect(qos, this);
          }
@@ -198,7 +198,7 @@ public class TestSession extends TestCase implements I_Callback
       try {
          try {
             con = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+            ConnectQos qos = new ConnectQos(null, name, passwd);
             qos.setSessionTimeout(timeout);
             con.connect(qos, this);
          }
@@ -244,7 +244,7 @@ public class TestSession extends TestCase implements I_Callback
          try {
             Log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
             con[ii] = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+            ConnectQos qos = new ConnectQos(null, name, passwd);
             qos.setMaxSessions(maxSessions);
             con[ii].connect(qos, this); // Login to xmlBlaster
          }
@@ -253,7 +253,7 @@ public class TestSession extends TestCase implements I_Callback
                Log.info(ME, "Success, connecting number " + ii + " of max=" + maxSessions + " was denied: " + e.toString());
                Log.info(ME, "We try to clear the old sessions now");
                try {
-                  ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+                  ConnectQos qos = new ConnectQos(null, name, passwd);
                   qos.setMaxSessions(maxSessions);
                   qos.clearSessions(true);
                   con[ii].connect(qos, this);

@@ -3,19 +3,19 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.23 2002/05/01 21:40:23 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.24 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -41,6 +41,7 @@ import test.framework.*;
 public class TestPtDQueue extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtDQueue";
+   private final Global glob;
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -62,9 +63,10 @@ public class TestPtDQueue extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPtDQueue(String testName)
+   public TestPtDQueue(Global glob, String testName)
    {
-       super(testName);
+      super(testName);
+      this.glob = glob;
    }
 
 
@@ -77,8 +79,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection();
-         senderConnection.login(senderName, passwd, new ConnectQos(), this);
+         senderConnection = new XmlBlasterConnection(glob);
+         senderConnection.login(senderName, passwd, new ConnectQos(glob), this);
          Log.info(ME, "Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
@@ -165,8 +167,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
          // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
-            receiverConnection = new XmlBlasterConnection();
-            receiverConnection.login(receiverName, passwd, new ConnectQos(), this);
+            receiverConnection = new XmlBlasterConnection(glob);
+            receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
          } catch (XmlBlasterException e) {
              Log.error(ME, e.toString());
              e.printStackTrace();
@@ -231,7 +233,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPtDQueue("testPtUnknownDestination"));
+       suite.addTest(new TestPtDQueue(new Global(), "testPtUnknownDestination"));
        return suite;
    }
 
@@ -247,12 +249,11 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPtDQueue testSub = new TestPtDQueue("TestPtDQueue");
+      TestPtDQueue testSub = new TestPtDQueue(glob, "TestPtDQueue");
       testSub.setUp();
       testSub.testPtUnknownDestination();
       testSub.tearDown();

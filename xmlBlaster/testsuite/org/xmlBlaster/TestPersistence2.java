@@ -17,18 +17,17 @@ Version:   ? cvs will update it ?
 
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.util.ServerThread;
@@ -49,6 +48,7 @@ import test.framework.*;
 public class TestPersistence2 extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistence2";
+   private final Global glob;
 
    private final String senderName = "Gesa";
    private final String senderPasswd = "secret";
@@ -68,9 +68,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPersistence2(String testName)
+   public TestPersistence2(Global glob, String testName)
    {
       super(testName);
+      this.glob = glob;
    }
 
 
@@ -88,7 +89,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       try {
          senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login( senderName, senderPasswd, qos, this);
       }
       catch (XmlBlasterException e) {
@@ -196,7 +197,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
          serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
          Util.delay( delay4Server );    // Wait some time
-         ConnectQos conectqos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos conectqos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, senderPasswd, conectqos, this);
 
       }
@@ -295,7 +296,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
    public static Test suite()
    {
       TestSuite suite= new TestSuite();
-      suite.addTest(new TestPersistence2("testDurable"));
+      suite.addTest(new TestPersistence2(new Global(), "testDurable"));
       return suite;
    }
 
@@ -311,12 +312,11 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPersistence2 testSub = new TestPersistence2("TestPersistence2");
+      TestPersistence2 testSub = new TestPersistence2(glob, "TestPersistence2");
       testSub.setUp();
       testSub.testDurable();
       testSub.tearDown();

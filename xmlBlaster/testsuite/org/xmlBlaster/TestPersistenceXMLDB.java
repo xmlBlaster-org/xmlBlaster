@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.4 2002/05/01 21:40:22 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.5 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -40,6 +40,7 @@ import test.framework.*;
 public class TestPersistenceXMLDB extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistenceXMLDB";
+   private Global glob = null;
 
    private final String senderName = "Benedikt";
    private final String senderPasswd = "secret";
@@ -59,9 +60,10 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPersistenceXMLDB(String testName)
+   public TestPersistenceXMLDB(Global glob, String testName)
    {
        super(testName);
+      this.glob = glob;
    }
 
 
@@ -78,7 +80,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
 
       try {
          senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, senderPasswd, qos, this);
       }
       catch (Exception e) {
@@ -221,7 +223,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
 
          serverThread = ServerThread.startXmlBlaster(serverPort);
          Util.delay( delay4Server );    // Wait some time
-         ConnectQos conectqos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos conectqos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, senderPasswd, conectqos, this);
 
       }
@@ -322,7 +324,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPersistenceXMLDB("testDurable"));
+       suite.addTest(new TestPersistenceXMLDB(new Global(), "testDurable"));
        return suite;
    }
 
@@ -338,12 +340,11 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPersistenceXMLDB testSub = new TestPersistenceXMLDB("TestPersistenceXMLDB");
+      TestPersistenceXMLDB testSub = new TestPersistenceXMLDB(glob, "TestPersistenceXMLDB");
       testSub.setUp();
       testSub.testDurable();
       testSub.tearDown();

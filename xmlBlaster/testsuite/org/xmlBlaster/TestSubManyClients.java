@@ -3,21 +3,21 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.8 2002/05/01 21:40:24 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.9 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -48,6 +48,7 @@ import test.framework.*;
 public class TestSubManyClients extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
    private boolean messageArrived = false;
 
    private final String publishOid1 = "dummy1";
@@ -76,11 +77,12 @@ public class TestSubManyClients extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubManyClients(String testName, String loginName)
+   public TestSubManyClients(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.oneName = loginName;
-       numClients = XmlBlasterProperty.get("numClients", 10);
+      super(testName);
+      this.glob = glob;
+      this.oneName = loginName;
+      numClients = XmlBlasterProperty.get("numClients", 10);
    }
 
 
@@ -183,8 +185,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
          sub.loginName = "Joe-" + ii;
 
          try {
-            sub.connection = new XmlBlasterConnection();
-            ConnectQos loginQosW = new ConnectQos(); // "<qos></qos>"; During login this is manipulated (callback address added)
+            sub.connection = new XmlBlasterConnection(glob);
+            ConnectQos loginQosW = new ConnectQos(glob); // "<qos></qos>"; During login this is manipulated (callback address added)
             sub.connection.login(sub.loginName, passwd, loginQosW, this);
          }
          catch (Exception e) {
@@ -387,7 +389,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubManyClients("testManyClients", loginName));
+       suite.addTest(new TestSubManyClients(new Global(), "testManyClients", loginName));
        return suite;
    }
 
@@ -403,12 +405,11 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestSubManyClients testSub = new TestSubManyClients("TestSubManyClients", "Tim");
+      TestSubManyClients testSub = new TestSubManyClients(glob, "TestSubManyClients", "Tim");
       testSub.setUp();
       testSub.testManyClients();
       testSub.tearDown();

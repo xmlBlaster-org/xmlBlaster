@@ -3,11 +3,12 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.24 2002/05/01 21:40:23 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.25 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -43,6 +44,7 @@ import test.framework.*;
 public class TestPtD extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtD";
+   private final Global glob;
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -64,9 +66,10 @@ public class TestPtD extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPtD(String testName)
+   public TestPtD(Global glob, String testName)
    {
        super(testName);
+      this.glob = glob;
    }
 
 
@@ -83,14 +86,14 @@ public class TestPtD extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         receiverConnection = new XmlBlasterConnection();
-         receiverConnection.login(receiverName, passwd, new ConnectQos(), this);
+         receiverConnection = new XmlBlasterConnection(glob);
+         receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
 
          receiver2Connection = new XmlBlasterConnection();
-         receiver2Connection.login(receiver2Name, passwd, new ConnectQos(), this);
+         receiver2Connection.login(receiver2Name, passwd, new ConnectQos(glob), this);
 
          senderConnection = new XmlBlasterConnection();
-         senderConnection.login(senderName, passwd, new ConnectQos(), this);
+         senderConnection.login(senderName, passwd, new ConnectQos(glob), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -238,8 +241,9 @@ public class TestPtD extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPtD("testPtOneDestination"));
-       suite.addTest(new TestPtD("testPtManyDestinations"));
+       Global glob = new Global();
+       suite.addTest(new TestPtD(glob, "testPtOneDestination"));
+       suite.addTest(new TestPtD(glob, "testPtManyDestinations"));
        return suite;
    }
 
@@ -255,12 +259,11 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPtD testSub = new TestPtD("TestPtD");
+      TestPtD testSub = new TestPtD(glob, "TestPtD");
       testSub.setUp();
       testSub.testPtOneDestination();
       testSub.tearDown();

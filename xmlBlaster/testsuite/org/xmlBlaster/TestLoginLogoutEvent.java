@@ -3,13 +3,13 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.14 2002/05/01 21:40:21 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.15 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import java.util.StringTokenizer;
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -45,6 +45,7 @@ import test.framework.*;
 public class TestLoginLogoutEvent extends TestCase implements I_Callback
 {
    private static String ME = "TestLoginLogoutEvent";
+   private Global glob = null;
 
    private XmlBlasterConnection firstConnection;
    private String firstName;
@@ -82,9 +83,10 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      if (glob == null) glob = new Global();
       try {
          firstConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -156,7 +158,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       expectedName = secondName; // second name should be returned on this login
       try {
          secondConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
 

@@ -3,11 +3,12 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.5 2002/05/01 21:40:19 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.6 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -34,6 +35,7 @@ import test.framework.*;
 public class TestCallback extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private Global glob = null;
 
    private String name;
    private String passwd = "secret";
@@ -65,7 +67,7 @@ public class TestCallback extends TestCase implements I_Callback
    {
       try {
          conAdmin = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos("simple", "1.0", "admin", passwd);
+         ConnectQos qos = new ConnectQos(glob, "admin", passwd);
          conAdmin.connect(qos, this);
 
          subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null);
@@ -106,7 +108,7 @@ public class TestCallback extends TestCase implements I_Callback
       try {
          Log.info(ME, "Connecting ...");
          XmlBlasterConnection con = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
 
          con.shutdownCb(); // Destroy the callback server

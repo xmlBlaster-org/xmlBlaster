@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.6 2002/05/01 21:40:26 ruff Exp $
+Version:   $Id: Util.java,v 1.7 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,6 +36,12 @@ public class Util
       args[5] = "" + (serverPort-2);
       args[6] = "-xmlrpc.port";
       args[7] = "" + (serverPort-3);
+      /*
+         Vector vec = new Vector();
+         vec.addElement("-port");
+         vec.addElement(""+serverPort);
+         return (String[])vec.toArray(new String[0]);
+      */
       return args;
    }
 

@@ -7,13 +7,11 @@ Comment:   Demo code for a client using xmlBlaster
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
@@ -39,6 +37,7 @@ import test.framework.*;
 public class TestSubExact extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -59,9 +58,10 @@ public class TestSubExact extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubExact(String testName, String loginName)
+   public TestSubExact(Global glob, String testName, String loginName)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -75,9 +75,9 @@ public class TestSubExact extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -236,7 +236,7 @@ public class TestSubExact extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubExact("testPublishAfterSubscribe", loginName));
+       suite.addTest(new TestSubExact(new Global(), "testPublishAfterSubscribe", loginName));
        return suite;
    }
 
@@ -252,12 +252,11 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestSubExact testSub = new TestSubExact("TestSubExact", "Tim");
+      TestSubExact testSub = new TestSubExact(glob, "TestSubExact", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribe();
       testSub.tearDown();

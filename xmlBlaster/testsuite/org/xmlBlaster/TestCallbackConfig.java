@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.5 2002/05/02 12:36:40 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.6 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -68,7 +68,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    {
       try {
          con = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos("simple", "1.0", "admin", passwd);
+         ConnectQos qos = new ConnectQos(null, "admin", passwd);
          
          // We configure detailed how our callback is handled by xmlBlaster
          // In connect() a default callback server is created and its address is added to cbProps

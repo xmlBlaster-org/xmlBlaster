@@ -3,20 +3,20 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.18 2002/05/01 21:40:23 ruff Exp $
+Version:   $Id: TestPub.java,v 1.19 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -38,6 +38,7 @@ import test.framework.*;
 public class TestPub extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -57,9 +58,10 @@ public class TestPub extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPub(String testName, String loginName)
+   public TestPub(Global glob, String testName, String loginName)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -73,9 +75,9 @@ public class TestPub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -248,7 +250,7 @@ public class TestPub extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestPub("testPublishAfterSubscribeXPath", loginName));
+       suite.addTest(new TestPub(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
@@ -264,12 +266,11 @@ public class TestPub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPub testSub = new TestPub("TestPub", "Tim");
+      TestPub testSub = new TestPub(glob, "TestPub", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();

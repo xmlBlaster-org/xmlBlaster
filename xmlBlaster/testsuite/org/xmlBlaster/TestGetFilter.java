@@ -3,11 +3,12 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.3 2002/05/01 21:40:20 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.4 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
@@ -38,6 +39,7 @@ import test.framework.*;
 public class TestGetFilter extends TestCase
 {
    private static String ME = "Tim";
+   private final Global glob;
 
    private XmlBlasterConnection con = null;
    private String name;
@@ -52,10 +54,11 @@ public class TestGetFilter extends TestCase
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestGetFilter(String testName, String name)
+   public TestGetFilter(Global glob, String testName, String name)
    {
-       super(testName);
-       this.name = name;
+      super(testName);
+      this.glob = glob;
+      this.name = name;
    }
 
    /**
@@ -80,14 +83,16 @@ public class TestGetFilter extends TestCase
       args[7] = "" + (serverPort-3);
       args[8] = "-MimeAccessPlugin[ContentLenFilter][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
+      glob.init(args);
+
       serverThread = ServerThread.startXmlBlaster(args);
       try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
          Log.info(ME, "Connecting ...");
-         con = new XmlBlasterConnection(args);
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+         con = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -204,7 +209,7 @@ public class TestGetFilter extends TestCase
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestGetFilter("testFilter", "Tim"));
+       suite.addTest(new TestGetFilter(new Global(), "testFilter", "Tim"));
        return suite;
    }
 
@@ -217,12 +222,11 @@ public class TestGetFilter extends TestCase
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestGetFilter testSub = new TestGetFilter("TestGetFilter", "Tim");
+      TestGetFilter testSub = new TestGetFilter(glob, "TestGetFilter", "Tim");
       testSub.setUp();
       testSub.testFilter();
       Log.exit(TestGetFilter.ME, "Good bye");

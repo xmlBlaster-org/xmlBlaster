@@ -3,21 +3,22 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.3 2002/05/01 21:40:23 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.4 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -40,6 +41,7 @@ import test.framework.*;
 public class TestPubBurstMode extends TestCase
 {
    private static String ME = "Tim";
+   private final Global glob;
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -60,9 +62,10 @@ public class TestPubBurstMode extends TestCase
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPubBurstMode(String testName, String loginName)
+   public TestPubBurstMode(Global glob, String testName, String loginName)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
    }
 
@@ -75,10 +78,10 @@ public class TestPubBurstMode extends TestCase
    protected void setUp()
    {
       try {
-         numPublish = XmlBlasterProperty.get("numPublish", 100);
-         senderConnection = new XmlBlasterConnection();   // Find orb
+         numPublish = glob.getProperty().get("numPublish", 100);
+         senderConnection = new XmlBlasterConnection(glob);   // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos();     // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob);     // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -167,7 +170,7 @@ public class TestPubBurstMode extends TestCase
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestPubBurstMode("testPublishMany", loginName));
+       suite.addTest(new TestPubBurstMode(new Global(), "testPublishMany", loginName));
        return suite;
    }
 
@@ -183,12 +186,11 @@ public class TestPubBurstMode extends TestCase
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestPubBurstMode testPub = new TestPubBurstMode("TestPubBurstMode", "Tim");
+      TestPubBurstMode testPub = new TestPubBurstMode(glob, "TestPubBurstMode", "Tim");
       testPub.setUp();
       testPub.testPublishMany();
       testPub.tearDown();

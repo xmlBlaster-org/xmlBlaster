@@ -3,11 +3,12 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.18 2002/05/01 21:40:22 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.19 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
@@ -37,6 +38,7 @@ import test.framework.*;
 public class TestPersistence extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistence";
+   private static Global glob = null;
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloDurable";
@@ -66,10 +68,11 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      if (glob == null) glob = new Global();
       try {
          String passwd = "secret";
          senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {
@@ -245,10 +248,9 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      TestPersistence.glob = new Global();
+      if (TestPersistence.glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
       TestPersistence testSub = new TestPersistence("TestPersistence");
       testSub.setUp();

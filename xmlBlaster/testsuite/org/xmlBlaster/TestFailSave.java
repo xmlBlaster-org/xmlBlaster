@@ -3,22 +3,23 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.28 2002/05/01 21:40:19 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.29 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import test.framework.*;
 
@@ -41,12 +42,14 @@ import test.framework.*;
 public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
 {
    private static String ME = "Tim";
+   private final Global glob;
+
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
    private ServerThread serverThread;
 
-   private XmlBlasterConnection corbaConnection;
+   private XmlBlasterConnection con;
    private String senderName;
 
    private int numReceived = 0;         // error checking
@@ -60,10 +63,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestFailSave(String testName, String loginName)
+   public TestFailSave(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.senderName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.senderName = loginName;
    }
 
 
@@ -74,24 +78,39 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    protected void setUp()
    {
+      glob.init(Util.getOtherServerPorts(serverPort));
+
       serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       try {
          numReceived = 0;
 
-         corbaConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
+         con = new XmlBlasterConnection(glob); // Find orb
 
+         ConnectQos connectQos = new ConnectQos(glob); // == "<qos></qos>";
+
+         // Setup fail save handling ...
+         Address addressProp = new Address(glob);
+         addressProp.setDelay(4000L);      // retry connecting every 4 sec
+         addressProp.setRetries(-1);       // -1 == forever
+         addressProp.setPingInterval(0L);  // switched off
+         addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+         con.initFailSave(this);
+
+         connectQos.setAddress(addressProp);
+
+         /* Old way:
          // Setup fail save handling ...
          long retryInterval = 4000L; // XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
          int retries = -1;           // -1 == forever
-         int maxMessages = 1000;
          long pingInterval = 0L;     // switched off
-         corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+         int maxMessages = 1000;
+         con.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+         */
 
          // and do the login ...
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
-         corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         con.login(senderName, passwd, connectQos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
           Log.warn(ME, "setUp() - login failed");
@@ -116,12 +135,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       String qos = "<qos></qos>";
       String[] strArr = new String[0];
       try {
-         strArr = corbaConnection.erase(xmlKey, qos);
+         strArr = con.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       assertEquals("Wrong number of message erased", strArr.length, (numPublish - numStop));
 
       Util.delay(500L);    // Wait some time
-      corbaConnection.logout();
+      con.logout();
 
       Util.delay(500L);    // Wait some time
       ServerThread.stopXmlBlaster(serverThread);
@@ -144,7 +163,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       String qos = "<qos></qos>";
       String subscriptionId = null;
       try {
-         subscriptionId = corbaConnection.subscribe(xmlKey, qos);
+         subscriptionId = con.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -171,7 +190,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
-      corbaConnection.publish(msgUnit);
+      con.publish(msgUnit);
       Log.info(ME, "Success: Publishing of " + oid + " done");
    }
 
@@ -225,8 +244,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       Log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
       try {
-         corbaConnection.flushQueue();    // send all tailback messages
-         // corbaConnection.resetQueue(); // or discard them (it is our choice)
+         con.flushQueue();    // send all tailback messages
+         // con.resetQueue(); // or discard them (it is our choice)
       } catch (XmlBlasterException e) {
          assert("Exception during reconnection recovery: " + e.reason, false);
       }
@@ -298,7 +317,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestFailSave("testFailSave", loginName));
+       suite.addTest(new TestFailSave(new Global(), "testFailSave", loginName));
        return suite;
    }
 
@@ -311,12 +330,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestFailSave testSub = new TestFailSave("TestFailSave", "Tim");
+      TestFailSave testSub = new TestFailSave(glob, "TestFailSave", "Tim");
       testSub.setUp();
       testSub.testFailSave();
       testSub.tearDown();

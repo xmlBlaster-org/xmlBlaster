@@ -3,18 +3,18 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.21 2002/04/16 20:46:45 ruff Exp $
+Version:   $Id: TestGet.java,v 1.22 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.GetQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.client.GetQos;
+import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -35,6 +35,7 @@ import test.framework.*;
 public class TestGet extends TestCase
 {
    private static String ME = "Tim";
+   private final Global glob;
 
    private String publishOid = "TestGet";
    private XmlBlasterConnection connection;
@@ -51,10 +52,11 @@ public class TestGet extends TestCase
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestGet(String testName, String loginName)
+   public TestGet(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.loginName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.loginName = loginName;
    }
 
 
@@ -66,9 +68,9 @@ public class TestGet extends TestCase
    protected void setUp()
    {
       try {
-         connection = new XmlBlasterConnection(); // Find orb
+         connection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          // Login to xmlBlaster, don't create a callback server
          connection.login(loginName, passwd, qos);
       }
@@ -190,8 +192,9 @@ public class TestGet extends TestCase
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestGet("testGet", loginName));
-       suite.addTest(new TestGet("testGetMany", loginName));
+       Global glob = new Global();
+       suite.addTest(new TestGet(glob, "testGet", loginName));
+       suite.addTest(new TestGet(glob, "testGetMany", loginName));
        return suite;
    }
 
@@ -207,12 +210,11 @@ public class TestGet extends TestCase
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestGet testSub = new TestGet("TestGet", "Tim");
+      TestGet testSub = new TestGet(glob, "TestGet", "Tim");
       testSub.setUp();
       testSub.testGet();
       testSub.testGetMany();

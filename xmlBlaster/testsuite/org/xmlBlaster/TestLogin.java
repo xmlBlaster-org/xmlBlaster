@@ -3,14 +3,12 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.20 2002/05/01 21:40:21 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.21 2002/05/03 10:37:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
@@ -40,6 +38,7 @@ import test.framework.*;
 public class TestLogin extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
+   private final Global glob;
 
    private String publishOid = "";
    private String oid = "TestLogin";
@@ -67,11 +66,12 @@ public class TestLogin extends TestCase implements I_Callback
     * @param loginName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   public TestLogin(String testName, String senderName, String secondName)
+   public TestLogin(Global glob, String testName, String senderName, String secondName)
    {
-       super(testName);
-       this.senderName = senderName;
-       this.secondName = secondName;
+      super(testName);
+      this.glob = glob;
+      this.senderName = senderName;
+      this.secondName = secondName;
    }
 
 
@@ -85,12 +85,12 @@ public class TestLogin extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         callbackConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos("simple", "1.0", senderName, passwd);
+         callbackConnection = new XmlBlasterConnection(glob); // Find orb
+         ConnectQos qos = new ConnectQos(glob, senderName, passwd);
          callbackConnection.connect(qos, this); // Login to xmlBlaster
 
          secondConnection = new XmlBlasterConnection(); // Find orb
-         qos = new ConnectQos("simple", "1.0", secondName, passwd);
+         qos = new ConnectQos(glob, secondName, passwd);
          secondConnection.connect(qos, this);
 
          // a sample message unit
@@ -308,7 +308,7 @@ public class TestLogin extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestLogin("testLoginLogout", "Tim", "Joe"));
+       suite.addTest(new TestLogin(new Global(), "testLoginLogout", "Tim", "Joe"));
        return suite;
    }
 
@@ -324,12 +324,11 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
       }
-      TestLogin testSub = new TestLogin("TestLogin", "Tim", "Joe");
+      TestLogin testSub = new TestLogin(glob, "TestLogin", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();
       testSub.tearDown();
