@@ -200,7 +200,8 @@ public:
    bool isPersistent() const;
 
    /**
-    * @param forceUpdate Mark a PtP message to be queued if receiver is not available. 
+    * Send message to subscriber even if the content is the same as the previous. 
+    * @param forceUpdate
     */
    void setForceUpdate(bool forceUpdate);
 
