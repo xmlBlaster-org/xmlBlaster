@@ -245,6 +245,14 @@ public final class TopicHandler implements I_Timeout
             }
          }
       }
+
+      if (true /*log.INFO*/) {
+         long maxMsgHistory = this.topicProperty.getHistoryQueueProperty().getMaxMsg();
+         String hist = (maxMsgHistory > 0) ? "history/maxMsg="+maxMsgHistory : "message history is switched off with queue/history/maxMsg=0";
+         long maxMsgStore = this.topicProperty.getMsgUnitStoreProperty().getMaxMsg();
+         String store = (maxMsgStore > 0) ? "persistence/msgUnitStore/maxMsg="+maxMsgStore : "message storage is switched off with persistence/msgUnitStore/maxMsg=0";
+         log.info(ME, "New topic is ready, " + hist + ", " + store);
+      }
    }
 
    /**
@@ -289,6 +297,9 @@ public final class TopicHandler implements I_Timeout
                StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
                this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
                this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+            }
+            else {
+               if (log.TRACE) log.trace(ME, "History queuing of this topic is switched of with maxMsg=0");
             }
          }
          else {
@@ -1086,7 +1097,7 @@ public final class TopicHandler implements I_Timeout
          return 0L;
       }
       long num = this.historyQueue.getNumOfEntries();
-      if (num > 0L && !isAlive() && !isUnconfigured()) { // assert
+      if (num > 0L && !this.dyingInProgress && !isAlive() && !isUnconfigured()) { // assert
          // isUnconfigured is possible on administrative startup with persistent messages
          log.error(ME, "Internal problem: we have messages but are not alive: " + toXml());
          Thread.currentThread().dumpStack();
@@ -1307,9 +1318,16 @@ public final class TopicHandler implements I_Timeout
             return; // ALIVE -> UNREFERENCED
          }
 
-         if (this.timerKey == null) {
-            this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
+         if (topicProperty.getDestroyDelay() > 0L) {
+            if (this.timerKey == null) {
+               this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
+            }
          }
+         else if (topicProperty.getDestroyDelay() == 0L) {
+            timeout(null); // toDead()
+            return; // destroy immediately
+         }
+         // for destroyDelay < 0 we live forever or until an erase arrives
 
          if (!isRegisteredInBigXmlDom) {
             addToBigDom(); // guarantee still XPATH visibility
@@ -1591,7 +1609,7 @@ public final class TopicHandler implements I_Timeout
 
 
    /**
-    * This timeout occurs after a configured delay in UNREFERENCED state
+    * This timeout occurs after a configured delay (destroyDelay) in UNREFERENCED state
     */
    public final void timeout(Object userData) {
       if (log.CALL) log.call(ME, "Timeout after destroy delay occurred - destroying topic now ...");
