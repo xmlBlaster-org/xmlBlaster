@@ -112,30 +112,19 @@ namespace org {
        */
       serverIdl::XmlTypeArr* update(const char* sessionId,
                                     const serverIdl::MessageUnitArr& msgUnitArr)
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
-      ;
+                                    UPDATE_THROW_SPECIFIER;
 
       /**
        * This is the oneway variant, not returning a value (no application level ACK). 
        * @see update()
        */
-      void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr)
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
-      ;
+      void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr) PING_THROW_SPECIFIER;
 
       /**
        * Check the callback server.
        * @see xmlBlaster.idl
        */
-      char *ping(const char *qos)
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
-      ;
+      char *ping(const char *qos) PING_THROW_SPECIFIER;
 
    }; // class DefaultCallback
 }}}}} // namespace

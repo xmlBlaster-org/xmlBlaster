@@ -37,6 +37,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTRADINGREPOS           <not_implemented.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
+#define UPDATE_THROW_SPECIFIER    
+#define PING_THROW_SPECIFIER      
 #endif  // OMNIORB
 
 /******************************************************************
@@ -61,6 +63,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTRADINGREPOS           <not_implemented.h>
 #define COSTYPEDEVENTCHANNELADMIN <OB/CosTypedEventChannelAdmin.h>
 #define COSTYPEDEVENT             <OB/CosTypedEventComm.h>
+#define UPDATE_THROW_SPECIFIER    
+#define PING_THROW_SPECIFIER      
 #endif  // ORBACUS
 
 /*****************************************************************
@@ -85,6 +89,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTRADINGREPOS           <mico/CosTradingRepos.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
+#define UPDATE_THROW_SPECIFIER    
+#define PING_THROW_SPECIFIER      
 #endif  // MICO
 
 /*****************************************************************
@@ -93,7 +99,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifdef  TAO
 #define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, C.h)>
 #define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.hh)>
-#define CORBA_HEADER              <tao/CORBA.h>
+#define CORBA_HEADER              <tao/corba.h>
 #define COSCONTAINEMENT           <not_implemented.h> // what is this ??
 #define COSOBJECTIDENTITY         <not_implemented.h>
 #define COSREFERENCE              <not_implemented.h>
@@ -109,6 +115,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTRADINGREPOS           <mico/CosTradingReposC.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
+#define UPDATE_THROW_SPECIFIER    ACE_THROW_SPEC (( CORBA::SystemException, serverIdl::XmlBlasterException ))
+#define PING_THROW_SPECIFIER      ACE_THROW_SPEC (( CORBA::SystemException ))
 #endif  // TAO
 
 
@@ -134,6 +142,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTRADINGREPOS           <omg/CosTradingRepos.hh>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <omg/CosTypedEventComm.hh>
+#define UPDATE_THROW_SPECIFIER    IT_THROW_DECL ((CORBA::SystemException))
+#define PING_THROW_SPECIFIER      IT_THROW_DECL ((CORBA::SystemException))
 #endif //ORBIX
 
 /**************************************************************

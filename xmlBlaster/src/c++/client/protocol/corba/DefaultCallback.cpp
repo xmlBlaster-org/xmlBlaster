@@ -40,12 +40,8 @@ DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback 
  * @param msgUnit      Contains a MessageUnit structs (your message)
  * @param qos              Quality of Service of the MessageUnit
  */
-serverIdl::XmlTypeArr* 
-DefaultCallback::update(const char* sessionId,
-                        const serverIdl::MessageUnitArr& msgUnitArr) 
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
+serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
+                       const serverIdl::MessageUnitArr& msgUnitArr) UPDATE_THROW_SPECIFIER
 {
 
    // typedef StringSequenceTmpl<CORBA::String_var> XmlTypeArr;
@@ -130,12 +126,8 @@ DefaultCallback::update(const char* sessionId,
        * This is the oneway variant, not returning a value (no application level ACK). 
        * @see update()
        */
-void 
-DefaultCallback::updateOneway(const char* sessionId,
-                              const serverIdl::MessageUnitArr& msgUnitArr) 
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
+void DefaultCallback::updateOneway(const char* sessionId,
+                      const serverIdl::MessageUnitArr& msgUnitArr) PING_THROW_SPECIFIER
 {
    if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
    
@@ -184,11 +176,7 @@ DefaultCallback::updateOneway(const char* sessionId,
  * Check the callback server.
  * @see xmlBlaster.idl
  */
-char*
-DefaultCallback::ping(const char *qos) 
-#ifdef ORBIX
-            IT_THROW_DECL ((CORBA::SystemException))
-#endif
+char* DefaultCallback::ping(const char *qos) PING_THROW_SPECIFIER
 {
    if (log_.call()) log_.call(me(), "ping(" + string(qos) + ") ...");
    return CORBA::string_dup("");
