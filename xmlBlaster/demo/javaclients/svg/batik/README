@@ -12,6 +12,9 @@ To run the demo do the following:
    $XMLBLASTER_HOME/demo/javaclients/svg/batik and invoke
    > java javaclients.svg.batik.ExtendedApplication -svgMaster chess.svg -svgUser user1
 
+   Note: You probably have to adjust the host/port in chess.svg to find xmlBlaster
+         It uses "localhost"
+
 3) start another term and change to the same directory as in 2). Invoke
    > java javaclients.svg.batik.ExtendedApplication -svgSlave chess.svg -svgUser user2
 
