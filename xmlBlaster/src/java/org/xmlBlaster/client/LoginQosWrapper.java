@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.11 2001/09/01 08:54:19 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.12 2001/09/01 09:40:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -17,7 +17,7 @@ import java.util.Vector;
 
 
 /**
- * This class encapsulates the qos of a publish() message.
+ * This class encapsulates the qos of a login() or connect(). 
  * <p />
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCII-XML string with the toXml() method.
