@@ -20,18 +20,18 @@
        <p>
        If you have not initialized postgres previously, you should do it now by invoking 
        <pre>
-       $PGRES_HOME/bin/initdb -D $PGRES_HOME/data
+$PGRES_HOME/bin/initdb -D $PGRES_HOME/data
        </pre>as the user postgres, where '$PGRES_HOME' is the base directory where you installed your postgres (for example in /usr/local/pgres).
         Once postgres has been initialized you can start the server. Since we are communicating via TCP/IP with the jdbc driver, we need the '-i'
         switch on, for example:
         <pre>
-         postmaster -i -N100 -B200 -D /usr/local/pgres/data
+postmaster -i -N100 -B200 -D /usr/local/pgres/data
         </pre>
          the -N50 flag and -B100 are needed if you want to run the <b>complete</b> testsuite since it will consume quite a
          big amount of tcp/ip connections. If you did'nt create a db before you can do it now. Lets suppose we call the database 'test', then 
          what you have to do is invoke
          <pre>
-         createdb test
+createdb test
          </pre>
          And now you still have to configure xmlBlaster in order to be able to find the db. Lets say you run it in the standard port on your
          localhost and under the user postgres (you don't need a password for that user). If you choosed these settings you should be able to
@@ -44,9 +44,10 @@
     <example lang="Java" type="HTML">
        These are example QoS of subscribe() invocations:
        <pre>
-           &lt;qos>
-               &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
-           &lt;/queue>
+&lt;qos>
+   &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
+   &lt;/queue>
+&lt;/qos>
        </pre>
    </example>
    <configuration where="server">
@@ -135,7 +136,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
