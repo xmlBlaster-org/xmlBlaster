@@ -73,16 +73,23 @@ java HelloWorld2 -help
          <tr><td>Security Features</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
          <tr><td>Security Plugin Specific Properties</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
          <tr><td>Session Settings</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
-         <tr><td><b>Failsafe Connection to XmlBlaster Server</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>Server Side Callback (in case we install a local callback server)</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>Queue ClientSide Storage Properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>Queue Callback Storage Properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td>Specific Communication Protocol Options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Failsafe Connection to XmlBlaster Server</td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>Server Side Callback (in case we install a local callback server)</td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>Queue ClientSide Storage Properties</td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>Queue Callback Storage Properties</td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>Specific Communication Protocol Options</td><td><img src="ok.gif" border="0" alt="no"/></td></tr>
          <tr><td>Logging Options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
          <tr><td>Properties Framework</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
       </table>
       </center>
      </p>
+     <p>Please use the <i>-help</i> option to check the current status:</p>
+     <pre>
+
+ java org.xmlBlaster.Main -help     (server side configuration)
+
+ java HelloWorld3 -help             (client side configuration)
+     </pre>
 
 
      <p><b>Failsafe Connection to XmlBlaster Server</b><br/>
@@ -116,7 +123,7 @@ java HelloWorld2 -help
       </tr>
        <tr>
          <td>-bootstrapPort</td>
-         <td>You can choose another bootstrapPort for the communication to xmlBlaster</td>
+         <td>You can choose another bootstrapPort for the communication to xmlBlaster [3412]</td>
       </tr>
        <tr>
          <td>-dispatch/clientSide/protocol/xmlrpc/port</td>
@@ -129,6 +136,36 @@ java HelloWorld2 -help
     </center>
     </p>
 
+
+     <p><b>Protocol specific configuration</b><br/>
+
+     The following parameters control the client side dispatch configuration,
+     in this example we show the options for the SOCKET protocol.
+     <center>
+     <table border="1">
+       <tr><th>Command line</th><th>Comment and [default]</th></tr>
+       <tr>
+         <td>-dispatch/clientSide/protocol/socket/hostname</td>
+         <td>IP or DNS host name where the xmlBlaster server is running [localhost].</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/protocol/socket/port</td>
+         <td>The port where the server is listening [7607]</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/protocol/socket/localHostname</td>
+         <td>Usually you don't need to set this parameter.
+             My be useful for example if you are running on a multi homed host
+             having multiple local IP addresses [localhost].</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/protocol/socket/localPort</td>
+         <td>Usually this is dynamically chosen by your OS. You can configure it
+             for example if you need to force a local port to satisfy a firewall.</td>
+       </tr>
+    </table>
+    </center>
+    </p>
 
      <p><b>Server Side Callback (in case we install a local callback server)</b><br/>
      The following parameters control the callback (server side) dispatch configuration. It only makes
@@ -236,16 +273,16 @@ java HelloWorld2 -help
      <![CDATA[
 <xmlBlaster>
   <node id='heron'>
-    <plugin id='queue:CACHE' 
+    <plugin id='queueCACHE' 
        className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
-       <attribute id='transientQueue'>queue:RAM</attribute>
-       <attribute id='persistentQueue'>queue:JDBC</attribute>
+       <attribute id='transientQueue'>queueRAM</attribute>
+       <attribute id='persistentQueue'>queueJDBC</attribute>
     </plugin>
 
-    <plugin id='queue:RAM' 
+    <plugin id='queueRAM' 
             className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
 
-    <plugin id='queue:JDBC' 
+    <plugin id='queueJDBC' 
        className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
        <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
        <attribute id='user'>joe</attribute>
@@ -266,16 +303,16 @@ java HelloWorld2 -help
           <dispatch id='callback' sessionId='4e56890ghdFzj0'
                 pingInterval='10000' retries='-1' delay='10000'
                 oneway='false' burstModeCollectTime='0' ptpAllowed='true'>
-             <plugin refid='dispatch:priority'/>
+             <plugin refid='dispatchPriority'/>
              <burstMode collectTime='400' />
              <compress type='gzip' minSize='3000'/>
              <ptp>true</ptp>
-             <plugin refid='queue:CACHE'>
+             <plugin refid='queueCACHE'>
                 <attribute id='numEntries'>7</attribute>
                 <attribute id='numBytes'>90023</attribute>
                 <attribute id='onOverflow'>DEAD_MESSAGE</attribute>
              </plugin>
-             <plugin refid='protocol:XMLRPC:users'>
+             <plugin refid='XMLRPC'>
                 <attribute id='hostname'>client.mycomp.com</attribute>
                 <attribute id='port'>8080</attribute>
              </plugin>
@@ -287,7 +324,7 @@ java HelloWorld2 -help
           <dispatch id='clientSide'
                     pingInterval='2000' retries='-1' delay='5000'
                     oneway='false'>
-             <plugin refid='queue:CACHE'>
+             <plugin refid='queueCACHE'>
                 <attribute id='maxEntries'>200</attribute>
                 <attribute id='entry'>
                    <attribute id='id'>1046976320188000000></attribute>
@@ -308,14 +345,14 @@ java HelloWorld2 -help
                 </attribute>
              </plugin>
              
-             <plugin id='protocol:XMLRPC:clientSide'
+             <plugin id='XMLRPC'
                 className='org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection'>
                 <attribute id='hostname'>server.mycomp.com</attribute>
                 <attribute id='port'>6901</attribute>
              </plugin>
           </dispatch>
 
-          <plugin id='protocol:XMLRPC:callback'
+          <plugin id='XMLRPC-callback'
              className='org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver'>
              <attribute id='hostname'>client.mycomp.com</attribute>
              <attribute id='port'>8080</attribute>
@@ -378,10 +415,11 @@ java HelloWorld2 -help
 
    <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <see type="REQ">interface</see>
+   <see type="REQ">protocol</see>
    <see type="REQ">admin.errorcodes</see>
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
 </requirement>
 
