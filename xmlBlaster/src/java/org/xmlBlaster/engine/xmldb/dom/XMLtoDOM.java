@@ -1,4 +1,4 @@
-package org.xmlBlaster.engine.xmldb;
+package org.xmlBlaster.engine.xmldb.dom;
 import java.io.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
