@@ -10,6 +10,7 @@ import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.StopParseException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 
@@ -334,159 +335,154 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * Fires the given xmlBlaster command and sends the response to the output stream
     * @param qName
     */
-   private void fireCommand(String qName) {      
-      try {
-         if ("connect".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
-            // if (this.qos.length() < 1) this.qos.append("<qos />");
-            String ret = null;
-            if (this.qos.length() < 1) {
-               ConnectQos connectQos = new ConnectQos(this.glob);
-               ret = this.access.connect(connectQos, this.callback).toXml();
-            }
-            else {
-               ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
-               // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
-               ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
-               if (tmp != null) ret = tmp.toXml("  ");
-               else ret = "";
-            }
-            this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
-            this.response.append("\n<connect>");
-            this.response.append(ret);
-            this.response.append("\n</connect>\n");
-            flushResponse();
-            return;
+   private void fireCommand(String qName) throws XmlBlasterException {      
+      if ("connect".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
+         // if (this.qos.length() < 1) this.qos.append("<qos />");
+         String ret = null;
+         if (this.qos.length() < 1) {
+            ConnectQos connectQos = new ConnectQos(this.glob);
+            ret = this.access.connect(connectQos, this.callback).toXml();
          }
-         if ("disconnect".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
-            boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
-            this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
-            this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
-            flushResponse();
-            return;
+         else {
+            ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
+            // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
+            ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
+            if (tmp != null) ret = tmp.toXml("  ");
+            else ret = "";
          }
-         if ("publish".equals(qName)) {
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            MsgUnit msgUnit = buildMsgUnit();
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
-            PublishReturnQos ret = this.access.publish(msgUnit);
-            this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
-            this.response.append("\n<publish>");
-            // this.response.append("  <messageId>");
-            if (ret != null) this.response.append(ret.toXml("  "));
-            // this.response.append("  </messageId>\n");
-            this.response.append("\n</publish>\n");
-            flushResponse();
-            return;
-         }
-         if ("publishArr".equals(qName)) {
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            int size = this.messageList.size();
-            MsgUnit[] msgs = new MsgUnit[size];
-            for (int i=0; i < size; i++) {
-               if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
-               msgs[i] = (MsgUnit)this.messageList.get(i);
-            }
-            PublishReturnQos[] ret = this.access.publishArr(msgs);
-            this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
-            this.response.append("\n<publishArr>");
-            if (ret != null) {
-               for (int i=0; i < ret.length; i++) {
-                  this.response.append("\n  <message>");
-                  this.response.append(ret[i].toXml("    "));
-                  this.response.append("\n  </message>\n");
-               }
-            }
-            this.response.append("\n</publishArr>\n");
-            flushResponse();
-            return;
-         }
-         if ("subscribe".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement subscribe: " + this.key.toString() + " " + this.qos.toString());
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
-            this.response.append("\n<subscribe>");
-            // this.response.append("  <subscribeId>");
-            if (ret != null) this.response.append(ret.toXml("    "));
-            // this.response.append("  </subscribeId>\n");
-            this.response.append("\n</subscribe>\n");
-            flushResponse();
-            return;
-         }
-         if ("unSubscribe".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement unSubscribe: " + this.key.toString() + " " + this.qos.toString());
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            
-            UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
-            this.response.append("\n<unSubscribe>");
-            if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
-            this.response.append("\n</unSubscribe>\n");
-
-            flushResponse();
-            return;
-         }
-         if ("erase".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement erase: " + this.key.toString() + " " + this.qos.toString());
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
-            this.response.append("\n<erase>");
-            if (ret != null) {
-               for (int i=0; i < ret.length; i++) {
-                  // this.response.append("  <messageId>");
-                  this.response.append(ret[i].toXml("  "));
-                  // this.response.append("  </messageId>\n");
-               }
-            }
-            this.response.append("\n</erase>\n");
-            flushResponse();
-            return;
-         }
-         if ("get".equals(qName)) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement get: " + this.key.toString() + " " + this.qos.toString());
-            if (this.qos.length() < 1) this.qos.append("<qos />");
-            if (this.key.length() < 1) this.key.append("<key />");
-            MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
-            this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
-            this.response.append("\n<get>");
-            if (ret != null) {
-               for (int i=0; i < ret.length; i++) {
-                  this.response.append("\n  <message>");
-                  this.response.append(ret[i].toXml("    "));
-                  this.response.append("\n  </message>");
-               }
-            }
-            this.response.append("\n</get>\n");
-            flushResponse();
-            return;
-         }
-
-         if ("qos".equals(qName)) {
-            this.inQos--;
-         }
-         if ("key".equals(qName)) {
-            this.inKey--;
-         }
-         if ("content".equals(qName)) {
-            this.inContent--;
-         }
+         this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
+         this.response.append("\n<connect>");
+         this.response.append(ret);
+         this.response.append("\n</connect>\n");
+         flushResponse();
+         return;
       }
-      catch (Exception ex) {  // handle here the exception
-         ex.printStackTrace();
+      if ("disconnect".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
+         boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
+         this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
+         this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
+         flushResponse();
+         return;
+      }
+      if ("publish".equals(qName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         MsgUnit msgUnit = buildMsgUnit();
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
+         PublishReturnQos ret = this.access.publish(msgUnit);
+         this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
+         this.response.append("\n<publish>");
+         // this.response.append("  <messageId>");
+         if (ret != null) this.response.append(ret.toXml("  "));
+         // this.response.append("  </messageId>\n");
+         this.response.append("\n</publish>\n");
+         flushResponse();
+         return;
+      }
+      if ("publishArr".equals(qName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         int size = this.messageList.size();
+         MsgUnit[] msgs = new MsgUnit[size];
+         for (int i=0; i < size; i++) {
+            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+            msgs[i] = (MsgUnit)this.messageList.get(i);
+         }
+         PublishReturnQos[] ret = this.access.publishArr(msgs);
+         this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
+         this.response.append("\n<publishArr>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               this.response.append("\n  <message>");
+               this.response.append(ret[i].toXml("    "));
+               this.response.append("\n  </message>\n");
+            }
+         }
+         this.response.append("\n</publishArr>\n");
+         flushResponse();
+         return;
+      }
+      if ("subscribe".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement subscribe: " + this.key.toString() + " " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
+         this.response.append("\n<subscribe>");
+         // this.response.append("  <subscribeId>");
+         if (ret != null) this.response.append(ret.toXml("    "));
+         // this.response.append("  </subscribeId>\n");
+         this.response.append("\n</subscribe>\n");
+         flushResponse();
+         return;
+      }
+      if ("unSubscribe".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement unSubscribe: " + this.key.toString() + " " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         
+         UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
+         this.response.append("\n<unSubscribe>");
+         if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
+         this.response.append("\n</unSubscribe>\n");
+
+         flushResponse();
+         return;
+      }
+      if ("erase".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement erase: " + this.key.toString() + " " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
+         this.response.append("\n<erase>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               // this.response.append("  <messageId>");
+               this.response.append(ret[i].toXml("  "));
+               // this.response.append("  </messageId>\n");
+            }
+         }
+         this.response.append("\n</erase>\n");
+         flushResponse();
+         return;
+      }
+      if ("get".equals(qName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement get: " + this.key.toString() + " " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
+         this.response.append("\n<get>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               this.response.append("\n  <message>");
+               this.response.append(ret[i].toXml("    "));
+               this.response.append("\n  </message>");
+            }
+         }
+         this.response.append("\n</get>\n");
+         flushResponse();
+         return;
+      }
+
+      if ("qos".equals(qName)) {
+         this.inQos--;
+      }
+      if ("key".equals(qName)) {
+         this.inKey--;
+      }
+      if ("content".equals(qName)) {
+         this.inContent--;
       }
    }
 
-   private void flushResponse() {
+   private void flushResponse() throws XmlBlasterException {
       try {
          if (this.out != null) {
             synchronized(this.out) {
@@ -496,6 +492,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
       catch (IOException ex) {
          this.log.error(ME, "flushResponse exception occured " + ex.getMessage());
+         throw XmlBlasterException.convert(this.glob, ME, ErrorCode.INTERNAL_UNKNOWN.toString(), ex);
       }
       finally {
          this.response = new StringBuffer();
@@ -540,42 +537,48 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    public void endElement(String namespaceURI, String localName, String qName) {
-      checkNestedTags();
-      if (this.inQos > 0) {
-         appendEndOfElement(this.qos, qName);
-         if ("qos".equals(qName) && this.inQos > 0) this.inQos--;
-         return;
-      }
-      if (this.inKey > 0) {
-         appendEndOfElement(this.key, qName);
-         if ("key".equals(qName) && this.inKey > 0) this.inKey--;
-         return;
-      }
-      if ("content".equals(qName)) {
-         if (this.inContent > 0) this.inContent--;
-         if (this.inContent > 0) appendEndOfElement(this.content, qName); // because nested content tags should be there (only the outher not)
-         this.contentData.setValueRaw(this.content.toString());
-         return;
-      }
-      if ("xmlBlaster".equals(qName)) {
-         this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
-         flushResponse();
-      }  
-      if ("message".equals(qName)) {
-         try {
-            this.messageList.add(buildMsgUnit());
+      try {
+         checkNestedTags();
+         if (this.inQos > 0) {
+            appendEndOfElement(this.qos, qName);
+            if ("qos".equals(qName) && this.inQos > 0) this.inQos--;
+            return;
          }
-         catch(XmlBlasterException e) {
-            this.log.error(ME, "endElement '" + qName + "' exception occurred when trying to build message unit: " + e.getMessage());         }
-         return;
-      }
-      // comes here since the end tag is not part of the content
-      if (this.inContent > 0) appendEndOfElement(this.content, qName);
+         if (this.inKey > 0) {
+            appendEndOfElement(this.key, qName);
+            if ("key".equals(qName) && this.inKey > 0) this.inKey--;
+            return;
+         }
+         if ("content".equals(qName)) {
+            if (this.inContent > 0) this.inContent--;
+            if (this.inContent > 0) appendEndOfElement(this.content, qName); // because nested content tags should be there (only the outher not)
+            this.contentData.setValueRaw(this.content.toString());
+            return;
+         }
+         if ("xmlBlaster".equals(qName)) {
+            this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
+            flushResponse();
+         }  
+         if ("message".equals(qName)) {
+            try {
+               this.messageList.add(buildMsgUnit());
+            }
+            catch(XmlBlasterException e) {
+               this.log.error(ME, "endElement '" + qName + "' exception occurred when trying to build message unit: " + e.getMessage());         }
+            return;
+         }
+         // comes here since the end tag is not part of the content
+         if (this.inContent > 0) appendEndOfElement(this.content, qName);
 
-      if (commandsToFire.contains(qName)) {
-         appendEndOfElement(this.character, qName);
-         fireCommand(qName);
-         return;
+         if (commandsToFire.contains(qName)) {
+            appendEndOfElement(this.character, qName);
+            fireCommand(qName);
+            return;
+         }
+      }
+      catch (XmlBlasterException e) {
+         if (this.log.TRACE) this.log.trace(ME, "endElement exception occured " + e.getMessage());
+         throw new StopParseException(e);
       }
    }
 
