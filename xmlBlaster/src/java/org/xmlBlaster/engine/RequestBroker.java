@@ -280,9 +280,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
     /*
    public final SessionInfo getClusterSessionInfo() {
-      this.unsecureSessionInfo;
+      return this.unsecureSessionInfo;
    }
       */
+   final SessionInfo getInternalSessionInfo() {
+      return this.unsecureSessionInfo;
+   }
 
    /**
     * Publish dead letters, expired letters should be filtered away before. 
@@ -539,7 +542,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             SubscriptionInfo subsQuery = null;
             if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
                subsQuery = new SubscriptionInfo(glob, sessionInfo, msgQueue, xmlKey, subscribeQos);
-               returnOid[ii] = subsQuery.getUniqueKey();
+               returnOid[ii] = subsQuery.getUniqueKey(); // XPath query
                fireSubscribeEvent(subsQuery);
             }
 
@@ -561,11 +564,16 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                         log.error(ME, "Internal problem for session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getUniqueKey() + "' is subscribed " + vec.size() + " times but duplicateUpdates==false!");
                   }
                }
-               if (subs == null)
-                  subs = new SubscriptionInfo(glob, sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
 
-               if (subsQuery != null)
-                  subsQuery.addSubscription(subs);
+               if (subs == null) {
+                  if (subsQuery != null) {
+                     subs = new SubscriptionInfo(glob, sessionInfo, subsQuery, xmlKeyExact);
+                     subsQuery.addSubscription(subs);
+                  }
+                  else
+                     subs = new SubscriptionInfo(glob, sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
+               }
+
                subscribeToOid(subs);                // fires event for subscription
 
                if (returnOid[ii].equals("")) returnOid[ii] = subs.getUniqueKey();
@@ -1413,6 +1421,7 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             try {
                fireMessageEraseEvent(sessionInfo, msgUnitHandler);
             } catch (XmlBlasterException e) {
+               if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
             }
             msgUnitHandler.erase(sessionInfo, Constants.STATE_ERASED);
             msgUnitHandler = null;
@@ -1448,16 +1457,21 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
-
       //SessionInfo sessionInfo = e.getSessionInfo();
       MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
-      String uniqueKey = msgUnitHandler.getUniqueKey();
-      if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
-      synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.remove(uniqueKey);
-         if (obj == null) {
-            log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
-            throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+      if (msgUnitHandler.hasSubscribers()) {
+         if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + msgUnitHandler.getUniqueKey() + ", not removing messageUnitHandler skeleton since " + msgUnitHandler.numSubscribers() + " subscribers exist ...");
+         // MessageUnitHandler will call 
+      }
+      else {
+         String uniqueKey = msgUnitHandler.getUniqueKey();
+         if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
+         synchronized(messageContainerMap) {
+            Object obj = messageContainerMap.remove(uniqueKey);
+            if (obj == null) {
+               log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+               throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+            }
          }
       }
    }
@@ -1633,7 +1647,7 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
     * @param sessionInfo
     * @param msgUnitHandler
     */
-   private final void fireMessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
+   final void fireMessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
       synchronized (messageEraseListenerSet) {
          if (messageEraseListenerSet.size() == 0)
