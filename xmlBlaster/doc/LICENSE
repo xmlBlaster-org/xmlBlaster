@@ -14,15 +14,8 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-   This software may NOT be used if your primary intention is
-   to produce or distribute an application for:
-
-     (1) military purposes
-     (2) racialist activities
-     (3) nuclear plants
-
    Please respect the LICENSE conditions of the third party components
-	 in the xmlBlaster/lib directory as well (see xmlBlaster/lib/README file).
+   in the xmlBlaster/lib directory as well (see xmlBlaster/lib/README file).
 
    manuel.kron@gmx.net / ruff@swand.lake.de
 
