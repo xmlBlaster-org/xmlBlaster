@@ -461,6 +461,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          else {
             if (Log.TRACE) Log.trace(ME, "Got authServer handle, trying connect ...");
+            if (Log.DUMP) Log.dump(ME, "Got authServer handle, trying connect:" + connectQos.toXml());
+
             String tmp = authServer.connect(connectQos.toXml());
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             sessionId = this.connectReturnQos.getSessionId();
