@@ -592,6 +592,12 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
       } catch(org.omg.CORBA.OBJ_ADAPTER e) {
          log.warn(ME, "No disconnect possible, no CORBA connection available: " + e.toString());
+      } catch(org.omg.CORBA.TRANSIENT e) {
+         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
+      } catch(org.omg.CORBA.COMM_FAILURE e) {
+         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
+      } catch(org.omg.CORBA.OBJECT_NOT_EXIST e) {
+         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
       } catch(Throwable e) {
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
          log.warn(ME, xmlBlasterException.getMessage());
