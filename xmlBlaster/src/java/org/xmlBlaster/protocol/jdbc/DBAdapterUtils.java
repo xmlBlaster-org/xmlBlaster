@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.10 2002/08/13 16:22:40 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.11 2004/04/22 09:15:08 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -23,6 +23,7 @@ import org.w3c.dom.Text;
  */
 public class DBAdapterUtils {
    private static final String ME = "DBAdapterUtils";
+   private final static String NULL_STR = "NULL";
 
    /**
     * Method declaration
@@ -132,12 +133,14 @@ public class DBAdapterUtils {
                   break;
 
                case Types.DATE:
-                  columnValue = rs.getDate(i).toString();
+                  Date d = rs.getDate(i);
+                  columnValue = (d==null) ? NULL_STR : d.toString();
 
                   break;
 
                case Types.TIMESTAMP:
-                  columnValue = rs.getTimestamp(i).toString();
+                  Timestamp t = rs.getTimestamp(i);
+                  columnValue = (t==null) ? NULL_STR : t.toString();
 
                   break;
 
@@ -164,12 +167,14 @@ public class DBAdapterUtils {
                case Types.DATALINK:
                case Types.BOOLEAN:
                */
-                  columnValue = rs.getObject(i).toString();
+                  Object o1 = rs.getObject(i);
+                  columnValue = (o1==null) ? NULL_STR : o1.toString();
                   break;
 
                default:
                   if (log.TRACE) log.warn(ME, "Datatype '" + cType + "' of column '" + columnName + "' is not implemented, plase add a case statement in DBAdapterUtils.java");
-                  columnValue = rs.getObject(i).toString();
+                  Object o2 = rs.getObject(i);
+                  columnValue = (o2==null) ? NULL_STR : o2.toString();
                   break;
                }
 
