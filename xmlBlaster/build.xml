@@ -1598,6 +1598,31 @@ TODO
       </foreach>
    </target>
 
+   <!--				   
+      Here an example on how to compile a single test application ...
+      ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
+   -->
+   <target name="cpp-test-single" depends="prepare-cpp" description="Create single C++ test client">
+      <foreach list="${cppToCompile}"
+               target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
+      </foreach>
+   </target>
+
+   <!--				   
+      Here an example on how to compile a single test application ...
+      ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
+   -->
+   <target name="cpp-demo-single" depends="prepare-cpp" description="Create single C++ demo client">
+      <foreach list="${cppToCompile}"
+               target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCppSourcePath" value="${demo.dir}/src/c++" />
+      </foreach>
+   </target>
+
+
+
+
    <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
       <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">

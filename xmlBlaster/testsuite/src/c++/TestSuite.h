@@ -123,8 +123,9 @@ public:
         string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
         string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");
         embeddedServer_ = new EmbeddedServer(global_, jvmArgs, cmdLine, &connection_);
-        embeddedServer_->start();
+        embeddedServer_->start(true);
         Thread::sleepSecs(5); // let the xmlBlaster server start ...
+        // don't need to wait anymore since 
      }
    }
 

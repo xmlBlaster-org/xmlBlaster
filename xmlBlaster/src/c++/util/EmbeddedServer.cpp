@@ -77,11 +77,48 @@ EmbeddedServer::~EmbeddedServer()
    log_.trace(ME, "destructor: stopped the server");
 }
 
-bool EmbeddedServer::start()
+bool EmbeddedServer::start(bool blockUntilUp)
 {
+   if (log_.call()) log_.call(ME, "start");
+
    if (runner_) return false;
    runner_ = new EmbeddedServerRunner(*this);
-   return runner_->start();
+   bool ret  = runner_->start();
+   if (ret && blockUntilUp) {
+      if (log_.trace()) log_.trace(ME, "start: setting up for a client connection");
+      bool isConnected = false;
+      int count = 0;
+      while (!isConnected && count < 60) {
+         if (log_.trace()) log_.trace(ME, "start: establishing a connection: trial nr. '" + lexical_cast<string>(count) + "'");
+         try {
+            count++;
+            XmlBlasterAccess conn(global_);
+            ConnectQos connQos(global_, "embeddedKiller", "secret");
+            Address address(global_);
+            address.setDelay(0);
+            connQos.setAddress(address);
+            // to be sure not to store the kill msg in a client queue ...
+            conn.connect(connQos, NULL);
+            log_.trace(ME, "successfully connected to the embedded server");
+            conn.disconnect(DisconnectQos(global_));
+            log_.trace(ME, "successfully disconnected from the embedded server");
+            isConnected = true;
+         }
+         catch (XmlBlasterException& ex) {
+            if (log_.trace()) log_.trace(ME, "exception occurred when connecting: " + ex.toXml());
+            if ( !ex.isCommunication() ) throw ex;
+            if (log_.trace()) log_.trace(ME, "the exception occurred was a communication exception (connection not established yet). Will retry (sleep for 2 sec)");
+            Thread::sleepSecs(2);
+         }
+         count++;
+      }
+      if (!isConnected) {
+         log_.error(ME, "maximum number of retrials to establish a connection failed ");
+         throw new XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, " start: could not establish a connection to the embedded server");
+      }
+
+   }
+   return ret;
 }
 
 bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)

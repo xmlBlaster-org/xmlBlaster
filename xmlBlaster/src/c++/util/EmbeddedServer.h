@@ -91,7 +91,11 @@ public:
     */
    bool stop(bool shutdownExternal=false, bool warnIfNotRunning=true);
 
-   bool start();
+   /**
+    * @param blockUntilUp if set to 'true' the method blocks until the server really is reacheable
+    *        (i.e. a client has successfully been able to connect)
+    */
+   bool start(bool blockUntilUp=true);
 
    /**
     * This method can be used to check if a server is already running and responding to requests.

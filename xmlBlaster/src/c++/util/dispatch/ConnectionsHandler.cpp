@@ -113,7 +113,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    catch (XmlBlasterException &ex) {
       if (log_.trace()) log_.trace(ME, "exception occured when connecting");
-      if ( ex.isCommunication() ) return queueConnect();
+      if ( ex.isCommunication() && connectionProblems_) return queueConnect();
       else {
          if (log_.trace()) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
          throw ex;
@@ -279,7 +279,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
       if (log_.trace()) log_.trace(ME, "publish successful");
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
+      if ( ex.isCommunication() && connectionProblems_) {
          toPollingOrDead();
          return queuePublish(msgUnit);
       }

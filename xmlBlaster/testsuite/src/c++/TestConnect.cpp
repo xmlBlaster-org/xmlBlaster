@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.14 2003/02/13 14:00:32 ruff Exp $
+Version:   $Id: TestConnect.cpp,v 1.15 2003/03/04 17:44:11 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -113,15 +113,58 @@ public:
    {
       TestSuite::setUp();
       try {
-         ConnectQosFactory factory(global_);
-         ConnectQos connectQos1 = factory.readObject(qos1_);
-         connection_.connect(connectQos1, NULL);
 
          // Login to xmlBlaster
+         ConnectQosFactory factory(global_);
          if (conn2_) delete conn2_;
          ConnectQos connectQos2 = factory.readObject(qos2_);
          conn2_ = new XmlBlasterAccess(global_);
          conn2_->connect(connectQos2, NULL);
+
+         conn2_->disconnect(DisconnectQos(global_));
+         delete conn2_;
+         conn2_ = NULL;
+
+         ConnectQos connectQos1 = factory.readObject(qos1_);
+         connection_.connect(connectQos1, this);
+
+      }
+      catch (XmlBlasterException &e) {
+         log_.error(ME, e.toXml());
+         usage();
+      }
+   }
+
+
+   void testPubSub()
+   {
+      try {
+         log_.info(ME, "testPubSub");
+
+
+         PublishKey pubKey(global_);
+         pubKey.setOid("testConnect");
+         PublishQos pubQos(global_);
+         MessageUnit msgUnit(pubKey, "This is a happy day!", pubQos);
+         connection_.publish(msgUnit);
+         Thread::sleepSecs(1);
+
+         SubscribeKey subKey(global_);
+         subKey.setOid("testConnect");
+
+         SubscribeQos subQos(global_);
+         string subscribeOid_ = connection_.subscribe(subKey, subQos).getSubscriptionId();
+         log_.info(ME, string("Success: Subscribe subscription-id=") + subscribeOid_ + " done");
+
+         Thread::sleepSecs(2);
+         assertEquals(log_, ME, 1, numReceived_, "reconnecting when communication down and giving positive publicSessionId: no exception expected");
+
+         EraseKey key(global_);
+         key.setOid("testConnect");
+         EraseQos qos(global_);
+         connection_.erase(key, qos);
+         Thread::sleepSecs(1);
+         log_.info(ME, "testPubSub successfully completed");
       }
       catch (XmlBlasterException &e) {
          log_.error(ME, e.toXml());
@@ -139,7 +182,7 @@ public:
    {
       TestSuite::tearDown();
       connection_.disconnect(DisconnectQos(global_));
-      conn2_->disconnect(DisconnectQos(global_));
+//      conn2_->disconnect(DisconnectQos(global_));
    }
 
 };
@@ -178,6 +221,7 @@ int main(int args, char *argc[]) {
    glob.initialize(args, argc);
    TestConnect *testConnect = new TestConnect(args, argc, qos1, qos2);
    testConnect->setUp();
+   testConnect->testPubSub();
    testConnect->tearDown();
    delete testConnect;
    return 0;
