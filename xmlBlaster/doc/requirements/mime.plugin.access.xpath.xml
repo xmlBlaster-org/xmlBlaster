@@ -41,9 +41,13 @@
       On subscribe first the usual XPATH or exact subscription is checked.
       The client is added as subscriber to all matching message types.
       If now real messages arrive, the filter plugin is additionally filtering
-      messages away. The same applies for get() invocations. WIth the XPath filter is therefore possible to emulate a JMS like topic destination: send messages with the same OID. Subscribe with an exact query on the messages, and filter with the XPathFilter on the content.
+      messages away. The same applies for get() invocations. With the XPath filter is therefore possible to emulate a JMS like topic destination: send messages with the same OID. Subscribe with an exact query on the messages, and filter with the XPathFilter on the content.
       </p>
       <p>
+      The XPathFilter is currently based on the Jaxen xpath engine. It is
+      also possible to register Jaxen extension functions by specifying them
+      in the property <code>engine.mime.xpath.extension_functions</code>. The
+      functions must implement the <code>org.jaxen.Function</code> interface.
       </p>
    </description>
    <example lang="Java" type="HTML">
@@ -101,7 +105,7 @@
 
    <configuration where="server">
       <p>
-      These parameters allow to configure the regex plugin.
+      These parameters allow to configure the XPath plugin.
       </p>
       <table border="1">
          <tr>
@@ -123,10 +127,18 @@
             <td>Max cache of loaded DOM trees for messages.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+         <tr>
+            <td>engine.mime.xpath.extension_functions</td>
+            <td>:contains-ignore-case:org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</td>
+            <td>A semicolon separated list of function definitions.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
       </table>
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.mime.xpath.XPathFilter</see>
+   <see type="API">org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction</see>
+   <see type="API">org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</see>
    <see type="API">org.xmlBlaster.util.qos.AccessFilterQos</see>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
@@ -134,8 +146,8 @@
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
-   <date>2002 09 27</date>
-   <revision>$Revision: 1.8 $</revision>
+   <date>2003 09 09</date>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
