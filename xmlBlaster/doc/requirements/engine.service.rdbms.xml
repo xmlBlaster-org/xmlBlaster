@@ -290,6 +290,59 @@ java javaclients.jdbc.XmlDBClient \
      </p>
    </example>
 
+   <configuration where="server">
+      <h3>Server side configuration</h3>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>JdbcDriver.loginName</td>
+            <td>__sys__jdbc</td>
+            <td>The login name of the jdbc proxy plugin</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>JdbcDriver.password</td>
+            <td>secret</td>
+            <td>The password for the jdbc proxy to login</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>JdbcDriver.drivers</td>
+            <td>sun.jdbc.odbc.JdbcOdbcDriver</td>
+            <td>The underlying JDBC protocol driver to use, you can specify any
+            number of drivers separated by ':'. Example (all in one line):<br />
+            <code>org.hsqldb.jdbcDriver: oracle.jdbc.driver.OracleDriver: COM.ibm.db2.jdbc.app.DB2Driver</code><br />
+            All listed databases are available simultaneously.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+      <p>
+      If you for example use the htpasswd plugin for authentication try this setting:
+      </p>
+      <p>Create a <code>$HOME/xmlBlaster.htpasswd</code> file with this entry:</p>
+      <pre>
+__sys__jdbc:yZ24stvIel1j6
+      </pre>
+      <p>Change your <code>$HOME/xmlBlaster.properties</code> file with this entry:</p>
+      <pre>
+Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
+      </pre>
+      <p>Start the server:</p>
+      <pre>
+java org.xmlBlaster.Main -JdbcDriver.password secret
+      </pre>
+   </configuration>
+
    <todo>
    INSERT and UPDATE are currently literally given, there should
    be a xml encoded variant allowing to use the Prepared statement.
@@ -304,7 +357,7 @@ java javaclients.jdbc.XmlDBClient \
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>A test i driven with the provided tinySql JDBC driver</comment>
