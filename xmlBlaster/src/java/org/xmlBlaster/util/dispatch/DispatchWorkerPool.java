@@ -35,12 +35,14 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    protected static class DeamonThreadFactory implements ThreadFactory {
       private final String id;
       private final int priority;
+      private int count; // to have a nice logging
+       
       DeamonThreadFactory(String id, int priority) {
          this.id = id;
          this.priority = priority;
       }
       public Thread newThread(Runnable command) {
-         Thread t = new Thread(command, "XmlBlaster.DispatchWorkerPool."+id);
+         Thread t = new Thread(command, "XmlBlaster.DispatchWorkerPool."+id + "-" + this.count++);
          t.setDaemon(true);
          t.setPriority(priority);
          //System.out.println("Created new daemon thread instance for DispatchWorkerPool");
