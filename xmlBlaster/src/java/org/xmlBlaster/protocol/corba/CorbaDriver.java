@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.11 2000/11/04 20:22:08 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.12 2000/11/04 22:37:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -18,8 +18,11 @@ import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.HttpIORServer;
-import java.io.*;
-import org.omg.CosNaming.*;
+import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.io.File;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NameComponent;
 
 
 /**
@@ -30,7 +33,7 @@ public class CorbaDriver implements I_Driver
    private static final String ME = "CorbaDriver";
    private static org.omg.CORBA.ORB orb = null;
    private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
-   private NamingContext nc = null;
+   private NamingContextExt nc = null;
    private NameComponent [] name = null;
    private String iorFile = null;
    /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
@@ -73,13 +76,13 @@ public class CorbaDriver implements I_Driver
       #  3. check in the System properties
       #  4. check in the orb.properties file located in the java.home/lib directory
       #  5. fall back on a hardcoded default behavior (use the Java IDL implementation)
-      */    
+      */
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
          System.setProperty("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
          System.setProperty("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
       }
-      
+
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -117,6 +120,35 @@ public class CorbaDriver implements I_Driver
          // 3) Publish IOR to a naming service
          boolean useNameService = XmlBlasterProperty.get("ns", true);  // default is to publish myself to the naming service
          if (useNameService) {
+
+            /*
+            // We check if a name server is running, if not we just create and start one:
+            Class nameServer = Class.forName("jacorb.naming.NameServer");
+            if (nameServer != null) {
+               try {
+                  nc = getNamingService();
+               }
+               catch (XmlBlasterException e) {
+                  class MyNameServer extends Thread {
+                     public void run() {
+                        Thread.currentThread().setName("XmlBlaster CorbaDriver NameServerThread");
+                        String[] aa = new String[1];
+                        // !!! where do we get the document root from (see jacorb.NameServerURL in jacorb.properties)?
+                        aa[0] = "/home/ruff/xmlBlaster/demo/html/NS_Ref";
+                        // !!! using reflection in future to avoid JacORB dependency (nameServer. Method main):
+                        jacorb.naming.NameServer.main(aa);
+                        Log.info(ME, "Created Name server");
+                     }
+                  }
+                  MyNameServer thr = new MyNameServer();
+                  thr.start();
+                  org.jutils.runtime.Sleeper.sleep(500);
+                  Log.info(ME, "Started CORBA naming service");
+               }
+            }
+            */
+            
+            // Register xmlBlaster with a name server:
             try {
                nc = getNamingService();
                name = new NameComponent[1];
@@ -128,6 +160,7 @@ public class CorbaDriver implements I_Driver
                Log.info(ME, "Published AuthServer IOR to naming service");
             }
             catch (XmlBlasterException e) {
+               Log.warn(ME + ".NoNameService", "Can't access naming service: " + e.toString());
                nc = null;
                if (iorPort > 0) {
                   Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
@@ -182,12 +215,25 @@ public class CorbaDriver implements I_Driver
 
       try {
          if (httpIORServer != null) httpIORServer.shutdown();
-         if (nc != null) nc.unbind(name);
-         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
       }
       catch (Throwable e) {
          Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
+      }
+
+      try {
+         if (nc != null) nc.unbind(name);
+      }
+      catch (Throwable e) {
+         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         e.printStackTrace();
+      }
+
+      try {
+         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
+      }
+      catch (Throwable e) {
+         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
       }
 
       if (rootPOA != null && authRef != null) {
@@ -217,18 +263,18 @@ public class CorbaDriver implements I_Driver
     * Locate the CORBA Naming Service.
     * <p />
     * The found naming service is cached, for better performance in subsequent calls
-    * @return NamingContext, reference on name service<br />
+    * @return NamingContextExt, reference on name service<br />
     *         Note that this reference may be invalid, because the naming service is not running any more
     * @exception XmlBlasterException
     *                    CORBA error handling if no naming service is found
     */
-   private NamingContext getNamingService() throws XmlBlasterException
+   private NamingContextExt getNamingService() throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "getNamingService() ...");
       if (nc != null)
          return nc;
 
-      NamingContext nameService = null;
+      NamingContextExt nameService = null;
       try {
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
@@ -238,7 +284,7 @@ public class CorbaDriver implements I_Driver
          }
          if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
-         nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
+         nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
             Log.error(ME + ".NoNameService", "Can't access naming service == null");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
@@ -252,7 +298,6 @@ public class CorbaDriver implements I_Driver
          throw e;
       }
       catch (Exception e) {
-         Log.warn(ME + ".NoNameService", "Can't access naming service: " + e.toString());
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
    }
