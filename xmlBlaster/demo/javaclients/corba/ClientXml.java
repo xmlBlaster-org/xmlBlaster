@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.1 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.2 2000/06/26 06:40:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -50,6 +50,7 @@ public class ClientXml implements I_Callback
          Log.plain("   -name               The login name [ClientSub].");
          Log.plain("   -passwd             The password [secret].");
          CorbaConnection.usage();
+         Log.usage();
          Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
       }

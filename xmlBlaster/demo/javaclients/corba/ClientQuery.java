@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.1 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.2 2000/06/26 06:40:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -93,6 +93,7 @@ public class ClientQuery
       Log.plain("   -passwd             The password [secret].");
       Log.plain("   -queryXpath         \"//key\"");
       CorbaConnection.usage();
+      Log.usage();
       Log.plain("Example: jaco javaclients.corba.ClientQuery -queryXpath //key\n");
       Log.panic(ME, text);
    }
