@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.5 2000/07/08 16:14:48 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.6 2000/07/09 13:55:16 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ public class NamedConnectionPool
     */
    Connection reserve(String dbUrl, String dbUser, String dbPasswd) throws XmlBlasterException
    {
-      return reserve(dbUrl, dbUser, dbPasswd, -1, -1, -1, -1);
+      return reserve(dbUrl, dbUser, dbPasswd, -1, -1, -1);
    }
 
 
@@ -102,14 +102,13 @@ public class NamedConnectionPool
     * @param eraseUnusedPoolTimeout Remove pool of a user if not in use, in ms
     *          0 switches it off, -1 uses default setting 1 hour (from xmlBlaster.properties)
     * @param maxInstances Default is max. 20 connections (from xmlBlaster.properties)
-    * @param busyToIdle   in msec
-    *          0 switches it off, -1 uses default setting which switches it off (from xmlBlaster.properties)
     * @param idleToErase  in msec
     *          0 switches it off, -1 uses default setting 10 min. (from xmlBlaster.properties)
     */
    Connection reserve(String dbUrl, String dbUser, String dbPasswd, long eraseUnusedPoolTimeout,
-                      int maxInstances, long busyToIdle, long idleToErase) throws XmlBlasterException
+                      int maxInstances, long idleToErase) throws XmlBlasterException
    {
+      long busyToIdle = 0L; // On timeout it changes state from 'busy' to 'idle': switched off!
       UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
       if (pool == null) { // check before as well to increase performance
          synchronized(meetingPoint) {
@@ -453,7 +452,7 @@ public class NamedConnectionPool
                   for (int ii=0; ii<50; ii++) {
                      Log.info(ME, " query run=" + ii + "\n");
                      org.jutils.time.StopWatch watch = new org.jutils.time.StopWatch();
-                     Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 60*1000L, 40*1000L);
+                     Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 40*1000L);
                      Log.info(ME, "Reserved connection id=" + con + watch.toString());
                      //Log.info(ME, np.toXml());
                      java.sql.Statement stmt = null;

@@ -1,15 +1,12 @@
-/*--- formatted by Jindent 2.1, (www.c-lab.de/~jindent) ---*/
-
 /*
  * -----------------------------------------------------------------------------
  * Name:      XmlDBAdapterWorker.java
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.11 2000/07/08 16:53:34 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.12 2000/07/09 13:55:16 ruff Exp $
  * ------------------------------------------------------------------------------
  */
-
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.Log;
@@ -19,19 +16,23 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import java.io.*;
 
-import org.w3c.dom.*;
-import com.sun.xml.tree.*;
-import java.sql.*;
-import java.io.*;
+import org.w3c.dom.Text;
+import com.sun.xml.tree.XmlDocument;
+import com.sun.xml.tree.ElementNode;
+
+import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.SQLException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 
 /**
- * Class declaration
- *
- *
- * @author
- * @version %I%, %G%
+ * For every database access, an instance of this class does the work in a dedicated thread. 
  */
 public class XmlDBAdapterWorker extends Thread {
 
@@ -42,11 +43,11 @@ public class XmlDBAdapterWorker extends Thread {
    private NamedConnectionPool   namedPool = null;
 
    /**
-    * Constructor declaration
-    *
-    * @param cust The sender of the SQL message
-    * @param content The SQL statement
-    * @param callback Interface to publish the XML based result set
+    * Create the worker instance to handle a single RDBMS request. 
+    * @param cust       The sender of the SQL message
+    * @param content    The SQL statement
+    * @param callback   Interface to publish the XML based result set
+    * @param namedPool  A pool of JDBC connections for the RDBMS users
     */
    public XmlDBAdapterWorker(String cust, byte[] content,
                              I_Publish callback, NamedConnectionPool namedPool) {
@@ -57,14 +58,7 @@ public class XmlDBAdapterWorker extends Thread {
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @return
-    *
-    * @throws Exception
-    *
-    * @see
+    * Parse the XML encoded SQL statement. 
     */
    private XmlDocument createDocument() throws Exception {
       XmlDocument          document = null;
@@ -83,16 +77,7 @@ public class XmlDBAdapterWorker extends Thread {
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @param descriptor
-    *
-    * @return
-    *
-    * @throws SQLException
-    *
-    * @see
+    * Query the database. 
     */
    private XmlDocument queryDB(ConnectionDescriptor descriptor) throws XmlBlasterException
    {
@@ -140,15 +125,8 @@ public class XmlDBAdapterWorker extends Thread {
    }
 
    /**
-    * Method declaration
-    *
-    *
     * @param rowsAffected
     * @param descriptor
-    *
-    * @return
-    *
-    * @see
     */
    private XmlDocument createUpdateDocument(int rowsAffected,
                                             ConnectionDescriptor descriptor) {
@@ -172,52 +150,8 @@ public class XmlDBAdapterWorker extends Thread {
       return document;
    }
 
-   /**
-    * Method declaration
-    *
-    *
-    * @param exception
-    *
-    * @return
-    *
-    * @see
-    */
-    /*
-   private XmlDocument createErrorDocument(Exception exception) {
-      XmlDocument document = new XmlDocument();
-      ElementNode root = (ElementNode) document.createElement("exception");
-
-      document.appendChild(root);
-
-      ElementNode extype = (ElementNode) document.createElement("type");
-
-      root.appendChild(extype);
-
-      Text  extypevalue =
-         (Text) document.createTextNode(exception.toString());
-
-      extype.appendChild(extypevalue);
-
-      ElementNode exmessage = (ElementNode) document.createElement("message");
-
-      root.appendChild(exmessage);
-
-      Text  exmessagevalue =
-         (Text) document.createTextNode(exception.getMessage());
-
-      exmessage.appendChild(exmessagevalue);
-
-      return document;
-   }
-   */
 
    /**
-    * Method declaration
-    *
-    *
-    * @param doc
-    *
-    * @see
     */
    private void notifyCust(XmlDocument doc)
    {
@@ -249,10 +183,7 @@ public class XmlDBAdapterWorker extends Thread {
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @see
+    * Query the database. 
     */
    public void run() {
       XmlDocument document = null;
@@ -286,5 +217,4 @@ public class XmlDBAdapterWorker extends Thread {
          notifyCust(document);
       }
    }
-
 }
