@@ -3,6 +3,16 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o Python client: Added missing return values for remote calls, added publishArr()
+
+ o XmlRpc access: Added support for message contents of type 'String' besides 'byte[]'
+
+ o C++ ClientProperty: Fixed float/double etc. assignement warning for templates
+
+ o Removed boost source from our C++ source tree (we use omnithread)
+
+ o Support for JDK 1.5 by forcing source/target compilation to 1.4
+
  o ClientProperty: Forcing Base64 for & character in string client property
 
  o XPath mime plugin extension
