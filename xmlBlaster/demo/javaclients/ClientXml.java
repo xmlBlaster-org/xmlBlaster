@@ -3,12 +3,15 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.2 1999/12/13 12:53:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.util.*;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
@@ -17,12 +20,15 @@ import org.xmlBlaster.clientIdl.*;
  * This client tests the method subscribe()/publish() with XML syntax key
  * and XPath query.
  * <p>
+ * This is a nice example using the DefaultCallback implementation from CorbaConnection.java
+ * which calls the update() method using I_Callback interface when messages arrive
+ * <p>
  * Invoke examples:
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml -name "Jeff"
  */
-public class ClientXml
+public class ClientXml implements I_Callback
 {
    private Server xmlBlaster = null;
    private static String ME = "Tim";
@@ -38,20 +44,10 @@ public class ClientXml
          //----------- Find orb ----------------------------------
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
-         //---------- Building a Callback server ----------------------
-         // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-
-         // Intializing my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-
-
          //----------- Login to xmlBlaster -----------------------
          String qos = "<qos></qos>";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, callback, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, qos, this); // installs the Callback server as well!
 
 
          String publishOid = "";
@@ -151,6 +147,25 @@ public class ClientXml
       catch (Exception e) {
           e.printStackTrace();
       }
+   }
+
+
+   /**
+    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * informing the client in an asynchronous mode about a new message.
+    * <p />
+    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
+    * this update is called.
+    *
+    * @param loginName The name to whom the callback belongs
+    * @param keyOid    the unique message key for your convenience (redundant to updateKey.getUniqueKey())
+    * @param updateKey The arrived key
+    * @param content   The arrived message content
+    * @param qos       Quality of Service of the MessageUnit
+    */
+   public void update(String loginName, String keyOid, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   {
+      Log.info(ME, "Receiving update of message [" + keyOid + "]");
    }
 
 
