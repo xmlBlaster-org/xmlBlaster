@@ -23,7 +23,7 @@ class TestCorbaDriver
 private:
    string              ME;
    Global&             global_;
-   Log&                log_;
+   I_Log&              log_;
    Mutex               updateMutex_;
    int                 numOfUpdates_;
    CorbaDriverFactory& factory_;

@@ -25,7 +25,7 @@ class PublishDemo
 private:
    string ME;
    Global& global_;
-   Log& log_;
+   I_Log& log_;
    char ptr[1];
    XmlBlasterAccess connection_;
    bool interactive;
@@ -255,7 +255,7 @@ void PublishDemo::publish()
    }
 }
 
-static void usage(Log& log) 
+static void usage(I_Log& log) 
 {
    log.plain("PublishDemo usage:", Global::usage());
    string str = "\nPlus many more additional command line arguments:";
@@ -283,7 +283,7 @@ int main(int args, char ** argv)
       org::xmlBlaster::util::Object_Lifetime_Manager::init();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
-      Log& log  = glob.getLog("demo");
+      I_Log& log  = glob.getLog("demo");
 
       if (glob.wantsHelp()) {
          usage(log);

@@ -3,7 +3,6 @@
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/Log.h>
 #include <util/Timestamp.h>
 #include <client/protocol/corba/CorbaDriverFactory.h>
 #include <iostream>
@@ -43,7 +42,7 @@ class ExternOrb : public I_Callback,           // for the asynchroneous updates
 private:
    string              ME;                     // the string identifying this class when logging
    Global&             global_;
-   Log&                log_;                                                                                                                                // the reference to the log object for this instance
+   I_Log&              log_;                                                                                                                                // the reference to the log object for this instance
    bool                doRun_;
    CORBA::ORB_ptr      orb_;
    CorbaDriverFactory& factory_;

@@ -8,7 +8,7 @@ Author:    Michele Laghi
 #include <util/XmlBlasterException.h>
 #include <util/ErrorCode.h>
 #include <util/Global.h>
-#include <util/Log.h>
+#include <util/I_Log.h>
 #include <util/Timestamp.h>
 
 using namespace std;
@@ -39,7 +39,7 @@ class TestEmptyContent : public I_Callback,     // for the asynchroneous updates
 private:
    string  ME;                        // the string identifying this class when logging
    Global& global_;
-   Log&    log_;                      // the reference to the log object for this instance
+   I_Log&  log_;                      // the reference to the log object for this instance
 
 public:
    TestEmptyContent(Global& glob) 

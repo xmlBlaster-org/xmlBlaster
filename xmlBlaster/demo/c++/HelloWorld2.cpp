@@ -35,13 +35,13 @@ class HelloWorld2 : public I_Callback,          // for the asynchroneous updates
 private:
    string  ME;                        // the string identifying this class when logging
    Global& global_;
-   Log&    log_;                      // the reference to the log object for this instance
+   I_Log& log_;                       // the reference to the log object for this instance
 
 public:
    HelloWorld2(Global& glob) 
    : ME("HelloWorld2"),
      global_(glob), 
-     log_(glob.getLog("demo"))        // all logs written in this class are written to the
+     log_(glob.getLog("demo"))      // all logs written in this class are written to the
    {                                  // log channel called 'demo'. To see the traces of this
                                       // channel invoke -trace[demo] true on the command line,
                                       // then it will only switch on the traces for the demo channel

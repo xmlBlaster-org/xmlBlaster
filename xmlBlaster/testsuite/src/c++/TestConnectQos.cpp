@@ -8,7 +8,6 @@ Comment:   Testing the Timeout Features
 #include <util/qos/ConnectQosFactory.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/Log.h>
 #include "TestSuite.h"
 #include <iostream>
 
@@ -25,7 +24,7 @@ class TestConnectQos
 private:
    string  ME;
    Global& global_;
-   Log&    log_;
+   I_Log&  log_;
 
 public:
    TestConnectQos(Global& glob) 

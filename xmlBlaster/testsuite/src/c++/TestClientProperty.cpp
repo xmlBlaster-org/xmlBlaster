@@ -24,7 +24,7 @@ class TestClientProperty : public TestSuite {
 private:
    string ME;
    Global& global_;
-   Log&    log_;
+   I_Log&  log_;
    int     count_;
 public:
    TestClientProperty(Global& global, const string& name) 

@@ -26,7 +26,7 @@ class TestThread : public Thread {
 private:
    string ME;
    Global& global_;
-   Log&    log_;
+   I_Log&  log_;
    bool    blocking_;
    bool    doRun_;
 public:

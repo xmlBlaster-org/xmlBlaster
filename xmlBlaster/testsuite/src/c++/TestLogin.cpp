@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.15 2004/01/14 15:20:26 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.16 2004/02/08 23:20:17 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -22,7 +22,6 @@ Version:   $Id: TestLogin.cpp,v 1.15 2004/01/14 15:20:26 ruff Exp $
  */
 
 #include <string>
-#include <util/Log.h>
 #include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <util/StopWatch.h>
@@ -55,7 +54,7 @@ private:
    string    contentMimeExtended_;
    util::StopWatch stopWatch_;
    Global&    global_;
-   util::Log& log_;
+   util::I_Log& log_;
 
 public:
    /**
@@ -406,7 +405,7 @@ private:
    {
       Global& glob = Global::getInstance();
       glob.initialize();
-      util::Log& log_ = glob.getLog("test");
+      util::I_Log& log_ = glob.getLog("test");
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
       log_.plain(me(), "Usage:");

@@ -38,7 +38,7 @@ class SubscribeDemo : public I_Callback
 private:
    string           ME;
    Global&          global_;
-   Log&             log_;
+   I_Log&           log_;
    XmlBlasterAccess connection_;
    int updateCounter;
    char ptr[1];

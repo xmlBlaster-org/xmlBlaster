@@ -31,7 +31,7 @@ class TestQueue
 private:
    string    ME;
    Global&   global_;
-   Log&      log_;
+   I_Log&    log_;
    MsgQueue* queue_; 
 
 public:

@@ -14,20 +14,19 @@ Comment:   Testing helper
 #include <util/EmbeddedServer.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/Log.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/Timestamp.h>
 #include <util/lexical_cast.h>
 
 namespace org { namespace xmlBlaster { namespace test {
 
-template <class T> extern void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
-template <class T> extern void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
-extern void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
-extern void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
+template <class T> extern void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
+template <class T> extern void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
+extern void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
+extern void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
 
 template <class T> 
-void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
+void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should != is) {
       log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' but should be '" + org::xmlBlaster::util::lexical_cast<std::string>(should) + "'");
@@ -39,7 +38,7 @@ void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const
 }
 
 template <class T> 
-void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
+void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should == is) {
       log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' in both cases but they should be different");
@@ -53,7 +52,7 @@ void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, con
 
 // specific implementation for the string since the org::xmlBlaster::util::lexical_cast from string to string causes problems.
 
-void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
+void assertEquals(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should != is) {
       log.error(who, txt + " FAILED: value is '" + is + "' but should be '" + should + "'");
@@ -64,7 +63,7 @@ void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const
    }
 }
 
-void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
+void assertDifferes(org::xmlBlaster::util::I_Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should == is) {
       log.error(who, txt + " FAILED: value is '" + is + "' for both cases but they should be different");
@@ -83,7 +82,7 @@ protected:
    std::string           ME;
    std::string           applName_;
    org::xmlBlaster::util::Global&          global_;
-   org::xmlBlaster::util::Log&             log_;
+   org::xmlBlaster::util::I_Log&             log_;
    bool             useEmbeddedServer_;
    org::xmlBlaster::client::XmlBlasterAccess connection_;
    org::xmlBlaster::util::EmbeddedServer*  embeddedServer_;

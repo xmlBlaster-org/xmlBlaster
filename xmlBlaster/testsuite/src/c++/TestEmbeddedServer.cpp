@@ -22,7 +22,7 @@ class TestEmbeddedServer
 private:
    string  ME;
    Global& global_;
-   Log&    log_;
+   I_Log&  log_;
    long    sleepDelay_;
 
 

@@ -27,7 +27,7 @@ private:
    string ME;
    Timeout *timeoutObject;
    Global& global_;
-   Log&    log_;
+   I_Log&  log_;
    int     count_;
 public:
    TestTimeout(Global& global, string name) 
