@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.54 2003/02/27 11:26:17 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.55 2003/03/04 16:44:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -369,7 +369,7 @@ public class CorbaDriver implements I_Driver
          if (i > 0) {
             ret += "/";
          }
-         ret += nameComponent[i].id + ((nameComponent[i].kind != null) ? "." + nameComponent[i].kind : "");
+         ret += nameComponent[i].id + ((nameComponent[i].kind != null && nameComponent[i].kind.length()>0) ? "." + nameComponent[i].kind : "");
       }
       return ret;
    }
