@@ -3,7 +3,7 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.1 2001/02/14 20:53:42 ruff Exp $
+Version:   $Id: XmlNotPortable.java,v 1.2 2002/01/02 21:07:56 laghi Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -54,7 +54,7 @@ public class XmlNotPortable
 
 
    /**
-    * Mergin a node into another document. 
+    * Mergin a node into another document.
     * <p />
     * The caller must synchronize if necessary
     * @param the destination document
@@ -75,4 +75,40 @@ public class XmlNotPortable
 
       if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
    }
+
+
+   /**
+    * Replacing a node (located within a certain DOM hierachy) with an other
+    * one
+    * <p />
+    * The caller must synchronize if necessary
+    * @param oldNode the node to be replaced
+    * @param newNode the node to put in place of the old node
+    */
+   public static final void replaceNode(org.w3c.dom.Node oldNode, org.w3c.dom.Node newNode)
+   {
+      if (Log.TRACE) Log.trace(ME, "replaceNode=" + oldNode.toString());
+
+      org.w3c.dom.Document document = oldNode.getOwnerDocument();
+
+      if (document instanceof org.apache.crimson.tree.XmlDocument) {
+         ((org.apache.crimson.tree.XmlDocument)document).changeNodeOwner(newNode); // not DOM portable
+      }
+      else {
+         Log.error(ME, "Code to replace XML-nodes is missing for document class=" + document.getClass().getName());
+      }
+
+      org.w3c.dom.Node parentNode = oldNode.getParentNode();
+      if (parentNode == null) {
+         document.getDocumentElement().appendChild(newNode);
+         document.getDocumentElement().removeChild(oldNode);
+      }
+      else {
+         parentNode.appendChild(newNode);
+         parentNode.removeChild(oldNode);
+      }
+
+      if (Log.TRACE) Log.trace(ME, "Successfully replaced node");
+   }
+
 }
