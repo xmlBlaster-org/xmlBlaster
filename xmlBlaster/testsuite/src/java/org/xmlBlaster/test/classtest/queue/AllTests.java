@@ -15,8 +15,14 @@ public class AllTests {
       junit.textui.TestRunner.run (suite());
    }
    public static Test suite ( ) {
-      TestSuite suite= new TestSuite("All xmlBlaster class tests");
+      TestSuite suite= new TestSuite("All xmlBlaster queue tests");
       suite.addTest(I_QueueTest.suite());
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.queue.CacheQueueTest.class));
+      suite.addTest(org.xmlBlaster.test.classtest.queue.QueueThreadingTest.suite());
+      suite.addTest(org.xmlBlaster.test.classtest.queue.QueueServerEntryTest.suite());
+      suite.addTest(org.xmlBlaster.test.classtest.queue.QueueExtendedTest.suite());
+      // This runs manually only as we need to kill the Database:
+      suite.addTest(org.xmlBlaster.test.classtest.queue.JdbcQueueTest.suite());
       return suite;
    }
 }

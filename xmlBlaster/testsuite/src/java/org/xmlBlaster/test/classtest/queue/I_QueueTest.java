@@ -9,15 +9,16 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.jdbc.JdbcManager;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
 
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.client.qos.PublishQos;
 
@@ -66,6 +67,7 @@ public class I_QueueTest extends TestCase {
    public I_QueueTest(String name, int currImpl) {
       super(name);
       this.queue = IMPL[currImpl];
+      //this.ME = "I_QueueTest[" + this.queue.getClass().getName() + "]";
    }
 
    protected void setUp() {
@@ -96,7 +98,7 @@ public class I_QueueTest extends TestCase {
    }
 
    /**
-    * Tests QueuePropertyBase() and getQueueId()
+    * Tests QueuePropertyBase() and getStorageId()
     * @param queueTypeList A space separated list of names for the
     *        implementations to be tested. Valid names are:
     *        RamQueuePlugin JdbcQueuePlugin
@@ -110,67 +112,66 @@ public class I_QueueTest extends TestCase {
     * @param queue !!!Is not initialized in this case!!!!
     */
    private void config(I_Queue queue) {
-      ME = "I_QueueTest.config(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.config(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
 
+      QueuePropertyBase prop1 = null;
       QueuePropertyBase prop = null;
       try {
          // test initialize()
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-         int max = 33;
-         prop.setMaxMsg(max);
-         prop.setMaxMsgCache(max);
-         assertEquals("Wrong capacity", max, prop.getMaxMsg());
-         String queueId = "cb:SomeQueueId";
+         prop1 = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         int max = 12;
+         prop1.setMaxMsg(max);
+         prop1.setMaxMsgCache(max);
+         assertEquals(ME+": Wrong capacity", max, prop1.getMaxMsg());
+         assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
+         StorageId queueId = new StorageId("cb", "SomeQueueId");
 
-         queue.initialize(queueId, prop);
-         assertEquals("Wrong queue ID", queueId, queue.getQueueId());
+         queue.initialize(queueId, prop1);
+         assertEquals(ME+": Wrong queue ID", queueId, queue.getStorageId());
 
          try {
-            QueuePropertyBase prop2 = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, "/node/test");
-            prop2.setMaxMsg(99);
-            prop2.setMaxMsgCache(99);
-            queue.setProperties(prop2);
+            prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, "/node/test");
+            prop.setMaxMsg(99);
+            prop.setMaxMsgCache(99);
+            queue.setProperties(prop);
          }
          catch(XmlBlasterException e) {
-            if (queue instanceof RamQueuePlugin)
-               fail("RamQueuePlugin does not support changing properties");
-            else
-               log.info(ME, "SUCCESS: Expected the exception thrown: " + e.toString());
+            fail("Changing properties failed");
          }
 
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
 
       long len = prop.getMaxMsg();
-      assertEquals("Wrong capacity", prop.getMaxMsg(), queue.getMaxNumOfEntries());
-      assertEquals("Wrong capacity", prop.getMaxMsg(), ((QueuePropertyBase)queue.getProperties()).getMaxMsg());
-      assertEquals("Wrong size", 0, queue.getNumOfEntries());
+      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), queue.getMaxNumOfEntries());
+      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), ((QueuePropertyBase)queue.getProperties()).getMaxMsg());
+      assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
 
       try {
          for (int ii=0; ii<len; ii++) {
-            queue.put(new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true), false);
+            queue.put(new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true), false);
          }
          assertEquals(ME+": Wrong total size", len, queue.getNumOfEntries());
 
          try {
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
             queue.put(queueEntry, false);
             queue.put(queueEntry, false);
             fail("Did expect an exception on overflow");
          }
          catch(XmlBlasterException e) {
-            log.info(ME, "SUCCESS the exception is OK: " + e.toString());
+            log.info(ME, "SUCCESS the exception is OK: " + e.getMessage());
          }
 
          log.info(ME, "toXml() test:" + queue.toXml(""));
          log.info(ME, "usage() test:" + queue.usage());
 
-         assertEquals("should not be shutdown", false, queue.isShutdown());
+         assertEquals(ME+": should not be shutdown", false, queue.isShutdown());
          queue.shutdown(true);
-         assertEquals("should be shutdown", true, queue.isShutdown());
+         assertEquals(ME+": should be shutdown", true, queue.isShutdown());
 
          log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
          System.out.println("***" + ME + " [SUCCESS]");
@@ -178,8 +179,101 @@ public class I_QueueTest extends TestCase {
          queue = null;
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
+   }
+
+//------------------------------------
+   public void testSize1() {
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         int max = 1;
+         prop.setMaxMsg(max);
+         prop.setMaxMsgCache(max);
+         queueType = this.queue.toString();
+         StorageId queueId = new StorageId("cb", "QueuePlugin/size1");
+         this.queue.initialize(queueId, prop);
+         queue.clear();
+         assertEquals(ME + "wrong size before starting ", 0L, queue.getNumOfEntries());
+         assertEquals(ME, 1L, queue.getMaxNumOfEntries());
+         size1(this.queue);
+      }
+      catch (XmlBlasterException ex) {
+         fail("Exception when testing Size1 probably due to failed initialization of the queue of type " + queueType);
+      }
+   }
+
+   /**
+    * Tests put(MsgQueueEntry[]) and put(MsgQueueEntry) and clear()
+    */
+   private void size1(I_Queue queue) {
+      queue = queue;
+      ME = "I_QueueTest.size1(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      int maxMsg = (int)queue.getMaxNumOfEntries();
+      try {
+         //========== Test 1: put(I_QueueEntry[])
+         int numLoop = 10;
+         ArrayList list = new ArrayList();
+         /*
+         for (int ii=0; ii<numLoop; ii++) {
+            DummyEntry[] queueEntries = {
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)};
+
+            queue.put(queueEntries, false);
+
+            for (int i=0; i < 3; i++) list.add(queueEntries[i]);
+
+            this.checkSizeAndEntries(" put(I_QueueEntry[]) ", list, queue);
+            assertEquals(ME+": Wrong size", (ii+1)*queueEntries.length, queue.getNumOfEntries());
+         }
+         */
+
+         //========== Test 2: put(I_QueueEntry)
+         for (int ii=0; ii<numLoop; ii++) {
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            try {
+               queue.put(queueEntry, false);
+               if (ii > maxMsg) { // queue allows on overload
+                  fail("Didn't expect more than " + maxMsg + " entries" + queue.toXml(""));
+               }
+               else
+                  list.add(queueEntry);
+            }
+            catch (XmlBlasterException e) {
+               if (ii <= maxMsg) {
+                  fail("Didn't expect exception" + e.getMessage());
+               }
+            }
+         }
+
+         // The queues allow temporary oversize (one extra put())
+         assertEquals(ME+": Wrong total size " + queue.toXml(""), maxMsg+1, queue.getNumOfEntries());
+         this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
+         log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
+
+         ArrayList entryList = queue.takeLowest(1, -1L, null, false);
+         assertEquals("TAKE #1 failed"+queue.toXml(""), 1, entryList.size());
+         log.info(ME, "curr entries="+queue.getNumOfEntries());
+
+         entryList = queue.takeLowest(1, -1L, null, false);
+         assertEquals("TAKE #2 failed"+queue.toXml(""), 1, entryList.size());
+
+         queue.clear();
+         assertEquals(ME+": Wrong empty size", 0L, queue.getNumOfEntries());
+
+         System.out.println("***" + ME + " [SUCCESS]");
+         queue.shutdown(true);
+         queue = null;
+
+      }
+      catch(XmlBlasterException e) {
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+      log.info(ME, "SUCCESS");
    }
 
 
@@ -189,7 +283,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/putMsg", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/putMsg");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0L, queue.getNumOfEntries());
          putMsg(this.queue);
@@ -233,6 +328,9 @@ public class I_QueueTest extends TestCase {
       long queueSizeOfDurables = queue.getNumOfDurableBytes();
       long queueSizeOfTransients = queue.getNumOfBytes() - queueSizeOfDurables;
 
+      txt += " NumDurables=" + queueNumOfDurables + " NumOfTransients=" + queueNumOfTransients; 
+      txt += " SizeOfDurables=" + queueSizeOfDurables + " SizeOfTransients=" + queueSizeOfTransients;
+
       assertEquals(ME + ": " + txt + " wrong number of durables   ", numOfDurables, queueNumOfDurables);
       assertEquals(ME + ": " + txt + " wrong number of transients ", numOfTransients, queueNumOfTransients);
       assertEquals(ME + ": " + txt + " wrong size of durables     ", sizeOfDurables, queueSizeOfDurables);
@@ -246,7 +344,7 @@ public class I_QueueTest extends TestCase {
     */
    private void putMsg(I_Queue queue) {
       queue = queue;
-      ME = "I_QueueTest.putMsg(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.putMsg(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: put(I_QueueEntry[])
@@ -254,9 +352,9 @@ public class I_QueueTest extends TestCase {
          ArrayList list = new ArrayList();
          for (int ii=0; ii<numLoop; ii++) {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true)};
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)};
 
             queue.put(queueEntries, false);
 
@@ -272,12 +370,12 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 2: put(I_QueueEntry)
          for (int ii=0; ii<numLoop; ii++) {
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
             list.add(queueEntry);
             queue.put(queueEntry, false);
          }
-         this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
          assertEquals(ME+": Wrong total size", numLoop+total, queue.getNumOfEntries());
+         this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
          log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
          queue.clear();
@@ -289,7 +387,7 @@ public class I_QueueTest extends TestCase {
 
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -301,7 +399,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/peekMsg", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/peekMsg");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          peekMsg(this.queue);
@@ -318,15 +417,15 @@ public class I_QueueTest extends TestCase {
     * For a discussion of the sorting order see Javadoc of this class
     */
    private void peekMsg(I_Queue queue) {
-      ME = "I_QueueTest.peekMsg(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.peekMsg(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: peek()
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
             for (int ii=0; ii<10; ii++) {
@@ -358,18 +457,18 @@ public class I_QueueTest extends TestCase {
          //========== Test 2: peek(num)
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
@@ -379,7 +478,7 @@ public class I_QueueTest extends TestCase {
                int expected = ii;
                if (ii == -1 || ii >= queueEntries.length)
                   expected = queueEntries.length;
-               assertEquals("Wrong number of entries returned ii=" + ii, expected, results.size());
+               assertEquals(ME+": Wrong number of entries returned ii=" + ii, expected, results.size());
             }
 
             queue.clear();
@@ -391,18 +490,18 @@ public class I_QueueTest extends TestCase {
          //========== Test 3: peekSamePriority(-1)
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
@@ -411,17 +510,17 @@ public class I_QueueTest extends TestCase {
                for (int ii=0; ii<10; ii++) {
                   ArrayList results = queue.peekSamePriority(-1, -1L); // does no remove
                   assertTrue("Expected results", results != null);
-                  assertEquals("Wrong number of 9 priorities", 4, results.size());
+                  assertEquals(ME+": Wrong number of 9 priorities", 4, results.size());
                   for (int k=0; k<results.size(); ++k)
-                     assertEquals("Wrong priority returned", prios[j], ((I_QueueEntry)results.get(k)).getPriority());
+                     assertEquals(ME+": Wrong priority returned", prios[j], ((I_QueueEntry)results.get(k)).getPriority());
                }
                for (int ii=0; ii<4; ii++) {
                   int num = queue.remove();
-                  assertEquals("Expected remove", 1, num);
+                  assertEquals(ME+": Expected remove", 1, num);
                }
             }
 
-            assertEquals("Expected empty queue", 0, queue.getNumOfEntries());
+            assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
 
             log.info(ME, "#3 Success, peekSamePriority()");
          }
@@ -429,33 +528,33 @@ public class I_QueueTest extends TestCase {
          //========== Test 4: peekWithPriority(-1,7,9)
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
             for (int ii=0; ii<10; ii++) {
                ArrayList results = queue.peekWithPriority(-1, -1L, 7, 9); // does no remove
                assertTrue("Expected results", results != null);
-               assertEquals("Wrong number of 9 priorities", 8, results.size());
+               assertEquals(ME+": Wrong number of 9 priorities", 8, results.size());
                for (int k=0; k<results.size(); ++k) {
-                  assertEquals("Wrong priority returned", (k<4)?9L:7L, ((I_QueueEntry)results.get(k)).getPriority());
+                  assertEquals(ME+": Wrong priority returned", (k<4)?9L:7L, ((I_QueueEntry)results.get(k)).getPriority());
                }
             }
             queue.clear();
-            assertEquals("Expected empty queue", 0, queue.getNumOfEntries());
+            assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
 
             log.info(ME, "#4 Success, peekWithPriority()");
          }
@@ -465,7 +564,7 @@ public class I_QueueTest extends TestCase {
          queue.shutdown(true);
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -476,7 +575,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/removeWithPriority", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/removeWithPriority");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          removeWithPriority(this.queue);
@@ -491,25 +591,25 @@ public class I_QueueTest extends TestCase {
     * Test removeWithPriority(long[])
     */
    private void removeWithPriority(I_Queue queue) {
-      ME = "I_QueueTest.removeWithPriority(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.removeWithPriority(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: remove prio 7 and 9
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
@@ -532,19 +632,19 @@ public class I_QueueTest extends TestCase {
          //========== Test 2: remove prio 7 and 9 with num limit
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
@@ -558,7 +658,7 @@ public class I_QueueTest extends TestCase {
          queue.shutdown(true);
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -569,7 +669,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/removeRandom", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/removeRandom");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          removeRandom(this.queue);
@@ -585,13 +686,13 @@ public class I_QueueTest extends TestCase {
     * Test removeRandom(long[])
     */
    private void removeRandom(I_Queue queue) {
-      ME = "I_QueueTest.removeRandom(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "][" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.removeRandom(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "][" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: remove 1 from 1
          {
-            //MessageUnit msgUnit = new MessageUnit("<key/>", "bla".getBytes(), "<qos/>");
-            DummyEntry[] queueEntries = { new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true) };
+            //MsgUnit msgUnit = new MsgUnit("<key/>", "bla".getBytes(), "<qos/>");
+            DummyEntry[] queueEntries = { new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true) };
             queue.put(queueEntries, false);
 
             I_QueueEntry[] testEntryArr = { queueEntries[0] };
@@ -605,9 +706,9 @@ public class I_QueueTest extends TestCase {
          //========== Test 2: removeRandom 2 from 3
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
@@ -627,17 +728,17 @@ public class I_QueueTest extends TestCase {
          //========== Test 3: removeRandom 5 from 3
          {
             DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true)
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)
                                         };
             queue.put(queueEntries, false);
 
             I_QueueEntry[] dataIdArr = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
                          queueEntries[0],
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
                          queueEntries[2],
                                         };
             long numRemoved = queue.removeRandom(dataIdArr);
@@ -683,7 +784,7 @@ public class I_QueueTest extends TestCase {
          System.out.println("***" + ME + " [SUCCESS]");
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -695,7 +796,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/takeLowest", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/takeLowest");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          takeLowest(this.queue);
@@ -714,7 +816,7 @@ public class I_QueueTest extends TestCase {
 
       if (queue instanceof CacheQueueInterceptorPlugin) return;
 
-      ME = "I_QueueTest.takeLowest(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.takeLowest(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: takeLowest without restrictions
@@ -723,11 +825,11 @@ public class I_QueueTest extends TestCase {
             int imax = 20;
             long size = 0L;
 
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
                queue.put(entries[i], false);
             }
@@ -735,7 +837,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry);
+            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", list.size(), entries.length-1);
             for (int i=1; i < imax; i++) {
@@ -756,18 +858,18 @@ public class I_QueueTest extends TestCase {
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
                queue.put(entries[i], false);
             }
 
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
             // should return an empty array since the timestamp is  the last
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry);
+            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", 0, list.size());
             queue.clear();
@@ -783,7 +885,7 @@ public class I_QueueTest extends TestCase {
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
                queue.put(entries[i], false);
             }
@@ -793,7 +895,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
             // should return an empty array since the timestamp is  the last
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry);
+            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", list.size(), imax-6-1);
             queue.clear();
@@ -807,11 +909,11 @@ public class I_QueueTest extends TestCase {
             int imax = 20;
             long size = 0L;
 
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
                queue.put(entries[i], false);
             }
@@ -819,13 +921,13 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
-            ArrayList list = queue.takeLowest(-1, -1, null);
+            ArrayList list = queue.takeLowest(-1, -1, null, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", list.size(), entries.length-1);
             for (int i=1; i < imax; i++) {
                int j = imax - 1 - i;
                long ref = ((I_QueueEntry)list.get(j)).getUniqueId();
-               assertEquals(ME+": Wrong size in bytes put", entries[i].getUniqueId(), ref);
+               assertEquals(ME+": Wrong unique ID", entries[i].getUniqueId(), ref);
             }
             queue.clear();
             assertEquals(ME+": Wrong size in takeLowest after cleaning ", queue.getNumOfEntries(), 0);
@@ -834,7 +936,7 @@ public class I_QueueTest extends TestCase {
 
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -844,7 +946,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/takeLowest", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/takeLowest");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          wrongOrder(this.queue);
@@ -859,7 +962,7 @@ public class I_QueueTest extends TestCase {
     * Test wrongOrder(I_Queue)
     */
    private void wrongOrder(I_Queue queue) {
-      ME = "I_QueueTest.wrongOrder(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.wrongOrder(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: checks if entries are returned in the correct
@@ -871,7 +974,7 @@ public class I_QueueTest extends TestCase {
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
             }
 
@@ -907,7 +1010,7 @@ public class I_QueueTest extends TestCase {
 
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -917,7 +1020,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/putEntriesTwice", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/putEntriesTwice");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
          putEntriesTwice(this.queue);
@@ -932,7 +1036,7 @@ public class I_QueueTest extends TestCase {
     * Test wrongOrder(I_Queue)
     */
    private void putEntriesTwice(I_Queue queue) {
-      ME = "I_QueueTest.putEntriesTwice(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.putEntriesTwice(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: checks if entries are returned in the correct
@@ -944,7 +1048,7 @@ public class I_QueueTest extends TestCase {
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                size += entries[i].getSizeInBytes();
             }
 
@@ -958,7 +1062,7 @@ public class I_QueueTest extends TestCase {
          }
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -969,7 +1073,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/peekWithLimitEntry", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/peekWithLimitEntry");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
          peekWithLimitEntry(this.queue);
@@ -984,7 +1089,7 @@ public class I_QueueTest extends TestCase {
     * Test testPeekWithLimitEntry(I_Queue)
     */
    private void peekWithLimitEntry(I_Queue queue) {
-      ME = "I_QueueTest.peekWithLimitEntry(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.peekWithLimitEntry(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: normal case where limitEntry is contained in the queue
@@ -993,11 +1098,11 @@ public class I_QueueTest extends TestCase {
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
-            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
@@ -1018,13 +1123,13 @@ public class I_QueueTest extends TestCase {
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
-            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
-            DummyEntry limitEntry = new DummyEntry(glob, PriorityEnum.HIGH8_PRIORITY, queue, true);
+            DummyEntry limitEntry = new DummyEntry(glob, PriorityEnum.HIGH8_PRIORITY, queue.getStorageId(), true);
 
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
@@ -1041,13 +1146,13 @@ public class I_QueueTest extends TestCase {
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
-            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
-            DummyEntry limitEntry = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
+            DummyEntry limitEntry = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
 
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
@@ -1068,11 +1173,11 @@ public class I_QueueTest extends TestCase {
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
-            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
-            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue, true);
-            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+            entries[0] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[3] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[1] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            entries[4] = new DummyEntry(glob, PriorityEnum.LOW_PRIORITY, queue.getStorageId(), true);
+            entries[2] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
@@ -1085,7 +1190,7 @@ public class I_QueueTest extends TestCase {
          }
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -1096,7 +1201,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
          queueType = this.queue.toString();
-         this.queue.initialize("cb:QueuePlugin/testSizes", prop);
+         StorageId queueId = new StorageId("cb", "QueuePlugin/testSizes");
+         this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
          sizesCheck(this.queue);
@@ -1111,7 +1217,7 @@ public class I_QueueTest extends TestCase {
     * Test sizesCheck(I_Queue)
     */
    private void sizesCheck(I_Queue queue) {
-      ME = "I_QueueTest.sizesCheck(" + queue.getQueueId() + ")[" + queue.getClass().getName() + "]";
+      ME = "I_QueueTest.sizesCheck(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
          //========== Test 1: normal case where limitEntry is contained in the queue
@@ -1123,7 +1229,7 @@ public class I_QueueTest extends TestCase {
             ArrayList list = new ArrayList();
 
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue, true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
                list.add(entries[i]);
             }
 
@@ -1132,7 +1238,7 @@ public class I_QueueTest extends TestCase {
 
             if (queue instanceof CacheQueueInterceptorPlugin) return;
 
-            ArrayList subList = queue.takeLowest(2, 1000L, null);
+            ArrayList subList = queue.takeLowest(2, 1000L, null, true);
 
             this.log.info(ME, "size of list before: " + list.size());
             list.remove(list.size()-1);
@@ -1151,7 +1257,7 @@ public class I_QueueTest extends TestCase {
          }
       }
       catch(XmlBlasterException e) {
-         fail(ME + ": Exception thrown: " + e.toString());
+         fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
 
@@ -1177,6 +1283,7 @@ public class I_QueueTest extends TestCase {
       Global glob = new Global();
       for (int i=0; i<IMPL.length; i++) {
          suite.addTest(new I_QueueTest("testConfig", i));
+         suite.addTest(new I_QueueTest("testSize1", i));
          suite.addTest(new I_QueueTest("testPutMsg", i));
          suite.addTest(new I_QueueTest("testPeekMsg", i));
          suite.addTest(new I_QueueTest("testRemoveRandom", i));
@@ -1206,6 +1313,10 @@ public class I_QueueTest extends TestCase {
 
          long startTime = System.currentTimeMillis();
 
+         testSub.setUp();
+         testSub.testSize1();
+         testSub.tearDown();
+         /*
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
@@ -1241,7 +1352,7 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testSizesCheck();
          testSub.tearDown();
-
+         */
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }

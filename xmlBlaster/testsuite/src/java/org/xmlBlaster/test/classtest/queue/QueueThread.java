@@ -44,7 +44,7 @@ class QueueThread extends Thread {
          log.trace(this.name, "runPut sweep " + i + " entered");
          try {
             this.log.trace(this.name, "runPut sweep: " + i + " still running: " + this.counter);
-            DummyEntry entry = new DummyEntry(this.glob, PriorityEnum.NORM_PRIORITY, this.queue, this.sizeOfMsg, true);
+            DummyEntry entry = new DummyEntry(this.glob, PriorityEnum.NORM_PRIORITY, this.queue.getStorageId(), this.sizeOfMsg, true);
             this.entryList.add(entry);
             this.queue.put(entry, false);
             this.log.trace(this.name, "after invocation");
