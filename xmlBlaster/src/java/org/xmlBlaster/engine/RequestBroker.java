@@ -907,9 +907,26 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          return new KeyData[] { topicHandler.getMsgKeyData() };
       }
 
+      else if (queryKeyData.isDomain()) { // a domain attribute is given
+         String domain = queryKeyData.getDomain();
+         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
+         if (domain == null) {
+            log.warn(ME, "The DOMAIN query has a domain=null, no topics found");
+            return new KeyData[0];
+         }
+         TopicHandler[] topics = getTopicHandlerArr();
+         ArrayList strippedList = new ArrayList();
+         for(int i=0; i<topics.length; i++) {
+            TopicHandler topicHandler = topics[i];
+            if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
+               strippedList.add(topicHandler.getMsgKeyData());
+         }
+         return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
+      }
+
       else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
-         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
+         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
+         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
       }
    }
 
@@ -947,9 +964,26 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          return new TopicHandler[] { topicHandler };
       }
 
+      else if (queryKeyData.isDomain()) { // a domain attribute is given
+         String domain = queryKeyData.getDomain();
+         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
+         if (domain == null) {
+            log.warn(ME, "The DOMAIN query has a domain=null, no topics found");
+            return new TopicHandler[0];
+         }
+         TopicHandler[] topics = getTopicHandlerArr();
+         ArrayList strippedList = new ArrayList();
+         for(int i=0; i<topics.length; i++) {
+            TopicHandler topicHandler = topics[i];
+            if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
+               strippedList.add(topicHandler);
+         }
+         return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
+      }
+
       else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
-         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
+         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
+         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
       }
    }
 
