@@ -55,9 +55,9 @@ public class SoapConnection implements I_XmlBlasterConnection
    protected ConnectQos connectQos = null;
    protected ConnectReturnQos connectReturnQos = null;
    /** See service.xml configuration */
-   private final String authenticationService = "urn:I_AuthServer";
+   private final String authenticationService = "urn:AuthenticationService";
    /** See service.xml configuration */
-   private final String xmlBlasterService = "urn:I_XmlBlaster";
+   private final String xmlBlasterService = "urn:XmlBlasterService";
 
    /**
     * Connect to xmlBlaster using SOAP.
