@@ -99,9 +99,7 @@ public class SubjectInfo implements I_AdminSubject
     * @param securityCtx  The security context of this subject
     * @param prop         The property from the subject queue, usually from connectQos.getSubjectCbQueueProperty()
     */
-   public SubjectInfo(Global glob, I_Subject securityCtx, CbQueueProperty prop)
-          throws XmlBlasterException
-   {
+   public SubjectInfo(Global glob, I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
       this(glob, securityCtx.getName(), securityCtx, prop);
       if (securityCtx==null) {
          String tmp="SubjectInfo(securityCtx==null); // a correct security manager must be set.";
@@ -156,18 +154,15 @@ public class SubjectInfo implements I_AdminSubject
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
 
-   public void finalize()
-   {
+   public void finalize() {
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
    }
 
-   public boolean isShutdown()
-   {
+   public boolean isShutdown() {
       return this.isShutdown;
    }
 
-   public void shutdown()
-   {
+   public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of subject " + getLoginName());
       this.isShutdown = true;
       boolean force = false;
