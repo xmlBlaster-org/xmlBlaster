@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.3 2000/02/24 22:19:51 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.4 2000/02/25 13:51:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -165,7 +165,7 @@ public class PublishFile
     */
    protected void tearDown()
    {
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 

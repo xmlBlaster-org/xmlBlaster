@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.1 2000/02/22 04:23:23 jsrbirch Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.2 2000/02/25 13:51:01 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -23,8 +23,8 @@ import java.util.*;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
@@ -42,10 +42,10 @@ public class XmlDBAdapter implements I_Callback {
 
    /**
     * Constructor declaration
-    * 
-    * 
+    *
+    *
     * @param args
-    * 
+    *
     * @see
     */
    public XmlDBAdapter(String args[]) {
@@ -60,18 +60,18 @@ public class XmlDBAdapter implements I_Callback {
    /**
     * CallBack of xmlBlaster
     */
-   public void update(String login, UpdateKey key, byte[] content, 
+   public void update(String login, UpdateKey key, byte[] content,
                       UpdateQoS updateQos) {
 
       String               cust = updateQos.getSender();
       String               qos = updateQos.printOn().toString();
-      XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust, 
+      XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust,
               content, qos, xmlBlaster);
 
       worker.start();
 
 
-   } 
+   }
 
    /**
     * find xmlBlaster server, login and subscribe
@@ -84,17 +84,17 @@ public class XmlDBAdapter implements I_Callback {
 
          // ---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa = 
+         org.omg.PortableServer.POA poa =
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
 
          // ----------- Login to xmlBlaster -----------------------
          xmlBlaster = corbaConnection.login(ME, passwd, qos, this);
 
-      } 
+      }
       catch (Exception e) {
          e.printStackTrace();
-      } 
-   } 
+      }
+   }
 
    /**
     * unsubsrcibe and logout from xmlBlaster
@@ -106,28 +106,28 @@ public class XmlDBAdapter implements I_Callback {
          return;
 
          // ----------- Logout --------------------------------------
-      } 
+      }
 
       Log.trace(ME, "Logout ...");
-      corbaConnection.logout(xmlBlaster);
-   } 
+      corbaConnection.logout();
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param args
-    * 
+    *
     * @see
     */
    public static void main(String args[]) {
       XmlDBAdapter   db = new XmlDBAdapter(args);
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void initDrivers() {
@@ -142,21 +142,21 @@ public class XmlDBAdapter implements I_Callback {
             driver = st.nextToken().trim();
 
             Class.forName(driver);
-         } 
+         }
          catch (Exception e) {
             Log.warning(ME, "Couldn't initialize dirver =>" + driver);
-         } 
-      } 
-   } 
+         }
+      }
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void checkForKeyboardInput() {
-      BufferedReader in = 
+      BufferedReader in =
          new BufferedReader(new InputStreamReader(System.in));
 
       while (true) {
@@ -166,13 +166,13 @@ public class XmlDBAdapter implements I_Callback {
             if (line.toLowerCase().equals("q")) {
                logout();
                System.exit(0);
-            } 
-         } 
+            }
+         }
          catch (IOException e) {
             Log.warning(ME, e.toString());
-         } 
-      } 
-   } 
+         }
+      }
+   }
 
 }
 

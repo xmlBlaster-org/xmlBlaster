@@ -3,7 +3,7 @@ Name:      ServletConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ServletConnection.java,v 1.1 2000/02/21 09:46:05 ruff Exp $
+Version:   $Id: ServletConnection.java,v 1.2 2000/02/25 13:51:01 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -30,7 +30,7 @@ import java.util.Properties;
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
  * Example: servlet.CallbackServletDriver.args=ORBagentAddr=192.168.1.1
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author ruff@swand.lake.de
  */
 public class ServletConnection extends CorbaConnection
@@ -126,9 +126,9 @@ public class ServletConnection extends CorbaConnection
     * Logout from xmlBlaster.
     * Better use cleanup(), which does everything
     */
-   public void logout()
+   public boolean logout()
    {
-      super.logout(xmlBlaster);
+      return super.logout();
    }
 
    /**

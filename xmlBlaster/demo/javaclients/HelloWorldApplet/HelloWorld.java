@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.5 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.6 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -159,7 +159,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       }
 
       if (senderConnection != null)
-         senderConnection.logout(xmlBlaster);
+         senderConnection.logout();
       Log.info(ME+"-tearDown", "Success: Logged out");
    }
 

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.7 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.8 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -68,7 +68,7 @@ public class ClientQuery
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
       }
       catch (XmlBlasterException e) {
           Log.error(ME, "Error occurred: " + e.toString());

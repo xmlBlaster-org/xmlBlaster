@@ -2,6 +2,8 @@
 
 Changes for 0.74 [Feb.??, 2000]
 ==============================
+   - CorbaConnection: logout(boolean) deprecated -> use logout() now
+
    - Changed xmlBlaster.idl: messageUnit    -> msgUnit
                              messageUnitArr -> msgUnitArr
      Case does not matter, IDL is case-insensitive when detecting name clashes.

@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.6 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -102,7 +102,7 @@ public class ClientErase
 
          //----------- logout() -----------------------------
          Util.ask("logout()");
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
       }
       catch (Exception e) {
           e.printStackTrace();

@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.23 2000/02/24 22:19:51 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.24 2000/02/25 13:51:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -699,7 +699,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       /** Logout. */
       void logout()
       {
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
       }
    }
 

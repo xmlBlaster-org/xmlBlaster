@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.24 2000/02/20 17:38:49 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.25 2000/02/25 13:51:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -198,7 +198,7 @@ public class Authenticate
       ClientInfo clientInfo = getClientInfoByName(loginName);
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
-         Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in");
+         Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
          resetClientInfo(clientInfo.getAuthenticationInfo().getXmlBlaster(), false);
          // allowing re-login: if the client crashed without proper logout, she should
          // be allowed to login again, so - first logout the last session (but keep messages in client queue)

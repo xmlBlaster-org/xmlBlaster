@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.7 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.8 2000/02/25 13:51:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -106,7 +106,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 

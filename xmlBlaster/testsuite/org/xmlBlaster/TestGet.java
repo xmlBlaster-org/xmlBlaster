@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.2 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestGet.java,v 1.3 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -90,7 +90,7 @@ public class TestGet extends TestCase
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      corbaConnection.logout(xmlBlaster);
+      corbaConnection.logout();
       // Give the server some millis to finish the iiop handshake ...
       try { Thread.currentThread().sleep(200); } catch (InterruptedException e) {}
       Log.info(ME, "Success, logged out");

@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.7 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.8 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -129,8 +129,8 @@ public class TestLogin extends TestCase implements I_Callback
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
 
-      senderConnection.logout(xmlBlaster);
-      secondConnection.logout(secondBlaster);
+      senderConnection.logout();
+      secondConnection.logout();
    }
 
 
@@ -235,7 +235,7 @@ public class TestLogin extends TestCase implements I_Callback
       assert("returned publishOid == null", publishOid != null);
       assertNotEquals("returned publishOid", 0, publishOid.length());
       // test logout with following subscribe()
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
       try {
          publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
          assert("Didn't expect successful subscribe after logout", false);

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.8 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.9 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -144,7 +144,7 @@ public class ClientXml implements I_Callback
 
 
          Util.ask("logout()");
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
       }
       catch (Exception e) {
           e.printStackTrace();

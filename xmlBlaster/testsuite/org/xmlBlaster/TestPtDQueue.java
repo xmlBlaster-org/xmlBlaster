@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.7 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.8 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -94,8 +94,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
    protected void tearDown()
    {
       Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
-      receiverConnection.logout(receiverXmlBlaster);
-      senderConnection.logout(senderXmlBlaster);
+      receiverConnection.logout();
+      senderConnection.logout();
    }
 
 

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.7 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.8 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -148,7 +148,7 @@ public class ClientGet
 
 
          Util.ask("logout()");
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
 
          // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }

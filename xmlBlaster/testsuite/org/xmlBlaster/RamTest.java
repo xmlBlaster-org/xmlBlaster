@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.4 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: RamTest.java,v 1.5 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -107,7 +107,7 @@ public class RamTest extends TestCase
       long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
       Log.info(ME, "Success: Erasing done, " + NUM_PUBLISH + " messages erased, average messages/second = " + avg);
 
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 

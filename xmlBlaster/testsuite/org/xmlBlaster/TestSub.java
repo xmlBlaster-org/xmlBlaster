@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.13 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestSub.java,v 1.14 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -78,8 +78,9 @@ public class TestSub extends TestCase implements I_Callback
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
+          assert("Login failed: " + e.toString(), false);
       }
    }
 
@@ -101,7 +102,7 @@ public class TestSub extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 

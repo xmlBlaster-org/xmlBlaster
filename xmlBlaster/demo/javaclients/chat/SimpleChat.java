@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.4 2000/02/24 22:19:51 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.5 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package javaclients.chat;
@@ -212,7 +212,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
       //----------- Logout --------------------------------------
       Log.trace(ME, "Logout ...");
-      corbaConnection.logout(xmlBlaster);
+      corbaConnection.logout();
    }
 
    public static void main(String args[]){

@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.6 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -127,7 +127,7 @@ public class ClientOid
 
 
          //----------- Logout --------------------------------------
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
 
 
          //----------- Trying to send some data after logout -------

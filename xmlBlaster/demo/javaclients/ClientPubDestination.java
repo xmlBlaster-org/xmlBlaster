@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.6 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -58,7 +58,7 @@ public class ClientPubDestination
 
       if (initSender(senderName) == false) return false;
 
-      receiverConnection.logout(receiverXmlBlaster);
+      receiverConnection.logout();
 
       return true;
    }
@@ -142,7 +142,7 @@ public class ClientPubDestination
             Log.error(ME, numReceived + " callbacks arrived, did expect one after a direct addressing from " + senderName);
          numReceived = 0;
 
-         corbaConnection.logout(xmlBlaster);
+         corbaConnection.logout();
       }
       catch (Exception e) {
           e.printStackTrace();

@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.3 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.4 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -90,7 +90,7 @@ public class TestPersistence extends TestCase implements I_Callback
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       checkContent(false);
 
-      senderConnection.logout(senderXmlBlaster);
+      senderConnection.logout();
    }
 
 

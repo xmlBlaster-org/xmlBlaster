@@ -3,7 +3,7 @@ Name:      Queue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: Queue.java,v 1.1 2000/02/24 11:16:47 ruff Exp $
+Version:   $Id: Queue.java,v 1.2 2000/02/25 13:51:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -19,10 +19,10 @@ import java.util.NoSuchElementException;
 /**
  * This queue (FIFO) implementation may serve as your base class
  * or as a member variable. <br />
- * It is based on a linked list. 
+ * It is based on a linked list.
  * <p />
  * TODO: Allow persistence store e.g. via JDBC bridge into Orcale with some smart caching
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public class Queue
@@ -31,7 +31,7 @@ public class Queue
    private final int MAX_ENTRIES;
 
    /**
-    * The queue is implemented with a linked list. 
+    * The queue is implemented with a linked list.
     * I believe ArrayList is more expensive in this case
     */
    private LinkedList queueList = null;
@@ -66,6 +66,7 @@ public class Queue
     */
    public final void push(Object obj) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering push() ...");
       synchronized (queueList) {
          if (queueList.size() >= MAX_ENTRIES)
             throw new  XmlBlasterException(ME+".MaxSize", "Maximun size of queue reached");
@@ -81,6 +82,7 @@ public class Queue
     */
    public final Object pull()
    {
+      if (Log.CALLS) Log.calls(ME, "Entering pull() ...");
       try {
          synchronized (queueList) {
             return queueList.removeLast();
@@ -107,7 +109,7 @@ public class Queue
 
 
    /**
-    * Check if the queue is filled up. 
+    * Check if the queue is filled up.
     * <p />
     * @return true space for at least on more entry
     *         false quota exceeded

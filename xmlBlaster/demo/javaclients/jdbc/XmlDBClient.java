@@ -14,8 +14,8 @@ import java.io.*;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
@@ -29,8 +29,8 @@ public class XmlDBClient implements I_Callback
    private String          publishOid = "XmlDBClient";
    private String          xmlKey = "";
    private CorbaConnection corbaConnection = null;
-   private static String   qos = "" + "<qos>" 
-                                 + " <destination queryType='EXACT'>" 
+   private static String   qos = "" + "<qos>"
+                                 + " <destination queryType='EXACT'>"
                                  + adapter + " </destination>" + "</qos>";
 
    private String          args[];
@@ -39,10 +39,10 @@ public class XmlDBClient implements I_Callback
 
    /**
     * Constructor declaration
-    * 
-    * 
+    *
+    *
     * @param args
-    * 
+    *
     * @see
     */
    public XmlDBClient(String args[])
@@ -56,8 +56,8 @@ public class XmlDBClient implements I_Callback
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void waitOnResults()
@@ -67,27 +67,27 @@ public class XmlDBClient implements I_Callback
          try
           {
             Thread.sleep(500);
-         } 
+         }
          catch (InterruptedException e) {}
 
          System.out.println("Waiting...");
-      } 
+      }
 
       System.out.println(results);
       logout();
-   } 
+   }
 
 
    /**
     * CallBack of xmlBlaster
     */
-   public void update(String cust, UpdateKey key, byte[] content, 
+   public void update(String cust, UpdateKey key, byte[] content,
                       UpdateQoS updateQos)
     {
       results = new String(content);
       done = true;
 
-   } 
+   }
 
    /**
     * find xmlBlaster server, login and subscribe
@@ -102,18 +102,18 @@ public class XmlDBClient implements I_Callback
 
          // ---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa = 
+         org.omg.PortableServer.POA poa =
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
 
          // ----------- Login to xmlBlaster -----------------------
          xmlBlaster = corbaConnection.login(ME, passwd, qos, this);
 
-      } 
+      }
       catch (Exception e)
        {
          e.printStackTrace();
-      } 
-   } 
+      }
+   }
 
    /**
     * unsubsrcibe and logout from xmlBlaster
@@ -125,29 +125,29 @@ public class XmlDBClient implements I_Callback
          return;
 
          // ----------- Logout --------------------------------------
-      } 
+      }
 
       Log.trace(ME, "Logout ...");
-      corbaConnection.logout(xmlBlaster);
-   } 
+      corbaConnection.logout();
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param args
-    * 
+    *
     * @see
     */
    public static void main(String args[])
     {
       XmlDBClient client = new XmlDBClient(args);
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void query()
@@ -157,24 +157,24 @@ public class XmlDBClient implements I_Callback
       String   type = Args.getArg(args, "-type", "query");
       String   limit = Args.getArg(args, "-limit", "50");
       String   confirm = Args.getArg(args, "-confirm", "true");
-      String   queryStr = Args.getArg(args, "-query", 
+      String   queryStr = Args.getArg(args, "-query",
                                       "select * from intrauser");
-      String   url = Args.getArg(args, "-url", 
+      String   url = Args.getArg(args, "-url",
                                  "jdbc:postgresql://24.3.47.214/postgres");
-      String   query = "" + "<database:adapter>" + " <database:url>" + url 
-                       + "</database:url>" + " <database:username>" + user 
-                       + "</database:username>" + " <database:password>" 
-                       + pass + "</database:password>" 
-                       + " <database:interaction type='" + type + "'/>" 
-                       + " <database:command>" + queryStr 
-                       + "</database:command>" 
-                       + " <database:connectionlifespan ttl='1'/>" 
-                       + " <database:rowlimit max='" + limit + "'/>" 
-                       + " <database:confirmation confirm='" + confirm 
+      String   query = "" + "<database:adapter>" + " <database:url>" + url
+                       + "</database:url>" + " <database:username>" + user
+                       + "</database:username>" + " <database:password>"
+                       + pass + "</database:password>"
+                       + " <database:interaction type='" + type + "'/>"
+                       + " <database:command>" + queryStr
+                       + "</database:command>"
+                       + " <database:connectionlifespan ttl='1'/>"
+                       + " <database:rowlimit max='" + limit + "'/>"
+                       + " <database:confirmation confirm='" + confirm
                        + "'/>" + "</database:adapter>";
 
-      String   xmlKey = "" + "<?xml version='1.0' encoding='ISO-8859-1' ?>" 
-                        + "<key oid='XmlDBClient' contentMime='text/plain'>" 
+      String   xmlKey = "" + "<?xml version='1.0' encoding='ISO-8859-1' ?>"
+                        + "<key oid='XmlDBClient' contentMime='text/plain'>"
                         + "</key>";
 
       try
@@ -184,9 +184,9 @@ public class XmlDBClient implements I_Callback
 
          System.out.println("Published query...");
          System.out.println("qos =>" + qos);
-      } 
+      }
       catch (Exception e) {}
-   } 
+   }
 
 }
 

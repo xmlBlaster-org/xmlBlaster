@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.3 2000/02/24 22:19:54 ruff Exp $
+Version:   $Id: TestPub.java,v 1.4 2000/02/25 13:51:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -95,7 +95,7 @@ public class TestPub extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      senderConnection.logout(xmlBlaster);
+      senderConnection.logout();
    }
 
 
