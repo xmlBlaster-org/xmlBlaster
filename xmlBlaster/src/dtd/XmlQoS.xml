@@ -138,6 +138,8 @@
          <rcvTimestamp millis='1007764305862' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call, nanos currently not supported -->
             2001-12-07 23:31:45.862 <!-- The millis from above human readable -->
          </rcvTimestamp>
+         <expiration timeToLive='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration -->
+                                            <!-- This value is calculated relative to the current time on sending the message from xmlBlaster -->
          <queue index='0' of='1'> <!-- If queued messages are flushed on login -->
          </queue>
       </qos>
