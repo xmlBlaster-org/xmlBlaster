@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.20 2002/05/19 17:52:49 ruff Exp $
+Version:   $Id: Global.java,v 1.21 2002/05/19 20:39:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -64,7 +64,10 @@ public class Global implements Cloneable
     */
    public Global()
    {
-      System.out.println("######Global constructor empty");
+      if (this.firstInstance != null) {
+         System.out.println("######Global empty constructor invoked again, try Global.instance()");
+         //Thread.currentThread().dumpStack();
+      }
       synchronized (Global.class) {
          if (this.firstInstance == null)
             this.firstInstance = this;
@@ -77,7 +80,6 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
-      //Thread.currentThread().dumpStack();
    }
 
    /**
@@ -86,7 +88,10 @@ public class Global implements Cloneable
     */
    public Global(String[] args)
    {
-      System.out.println("######Global constructor args");
+      if (this.firstInstance != null) {
+         System.out.println("######Global args constructor invoked again, try Global.instance()");
+         //Thread.currentThread().dumpStack();
+      }
       synchronized (Global.class) {
          if (this.firstInstance == null)
             this.firstInstance = this;
@@ -99,7 +104,6 @@ public class Global implements Cloneable
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
       init(args);
-      //Thread.currentThread().dumpStack();
    }
 
    /**
