@@ -309,19 +309,13 @@ int main(int argc, char** argv)
       }
       if (msgUnitArr != (MsgUnitArr *)0) {
          for (i=0; i<msgUnitArr->len; i++) {
-            char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
-                                             msgUnitArr->msgUnitArr[i].contentLen);
-            const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ?
-                                 " ..." : "";
+            char *m = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
             printf("\n[client] Get synchronous returned message#%lu/%lu:\n"
                      "-------------------------------------"
-                     "%s\n <content>%.100s%s</content>%s\n"
+                     "%s\n"
                      "-------------------------------------\n",
-                     (unsigned long)(i+1), (unsigned long)msgUnitArr->len,
-                     msgUnitArr->msgUnitArr[i].key,
-                     contentStr, dots,
-                     msgUnitArr->msgUnitArr[i].qos);
-            xmlBlasterFree(contentStr);
+                     (unsigned long)(i+1), (unsigned long)msgUnitArr->len, m);
+            xmlBlasterFree(m);
          }
          freeMsgUnitArr(msgUnitArr);
       }
