@@ -82,37 +82,5 @@
    </plugin>
    <!--===============================================-->
 
-
-   <!--========== QUEUE/STORAGE PLUGINS ==============-->
-   <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
-      <attribute id='transientQueue'>queue:RAM</attribute>
-      <attribute id='persistentQueue'>queue:JDBC</attribute>
-   </plugin>
-   
-   <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
-
-   <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
-      <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
-      <attribute id='user'>joe</attribute>
-      <attribute id='password'>secret</attribute>
-      <attribute id='connectionBusyTimeout'>90000</attribute>
-      <attribute id='maxWaitingThreads'>300</attribute>
-   </plugin>
-     
-   <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
-      <attribute id='transientQueue'>storage:RAM</attribute>
-      <attribute id='persistentQueue'>storage:JDBC</attribute>
-   </plugin>
-   
-   <plugin id='storage:RAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
-
-   <plugin id='storage:JDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
-      <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
-      <attribute id='user'>joe</attribute>
-      <attribute id='password'>secret</attribute>
-      <attribute id='connectionBusyTimeout'>90000</attribute>
-      <attribute id='maxWaitingThreads'>300</attribute>
-   </plugin>
-   <!--===============================================-->
 </xmlBlaster>
 
