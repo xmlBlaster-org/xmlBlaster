@@ -163,8 +163,9 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    
    &lt;persistent/>  &lt;!-- message is recovered on server crash -->
 
-   &lt;forceUpdate/>  &lt;!-- message is put to destination queue even if destination
-                              is not logged in -->
+   &lt;forceUpdate>false&lt;forceUpdate>
+                     &lt;!-- messages with identical content as the predecessor
+                             are not updated -->
 
    &lt;!-- Send to all login sessions of user 'Tim', if Tim is offline queue it -->
    &lt;destination queryType='EXACT' forceQueuing='true'>
@@ -204,7 +205,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
      <p>
      If a destination client is offline the publisher gets thrown back an exception
      and the message is not delivered.
-     By adding the tag <b>forceUpdate</b> the message will be queued in xmlBlaster
+     By adding the tag <b>forceQueuing</b> the message will be queued in xmlBlaster
      until the destination client logs in and will then be delivered to the destination.
      </p>
    </example>
@@ -379,7 +380,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
