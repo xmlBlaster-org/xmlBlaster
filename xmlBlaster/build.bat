@@ -5,7 +5,7 @@ echo -------------------
 
 if "%JAVA_HOME%" == "" goto error
 
-set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;.\lib\ant.jar;lib\parser.jar;lib\jaxp.jar;.\lib\idl.jar;.\lib\jacorb.jar;.\lib\omquery.jar;.\lib\xtdash.jar;.\servlet.jar;.\lib\test.jar;.\lib\xmlrpc.jar;.\lib\a2Blaster.jar;.\lib\jutils.jar;.\lib\mail.jar;.\lib\activation.jar;.\lib\cpptasks.jar
+set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;.\lib\ant.jar;lib\parser.jar;lib\jaxp.jar;.\lib\idl.jar;.\lib\jacorb.jar;.\lib\omquery.jar;.\lib\xtdash.jar;.\servlet.jar;.\lib\test.jar;.\lib\xmlrpc.jar;.\lib\a2Blaster.jar;.\lib\jutils.jar;.\lib\mail.jar;.\lib\activation.jar;.\lib\cpptasks.jar;.\lib\batik-awt-util.jar;.\lib\batik-bridge.jar;.\lib\batik-css.jar;.\lib\batik-dom.jar;.\lib\batik-ext.jar;.\lib\batik-extension.jar;.\lib\batik-gui-util.jar;.\lib\batik-gvt.jar;.\lib\batik-parser.jar;.\lib\batik-script.jar;.\lib\batik-svg-dom.jar;.\lib\batik-svggen.jar;.\lib\batik-transcoder.jar;.\lib\batik-util.jar;.\lib\batik-xml.jar
 
 echo Building with classpath %LOCALCLASSPATH%
 
