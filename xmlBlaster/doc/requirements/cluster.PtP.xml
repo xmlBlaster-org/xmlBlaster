@@ -27,11 +27,13 @@
       allows us to route the message in a cluster environment.
       </p>
       <p>
-      The current implementation supports only destinations where the destination cluster node
-      is directly connected to the source cluster node - or if a cluster node has only one known further cluster
-      node the message is routed as well through such a chain of clusters.
-      In a future release we can add a plugin based node lookup to allow extended routing if demand
-      for such a feature arises.
+      If you destination address has an absolute name like '/node/heron/client/joe'
+      the local node and all direct neighbors are checked and if 'heron' is found the message is
+      directly delivered. Otherwise the same routing rule as for Publish/Subscribe apply.
+      For example a relative destination address 'client/joe/1' is routed similar
+      to Publish/Subscribe by looking at the key-domain or other key attributes.
+      If no routing matches the local node is chosen and the PtP message
+      is queued for 'client/joe/1' until this client logs in.
       </p>
    </description>
 
@@ -50,7 +52,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 27</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
