@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.33 2002/09/14 23:12:08 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.34 2002/09/15 11:18:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -48,6 +48,7 @@ import org.xmlBlaster.protocol.socket.Parser;
  * </pre>
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
@@ -705,7 +706,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     *                      Defaults to our hostname</li>
     *  <li>-socket.responseTimeout  How long to wait for a method invocation to return
     *                      Defaults to one minute</li>
-    *  <li>-socket.debug       1 or 2 switches on detailed SOCKET debugging [0]</li>
+    *  <li>-socket.cb.multiThreaded Use seperate threads per update() on client side [true]</li>
+    *  <li>-dump[socket]   true switches on detailed SOCKET debugging [false]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
@@ -725,7 +727,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "   -socket.responseTimeout  How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
       text += "   -socket.threadPrio  The priority 1=min - 10=max of the callback listener thread [5].\n";
-      text += "   -socket.debug       1 or 2 switches on detailed SOCKET debugging [0].\n";
+      text += "   -socket.cb.multiThreaded Use seperate threads per update() on client side [true].\n";
+      text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
    }
