@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.12 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.13 2002/05/17 13:45:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -75,7 +75,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = new String[10];
+      String[] args = new String[12];
       args[0] = "-port";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
       args[2] = "-socket.port";
@@ -86,6 +86,8 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       args[7] = "" + (serverPort-3);
       args[8] = "-MimeAccessPlugin[ContentLenFilter][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
+      args[10] = "-client.port";
+      args[11] = "" + serverPort;
       glob.init(args);
 
       serverThread = ServerThread.startXmlBlaster(args);

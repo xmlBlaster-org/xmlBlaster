@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.9 2002/05/17 09:54:49 ruff Exp $
+Version:   $Id: Util.java,v 1.10 2002/05/17 13:45:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -46,6 +46,8 @@ public class Util
       vec.addElement(""+(serverPort-2));
       vec.addElement("-xmlrpc.port");
       vec.addElement(""+(serverPort-3));
+      vec.addElement("-client.port");
+      vec.addElement(""+serverPort);
       return vec;
    }
 
@@ -54,7 +56,7 @@ public class Util
     */
    public static String[] getDefaultServerPorts()
    {
-      String[] argsDefault = new String[8];
+      String[] argsDefault = new String[10];
       argsDefault[0] = "-port";
       argsDefault[1] = "" + Constants.XMLBLASTER_PORT;
       argsDefault[2] = "-socket.port";
@@ -63,6 +65,8 @@ public class Util
       argsDefault[5] = "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
       argsDefault[6] = "-xmlrpc.port";
       argsDefault[7] = "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT;
+      argsDefault[8] = "-client.port";
+      argsDefault[9] = "" + Constants.XMLBLASTER_PORT;
       return argsDefault;
    }
 
