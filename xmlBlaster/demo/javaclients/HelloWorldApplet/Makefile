@@ -12,13 +12,13 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients/HelloWorldApplet
 #------------------------------------------------------------------------------
 
 
-JFILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
+LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 
 $(CLASS_DIR)/%.class: %.java
 	$(JAVAC) -d $(CLASS_TOP_DIR) $<
 
 
-all: $(JFILES)
+all: $(LOCAL_FILES)
 
 clean:
 	rm $(CLASS_DIR)/*.class 
