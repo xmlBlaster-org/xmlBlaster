@@ -216,9 +216,10 @@ public class Global implements Cloneable
     * by your args array (usually the command line args).
     *
     * <p>By setting loadPropFile to false it is possible to create a Global
-    * which does not automtically search out the xmlBlaster.properties file,
-    * which is god when you want to start xmlBlaster in an embedded environment.
-    * <p>Its possible to later load the property file if one wants, here is one way to do it:</p>
+    * which does not automatically search out the xmlBlaster.properties file,
+    * which is good when you want to start xmlBlaster in an embedded environment.
+    * <p>It is possible to later load the property file if one wants, here is one 
+    * way to do it:</p>
     * <pre>
          Property p = glob.getProperty();
          Properties prop = new Properties();
@@ -228,8 +229,8 @@ public class Global implements Cloneable
          String[] ar = Property.propsToArgs(prop);
          p.addArgs2Props( ar != null ? ar : new String[0] );
        </pre>
-     <p>It is also possible to load an entire other property file or find it
-        with some other algoritm byte using the same pattern as obove, just
+     <p>It is also possible to load an entire second property file or find it
+        with some other algorithm byte using the same pattern as above, just
         don't use findPath, but some other code.</p>
     * @param args args array (usually the command line args).
     * @param loadPropFile if automatic loading of xmlBlaster.properties should be done.
@@ -585,7 +586,8 @@ public class Global implements Cloneable
    /**
     * private, called from constructor
     * @param args arguments to initilize the property with.
-    * @param loadPropFile if loading of xmlBlaster.properties file should be done, if false no loading of the file is done.
+    * @param loadPropFile if loading of xmlBlaster.properties 
+    *        file should be done, if false no loading of the file is done.
     * @return -1 on error
     */
    private int initProps(String[] args, boolean loadPropFile) {

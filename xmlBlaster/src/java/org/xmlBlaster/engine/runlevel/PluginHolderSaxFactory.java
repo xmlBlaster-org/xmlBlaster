@@ -11,11 +11,13 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xml.sax.Attributes;
-
-import java.io.FileInputStream;
-import org.xml.sax.InputSource;
 import org.xmlBlaster.util.FileLocator;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+
+import java.io.InputStream;
+import java.net.URL;
 
 
 /**
@@ -202,21 +204,17 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
    public PluginHolder readConfigFile() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "readConfigFile");
       FileLocator fileLocator = new FileLocator(this.glob);
-      String filename = fileLocator.findXmlBlasterFile("pluginsFile", "xmlBlasterPlugins.xml");
+      URL url = fileLocator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml");
 
       // null pointer check here ....
-      if (filename == null) {
-         String[] tmp = fileLocator.createXmlBlasterSearchPath();
-         String searchPath = "";
-         for (int i=0; i<tmp.length; i++) searchPath += "\n      " + tmp[i];
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile", 
-         "the file 'xmlBlasterPlugins.xml' has not been found in the search path '" + searchPath + 
-         "' nor in the property 'pluginsFile'");
+      if (url == null) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile",
+         "the file 'xmlBlasterPlugins.xml' has not been found in the search path nor in the property 'pluginsFile'");
       }
 
-      if (this.log.TRACE) this.log.trace(ME, "readConfigFile: the file is '" + filename + "'");
+      if (this.log.TRACE) this.log.trace(ME, "readConfigFile: the file is '" + url.getFile() + "'");
       try {
-         FileInputStream fis = new FileInputStream(filename);
+         InputStream fis = url.openStream();
          InputSource inSource = new InputSource(fis);
          reset();
          init(inSource);
@@ -224,10 +222,9 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          if (this.log.DUMP) this.log.dump(ME, ".readConfigFile. The content: \n" + ret.toXml());
          return ret;
       }
-      catch(java.io.FileNotFoundException ex) {
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile", "the file '" + filename + "' has not been found", ex);
+      catch(java.io.IOException ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile", "the file '" + url.getFile() + "' has not been found", ex);
       }
-
    }
 
    public static void main(String[] args) {

@@ -12,6 +12,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.jutils.log.LogChannel;
+import java.net.URL;
+import java.io.InputStream;
 
 
 public class FileLocator
@@ -125,6 +127,114 @@ public class FileLocator
        return ret;
     }
 
+
+   /**
+    * checks if the file exists in the given path (only one path).
+    * @param filename the name of the file to lookup
+    * @param path the path in which the file should reside. If it is null, then
+    *        filename will be considered an absolute filename.
+    * @return URL the URL for the given file or null if no file found.
+    */
+   private final URL findFileInSinglePath(String path, String filename) {
+      if (this.log.CALL) this.log.call(ME, "findFileInSinglePath with path='" +
+         path + "' and filename='" + filename + "'");
+      File file = null;
+      if (path != null) file = new File(path, filename);
+      else file = new File(filename);
+      if (file.exists()) {
+         if (file.isDirectory()) {
+            this.log.warn(ME, "findFileInSinglePath: the given name '" + file.getAbsolutePath() + "' is not a file, it is a directory");
+            return null;
+         }
+         if (!file.canRead()) {
+            this.log.warn(ME, "findFileInSinglePath: don't have the rights to read the file '" + file.getAbsolutePath() + "'");
+            return null;
+         }
+         try {
+            return file.toURL();
+         }
+         catch (java.net.MalformedURLException ex) {
+            this.log.warn(ME, "findFileInSinglePath: path='" + path + "', filename='" + filename + " exception: " + ex.getMessage());
+            return null;
+         }
+      }
+      return null;
+   }
+
+   /**
+    * tries to find a file according to the xmlBlaster Strategy.
+    * The strategy is:
+    * <ul>
+    *   <li>given value of the specified property</li>
+    *   <li>user.dir</li>
+    *   <li>full name (complete with path)</li>
+    *   <li>PROJECT_HOME global property</li>
+    *   <li>user.home</li>
+    *   <li>classpath</li>
+    *   <li>java.ext.dirs</li>
+    *   <li>java.home</li>
+    * </ul>
+    *  @return URL the URLfrom which to read the content or null if
+    *          the file/resource has not been found. Note that we return the
+    *          url instead of the filename since it could be a resource and
+    *          therefore it could not be opened as a normal file.
+    */
+   public final URL findFileInXmlBlasterSearchPath(String propertyName, String filename) {
+      String path = null;
+      URL ret = null;
+      path = this.glob.getProperty().get(propertyName, (String)null);
+      if (path != null) {
+         ret = findFileInSinglePath(path, filename);
+         if (ret != null) return ret;
+      }
+      // user.dir
+      path = System.getProperty("user.dir", ".");
+      ret = findFileInSinglePath(path, filename);
+      if (ret != null) return ret;
+
+      // full name (complete with path)
+      ret = findFileInSinglePath(null, filename);
+      if (ret != null) return ret;
+
+      // PROJECT_HOME global property
+      path = this.glob.getProperty().get("PROJECT_HOME", (String)null);
+      if (path != null) {
+         ret = findFileInSinglePath(path, filename);
+         if (ret != null) return ret;
+      }
+
+      // user.home
+      path = System.getProperty("user.home", (String)null);
+      if (path != null) {
+         ret = findFileInSinglePath(path, filename);
+         if (ret != null) return ret;
+      }
+
+      // classpath
+      try {
+         URL url = this.glob.getClassLoaderFactory().getXmlBlasterClassLoader().getResource(filename);
+         if (url != null) return url;
+      }
+      catch (XmlBlasterException ex) {
+         this.log.warn(ME, "findFileInXmlBlasterSearchPath: " + ex.getMessage());
+      }
+
+      // java.ext.dirs
+      path = System.getProperty("java.ext.dirs", (String)null);
+      if (path != null) {
+         ret = findFileInSinglePath(path, filename);
+         if (ret != null) return ret;
+      }
+
+      // java.home
+      path = System.getProperty("java.home", (String)null);
+      if (path != null) {
+         return findFileInSinglePath(path, filename);
+      }
+      return null;
+    }
+
+
     /**
      * Finds a file according to the xmlBlaster file finder strategy which is the
      * following search order:
@@ -145,6 +255,7 @@ public class FileLocator
      * @param filename the name of the file to search.
      *
      */
+/*
     public final String findXmlBlasterFile(String filePropertyName, String filename)
        throws XmlBlasterException {
        if (this.log.CALL) this.log.call(ME, "findXmlBlasterFile with propertyName='" + filePropertyName + "' and filename='" + filename + "'");
@@ -156,7 +267,7 @@ public class FileLocator
        }
        return findFile(createXmlBlasterSearchPath(), filename);
     }
-
+*/
 
     public static void main(String[] args) {
        Global glob = Global.instance();
@@ -166,7 +277,7 @@ public class FileLocator
        FileLocator locator = new FileLocator(glob);
 
        try {
-          String ret = locator.findXmlBlasterFile("pluginsFile", "xmlBlasterPlugins.xml");
+          String ret = locator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml").getFile();
           if (ret != null) {
              System.out.println("The file 'xmlBlasterPlugins.xml' has been found");
              System.out.println("Its complete path is: '" + ret + "'");
