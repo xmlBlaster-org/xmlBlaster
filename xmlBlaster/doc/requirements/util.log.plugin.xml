@@ -31,10 +31,14 @@ logDevice[cb]=console,file
    <example lang="Java" type="HTML">
      
       <h2 id="LOG4J">This is an example of a Log4j I_LogDeviceFactory</h2>
+      <p>Cut and paste the code snippet below into a new file
+      <tt>xmlBlaster/src/java/org/xmlBlaster/util/log/Log4jDeviceFactory.java</tt>
+      compile it and configure it in <tt>xmlBlaster.properties</tt> as described below:
+      </p>
       
       <pre>
       <![CDATA[
-package org.backsource.in.blaster;
+package org.xmlBlaster.util.log;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -115,7 +119,7 @@ public class Log4jDeviceFactory implements I_LogDeviceFactory {
       </pre>
       <p>Which would be configured with.</p>
       <pre>
-       LoggableDevicePlugin[log4j][1.0]=org.backsource.in.blaster.Log4jDeviceFactory
+       LoggableDevicePlugin[log4j][1.0]=org.xmlBlaster.util.log.Log4jDeviceFactory
        logDevice=log4j
       </pre>
    </example>
