@@ -19,6 +19,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
@@ -742,6 +743,38 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       return this.persistentStore.unRegisterStorageProblemListener(listener);
    }
 
+
+   /**
+    * @see I_Map#change(I_Entry, I_ChangeCallback)
+    */
+   public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
+      this.log.warn(ME, "change not implemented yet ..........");
+      synchronized(this) {
+         long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         I_MapEntry newEntry = callback.changeEntry(entry);
+         if (oldSizeInBytes != newEntry.getSizeInBytes()) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
+         } 
+         
+         if (entry != newEntry) { // then they are not the same reference ...
+            int tmp = remove(entry);
+            if (tmp < 1) throw new XmlBlasterException(this.glob,  ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has not been found on this map");
+            put(newEntry);
+         }
+         return newEntry;
+      }
+   }
+
+
+   /**
+    * @see I_Map#change(long, I_ChangeCallback)
+    */
+   public I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException {
+      synchronized (this) {
+         I_MapEntry oldEntry = get(uniqueId);
+         return change(oldEntry, callback);
+      }
+   }
 
 
 }

@@ -159,4 +159,34 @@ public interface I_Map extends I_StorageProblemNotifier
     * @return An xml encoded dump
     */
    String toXml(String extraOffset);
+
+
+   /**
+    * @param entry the entry to change. This is the old entry, i.e. the entry on which the modification
+    *        has to take place. IMPORTANT: This method is not threadsafe since it does not make a lookup
+    *        to get the actual entry. The specified entry could be a dirty read, in which case the 
+    *        current entry would be overwritten with this dirty value. If you want to work threadsafe 
+    *        you should invoke change(long, callback). That method makes a lookup within the same 
+    *        synchronization point.
+    * @param callback the object on which the callback method 'changeEntry' is invoked. The modification
+    *        of the object is done in that method.
+    * @return I_MapEntry the modified entry.
+    * @throws XmlBlasterException if something goes wrong when making the change (for example if the
+    *         entry is not in the map) or if the callback throws an exception.
+    */
+   I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException;
+
+   /**
+    * This method is threadsafe because it makes a lookup for the updated entry within the synchronization
+    * point.
+    * @param uniqueId the uniqueId of the entry to change. This is the old entry, i.e. the entry on 
+    *        which the modification has to take place.
+    * @param callback the object on which the callback method 'changeEntry' is invoked. The modification
+    *        of the object is done in that method.
+    * @return I_Entry the modified entry.
+    * @throws XmlBlasterException if something goes wrong when making the change (for example if the
+    *         entry is not in the map) or if the callback throws an exception.
+    */
+   I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException;
+
 }

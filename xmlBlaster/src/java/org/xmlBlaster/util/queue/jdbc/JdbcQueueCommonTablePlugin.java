@@ -22,6 +22,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
@@ -1222,6 +1223,28 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
       if (this.manager == null) return false;
       return this.manager.unRegisterStorageProblemListener(listener);
+   }
+
+
+   /**
+    * @see I_Map#change(I_Entry, I_ChangeCallback)
+    */
+   public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
+      this.log.warn(ME, "change not implemented yet ..........");
+      synchronized(this) {
+         return callback.changeEntry(entry);
+      }
+   }
+
+
+   /**
+    * @see I_Map#change(long, I_ChangeCallback)
+    */
+   public I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException {
+      synchronized (this) {
+         I_MapEntry oldEntry = get(uniqueId);
+         return change(oldEntry, callback);
+      }
    }
 
 }
