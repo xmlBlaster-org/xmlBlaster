@@ -658,9 +658,6 @@ int main(int argc, char** argv)
       <h3>This is a first alpha release, we need to:</h3>
       <p>
       <ul>
-      <li> Throwing an XmlBlasterException from CallbackServer
-        back to xmlBlaster: The exception is buggy encoded</li>
-
       <li> Adding mutex to every function call</li>
 
       <li> Invoking xmlBlaster from within the callback thread (in update() function)
@@ -683,7 +680,6 @@ int main(int argc, char** argv)
 
       <li> Add testsuite (with ant)</li>
 
-      <li> Write requirement documentation in xmlBlaster/doc/requirements/client.c.socket.xml</li>
       </ul>
       </p>
    </todo>
@@ -699,6 +695,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 </requirement>
 
