@@ -280,6 +280,43 @@ public class DbPool implements I_DbPool, I_PoolManager {
    }
 
    /**
+    * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#update(String)
+    */
+   public int update(Connection conn, String command) throws Exception {
+      if (conn == null)
+         return update(conn, command);
+      
+      Statement   stmt = null;
+      ResultSet   rs = null;
+      try {
+         stmt = conn.createStatement();
+         if (log.isLoggable(Level.FINE)) log.fine("Running update command '" + command + "'");
+         int rowsAffected = stmt.executeUpdate(command);
+         return rowsAffected;
+      }
+      catch (SQLException e) {
+         String str = "SQLException in query '" + command + "' : " + e;
+         log.warning(str + ": sqlSTATE=" + e.getSQLState());
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         String str = "Unexpected exception in query '" + command + "' : " + e;
+         log.severe(str);
+         throw new Exception(e);
+      }
+      finally {
+         try {
+            if (rs!=null) rs.close();
+            if (stmt!=null) stmt.close();
+         }
+         catch (SQLException e) {
+            log.warning("Closing of stmt failed: " + e.toString());
+         }
+      }
+   }
+
+   /**
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(String, I_ResultCb)
     */
    public void select(String command, I_ResultCb cb) throws Exception {

@@ -50,6 +50,8 @@ public interface I_DbPool {
     */ 
    int update(String command) throws Exception;
 
+   public int update(Connection conn, String command) throws Exception;
+   
    /**
     * Convenience method to execute a SELECT SQL command in auto commit mode.  
     * @param command for example <tt>SELECT * FROM TEST_POLL</tt>
