@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.92 2002/01/15 20:52:28 goetzger Exp $
+# $Id: .bashrc,v 1.93 2002/01/15 21:30:19 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -83,6 +83,16 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "${BLACK_LTGREEN}Welcome to xmlBlaster.org   ${ESC}"
    ${ECHO} "${BLACK_LTGREEN}   XMLBLASTER_HOME=${XMLBLASTER_HOME}  ${ESC}"
 
+   # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
+   # using release 1.04b; from http://www.dbxml.org
+   CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xmldb.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/juggernaut-1.0.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/openorb-1.2.0.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xerces-1.4.3.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xalan-2.0.1.jar:${CLASSPATH}
+
+
    #a2Blaster - authentication and authorisation service
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
@@ -133,15 +143,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-dom.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-gvt.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-svggen.jar:${CLASSPATH}
-   # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
-   # using release 1.04b; from http://www.dbxml.org
-   CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xmldb.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/juggernaut-1.0.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/openorb-1.2.0.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xerces-1.4.3.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xalan-2.0.1.jar:${CLASSPATH}
-
 
 
    if [ "${USE_ANT}" = "true" ] ; then
@@ -214,7 +215,7 @@ if [ "${JAVA_HOME}" != "" ] ; then
          #      ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
          #	else
          #      ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
-         #	fi
+         #      fi
          #fi
          ## If copy failed (missing permissions?)
          ## if [ $? -ne 0 ] ;  then
@@ -236,6 +237,7 @@ else
    ${ECHO} "$BLACK_RED               Example: 'export JAVA_HOME=/opt/local/jdk'      $ESC"
    return 1
 fi
+
 
 # !!! Why don't we add jacorb.sh and orbacus.sh and mico.sh as procedures to this shell? It would be less complicated IMHO
 if [ ${#} -eq 0 ]; then
@@ -263,6 +265,7 @@ fi # end of if [ ${#} -eq 0 ]
 # Conflicts with JacORBs idl.jar because both use java_cup
 # (tinySQL has modified parser.java)
 #CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
+
 
 # stuff fot the c++ classes
 if [ "${USE_CPP}" = "" ] ; then
@@ -351,7 +354,7 @@ if [ "${JIKES_HOME}" != "" ] ; then
       export PATH
    if [ "${JDK_1_1}" != "" ] ; then
     JIKESPATH=${CLASSPATH}
-   	   export JIKESPATH
+           export JIKESPATH
       else
          JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
          export JIKESPATH
