@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+Name:           Session.java
+Project:        xmlBlaster
+Comment:
+Author:
+-----------------------------------------------------------------------------*/
+
+
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -26,8 +34,9 @@ public class Session implements I_Session, I_Subject {
    protected String sessionId = null;
    protected boolean authenticated = false;
 
-   //protected final LdapGateway htpasswd;
-   protected final HtPasswd htpasswd;
+   // no final in order to enable inheritance for new features
+   // like LdapGateway, etc.
+   protected HtPasswd htpasswd;
 
    protected String loginName = null;
 
