@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Removed all Makefiles, please use now 'ant' and 'build.xml'
+   NOTE: xmlBlaster/config/xmlBlaster-autoconf.tar.gz still exists
+         but probably needs a face lift.
+
  o BUGIFX in cluster configuration, switch off naming service and
    setting other address parameters is now possible from configuration file.
    Reported by Michael Atighetchi.

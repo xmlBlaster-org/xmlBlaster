@@ -423,8 +423,8 @@ TODO
       <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.java.dir}">
             <exclude name="org/jutils"/>
-            <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="README,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+            <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
@@ -483,7 +483,6 @@ TODO
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.dir}">
             <exclude name="**/README*"/>
-            <exclude name="**/Makefile"/>
             <exclude name="c/**"/>
             <exclude name="c++/**"/>
             <exclude name="perl/**"/>
@@ -580,8 +579,7 @@ TODO
    <target name="testsuite-only" description="Compile Java testsuite only into testsuite.jar (based on junit)">
       <copy todir="${build.src}/testsuite/src/java/org" filtering="true">
          <fileset dir="${testsuite.dir}/src/java/org">
-            <exclude name="README, Makefile"/>
-            <exclude name="Makefile"/>
+            <exclude name="README"/>
          </fileset>
       </copy>
       <javac srcdir="${build.src}/testsuite/src/java"
