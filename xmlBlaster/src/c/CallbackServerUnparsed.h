@@ -140,7 +140,7 @@ struct CallbackServerUnparsedStruct {
  * @return NULL if allocation or bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
-extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
+extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* argv,
                                UpdateCbFp update, void *userData);
 
 /**
