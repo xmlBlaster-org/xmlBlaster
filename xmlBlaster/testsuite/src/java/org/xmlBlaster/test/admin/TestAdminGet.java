@@ -11,12 +11,12 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.PropString;
-import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -41,6 +41,36 @@ import junit.framework.*;
  */
 public class TestAdminGet extends TestCase implements I_Callback
 {
+   
+   public class PublisherThread extends Thread {
+      private Global global;
+      private long delay;
+      private MsgUnit[] msgUnits;
+      private Exception ex;
+      
+      public PublisherThread(Global global, long timeToWaitBeforePublishing, MsgUnit[] msgUnits) {
+         this.global = global;
+         this.delay = timeToWaitBeforePublishing;
+         this.msgUnits = msgUnits;
+         start();
+      }
+      
+      public boolean hasException() {
+         return (this.ex != null);
+      }
+      
+      public void run() {
+         try {
+            if (this.delay > 0L) sleep(this.delay);
+            this.global.getXmlBlasterAccess().publishArr(this.msgUnits);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            this.ex = ex;
+         }
+      }
+   }
+   
    private static String ME = "TestAdminGet";
    
    private Global glob;
@@ -158,6 +188,7 @@ public class TestAdminGet extends TestCase implements I_Callback
  
    /**
     * TEST: Construct a message and publish it.
+    * If the counter is negative, the content of the message will be an empty string.
     * <p />
     */
    public void doPublish(int counter, String oid) throws XmlBlasterException {
@@ -286,7 +317,140 @@ public class TestAdminGet extends TestCase implements I_Callback
       }
    }
 
+   private void doActivateDispatch(boolean doDispatch) throws XmlBlasterException {
+      // inhibit delivery of subscribed messages ...
+      String getOid = "__cmd:client/" + this.sessionName + "/?dispatcherActive=" + doDispatch;
+      doPublish(-1, getOid);
+      // query with a given GetQos ...         
+      getOid = "__cmd:client/" + this.sessionName + "/?dispatcherActive";
+      MsgUnit[] msg = this.glob.getXmlBlasterAccess().get(new GetKey(this.glob, getOid), new GetQos(this.glob));
+      assertEquals("wrong number of messages returned", 1, msg.length);
+      assertEquals("wrong return value", "" + doDispatch, msg[0].getContentStr());
+   } 
 
+
+   /**
+    * Testing the getting of queue entries. Note that before this method is called, the queue must be empty
+    * TEST: <br />
+    */
+   private void adminGet(String oid, boolean consumable, long waitingDelay, int maxEntries, int initialEntries, int endEntries, int entriesExpected) {
+      try {
+         int sizePerMsg = 0;
+         doActivateDispatch(false);
+         assertEquals("wrong prerequisite: entries have arrived before starting the test: probably coming from an inconsistency in the previous test", 0, this.updateInterceptor.count());
+         this.updateInterceptor.clear();
+         for (int i=0; i < initialEntries; i++) doPublish(i, oid);
+         log.info(ME, "In the callback queue there should now be '" + initialEntries + "' entries");
+         int ret = this.updateInterceptor.waitOnUpdate(200L);
+         assertEquals("no update should arrive here ", 0, ret);
+         
+         // prepare the messages to be published
+         // wait a third of the total waiting time before publishing in a separate thread (while we wait for updates)
+         
+         int extraEntries = endEntries - initialEntries;
+         MsgUnit[] msgs = new MsgUnit[extraEntries];
+         for (int i=0; i < extraEntries; i++) {
+            String content = "extraMsg" + i;
+            msgs[i] = new MsgUnit(new PublishKey(this.glob, oid), content, new PublishQos(this.glob));
+         }
+         long delay = waitingDelay / 3 + 10L;
+         PublisherThread pubThread = new PublisherThread(this.glob, delay, msgs);
+
+         // query with a given GetQos ...         
+         GetQos getQos = new GetQos(this.glob);
+         QuerySpecQos querySpecQos = new QuerySpecQos(this.glob, "QueueQuery", "1.0", "maxEntries=" + maxEntries + "&maxSize=-1&consumable=" + consumable + "&waitingDelay=" + waitingDelay);
+         getQos.addQuerySpec(querySpecQos);
+         String getOid = "__cmd:client/" + this.sessionName + "/?cbQueueEntries";
+         MsgUnit[] mu = this.glob.getXmlBlasterAccess().get(new GetKey(this.glob, getOid), getQos);
+         assertEquals("an exception occured when it should not", false, pubThread.hasException());
+         assertEquals("wrong number of retreived entries", entriesExpected, mu.length);
+
+         assertEquals("messages should not arrive here", 0, this.updateInterceptor.count());
+         doActivateDispatch(true);
+         if (consumable) {
+            int rest = endEntries-mu.length;
+            int arrived = 0;
+            if (rest < 1) {
+               arrived = this.updateInterceptor.waitOnUpdate(500L, 1);
+            }
+            else arrived = this.updateInterceptor.waitOnUpdate(500L, rest);
+            assertEquals("wrong number of messages arrived (some should have been consumed by the get", rest, arrived);
+         }
+         else {
+            int arrived = this.updateInterceptor.waitOnUpdate(200L, endEntries);
+            assertEquals("all published messages should arrive here", endEntries, arrived);
+         }
+         this.updateInterceptor.clear();
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+         assertTrue("exception should not occur here", false);
+      }
+   }
+
+   public void testGetNonConsumableNoWaiting() {
+      String oid = "NonConsumableNoWaiting";
+      doSubscribe(oid);
+      boolean consumable = false;
+      long waiting = 0L; // no waiting
+      int maxEntries = 3;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, 0);
+      adminGet(oid, consumable, waiting, maxEntries, 2, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 2, 0);
+      doUnSubscribe(oid);
+   }
+
+   public void testGetConsumableNoWaiting() {
+      String oid = "ConsumableNoWaiting";
+      doSubscribe(oid);
+      boolean consumable = true;
+      long waiting = 0L; // no waiting
+      int maxEntries = 3;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, 0);
+      adminGet(oid, consumable, waiting, maxEntries, 2, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 2, 0);
+      doUnSubscribe(oid);
+   }
+
+   public void testGetNonConsumableDoWaiting() {
+      String oid = "NonConsumableDoWaiting";
+      doSubscribe(oid);
+      boolean consumable = false;
+      long waiting = 200L; // no waiting
+      int maxEntries = 3;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 2, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 1, maxEntries, maxEntries);
+      waiting = -1L;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 1, maxEntries, maxEntries);
+      doUnSubscribe(oid);
+   }
+
+   public void testGetConsumableDoWaiting() {
+      String oid = "ConsumableDoWaiting";
+      doSubscribe(oid);
+      boolean consumable = false;
+      long waiting = 200L; // no waiting
+      int maxEntries = 3;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 2, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 2, 2);
+      adminGet(oid, consumable, waiting, maxEntries, 1, maxEntries, maxEntries);
+      waiting = -1L;
+      adminGet(oid, consumable, waiting, maxEntries, 4, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 0, 4, maxEntries);
+      adminGet(oid, consumable, waiting, maxEntries, 1, maxEntries, maxEntries);
+      doUnSubscribe(oid);
+   }
+
+   
    /**
     * Invoke: java org.xmlBlaster.test.client.TestAdminGet
     * <p />
@@ -310,6 +474,23 @@ public class TestAdminGet extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testGetQueueEntries();
       testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testGetNonConsumableNoWaiting();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testGetNonConsumableDoWaiting();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testGetConsumableNoWaiting();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testGetConsumableDoWaiting();
+      testSub.tearDown();
+
    }
 }
 
