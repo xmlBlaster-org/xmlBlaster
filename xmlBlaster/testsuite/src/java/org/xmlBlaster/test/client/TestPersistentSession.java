@@ -35,7 +35,7 @@ import junit.framework.*;
 /**
  * Tests the persistent sessions .
  * <br />For a description of what this persistent sessions and subscriptions are
- * please read the requirement engine.persistent.session.
+ * please read the requirement engine.persistence.session.
  * <p>
  * This is an interesting example, since it creates a XmlBlaster server instance
  * in the same JVM , but in a separate thread, talking over CORBA with it.
