@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: TestJ2eeServices.java,v 1.1 2003/09/24 14:31:26 antman Exp $
+ * $Id: TestJ2eeServices.java,v 1.2 2004/02/21 13:57:19 ruff Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@ import javax.naming.Context;
  * Test the j2ee services in combination.
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class TestJ2eeServices extends TestCase implements I_Callback {
@@ -77,7 +77,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
    
    public  TestJ2eeServices(Global glob, String testName){
       super(testName);
-      this.glob = (glob == null) ? Global.instance() : glob;;
+      this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("test");
       
    }
