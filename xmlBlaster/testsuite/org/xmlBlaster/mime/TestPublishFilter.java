@@ -3,7 +3,7 @@ Name:      TestPublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestPublishFilter.java,v 1.1 2002/06/08 23:02:33 ruff Exp $
+Version:   $Id: TestPublishFilter.java,v 1.2 2002/06/15 16:20:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -44,7 +44,7 @@ import junit.framework.*;
  */
 public class TestPublishFilter extends TestCase
 {
-   private static String ME = "Tim";
+   private static String ME = "TestPublishFilter";
    private final Global glob;
    private final LogChannel log;
 
@@ -52,7 +52,7 @@ public class TestPublishFilter extends TestCase
    private String name;
    private String passwd = "secret";
    private ServerThread serverThread;
-   private int serverPort = 7604;
+   private int serverPort = 7619;
    private int filterMessageContentBiggerAs = 10;
    private int numUpdated = 0;
 
@@ -126,11 +126,6 @@ public class TestPublishFilter extends TestCase
    {
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
-      try {
-         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", null);
-         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
-
       con.disconnect(null);
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
@@ -199,6 +194,12 @@ public class TestPublishFilter extends TestCase
       } catch(XmlBlasterException e) {
          log.warn(ME, "TEST 3: SUCCESS XmlBlasterException: " + e.reason);
       }
+
+      try {
+         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", null);
+         assertEquals("Erased problem", 1, arr.length);
+      } catch(XmlBlasterException e) { fail(ME + " XmlBlasterException: " + e.reason); }
+
       log.info(ME, "Success in testFilter()");
    }
 
