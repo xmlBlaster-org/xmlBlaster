@@ -3,13 +3,12 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.3 1999/12/02 16:48:06 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.4 1999/12/02 17:54:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import java.io.*;
-import java.util.Vector;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
@@ -25,19 +24,13 @@ public class XmlQoSBase extends HandlerBase
 {
    private String ME = "XmlQoSBase";
 
-   // private static final String DEFAULT_PARSER_NAME = 
+   // private static final String DEFAULT_PARSER_NAME =
                                         // com.ibm.xml.parsers.SAXParser
                                         // com.sun.xml.parser.ValidatingParser
 
-   private StringBuffer  character = new StringBuffer();
+   protected StringBuffer  character = new StringBuffer();
    protected boolean inQos = false;         // parsing inside <qos> ?
-   private boolean inDestination = false; // parsing inside <destination> ?
-   private boolean isXPathQuery = false;
 
-   /**
-    * Vector for loginQoS, holding all destination addresses
-    */
-   private Vector destinationVec = new Vector();
 
    /**
     * The original key in XML syntax, for example:
@@ -47,7 +40,7 @@ public class XmlQoSBase extends HandlerBase
 
 
    /**
-    * This object parses the given quality of service XML string using the SAX parser. 
+    * This object parses the given quality of service XML string using the SAX parser.
     * @param xmlQoS_literal Quality of service in XML notation
     */
    public XmlQoSBase(String xmlQoS_literal) throws XmlBlasterException
@@ -85,7 +78,7 @@ public class XmlQoSBase extends HandlerBase
       }
    }
 
-   
+
    /**
     * @return returns the literal xml string
     */
@@ -108,30 +101,13 @@ public class XmlQoSBase extends HandlerBase
 
 
    /** Start element. */
-   public void startElement(String name, AttributeList attrs) 
+   public void startElement(String name, AttributeList attrs)
    {
       if (name.equalsIgnoreCase("qos")) {
          inQos = true;
          return;
       }
-
-      if (name.equalsIgnoreCase("destination")) {
-         if (!inQos)
-            return;
-         inDestination = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               if( attrs.getName(i).equalsIgnoreCase("queryType") ) {
-                  String queryType = attrs.getValue(i).trim();
-                  if (queryType.equalsIgnoreCase("XPATH"))
-                     isXPathQuery = true;
-               }
-            }
-         }
-         return;
-      }
-   } // startElement(String,AttributeList)
+   }
 
 
    /**
@@ -155,17 +131,6 @@ public class XmlQoSBase extends HandlerBase
    public void endElement(String name) {
       if( name.equalsIgnoreCase("qos") ) {
          inQos = false;
-         character = new StringBuffer();
-         return;
-      }
-
-      if( name.equalsIgnoreCase("destination") ) {
-         inDestination = false;
-         if (isXPathQuery)
-            Log.error(ME, "Sorry, XPath destinations are not yet supported");
-         isXPathQuery = false;
-         String destination = character.toString().trim();
-         destinationVec.addElement(destination);
          character = new StringBuffer();
          return;
       }
@@ -220,7 +185,7 @@ public class XmlQoSBase extends HandlerBase
                                           ", systemId="+systemId+
                                           ", notationName="+notationName+")");
    }
- 
+
 
    /** Returns a string of the location. */
    private String getLocationString(SAXParseException ex)
