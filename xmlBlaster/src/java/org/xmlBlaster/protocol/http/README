@@ -87,7 +87,7 @@ Read !!! the good Apache Jserv configuring overview at
 Config files setup:
 ===================
 
-    httpd.conf -> jserv.conf -> jserv.properties -> example.properties
+    httpd.conf -> jserv.conf -> jserv.properties -> zone.properties
 
 5) Where are the xmlBlaster servlets lying around: 
    Edit /etc/httpd/conf/jserv/zone.properties
