@@ -160,10 +160,17 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private void initThis() {
       String myId = getProperty().get("cluster.node.id", (String)null);
-      if (myId == null && !useCluster())
-         myId = "xmlBlaster";  // fallback
       if (myId == null && getBootstrapAddress().getPort() > 0) {
          myId = getStrippedString(getBootstrapAddress().getAddress());
+      }
+      if (myId == null) {
+         if (useCluster()) {
+            log.error(ME, "Can't determine server instance name, try to add '-cluster.node.id <aUniqueId>' on startup.");
+            System.exit(1);
+         }
+         else {
+            myId = "xmlBlaster";  // fallback
+         }
       }
       if (myId != null) {
          setId(myId);
@@ -350,13 +357,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return this.msgFileDumper;
    }
 
-   /**
+   /*
     * Sets the unique node id of this xmlBlaster server instance (needed for clustering).
     * <p />
     * The new node ID is only set if my current instance is null!
     * <p />
     * See private org.xmlBlaster.Main#createNodeId()
     */
+/*
    public void setUniqueNodeIdName(String uniqueNodeIdName) {
       if (this.nodeId == null && uniqueNodeIdName != null) {
          this.nodeId = new NodeId(uniqueNodeIdName);
@@ -364,9 +372,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
          log.info(ME, "Setting xmlBlaster instance name to '" + this.nodeId.toString() + "'");
          getRunlevelManager().setId(this.nodeId.getId());
+         Thread.currentThread().dumpStack();
       }
    }
-
+*/
    /**
     * Access the handle of the user session timer thread.
     * @return The Timeout instance
