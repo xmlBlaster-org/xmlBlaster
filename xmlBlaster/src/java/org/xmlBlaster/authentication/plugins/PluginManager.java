@@ -6,6 +6,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
@@ -66,9 +67,9 @@ public class PluginManager extends PluginManagerBase {
     * @exception XmlBlasterException Thrown if to suitable security manager has been found.
     */
    public I_Manager getManager(String type, String version) throws XmlBlasterException {
-      if (type.equals("simple")) {
+      if ("simple".equals(type)) {
          if (glob.getProperty().get("Security.Server.allowSimpleDriver", false) == false){
-            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the simple security manager!");
+            throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "It's not allowed to use the simple security manager!");
          }
       }
       return (I_Manager)getPluginObject(type, version);
@@ -86,7 +87,7 @@ public class PluginManager extends PluginManagerBase {
       SessionInfo sessionInfo = auth.check(sessionId);
       if (sessionInfo==null) { // Should never be null, if access is denied an XmlBlasterException is thrown
          log.error(ME, "Authentication internal error, access denied");
-         throw new XmlBlasterException(ME+".NoAccess","Unknown session!");
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Unknown session!");
       }
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       return sessionSecCtx.getManager();
