@@ -31,7 +31,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 
@@ -115,20 +114,20 @@ public final class XmlBlasterNativeClient implements I_Callback
 
       this.xmlBlasterCon.registerConnectionListener(new I_ConnectionStateListener() {
             
-            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                connected = true;
-               conRetQos = connectionHandler.getConnectReturnQos();
+               conRetQos = connection.getConnectReturnQos();
                log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + 
-                            connectionHandler.getGlobal().getId() + " as " + conRetQos.getSessionName());
+                            connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
             }
 
-            public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-               log.warn(ME, "I_ConnectionProblems: No connection to " + connectionHandler.getGlobal().getId());
+            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.warn(ME, "I_ConnectionProblems: No connection to " + connection.getGlobal().getId());
                connected = false;
             }
 
-            public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-               log.error(ME, "I_ConnectionStateListener: Connection to " + connectionHandler.getGlobal().getId() + " is dead");
+            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.error(ME, "I_ConnectionStateListener: Connection to " + connection.getGlobal().getId() + " is dead");
                connected = false;
             }
          });
