@@ -32,12 +32,6 @@ UpdateQos& UpdateQos::operator=(const UpdateQos& data)
    return *this;
 }
 
-# ifdef XXXXXPP
-const QosData::ClientPropertyMap& UpdateQos::getClientProperties() const
-{
-   return data_.getClientProperties();
-}
-# endif
 /**
 * Test if Publish/Subscribe style is used.
 *

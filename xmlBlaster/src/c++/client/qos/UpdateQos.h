@@ -64,16 +64,6 @@ public:
    UpdateQos(const UpdateQos& data);
 
    UpdateQos& operator=(const UpdateQos& data);
-# ifdef XXXXXPP
-   /**
-    * Get a map containing all send client properties
-    */
-   const org::xmlBlaster::util::qos::QosData::ClientPropertyMap& getClientProperties() const;
-
-   bool hasClientProperty(const std::string& name) const {
-      return data_.hasClientProperty(name);
-   }
-   # endif
 
    /**
     * Test if Publish/Subscribe style is used.
