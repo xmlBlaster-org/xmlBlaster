@@ -905,8 +905,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Creation of CallbackServer failed: " + e.toString());
-         e.printStackTrace();
+         if (log.TRACE) log.trace(ME, "Creation of CallbackServer failed: " + e.toString());
+         //e.printStackTrace();
          throw new XmlBlasterException(ME, "Creation of CallbackServer failed: " + e.toString());
       }
       String text = "Unknown driverType '" + driverType + "' to install xmlBlaster callback server.";
