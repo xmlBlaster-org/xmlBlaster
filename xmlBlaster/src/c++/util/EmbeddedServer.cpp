@@ -11,16 +11,60 @@ Comment:   Testing the Timeout Features
 
 namespace org { namespace xmlBlaster { namespace util {
 
+
+EmbeddedServerRunner::EmbeddedServerRunner(EmbeddedServer& owner) : ME("EmbeddedServerRunner"), owner_(owner)
+{
+}
+
+void EmbeddedServerRunner::run()
+{  
+   if (owner_.log_.call()) owner_.log_.call(ME, "::run");
+
+   if (owner_.isRunning_) {
+      owner_.log_.warn(ME, "the current server is already running. ignoring the start command.");
+      return;
+   }
+/* currently commented out (could give problems if multithreading not supported)
+   if (isSomeServerResponding()) {
+      log_.error(ME, "an external server is already running. Please shut it down");
+      return;
+   }
+*/
+   string cmdLine = string("java ") + owner_.jvmArguments_ + " org.xmlBlaster.Main " + owner_.applArguments_;
+   owner_.log_.info(ME, "starting the embedded server with command line: '" + cmdLine + "'");
+   if (system(NULL)) {
+      try {
+         owner_.isRunning_ = true;
+         int ret = system(cmdLine.c_str());
+         owner_.log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + boost::lexical_cast<string>(ret));
+         owner_.isRunning_ = false;
+      }
+      catch (exception& ex) {
+         owner_.log_.error(ME,string("could not start the server: ") + ex.what());
+         owner_.isRunning_ = false;
+      }
+      catch (...) {
+         owner_.log_.error(ME,"could not start the server: an unknown exception occured");
+         owner_.isRunning_ = false;
+      }
+   }
+   else {
+      owner_.log_.error(ME, "could not start the embedded server: your OS does not have a command processor, plase start your server manually");
+      owner_.isRunning_ = false;
+   }
+}
+
+
 EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const string& applArguments, XmlBlasterAccess* externalAccess) 
-   : Thread(),
-     ME("EmbeddedServer"), 
+   : ME("EmbeddedServer"), 
      global_(glob), 
      log_(glob.getLog("core"))
 {
-   isRunning_         = false;
-   applArguments_     = applArguments;
-   jvmArguments_      = jvmArguments;
-   externalAccess_    = externalAccess; 
+   isRunning_      = false;
+   applArguments_  = applArguments;
+   jvmArguments_   = jvmArguments;
+   externalAccess_ = externalAccess; 
+   runner_         = false;
 }
 
 EmbeddedServer::~EmbeddedServer()
@@ -33,42 +77,11 @@ EmbeddedServer::~EmbeddedServer()
    log_.trace(ME, "destructor: stopped the server");
 }
 
-void EmbeddedServer::run()
-{  
-   if (log_.call()) log_.call(ME, "::run");
-
-   if (isRunning_) {
-      log_.warn(ME, "the current server is already running. ignoring the start command.");
-      return;
-   }
-/* currently commented out (could give problems if multithreading not supported)
-   if (isSomeServerResponding()) {
-      log_.error(ME, "an external server is already running. Please shut it down");
-      return;
-   }
-*/
-   string cmdLine = string("java ") + jvmArguments_ + " org.xmlBlaster.Main " + applArguments_;
-   log_.info(ME, "starting the embedded server with command line: '" + cmdLine + "'");
-   if (system(NULL)) {
-      try {
-         isRunning_ = true;
-         int ret = system(cmdLine.c_str());
-         log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + boost::lexical_cast<string>(ret));
-         isRunning_ = false;
-      }
-      catch (exception& ex) {
-         log_.error(ME,string("could not start the server: ") + ex.what());
-         isRunning_ = false;
-      }
-      catch (...) {
-         log_.error(ME,"could not start the server: an unknown exception occured");
-         isRunning_ = false;
-      }
-   }
-   else {
-      log_.error(ME, "could not start the embedded server: your OS does not have a command processor, plase start your server manually");
-      isRunning_ = false;
-   }
+bool EmbeddedServer::start()
+{
+   if (runner_) return false;
+   runner_ = new EmbeddedServerRunner(*this);
+   return runner_->start();
 }
 
 bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
@@ -104,8 +117,10 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    conn.publish(msgUnit);
 
    if (log_.trace()) log_.trace(ME, "stop: going to join the threads");
-   this->join();
-   
+   if (runner_) runner_->join();
+
+   delete runner_;
+   runner_ = NULL;
    if (log_.trace()) log_.trace(ME, "stop completed");
    return true;
 }

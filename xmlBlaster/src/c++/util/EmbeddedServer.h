@@ -28,17 +28,36 @@ using namespace org::xmlBlaster::client::key;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-class Dll_Export EmbeddedServer : public Thread
+class EmbeddedServer;
+
+class EmbeddedServerRunner : public Thread 
 {
 private:
-   string            ME;
-   Global&           global_;
-   Log&              log_;
-   bool              isRunning_;
-   string            applArguments_;
-   string            jvmArguments_;
-   XmlBlasterAccess* externalAccess_;
+   const string    ME;
+   EmbeddedServer& owner_;
+public:
 
+   EmbeddedServerRunner(EmbeddedServer& owner);
+
+   /**
+    * This method is invoked by the start method. Note that it is invoked only if the current thread is not
+    * already running.
+    */
+   void run();
+};
+
+class Dll_Export EmbeddedServer
+{
+friend class EmbeddedServerRunner;
+private:
+   string                ME;
+   Global&               global_;
+   Log&                  log_;
+   bool                  isRunning_;
+   string                applArguments_;
+   string                jvmArguments_;
+   XmlBlasterAccess*     externalAccess_;
+   EmbeddedServerRunner* runner_;
 public:
    /**
     * To start the server, you need a java virtual machine, the xmlBlaster server installed and in the 
@@ -63,12 +82,6 @@ public:
    virtual ~EmbeddedServer();
 
    /**
-    * This method is invoked by the start method. Note that it is invoked only if the current thread is not
-    * already running.
-    */
-   void run();
-
-   /**
     * This method shuts down the xmlBlaster server which is responding to the request. If the current 
     * embedded server is running it shuts it down. If the current embedded server is not running, this 
     * method will make a try to kill it only if the 'shutdownExternal' flag has been set to 'true'. This
@@ -78,6 +91,7 @@ public:
     */
    bool stop(bool shutdownExternal=false, bool warnIfNotRunning=true);
 
+   bool start();
 
    /**
     * This method can be used to check if a server is already running and responding to requests.
