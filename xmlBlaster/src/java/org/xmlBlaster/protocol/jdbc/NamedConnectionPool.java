@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.10 2000/11/03 19:56:39 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.11 2002/03/21 22:45:50 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -443,6 +443,7 @@ public class NamedConnectionPool
     * Invoke: java org.xmlBlaster.protocol.jdbc.NamedConnectionPool -trace true
     */
    public static void main(String[] args) {
+      /*
       NamedConnectionPool namedPool = null;
       try {
          Log.setLogLevel(args); // initialize log level
@@ -541,6 +542,7 @@ public class NamedConnectionPool
          namedPool.destroy();
          Log.panic(ME, "ERROR: Test failed " + e.toString());
       }
+      */
    }
 }
 

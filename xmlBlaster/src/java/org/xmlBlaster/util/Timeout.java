@@ -354,7 +354,7 @@ public class Timeout extends Thread
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
     */
    public static void main(String args[]) throws Exception {
-
+     /*
       String ME = "Timeout-Tester";
       Timeout timeout = new Timeout();
 
@@ -461,5 +461,6 @@ public class Timeout extends Thread
          System.err.println("*****ERROR:main interrupt: " + e.toString());
       }
       System.err.println("Test OK");
+      */
    }
 }
