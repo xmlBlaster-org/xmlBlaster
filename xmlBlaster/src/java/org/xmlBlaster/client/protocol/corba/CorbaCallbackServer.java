@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.36 2003/04/04 17:34:44 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.37 2003/04/17 13:10:18 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -78,13 +78,12 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
          this.glob = new Global();
       this.log = this.glob.getLog("corba");
 
-      String cbHostname = null;
       this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,true);
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;
       createCallbackServer();
-      log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
+      log.info(ME, "Success, created CORBA callback server");
    }
 
    /** Enforced by I_Plugin */
@@ -117,10 +116,12 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
 
       // Getting the default POA implementation "RootPOA"
       try {
-         rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+         rootPOA = org.omg.PortableServer.POAHelper.narrow(this.orb.resolve_initial_references("RootPOA"));
       } catch (org.omg.CORBA.COMM_FAILURE e) {
+         //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco' instead of 'java' and read instructions in xmlBlaster/bin/jaco or xmlBlaster/config/orb.properties: " + e.toString());
       } catch (Exception e) {
+         //e.printStackTrace();
          log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, e.toString());
       }
@@ -129,7 +130,7 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
          rootPOA.the_POAManager().activate();
          this.callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          // necessary for orbacus
-         if (orb.work_pending()) orb.perform_work();
+         if (this.orb.work_pending()) this.orb.perform_work();
       } catch (Exception e) {
          log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, e.toString());
