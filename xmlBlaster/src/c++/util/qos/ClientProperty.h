@@ -29,6 +29,12 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
  * </pre>
  * If the attribute <code>type</code> is missing we assume a 'String' property
  *
+ * <h3>Charactersets other than US-ASCII (7bit)</h3>
+ * <p>For international character sets like "UTF-8" or "iso-8859-1"
+ *    you need to force the <tt>type</tt> to <tt>Constants::TYPE_BLOB</tt> which
+ *    will send the data base64 encoded.</p>
+ * <p>The key name may only consist of US-ASCII characters</p>
+ *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.clientProperty.html">The client.qos.clientProperty requirement</a>
  * @see TestClientProperty
@@ -50,21 +56,24 @@ public:
 
    /**
     * Standard constructor. 
-    * @param name  The unique property key
+    * @param name  The unique property key in US-ASCII encoding (7-bit)
     * @param value Your data . The type (like "float") is guessed from T_VALUE
     *              NOTE: "vector<unsigned char>" "unsigned char*" are
     *                    treated as BLOBs and will be transferred Base64 encoded.
-    * @param type The data type of the value, optional, e.g. "float"
+    * @param type The data type of the value, optional, e.g. Constants::TYPE_FLOAT ("float")
+    * @param encoding How the data is transferred, org::xmlBlaster::util::Constants::ENCODING_BASE64 or ""
     */
    template <typename T_VALUE> ClientProperty(
                   const std::string& name,
-                  const T_VALUE& value
+                  const T_VALUE& value,
+                  const std::string& type="",
+                  const std::string& encoding=""
                   );
 
    /**
     * Specialized ctor for literal data. 
-    * @param name  The unique property key
-    * @param value Your pointer
+    * @param name  The unique property key in US-ASCII encoding (7-bit)
+    * @param value Your pointer to data
     * @param type  Optionally you can force another type than "String",
     *              for example Constant::TYPE_DOUBLE if the pointer contains
     *              such a number as a string representation. 
@@ -75,7 +84,7 @@ public:
 
    /**
     * Specialized ctor for blob data. 
-    * @param name  The unique property key
+    * @param name  The unique property key in US-ASCII encoding (7-bit)
     * @param value Your BLOB data.
     * @param type  Optionally you can force another type than "byte[]",
     *              for example Constant::TYPE_DOUBLE if the vector contains
@@ -87,10 +96,15 @@ public:
 
    /**
     * Internal constructor only, used by SAX parser in conjunction with setValueRaw()
-    */
+    * @param name  The unique property key in US-ASCII encoding (7-bit)
+    * @param value Your data.
+    * @param type  for example Constant::TYPE_STRING
+    * @param encoding Constants::ENCODING_BASE64 or "" for plain text
    ClientProperty(const std::string& name,
-                  const std::string& encoding,
-                  const std::string& type);
+                  const std::string& value,
+                  const std::string& type,
+                  const std::string& encoding);
+    */
 
    //virtual ~ClientProperty();
 
@@ -168,11 +182,14 @@ public:
 // to be available outside the shared library
 template <typename T_VALUE> ClientProperty::ClientProperty(
                      const std::string& name,
-                     const T_VALUE& value)
+                     const T_VALUE& value,
+                     const std::string& type,
+                     const std::string& encoding
+                     )
    : name_(name),
      value_(""),
-     encoding_(org::xmlBlaster::util::Constants::ENCODING_NONE),
-     type_("")
+     encoding_(encoding),
+     type_(type)
 {
    if (type_ == "") {
       guessType(value);  // guess type from T_VALUE

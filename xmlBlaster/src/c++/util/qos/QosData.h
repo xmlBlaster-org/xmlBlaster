@@ -200,14 +200,22 @@ public:
    void addClientProperty(const ClientProperty& clientProperty);
 
    /**
-    * Add a client property key and value
-    * @param name
+    * Add a client property key and value. 
+    * If you use other character sets than US-ASCII you should set the type
+    * to Constants::TYPE_BLOB (which will force a Base64 encoding). 
+    * @param name  The key name in US-ASCII encoding
     * @param value "vector<unsigned char>" and "unsigned char *" is treated as a blob
+    * @param type  Optionally you can force another type than "String",
+    *              for example Constants::TYPE_DOUBLE if the pointer contains
+    *              such a number as a string representation. 
+    * @param encoding How the data is transferred, org::xmlBlaster::util::Constants::ENCODING_BASE64 or ""
     * @see ClientProperty::#ClientProperty
     */
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
-            const T_VALUE& value);
+            const T_VALUE& value,
+            const std::string& type="",
+            const std::string& encoding="");
 
    /**
     * Access the value for the given name, if not found returns the defaultValue. 
@@ -251,9 +259,10 @@ public:
 };
 
 template <typename T_VALUE> void QosData::addClientProperty(
-             const std::string& name, const T_VALUE& value)
+             const std::string& name, const T_VALUE& value,
+             const std::string& type, const std::string& encoding)
 {
-   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value);
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value, type, encoding);
    clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
 }
 

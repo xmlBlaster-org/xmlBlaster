@@ -29,12 +29,12 @@ ClientProperty::ClientProperty(const std::string& name,
      type_(type)
 {
    if (needsEncoding()) {
-      std::vector<unsigned char> vec;
-      vec.reserve(value_.size());
+      std::vector<unsigned char> vec(value, value+strlen(value));
       encoding_ = Constants::ENCODING_BASE64;
-      copy(value_.begin(), value_.end(), back_inserter(vec));
       value_ = Base64::Encode(vec);
    }
+   else
+      value_ = value;
 }
 
 ClientProperty::ClientProperty(const std::string& name,
@@ -51,19 +51,20 @@ ClientProperty::ClientProperty(const std::string& name,
    encoding_ = Constants::ENCODING_BASE64;
    value_ = Base64::Encode(value);
 }
-
+/*
 ClientProperty::ClientProperty(const std::string& name,
-                     const std::string& encoding,
-                     const std::string& type)
+                  const std::string& value,
+                  const std::string& type,
+                  const std::string& encoding)
    : name_(name),
-     value_(""),
+     value_(value),
      encoding_(encoding),
      type_(type)
 {
 }
-
+*/
 bool ClientProperty::needsEncoding() const {
-   if (type_ == Constants::TYPE_BLOB)
+   if (type_ == Constants::TYPE_BLOB || encoding_ == Constants::ENCODING_BASE64)
       return true;
    else if (
         value_.find("<") != std::string::npos ||
