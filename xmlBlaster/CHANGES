@@ -93,6 +93,11 @@ Changes cvs
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Modified Log4Cplus logging:
+     1. We are now forwarding all xmlBlaster.properties and command line settings to log4cplus,
+        so you could configure everything in xmlBlaster.properties instead of a separate log4cplus.properties
+     2. log4cplus is extended to do ${xy} variable replacement not only from environment
+        but from itself as well (recursion depth is one).
    - Added zlib:stream compression support with via C SOCKET protocol plugin
    - Incompatible API change (the compiler will tell you everything - no risk!): 
       o 'class Destination' constructor expects now the new SessionName instead of SessionQos
