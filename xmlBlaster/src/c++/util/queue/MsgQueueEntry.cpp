@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/MsgQueueEntry.h>
+#include <util/Global.h>
 #include <boost/lexical_cast.hpp>
 using boost::lexical_cast;
 
@@ -21,15 +22,16 @@ using org::xmlBlaster::util::MessageUnit;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-MsgQueueEntry::MsgQueueEntry(const MessageUnit& msgUnit, const string& type, int priority, bool durable)
-   : ReferenceCounterBase()
+MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool durable)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
 {
    connectQos_       = NULL;
    connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
    msgUnit_          = new MessageUnit(msgUnit);
-//   embeddedObject_   = msgUnit_;
-
+   queryQosData_     = NULL;
+   queryKeyData_     = NULL;
+   statusQosData_    = NULL;
    uniqueId_         = TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = type;
    priority_         = priority; // should be normal priority
@@ -37,14 +39,16 @@ MsgQueueEntry::MsgQueueEntry(const MessageUnit& msgUnit, const string& type, int
    logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
-MsgQueueEntry::MsgQueueEntry(const ConnectQos& connectQos, const string& type, int priority, bool durable)
-   : ReferenceCounterBase()
+MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool durable)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
 {
    connectQos_       = new ConnectQos(connectQos);
    msgUnit_          = NULL;
    connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
-//   embeddedObject_   = connectQos_;
+   queryQosData_     = NULL;
+   queryKeyData_     = NULL;
+   statusQosData_    = NULL;
    uniqueId_         = TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = type;
    priority_         = priority; // should be maximum priority
@@ -52,23 +56,50 @@ MsgQueueEntry::MsgQueueEntry(const ConnectQos& connectQos, const string& type, i
    logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
+
+MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type, int priority, bool durable)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global)
+{
+   connectQos_       = NULL;
+   msgUnit_          = NULL;
+   connectReturnQos_ = NULL;
+   publishReturnQos_ = NULL;
+   queryQosData_     = new QueryQosData(queryQosData);
+   queryKeyData_     = new QueryKeyData(queryKeyData);
+   statusQosData_    = NULL;
+   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   embeddedType_     = type;
+   priority_         = priority; // should be maximum priority
+   durable_          = durable; // currently no durables supported
+   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+}
+
+
+
 MsgQueueEntry::~MsgQueueEntry()
 {
    delete connectQos_;
    delete msgUnit_;
    delete publishReturnQos_;
    delete connectReturnQos_;
+   delete queryQosData_;
+   delete queryKeyData_;
+   delete statusQosData_;
 }
 
 MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
-   : ReferenceCounterBase(entry)
+   : ReferenceCounterBase(entry), ME(entry.ME), global_(entry.global_)
 {
    connectQos_       = NULL;
    msgUnit_          = NULL;
    connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
+   queryQosData_     = NULL;
+   queryKeyData_     = NULL;
+   statusQosData_    = NULL;
    copy(entry);
 }
+
 
 MsgQueueEntry& MsgQueueEntry::operator =(const MsgQueueEntry& entry)
 {
@@ -76,7 +107,6 @@ MsgQueueEntry& MsgQueueEntry::operator =(const MsgQueueEntry& entry)
    copy(entry);
    return *this;
 }
-
 int MsgQueueEntry::getPriority() const
 {
    return priority_;
@@ -102,8 +132,8 @@ size_t MsgQueueEntry::getSizeInBytes() const
    size_t sum = 0;
    if (msgUnit_          != NULL) sum += sizeof(*msgUnit_);
    if (connectQos_       != NULL) sum += sizeof(*connectQos_);
-//   if (connectReturnQos_ != NULL) sum += sizeof(*connectReturnQos_);
-//   if (publishReturnQos_ != NULL) sum += sizeof(*publishReturnQos_);
+   if (queryQosData_     != NULL) sum += sizeof(*queryQosData_);
+   if (queryKeyData_     != NULL) sum += sizeof(*queryKeyData_);
    return sum;
 }
 

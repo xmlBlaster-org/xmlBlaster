@@ -90,6 +90,8 @@ public:
     */
    string wrap(const string& str);
 
+   QueryKeyData getData() const;
+
 };
 
 }}}} // namespace

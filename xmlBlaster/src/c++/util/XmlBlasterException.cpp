@@ -94,7 +94,7 @@ namespace org { namespace xmlBlaster { namespace util {
       string ret = errorCodeStr_ + ", node=" + node_ +
         ", location=" + location_ + ", lang=" + lang_ +
         "versionInfo=" + versionInfo_ + ", timestamp=" +
-        lexical_cast<string>(timestamp_) + ", stackTrace=" + stackTrace_ +
+        timestamp_ + ", stackTrace=" + stackTrace_ +
         ", embeddedMessage=" + embeddedMessage_ + ", transactionInfo=" +
         transactionInfo_ + ", original message=" + message_;
      return ret;
@@ -250,7 +250,7 @@ namespace org { namespace xmlBlaster { namespace util {
       "   <lang>" + getLang() + "</lang>\n" +
       "   <message><![CDATA[" + getRawMessage() + "]]></message>\n" +
       "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n" +
-      "   <timestamp>" + lexical_cast<string>(getTimestamp()) + "</timestamp>\n" +
+      "   <timestamp>" + getTimestamp() + "</timestamp>\n" +
       "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n" +
       "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n" +
       //"   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n" +

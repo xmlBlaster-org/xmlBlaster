@@ -37,6 +37,13 @@ UnSubscribeQos::UnSubscribeQos(Global& global)
 {
 }
 
+
+UnSubscribeQos::UnSubscribeQos(Global& global, const QueryQosData& data)
+   : ME("UnSubscribeQos"), global_(global), data_(data)
+{
+}
+
+
 UnSubscribeQos::UnSubscribeQos(const UnSubscribeQos& qos)
    : ME(qos.ME), global_(qos.global_), data_(qos.data_)
 {
@@ -47,13 +54,14 @@ UnSubscribeQos& UnSubscribeQos::operator =(const UnSubscribeQos& qos)
    return *this;
 }
 
-/**
- * Converts the data into a valid XML ASCII string.
- * @return An XML ASCII string
- */
 string UnSubscribeQos::toXml() const
 {
    return data_.toXml();
+}
+
+QueryQosData UnSubscribeQos::getData() const
+{
+   return data_;
 }
 
 }}}}

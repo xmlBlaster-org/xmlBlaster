@@ -15,10 +15,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/qos/PublishReturnQos.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/ReferenceCounterBase.h>
+#include <util/qos/StatusQosData.h>
+#include <util/qos/QueryQosData.h>
+#include <util/key/QueryKeyData.h>
 
 #include <stddef.h>
 
 using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::key;
 using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
 using org::xmlBlaster::util::qos::ConnectQos;
 using org::xmlBlaster::util::ReferenceCounterBase;
@@ -37,33 +42,41 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
-   string       ME;
-   int          priority_;
-   bool         durable_;
-   Timestamp    uniqueId_;
-//   void*        embeddedObject_;
-   string       embeddedType_;
-   string       logId_;
-//   long         sizeInBytes_;
-   // specific for c++ clients:
-   MessageUnit* msgUnit_;
-   ConnectQos*  connectQos_;
+   string        ME;
+   Global&       global_;
+   int           priority_;
+   bool          durable_;
+   Timestamp     uniqueId_;
+   string        embeddedType_;
+   string        logId_;
+   MessageUnit*  msgUnit_;
+   ConnectQos*   connectQos_;
+   QueryQosData* queryQosData_;
+   QueryKeyData* queryKeyData_;
 
    // specific return values
    ConnectReturnQos* connectReturnQos_;
    PublishReturnQos* publishReturnQos_;
+   StatusQosData*    statusQosData_;
 
 public:
 
     /**
      * Constructor suited for operations like publishes
      */
-    MsgQueueEntry(const MessageUnit& msgUnit, const string& type="publish", int priority=5, bool durable=false);
+    MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=5, bool durable=false);
 
     /**
      * Constructor suited for operations like connect
      */
-    MsgQueueEntry(const ConnectQos& connectQos, const string& type="connect", int priority=9, bool durable=false);
+    MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type="connect", int priority=9, bool durable=false);
+
+
+    /**
+     * Constructor suited for operations like subscribe and unSubscribe
+     */
+    MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type="subscribe", int priority=9, bool durable=false);
+
 
     virtual ~MsgQueueEntry();
 
@@ -88,13 +101,33 @@ public:
        if (entry.connectReturnQos_ != NULL) 
           connectReturnQos_ = new ConnectReturnQos(*entry.connectReturnQos_);
 
-
        if (publishReturnQos_ != NULL) {
           delete publishReturnQos_;
 	  publishReturnQos_ = NULL; 
        }
        if (entry.publishReturnQos_ != NULL) 
           publishReturnQos_ = new PublishReturnQos(*entry.publishReturnQos_);
+
+       if (queryQosData_ != NULL) {
+          delete queryQosData_;
+	  queryQosData_ = NULL; 
+       }
+       if (entry.queryQosData_ != NULL) 
+          queryQosData_ = new QueryQosData(*entry.queryQosData_);
+
+       if (queryKeyData_ != NULL) {
+          delete queryKeyData_;
+	  queryKeyData_ = NULL; 
+       }
+       if (entry.queryKeyData_ != NULL) 
+          queryKeyData_ = new QueryKeyData(*entry.queryKeyData_);
+
+       if (statusQosData_ != NULL) {
+          delete statusQosData_;
+	  statusQosData_ = NULL; 
+       }
+       if (entry.statusQosData_ != NULL) 
+          statusQosData_ = new StatusQosData(*entry.statusQosData_);
 
        uniqueId_     = entry.uniqueId_;
        embeddedType_ = entry.embeddedType_;
@@ -171,10 +204,9 @@ public:
     */
    size_t getSizeInBytes() const;
 
+
    // this should actually be in another interface but since it is an only method we put it here.
    virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection) = 0;
-
-   virtual string onlyForTesting() const = 0;
 
 };
 

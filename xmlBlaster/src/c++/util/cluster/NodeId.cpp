@@ -52,7 +52,7 @@ string NodeId::getId() const
 void NodeId::setId(const string& id)
 {
    if (id.empty()) {
-      log_.error(ME, "Cluster node has no name");
+//      log_.error(ME, "Cluster node has no name");
       id_ = "NoNameNode";
    }
    id_ = id;

@@ -8,8 +8,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-PublishQueueEntry::PublishQueueEntry(const MessageUnit& msgUnit, const string& type, int priority, bool durable)
-   : MsgQueueEntry(msgUnit, type, priority, durable)
+PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool durable)
+   : MsgQueueEntry(global, msgUnit, type, priority, durable)
 {
    ME = "PublishQueueEntry";
    if (priority < 0) priority_ = msgUnit.getQos().getPriority();
@@ -27,6 +27,8 @@ MsgQueueEntry& PublishQueueEntry::send(I_XmlBlasterConnection& connection)
       delete publishReturnQos_;
       publishReturnQos_ = NULL;
    }
+   std::cout << "PublishQueueEntry: " << msgUnit_->getContent() << std::endl;
+
    publishReturnQos_ = new PublishReturnQos(connection.publish(*msgUnit_));
    return *this;
 }

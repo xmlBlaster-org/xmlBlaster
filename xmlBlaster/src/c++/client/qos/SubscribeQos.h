@@ -45,6 +45,8 @@ class Dll_Export SubscribeQos : public GetQos
 public:
    SubscribeQos(Global& global);
 
+   SubscribeQos(Global& global, const QueryQosData& data);
+
    SubscribeQos(const SubscribeQos& qos);
 
    SubscribeQos& operator =(const SubscribeQos& qos);

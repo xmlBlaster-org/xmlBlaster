@@ -178,7 +178,14 @@ string SessionQosData::toXml(const string& extraOffset, bool isClient) const
    string offset = extraOffset; // currently unused.
    string ret = string("<session timeout='") + lexical_cast<string>(getTimeout()) +
                 string("' maxSessions='") + lexical_cast<string>(getMaxSessions()) +
-                string("' clearSessions='") + lexical_cast<string>(getClearSessions());
+                string("' clearSessions='") + Global::getBoolAsString(clearSessions_);
+   if (!sessionId_.empty()) {
+      ret += string("' sessionId='") + sessionId_;
+   }
+   if (!pubSessionId_.empty()) {
+      ret += string("' publicSessionId='") + pubSessionId_;
+   }
+		
    if (isClient) ret += string("' name='")  + getSubjectId() + "'>\n";
    else ret += string("' name='")  + getAbsoluteName() + "'>\n";
    ret += string("  <sessionId>") + getSessionId() + string("</sessionId>\n");

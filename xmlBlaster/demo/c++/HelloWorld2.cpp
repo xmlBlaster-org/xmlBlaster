@@ -82,7 +82,7 @@ public:
          PublishReturnQos pubRetQos = con.publish(msgUnit);
          log_.info(ME, "successfully published to xmlBlaster. Return qos: " + pubRetQos.toXml());
          try {
-            TimestampFactory::sleepSecs(1);
+            Thread::sleepSecs(1);
          }
          catch(XmlBlasterException e) {
             cout << e.toXml() << endl;

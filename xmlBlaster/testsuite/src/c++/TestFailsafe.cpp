@@ -34,6 +34,7 @@ private:
 
    XmlBlasterAccess   *connection_;
    ConnectQos         *connQos_;
+   ConnectReturnQos   *connRetQos_;
    SubscribeQos       *subQos_;
    SubscribeKey       *subKey_;
    PublishQos         *pubQos_;
@@ -45,6 +46,7 @@ public:
    {
       connection_ = NULL;
       connQos_    = NULL;
+      connRetQos_ = NULL;
       subQos_     = NULL;
       subKey_     = NULL;
       pubQos_     = NULL;
@@ -53,6 +55,13 @@ public:
 
    virtual ~TestFailsafe()
    {
+      delete connection_;
+      delete connQos_;
+      delete connRetQos_;
+      delete subQos_;
+      delete subKey_;
+      delete pubQos_;
+      delete pubKey_;
    }
 
    bool reConnected()
@@ -81,8 +90,8 @@ public:
 	 connQos_ = new ConnectQos(global_, "guy", "secret");
 
 	 log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
-	 ConnectReturnQos connRetQos = connection_->connect(*connQos_, this);  // Login to xmlBlaster, register for updates
-	 log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos.toXml());
+	 connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
+	 log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
 
 	 subKey_ = new SubscribeKey(global_);
 	 subKey_->setOid("TestFailsafe");
@@ -97,6 +106,29 @@ public:
 	 assert(0);
       }
 
+   }
+
+   void testReconnect()
+   {
+      DisconnectQos disconnectQos(global_);
+      connection_->disconnect(disconnectQos);
+      Thread::sleep(500);
+      string origSessionId = connRetQos_->getSessionQos().getSessionId();
+      log_.info(ME, string("original session Id: '") + origSessionId + "'");
+      ConnectReturnQos tmp = connection_->connect(*connQos_, this);
+      Thread::sleep(500);
+      string currentSessionId = tmp.getSessionQos().getSessionId();
+      log_.info(ME, string("session Id after reconnection: '") + currentSessionId + "'");
+      connection_->disconnect(disconnectQos);
+
+      Thread::sleep(500);
+      SessionQos sessionQos = connQos_->getSessionQos();
+      sessionQos.setSessionId(connRetQos_->getSessionQos().getSessionId());
+      connQos_->setSessionQos(sessionQos);
+      tmp = connection_->connect(*connQos_, this);
+      log_.info(ME, string("connect qos for second reconnection: ") + connQos_->toXml());
+      currentSessionId = tmp.getSessionQos().getSessionId();
+      log_.info(ME, string("session Id after second reconnection: '") + currentSessionId + "'");
    }
 
 
@@ -170,15 +202,41 @@ public:
  */
 int main(int args, char ** argv)
 {
-   XMLPlatformUtils::Initialize();
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argv);
-// XmlBlasterConnection::usage();
-//   glob.getLog().info("TestFailsafe", "Example: java TestFailsafe\n");
+   try {
+      XMLPlatformUtils::Initialize();
+      Global& glob = Global::getInstance();
+      glob.initialize(args, argv);
+   // XmlBlasterConnection::usage();
+   //   glob.getLog().info("TestFailsafe", "Example: java TestFailsafe\n");
 
-   TestFailsafe testFailsafe(glob);
-   testFailsafe.setUp();
-   testFailsafe.testFailsafe();
-   testFailsafe.tearDown();
+      TestFailsafe testFailsafe(glob);
+      testFailsafe.setUp();
+      // testFailsafe.testReconnect();
+      testFailsafe.testFailsafe();
+      testFailsafe.tearDown();
+   }
+   catch (XmlBlasterException& ex) {
+      std::cout << ex.toXml() << std::endl;
+   }
+   catch (exception& ex) {
+      cout << " exception: " << ex.what() << endl;
+   }
+   catch (bad_exception& ex) {
+      cout << "bad_exception: " << ex.what() << endl;
+   }
+   catch (string& ex) {
+      cout << "string: " << ex << endl;
+   }
+   catch (char* ex) {
+      cout << "char* :  " << ex << endl;
+   }
+
+   catch (...)
+   {
+      cout << "unknown exception occured" << endl;
+      XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");
+      cout << e.toXml() << endl;
+   }
+
    return 0;
 }

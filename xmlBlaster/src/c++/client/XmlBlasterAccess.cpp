@@ -29,7 +29,6 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    updateClient_       = NULL;
    connection_         = NULL;
    deliveryManager_    = NULL;
-   status_             = START;
    connectionProblems_ = NULL;
 }
 
@@ -68,7 +67,6 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    }
    if (log_.TRACE) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    connectReturnQos_ = connection_->connect(connectQos_);
-   status_ = CONNECTED;
    return connectReturnQos_;
 }
 
@@ -109,7 +107,6 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
 {
    if (connection_ == NULL) return false;
    bool ret  = connection_->disconnect(qos);
-   status_ = DEAD;
    return ret;
 }
 

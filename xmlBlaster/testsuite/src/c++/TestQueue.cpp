@@ -8,7 +8,8 @@ Comment:   Testing the Timeout Features
 #include <util/ReferenceHolder.h>
 #include <util/queue/PublishQueueEntry.h>
 #include <util/queue/ConnectQueueEntry.h>
-
+#include <util/queue/MsgQueue.h>
+ 
 #include <iostream>
 #include <string>
 #include <util/Log.h>
@@ -50,17 +51,21 @@ class TestQueue
 {
    
 private:
-   string ME;
-   Global& global_;
-   Log& log_;
+   string    ME;
+   Global&   global_;
+   Log&      log_;
+   MsgQueue* queue_; 
 
 public:
    TestQueue(Global& global, string name) : ME(name), global_(global), log_(global.getLog("test"))
    {
+      queue_ = NULL;
    }
 
    virtual ~TestQueue()
    {
+      delete queue_;
+      queue_ = NULL;
    }
 
    void testPublishCompare() 
@@ -129,42 +134,37 @@ public:
    }
 
 
-   void testReferenceHolder()
+   void testQueue()
    {
-      log_.info(ME, "reference holder test: starting ...");
+      QueueProperty prop(global_, "");
+      queue_ = new MsgQueue(global_, prop);
+      assertEquals(log_, true, queue_->empty(),  "check for emptiness of queue after creation");
+      ConnectQos connQos(global_);
+      ConnectQueueEntry entry(connQos);
+      queue_->put(entry);
+      assertEquals(log_, false, queue_->empty(), "check for emptiness of queue after creation");
+      
+      vector<EntryType> ret = queue_->peekWithSamePriority();
+      assertEquals(log_, (size_t)1, ret.size(), "check for number of entries peeked");
 
-      double val1 = 1.0;
-
-      vector<ReferenceHolder<double> > vec;
-      ReferenceHolder<double> holder1(val1);
-      vec.insert(vec.end(), holder1);
-      val1 = 4.0;
-      assertEquals(log_, 4.0, **vec.begin(), "refence holder test");
-      log_.info(ME, "reference holder test: successfully completed!");
+      assertEquals(log_, (long)1, queue_->randomRemove(ret.begin(), ret.end()), "check for number of entries deleted");
+      assertEquals(log_, true, queue_->empty(), "check for emptiness after deletion");
    }
 
 
    void setUp() 
    {
+      if (queue_) {
+         delete queue_;
+	 queue_ = NULL;
+      }
    }
 
    void tearDown() {
-   }
-
-   bool reConnected()
-   {
-      log_.info(ME, "reconnected");
-      return true;
-   }
-
-   void lostConnection()
-   {
-      log_.info(ME, "lost connection");
-   }
-
-   void toPolling()
-   {
-      log_.info(ME, "going to poll modus");
+      if (queue_) {
+         delete queue_;
+	 queue_ = NULL;
+      }
    }
 
 
@@ -194,7 +194,7 @@ int main(int args, char *argc[]) {
    test->tearDown();
 
    test->setUp();
-   test->testReferenceHolder();
+   test->testQueue();
    test->tearDown();
 
    delete test;

@@ -141,6 +141,7 @@ public:
     */
    MsgQueue getCopyOfQueue(bool eraseOriginalQueueEntries=true);
 
+   bool isFailsafe() const;
 
 protected:
    /** only used inside the class to avoid deadlock */
@@ -148,6 +149,10 @@ protected:
    PublishReturnQos queuePublish(const MessageUnit& msgUnit);
    bool startPinger();
 
+   /**
+    * Going to polling status in case we are in failsafe mode or to DEAD if we are not in failsafe mode.
+    */
+   void toPollingOrDead();
 };
 
 

@@ -1,13 +1,19 @@
 /*------------------------------------------------------------------------------
-Name:      PublishQueueEntry.h
+Name:      SubscribeQueueEntry.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-#ifndef _UTIL_QUEUE_PUBLISHQUEUEENRY_H
-#define _UTIL_QUEUE_PUBLISHQUEUEENRY_H
+#ifndef _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
+#define _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
 
 #include <util/queue/MsgQueueEntry.h>
+#include <client/qos/SubscribeQos.h>
+#include <client/qos/SubscribeReturnQos.h>
+#include <client/key/SubscribeKey.h>
+
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -19,17 +25,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export PublishQueueEntry : public MsgQueueEntry
+class Dll_Export SubscribeQueueEntry : public MsgQueueEntry
 {
 public:
 
    /**
-    * Constructor. You can provide a name different from 'publish'.
-    * Normally the entry has the priority specified in the PublishQos of the message unit. However, if you
-    * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
-    * priority of the message unit will be ignored.
+    * Constructor suited for operations like subscribe and unSubscribe
     */
-   PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=-1, bool durable=false);
+   SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type="subscribe", int priority=9, bool durable=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In
@@ -40,11 +43,11 @@ public:
    // this should actually be in another interface but since it is an only method we put it here.
    MsgQueueEntry& send(I_XmlBlasterConnection& connection);
 
-   MessageUnit getMsgUnit() const;
+   SubscribeQos getSubscribeQos() const;
 
-   PublishReturnQos getPublishReturnQos() const;
-
-   string onlyForTesting() const;
+   SubscribeKey getSubscribeKey() const;
+ 
+   SubscribeReturnQos getSubscribeReturnQos() const;
 
 };
 

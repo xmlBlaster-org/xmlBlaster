@@ -253,16 +253,17 @@ void CorbaDriver::usage()
 org::xmlBlaster::util::XmlBlasterException
 CorbaDriver::convertFromCorbaException(const serverIdl::XmlBlasterException& ex)
 {
-   return org::xmlBlaster::util::XmlBlasterException(string(ex.errorCodeStr),
-                                                     string(ex.node),
-                                                     string(ex.location),
-                                                     string(ex.lang),
-                                                     string(ex.message),
-                                                     string(ex.versionInfo),
-                                                     string(ex.timestampStr),
-                                                     string(ex.stackTrace),
-                                                     string(ex.embeddedMessage),
-                                                     string(ex.transactionInfo));
+   string tmp = "";
+   return org::xmlBlaster::util::XmlBlasterException(ex.errorCodeStr==NULL?tmp:string(ex.errorCodeStr),
+                                                     ex.node==NULL?tmp:string(ex.node),
+                                                     ex.location==NULL?tmp:string(ex.location),
+                                                     ex.lang==NULL?tmp:string(ex.lang),
+                                                     ex.message==NULL?tmp:string(ex.message),
+                                                     ex.versionInfo==NULL?tmp:string(ex.versionInfo),
+                                                     ex.timestampStr==NULL?tmp:string(ex.timestampStr),
+                                                     ex.stackTrace==NULL?tmp:string(ex.stackTrace),
+                                                     ex.embeddedMessage==NULL?tmp:string(ex.embeddedMessage),
+                                                     ex.transactionInfo==NULL?tmp:string(ex.transactionInfo));
 }
 
 serverIdl::XmlBlasterException

@@ -35,6 +35,13 @@ GetQos::GetQos(Global& global) : UnSubscribeQos(global)
    ME = "GetQos";
 }
 
+GetQos::GetQos(Global& global, const QueryQosData& data)
+   : UnSubscribeQos(global, data)
+{
+   ME = "GetQos";
+}
+
+
 GetQos::GetQos(const GetQos& qos) : UnSubscribeQos(qos)
 {
 }

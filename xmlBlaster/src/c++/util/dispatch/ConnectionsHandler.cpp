@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
 Name:      ConnectionsHandler.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
@@ -81,6 +81,14 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
 
    connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+   string sessionId = connectReturnQos_->getSessionQos().getSessionId();
+   log_.info(ME, string("successfully connected with sessionId = '") + sessionId + "'");
+   SessionQos tmp = connectQos_->getSessionQos();
+   tmp.setSessionId(sessionId);
+   connectQos_->setSessionQos(tmp);
+   if (log_.TRACE) {
+      log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
+   }
    status_ = CONNECTED;
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
@@ -105,10 +113,7 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
       status_ = DEAD;
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         status_ = POLLING;
-	 startPinger();
-      }
+      if ( ex.isCommunication() ) toPollingOrDead();
       throw ex;
    }
 }
@@ -177,10 +182,7 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
       return connection_->subscribe(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         status_ = POLLING;
-         startPinger();
-      }
+      if ( ex.isCommunication() ) toPollingOrDead();
       throw ex;
    }
 }
@@ -199,10 +201,7 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
       return connection_->get(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         status_ = POLLING;
-	 startPinger();
-      }
+      if ( ex.isCommunication() ) toPollingOrDead();
       throw ex;
    }
 }
@@ -222,10 +221,7 @@ vector<UnSubscribeReturnQos>
       return connection_->unSubscribe(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         status_ = POLLING;
-	 startPinger();
-      }
+      if ( ex.isCommunication() ) toPollingOrDead();
       throw ex;
    }
 }
@@ -242,11 +238,11 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "publish");
    try {
       return connection_->publish(msgUnit);
+      if (log_.TRACE) log_.trace(ME, "publish successful");
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
-         status_ = POLLING;
-	 startPinger();
+         toPollingOrDead();
          return queuePublish(msgUnit);
       }
       else throw ex;
@@ -271,9 +267,8 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
-         status_ = POLLING;
+         toPollingOrDead();
          for (size_t i=0; i < msgUnitArr.size(); i++) queuePublish(msgUnitArr[i]);
-	 startPinger();
       }
       else throw ex;
    }
@@ -300,12 +295,11 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
-         status_ = POLLING;
+         toPollingOrDead(); 
 	 vector<PublishReturnQos> retQos;
 	 for (size_t i=0; i < msgUnitArr.size(); i++) {
 	    retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
 	 }
-         startPinger();
 	 return retQos;
       }
       else throw ex;
@@ -327,10 +321,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
       return connection_->erase(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         status_ = POLLING;
-	 startPinger();
-      }
+      if ( ex.isCommunication() ) toPollingOrDead();
       throw ex;
    }
 }
@@ -340,6 +331,34 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
    Lock lock(connectionMutex_);
    connectionProblems_ = connectionProblems;
 }
+
+void ConnectionsHandler::toPollingOrDead()
+{
+   if (!isFailsafe()) {
+      log_.info(ME, "going into DEAD status since not in failsafe mode. For failsafe mode set 'delay' to a positive long value, for example on the cmd line: -delay 10000");
+      status_ = DEAD;
+      connection_->shutdown();
+      if (connectionProblems_) connectionProblems_->lostConnection();
+      return;
+   }
+
+   log_.info(ME, "going into POLLING status");
+   status_ = POLLING;
+   currentRetry_ = 0;
+   /*
+   try {
+      DisconnectQos discQos(global_);
+      connection_->disconnect(discQos);
+   }
+   catch (...) {
+      log_.warn(ME, "exception when trying to disconnect");
+   }
+   */
+   connection_->shutdown();
+   if (connectionProblems_) connectionProblems_->toPolling();
+   startPinger();
+}
+
 
 void ConnectionsHandler::timeout(void *userData)
 {
@@ -356,22 +375,7 @@ void ConnectionsHandler::timeout(void *userData)
         }
      }
      catch (XmlBlasterException& ex) {
-        status_ = POLLING;
-	currentRetry_ = 0;
-	try {
-	   DisconnectQos discQos(global_);
-	   connection_->disconnect(discQos);
-	}
-	catch (...) {
-	   log_.warn(ME, "exception when trying to disconnect");
-	}
-	
-	connection_->shutdown();
-
-	if (connectionProblems_) {
-	   connectionProblems_->toPolling();
-	}
-        startPinger();
+        toPollingOrDead();
      }
      return;
   }
@@ -381,10 +385,18 @@ void ConnectionsHandler::timeout(void *userData)
      try {
         if ((connection_) && (connectQos_)) {
            if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
+
 	   ConnectReturnQos retQos = connection_->connect(*connectQos_);
-           if ( log_.TRACE ) log_.trace(ME, "ping timeout: re-connection was successful");
 	   if (connectReturnQos_) delete connectReturnQos_;
            connectReturnQos_ = new ConnectReturnQos(retQos);
+	   string sessionId = connectReturnQos_->getSessionQos().getSessionId();
+           log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
+
+           if ( log_.TRACE ) {
+	      log_.trace(ME, "ping timeout: re-connection was successful");
+	      log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
+	   }
+
 	   bool doFlush = true;
            if ( connectionProblems_ ) doFlush = connectionProblems_->reConnected();
 
@@ -436,7 +448,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
    PublishReturnQos retQos(global_);
    retQos.setKeyOid(msgUnit.getKey().getOid());
    retQos.setState("QUEUED");
-   PublishQueueEntry entry(msgUnit);
+   PublishQueueEntry entry(global_, msgUnit);
    queue_->put(entry);
    return retQos;
 }
@@ -458,7 +470,8 @@ long ConnectionsHandler::flushQueue()
    
 long ConnectionsHandler::flushQueueUnlocked()
 {
-   if (!queue_ || queue_->empty()) return 0;
+   if ( log_.CALL ) log_.call(ME, "flushQueueUnlocked");
+	   if (!queue_ || queue_->empty()) return 0;
    if (status_ != CONNECTED || connection_ == NULL) return -1;
 
    long ret = 0;
@@ -470,11 +483,7 @@ long ConnectionsHandler::flushQueueUnlocked()
 	    (*iter)->send(*connection_);
 	 }
 	 catch (XmlBlasterException &ex) {
-	   if (ex.isCommunication()) {
-	      status_ = POLLING;
-	      startPinger();
-	      connection_->shutdown();
-	   }
+	   if (ex.isCommunication()) toPollingOrDead();
 	   queue_->randomRemove(entries.begin(), iter);
 	   throw ex;
 	 }
@@ -502,6 +511,12 @@ MsgQueue ConnectionsHandler::getCopyOfQueue(bool eraseOriginalQueueEntries)
    MsgQueue ret = *queue_;
    if (eraseOriginalQueueEntries) ret.clear();
    return ret;
+}
+
+bool ConnectionsHandler::isFailsafe() const
+{
+   if (!connectQos_) return false;
+   return connectQos_->getAddress().getDelay() > 0;
 }
 
 

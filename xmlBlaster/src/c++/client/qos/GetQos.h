@@ -38,6 +38,8 @@ class Dll_Export GetQos : public UnSubscribeQos
 public:
    GetQos(Global& global);
 
+   GetQos(Global& global, const QueryQosData& data);
+
    GetQos(const GetQos& qos);
 
    GetQos& operator =(const GetQos& qos);

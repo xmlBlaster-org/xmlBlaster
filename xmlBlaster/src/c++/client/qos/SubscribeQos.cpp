@@ -35,6 +35,12 @@ SubscribeQos::SubscribeQos(Global& global) : GetQos(global)
    ME = "SubscribeQos";
 }
 
+SubscribeQos::SubscribeQos(Global& global, const QueryQosData& data)
+   : GetQos(global, data)
+{
+   ME = "SubscribeQos";
+}
+
 SubscribeQos::SubscribeQos(const SubscribeQos& qos) : GetQos(qos)
 {
 }

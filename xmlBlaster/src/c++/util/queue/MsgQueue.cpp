@@ -120,7 +120,7 @@ long MsgQueue::randomRemove(vector<EntryType>::const_iterator start, vector<Entr
       if (storage_.empty()) return 0;
       int help = storage_.erase(*iter);
       if (help > 0) {
-         count -= help;
+         count += help;
          numOfBytes_ -= help * entrySize;
       }
       iter++;

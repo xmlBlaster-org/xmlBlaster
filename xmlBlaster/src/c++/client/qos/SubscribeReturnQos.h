@@ -81,6 +81,8 @@ public:
     */
    string toXml(const string& extraOffset="") const;
 
+   StatusQosData getData() const;
+
 };
 
 }}}} // namespace

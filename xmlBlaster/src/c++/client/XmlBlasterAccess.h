@@ -57,14 +57,15 @@ private:
 
    /** Used to callback the clients default update() method (as given on connect()) */
    I_Callback* updateClient_;
-
-   /** used to temporarly store the failsafe notification address (if any) */
+   
+   /** used to temporarly store the failsafe notification address (if any). Once initFailsafe is called, this
+    * pointer is set to NULL again. This way connection_.initFailsafe will be invoked even if the user has
+    * called XmlBlasterAccess::initFailsafe before the connection_ member has been created.
+    */
    I_ConnectionProblems* connectionProblems_;
    Global& global_;
    Log&    log_;
 
-   enum {START, CONNECTED, POLLING, DEAD, END};
-   int status_;
 public:
    /**
     * Create an xmlBlaster accessor. 

@@ -66,4 +66,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_.toXml(extraOffset);
    }
 
+   StatusQosData SubscribeReturnQos::getData() const
+   {
+      return data_;
+   }
+
 }}}} // namespace

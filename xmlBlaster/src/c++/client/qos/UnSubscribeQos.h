@@ -44,6 +44,8 @@ public:
     */
    UnSubscribeQos(Global& global);
 
+   UnSubscribeQos(Global& global, const QueryQosData& data);
+
    UnSubscribeQos(const UnSubscribeQos& qos);
 
    UnSubscribeQos& operator =(const UnSubscribeQos& qos);
@@ -53,6 +55,8 @@ public:
     * @return An XML ASCII string
     */
    string toXml() const;
+
+   QueryQosData getData() const;
 };
 
 }}}}

@@ -65,7 +65,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * key   = loginName, the unique login name of a client
     * value = SessionInfo object, containing all data about a client
     */
-   final private Map loginNameSubjectInfoMap = new HashMap();
+   final private Map loginNameSubjectInfoMap = Collections.synchronizedMap(new HashMap());
 
    /**
     * For listeners who want to be informed about login/logout
@@ -232,7 +232,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          subjectInfo = getSubjectInfoByName(subjectName);
          if (subjectInfo == null) {
             subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectCbQueueProperty());
-            addLoginName(subjectInfo);
+            loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
          }
          else  // TODO: Reconfigure subject queue only when queue relating='subject' was used
             subjectInfo.setCbQueueProperty(connectQos.getSubjectCbQueueProperty()); // overwrites only if not null
@@ -263,8 +263,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
 
          sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
-         synchronized(this.sessionInfoMap) {
-            this.sessionInfoMap.put(secretSessionId, sessionInfo);
+         synchronized(sessionInfoMap) {
+            sessionInfoMap.put(secretSessionId, sessionInfo);
          }
          subjectInfo.notifyAboutLogin(sessionInfo);
 
@@ -391,50 +391,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       SubjectInfo subjectInfo = getSubjectInfoByName(subjectName);
       if (subjectInfo == null) {
          subjectInfo = new SubjectInfo(getGlobal(), subjectName.getRelativeName());
-         addLoginName(subjectInfo);
+         loginNameSubjectInfoMap.put(subjectName.getLoginName(), subjectInfo);
       }
 
       return subjectInfo;
    }
 
-   private void addLoginName(SubjectInfo subjectInfo) {
-      synchronized(this.loginNameSubjectInfoMap) {
-         this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
-      }
-      try {
-         glob.getRequestBroker().updateInternalUserList();
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Publishing internal user list failed: " + e.getMessage());
-      }
-   }
-
-   private void removeLoginName(SubjectInfo subjectInfo) {
-      synchronized(this.loginNameSubjectInfoMap) {
-         this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
-      }
-      try {
-         glob.getRequestBroker().updateInternalUserList();
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Publishing internal user list failed: " + e.getMessage());
-      }
-   }
-
-   public int getNumSubjects() {
-      return this.loginNameSubjectInfoMap.size();
-   }
-
-   /**
-    * Access a subjectInfo with the unique login name
-    * @return the SubjectInfo object<br />
-    *         null if not found
-    */
-   public final SubjectInfo getSubjectInfoByName(SessionName subjectName) {
-      synchronized(this.loginNameSubjectInfoMap) {
-         return (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
-      }
-   }
 
    /**
     * Access a sessionInfo with the unique secretSessionId. 
@@ -442,17 +404,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * @return the SessionInfo object or null if not known
     */
    public final SessionInfo getSessionInfo(String secretSessionId) {
-      synchronized(this.sessionInfoMap) {
-         return (SessionInfo)this.sessionInfoMap.get(secretSessionId);
-      }
-   }
-
-   /**
-    * Returns a current snapshot of all sessions
-    */
-   public final SessionInfo[] getSessionInfoArr() {
-      synchronized(this.sessionInfoMap) {
-         return (SessionInfo[])this.sessionInfoMap.values().toArray((new SessionInfo[this.sessionInfoMap.size()]));
+      synchronized(sessionInfoMap) {
+         return (SessionInfo)sessionInfoMap.get(secretSessionId);
       }
    }
 
@@ -468,20 +421,32 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    }
 
    public boolean sessionExists(String secretSessionId) {
-      synchronized(this.sessionInfoMap) {
-         return this.sessionInfoMap.containsKey(secretSessionId);
+      synchronized(sessionInfoMap) {
+         return sessionInfoMap.get(secretSessionId) != null;
       }
    }
+
+   /**
+    * Access a subjectInfo with the unique login name
+    * @return the SubjectInfo object<br />
+    *         null if not found
+    */
+   public final SubjectInfo getSubjectInfoByName(SessionName subjectName) {
+      return (SubjectInfo)loginNameSubjectInfoMap.get(subjectName.getLoginName());
+   }
+
 
    /**
     * Logout of a client.
     * <p>
     * @exception XmlBlasterException If client is unknown
     */
-   public final void logout(String secretSessionId) throws XmlBlasterException {
+   public final void logout(String secretSessionId) throws XmlBlasterException
+   {
       log.error(ME, "logout not implemented");
       throw new XmlBlasterException(ME, "logout not implemented");
    }
+
 
    /**
     * @param xmlServer xmlBlaster CORBA handle
@@ -490,8 +455,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    private void resetSessionInfo(String secretSessionId, boolean clearQueue) throws XmlBlasterException
    {
       Object obj;
-      synchronized(this.sessionInfoMap) {
-         obj = this.sessionInfoMap.remove(secretSessionId);
+      synchronized(sessionInfoMap) {
+         obj = sessionInfoMap.remove(secretSessionId);
       }
 
       if (obj == null) {
@@ -517,7 +482,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                log.info(ME, "Destroying SubjectInfo " + subjectInfo.getSubjectName() + ". Nobody is logged in and no queue entries available");
             else
                log.warn(ME, "Destroying SubjectInfo " + subjectInfo.getSubjectName() + " as clearQueue is set to true. Lost " + subjectInfo.getSubjectQueue().getNumOfEntries() + " messages");
-            removeLoginName(subjectInfo);
+            loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
             subjectInfo.shutdown();
             subjectInfo = null;
          }
@@ -525,8 +490,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       sessionInfo.shutdown();
       sessionInfo = null;
-      log.info(ME, "loginNameSubjectInfoMap has " + getNumSubjects() +
-                   " entries and sessionInfoMap has " + this.sessionInfoMap.size() + " entries");
+      log.info(ME, "loginNameSubjectInfoMap has " + loginNameSubjectInfoMap.size() + " entries and sessionInfoMap has " + sessionInfoMap.size() + " entries");
    }
 
 
@@ -602,11 +566,18 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     */
    public SessionInfo check(String secretSessionId) throws XmlBlasterException
    {
+      // even the corba client should get a communication exception when the server is shutting down
+      // (before this change he was getting "access denided" since the sessions were already killed).
+      if (glob.getRunlevelManager().getCurrentRunlevel() <= RunlevelManager.RUNLEVEL_STANDBY) {
+         log.warn(ME+".communication.noconnection", "The run level of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "The run level of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".");
+      }
+
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
       Object obj = null;
-      synchronized(this.sessionInfoMap) {
-         obj = this.sessionInfoMap.get(secretSessionId);
+      synchronized(sessionInfoMap) {
+         obj = sessionInfoMap.get(secretSessionId);
       }
 
       if (obj == null) {
@@ -651,6 +622,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
    }
 
+   public int getNumSubjects() {
+      return loginNameSubjectInfoMap.size();
+   }
+
    public int getMaxSubjects() {
       return Integer.MAX_VALUE; // TODO: allow to limit max number of different clients (or login sessions?)
    }
@@ -664,14 +639,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       if (numSubjects < 1)
          return "";
       StringBuffer sb = new StringBuffer(numSubjects * 30);
-      synchronized(this.loginNameSubjectInfoMap) {
-         Iterator iterator = this.loginNameSubjectInfoMap.values().iterator();
-         while (iterator.hasNext()) {
-            if (sb.length() > 0)
-               sb.append(",");
-            SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
-            sb.append(subjectInfo.getLoginName());
-         }
+      Iterator iterator = loginNameSubjectInfoMap.values().iterator();
+      while (iterator.hasNext()) {
+         if (sb.length() > 0)
+            sb.append(",");
+         SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
+         sb.append(subjectInfo.getLoginName());
       }
       return sb.toString();
    }
@@ -700,13 +673,17 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            if (log.TRACE) log.trace(ME, "Killing " + this.sessionInfoMap.size() + " login sessions");
-            SessionInfo[] sessionInfoArr = getSessionInfoArr();
-            for (int ii=0; ii<sessionInfoArr.length; ii++) {
+            if (log.TRACE) log.trace(ME, "Killing " + sessionInfoMap.size() + " login sessions");
+            Object[] objs = null;
+            synchronized(sessionInfoMap) {
+               objs = sessionInfoMap.values().toArray();
+            }
+            for (int ii=0; objs!=null && ii<objs.length; ii++) {
                try {
                   boolean clearQueue = true;
-                  SessionInfo sessionInfo = sessionInfoArr[ii];
+                  SessionInfo sessionInfo = (SessionInfo)objs[ii];
                   resetSessionInfo(sessionInfo.getSessionId(), clearQueue);
+                  objs[ii] = null;
                }
                catch (Throwable e) {
                   log.error(ME, "Problem on session shutdown, we ignore it: " + e.getMessage());
@@ -737,18 +714,15 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      log.info(ME, "Client maps, sessionInfoMap.size()=" + this.sessionInfoMap.size() +
-                   " and loginNameSubjectInfoMap.size()=" + getNumSubjects());
-      synchronized(this.loginNameSubjectInfoMap) {
-         Iterator iterator = this.loginNameSubjectInfoMap.values().iterator();
+      log.info(ME, "Client maps, sessionInfoMap.size()=" + sessionInfoMap.size() + " and loginNameSubjectInfoMap.size()=" + loginNameSubjectInfoMap.size());
+      Iterator iterator = loginNameSubjectInfoMap.values().iterator();
 
-         sb.append(offset).append("<Authenticate>");
-         while (iterator.hasNext()) {
-            SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
-            sb.append(subjectInfo.toXml(extraOffset+Constants.INDENT));
-         }
-         sb.append(offset).append("</Authenticate>\n");
+      sb.append(offset).append("<Authenticate>");
+      while (iterator.hasNext()) {
+         SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
+         sb.append(subjectInfo.toXml(extraOffset+Constants.INDENT));
       }
+      sb.append(offset).append("</Authenticate>\n");
 
       return sb.toString();
    }
