@@ -180,7 +180,7 @@
          <p>
          The plugin interface <i>I_LoadBalancer.java</i> allows you to code
          your own load balancing logic, the default plugin delivered with xmlBlaster
-         is <i>RoundRobin.java</i> which implements a roung robin approach.
+         is <i>RoundRobin.java</i> which implements a round robin approach.
          </p>
          </li>
          <li><h4>Map a cluster node ID to the physical xmlBlaster instance</h4>
@@ -736,7 +736,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.33 $</revision>
+   <revision>$Revision: 1.34 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
