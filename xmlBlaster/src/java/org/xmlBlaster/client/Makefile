@@ -14,19 +14,11 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client
 
 #------------------------------------------------------------------------------
 SUB_DIRS = filestore
-LOCAL_FILES = \
-			$(CLASS_DIR)/CorbaConnection.class \
-			$(CLASS_DIR)/UpdateQoS.class \
-			$(CLASS_DIR)/UpdateKey.class \
-			$(CLASS_DIR)/KeyWrapper.class \
-			$(CLASS_DIR)/PublishKeyWrapper.class  \
-			$(CLASS_DIR)/QosWrapper.class \
-			$(CLASS_DIR)/PublishQosWrapper.class
+LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
-
-$(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
-	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
+$(CLASS_DIR)/%.class: %.java
+	$(JAVAC) -d $(CLASS_TOP_DIR) $<
 
 all: 	all_SUB_DIRS precond java
 
