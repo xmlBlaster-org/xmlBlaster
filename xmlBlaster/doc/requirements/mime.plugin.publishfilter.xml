@@ -66,25 +66,28 @@
       <p>
       </p>
    </description>
-   <example lang="Java">
-<![CDATA[
+   <example lang="XML" type="HTML">
+      <p>
+         This is an example message for a publish() method invocation:
+      </p>
+      <pre class="BORDER">
+&lt;key oid='LongMessage'/>
+content="veeerrrrrylongcooontenttttttt"
+&lt;qos/>
+      </pre>
+      <p>
+         As the message is too long for our plugin, the plugin.intercept() method
+         returns "TOOLONG".
+         xmlBlaster rejects the messages and returns for this publish()
+      </p>
+      <pre class="BORDER">
+&lt;qos>&lt;state id='TOOLONG'/>&lt;qos>
+      </pre>
 
-These is an example publish() method invocation:
-================================================
-
-   <key oid='LongMessage'/>
-   content="veeerrrrrylongcooontenttttttt"
-   <qos/>
-
-As the message is too long for our plugin, the plugin.intercept() method
-returns "TOOLONG".
-xmlBlaster rejects the messages and returns for this publish()
-
-   <qos><state id='TOOLONG'/><qos>
-
-If you return strings containing '<' characters, please
-embrace your return value with a CDATA section.
-]]>
+      <p>
+         If you return strings contain '&lt;' characters, please
+         embrace your return value with a &lt;![CDATA[ ... ]]&gt; section.
+      </p>
    </example>
    <configuration where="server">
       <p>
@@ -100,7 +103,7 @@ embrace your return value with a CDATA section.
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
