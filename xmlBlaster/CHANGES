@@ -4,6 +4,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Added new QoS 'newestFirst' to control the deliver ordering of messages
+   when querying the history queue with 'get()' or 'subscribe()'
+
  o C++ client library:
    - Fixed passing callback settings from command line
    - Extended Property.cpp to replace ${...} variables from xmlBlaster.properties
