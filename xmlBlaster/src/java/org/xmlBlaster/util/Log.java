@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.60 2001/09/01 08:53:12 ruff Exp $
+Version:   $Id: Log.java,v 1.61 2002/02/07 13:12:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -332,7 +332,7 @@ public class Log
          location = sourceName + ":" + line;
          System.out.println("Exception found location=" + location);
       }
-      catch (IOException e) {}
+      catch (Throwable e) { e.printStackTrace(); }
 
       return location;
    }
