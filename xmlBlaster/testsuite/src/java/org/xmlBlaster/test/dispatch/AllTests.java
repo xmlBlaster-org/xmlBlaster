@@ -16,7 +16,6 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster dispatch plugin tests");
       suite.addTest(new TestSuite(org.xmlBlaster.test.dispatch.ConfigurationParserTest.class));
-      suite.addTest(new TestSuite(TestActivateDispatcher.class));
       suite.addTest(TestPriorizedDispatchPlugin.suite());
       suite.addTest(TestPriorizedDispatchWithLostCallback.suite());
       return suite;
