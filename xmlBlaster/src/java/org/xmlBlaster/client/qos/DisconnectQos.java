@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.2 2003/03/24 16:13:07 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.3 2003/05/06 16:06:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.util.property.PropBoolean;
 
 /**
  * This class encapsulates the qos of a logout() or disconnect()
@@ -35,6 +36,10 @@ public class DisconnectQos
    private final Global glob;
    private final DisconnectQosData disconnectQosData;
    private I_MsgSecurityInterceptor securityInterceptor;
+
+   private PropBoolean clearClientQueue = new PropBoolean(true);
+   private boolean shutdownDispatcher = true;
+   private boolean shutdownCbServer = true;
 
    public DisconnectQos(Global glob) {
       this(glob, null);
@@ -121,5 +126,66 @@ public class DisconnectQos
     */
    public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
       this.securityInterceptor = securityInterceptor;
+   }
+
+   /**
+    * If there are tail back messages in the client side queue, what to do with them. 
+    * <p>
+    * Controls client side behavior.
+    * </p>
+    * @param clearClientQueue true Removes all entries of the client side tailback queue<br />
+    *                         false Keep persistent entries in client side queue, will be sent on next connect
+    *                               of the same client with the same public session ID.
+    */
+   public void clearClientQueue(boolean clearClientQueue) {
+      this.clearClientQueue.setValue(clearClientQueue);
+   }
+
+   /**
+    * @see #clearClientQueue(boolean)
+    */
+   public boolean clearClientQueue() {
+      return this.clearClientQueue.getValue();
+   }
+
+   public PropBoolean getClearClientQueueProp() {
+      return this.clearClientQueue;
+   }
+
+   /**
+    * Shutdown the client side dispatcher framework on disconnect, which
+    * includes the low level connection like CORBA. 
+    * <p>
+    * Controls client side behavior.
+    * </p>
+    * @param shutdownDispatcher true is default
+    */
+   public void shutdownDispatcher(boolean shutdownDispatcher) {
+      this.shutdownDispatcher = shutdownDispatcher;
+   }
+
+   /**
+    * @return Defaults to true
+    */
+   public boolean shutdownDispatcher() {
+      return this.shutdownDispatcher;
+   }
+
+   /**
+    * Shutdown the client side callback server on disconnect. 
+    * <p>
+    * Controls client side behavior.
+    * </p>
+    * @param shutdownCbServer true is default
+    */
+   public void shutdownCbServer(boolean shutdownCbServer) {
+      this.shutdownCbServer = shutdownCbServer;
+   }
+
+   /**
+    * @return Defaults to true
+    */
+   public boolean shutdownCbServer() {
+      return this.shutdownCbServer;
    }
 }
