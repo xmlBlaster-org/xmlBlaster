@@ -237,7 +237,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             // Here we NEVER return to hold the persistent http connection for callbacks to the applet
             String qos = getParameter(req, "xmlBlaster.connectQos", (String)null);
             // if the binary protocol is used ...
-            if (msgHolder != null) qos = msgHolder.qos;
+            if (msgHolder != null) qos = msgHolder.getQos();
             connect(ME, log, session, qos, req, res);
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) {
@@ -476,11 +476,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          // Extract the message data
 
          MsgHolder msg = extractMessage(ME, log, req, binaryMsg);
-         String oid = msg.oid;
-         String key = msg.key;
-         String qos = msg.qos;
-         String xmlRequest = msg.key; // in case of xmlScript the request is sent as the key (all other are null)
-         byte[] content = msg.content;
+         String oid = msg.getOid();
+         String key = msg.getKey();
+         String qos = msg.getQos();
+         String xmlRequest = msg.getKey(); // in case of xmlScript the request is sent as the key (all other are null)
+         byte[] content = msg.getContent();
          
          if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
             if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);

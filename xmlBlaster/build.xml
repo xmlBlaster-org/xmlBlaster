@@ -841,6 +841,11 @@ TODO
 	    <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
 	    <echo message="========================================================================"/>
          </case>
+         <case value="${J2ME_HOME}">
+	    <echo message="========================================================================"/>
+	    <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
+	    <echo message="========================================================================"/>
+         </case>
          <default>
          </default>
       </switch>
