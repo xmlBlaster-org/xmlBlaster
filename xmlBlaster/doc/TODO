@@ -2,7 +2,7 @@
   * Normalizing the DOM tree
   * Profiling http://www.optimizeit.com/ or
               http://www.klg.com/ - JProbe (no Linux!?)
-				  or whatever
+    or whatever
   * Use SML instead of XML? http://www.xml.com/pub/1999/11/sml/index.html
 
 - Client should be able to query which subscriptions he has
@@ -77,6 +77,8 @@
 
 - Evaluate other query engines for better performance, see
    http://www-db.research.bell-labs.com/user/simeon/xquery.html
+
+- Support for XQL see www.fatdog.com
 
 Clients
 -------
