@@ -27,6 +27,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 //import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -57,7 +58,7 @@ import org.xmlBlaster.engine.MsgErrorHandler;
  * </ol>
  * @author Marcel Ruff
  */
-public class SessionInfo implements I_Timeout
+public class SessionInfo implements I_Timeout, I_QueueSizeListener
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
@@ -88,6 +89,7 @@ public class SessionInfo implements I_Timeout
     * Node objects = MsgQueueEntry
     */
    private I_Queue sessionQueue;
+   private long lastNumEntries = 0L;
 
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
@@ -141,6 +143,7 @@ public class SessionInfo implements I_Timeout
       if (log.TRACE) log.trace(ME, "Creating callback queue type=" + type + " version=" + version);
       this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
       this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      this.sessionQueue.addQueueSizeListener(this);
 
       if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
          if (log.TRACE) log.trace(ME, "Creating dispatch manager as ConnectQos contains callback addresses");
@@ -409,6 +412,31 @@ public class SessionInfo implements I_Timeout
     */
    public boolean isSameSession(SessionInfo sessionInfo) {
       return getId().equals(sessionInfo.getId());
+   }
+
+   /**
+    * We register for queue size changes and notify the subject queue if 
+    * we are willing to accept messages again. 
+    * Enforced by I_QueueSizeListener
+    */
+   public void changed(long numEntries, long numBytes) {
+      if (lastNumEntries != numEntries) {
+         long max = getSessionQueue().getMaxNumOfEntries();
+         if (lastNumEntries >= max && numEntries < max) {
+            if (log.TRACE) log.trace(ME, "SessionQueue has emptied from " + lastNumEntries +
+                           " to " + numEntries + " entries, calling subjectInfo.forwardToSessionQueue()");
+
+            log.error(ME, "DEBUG ONLY: TODO: Implement it: sessionQueue has emptied from " + lastNumEntries +
+                           " to " + numEntries + " entries, calling subjectInfo.forwardToSessionQueue()");
+            lastNumEntries = numEntries; // to avoid recursion
+            this.sessionQueue.removeQueueSizeListener(this);
+            
+            subjectInfo.forwardToSessionQueue();
+            
+            this.sessionQueue.addQueueSizeListener(this);
+         }
+      }
+      lastNumEntries = numEntries;
    }
 
    /**
