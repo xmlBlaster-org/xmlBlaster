@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding="ISO-8859-1" ?> 
+
+<!-- Test Syntax:
+        java sax.SAXCount Airport.xml -->
+
+<subscribe>
+   <key oid="EDDI-A">
+      <Airport icao="EDDI">
+         <Runway id="1">
+           <WindVeloc w_id="1">
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+
+   <key oid="EDDI-B">
+      <Airport icao="EDDI">
+        <Runway id="1">
+           <WindVeloc w_id="2">
+           </WindVeloc>
+        </Runway>
+      </Airport>
+   </key>
+
+   <key oid="EDDI-C">
+      <Airport icao="EDDI">
+         <Runway id="1">
+           <WindVeloc w_id="3">
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+
+   <key oid="EDDI-C">
+      <Airport icao="EDDI">
+         <Runway id="2">
+           <WindVeloc w_id="1">
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+
+   <key oid="IAAD-C">
+      <Airport icao="IAAD">
+         <Runway id="2">
+           <WindVeloc w_id="1">
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+
+   <key oid="FDDI-C">
+      <Airport icao="FDDI">
+         <Runway id="1">
+           <WindVeloc w_id="1">
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+</subscribe>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding="ISO-8859-1" ?> 
+
+<!-- The reorganized tree from Airport.xml -->
+
+<!-- see: http://www.w3.org/TR/xpath -->
+<!-- see: http://www.246.ne.jp/~kamiya/pub/omquery.zip -->
+
+<!-- java DomQueryTest AirportBlaster.xml xmlBlaster/Airport[@icao=\"IAAD\"] -->
+<!-- java DomQueryTest AirportBlaster.xml xmlBlaster/Airport[@icao=\"IAAD\"or@icao=\"FDDI\"] -->
+<!-- java DomQueryTest AirportBlaster.xml \(xmlBlaster/Airport[@icao=\"IAAD\"]\|xmlBlaster/Airport[@icao=\"FDDI\"]\) -->
+<xmlBlaster>
+   <Airport icao="EDDI">
+      <Runway id="1">
+         <WindVeloc w_id="1" oid_reference="EDDI-A"></WindVeloc>
+         <WindVeloc w_id="2" oid_reference="EDDI-B"></WindVeloc>
+         <WindVeloc w_id="3" oid_reference="EDDI-C"></WindVeloc>
+      </Runway>
+      <Runway id="2">
+         <WindVeloc w_id="1" oid_reference="EDDI-D"></WindVeloc>
+      </Runway>
+   </Airport>
+
+   <Airport icao="IAAD">
+      <Runway id="2">
+         <WindVeloc w_id="1" oid_reference="IAAD_A"></WindVeloc>
+      </Runway>
+   </Airport>
+
+   <Airport icao="FDDI">
+      <Runway id="2">
+         <WindVeloc w_id="1" oid_reference="FDDI_A"></WindVeloc>
+      </Runway>
+   </Airport>
+</xmlBlaster>
+
