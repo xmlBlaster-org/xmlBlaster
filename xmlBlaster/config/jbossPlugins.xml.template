@@ -1,0 +1,44 @@
+<!--
+# Name:      xmlBlasterPlugins.xml
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+-->
+<xmlBlaster>
+
+   <!--============= PROTOCOL PLUGINS ================-->
+
+   <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
+   <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
+   </plugin>
+
+   
+   <!--===============================================-->
+
+
+   <!--========== DISPATCHER PLUGINS =================-->
+   <plugin id='dispatchPriority'
+           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+           jar='/tmp/my.jar'>
+      <attribute id='config'>
+         <![CDATA[
+         <msgDispatch defaultStatus='64k' defaultAction='send'>
+         <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'>
+            <action do='send'  ifPriority='7-9'/>
+            <action do='queue'  ifPriority='2-6'/>
+         </onStatus>
+         <onStatus oid='_bandwidth.status' content='2M'>
+            <action do='send'  ifPriority='0-9'/>
+         </onStatus>
+         </msgDispatch>
+         ]]>
+      </attribute>
+   </plugin>
+   <!--===============================================-->
+
+</xmlBlaster>
+

@@ -2,38 +2,28 @@
 # Name:      xmlBlaster.properties
 # Project:   xmlBlaster.org
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-# Comment:   Properties for xmlBlaster MOM server, copy into you home directory
+# Comment:   Properties for JMX XmlBlaster server in JBoss, see xmlBlaster.properties.template for a more full property file.
 #
-#All JVM system variables are supported, e.g.
-#   ${user.dir}
-#   ${user.home}
-#could be used and would be replaced to the current directory and
-#the users home directory respectively.
 #
-#Further you can reference all variables in this file or from command line
-#with ${...}
-#------------------------------------------------------------------------------
+# Run RAM based only. The hsql used by XmlBlaster does not work on JBoss 3.0
+#
+persistence/msgUnitStore/defaultPlugin=RAM,1.0
+queue/subject/defaultPlugin=RAM,1.0
+queue/history/defaultPlugin=RAM,1.0
+queue/callback/defaultPlugin=RAM,1.0
+useTopicStore=false
 
+# Client side
+queue/connection/defaultPlugin=RAM,1.0
 
 #------------------------------------------------------------------------------
 # Authentication and Authorization
-Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.Manager
-Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
-Security.Server.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.Manager
 Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.Manager
 
 # NONE switches off security checks in passwd file:
 Security.Server.Plugin.htpasswd.secretfile=NONE
 #Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
 
-# Force on client side a specified plugin (as default)
-# Only if you access xmlBlaster with java clients and
-# use our helper class XmlBlasterAccess.java
-# With "gui,1.0" will the server popup a GUI panel
-#Security.Client.DefaultPlugin=htpasswd,1.0
-Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientPlugin
-Security.Client.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.ClientPlugin
-Security.Client.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.ClientPlugin
 Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.ClientPlugin
 #------------------------------------------------------------------------------
 
@@ -41,24 +31,22 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 #------------------------------------------------------------------------------
 # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
 # For supported protocol types see xmlBlaster/src/java/org/xmlBlaster/protocol directory
-# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html 
-
-ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
-#ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
-#ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
-#ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
-#ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
-#ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-#ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html
+# NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
 CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
-#CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
-#CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
-#CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
-#CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
-#CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-#CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
-#CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativeDriver
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# On client side only
+
+# Register the client side protocol plugin to connect to server
+ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
+
+
+# Register the client side callback server plugins:
+ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
 #------------------------------------------------------------------------------
 
 #
@@ -66,32 +54,96 @@ CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 # well with JBoss
 #
 
-plugin/rmi/registryPort=1298
+#plugin/rmi/registryPort=1298
 #plugin/rmi/hostname
-soap.port=1280
-plugin/socket/port=7607
-plugin/xmlrpc/port=1281
--DOAPort=7609
+#soap.port=1280
+#plugin/socket/port=7607
+#plugin/xmlrpc/port=1281
+#-DOAPort=7609
+#-Djacorb.verbosity=5
 #
 # Set logging
 #
-trace=true
+trace=false
+trace[dispatch]=false
 
 #------------------------------------------------------------------------------
-# Adjust if you want to use the EMAIL plugin.
-# See xmlBlaster/demo/javaclients/email/README
-EmailDriver.smtpHost=localhost
-EmailDriver.from=xmlblast@localhost
+# Customize dispatcher plugin
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
+DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+#DispatchPlugin/defaultPlugin=Priority,1.0
+# Up to the client to set
+dispatch/connection/DispatchPlugin/defaultPlugin=undef
+dispatch/callback/DispatchPlugin/defaultPlugin=undef
+#dispatch/callback/DispatchPlugin/defaultPlugin=Priority,1.0
+
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
+PriorizedDeliveryPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
+   <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'> \
+     <action do='send'  ifPriority='7-9'/> \
+     <action do='queue'  ifPriority='2-6'/> \
+  </onStatus> \
+   <onStatus oid='_bandwidth.status' content='2M'> \
+     <action do='send'  ifPriority='0-9'/> \
+   </onStatus> \
+ </msgDispatch>
+
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
-# List of all jdbc drivers to initalize for the XmlDBAdapter
-# Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
-# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html 
-JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver
-#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
-#JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver,oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver,com.sybase.jdbc2.jdbc.SybDriver
+# Server side plugins to store single messages persistently 'msgUnitStore'
+# Server side setup to recover topics after a server crash 'topicStore'
+# CACHE is only meaningfull if you really have a persistent store setup
+
+StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
+
+# Choose the plugins
+#persistence/topicStore/defaultPlugin=JDBC,1.0
+#persistence/msgUnitStore/defaultPlugin=CACHE,1.0
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Declare existing queue implementation plugins
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
+QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
+QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
+
+# Choose the plugin (each client can overwrite this in its connect/publish QoS)
+# Uncomment to the persistence
+#queue/subject/defaultPlugin=CACHE,1.0
+#queue/history/defaultPlugin=CACHE,1.0
+#queue/callback/defaultPlugin=CACHE,1.0
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Customize queue and persistence properties
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+
+# The property with appended 'Cache' is in RAM, the second property is swap space on harddisk
+
+# How many history messages of same key oid (topic) to hold in xmlBlaster (holds references only)
+queue/history/maxEntriesCache = 1000
+queue/history/maxEntries = ${queue/history/maxEntriesCache}
+
+# How big is a callback queue for each client (holds references only)
+queue/callback/maxEntriesCache = 1000
+queue/callback/maxEntries = ${queue/callback/maxEntriesCache}
+
+# How big is the topic cache for messages of same oid (here your message content occupies the memory)
+persistence/msgUnitStore/maxEntriesCache = 10000
+persistence/msgUnitStore/maxEntries = 100000000
+
+
+# Tail back queue on client side (contains the real data of all message types)
+queue/connection/maxEntriesCache = 1000
+queue/connection/maxEntries = 10000000
+#------------------------------------------------------------------------------
+
+
 #------------------------------------------------------------------------------
 
 
@@ -101,14 +153,9 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html
 MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
 MimeAccessPlugin[GnuRegexFilter][1.0]=org.xmlBlaster.engine.mime.regex.GnuRegexFilter
+MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter
 #------------------------------------------------------------------------------
 
-
-#------------------------------------------------------------------------------
-# Add here your MIME based plugins which allow to filter published messages.
-# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
-# MimePublishPlugin[PublishLenChecker][1.0]=org.xmlBlaster.engine.mime.demo.PublishLenChecker,DEFAULT_MAX_LEN=200
-#------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
@@ -129,69 +176,52 @@ RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 
 
 #------------------------------------------------------------------------------
-# Telnet access to xmlBlaster for administration
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html
-#admin.remoteconsole.port=2702
-#admin.remoteconsole.sessionTimeout=600000
+# Switch off internal messages, events sent on client login and logout
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html
+loginEvent=false
+logoutEvent=false
+userListEvent=false
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
-# When an XmlBlasterException is thrown, log it to console
-Log.exception=false
-
-# Control logging output format (examples are provided below)
-# <timestamp>:<levelStr>:<instance>:<text>
-#
-# Apr 29, 2000 4:43:35 PM:INFO :Main:Published AuthServer IOR on bootstrapPort 3412
-LogFormat=[{0} {1} {2}] {3}
-#LogFormat={0}:{1}:{2}:{3}
-#
-# Apr 29, 2000 5:36:21 PM INFO  Published AuthServer IOR on bootstrapPort 3412
-#LogFormat={0} {1} {3}
-#
-# INFO :Published AuthServer IOR on bootstrapPort 3412
-#LogFormat={1}:{3}
-#
-# Published AuthServer IOR on bootstrapPort 3412
-#LogFormat={3}
+# Pluggable Loggers
+LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
+LoggableDevicePlugin[file][1.0]=org.xmlBlaster.util.log.FileLogDeviceFactory,logFile=mylogfile
+# Control wich logger to use globaly, comma separated list
+logDevice=console
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# When an XmlBlasterException is thrown, how to format the getMessage() string, see:
+# http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html
+XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideException={3} node=[{1}] location=[{2}] message=[{4} : {8}]
+
 
 
 #------------------------------------------------------------------------------
 # How to format Date and Time in logging output
 #
 # Choose one of SHORT, MEDIUM, LONG, FULL
-#   SHORT is completely numeric, such as 12.13.52 or 3:30pm 
-#   MEDIUM is longer, such as Jan 12, 1952 
-#   LONG is longer, such as January 12, 1952 or 3:30:32pm 
-#   FULL is pretty completely specified, such as Tuesday, April 12, 1952 AD or 3:30:42pm PST. 
+#   SHORT is completely numeric, such as 12.13.52 or 3:30pm
+#   MEDIUM is longer, such as Jan 12, 1952
+#   LONG is longer, such as January 12, 1952 or 3:30:32pm
+#   FULL is pretty completely specified, such as Tuesday, April 12, 1952 AD or 3:30:42pm PST.
 LogFormat.Date=MEDIUM
 LogFormat.Time=MEDIUM
 
-# Choose language - lowercase two-letter ISO-639 code.
-# Choose country - uppercase two-letter ISO-3166 code
-# Defaults to local computer setting
-#LogFormat.Language=en
-#LogFormat.Country=US
-
-#LogFormat.Language=fr
-#LogFormat.Country=FR
-
-#LogFormat.Language=de
-#LogFormat.Country=DE
-#------------------------------------------------------------------------------
-
 
 #------------------------------------------------------------------------------
 #
-# JAXP parsers. Currently only crimson is actually possible to use. 
+# JAXP parsers. Currently only crimson is actually possible to use.
 #
 javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
 javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
+#------------------------------------------------------------------------------
+
 
 #------------------------------------------------------------------------------
-# Any other custom properties can be added here. 
+# Any other custom properties can be added here.
 # These are available through the API e.g.
 # String str = Global.instance().getProperty().get("MyApp.mykey", "defaultValue");
 #------------------------------------------------------------------------------
