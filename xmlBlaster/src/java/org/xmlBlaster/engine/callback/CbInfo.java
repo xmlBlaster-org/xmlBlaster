@@ -3,12 +3,13 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.7 2002/03/13 16:41:13 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.8 2002/03/17 07:22:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -29,20 +30,23 @@ import java.util.StringTokenizer;
 public class CbInfo
 {
    public final String ME = "CbInfo";
+   private final Global glob;
    private I_CallbackDriver[] callbackDrivers = null;
    private CallbackAddress[] cbArr = null;
    /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
    private static Hashtable protocols = null;
 
-
+   /*
    public CbInfo()
    {
       callbackDrivers = new I_CallbackDriver[0];
       cbArr = new CallbackAddress[0];
    }
+   */
 
-   public CbInfo(CallbackAddress[] cbArr) throws XmlBlasterException
+   public CbInfo(Global glob, CallbackAddress[] cbArr) throws XmlBlasterException
    {
+      this.glob = glob;
       initialize(cbArr);
    }
 
@@ -57,13 +61,30 @@ public class CbInfo
       else {
          callbackDrivers = new I_CallbackDriver[cbArr.length];
          for (int ii=0; ii<cbArr.length; ii++) {
-            // Load the protocol driver ...
-            Class cl = (Class)protocols.get(cbArr[ii].getType());
-            if (cl == null) {
-               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+ 
+            Object obj = protocols.get(cbArr[ii].getType());
+            if (obj == null) {
+               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported, try setting it in xmlBlaster.properties");
                throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
             }
 
+            // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
+            I_CallbackDriver cbDriverNative = glob.getNativeCallbackDriver(cbArr[ii].getType() + cbArr[ii].getAddress());
+            if (cbDriverNative != null)  { // && obj.toString().indexOf("org.xmlBlaster.protocol.socket.CallbackSocketDriver") >= 0) {
+               callbackDrivers[ii] = cbDriverNative;
+               callbackDrivers[ii].init(cbArr[ii]);
+               if (Log.TRACE) Log.trace(ME, "Created native callback driver for protocol '" + cbArr[ii].getType() + "'");
+               continue;
+            }
+
+            if (obj instanceof String) { // e.g. SOCKET:native
+               Log.error(ME, "Ignoring protocol driver " + cbArr[ii].getType());
+               continue;
+            }
+         
+            // else we need to load (instantiate) the protocol driver ...
+
+            Class cl = (Class)obj;
 
             try {
                callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
@@ -156,6 +177,11 @@ public class CbInfo
          }
          String protocol = token.substring(0, index).trim();
          String driverId = token.substring(index+1).trim();
+
+         if (driverId.equalsIgnoreCase("NATIVE")) { // We can mark in xmlBlaster.properties e.g. SOCKET:native
+            protocols.put(protocol, "");
+            continue;
+         }
 
          // Load the protocol driver ...
          try {

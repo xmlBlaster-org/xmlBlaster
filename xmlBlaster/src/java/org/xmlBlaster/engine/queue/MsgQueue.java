@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.4 2002/03/14 16:30:25 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.5 2002/03/17 07:22:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -33,7 +33,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    private String ME = "MsgQueue";
    private String name;
    protected QueueProperty property = new QueueProperty(null);
-   private Global glob;
+   protected Global glob;
    private CbWorkerPool cbWorkerPool;
    protected CbInfo cbInfo = null;
    protected Log log;
@@ -170,7 +170,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          if (addr.length > 1) {
             log.error(ME, "Ignoring multiple callback address");
          }
-         cbInfo = new CbInfo(addr);
+         cbInfo = new CbInfo(glob, addr);
       }
    }
 
