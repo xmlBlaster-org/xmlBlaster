@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.3 2000/03/13 17:34:31 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.4 2000/03/13 22:20:39 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -36,7 +36,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -57,16 +57,90 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
-      Log.info(ME, "Initialize ...");
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       //Log.addLogLevel("DUMP");
       //Log.addLogLevel("TRACE");
       Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
-      Log.addLogListener(this);
+      //Log.addLogListener(this);
       Log.info(ME, "Initialize ...");
    }
+
+
+
+
+   /**
+    * GET request from the browser
+    * Used for login and for keeping a permanent http connection
+    */
+   public void doGet(HttpServletRequest req, HttpServletResponse res)
+                                 throws ServletException, IOException
+   {
+      Log.info(ME, "Entering doGet() ...");
+      res.setContentType("text/html");
+      StringBuffer retStr = new StringBuffer("");
+      String errorText="";
+
+      HttpSession session = req.getSession(true);
+      String sessionId = req.getRequestedSessionId();
+
+      HttpPushHandler pushHandler = new HttpPushHandler(req, res);
+
+      try {
+         String actionType = Util.getParameter(req, "ActionType", "NONE");
+
+         //------------------ Login -------------------------------------------------
+         if (actionType.equals("login")) {
+            Log.info(ME, "Login action ...");
+
+            String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
+            if (loginName == null || loginName.length() < 1)
+               throw new Exception("Missing login name");
+            String passwd = Util.getParameter(req, "passwd", null);  // "secret";
+            if (passwd == null || passwd.length() < 1)
+               throw new Exception("Missing passwd");
+
+            // Find proxyConnection !!Attention, other browser can use an existing
+            //                        xmlBlaster connection. This is an security problem.
+            ProxyConnection proxyConnection = (ProxyConnection)proxyConnections.get( loginName );
+            if( proxyConnection == null ) {
+               proxyConnection = new ProxyConnection( loginName, passwd );
+               proxyConnections.put( loginName, proxyConnection );
+            }
+            proxyConnection.addHttpSession( sessionId, pushHandler );
+
+
+            // confirm successful login:
+            pushHandler.push("if (parent.loginSuccess != null) parent.loginSuccess(true);\n");
+
+            // Don't fall out of doGet() to keep the HTTP connection open
+            Log.info(ME, "Waiting forever, permanent HTTP connection ...");
+            Thread.currentThread().join();
+         }
+
+         //------------------ Test --------------------------------------------------
+         else if(actionType.equals("test")) {
+            pushHandler.push("alert('Test erfolgreich');\n");
+            Thread.currentThread().join();
+         }
+
+
+      } catch (XmlBlasterException e) {
+         Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
+         errorText = e.reason;
+      } catch (Exception e) {
+         Log.error(ME, "Caught Exception: " + e.toString());
+         errorText = e.toString();
+         e.printStackTrace();
+      } finally {
+
+         Log.info(ME, "Entering finally of permanent connection");
+         pushHandler.cleanup();
+      }
+   }
+
+
 
 
    /**
@@ -164,73 +238,6 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
          out.println(retStr.toString());
       }
    }
-
-
-   /**
-    * GET request from the browser
-    * Used for login and for keeping a permanent http connection
-    */
-   public void doGet(HttpServletRequest req, HttpServletResponse res)
-                                 throws ServletException, IOException
-   {
-      Log.info(ME, "Entering doGet() ...");
-      res.setContentType("text/html");
-      StringBuffer retStr = new StringBuffer("");
-      String errorText="";
-
-      HttpSession session = req.getSession(true);
-      String sessionId = req.getRequestedSessionId();
-
-      HttpPushHandler pushHandler = new HttpPushHandler(req, res);
-
-      String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
-      String passwd = Util.getParameter(req, "passwd", null);  // "secret";
-      Log.info(ME, "Entering BlasterHttpProxy servlet for '" + loginName + "', sessionId=" + sessionId);
-
-      try {
-         String actionType = Util.getParameter(req, "ActionType", "NONE");
-
-         if (actionType.equals("login")) {
-            Log.info(ME, "Login action ...");
-
-            if (loginName == null || loginName.length() < 1)
-               throw new Exception("Missing login name");
-            if (passwd == null || passwd.length() < 1)
-               throw new Exception("Missing passwd");
-
-            // Find proxyConnection !!Attention, other browser can use an existing
-            //                        xmlBlaster connection. This is an security problem.
-            ProxyConnection proxyConnection = (ProxyConnection)proxyConnections.get( loginName );
-            if( proxyConnection == null ) {
-               proxyConnection = new ProxyConnection( loginName, passwd );
-               proxyConnections.put( loginName, proxyConnection );
-            }
-            proxyConnection.addHttpSession( sessionId, pushHandler );
-
-
-            // confirm successful login:
-            //pushHandler.push("/*if (top.loginSuccess != null) */top.loginSuccess(true);\n");
-            pushHandler.push("<HTML></HTML>");
-
-            // Don't fall out of doGet() to keep the HTTP connection open
-            Log.info(ME, "Waiting forever, permanent HTTP connection ...");
-            Thread.currentThread().join();
-         }
-      } catch (XmlBlasterException e) {
-         Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
-         errorText = e.reason;
-      } catch (Exception e) {
-         Log.error(ME, "Caught Exception: " + e.toString());
-         errorText = e.toString();
-         e.printStackTrace();
-      } finally {
-
-         Log.info(ME, "Entering finally of permanent connection");
-
-         pushHandler.cleanup();
-      }
-   }
-
 
 
    /**

@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.2 2000/03/12 22:46:44 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.3 2000/03/13 22:20:39 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -94,12 +94,12 @@ public class HttpPushHandler
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
           "   <meta http-equiv='Pragma' content='no-cache'>\n" +
           "   <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>\n" +
-          "   <TITLE>Hello World</TITLE>\n" +
+          "   <TITLE>BlasterHttpProxy Connection</TITLE>\n" +
           "</HEAD>\n" +
           "<BODY>\n" +
-          "   <br>HIDDEN&nbsp;\n" +
           "   <br>&nbsp;\n" +
-          "   <form ACTION=\"\" METHOD=\"POST\" TARGET=\"callbackFrame\">\n" +
+          "   <br>&nbsp;\n" +
+          "   <form ACTION=\"\" METHOD=\"POST\" TARGET=\"callback\">\n" +
           "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\">\n" +
           "   </form>\n" +
           "   <script language='JavaScript'>\n";
@@ -203,7 +203,7 @@ public class HttpPushHandler
       }
    }
 
-   public void update( String text ) 
+   public void update( String text )
    {
       try {
          push( text );
