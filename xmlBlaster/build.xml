@@ -2091,7 +2091,7 @@ TODO
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
