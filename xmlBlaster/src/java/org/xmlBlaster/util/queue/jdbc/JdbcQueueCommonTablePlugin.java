@@ -650,9 +650,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
 
    /**
-    * Removes max num messages.
+    * Removes max numOfEntries messages.
     * This method does not block.
-    * @param num Erase num entries or less if less entries are available, -1 erases everything
+    * @param numOfEntries Erase num entries or less if less entries are available, -1 erases everything
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */

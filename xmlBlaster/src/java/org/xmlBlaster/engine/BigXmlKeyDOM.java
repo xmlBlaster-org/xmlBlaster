@@ -12,10 +12,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.ClientEvent;
-import org.xmlBlaster.authentication.SessionInfo;
-import java.util.*;
-import java.io.*;
+import java.util.StringTokenizer;
 
 /**
  * Building a huge DOM tree for all known MsgUnit.xmlKeys.

@@ -4,28 +4,20 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.client.qos.PublishQos;
-
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import junit.framework.*;
 import org.xmlBlaster.util.queue.QueuePluginManager;
@@ -236,8 +228,8 @@ public class I_QueueTest extends TestCase {
     * Tests put(MsgQueueEntry[]) and put(MsgQueueEntry) and clear()
     */
    private void size1(I_Queue queue) {
-      queue = queue;
-      ME = "I_QueueTest.size1(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
+      this.queue = queue;
+      ME = "I_QueueTest.size1(" + queue.getStorageId() + ")[" + this.queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       int maxEntries = (int)queue.getMaxNumOfEntries();
       try {
@@ -1377,10 +1369,58 @@ public class I_QueueTest extends TestCase {
       }
    }
 
+   public void testBigEntries() {
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         queueType = this.queue.toString();
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/testSizes");
+         this.queue.initialize(queueId, prop);
+         queue.clear();
+         assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
+         bigEntries(this.queue);
+      }
+      catch (XmlBlasterException ex) {
+         log.error(ME, "Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
+      }
+   }
 
+
+   /**
+    * Test bigEngtries(I_Queue)
+    * It tests the insertion and removal of entries which contain a large blob (2.1MB)
+    */
+   private void bigEntries(I_Queue queue) {
+      ME = "I_QueueTest.bigEntries(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      try {
+         {
+            this.log.trace(ME, "start test");
+            int imax = 3; 
+            long msgSize = 2202010; // 2.1 MB
+            DummyEntry[] entries = new DummyEntry[imax];
+            ArrayList list = new ArrayList();
+
+            for (int i=0; i < imax; i++) {
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
+               list.add(entries[i]);
+            }
+
+            queue.put(entries, false);
+            this.checkSizeAndEntries("sizesCheck test 1: ", list, queue);
+            queue.removeRandom(entries);
+            list.removeAll(list);
+            this.checkSizeAndEntries("sizesCheck test 1 (after removing): ", list, queue);
+
+
+         }
+      }
+      catch(XmlBlasterException e) {
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+   }
 
    public void tearDown() {
-
       try {
          this.queue.clear();
          this.queue.shutdown();
@@ -1409,6 +1449,7 @@ public class I_QueueTest extends TestCase {
          suite.addTest(new I_QueueTest("testPutEntriesTwice", i, glob));
          suite.addTest(new I_QueueTest("testPeekWithLimitEntry", i, glob));
          suite.addTest(new I_QueueTest("testSizesCheck", i, glob));
+         suite.addTest(new I_QueueTest("testBigEntries", i, glob));
       }
       return suite;
    }
@@ -1468,6 +1509,10 @@ public class I_QueueTest extends TestCase {
 
          testSub.setUp();
          testSub.testSizesCheck();
+         testSub.tearDown();
+
+         testSub.setUp();
+         testSub.testBigEntries();
          testSub.tearDown();
          /*
          */
