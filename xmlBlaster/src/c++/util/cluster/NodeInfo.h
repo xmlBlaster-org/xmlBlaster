@@ -48,11 +48,34 @@ private:
    bool            inCallback_; //  = false; // parsing inside <callback> ?
    bool            inBackupnode_; // = false; // parsing inside <backupnode> ?
 
+   void init()
+   {
+      nameService_  = false;
+      inAddress_    = false;
+      inCallback_   = false;
+      inBackupnode_ = false;
+   }
+
+   void copy(const NodeInfo& info)
+   {
+   tmpAddress_   = info.tmpAddress_;
+   tmpCbAddress_ = info.tmpCbAddress_;
+   nameService_  = info.nameService_;
+   inAddress_    = info.inAddress_;
+   inCallback_   = info.inCallback_;
+   inBackupnode_ = info.inBackupnode_;
+   }
+
+
    /**
     * Holds the addresses of a node. 
     */
 public:
    NodeInfo(Global& global, NodeId nodeId);
+
+   NodeInfo(const NodeInfo& info);
+
+   NodeInfo& operator=(const NodeInfo& info);
 
    /**
     * @return The unique name of the managed xmlBlaster instance e.g. "bilbo.mycompany.com"

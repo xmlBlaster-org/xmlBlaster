@@ -48,7 +48,7 @@ Comment:   Basic xmlBlaster exception.
 
 namespace org { namespace xmlBlaster { namespace util {
 
-class XmlBlasterException
+class Dll_Export XmlBlasterException
 {
    private:
       const string errorCodeStr_;

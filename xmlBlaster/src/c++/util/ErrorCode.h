@@ -47,7 +47,7 @@ Comment:   Basic xmlBlaster exception ErrorCode definitions.
 
 namespace org { namespace xmlBlaster { namespace util {
 
-   struct ErrorCode {
+   struct Dll_Export ErrorCode {
       string errorCode;
       string description;
       ErrorCode(const string &ec, const string &desc)

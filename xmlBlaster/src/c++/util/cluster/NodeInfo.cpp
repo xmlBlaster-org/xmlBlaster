@@ -28,6 +28,22 @@ NodeInfo::NodeInfo(Global& global, NodeId nodeId)
      tmpAddress_(global), tmpCbAddress_(global), cbAddressMap_(), addressMap_(),
      backupNodeMap_()
 {
+   init();
+}
+
+NodeInfo::NodeInfo(const NodeInfo& info)
+   : ME(info.ME), global_(info.global_), nodeId_(info.nodeId_),
+     tmpAddress_(info.tmpAddress_), tmpCbAddress_(info.tmpCbAddress_),
+     cbAddressMap_(info.cbAddressMap_), addressMap_(info.addressMap_),
+     backupNodeMap_(info.backupNodeMap_)
+{
+   copy(info);
+}
+
+NodeInfo& NodeInfo::operator=(const NodeInfo& info)
+{
+   copy(info);
+   return *this;
 }
 
 /**
