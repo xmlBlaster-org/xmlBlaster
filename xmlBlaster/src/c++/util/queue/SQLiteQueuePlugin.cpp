@@ -210,13 +210,16 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
    ::ExceptionStruct exception;
    ::QueueEntry queueEntry;
 
+   // Copy C++ to C struct ...
+
    queueEntry.priority = entry.getPriority();
    queueEntry.isPersistent = entry.isPersistent();
    queueEntry.uniqueId = entry.getUniqueId();
    strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish"
    queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
 
-   // dump MsgQueueEntry with SOCKET protocol into C ::MsgUnit
+   // dump MsgQueueEntry with SOCKET protocol into C ::MsgUnit ...
+   
    const BlobHolder *blob = (const BlobHolder *)entry.getEmbeddedObject();
    if (blob == 0) throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "put() failed, the entry " + entry.getLogId() + " returned NULL for embeddedObject");
    queueEntry.embeddedBlob.data = blob->data;
@@ -227,6 +230,8 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
       log_.dump(ME+".put()", string("Put blob to queue:") + dumpP);
       ::xmlBlasterFree(dumpP);
    }
+
+   // Push into C persistent queue ...
 
    queueP_->put(queueP_, &queueEntry, &exception);
 
@@ -317,20 +322,19 @@ long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &st
    if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, randomRemove() failed");
    if (start == end || queueP_->empty(queueP_)) return 0;
    vector<EntryType>::const_iterator iter = start;
-   long count = 0;
+   QueueEntryArr *queueEntryArr = 0;
    while (iter != end) {
       /*
-      long entrySize = (*iter)->getSizeInBytes();
-      if (queueP_->empty()) return 0;
-      int help = queueP_->erase(*iter);
-      if (help > 0) {
-         count += help;
-         numOfBytes_ -= help * entrySize;
-      }
+      EntryType entryType = (*iter);
+      ----> Copy from C++ into C array TODO !!!!!!!!!!!
       */
       iter++;
    }
-   return count;
+
+   ::ExceptionStruct exception;
+   int32_t numRemoved = queueP_->randomRemove(queueP_, queueEntryArr, &exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+   return (long)numRemoved;
 }
 
 long SQLiteQueuePlugin::getNumOfEntries() const
