@@ -313,7 +313,7 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
                            log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed, is_nil");
                      }
                      catch (const CORBA::Exception &exc) {
-                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + lexical_cast<string>(exc));
+                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + to_string(exc));
                      }
                   }
 
@@ -325,7 +325,7 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
                         authServerFirst = authenticateIdl::AuthServer::_narrow(relativeContext.resolve(id, kind));
                      }
                      catch (const CORBA::Exception &exc) {
-                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + lexical_cast<string>(exc));
+                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + to_string(exc));
                      }
                   }
                } while ( more );
