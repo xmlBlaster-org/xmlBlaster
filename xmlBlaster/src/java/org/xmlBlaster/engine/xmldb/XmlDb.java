@@ -3,7 +3,7 @@ Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Store MessageUnits in a File-database or holds in a Cache
-Version:   $Id: XmlDb.java,v 1.2 2000/08/22 22:26:12 kron Exp $
+Version:   $Id: XmlDb.java,v 1.3 2000/08/23 12:32:06 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;
@@ -11,6 +11,7 @@ package org.xmlBlaster.engine.xmldb;
 import org.w3c.dom.*;
 
 import java.util.Enumeration;
+import java.util.Vector;
 import org.xmlBlaster.util.*;
 import org.jutils.log.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -69,6 +70,9 @@ public class XmlDb
          Log.error(ME + ".insert", "The arguments of insert() are invalid (null)");
       }
 
+      // Insert key to DOM
+      _pdomInstance.insert(mu);
+
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);
 
       // Check if key exists in cache
@@ -79,8 +83,6 @@ public class XmlDb
       // write MessageUnit to Cache
       _cache.write(pmu);
 
-      // Insert key to DOM
-      _pdomInstance.insert(mu);
       return null;
     }
 
@@ -112,8 +114,20 @@ public class XmlDb
     */
     public Enumeration query(String queryString)
     {
-       Enumeration muArr = null;
-       return muArr;
+       Enumeration oidIter = _pdomInstance.query(queryString);
+       Vector v = new Vector();
+       while(oidIter.hasMoreElements())
+       {
+          String oid = (String)oidIter.nextElement();
+          /** Read from Cache */
+          PMessageUnit pmu = _cache.read(oid);
+
+          if(pmu != null){
+            v.addElement(pmu);
+          }
+          
+       }
+       return v.elements();
     }
 
     /**

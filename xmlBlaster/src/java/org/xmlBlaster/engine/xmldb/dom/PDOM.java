@@ -106,9 +106,6 @@ public class PDOM
 
    public final void  delete(String oid)
    {
-      /** Delete PMessageUnit from Cache and file-database. */
-//      _cache.delete(oid);
-      
       /** Delete Key from DOM **/
       NodeList nl = _rootNode.getChildNodes();
       for(int i=0; i<nl.getLength();i++)
@@ -124,7 +121,6 @@ public class PDOM
             break;   
          }
       }
-
    }
 
 
@@ -153,8 +149,8 @@ public class PDOM
          Log.error(ME,"Can't query by XPATH because : "+ e.getMessage());
       }
 
-      /** Read PMessageUnits from Cache and give it back to the engine */
-      Enumeration pmus = null;
+//      /** Read PMessageUnits from Cache and give it back to the engine */
+//      Enumeration pmus = null;
       Vector v = new Vector();
 
       while(keys.hasMoreElements())
@@ -172,14 +168,14 @@ public class PDOM
          String oid = getOid(nodeString);
 
          /** Read from Cache */
-/*         PMessageUnit pmu = _cache.read(oid);
-         if(pmu != null){
-            v.addElement(pmu);
-         }*/
+//         PMessageUnit pmu = _cache.read(oid);
+//         if(pmu != null){
+            v.addElement(oid);
+//         }
       }
-      pmus = v.elements();
+//      pmus = v.elements();
 
-      return pmus;
+      return v.elements();
    }
 
    public org.w3c.dom.Node getRootNode()
