@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.6 2000/01/19 22:21:41 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.7 2000/01/20 19:41:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -72,6 +72,26 @@ public class FileUtil
       if (sep == -1)
          return body;
       return body.substring(sep + 1);
+   }
+
+
+   /**
+    * Concatenate a filename to a path (DOS and UNIX, checks for separator). 
+    * @param path for example "/tmp"
+    * @param name for example "hello.txt"
+    * @return "/tmp/hello.txt"
+    */
+   public static String concatPath(String path, String name)
+   {
+      if (path == null) return name;
+      if (name == null) return path;
+      if (path.endsWith(File.separator) && name.startsWith(File.separator))
+         return path + name.substring(1);
+      if (path.endsWith(File.separator))
+         return path + name;
+      if (name.startsWith(File.separator))
+         return path + name;
+      return path + File.separator + name;
    }
 
 
@@ -165,10 +185,6 @@ public class FileUtil
    /**
     * Write data from <code>byte[]</code> into a file.
     * <p />
-    * All error handling and reporting is done by this method<br>
-    * Nice function for testing
-    * <br><b>Example:</b><br>
-    *    <code>FileUtil.writeFile(myBytes, "/tmp/hello");</code>
     * @param outName  name of file including path
     * @param arr      data
     * @return
@@ -177,12 +193,32 @@ public class FileUtil
     */
    public static final boolean writeFile(String outName, byte[] arr)
    {
+      return writeFile(null, outName, arr);
+   }
+
+
+   /**
+    * Write data from <code>byte[]</code> into a file.
+    * <p />
+    * All error handling and reporting is done by this method<br>
+    * Nice function for testing
+    * <br><b>Example:</b><br>
+    *    <code>FileUtil.writeFile(myBytes, "/tmp/hello");</code>
+    * @param parent   the path
+    * @param child    the name
+    * @param arr      data
+    * @return
+    *       <code>true</code> successfully wrote data
+    *       <code>false</code> error
+    */
+   public static final boolean writeFile(String parent, String child, byte[] arr)
+   {
       try {
-         File to_file = new File(outName);
+         File to_file = new File(parent, child);
          FileOutputStream to = new FileOutputStream(to_file);
          to.write(arr);
          to.close();
-         if (Log.TRACE) Log.trace(ME, "Wrote " + outName + " with size = " + arr.length + " bytes.");
+         if (Log.TRACE) Log.trace(ME, "Wrote " + to_file.toString() + " with size = " + arr.length + " bytes.");
          return true;
       }
       catch (Exception e) {
@@ -205,9 +241,9 @@ public class FileUtil
     *       <code>true</code> successfully wrote data
     *       <code>false</code> error
     */
-   public static final boolean writeFile(String outName, StringBuffer arr)
+   public static final boolean writeFile(String parent, String child, String arr)
    {
-      return writeFile(outName, arr.toString().getBytes() );
+      return writeFile(parent, child, arr.toString().getBytes() );
    }
 
 
