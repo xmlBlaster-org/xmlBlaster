@@ -66,6 +66,7 @@ import java.util.*;
  * JDK 1.2 or higher only.
  *
  * @author ruff@swand.lake.de
+ * @see classtest.TimeoutTest
  */
 public class Timeout extends Thread
 {
@@ -133,8 +134,10 @@ public class Timeout extends Thread
     */
    public void run()
    {
+      Container container;
       while (running) {
          long delay = 100000; // sleep veeery long
+         container = null;
          synchronized (map) {
             try {
                Timestamp nextWakeup = (Timestamp) map.firstKey();
@@ -142,20 +145,24 @@ public class Timeout extends Thread
                long current = System.currentTimeMillis();
                delay = next - current;
                if (delay <= 0) {
-                  Container container = (Container) map.remove(nextWakeup);
+                  container = (Container) map.remove(nextWakeup);
                   if (false) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
                      System.out.println("Timeout occurred, calling listener with real time error of " + diff + " millis");
                   }
-                  container.callback.timeout(container.userData);
-                  continue;
                }
             }
             catch (NoSuchElementException e) {
                // The listener map is empty, nothing to do.
             }
          }
+
+         if (container != null) {
+            container.callback.timeout(container.userData);
+            continue;
+         }
+
          try {
             synchronized (this) {
                wait(delay);
@@ -383,114 +390,5 @@ public class Timeout extends Thread
       try { Thread.currentThread().sleep(4000); } catch (InterruptedException e) {}
       System.err.println("ERROR: Timeout not occurred.");
       System.exit(1);
-
-     /*
-      String ME = "Timeout-Tester";
-      Timeout timeout = new Timeout();
-
-      //==== 1. We test the functionality:
-      System.out.println("Phase 1: Testing basic functionality ...");
-
-      // Test to remove invalid keys
-      timeout.removeTimeoutListener(null);
-      timeout.removeTimeoutListener(new Timestamp(12));
-
-      // We have the internal knowledge that the key is the scheduled timeout in millis since 1970
-      // so we use it here for testing ...
-      final Timestamp[] keyArr = new Timestamp[4];
-      class Dummy1 implements I_Timeout {
-         private String ME = "Dummy1";
-         private int counter = 0;
-         public void timeout(Object userData) {
-            long time = System.currentTimeMillis();
-            long diff = time - keyArr[counter].getMillis();
-            if (Math.abs(diff) < 40)
-               // Allow 40 millis wrong notification (for code execution etc.) ...
-               System.out.println("Timeout occurred for " + userData.toString() + " at " + time + " millis, real time failure=" + diff + " millis.");
-            else
-               System.err.println("*****ERROR: Wrong timeout occurred for " + userData.toString() + " at " + time + " millis, scheduled was " + keyArr[counter] + " , real time failure=" + diff + " millis.");
-            counter++;
-         }
-      }
-      Dummy1 dummy = new Dummy1();
-      keyArr[2] = timeout.addTimeoutListener(dummy, 4000L, "timer-4000");
-
-      keyArr[3] = timeout.addTimeoutListener(dummy, 2000L, "timer-5500");
-      keyArr[3] = timeout.refreshTimeoutListener(keyArr[3], 5500L);
-      long diffT = keyArr[3].getMillis() - System.currentTimeMillis();
-      if (Math.abs(5500L - diffT) > 30)
-         System.out.println("ERROR: refresh failed");
-
-      keyArr[0] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
-      keyArr[1] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
-      long span = 0;
-      if ((span = timeout.spanToTimeout(keyArr[2])) < 3000L)
-         System.err.println("*****ERROR: This short span to timeout = " + span + " is probably wrong, or you have a very slow computer.");
-      else
-         System.out.println("Span to life of " + span + " is reasonable");
-      Timestamp key = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
-      timeout.removeTimeoutListener(key);
-      try {
-         key = timeout.refreshTimeoutListener(key, 1500L);
-      }
-      catch (XmlBlasterException e) {
-         System.out.println("Refresh failed which is OK (it is a test): " + e.reason);
-      }
-      if (timeout.isExpired(keyArr[2]))
-         System.err.println("*****ERROR: Should not be expired");
-      else
-         System.out.println("Correct, is not expired");
-      try {
-         Thread.currentThread().sleep(7000L);
-      }
-      catch (Exception e) {
-         System.err.println("*****ERROR: main interrupt: " + e.toString());
-      }
-      if (!timeout.isExpired(keyArr[2]))
-         System.err.println("*****ERROR: Should be expired");
-      else
-         System.out.println("Correct, is expired");
-
-
-      //===== 2. We test a big load:
-      final int numTimers = 10000;
-      System.out.println("Phase 2: Testing " + numTimers + " timeouts ...");
-      timeout.shutdown();
-      timeout = new Timeout(); // get a new handle
-      class Dummy2 implements I_Timeout {
-         private String ME = "Dummy2";
-         private int counter = 0;
-         private long start = 0L;
-         public void timeout(Object userData) {
-            if (counter == 0) {
-               start = System.currentTimeMillis();
-            }
-            counter++;
-            if (counter == numTimers) {
-               long diff = System.currentTimeMillis() - start;
-               if (diff < 2000L)
-                  System.out.println("Success, tested " + numTimers + " timers, all updates came in " + diff + " millis");
-               else
-                  System.err.println("*****ERROR: Error testing " + numTimers + " timers, all updates needed " + diff + " millis");
-            }
-         }
-      }
-      Dummy2 dummy2 = new Dummy2();
-      long start = System.currentTimeMillis();
-      for (int ii = 0; ii < numTimers; ii++) {
-         timeout.addTimeoutListener(dummy2, 4000L, "timer-" + ii);
-      }
-      if (numTimers != timeout.getSize())
-         System.out.println("ERROR: Expected " + numTimers + " instead of " + timeout.getSize() + " active timers");
-      System.out.println("Feeding of " + numTimers + " done, " + (long) (1000 * (double) numTimers / (System.currentTimeMillis() - start)) + " adds/sec");
-      System.out.println("Waiting in main");
-      try {
-         Thread.currentThread().sleep(100000L);
-      }
-      catch (Exception e) {
-         System.err.println("*****ERROR:main interrupt: " + e.toString());
-      }
-      System.err.println("Test OK");
-      */
    }
 }
