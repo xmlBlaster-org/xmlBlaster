@@ -391,6 +391,12 @@ public final class ErrorCode implements java.io.Serializable
             new ResourceInfo(ResourceInfo.API, "query syntax", "org.xmlBlaster.util.key.QueryKeyData")
          }
       );
+
+   public static final ErrorCode USER_CLIENTCODE = new ErrorCode("user.clientCode",
+         "You may use this error code in your client implementation to throw your own exceptions.",
+         new ResourceInfo[] {
+         }
+      );
    ////////// END ////////////////////////////////////////////////////////////////
 
 
