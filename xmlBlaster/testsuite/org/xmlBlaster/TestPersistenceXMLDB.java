@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.11 2002/06/27 12:56:46 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.12 2002/07/13 14:58:05 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,114 +37,131 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPersistenceXMLDB
  * </pre>
  */
-public class TestPersistenceXMLDB extends TestCase implements I_Callback
-{
+public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    private final static String ME = "TestPersistenceXMLDB";
    private Global glob = null;
 
    private final String senderName = "Benedikt";
    private final String senderPasswd = "secret";
    private String publishOid = "amIdurable";
+   private String subscribeString = "subscribeMe";
    private XmlBlasterConnection senderConnection = null;
    private String senderContent = "Smoked < Ham"; // not well formed XML on purpose
    // private String sendetContent = "<description>Smoked Ham</description>";
 
    private int numReceived = 0;
 
-   private ServerThread serverThread;
+   private ServerThread st;
+   private ServerThread serverThread1;
+   private ServerThread serverThread2;
    private int serverPort = 7604;
 
    /**
     * Constructs the TestPersistenceXMLDB object.
     * <p />
-    * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
+    * @param glob		 Keeps global args and parameters.
+    * @param testName The name used in the test suite.
     */
    public TestPersistenceXMLDB(Global glob, String testName)
    {
-       super(testName);
+      super(testName);
       this.glob = glob;
    }
+
+   /**
+    * Starts a xmlBlaster serverthread.
+    * @return the server thread.
+    */
+   protected ServerThread startServer() {
+      ServerThread st;
+      glob.init(Util.getOtherServerPorts(serverPort));
+
+      st = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      return st;
+   } // end of startServer
+
+
+   /**
+    * Stops a xmlBlaster serverthread.
+    * @param st keeps the server thread
+    */
+   protected void stopServer(ServerThread st) {
+         ServerThread.stopXmlBlaster(st);
+         Log.info( ME, "Xmlblaster stopped");
+         st = null;
+   } // end of stopServer
+
+
+   /**
+    * Connects a client at the server.
+    * @param name		The loginname.
+    * @param passwd	The loginpassword.
+    * @return The sender connection.
+    */
+   protected XmlBlasterConnection connectClient(String name, String passwd) {
+      Log.info(ME, "connect to client: name='" + name + "' passwd='" + passwd + "'");
+         XmlBlasterConnection sc = null;
+      try {
+         sc = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob, name, passwd); // == "<qos></qos>";
+         sc.connect(qos, this);
+         Log.info( ME, name + " connected" );
+      } catch (Exception e) {
+          Log.error(ME, e.toString());
+          e.printStackTrace();
+      }
+      return sc;
+   } // end of connectClient
+
+
+   /**
+    * Disconnects a client from the server.
+    * @param sc A connection of a client to xmlBlaster.
+    */
+   protected void disconnectClient(XmlBlasterConnection sc) {
+      try {
+         sc.disconnect(null);
+         sc = null;
+      } catch (Exception e) {
+          Log.error(ME, e.toString());
+          e.printStackTrace();
+      }
+   } // end of disconnectClient
 
 
    /**
     * Sets up the fixture.
+    * Sends a durable message to be stored in persistence driver.
     * <p />
-    * Creates a CORBA connection and does a login.<br />
-    * - One connection for the sender client<br />
+    * Starts the server, creates a connection and does a login.<br />
+    * Sends a durable message and disconnects from server.<br />
+    * Shuts the server down.<br />
     */
-   protected void setUp()
-   {
-      serverThread = ServerThread.startXmlBlaster(serverPort);
-      Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+   protected void setUp() {
+      serverThread1 = startServer();
+      senderConnection = connectClient(senderName, senderPasswd);
 
-      try {
-         senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, senderPasswd, qos, this);
-      }
-      catch (Exception e) {
-          Log.error(ME, e.toString());
-          e.printStackTrace();
-      }
+      sendDurable(senderConnection);
 
-      /*
-      String xmlKeyPub = "<key oid='" + publishOid + "' queryType='EXACT'>\n" + "</key>";
-      try {
-         senderConnection.subscribe(xmlKeyPub, "<qos></qos>");
-      } catch(XmlBlasterException e2) {
-         Log.warn(ME, "XmlBlasterException: " + e2.reason);
-      }
-      Log.trace(ME, "Subscribed to '" + publishOid + "' ...");
-      */
-   }
+      disconnectClient(senderConnection);
+      stopServer(serverThread1);
 
-
-   /**
-    * Tears down the fixture.
-    * <p />
-    * cleaning up .... logout
-    */
-   protected void tearDown() {
-
-      Util.delay(3000L);   // Wait 200 milli seconds, until all updates are processed ...
-
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
-      String qos = "<qos></qos>";
-      String[] strArr = null;
-/*      try {
-         strArr = senderConnection.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-         Log.error(ME, "XmlBlasterException: " + e.reason);
-      }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
-      checkContent(false);*/
-
-      senderConnection.logout();
-
-      Util.delay(500L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
-      // reset to default server port (necessary if other tests follow in the same JVM).
-      String[] args = new String[2];
-      args[0] = "-port";
-      args[1] = "" + Constants.XMLBLASTER_PORT;
-      try {
-         glob.getProperty().addArgs2Props(args);
-      } catch(org.jutils.JUtilsException e) {
-         assertTrue(e.toString(), false);
-      }
-   }
+      serverThread1 = null;
+      senderConnection = null;
+   } // end of setUp
 
 
    /**
     * Publish a durable message.
-    * <p />
+    * @param sc A connection of a client to xmlBlaster.
     */
-   public void sendDurable()
-   {
+   public void sendDurable(XmlBlasterConnection sc) {
+   	if (Log.CALL) Log.call(ME, "sendDurable");
       if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
+                      "   <" + subscribeString + "/>\n" +
                       "</key>";
 
       String qos = "<qos>" +
@@ -153,129 +170,64 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit).getOid();
+         String returnedOid = sc.publish(msgUnit).getOid();
          assertEquals("Returned oid is invalid", publishOid, returnedOid);
-         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
-
-      waitOnUpdate(1000L, 0);
-      assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
-      numReceived = 0;
-   }
+   } // end of sendDurable
 
 
    /**
-    * TEST: Publish a durable message.
-    * <p />
+    * Subscribes to publishOid at the given connection.
+    * @param sc A connection of a client to xmlBlaster.
     */
-   public void testDurable()
-   {
-      sendDurable();
-      // checkContent(true);
-      waitOnUpdate(2500L, 0);
-      Util.delay(2000L);
+   protected void subscribe(XmlBlasterConnection sc) {
+   	if (Log.CALL) Log.call(ME, "subscribe");
 
-      senderContent = senderContent + " again";
-      sendDurable();
-      // checkContent(true);
-      waitOnUpdate(2500L, 0);
-
-      RestartTestServer();
-
-      waitOnUpdate(2500L, 0);
-
-      /*
-      sendDurable();
-      checkContent(true);
-
-      senderContent = senderContent + " again";
-      sendDurable();
-      RestartTestServer();
-      checkContent(true);
-      */
-
-   }
-
-   /**
-    * a dirty hack to restart the Test Server between send and checkcontent.
-    * - logout()
-    * - stopXmlBlaster()
-    * - delay()
-    * - startXmlBlaster()
-    * - delay()
-    * - login()
-    * <p />
-    */
-   public void RestartTestServer() {
-      long    delay4Server = 2000L ;
-      Log.info( ME, "Restarting Test Server" );
+      String xmlKeySub = "<key oid='' queryType='XPATH'>\n" + "/xmlBlaster/key/" + subscribeString + " </key>";
+      Log.info(ME, "Subscribe to '" + xmlKeySub + "' ...");
 
       try {
-         senderConnection.logout();
-        Log.info( ME, "Here I am" );
-         ServerThread.stopXmlBlaster(serverThread);
-         serverThread = null ;
-         Util.delay( delay4Server );    // Wait some time
-
-
-         serverThread = ServerThread.startXmlBlaster(serverPort);
-         Util.delay( delay4Server );    // Wait some time
-         ConnectQos conectqos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, senderPasswd, conectqos, this);
-
+         sc.subscribe(xmlKeySub, "<qos></qos>");
+      } catch(XmlBlasterException e2) {
+         Log.warn(ME, "XmlBlasterException: " + e2.reason);
       }
-      catch (XmlBlasterException e) {
-         Log.warn(ME, "setUp() - login failed");
-      }
-      catch (Exception e) {
-         Log.error(ME, e.toString());
-         e.printStackTrace();
-      }
-   }
+      //Log.trace(ME, "Subscribed to '" + xmlKeySub + "' ...");
+   } // end of subscribe
+
 
    /**
-    * If the FileDriver is used, check if the correct content is written.
+    * TEST: Subscribes to the message with the given key per XPATH.
+    * <p />
+    * Starts the server, creates a connection and does a login.<br />
+    * Subscribes to a durable message waits a while and disconnects from server.<br />
+    * Shuts the server down.<br />
     */
-   void checkContent(boolean checkContent)
-   {
-      String driverClass = glob.getProperty().get("Persistence.Driver", (String)null);
-      if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver")) {
-         Log.info(ME, "Sorry, can't check persistence store, only checks for Xindice is implemented");
-         return;
-      }
+   public void testDurable() {
 
-      String path = glob.getProperty().get("Persistence.Path", (String)null);
-      if (path == null) {
-         Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
-         return;
-      }
+      serverThread2 = startServer();
+      senderConnection = connectClient(senderName, senderPasswd);
 
-      if (checkContent) {
-         try {
-            String persistenceContent = FileUtil.readAsciiFile(path, publishOid);
-            assertEquals("Written content is corrupted", senderContent, persistenceContent);
-         }
-         catch (Exception e) {
-            assertTrue("Couldn't read file " + FileUtil.concatPath(path, publishOid), false);
-         }
-      }
-      else { // Check if erased
-         java.io.File f = new java.io.File(path, publishOid);
-         if (f.exists())
-            assertTrue("File " + FileUtil.concatPath(path, publishOid) + " is not erased properly", false);
-      }
-   }
+      subscribe(senderConnection);
+      Util.delay(3000L);   // Wait 200 milli seconds, until all updates are processed ...
+
+      disconnectClient(senderConnection);
+      stopServer(serverThread2);
+
+      serverThread2 = null;
+      senderConnection = null;
+   } // end of testDurable
+
 
    /**
     * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
+    * delivering us a new asynchronous message.
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       //Log.info(ME, "Receiving update of a message ...");
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -291,38 +243,11 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
       return "";
    }
 
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (numReceived < numWait) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
-   }
-
 
    /**
     * Method is used by TestRunner to load these tests
     */
-   public static Test suite()
-   {
+   public static Test suite() {
        TestSuite suite= new TestSuite();
        suite.addTest(new TestPersistenceXMLDB(new Global(), "testDurable"));
        return suite;
@@ -338,16 +263,20 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistenceXMLDB</pre>
     */
-   public static void main(String args[])
-   {
+   public static void main(String args[]) {
       Global glob = new Global();
+
       if (glob.init(args) != 0) {
          Log.panic(ME, "Init failed");
       }
+
       TestPersistenceXMLDB testSub = new TestPersistenceXMLDB(glob, "TestPersistenceXMLDB");
       testSub.setUp();
       testSub.testDurable();
-      testSub.tearDown();
       Log.exit(TestPersistenceXMLDB.ME, "Good bye");
-   }
-}
+
+   } // end of main
+
+} // end of class
+
+// end of file
