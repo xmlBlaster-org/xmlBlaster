@@ -129,9 +129,9 @@ public class FileLocator
 
    /**
     * checks if the file exists in the given path (only one path).
-    * @param filename the name of the file to lookup
     * @param path the path in which the file should reside. If it is null, then
     *        filename will be considered an absolute filename.
+    * @param filename the name of the file to lookup
     * @return URL the URL for the given file or null if no file found.
     */
    private final URL findFileInSinglePath(String path, String filename) {
@@ -173,10 +173,16 @@ public class FileLocator
     *   <li>java.ext.dirs</li>
     *   <li>java.home</li>
     * </ul>
+    * @paran propertyName The key to look into Global, for example
+    *        <tt>locator.findFileInXmlBlasterSearchPath("pluginsFile", "/tmp/xmlBlasterPlugins.xml").getFile();</tt>
+    *        looks for the key "pluginsFile" in global scope, if found the file of the keys value is chosen, else
+    *        the above lookup applies.
+    *  @param filename
     *  @return URL the URLfrom which to read the content or null if
     *          the file/resource has not been found. Note that we return the
     *          url instead of the filename since it could be a resource and
     *          therefore it could not be opened as a normal file.
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html">The util.property requirement</a>
     */
    public final URL findFileInXmlBlasterSearchPath(String propertyName, String filename) {
       String path = null;
@@ -235,41 +241,6 @@ public class FileLocator
       return null;
     }
 
-
-    /**
-     * Finds a file according to the xmlBlaster file finder strategy which is the
-     * following search order:
-     *<ul>
-     * <li>given property (for example 'pluginFile'</li>
-     * <li>local directory</li>
-     * <li>$PROECT_HOME</li>
-     * <li>$HOME</li>
-     * <li>java.ext.dirs</li>
-     * <li>java.home</li>
-     *</ul>
-     *<p/>
-     * If no file is found, then null is returned, otherwise the first file found is
-     * returned.
-     *
-     * @param filePropertyName the name of the property to which the filename could
-     *        be associated to (the first place to look at).
-     * @param filename the name of the file to search.
-     *
-     */
-/*
-    public final String findXmlBlasterFile(String filePropertyName, String filename)
-       throws XmlBlasterException {
-       if (this.log.CALL) this.log.call(ME, "findXmlBlasterFile with propertyName='" + filePropertyName + "' and filename='" + filename + "'");
-       String nameFromProperty = this.glob.getProperty().get(filePropertyName, (String)null);
-       if (nameFromProperty != null) {
-          if (this.log.TRACE) this.log.trace(ME, ".findXmlBlasterFile nameFromProperty = '" + nameFromProperty + "'");
-          File file = new File(nameFromProperty);
-          if (file.exists() && (!file.isDirectory())) return nameFromProperty;
-       }
-       return findFile(createXmlBlasterSearchPath(), filename);
-    }
-*/
-
     public static void main(String[] args) {
        Global glob = Global.instance();
        glob.init(args);
@@ -284,7 +255,7 @@ public class FileLocator
              System.out.println("Its complete path is: '" + ret + "'");
           }
           else {
-                  System.out.println("The file 'xmlBlasterPlugins.xml' has not been found");
+             System.out.println("The file 'xmlBlasterPlugins.xml' has not been found");
           }
        }
        catch (Exception ex) {
