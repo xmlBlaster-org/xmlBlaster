@@ -4,11 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/15 13:09:10 $
+           $Date: 1999/11/15 14:47:54 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.XmlKey;
@@ -29,6 +30,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    private RequestBroker requestBroker;
    private Authenticate authenticate;
 
+
    /**
     * Construct a persistently named object.
     */
@@ -44,66 +46,45 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * Subscribe to messages
     */
-   public void subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal + ")"*/);
-      /*
-      if (Log.HACK_POA) {
-         try {
-            org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
-                                                         orb.resolve_initial_references("POACurrent"));
-            byte[] active_oid = poa_current.get_object_id();
-            Log.warning(ME, "subscribe for poa oid: " + active_oid);
-            org.omg.PortableServer.POA xmlBlasterPOA = poa_current.get_POA();
-            org.omg.PortableServer.Servant servant = xmlBlasterPOA.id_to_servant(active_oid);
-            org.omg.CORBA.Object servantObj = xmlBlasterPOA.id_to_reference(active_oid);
-            String IOR = orb.object_to_string(servantObj);
-            Log.warning(ME, "subscribe for IOR: " + IOR);
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-            sessionId = IOR; // !!!
-
-            //org.omg.PortableServer.Servant servant = poa_current.getServant();
-            //byte[] oid = xmlBlasterPOA.servant_to_id(servant);
-            //Log.warning(ME, "subscribe for servant oid: " + oid);
-
-            // NOT TIE:
-            // is wrong:
-            // byte[] this_oid = xmlBlasterPOA.reference_to_id(_this());
-            // Log.warning(ME, "subscribe for _this() oid: " + this_oid);
-            //
-
-            Log.warning(ME, "subscribe for servant _object_id() oid: " + _object_id()); // == poa_current.get_object_id()
-
-         } catch (Exception e) {
-            Log.error(ME, "subscribe for oid");
-         }
-      }
-      */
+      authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.subscribe(authenticate.check(sessionId), xmlKey, xmlQoS);
+      requestBroker.subscribe(authenticate.check(), xmlKey, xmlQoS);
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
    }
 
 
    /**
     * @see xmlBlaster.idl
     */
-   public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal + ")"*/);
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+
+      authenticate.check();
+
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.unSubscribe(authenticate.check(sessionId), xmlKey, xmlQoS);
+      requestBroker.unSubscribe(authenticate.check(), xmlKey, xmlQoS);
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
    }
 
 
    /**
     * @see xmlBlaster.idl
     */
-   public int publish(String sessionId, MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public int publish(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
-      authenticate.check(sessionId);
+      authenticate.check();
 
       if (messageUnitArr.length < 1) {
          if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero messageUnits sent");
@@ -117,13 +98,14 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public int erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public int erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      authenticate.check(sessionId);
+      authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
+
       return requestBroker.erase(xmlKey, xmlQoS);
    }
 
@@ -133,10 +115,16 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnit[] get(String sessionId, String xmlKey, String qos) throws XmlBlasterException
+   public MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
    {
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+
+      authenticate.check();
+
       MessageUnit[] messageUnitArr = new MessageUnit[0];
        // IMPLEMENT: Operation
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       return messageUnitArr;
    }
 

@@ -45,6 +45,8 @@ public class Client
             authServer = AuthServerHelper.narrow(nc.resolve(name));
          }
 
+         StopWatch stop = new StopWatch();
+
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
          org.omg.PortableServer.POA poa = 
@@ -54,43 +56,39 @@ public class Client
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
          // callbackTie._orb( orb ); // necessary?
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         Log.trace(ME, "Exported Callback Server interface" + stop.nice());
 
 
          String qos = orb.object_to_string(callback);
 
          //----------- Login to the server -----------------------
-         String sessionId = "";
          try {
             String passwd = "some";
-            //sessionId = authServer.login(loginName, passwd, callback, qos);
             xmlServer = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
          //------------ Use the returned IOR as Server Reference ------
-         Log.info(ME, "Got xmlBlaster server IOR");
+         Log.info(ME, "Got xmlBlaster server IOR" + stop.nice());
 
-         //org.omg.CORBA.Object oo = orb.string_to_object(sessionId);
-         //xmlServer = ServerHelper.narrow(oo);
-
-         Log.warning(ME, "Server IOR= " + orb.object_to_string(xmlServer));
+         Log.warning(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
 
          String xmlKey = "KEY_FOR_SMILEY";
 
          try {
-            xmlServer.subscribe(sessionId, xmlKey, qos);
+            xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.trace(ME, "Subscribed to Smiley data ...");
+         Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
          try {
-            xmlServer.subscribe(sessionId, xmlKey, qos);
+            xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.trace(ME, "Subscribed to Smiley data ...");
+         Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
          // Construct a message
          String str = "Smiley changed";
@@ -101,32 +99,33 @@ public class Client
 
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            xmlServer.publish(sessionId, marr, qarr);
+            xmlServer.publish(marr, qarr);
 
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
-         Log.info(ME, "Sending done, waiting for response ...");
+         Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
          delay(); // Wait some time ...
 
 
          Log.trace(ME, "Trying unsubscribe ...");
+         stop.restart();
          try {
-            xmlServer.unSubscribe(sessionId, xmlKey, qos);
+            xmlServer.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.info(ME, "Unsubscribe done");
+         Log.info(ME, "Unsubscribe done" + stop.nice());
 
 
          try {
             marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
-            xmlServer.publish(sessionId, marr, qarr);
+            xmlServer.publish(marr, qarr);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.info(ME, "Sending done, there shouldn't be a callback anymore ...");
+         Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
          /*
          xmlServer._release();
          System.out.println("done. ");

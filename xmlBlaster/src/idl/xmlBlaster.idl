@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.11 1999/11/15 13:09:06 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.12 1999/11/15 14:47:47 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   JacORB:
@@ -172,7 +172,7 @@ module serverIdl
        *                HACK: Specify the ClientCallback String IOR here!!!
        */
       //oneway
-      void subscribe(in string sessionId, in XmlType xmlKey, in XmlType qos)
+      void subscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -188,7 +188,7 @@ module serverIdl
        *                HACK: Specify the ClientCallback String IOR here!!!
        * @return Contains a sequence of 0 - n MessageUnit structs
        */
-      MessageUnitArr get(in string sessionId, in XmlType xmlKey, in XmlType qos)
+      MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -196,14 +196,13 @@ module serverIdl
        * if a key was subscribed forever, you can cancel your
        * subscription with following method
        *
-       * @param sessionId The client identifier, obtained from login()
        * @param xmlKey    Key with attributes allowing Regex/XQL/SQL selection<br>
        *                  See xmlKey.dtd for a description
        * @param qos       Quality of Service, flags to control unsubscritpion<br>
        *                  See qosSubscribe.dtd for a description
        */
       //oneway
-      void unSubscribe(in string sessionId, in XmlType xmlKey, in XmlType qos)
+      void unSubscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -222,7 +221,7 @@ module serverIdl
        * @return number of keys successfully set
        */
       //oneway
-      long publish(in string sessionId, in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
+      long publish(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
                                           raises(XmlBlasterException);
 
 
@@ -230,7 +229,7 @@ module serverIdl
        * erase an attribute
        * @return number of entries removed
        */
-      long erase(in string sessionId, in XmlType xmlKey, in XmlType qos)
+      long erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -265,10 +264,9 @@ module authenticateIdl
 
 
       /**
-       * Login to server
-       * @param sessionId The client identifier, obtained from login()
+       * Logout from server
        */
-      void logout(in string sessionId) raises (serverIdl::XmlBlasterException);
+      void logout() raises (serverIdl::XmlBlasterException);
    };
 
 

@@ -3,12 +3,13 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Login for clients
-           $Revision: 1.4 $
-           $Date: 1999/11/15 13:09:10 $
+           $Revision: 1.5 $
+           $Date: 1999/11/15 14:47:54 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.ServerImpl;
 import org.xmlBlaster.serverIdl.ServerPOATie;
@@ -125,40 +126,27 @@ public class Authenticate
     * Authentication of a client
     *
     * @param cb The Callback interface of the client
-    * @return The IOR of the xmlBlaster.Server interface, use:
-    *         <code>org.omg.CORBA.Object oo = orb.string_to_object(sessionId);
-    *               xmlServer = ServerHelper.narrow(oo);
-    *         </code><br>
-    *         to access the server in the client.
+    * @return The xmlBlaster.Server interface
     */
    public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
                        BlasterCallback callback,
                        String xmlQoS_literal, String callbackIOR) throws XmlBlasterException
    {
-
-      String sessionId;
+      String uniqueClientKey;
       org.omg.CORBA.Object objRef;
       org.xmlBlaster.serverIdl.Server server = null;
-      ServerImpl serverImpl = null;
+
       try {
          byte[] oid = xmlBlasterPOA.activate_object(xmlBlasterServant);
-         //byte[] oid = xmlBlasterPOA.servant_to_id(xmlBlasterServant);
-         Log.info(ME, "New Active Object Map ID=" + oid + " for client " + loginName);
+         Log.trace(ME, "New Active Object Map ID=" + oid + " for client " + loginName);
 
-         /* This produced similar IOR:
-         serverImpl = (ServerImpl)xmlBlasterPOA.id_to_servant(oid);
-         sessionId = new String(oid);
-         */
-
-
-         // !!! create a new object reference:
+         // Create a new object reference:
          // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
          objRef = xmlBlasterPOA.id_to_reference(oid);
          server = org.xmlBlaster.serverIdl.ServerHelper.narrow(objRef);
-         sessionId = orb.object_to_string(objRef);
-         Log.info(ME, "New Active Object Map IOR=" + sessionId);
-         Log.info(ME, "New Active Object Map ID=" + xmlBlasterPOA.reference_to_id(objRef));
-
+         uniqueClientKey = orb.object_to_string(objRef);
+         // Log.trace(ME, "New Active Object Map IOR=" + uniqueClientKey);
+         // Log.trace(ME, "New Active Object Map ID=" + xmlBlasterPOA.reference_to_id(objRef));
       } catch ( Exception e ) {
          e.printStackTrace();
          Log.error(ME, e.toString());
@@ -166,28 +154,29 @@ public class Authenticate
       }
 
       XmlQoSClient xmlQoS = new XmlQoSClient(xmlQoS_literal);
-      ClientInfo clientInfo = new ClientInfo(sessionId, loginName, passwd, callback, callbackIOR, xmlQoS);
+      ClientInfo clientInfo = new ClientInfo(uniqueClientKey, loginName, passwd, callback, callbackIOR, xmlQoS);
       synchronized(clientInfoMap) {
          clientInfoMap.put(clientInfo.getUniqueKey(), clientInfo);
       }
-      return server; //serverImpl._this(orb); // (org.xmlBlaster.serverIdl.Server)objRef;  //sessionId !!!!!
+      return server;
    }
 
 
    /**
     * Logout of a client
-    *
-    * @param the unique sessionId for the client
     */
-   public void logout(String sessionId) throws XmlBlasterException
+   public void logout() throws XmlBlasterException
    {
+      ClientInfo clientInfo = check();
       synchronized(clientInfoMap) {
          // byte[] oid = ??
          // xmlBlasterPOA.deactivate_object(oid);  // !!!
-         Object obj = clientInfoMap.remove(sessionId);
+         Object obj = clientInfoMap.remove(clientInfo.getUniqueKey());
          if (obj == null) {
-            throw new XmlBlasterException(ME+"Unknown", "Sorry, you are not known, no logout");
+            Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
+            throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
          }
+         Log.info(ME, "Successfull logout for client " + clientInfo.toString());
          obj = null;
       }
    }
@@ -199,36 +188,48 @@ public class Authenticate
     * @return ClientInfo - if the client is OK
     * @exception Access denied
     */
-   public ClientInfo check(String sessionId) throws XmlBlasterException
+   public ClientInfo check() throws XmlBlasterException
    {
+      String uniqueClientKey;
+      StopWatch stop = new StopWatch();
       try { 
          // who is it?
          // find out by asking the xmlBlasterPOA
          org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
                                                       orb.resolve_initial_references("POACurrent"));
+         
          byte[] active_oid = poa_current.get_object_id();
          Log.warning(ME, "subscribe for poa oid: " + active_oid);
          org.omg.PortableServer.POA xmlBlasterPOA = poa_current.get_POA();
          org.omg.PortableServer.Servant servant = xmlBlasterPOA.id_to_servant(active_oid);
          org.omg.CORBA.Object servantObj = xmlBlasterPOA.id_to_reference(active_oid);
          String IOR = orb.object_to_string(servantObj);
-         Log.warning(ME, "subscribe for IOR: " + IOR);
+         
+         // Log.trace(ME, "subscribe for IOR: " + IOR);
 
-         sessionId = IOR; // !!!
+         uniqueClientKey = IOR; // !!! The IOR which the client used to access the Server interface
+                                // is out unique identifier
+
+         Log.trace(ME, "Client checking done" + stop.nice());
+
       } catch (Exception e) {
-         Log.error(ME, "subscribe for oid");
+         Log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
+         throw new XmlBlasterException(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
       }
+
+      Object obj = null;
 
       synchronized(clientInfoMap) {
-         Object obj = clientInfoMap.get(sessionId);
-         if (obj == null) {
-            throw new XmlBlasterException(ME+"AccessDenied", "Sorry, sessionId is invalid");
-         }
-         ClientInfo clientInfo = (ClientInfo)obj;
-
-         Log.info(ME, "Succesfully granted access for " + clientInfo.toString());
-
-         return clientInfo;
+         obj = clientInfoMap.get(uniqueClientKey);
       }
+
+      if (obj == null) {
+         throw new XmlBlasterException(ME+"AccessDenied", "Sorry, uniqueClientKey is invalid");
+      }
+      ClientInfo clientInfo = (ClientInfo)obj;
+
+      Log.info(ME, "Succesfully granted access for " + clientInfo.toString() + stop.nice());
+
+      return clientInfo;
    }
 }

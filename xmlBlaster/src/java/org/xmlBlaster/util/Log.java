@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.5 $  $Date: 1999/11/14 21:55:20 $
+           $Revision: 1.6 $  $Date: 1999/11/15 14:47:54 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -22,6 +22,7 @@ public class Log
     * if (Log.CALLS) Log.trace(....); -> dead code elimination
     */
    public final static boolean CALLS = true;  // trace method calls
+   public final static boolean TIME  = true;  // trace performance
    public final static boolean DEBUG = true;  // trace application flow
 
    /**
@@ -38,9 +39,29 @@ public class Log
    private static int numErrorInvocations = 0;
 
    /**
+    * colors foreground/background
+    */
+   private final static String ESC          = "\033[0m";     // Reset color to original values
+   private final static String BOLD         = "\033[1m";
+
+   private final static String RED_BLACK    = "\033[31;40m";
+   private final static String GREEN_BLACK  = "\033[32;40m";
+   private final static String YELLOW_BLACK = "\033[33;40m";
+   private final static String BLUE_BLACK   = "\033[34;40m";
+   private final static String PINK_BLACK   = "\033[35;40m";
+   private final static String LTGREEN_BLACK= "\033[36;40m";
+   private final static String WHITE_BLACK  = "\033[37;40m";
+
+   private final static String WHITE_RED    = "\033[37;41m";
+   private final static String BLACK_RED    = "\033[30;41m";
+   
+
+   /**
     * Output text for different logging levels
     */
    private final static StringBuffer INSTANCE_SEPERATOR = new StringBuffer(":  ");
+   private final static StringBuffer timeX  = new StringBuffer("TIME  ");
+   private final static StringBuffer callsX = new StringBuffer("CALL  ");
    private final static StringBuffer traceX = new StringBuffer("TRACE ");
    private final static StringBuffer plainX = new StringBuffer("      ");
    private final static StringBuffer infoX  = new StringBuffer("INFO  ");
@@ -53,14 +74,17 @@ public class Log
     * Colored output to xterm
     */
    private final static boolean withXtermEscapeColor = true;
-   private final static StringBuffer INSTANCE_SEPERATOR_E = new StringBuffer("\033[1m:\033[0m  "); // bold
-   private final static StringBuffer traceE = new StringBuffer("\033[37;40mTRACE\033[0m: ");   // white on black
-   private final static StringBuffer plainE = new StringBuffer("\033[37;40m     \033[0m: ");   // white on black
-   private final static StringBuffer infoE  = new StringBuffer("\033[32;40mINFO \033[0m: ");   // green
-   private final static StringBuffer warnE  = new StringBuffer("\033[33;40mWARN \033[0m: ");   // yellow
-   private final static StringBuffer errorE = new StringBuffer("\033[31;40mERROR\033[0m: ");   // red
-   private final static StringBuffer panicE = new StringBuffer("\033[31;40mPANIC\033[0m: ");   // red
-   private final static StringBuffer exitE  = new StringBuffer("\033[32;40mEXIT \033[0m: ");   // green
+   private final static StringBuffer INSTANCE_SEPERATOR_E = new StringBuffer(BOLD + ":" + ESC + "  "); // bold
+
+   private final static StringBuffer timeE  = new StringBuffer(LTGREEN_BLACK+ "TIME " + ESC + ": ");
+   private final static StringBuffer callsE = new StringBuffer(WHITE_BLACK  + "CALL " + ESC + ": ");
+   private final static StringBuffer traceE = new StringBuffer(WHITE_BLACK  + "TRACE" + ESC + ": ");
+   private final static StringBuffer plainE = new StringBuffer(WHITE_BLACK  + "     " + ESC + ": ");
+   private final static StringBuffer infoE  = new StringBuffer(GREEN_BLACK  + "INFO " + ESC + ": ");
+   private final static StringBuffer warnE  = new StringBuffer(YELLOW_BLACK + "WARN " + ESC + ": ");
+   private final static StringBuffer errorE = new StringBuffer(RED_BLACK    + "ERROR" + ESC + ": ");
+   private final static StringBuffer panicE = new StringBuffer(BLACK_RED    + "PANIC" + ESC + ": ");
+   private final static StringBuffer exitE  = new StringBuffer(GREEN_BLACK  + "EXIT " + ESC + ": ");
 
 
    /**
@@ -91,7 +115,8 @@ public class Log
     */
    public final static void log(final StringBuffer levelStr, String instance, String text)
    {
-      System.err.println(logHeader(levelStr).append(instance).append(withXtermEscapeColor ? INSTANCE_SEPERATOR_E : INSTANCE_SEPERATOR).append(text));
+      // System.err.println(logHeader(levelStr).append(instance).append(withXtermEscapeColor ? INSTANCE_SEPERATOR_E : INSTANCE_SEPERATOR).append(text));
+      System.err.println(logHeader(levelStr).append(" [").append(instance).append("] ").append(text));
    }
 
 
@@ -191,11 +216,29 @@ public class Log
       log(null, instance, text);
    }
 
+   /**
+    * Tracing execution
+    */
    public final static void trace(String instance, String text)
    {
       log((withXtermEscapeColor) ? traceE : traceX, instance, text);
    }
 
+   /**
+    * tracing when entering methods
+    */
+   public final static void calls(String instance, String text)
+   {
+      log((withXtermEscapeColor) ? callsE : callsX, instance, text);
+   }
+
+   /**
+    * Output of performant measurements (elapsed milliseconds)
+    */
+   public final static void time(String instance, String text)
+   {
+      log((withXtermEscapeColor) ? timeE : timeX, instance, text);
+   }
 
    /**
     * Only for testing
@@ -205,6 +248,8 @@ public class Log
    {
       String me = "Log-Tester";
 
+      Log.calls(me, "Entering method main()");
+      Log.time(me, "Elapsed time = 34 milli seconds");
       Log.trace(me, "TRACE: Entering method xy");
       Log.info(me, "Successfully loaded data");
       Log.warning(me, "your input is strange");

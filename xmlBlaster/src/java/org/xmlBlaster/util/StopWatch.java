@@ -3,7 +3,7 @@ Name:      StopWatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.1 $  $Date: 1999/11/08 12:58:17 $
+           $Revision: 1.2 $  $Date: 1999/11/15 14:47:54 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -29,20 +29,55 @@ public class StopWatch
    {
       if (stopTime == -1)
          stopTime = System.currentTimeMillis();
-   
+
       return stopTime - startTime;
    }
 
-   public final String elapsedNice()
+
+   /**
+    * Returns a nice string with elapsed time
+    * Resets the stop watch
+    */
+   public final String nice()
+   {
+      String str = toString();
+
+      restart();
+
+      return str;
+   }
+
+ 
+   /**
+    * Nicely formatted output containing elapsed time since
+    * Construction or since last restart()
+    */
+   public final String toString()
    {
       long millis = elapsed();
       long seconds = millis / 1000;
       long sec = (seconds % 3600) % 60;
       long min = (seconds % 3600) / 60;
       long hour = seconds / 3600;
-      String str = "" + hour + " h " + min + " min " + sec + " sec " + millis % 1000 + " millis";
-      return str;
+      
+      StringBuffer strbuf = new StringBuffer(60);
+      
+      strbuf.append(" [ ");
+
+      if (hour > 0L)
+         strbuf.append(hour + " h ");
+      if (min > 0L)
+         strbuf.append(min + " min ");
+      if (sec > 0L)
+         strbuf.append(sec + " sec ");
+
+      strbuf.append((millis % 1000) + " millis");
+
+      strbuf.append(" ]");
+
+      return strbuf.toString();
    }
+
 
    public final void restart()
    {
@@ -67,8 +102,8 @@ public class StopWatch
          val *= val;
       }
 
-      Log.info(me, "Time for 100000 loops = " + stop.elapsedNice());
       Log.info(me, "Time for 100000 loops = " + stop.elapsed() + " Millisec");
+      Log.info(me, "Time for 100000 loops = " + stop.nice());
 
       Log.exit(me, "Good bye");
    }
