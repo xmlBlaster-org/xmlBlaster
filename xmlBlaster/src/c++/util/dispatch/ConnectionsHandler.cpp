@@ -21,6 +21,7 @@ using namespace std;
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::storage;
 using namespace org::xmlBlaster::util::queue;
@@ -279,7 +280,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
    try {
       // fill in the sender absolute name
       if (connectReturnQos_) {
-         msgUnit.getQos().setSender(connectReturnQos_->getSessionQos());
+         msgUnit.getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
       return connection_->publish(msgUnit);
    }   
@@ -301,7 +302,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
    // fill in the sender absolute name
    if (connectReturnQos_) {
       for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
-         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
+         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
    }
 
@@ -332,7 +333,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(const vector<MessageUnit
    // fill in the sender absolute name
    if (connectReturnQos_) {
       for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
-         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
+         msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
    }
 
@@ -450,10 +451,12 @@ void ConnectionsHandler::timeout(void * /*userData*/)
  
             string lastSessionId = connectQos_->getSessionQos().getSecretSessionId();
             ConnectReturnQos retQos = connection_->connect(*connectQos_);
+            if (log_.trace()) log_.trace(ME, string("Successfully reconnected, ConnectRetQos: ") + retQos.toXml());
             if (connectReturnQos_) delete connectReturnQos_;
             connectReturnQos_ = new ConnectReturnQos(retQos);
             string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
-            log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
+            log_.info(ME, string("Successfully reconnected as '") + connectReturnQos_->getSessionQos().getAbsoluteName() +
+                          "' after " + lexical_cast<string>(currentRetry_) + " attempts");
             connectQos_->getSessionQos().setSecretSessionId(sessionId);
  
             if ( log_.trace() ) {
@@ -468,7 +471,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
  
             Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
             if (sessionId != lastSessionId) {
-               log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
+               log_.info(ME, string("When reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
             }
  
             if (doFlush) {
@@ -476,10 +479,10 @@ void ConnectionsHandler::timeout(void * /*userData*/)
                   flushQueueUnlocked(queue_, true);
                }
                catch (const XmlBlasterException &ex) {
-                  log_.warn(ME, "An exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue:" + ex.getMessage());
+                  log_.warn(ME, "An exception occured when trying to asynchronously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue:" + ex.getMessage());
                }
                catch (...) {
-                  log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
+                  log_.warn(ME, "An exception occured when trying to asynchronously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
                }
             }
             startPinger();
@@ -610,6 +613,10 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
             if (log_.trace()) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
             const EntryType entry = (*iter);
             const MsgQueueEntry &entry2 = *entry;
+            {
+               MsgQueueEntry &entry3 = const_cast<MsgQueueEntry&>(entry2);
+               entry3.setSender(connectReturnQos_->getSessionQos().getSessionName());
+            }
             entry2.send(*this);
             if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
