@@ -416,12 +416,15 @@ TODO
    <target name="demo" depends="xmlBlaster" description="Compile the xmlBlaster demo clients">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.dir}">
-         <exclude name="README"/>
-         <exclude name="Makefile"/>
+         <exclude name="**/README*"/>
+         <exclude name="**/Makefile"/>
          <exclude name="c/**"/>
          <exclude name="**/XmlRpcHttpClient.java"/>
          </fileset>
       </copy>
+      <copy file="${demo.java.dir}/simplereader/blue.gif" tofile="${build.dest}/javaclients/simplereader/blue.gif"/>
+      <copy file="${demo.java.dir}/simplereader/red.gif" tofile="${build.dest}/javaclients/simplereader/red.gif"/>
+
       <javac srcdir="${build.src}/demo"
             destdir="${build.dest}"
             classpath="${cp}:${lib.dir}/${name}.jar"
@@ -429,7 +432,7 @@ TODO
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,javaclients/**/*.gif"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
 
