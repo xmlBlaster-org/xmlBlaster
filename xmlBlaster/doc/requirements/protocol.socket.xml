@@ -607,6 +607,21 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
 
       <p>Again the results for compression of SSL messages are very promising.</p>
 
+      <h2>Try a C (or C++) client</h2>
+      <p>Download <tt>zlib</tt> at http://www.gzip.org/zlib/ and
+      edit <tt>build.properties</tt> to set the zlib pathes, finally compile it
+      with '<tt>build c</tt>'. Now you are ready to try:
+      </p>
+<pre>
+  HelloWorld3 -dispatch/connection/plugin/socket/compress/type zlib:stream
+              -dispatch/connection/plugin/socket/port 7607
+</pre>
+      <p>Compile the C++ examples with '<tt>build cpp</tt>' and try:
+      </p>
+<pre>
+  PublishDemo -protocol SOCKET -dispatch/connection/plugin/socket/compress/type zlib:stream
+              -dispatch/connection/plugin/socket/port 7607 -numPublish 10 -contentSize 100000
+</pre>
    </example>
 
    <configuration where="server">
@@ -909,7 +924,7 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <see type="INTERNET" label="xmlBlaster.properties">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.54 $</revision>
+   <revision>$Revision: 1.55 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
