@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.8 2000/10/21 20:50:03 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.9 2000/10/22 13:50:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -39,8 +39,8 @@ import java.net.MalformedURLException;
  *  ${JacORB_HOME}/bin/jaco javaclients.rmi.ClientGet -name "Jeff"
  *
  *  Options:
- *     -rmi.Hostname localhost       // Where the server rmi registry is
- *     -rmi.RegistryPort 1099        // Port of server rmi registry
+ *     -rmi.hostname localhost       // Where the server rmi registry is
+ *     -rmi.registryPort 1099        // Port of server rmi registry
  *
  *  or directly:
  *     -rmi.AuthServer.url "rmi://localhost:1099/I_AuthServer"
@@ -218,10 +218,10 @@ public class ClientGet
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.Hostname", hostname);
+      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort",
+      int registryPort = XmlBlasterProperty.get("rmi.registryPort",
                          org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 

@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.3 2000/10/22 12:34:48 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.4 2000/10/22 13:50:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -49,7 +49,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -105,10 +105,10 @@ public class RmiConnection implements I_XmlBlasterConnection
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.Hostname", hostname);
+      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort", DEFAULT_REGISTRY_PORT);
+      int registryPort = XmlBlasterProperty.get("rmi.registryPort", DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 
 
@@ -493,10 +493,10 @@ public class RmiConnection implements I_XmlBlasterConnection
    public static String usage()
    {
       String text = "\n";
-      text += "RmiConnection options:\n";
-      text += "   -rmi.RegistryPortCB Specify a port number where rmiregistry listens.\n";
+      text += "RmiConnection 'RMI' options:\n";
+      text += "   -rmi.registryPortCB Specify a port number where rmiregistry listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -rmi.HostnameCB     Specify a hostname where rmiregistry runs.\n";
+      text += "   -rmi.hostnameCB     Specify a hostname where rmiregistry runs.\n";
       text += "                       Default is the localhost.\n";
       text += "\n";
       return text;

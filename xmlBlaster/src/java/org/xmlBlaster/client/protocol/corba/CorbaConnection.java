@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.4 2000/10/22 08:39:23 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.5 2000/10/22 13:50:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -62,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -655,12 +655,12 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public static String usage()
    {
       String text = "\n";
-      text += "CorbaConnection options:\n";
-      text += "   -ior                The IOR string.";
-      text += "   -iorHost            The host where to find xmlBlaster [localhost]";
-      text += "   -iorPort            The port where xmlBlaster publishes its IOR [7609]";
-      text += "   -iorFile <fileName> A file with the xmlBlaster IOR.";
-      text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]";
+      text += "CorbaConnection 'IOR' options:\n";
+      text += "   -ior                The IOR string from the running xmlBlaster server.\n";
+      text += "   -iorHost            The host where to find xmlBlaster [localhost]\n";
+      text += "   -iorPort            The port where xmlBlaster publishes its IOR [7609]\n";
+      text += "   -iorFile <fileName> A file with the xmlBlaster IOR.\n";
+      text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]\n";
       text += "\n";
       return text;
    }

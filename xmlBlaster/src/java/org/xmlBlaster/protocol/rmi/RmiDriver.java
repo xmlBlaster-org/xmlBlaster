@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.10 2000/10/21 20:52:33 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.11 2000/10/22 13:50:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.rmi.RMISecurityManager;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.Naming;
+import java.rmi.AlreadyBoundException;
 
 
 /**
@@ -58,12 +59,21 @@ import java.rmi.Naming;
  * <p />
  * RMI has not fine controlled policy like the CORBA POA!
  * <p />
+ * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
+ * You can specify another port or host to create/use a rmi-registry server:
+ * <pre>
+ *     -rmi.registryPort   Specify a port number where rmiregistry listens.
+ *                         Default is port 1099, the port 0 switches this feature off.
+ *     -rmi.hostname       Specify a hostname where rmiregistry runs.
+ *                         Default is the localhost.
+ * </pre>
+ * <p />
  * Invoke options: <br />
  * <pre>
  *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
  *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
  *        -Djava.rmi.server.hostname=hostname.domainname
- *        ...
+ *        MyApp -rmi.registryPort 2078
  * </pre>
  * Another option is to include the directory of xmlBlaster.policy into
  * your CLASSPATH.
@@ -188,23 +198,38 @@ public class RmiDriver implements I_Driver
    private void bindToRegistry() throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "bindToRegistry() ...");
-      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
+      int registryPort = XmlBlasterProperty.get("rmi.registryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
+
+      String hostname;
+      try  {
+         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+         hostname = addr.getHostName();
+      } catch (Exception e) {
+         Log.warn(ME, "Can't determin your hostname");
+         hostname = "localhost";
+      }
+      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      
       try {
          if (registryPort > 0) {
             // Start a 'rmiregistry' if desired
-            java.rmi.registry.LocateRegistry.createRegistry(registryPort);
-            Log.info(ME, "Started RMI registry on port " + registryPort);
+            try {
+               java.rmi.registry.LocateRegistry.createRegistry(registryPort);
+               Log.info(ME, "Started RMI registry on port " + registryPort);
+            } catch (java.rmi.server.ExportException e) {
+               // Try to bind to an already running registry:
+               try {
+                  java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
+                  Log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                               " we will use this one. You could change the port with e.g. '-rmi.registryPortCB 1122' to run your own rmiregistry.");
+               }
+               catch (RemoteException e2) {
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -rmi.registryPortCB=1122 : " + e.toString();
+                  Log.error(ME, text);
+                  throw new XmlBlasterException(ME, text);
+               }
+            }
          }
-
-         String hostname;
-         try  {
-            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-            hostname = addr.getHostName();
-         } catch (Exception e) {
-            Log.warn(ME, "Can't determin your hostname");
-            hostname = "localhost";
-         }
-         hostname = XmlBlasterProperty.get("rmi.Hostname", hostname);
 
          String prefix = "rmi://";
          authBindName = prefix + hostname + ":" + registryPort + "/I_AuthServer";
@@ -212,15 +237,33 @@ public class RmiDriver implements I_Driver
 
          // Publish RMI based xmlBlaster server ...
          try {
-            Naming.rebind(authBindName, authRmiServer);
+            Naming.bind(authBindName, authRmiServer);
             Log.info(ME, "Bound authentication RMI server to registry with name '" + authBindName + "'");
+         } catch (AlreadyBoundException e) {
+            try {
+               Naming.rebind(authBindName, authRmiServer);
+               Log.warn(ME, "Removed another entry while binding authentication RMI server to registry with name '" + authBindName + "'");
+            }
+            catch(Exception e2) {
+               Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
+               throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
+            }
          } catch (Exception e) {
             Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
             throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
          }
+
          try {
-            Naming.rebind(xmlBlasterBindName, xmlBlasterRmiServer);
+            Naming.bind(xmlBlasterBindName, xmlBlasterRmiServer);
             Log.info(ME, "Bound xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
+         } catch (AlreadyBoundException e) {
+            try {
+               Naming.rebind(xmlBlasterBindName, xmlBlasterRmiServer);
+               Log.warn(ME, "Removed another entry while binding xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
+            } catch (Exception e2) {
+               Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
+               throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
+            }
          } catch (Exception e) {
             Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
             throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
@@ -239,9 +282,9 @@ public class RmiDriver implements I_Driver
    {
       String text = "\n";
       text += "RmiDriver options:\n";
-      text += "   -rmi.RegistryPort   Specify a port number where rmiregistry listens.\n";
+      text += "   -rmi.registryPort   Specify a port number where rmiregistry listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -rmi.Hostname       Specify a hostname where rmiregistry runs.\n";
+      text += "   -rmi.hostname       Specify a hostname where rmiregistry runs.\n";
       text += "                       Default is the localhost.\n";
       text += "\n";
       return text;

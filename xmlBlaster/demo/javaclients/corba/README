@@ -27,15 +27,15 @@
 
 Running a client with CORBA protocol (default):
 
-      jaco javaclients.corba.ClientSub -Client.Protocol IOR
+      jaco javaclients.corba.ClientSub -client.protocol IOR
 
 Running a client with RMI protocol:
 
-      jaco javaclients.corba.ClientSub -Client.Protocol RMI
+      jaco javaclients.corba.ClientSub -client.protocol RMI
 
 Running a client with XML-RPC protocol:
 
-      jaco javaclients.corba.ClientSub -Client.Protocol XML-RPC
+      jaco javaclients.corba.ClientSub -client.protocol XML-RPC
 
 Note: To run these other protocols, the xmlBlaster server must
       have switched the supporting driver on (see xmlBlaster.properties)

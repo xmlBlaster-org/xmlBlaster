@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.2 2000/10/22 12:40:14 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.3 2000/10/22 13:50:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -33,14 +33,22 @@ import java.rmi.Naming;
  * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
  * You can specify another port or host to create/use a rmi-registry server:
  * <pre>
- *     -rmi.RegistryPortCB Specify a port number where rmiregistry listens.
+ *     -rmi.registryPortCB Specify a port number where rmiregistry listens.
  *                         Default is port 1099, the port 0 switches this feature off.
- *     -rmi.HostnameCB     Specify a hostname where rmiregistry runs.
+ *     -rmi.hostnameCB     Specify a hostname where rmiregistry runs.
  *                         Default is the localhost.
  * </pre>
  * <p />
  * Note: The security manager must be initialized properly before you use an instance of this class.<br />
  * RmiConnection does it in its constructor if you use this class, or you could use RmiConnection.createSecurityManager() to do this.
+ * <p />
+ * Invoke options: <br />
+ * <pre>
+ *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
+ *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
+ *        -Djava.rmi.server.hostname=hostname.domainname
+ *        MyApp -rmi.registryPort 2079
+ * </pre>
  */
 class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback
 {
@@ -92,10 +100,10 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
       if (Log.CALL) Log.call(ME, "bindToRegistry() ...");
 
       // Use the xmlBlaster-server rmiRegistry as a fallback:
-      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort",
+      int registryPort = XmlBlasterProperty.get("rmi.registryPort",
                                                 DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
       // Use the given callback port if specified :
-      registryPort = XmlBlasterProperty.get("rmi.RegistryPortCB", registryPort);
+      registryPort = XmlBlasterProperty.get("rmi.registryPortCB", registryPort);
 
       String hostname;
       try  {
@@ -104,10 +112,10 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
       } catch (Exception e) {
          Log.info(ME, "Can't determin your hostname");
          // Use the xmlBlaster-server rmiRegistry as a fallback:
-         hostname = XmlBlasterProperty.get("rmi.Hostname", "localhost");
+         hostname = XmlBlasterProperty.get("rmi.hostname", "localhost");
       }
       // Use the given callback hostname if specified :
-      hostname = XmlBlasterProperty.get("rmi.HostnameCB", hostname);
+      hostname = XmlBlasterProperty.get("rmi.hostnameCB", hostname);
 
       try {
          if (registryPort > 0) {
@@ -120,10 +128,10 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
                   Log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
-                               " we will use this one. You could change the port with e.g. '-rmi.RegistryPortCB 1122' to run your own rmiregistry.");
+                               " we will use this one. You could change the port with e.g. '-rmi.registryPortCB 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
-                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -rmi.RegistryPortCB=1122 : " + e.toString();
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -rmi.registryPortCB=1122 : " + e.toString();
                   Log.error(ME, text);
                   throw new XmlBlasterException(ME, text);
                }
