@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.6 $  $Date: 1999/11/15 14:47:54 $
+           $Revision: 1.7 $  $Date: 1999/11/15 15:04:24 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -54,7 +54,7 @@ public class Log
 
    private final static String WHITE_RED    = "\033[37;41m";
    private final static String BLACK_RED    = "\033[30;41m";
-   
+
 
    /**
     * Output text for different logging levels
@@ -116,7 +116,7 @@ public class Log
    public final static void log(final StringBuffer levelStr, String instance, String text)
    {
       // System.err.println(logHeader(levelStr).append(instance).append(withXtermEscapeColor ? INSTANCE_SEPERATOR_E : INSTANCE_SEPERATOR).append(text));
-      System.err.println(logHeader(levelStr).append(" [").append(instance).append("] ").append(text));
+      System.err.println(logHeader(levelStr).append(" [").append(instance).append("]  ").append(text));
    }
 
 

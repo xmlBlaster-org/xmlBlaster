@@ -3,12 +3,12 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
-           $Revision: 1.4 $  $Date: 1999/11/15 14:47:54 $
+           $Revision: 1.5 $  $Date: 1999/11/15 15:04:24 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
-//import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.clientIdl.BlasterCallback;
@@ -64,7 +64,14 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
                        String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal + ")"*/);
-      return authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+
+      org.xmlBlaster.serverIdl.Server server =
+            authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+
+      return server;
    }
 
 
@@ -74,6 +81,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public void logout() throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering logout()");
+
       authenticate.logout();
    }
 
