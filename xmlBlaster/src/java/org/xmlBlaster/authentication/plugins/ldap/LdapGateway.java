@@ -199,7 +199,8 @@ public class LdapGateway
     */
    private DirContext getUserContext(String loginName, String userPassword) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Getting user=" + loginName + " context handle with passwd=" + userPassword + " ...");
+      if (Log.TRACE) Log.trace(ME, "Getting user=" + loginName + " context handle");
+      //if (Log.TRACE) Log.trace(ME, "Getting user=" + loginName + " context handle with passwd=" + userPassword + " ...");
       try {
          Hashtable env = new Hashtable(7, 0.75f);
          if (Log.TRACE) Log.trace(ME, "Using the factory " + CONTEXT_FACTORY);
