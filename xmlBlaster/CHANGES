@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.84x [xxx, xx 2003]
 ================================
+ o Bugfix for subscriber with initialUpdate==false and XPath subscription
+   on new created topic: Received no initial update for post topics.
+   Reported by Heinrich
+
  o QoS Bugfix: subscribing <local>false</local> was broken,
    the fix is checked with
     http://www.xmlblaster.org/xmlBlaster/testsuite/src/java/org/xmlBlaster/test/qos/TestSubNoLocal.java.html
