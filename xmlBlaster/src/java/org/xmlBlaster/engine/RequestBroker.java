@@ -1919,7 +1919,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
          MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
+         // __sessionId is deprecated, please use __publicSessionId
          msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
+         msgQosData.addClientProperty("__publicSessionId", sessionInfo.getPublicSessionId());
+         msgQosData.addClientProperty("__absoluteName", sessionInfo.getSessionName().getAbsoluteName());
          
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyLoginEvent,
                                   sessionInfo.getLoginName().getBytes(),
@@ -1950,7 +1953,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          this.publishQosLogoutEvent.clearRoutes();
          
          MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
+         // __sessionId is deprecated, please use __publicSessionId
          msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
+         msgQosData.addClientProperty("__publicSessionId", sessionInfo.getPublicSessionId());
+         msgQosData.addClientProperty("__absoluteName", sessionInfo.getSessionName().getAbsoluteName());
          
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(), msgQosData);
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
