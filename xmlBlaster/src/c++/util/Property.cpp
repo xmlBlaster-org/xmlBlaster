@@ -15,7 +15,33 @@ using namespace org::xmlBlaster::util;
 
 #define  MAX_NEST 50
 
-Property::Property(MapType propMap) : properties_(propMap) {
+Property::Property(MapType propMap) : properties_(propMap)
+{
+   // Add some predefined variables to be useful in xmlBlaster.properties as ${user.home} etc.
+   bool useEnv = true;
+   bool overwrite = false;
+   
+   if (!propertyExists("user.home", false)) {
+      setProperty("user.home", getProperty("HOME", useEnv), true); // UNIX
+      // Windows: _WINDOWS
+      // HOMEDRIVE=C:
+      // HOMEPATH=\Documents and Settings\Marcel
+      char *driveP = getenv("HOMEDRIVE");
+      string drive = (driveP != 0) ? string(driveP) : string("");
+      char *pathP = getenv("HOMEPATH");
+      string path = (pathP != 0) ? string(pathP) : string("");
+      setProperty("user.home", drive + path);
+   }
+   
+   // XMLBLASTER_HOME
+
+   setProperty("file.separator", FILE_SEP, overwrite);
+   setProperty("path.separator", PATH_SEP, overwrite);
+
+   // os.name = Linux, Windows, ...?
+   // line.separator = CRLF ...
+   // java.io.tmpdir = /tmp ...
+   // user.dir = /home/xmlblast/test -> getcwd()
 }
 
 /**
