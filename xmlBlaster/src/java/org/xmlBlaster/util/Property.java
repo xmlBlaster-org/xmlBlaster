@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.11 2000/04/30 10:46:37 ruff Exp $
+Version:   $Id: Property.java,v 1.12 2000/05/09 14:57:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -210,11 +210,11 @@ public class Property
             String key = (String)e.nextElement();
             String value = (String)xmlBlasterProperties.get(key);
             if (value.indexOf("$user.dir") != -1) {
-               xmlBlasterProperties.put(key, replace(value, "$user.dir", currentPath));
+               xmlBlasterProperties.put(key, StringHelper.replace(value, "$user.dir", currentPath));
                continue;
             }
             if (value.indexOf("$user.home") != -1) {
-               xmlBlasterProperties.put(key, replace(value, "$user.home", userHome));
+               xmlBlasterProperties.put(key, StringHelper.replace(value, "$user.home", userHome));
                continue;
             }
             if (value.indexOf("$XMLBLASTER_HOME") != -1) {
@@ -223,7 +223,7 @@ public class Property
                                 "Set it as environment 'java -DXMLBLASTER_HOME=/home/joe ...' or at the beginning of the file.");
                   continue;
                }
-               xmlBlasterProperties.put(key, replace(value, "$XMLBLASTER_HOME", xmlBlasterPath));
+               xmlBlasterProperties.put(key, StringHelper.replace(value, "$XMLBLASTER_HOME", xmlBlasterPath));
                continue;
             }
          }
@@ -240,25 +240,6 @@ public class Property
       }
 
       return xmlBlasterProperties;
-   }
-
-
-   /**
-    * Replace exactly one occurrence of 'from' with to 'to'
-    */
-   private final static String replace(String str, String from, String to)
-   {
-      int index = str.indexOf(from);
-      if (index >= 0) {
-         StringBuffer tmp = new StringBuffer("");
-         if (index > 0)
-            tmp.append(str.substring(0, index));
-         tmp.append(to);
-         tmp.append(str.substring(index + from.length()));
-         return tmp.toString();
-      }
-      else
-         return str;
    }
 
 
