@@ -18,14 +18,15 @@
          var urlParams = parent.location.search;
 
          var action = top.getFromUrlParam(urlParams, "ActionType", "");
-         var loginName = top.getFromUrlParam(urlParams, "loginName", "");
-         var passwd = top.getFromUrlParam(urlParams, "passwd", "");
+         var loginName = top.getFromUrlParam(urlParams, "xmlBlaster.loginName", "");
+         var passwd = top.getFromUrlParam(urlParams, "xmlBlaster.passwd", "");
+         var invalidate = top.getFromUrlParam(urlParams, "xmlBlaster.invalidate", "true"); // true: create a new session id
 
          var servlet;
          if (action != "" && loginName != "" && passwd != "") {
             // login infos passed by URL parameters
             top.Log.info("Login request from '" + loginName + "', calling BlasterHttpProxyServlet ...");
-            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&loginName=" + loginName + "&passwd=" + passwd;
+            servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&xmlBlaster.loginName=" + loginName + "&xmlBlaster.passwd=" + passwd + "&xmlBlaster.invalidate=" + invalidate;
          } else {
             // login infos passed by session object (cookies or hidden fields)
             servlet = "/servlet/BlasterHttpProxyServlet?ActionType=login";

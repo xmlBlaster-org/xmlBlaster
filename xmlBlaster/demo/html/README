@@ -29,7 +29,7 @@ Howto run the html examples with persistent http connection:
 
 6. Start you browser
 
-   http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=martin&passwd=secret
+   http://localhost/systemInfo/systemInfo.html?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
 
 
 Start it in the background on Linux:

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.29 2000/05/29 11:43:41 freidlin Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.30 2000/05/30 14:44:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -31,9 +31,9 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * If you use Apache/Jserv, look into /var/log/httpd/jserv.log
  * <p />
  * Invoke for testing:<br />
- *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
+ *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -76,7 +76,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
     * successful login.
     * <p />
     * Example:<br />
-    *  <code>index.html?ActionType=login&loginName=karl&passwd=secret</code>
+    *  <code>index.html?ActionType=login&xmlBlaster.loginName=karl&xmlBlaster.passwd=secret</code>
     */
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
@@ -108,10 +108,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          //------------------ Login -------------------------------------------------
          if (actionType.equals("login")) {
 
-            String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
+            String loginName = Util.getParameter(req, "xmlBlaster.loginName", null);    // "Joe";
             if (loginName == null || loginName.length() < 1)
-               throw new XmlBlasterException(ME, "Missing login name");
-            String passwd = Util.getParameter(req, "passwd", null);  // "secret";
+               throw new XmlBlasterException(ME, "Missing login name. Pass xmlBlaster.loginName=xy with your URL or in your cookie.");
+            String passwd = Util.getParameter(req, "xmlBlaster.passwd", null);  // "secret";
             if (passwd == null || passwd.length() < 1)
                throw new XmlBlasterException(ME, "Missing passwd");
 
