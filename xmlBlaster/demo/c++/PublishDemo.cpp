@@ -9,6 +9,7 @@ Comment:   Little demo to show how a publish is done
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 #include <util/qos/ClientProperty.h>
+#include <authentication/SecurityQos.h>
 #include <iostream>
 #include <map>
 
@@ -190,6 +191,8 @@ void PublishDemo::initEnvironment()
 void PublishDemo::connect()
 {
    ConnectQos connQos(global_);
+   //org::xmlBlaster::authentication::SecurityQos sec(global_, "jack", "secret", "htpasswd,1.0");
+   //connQos.setSecurityQos(sec);
    log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
    ConnectReturnQos retQos = connection_.connect(connQos, NULL); // no callback
    log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
