@@ -3,7 +3,7 @@ Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.22 2004/05/04 17:21:09 ruff Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.23 2004/07/04 21:46:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -44,9 +44,11 @@ typedef int64_t Timestamp;
 
 // This is useful to retrieve stack traces in exceptions. If your system
 // contains execinfo.h then you can add the ifdef of that system here.
-#ifdef __GNUC__
+#ifdef __GNUC__ 
+#ifndef __sun__
 //#define _ENABLE_STACK_TRACE_ // is set in build.xml
 #include <execinfo.h>
+#endif
 #endif
 
 #endif

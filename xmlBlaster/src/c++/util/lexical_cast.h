@@ -23,6 +23,11 @@
 
 namespace org { namespace xmlBlaster { namespace util {
 
+#if __sun__
+# define DISABLE_WIDE_CHAR_SUPPORT
+#endif
+
+//#if __GNUC__ == 2 || __sun__
 #if __GNUC__ == 2
    // Marcel 2004-04-01:
    // Is buggy for lexical_cast<string>(string("")): empty strings throw a bad_lexical_cast
@@ -237,7 +242,8 @@ namespace org { namespace xmlBlaster { namespace util {
     }
 #endif
 
-#if __GNUC__ == 2 || defined(__sun)
+//#if __GNUC__ == 2 || defined(__sun)
+#if __GNUC__ == 2
   // Problems with g++ 2.95.3 and template<>
 #else
    /**
@@ -250,6 +256,15 @@ namespace org { namespace xmlBlaster { namespace util {
     * Specialization which returns "true" instead of "1". 
     */
    template<> Dll_Export const char * lexical_cast(bool arg);
+
+   /**
+    * Laghi 2004-07-04
+    * Have a separate string -> string mapper because '<< string' does strip everything
+    * after white spaces in the string and on SUN it results in an exception. 
+    * Don't try 'const string &' as it is not invoked!
+    */
+   template<> Dll_Export std::string lexical_cast(std::string arg); // See Global.cpp
+
 #endif
 }}}
 

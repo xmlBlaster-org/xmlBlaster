@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.64 2004/06/03 19:21:21 laghi Exp $
+Version:   $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,13 +31,14 @@ Version:   $Id: Global.cpp,v 1.64 2004/06/03 19:21:21 laghi Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.64 2004/06/03 19:21:21 laghi Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.64 2004/06/03 19:21:21 laghi Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.65 2004/07/04 21:46:21 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
-#if __GNUC__ == 2 || defined(__sun)
+// #if __GNUC__ == 2 || defined(__sun)
+#if __GNUC__ == 2
   // Problems with g++ 2.95.3 and template<>
 #else
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
@@ -54,6 +55,16 @@ template<> const char * lexical_cast(bool arg)
    static const char * const _FALSE = "false";
    return (arg) ? _TRUE : _FALSE;
 }
+
+/** Specialization for std::string to return std::string as default impl. crashes on sun with gcc 
+    Don't use template<> std::string lexical_cast(const std::string& arg) since it won't be 
+    invoked (instead the default template will be invoked)
+*/
+template<> std::string lexical_cast(std::string arg)
+{
+   return arg;
+}
+
 #endif
 using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
