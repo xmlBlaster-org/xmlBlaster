@@ -7,30 +7,22 @@
       The xmlBlaster.properties file allows to customize the behavior of xmlBlaster.
    </description>
    <example lang="Java">
-      <![CDATA[
-      The xmlBlaster.properties file is searched in the following locations and the given order:
-
-       1. Command line parameter '-propertyFile', e.g.
-                                "-propertyFile /tmp/xy.properties"
-
-       2. Local directory       .
-
-       3. $PROJECT_HOME         e.g java -DPROJECT_HOME=/opt/xmlBlaster ...
-
-       4. $HOME                 user.home
-
-       5. java.ext.dirs         e.g.  /opt/jdk1.2.2/jre/lib/ext
-
-       6. java.home             e.g.  /opt/jdk1.2.2/jre/lib
-
-       7. Fallback: \jutils or /usr/local/jutils
-      ]]>
+     <ul>
+       <li>user.dir</li>
+       <li>full name (complete with path) for example -propertyFile /tmp/xy.properties</li>
+       <li>PROJECT_HOME global property (ex: java -DPROJECT_HOME=/opt/xmlBlaster)</li>
+       <li>user.home</li>
+       <li>classpath (the complete given classpath)</li>
+       <li>java.ext.dirs e.g. /opt/jdk1.2.2/jre/lib/ext</li>
+       <li>java.home e.g. /opt/jdk1.2.2/jre/lib</li>
+       <li>Fallback: \jutils or /usr/local/jutils</li>
+     </ul>
    </example>
    <see type="API">org.xmlBlaster.util.XmlBlasterProperty</see>
    <see type="API">org.jutils.init.Property</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="CLOSED">
       <name>xmlBlaster@marcelruff.info</name>
       <comment>

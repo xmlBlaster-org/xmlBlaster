@@ -65,18 +65,19 @@
      </ul>
      </p>
      The xmlBlasterPlugins.xml file is searched in the following locations and the given order:
+
      <table border="1">
        <tr>
          <th>location or parameter</th>
          <th>example</th>
        </tr>
        <tr>
-         <td>Command line parameter '-pluginsFile'</td>
-         <td>-pluginsFile /tmp/xmlBlasterPlugins.xml</td>
+         <td>user.dir</td>
+         <td>.</td>
        </tr>
        <tr>
-         <td>Local directory</td>
-         <td>.</td>
+         <td>Command line parameter '-pluginsFile'</td>
+         <td>-pluginsFile /tmp/xmlBlasterPlugins.xml</td>
        </tr>
        <tr>
          <td>$PROJECT_HOME</td>
@@ -85,6 +86,10 @@
        <tr>
          <td>$HOME</td>
          <td>user.home</td>
+       </tr>
+       <tr>
+         <td>classpath</td>
+         <td>/opt/xmlBlaster/lib/xmlBlaster.jar:....</td>
        </tr>
        <tr>
          <td>java.ext.dirs</td>
@@ -287,7 +292,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
