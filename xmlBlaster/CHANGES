@@ -1,6 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
- o C-client: Fixed gcc warnings on 64-bit s390 (with Linux) for printf() and sscanf()
+ o C-client: Fixed gcc warnings on IBM s390 (with Linux)
+   for printf() and sscanf() with %u and size_t
 
  o Fixed NPE in graphical chat demo
 
