@@ -15,18 +15,12 @@ import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.qos.AccessFilterQos;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 
 import java.util.Enumeration;
-import java.util.Vector;
 
 
 /**
@@ -154,9 +148,8 @@ public final class XmlKey
          // Example: xmlKey_literal="Airport.*" as a regular expression
 
          log.warn(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported: '" + xmlKey_literal + "'");
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
-
+         Thread.dumpStack();
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + " Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
       }
 
       this.keyData = glob.getMsgKeyFactory().readObject(xmlKey_literal);
@@ -189,7 +182,7 @@ public final class XmlKey
     */
    public String toXml() {
       log.warn(ME, "Accessing raw xml key string");
-      Thread.currentThread().dumpStack();
+      Thread.dumpStack();
       return this.keyData.toXml();
    }
 
@@ -225,10 +218,6 @@ public final class XmlKey
     */
    public final String getOid() {
       return this.keyData.getOid();
-   }
-
-   public final boolean isGeneratedOid() {
-      return this.keyData.isGeneratedOid();
    }
 
    public final String getContentMime() {
@@ -300,14 +289,14 @@ public final class XmlKey
       // Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
       if (node == null) {
          log.error(ME+".Internal", "root node = null");
-         throw new XmlBlasterException(ME+"Internal", "root node = null");
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + " Internal", "root node = null");
       }
 
       String nodeName = node.getNodeName();
 
       if (!nodeName.equalsIgnoreCase("key")) {
          log.error(ME+".WrongRootNode", "The root node must be named \"key\"\n" + this.keyData.toXml());
-         throw new XmlBlasterException(ME+".WrongRootNode", "The root node must be named \"key\"\n" + this.keyData.toXml());
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME+".WrongRootNode", "The root node must be named \"key\"\n" + this.keyData.toXml());
       }
 
       NamedNodeMap attributes = node.getAttributes();
