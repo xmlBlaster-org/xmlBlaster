@@ -37,7 +37,7 @@ public final class ContextNode
    /**
     * @param className The tag name like 'node' or 'client'
     * @param instanceName The instance like 'heron' or 'joe'
-    * @parma parent The parent node or null if root ContextNode ('node/heron' etc)
+    * @param parent The parent node or null if root ContextNode ('node/heron' etc)
     */
    public ContextNode(Global glob, String className, String instanceName, ContextNode parent) {
       this.className = className;
