@@ -362,20 +362,20 @@ ConnectQos qos = new ConnectQos(glob);
       for more details:
       </p>
       <pre>
-keytool -genkey -keystore testStore -keyalg RSA
+keytool -genkey  -alias xmlBlaster -keystore testStore -keyalg RSA
       </pre>
       <p>
       Now you are ready to start the xmlBlaster server with enabled SSL (all in one line):
       </p>
       <pre>
-java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keystore testStore
-                                                     -plugin/socket/keystorepass testtest
+java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore testStore
+                                                     -plugin/socket/keyStorePassword testtest
       </pre>
       <p>
       and finally we start a client to test it:
       </p>
       <pre>
-java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keystore testStore
+java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/trustStore testStore
       </pre>
       <p>
       To check the encryption dump the TCP/IP packages for example with tcpdump:
@@ -412,15 +412,20 @@ java -Djavax.net.debug=all ...
            onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
    &lt;attribute id='SSL'>true&lt;/attribute>
-   &lt;attribute id='keystore'>testStore&lt;/attribute>
-   &lt;attribute id='keystorepass'>testtest&lt;/attribute>
+   &lt;attribute id='trustStore'>testStore&lt;/attribute>
+   &lt;attribute id='trustStorePassword'>testtest&lt;/attribute>
+   &lt;attribute id='keyStore'>testStore&lt;/attribute>
+   &lt;attribute id='keyStorePassword'>testtest&lt;/attribute>
    &lt;attribute id='port'>7609&lt;/attribute>
    &lt;attribute id='startUdpListener'>false&lt;/attribute>
 &lt;/plugin>
       </pre>
       <p>
       Now the plain SOCKET is listening on default port 7607 and the SSL SOCKET
-      listens on port 7609.
+      listens on port 7609. The 'trustStore' settings are need only when you set up
+      clustering with SSL SOCKET cluster internal communication -
+      in this case the xmlBlaster server is a client to another xmlBlaster cluster node
+      and needs the imported certificate of the remote node in 'testStore'.
       <br />
       Additionally we register the client side <i>socket_ssl</i> plugins in <tt>xmlBlaster.properties</tt>:
       </p>
@@ -449,12 +454,39 @@ java HelloWorld3 -protocol SOCKET
       </p>
       <pre>
 java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socket_ssl/SSL true
-                 -plugin/socket_ssl/keystore testStore
+                 -plugin/socket_ssl/trustStore testStore
       </pre>
       <p>
-      The xmlBlaster.properties entries 'socket_ssl' are in fact optional, this would work as well:
-      <i>java HelloWorld3 -protocol SOCKET -plugin/socket/port 7609 -plugin/socket/SSL true -plugin/socket/keystore testStore</i>
+      The client side xmlBlaster.properties entries 'socket_ssl' are in fact optional, this would work as well:
+      <i>java HelloWorld3 -protocol SOCKET -plugin/socket/port 7609 -plugin/socket/SSL true -plugin/socket/trustStore testStore</i>
       </p>
+      <h2>Notes</h2>
+      <ul>
+      <li>An xmlBlaster server instance can have multiple different SSL SOCKET listeners established,
+          all of them reuse the same keystore. You can't use more than one keystore in the same JVM,
+	  the first loaded keystore is used even if you specifiy another keystore before
+	  creating the second socket listener.
+      </li>
+      <li>The above examples clients used the server side 'keystore' file which is a bad idea
+          as this file contains besides the certificate the servers private key. To avoid copying 
+	  the server private key to the clients host you can generate a certificate file which only
+	  contains the public certificate:<br />
+	  <p>Export the certificate</p>
+	  <p>
+	  <tt>keytool -alias xmlBlaster -export -keystore testStore -rfc -file xmlBlasterTrustStore.Cert</tt>
+	  </p>
+	  <p>Create a 'xmlBlaster.truststore' file to be used by clients</p>
+	  <p>
+	  <tt>keytool -import -alias xmlBlasterClient -file xmlBlasterTrustStore.Cert -keystore xmlBlasterClient.truststore</tt>
+	  </p>
+	  <p>
+	  and start a demo client:
+	  </p>
+	  <p>
+	  <tt>java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/trustStore xmlBlasterClient.truststore -plugin/socket/port 7609</tt>
+	  </p>
+      </li>
+      </ul>
    </example>
 
    <configuration where="server">
@@ -579,7 +611,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
          </tr>
 
          <tr>
-            <td>plugin/socket/keystore</td>
+            <td>plugin/socket/keyStore</td>
             <td>''</td>
             <td>The path of your SSL keystore file. Use the java utility keytool.
             </td>
@@ -587,9 +619,30 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
          </tr>
 
          <tr>
-            <td>plugin/socket/keystorepass</td>
+            <td>plugin/socket/keyStorePassword</td>
             <td>''</td>
             <td>The password of your keystore file.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/trustStore</td>
+            <td>''</td>
+            <td>The path of your SSL truststore or keystore file containing the remote certificate.
+	    This option is needed on server side if you want to connect two xmlBlaster cluster nodes via SSL SOCKET.
+	    The xmlBlaster server is simultaneously a SLL SOCKET client and connects to the remote node.
+	    To do this the certificate of the remote node must be imported to the local keystore file
+	    or to a separate certificate store. Add this name here.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/trustStorePassword</td>
+            <td>''</td>
+            <td>The password of your keystore file.
+	        If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -677,6 +730,24 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
+         <tr>
+            <td>plugin/socket/trustStore</td>
+            <td>''</td>
+            <td>The path of your SSL keystore file. Use the java utility keytool.
+	        If none is found we fall back to the server side <tt>plugin/socket/keyStore</tt> setting if set.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/trustStorePassword</td>
+            <td>''</td>
+            <td>The password of your keystore file.
+	        If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
    </configuration>
    <todo type="HTML">
@@ -710,7 +781,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
    <see type="INTERNET" label="SSL reference guide">http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.48 $</revision>
+   <revision>$Revision: 1.49 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
