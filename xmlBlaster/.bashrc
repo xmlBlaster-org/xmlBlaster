@@ -97,5 +97,25 @@ else
 fi
 
 
+#-------- Checking JDK version -
+#if ! [ ${JDK_HOME} ] ; then
+#   JAVA_EXE=`which java`
+#   if [ -n ${JAVA_EXE} ] ; then
+#      JDK_BIN=`dirname $JAVA_EXE`
+#      JDK_HOME=`dirname $JDK_BIN`
+#   fi
+#
+#	if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+#	   echo -e ""
+#      echo -e "$BLACK_RED   NOTE: There is no support for JDK 1.x, you need JDK 1.2           $ESC"
+#      echo -e ""
+#      return 1
+#	else
+#	   echo -e "$BLACK_LTGREEN      Using JDK 1.2 JDK_HOME=${JDK_HOME}  $ESC"
+#	fi
+#fi
+echo -e "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster   $ESC"
+
+
 return 0
 
