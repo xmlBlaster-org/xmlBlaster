@@ -20,6 +20,13 @@ BUGS:
 
 
 DONE:
+  - Added support to access xmlBlaster with telnet.
+    This is based on remotecons.jar 1.0
+    See http://wttools.sourceforge.net/ and
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html
+
+  - Testsuite: Ported from Junit 1.0 to Junit 3.7
+
   - Splitted PropertyQueue class to handle client connect queue
     and server callback queue
 
