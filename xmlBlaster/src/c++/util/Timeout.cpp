@@ -210,7 +210,7 @@ void Timeout::run()
 
          TimeoutMap::iterator iter = timeoutMap_.begin();
          if (iter == timeoutMap_.end()) {
-            log_.warn(ME, " The timeout is empty");
+            log_.info(ME, "No timer is registered, nothing to do");
          }
          else {
             if (log_.trace()) log_.trace(ME, " The timeout is not empty");
@@ -218,7 +218,7 @@ void Timeout::run()
             if (log_.trace()) log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<std::string>(nextWakeup) + " ns");
             delay = nextWakeup - timestampFactory_.getTimestamp();
 
-            if (log_.trace()) log_.trace(ME, "run, delay       : " + lexical_cast<std::string>(nextWakeup) + " ns");
+            if (log_.trace()) log_.trace(ME, "run, delay       : " + lexical_cast<std::string>(delay) + " ns");
             if ( delay < 0 ) delay = 0;
 
             if (delay <= 0) {
