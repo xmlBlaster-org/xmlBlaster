@@ -213,8 +213,8 @@ int main(int argc, char** argv)
       char msg[20];
                   
       printf("(Enter 'q' to exit) >> ");
-      gets(msg);
-      if (!strcmp(msg, "q")) 
+      fgets(msg, 19, stdin);
+      if (*msg == 'q') 
          break;
    }
     
