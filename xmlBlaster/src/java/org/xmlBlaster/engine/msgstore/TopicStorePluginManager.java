@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TopicsStorePluginManager.java
+Name:      TopicStorePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
 /**
- * TopicsStorePluginManager loads the I_Map implementation plugins. 
+ * TopicStorePluginManager loads the I_Map implementation plugins. 
  * <p>
  * Usage examples:
  * </p>
@@ -25,15 +25,15 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
  * #------------------------------------------------------------------------------
  * # Declare existing queue implementation plugins
  * # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
- * TopicsStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
- * TopicsStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
- * TopicsStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.TopicsStoreCachePlugin
+ * TopicStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+ * TopicStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+ * TopicStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
  * 
  * # Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
- * topicsStore.defaultPlugin=CACHE,1.0
+ * persistence.defaultPlugin=CACHE,1.0
  * # If you choose CACHE as defaultPlugin configure the CACHE plugin:
- * topicsStore.cache.persistentQueue=JDBC,1.0
- * topicsStore.cache.transientQueue=RAM,1.0
+ * persistence.cache.persistentQueue=JDBC,1.0
+ * persistence.cache.transientQueue=RAM,1.0
  * #------------------------------------------------------------------------------
  * </pre>
  * @author <a href="mailto:laghi@swissinfo.com">Michele Laghi</a>.
@@ -41,22 +41,22 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>
  */
-public class TopicsStorePluginManager extends PluginManagerBase
+public class TopicStorePluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
    private final LogChannel log;
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
-                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.TopicsStoreCachePlugin"} };
-   public static final String pluginPropertyName = "TopicsStorePlugin";
+                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin"} };
+   public static final String pluginPropertyName = "TopicStorePlugin";
 
-   public TopicsStorePluginManager(Global glob) {
+   public TopicStorePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("core");
-      this.ME = "TopicsStorePluginManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor TopicsStorePluginManager");
+      this.ME = "TopicStorePluginManager" + this.glob.getLogPrefixDashed();
+      if (log.CALL) log.call(ME, "Constructor TopicStorePluginManager");
    }
 
    /**
@@ -90,8 +90,8 @@ public class TopicsStorePluginManager extends PluginManagerBase
 
    /**
     * Enforced by PluginManagerBase. 
-    * @return The name of the property in xmlBlaster.property "TopicsStorePlugin"
-    * for "TopicsStorePlugin[JDBC][1.0]"
+    * @return The name of the property in xmlBlaster.property "TopicStorePlugin"
+    * for "TopicStorePlugin[JDBC][1.0]"
     */
    protected String getPluginPropertyName() {
       return pluginPropertyName;
