@@ -8,17 +8,18 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
-import org.jutils.JUtilsException;
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.Global;
-import org.jutils.init.Args;
-import org.jutils.time.I_Timeout;
-import org.jutils.time.Timeout;
-import org.jutils.pool.PoolManager;
-import org.jutils.pool.I_PoolManager;
-import org.jutils.pool.ResourceWrapper;
 import org.jutils.runtime.Sleeper;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.pool.PoolManager;
+import org.xmlBlaster.util.pool.I_PoolManager;
+import org.xmlBlaster.util.pool.ResourceWrapper;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -70,8 +71,8 @@ import java.sql.DriverManager;
  *       if (con!=null) namedPool.release(dbUrl, user, pw, con);
  *    }
  * </pre>
- * @see         org.jutils.pool.PoolManager
- * @see         org.jutils.pool.ResourceWrapper
+ * @see         org.xmlBlaster.util.pool.PoolManager
+ * @see         org.xmlBlaster.util.pool.ResourceWrapper
  * @since       xmlBlaster 0.78
  */
 public class NamedConnectionPool
@@ -260,7 +261,8 @@ public class NamedConnectionPool
       /** If the pool is exhausted, we poll every given millis<br />
           Please note that the current request thread will block for maxResourceExhaustRetries*resourceExhaustSleepGap millis. */
       private long resourceExhaustSleepGap;
-      private Long timeoutHandle = new Long(0L); // initialize for synchronized
+      private Timestamp timeoutHandle;
+      private Object timeoutMonitor = new Object();
 
       private final Object meetingPoint = new Object();
 
@@ -311,8 +313,8 @@ public class NamedConnectionPool
 
          poolManager = new PoolManager(ME, this, maxInstances, busyToIdle, idleToErase);
          if (this.eraseUnusedPoolTimeout >= 1000L)
-            synchronized(timeoutHandle) {
-               timeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
+            synchronized(this.timeoutMonitor) {
+               this.timeoutHandle = this.poolManager.getTransistionTimer().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
             }
       }
 
@@ -329,13 +331,13 @@ public class NamedConnectionPool
       /**
        * Create a new JDBC connection, the driver must be registered already.
        */
-      public Object toCreate(String instanceId) throws JUtilsException {
+      public Object toCreate(String instanceId) throws XmlBlasterException {
          try {
             return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
          }
          catch(Exception e) {
             //log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
-            throw new JUtilsException(ME, "Couldn't open database connection dbUrl=" + dbUrl + " dbUser=" + dbUser + ": " + e.toString());
+            throw new XmlBlasterException(ME, "Couldn't open database connection dbUrl=" + dbUrl + " dbUser=" + dbUser + ": " + e.toString());
          }
       }
 
@@ -368,8 +370,8 @@ public class NamedConnectionPool
             try {
                synchronized(meetingPoint) {
                   if (this.eraseUnusedPoolTimeout > 200L) {
-                     synchronized(timeoutHandle) {
-                        timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, this.eraseUnusedPoolTimeout);
+                     synchronized(this.timeoutMonitor) {
+                        this.timeoutHandle = this.poolManager.getTransistionTimer().refreshTimeoutListener(this.timeoutHandle, this.eraseUnusedPoolTimeout);
                      }
                   }
                   ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
@@ -377,15 +379,16 @@ public class NamedConnectionPool
                   return con;
                }
             }
-            catch (JUtilsException e) {
-               if (e.id.equals("ResourceExhaust") && ii < this.maxResourceExhaustRetries) {
+            catch (XmlBlasterException e) {
+               // id.equals("ResourceExhaust")
+               if (e.getErrorCode() == ErrorCode.RESOURCE_EXHAUST && ii < this.maxResourceExhaustRetries) {
                   if (ii == 0) log.warn(ME, "Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                   Sleeper.sleep(resourceExhaustSleepGap);
                   ii++;
                }
                else {
                   //log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
-                  throw new XmlBlasterException(e);
+                  throw e;
                }
             }
          }
@@ -402,10 +405,10 @@ public class NamedConnectionPool
                poolManager.release(""+con);
             }
          }
-         catch (JUtilsException e) {
+         catch (XmlBlasterException e) {
             Thread.currentThread().dumpStack();
             log.error(ME, "Caught exception in release(): " + e.toString());
-            throw new XmlBlasterException(e);
+            throw e;
          }
       }
 
@@ -431,8 +434,8 @@ public class NamedConnectionPool
             if (poolManager.getNumBusy() != 0) {
                log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
                if (this.eraseUnusedPoolTimeout > 200L) {
-                  synchronized(timeoutHandle) {
-                     timeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
+                  synchronized(this.timeoutMonitor) {
+                     this.timeoutHandle = this.poolManager.getTransistionTimer().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
                      //[Aug 12, 2002 9:32:11 PM WARN  UnnamedConnectionPool] Can't destroy pool from 'jdbc:oracle:thin:@localhost:1521:DEKRA', 'mrf', he seems to be busy working on his database.
                   }
                }
