@@ -1,0 +1,269 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='security.ldap' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster provides a LDAP based authentication plugin</topic>
+   <description>
+      <p>
+      Authentication in xmlBlaster is based on plugins. The plugin described here
+      is based on using an external LDAP server for authentication.
+      </p>
+     <h3>The LDAP server</h3>
+      <p>
+      To get started with ldap authentication please
+      setup an ldap server first. See the example section below.
+      Start your LDAP server and fill it with the demo data from
+      <code>xmlBlaster/demo/ldap/demoData.ldif</code>.
+      </p>
+
+     <h3>Get it running</h3>
+     <p>Add the configuration of the LDAP plugin in xmlBlaster.properties:</p>
+<pre>
+ldap.serverUrl=ldap://localhost:389/o=xmlBlaster,c=ORG
+ldap.rootDN=cn=Manager,o=xmlBlaster,c=ORG
+ldap.rootPwd=secret
+ldap.loginFieldName=cn
+</pre>
+      <p>Start the xmlBlaster server</p>
+
+      <pre>
+java -jar lib/xmlBlaster.jar
+      </pre>
+     <p>You may set these settings on command line as well:</p>
+<pre>
+   java -jar lib/xmlBlaster.jar \
+         -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster,c=ORG" \
+         -ldap.rootDN "cn=Manager,o=xmlBlaster,c=ORG" \
+         -ldap.rootPwd "secret" \
+         -ldap.loginFieldName "cn"
+</pre>
+
+      <p>Start a client (all in one line), e.g.</p>
+
+      <pre>
+java HelloWorld3 -session.name tim -passwd tim -Security.Client.DefaultPlugin ldap,1.0
+      </pre>
+
+   <p>In the log output of xmlBlaster server you should see something like:</p>
+
+   <pre>
+SecurityPluginManager] Plugin 'org.xmlBlaster.authentication.plugins.ldap.Manager'
+                       successfully initialized 
+   </pre>
+
+   <p>Congratulations, you were authenticated by LDAP!</p>
+   <p>Edit xmlBlaster.properties and add this line</p>
+
+<pre>
+Security.Client.DefaultPlugin=ldap,1.0
+</pre>
+
+   <p>Now LDAP is switched on as default, try again:</p>
+
+<pre>
+java HelloWorld3 -session.name tim -passwd tim
+</pre>
+
+   <p>The used connect() QoS which you can directly use from Python or Perl clients looks like this:</p>
+
+  <pre>
+&lt;securityService type="ldap" version="1.0">
+   &lt;user>tim&lt;/user>
+   &lt;passwd>tim&lt;/passwd>
+&lt;/securityService>
+  </pre>
+
+   <p>Now try an invalid password:</p>
+
+      <pre>
+java HelloWorld3 -session.name tim -passwd aaah
+      </pre>
+   <p>You should get an authentication error from LDAP</p>
+   </description>
+
+   <example lang="Java" type="HTML">
+      <p>
+      Here is an example how to setup the LDAP server
+      based on openldap server 2.x, the free ldap server (slapd)
+      <a href="http://www.openldap.org/" target="others">http://www.openldap.org/</a>
+      </p>
+      <pre>
+<![CDATA[
+Note:
+
+  In this xmlBlaster/demo/ldap/README you find a description of how to set up openldap.
+  After you have the running LDAP server, please follow
+
+     xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/ldap/README
+
+   on how to use it with xmlBlaster (it is simple - just go for it).
+
+See:
+
+  http://nimbus.temple.edu/ldap/ 
+  http://www.yolinux.com/TUTORIALS/LinuxTutorialLDAP.html
+  http://www.ldapguru.com/
+  http://java.sun.com/products/jndi
+       The JAVA based ldap interface
+  http://developer.netscape.com/docs/manuals/dirsdk/jsdk40/servinfo.htm
+       Demo code
+  xmlBlaster/demo/ldap/demoData.ldif
+       Demo users for our ldap server
+
+GUI based client:
+
+  Under UNIX you can use 'gq' to manage your ldap data.
+  (The gentlemans LDAP client)
+
+
+Install this demo:
+
+  JDK 1.3 and higher has ldap drivers integrated, for
+  JDK 1.2 please download the ldap driver and add it to your
+  classpath.
+
+
+Configure OpenLDAP server:
+
+  Edit /etc/openldap/slapd.conf
+    suffix     "o=xmlBlaster, c=ORG"
+    rootdn     "cn=Manager, o=xmlBlaster, c=ORG"
+
+    # Define global ACLs to allow default read/write access.
+    access to * by * read
+    access to * by * write
+
+    # Switch on logging:
+    loglevel -1
+
+  tail -f /var/log/messages
+
+
+Start/Stop:
+
+  rcldap start
+  rcldap stop
+
+
+Feed some initial users:
+
+  We have provided a file demoData.ldif which contains some
+  demo data, in the ldap interchange format.
+  The demo data is based on the core.schema.
+  Please import it:
+
+  ldapadd -x -D "cn=Manager,o=xmlBlaster,c=ORG" -w secret -v -f demoData.ldif
+
+
+Query the ldap server (cn is the unique user name):
+
+  ldapsearch -x -b 'o=xmlBlaster,c=ORG' '(objectclass=*)'
+
+  Check password:
+    ldapsearch -x -b 'o=xmlBlaster,c=ORG' '(&(cn=tim)(userPassword=tim))'
+  You should get a line like:  # numEntries: 1
+
+
+Recursiv remove all data:
+
+  echo "o=xmlBlaster, c=ORG" | ldapdelete -x -D "cn=Manager,o=xmlBlaster,c=ORG" -w secret -v -r
+
+
+Query ldap server with netscape or konqueror (Linux):
+
+  ldap://localhost/o=xmlBlaster, c=ORG??base
+  ldap://localhost/o=xmlBlaster, c=ORG??sub
+  ldap://localhost/o=xmlBlaster, c=ORG?cn,dbAnrede?sub
+  ldap://localhost/o=xmlBlaster, c=ORG?cn?sub?(sn=Stallman)
+
+  Syntax:
+    ldap[s]://<hostname>:<port>/<base_dn>?<attributes>?<scope>?<filter>
+    RFC2255
+
+
+LDAP and Kerberos:
+
+  http://www.umich.edu/~dirsvcs/ldap/doc/guides/slapd/15.html#RTFToC123
+]]>
+      </pre>
+   </example>
+
+   <configuration where="server">
+      <h3>Server side configuration</h3>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Security.Server.Plugin[ldap][1.0]</td>
+            <td>org.xmlBlaster. authentication.plugins. ldap.Manager</td>
+            <td>Load/activate this plugin</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ldap.serverUrl</td>
+            <td>ldap://localhost:389/o=xmlBlaster,c=ORG</td>
+            <td>URL to find your ldap server</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>ldap.rootDN</td>
+            <td>cn=Manager,o=xmlBlaster,c=ORG</td>
+            <td>LDAP entry</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>ldap.rootPwd</td>
+            <td>secret</td>
+            <td>The LDAP access password</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>ldap.loginFieldName</td>
+            <td>cn</td>
+            <td>The field name in the LDAP server which contains the clients login name</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+   <configuration where="client">
+      <h3>Additional client side configuration</h3>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Security.Client.Plugin[ldap][1.0]</td>
+            <td>org.xmlBlaster. authentication.plugins. ldap.ClientPlugin</td>
+            <td>Load the plugin on client side</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+   <todo type="HTML">
+   </todo>
+   <see type="REQ">security.introduction</see>
+   <see type="REQ">security.development.serverPlugin.howto</see>
+   <see type="REQ">security.htpasswd</see>
+   <see type="API">org.xmlBlaster.authentication.plugins.ldap.LdapGateway</see>
+   <see type="LOCAL">../../src/java/org/xmlBlaster/authentication/plugins/ldap/README</see>
+   <see type="LOCAL">../../demo/ldap/README</see>
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2001 09 08</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.authentication.TestAuthenticationHtPassWd</test>
+   </testcase>
+</requirement>
+
