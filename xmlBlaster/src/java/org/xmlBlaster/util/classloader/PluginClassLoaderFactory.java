@@ -1,25 +1,25 @@
 /*------------------------------------------------------------------------------
-Name:      ClassLoaderFactory.java
+Name:      PluginClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.1 2002/08/25 15:17:21 ruff Exp $
-Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.classloader;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.text.StringHelper;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.MalformedURLException;
 
-public class ClassLoaderFactory {
+public class PluginClassLoaderFactory {
    public final String ME;
    private final Global glob;
    private final LogChannel log;
@@ -29,87 +29,74 @@ public class ClassLoaderFactory {
    /**
     * We are a singleton in respect to a Global instance.
     */
-   public ClassLoaderFactory (Global glob) {
+   public PluginClassLoaderFactory (Global glob) {
      ++instanceCounter;
-     this.ME = "ClassLoaderFactory-" + instanceCounter;
+     this.ME = "PluginClassLoaderFactory-" + instanceCounter;
      this.glob = glob;
      this.log = glob.getLog("classloader");
-     if (log.CALL) log.call(ME, "ClassLoaderFactory constructor #" + instanceCounter);
+     if (log.CALL) log.call(ME, "PluginClassLoaderFactory constructor #" + instanceCounter);
    }
 
    /**
     * Creates and returns a new URL class loader based on the callers class loader and the
     * callers related additional classes which may exist in a specified path.
-    * <br />
-    * Example:
-    *
-    * Assuming a classpath like:
-    * <pre>
-    *   /home/goetzger/java/xmlBlaster/lib/jacorb.jar
-    *   /home/goetzger/java/xmlBlaster/demo
-    *   /home/goetzger/java/xmlBlaster/classes
-    *   /home/goetzger/java/xmlBlaster/lib/xmlBlaster.jar
-    *   /home/goetzger/java/xmlBlaster/lib/batik/js.jar
-    * </pre>
-    * And assuming a callers class name <code>org.xmlBlaster.util.ClassLoaderFactory</code>
-    * and provided that there is a path like
-    * <code>/home/goetzger/java/xmlBlaster/lib/org/xmlBlaster/util/ClassLoaderFactory</code>
-    * the new classpath may look like:
-    * <pre>
-    *    /home/goetzger/java/xmlBlaster/lib/org/xmlBlaster/util/ClassLoaderFactory/openorb-1.2.0.jar
-    * </pre>
-    *
-    * @param caller Type of the calling class
-    * @param plugin Name of the plugin to be loaded and for which the classpath have to be extended.
-    * @return a PluginClassLoader which contains the URL of the parent class loader.
-    *           and the URL related to the callers class.
-    * @exception XmlBlasterException if the array of URLs can not be formed.
     */
-   public PluginClassLoader getPluginClassLoader(Object caller, String plugin) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering getPluginClassLoader for plugin=" + plugin);
-      String basePath = null;
-      classPath = new ArrayList(); // new array containing all String URL for the new classpath
+   public PluginClassLoader getPluginClassLoader(PluginInfo pluginInfo) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getPluginClassLoader for plugin=" + pluginInfo.getClassName());
 
-      if (log.TRACE) log.trace(ME, "caller: '" + caller.getClass().getName() + "' pluginName: '" + plugin + "'");
-
-      // calling for object related base class path
-      LoaderInfo loaderInfo = getLoaderInfo(caller, plugin);
+      Hashtable pluginParams = pluginInfo.getParameters();
+      LoaderInfo loaderInfo = getLoaderInfo(this, pluginInfo.getClassName());
       if (log.TRACE) log.trace(ME, loaderInfo.toString());
 
-      basePath = loaderInfo.basePath;
-      if (log.TRACE) log.trace(ME, "Using base path '" + basePath + "' to scan for specific jar files ...");
-
-      // scanning the basePath (and no deeper dirs!) for jars:
-      if (basePath != null) {
-         File baseDir = new File(basePath);
-
-         if ( !baseDir.exists() || !baseDir.canRead() )
-            return ( new PluginClassLoader(glob, new URL[0], plugin ) );
-
-         String list[] = baseDir.list(); // getting content
-
-         for(int ii = 0; ii < list.length; ii++) {
-            String filename = list[ii].toLowerCase();
-            if (!filename.endsWith(".jar"))
+      // In xmlBlaster.properties e.g.
+      // ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,classpath=soap.jar:xerces.jar
+      String classPathStr = (String)pluginParams.get("classpath");
+      ArrayList classPath = new ArrayList();
+      if (classPathStr != null) {
+         log.info(ME, "Analyzing classpath=" + classPathStr + " for plugin " + pluginInfo.getClassName());
+         StringTokenizer st = new StringTokenizer(classPathStr, ";:");
+         while (st.hasMoreElements()) {
+            String jar = (String)st.nextElement();
+            File f = new File(jar); // 1. check absolute path
+            if (f.canRead()) {
+               classPath.add(jar);
                continue;
-            // add it if it's a jar
-            File file = new File(basePath, list[ii]);
-            if (!file.isDirectory()) {
-               classPath.add(file.toString());
-               //if (log.TRACE) log.trace(ME, "Adding: '" + file.getAbsolutePath() + "'");
+            }
+            jar = f.getName();
+            f = new File(jar);      // 2. check local directory
+            if (f.canRead()) {
+               classPath.add(jar);
+               continue;
+            }
+            String resourceJar = loaderInfo.rootPath +jar;
+            log.info(ME, "Analyzing classpath token=" + jar + " resourceJar=" + resourceJar);
+            f = new File(resourceJar);      // 3. check resource path of this instance
+            if (f.canRead()) {
+               classPath.add(resourceJar);
+               continue;
+            }
+                                    // 4. check JVM classpath 
+            URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
+            for (int j=0; j<urls.length; j++) {
+               if (urls[j].getFile().equalsIgnoreCase(jar)) {
+                  classPath.add(urls[j].toString());
+                  continue;
+               }
             }
          }
       }
 
       // The plugin itself needs to be loaded by our ClassLoader to inherit it
       // to all children classes - add the classpath to the plugin class:
-      if (loaderInfo.jarPath != null)
-         classPath.add(loaderInfo.jarPath); // Attach to end e.g. xmlBlaster.jar
-      else
-         classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
+      if (classPath.size() > 0) {
+         if (loaderInfo.jarPath != null)
+            classPath.add(loaderInfo.jarPath); // Attach to end e.g. xmlBlaster.jar
+         else
+            classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
+      }
 
-      if (log.TRACE) log.trace(ME, "Found " + (classPath.size()-1) + " jar files in '" + basePath + "'");
-      return new PluginClassLoader(glob, stringToUrl(classPath), plugin );
+      if (log.TRACE) log.trace(ME, "Found " + classPath.size() + " plugin specific jar files");
+      return new PluginClassLoader(glob, stringToUrl(classPath), pluginInfo );
    }
 
    /**
@@ -129,14 +116,14 @@ public class ClassLoaderFactory {
       //if (log.CALL) log.call(ME, "Entering getLoaderInfo");
       if (plugin == null || plugin.length() < 1) {
          Thread.currentThread().dumpStack();
-         throw new IllegalArgumentException("ClassLoaderFactory.getLoaderInfo() with plugin=null");
+         throw new IllegalArgumentException("PluginClassLoaderFactory.getLoaderInfo() with plugin=null");
       }
 
       String classResource = which(caller, plugin); // e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
       if (classResource == null) {
          String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
          //if (log.TRACE) log.trace(ME, text);
-         throw new XmlBlasterException("ClassLoaderFactory", text);
+         throw new XmlBlasterException("PluginClassLoaderFactory", text);
       }
       //if (log.TRACE) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
 
@@ -164,16 +151,6 @@ public class ClassLoaderFactory {
       LoaderInfo loaderInfo = new LoaderInfo(plugin, rootPath, jarPath, jarName, pluginSlashed);
       //if (log.TRACE) log.trace(ME, loaderInfo.toString());
       return loaderInfo;
-   }
-
-   /**
-    * Returns an Array which contains all URL of the callers class loader.
-    * @param caller The URLs for this objects class loader have to be retrieved.
-    * @return An Array which contains all URL of the callers class loader.
-    */
-   private URL[] getClassLoaderURLs(Object caller) {
-      URLClassLoader myCL = (URLClassLoader) caller.getClass().getClassLoader();
-      return (myCL.getURLs());
    }
 
    /*
