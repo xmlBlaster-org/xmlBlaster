@@ -142,7 +142,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
       this.commandIsAdded = false;
       StringBuffer buf = new StringBuffer("<?xml version='1.0' encoding='").append(this.charSet).append("' ?>");
       buf.append("\n<").append(rootTag).append(">");
-           this.out.write(buf.toString().getBytes(this.charSet));
+      this.out.write(buf.toString().getBytes(this.charSet));
    }
 
    /**
