@@ -198,9 +198,7 @@ public final class ClusterManager
 
       PublishQos publishQos = msgWrapper.getPublishQos();
       MessageUnit msgUnit = msgWrapper.getMessageUnit();
-      Log.info(ME, "QoS before:\n" + msgUnit.getQos());
       msgUnit.setQos(publishQos.toXml());
-      Log.info(ME, "QoS after:\n" + msgUnit.getQos());
 
       try {
          return con.publish(msgUnit);
