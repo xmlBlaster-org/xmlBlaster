@@ -4,9 +4,10 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -Wall -DUSE_MAIN -o CallbackServerUnparsed CallbackServerUnparsed.c
+Compile:   gcc -g -Wall -DUSE_MAIN -I.. -o CallbackServerUnparsed CallbackServerUnparsed.c xmlBlasterSocket.c ../msgUtil.c
            cl /MT -DUSE_MAIN -D_WINDOWS CallbackServerUnparsed.c ws2_32.lib
 -----------------------------------------------------------------------------*/
+#include <stdio.h>
 #include <string.h>
 #include <socket/xmlBlasterSocket.h>
 #include <CallbackServerUnparsed.h>
@@ -18,26 +19,6 @@ Compile:   gcc -Wall -DUSE_MAIN -o CallbackServerUnparsed CallbackServerUnparsed
 static void initCallbackServer(CallbackServerUnparsed *cb);
 static int isListening(CallbackServerUnparsed *cb);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
-
-/**
- * Read the given amount of bytes
- * @return number of bytes read
- */
-size_t readn(int fd, char *ptr, size_t nbytes)
-{
-   size_t nleft, nread;
-   nleft = nbytes;
-   while(nleft > 0) {
-      nread = recv(fd, ptr, (int)nleft, 0);
-      if (nread < 0)
-         return nread; /* error, return < 0 */
-      else if (nread == 0)
-         break;        /* EOF */
-      nleft -= nread;
-      ptr += nread;
-   }
-   return (nbytes-nleft);
-}
 
 /**
  * See header for a description. 
@@ -96,14 +77,14 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
    }   
 
    if (cb->debug)
-      printf("[CallbackServer] Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...\n",
+      printf("[CallbackServerUnparsed] Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...\n",
              cb->hostCB, cb->portCB);
 
    /*
     * Get a socket to work with.
     */
    if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-       perror("[CallbackServer] socket");
+       perror("[CallbackServerUnparsed] socket");
        return;
    }
 
@@ -119,7 +100,7 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
    serv_addr.sin_port = htons(cb->portCB);
 
    if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-       perror("[CallbackServer] bind");
+       perror("[CallbackServerUnparsed] bind");
        return;
    }
 
@@ -127,11 +108,11 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
     * Listen on the socket.
     */
    if (listen(cb->listenSocket, 5) < 0) {
-       perror("[CallbackServer] listen");
+       perror("[CallbackServerUnparsed] listen");
        return;
    }
 
-   if (cb->debug) printf("[CallbackServer] Waiting for xmlBlaster to connect ...\n");
+   if (cb->debug) printf("[CallbackServerUnparsed] Waiting for xmlBlaster to connect ...\n");
 
    /*
     * Accept connections.  When we accept one, ns
@@ -140,10 +121,10 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
     */
    cli_len = (socklen_t)sizeof(cli_addr);
    if ((ns = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
-       perror("[CallbackServer] accept");
+       perror("[CallbackServerUnparsed] accept");
        return;
    }
-   if (cb->debug) printf("[CallbackServer] XmlBlaster connected from %d:%hd\n", cli_addr.sin_addr.s_addr, cli_addr.sin_port);
+   if (cb->debug) printf("[CallbackServerUnparsed] XmlBlaster connected from %d:%hd\n", cli_addr.sin_addr.s_addr, cli_addr.sin_port);
 
    while (1) {
       XmlBlasterException xmlBlasterException;
@@ -155,17 +136,17 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
        */
       numRead = readn(ns, msgLengthP, MSG_LEN_FIELD_LEN);
       if (numRead != MSG_LEN_FIELD_LEN) {
-         if (cb->debug) printf("[CallbackServer] ERROR Callback data 'length' from xmlBlaster is corrupted");
+         if (cb->debug) printf("[CallbackServerUnparsed] ERROR Callback data 'length' from xmlBlaster is corrupted");
          return;
       }
       msgLengthP[numRead] = 0;
       msgLength = atoi(msgLengthP);
-      if (cb->debug) printf("[CallbackServer] Callback data from xmlBlaster arrived, message length %d bytes\n", msgLength);
+      if (cb->debug) printf("[CallbackServerUnparsed] Callback data from xmlBlaster arrived, message length %d bytes\n", msgLength);
 
       /* ignore flag bits (pos 10-13) */
       numRead = readn(ns, msgFlagP, MSG_FLAG_FIELD_LEN);
       if (numRead != MSG_FLAG_FIELD_LEN) {
-         if (cb->debug) printf("[CallbackServer] ERROR Callback data 'flag' from xmlBlaster is corrupted");
+         if (cb->debug) printf("[CallbackServerUnparsed] ERROR Callback data 'flag' from xmlBlaster is corrupted");
          return;
       }
 
@@ -173,7 +154,7 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
       rawData = (char *)malloc((msgLength+1)*sizeof(char));
       numRead = readn(ns, rawData, msgLength);
       *(rawData + msgLength) = 0;
-      if (cb->debug) printf("[CallbackServer] Callback data from xmlBlaster arrived:\n%s\n", rawData);
+      if (cb->debug) printf("[CallbackServerUnparsed] Callback data from xmlBlaster arrived:\n%s\n", rawData);
 
       /*
          We keep the raw data, and insert some '\0' (string end),
@@ -210,16 +191,6 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
       free(returnQos);
       free(rawData);
    }
-}
-
-/*
- * @return The first 10 bytes are analyzed and returned as length info
- */
-int getLength(char *data)
-{
-   char tmp[MSG_LEN_FIELD_LEN+1];
-   sprintf(tmp, "%10.10s", data);
-   return atoi(tmp);
 }
 
 bool isListening(CallbackServerUnparsed *cb)
@@ -267,11 +238,19 @@ char *myUpdate(MsgUnit *msg, XmlBlasterException *xmlBlasterException)
    return strcpyAlloc("<qos/>"); // Everything is OK
 }
 
+/**
+ * Invoke: CallbackServerUnparsed -debug true
+ */
 int main(int argc, char** argv)
 {
    CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate);
+   printf("[main] Created CallbackServerUnparsed instance, creating listener ...\n");
    cb->initCallbackServer(cb);
+
+   // This code is never reached
+   printf("[main] Created socket listener\n");
    cb->shutdown(cb);
+   printf("[main] Socket listener is shutdown\n");
    freeCallbackServerUnparsed(cb);
    return 0;
 }

@@ -53,7 +53,7 @@ extern char *messageUnitToXml(MsgUnit *msg);
 extern char *contentToString(char *content, MsgUnit *msg);
 extern char *strFromBlobAlloc(const char *blob, const size_t len);
 extern char *strcpyAlloc(const char *src);
-extern int strcpy_alloc(char **into_string, const char *from_string);
+//extern int strcpy_alloc(char **into_string, const char *from_string);
 extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 extern void trim(char *s);
 extern char *toReadableDump(char *data, size_t len);

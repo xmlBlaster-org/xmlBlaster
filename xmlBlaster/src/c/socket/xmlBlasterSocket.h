@@ -5,9 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SOCKET internal header (not included directly by clients)
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #ifdef _WINDOWS
 #  include <winsock2.h>
 #else
@@ -18,12 +16,6 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <unistd.h>      // gethostname(), sleep(seconds)
 #endif
 #include <msgUtil.h>
-
-/*
-#define bool int
-#define true 1
-#define false 0
-*/
 
 #define  MAX_METHODNAME_LEN 20
 #define  MAX_SESSIONID_LEN 256
@@ -66,5 +58,4 @@ enum XMLBLASTER_MSG_TYPE_ENUM {
 
 extern size_t readn(int fd, char *ptr, size_t nbytes);
 extern int getLength(char *data);
-extern char *contentToString(char *content, MsgUnit *msg);
-extern char *messageUnitToXml(MsgUnit *msg);
+

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   client connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -Wall -g -D_REENTRANT -Isocket -I. -o client *.c socket/*.c -lpthread
+Compile:   gcc -Wall -g -D_REENTRANT -I. -o client client.c msgUtil.c socket/*.c -lpthread
 Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -I. client.c msgUtil.c socket\*.c ws2_32.lib
 Invoke:    client -dispatch/callback/plugin/socket/hostname develop -dispatch/callback/plugin/socket/port 7607 -debug true
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
@@ -13,8 +13,6 @@ Date:      05/2003
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <sys/types.h>
 #ifdef _WINDOWS
 #else
 #  include <unistd.h>
@@ -23,46 +21,11 @@ Date:      05/2003
 #include <XmlBlasterAccessUnparsed.h>
 #include <CallbackServerUnparsed.h>
 
+char *update(MsgUnit *msg, XmlBlasterException *xmlBlasterException);
+
 static bool debug = false;
 static bool help = false;
 
-
-/**
- * Here we asynchronous receive the callback from xmlBlaster
- * msg = char *key, char *content, int contentLen, char *qos
- *
- * NOTE: After this call the memory of msg is freed immediately by callbackServer.c
- *       So you need to take a copy of all msg members if needed out of the scope of this function.
- * @param msg The message from the server
- * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
- *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
- * @return The update return QoS, XML formatted. You need to allocate it with malloc() and
- *         the library will free it for you. Returning NULL is OK as well.
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
- */
-char *update(MsgUnit *msg, XmlBlasterException *xmlBlasterException)
-{
-   // Do something useful with the arrived message
-   char *xml = messageUnitToXml(msg);
-   if (debug) printf("client.update(): Asynchronous message update arrived:\n%s\n", xml);
-   free(xml);
-
-   /*
-   char content[msg->contentLen+1];
-   contentToString(content, msg);
-   if (debug)
-      printf("client.update(): Asynchronous message update arrived:\nkey=%s\ncontent=%s\nqos=%s\n",
-             msg->xmlKey, content, msg->qos);
-   */
-
-   if (false) { // How to throw an exception
-      strncpy0(xmlBlasterException->errorCode, "user.notWanted", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      strncpy0(xmlBlasterException->message, "I don't want this message", XMLBLASTEREXCEPTION_MESSAGE_LEN);
-      return 0;
-   }
-
-   return strcpyAlloc("<qos/>"); // Everything is OK
-}
 
 /**
  * Test the baby
@@ -263,4 +226,43 @@ int main(int argc, char** argv)
    freeXmlBlasterAccessUnparsed(xb);
    exit(0);
 }
+
+
+/**
+ * Here we asynchronous receive the callback from xmlBlaster
+ * msg = char *key, char *content, int contentLen, char *qos
+ *
+ * NOTE: After this call the memory of msg is freed immediately by callbackServer.c
+ *       So you need to take a copy of all msg members if needed out of the scope of this function.
+ * @param msg The message from the server
+ * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
+ *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
+ * @return The update return QoS, XML formatted. You need to allocate it with malloc() and
+ *         the library will free it for you. Returning NULL is OK as well.
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+ */
+char *update(MsgUnit *msg, XmlBlasterException *xmlBlasterException)
+{
+   // Do something useful with the arrived message
+   char *xml = messageUnitToXml(msg);
+   if (debug) printf("client.update(): Asynchronous message update arrived:\n%s\n", xml);
+   free(xml);
+
+   /*
+   char content[msg->contentLen+1];
+   contentToString(content, msg);
+   if (debug)
+      printf("client.update(): Asynchronous message update arrived:\nkey=%s\ncontent=%s\nqos=%s\n",
+             msg->xmlKey, content, msg->qos);
+   */
+
+   if (false) { // How to throw an exception
+      strncpy0(xmlBlasterException->errorCode, "user.notWanted", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(xmlBlasterException->message, "I don't want this message", XMLBLASTEREXCEPTION_MESSAGE_LEN);
+      return 0;
+   }
+
+   return strcpyAlloc("<qos/>"); // Everything is OK
+}
+
 
