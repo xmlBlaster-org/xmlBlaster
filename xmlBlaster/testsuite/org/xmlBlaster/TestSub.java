@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.9 1999/12/16 11:49:41 ruff Exp $
+Version:   $Id: TestSub.java,v 1.10 1999/12/16 17:23:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -47,6 +47,8 @@ public class TestSub extends TestCase implements I_Callback
    private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
+   private final String contentMime = "text/xml";
+   private final String contentMimeExtended = "1.0";
 
    /**
     * Constructs the TestSub object.
@@ -142,7 +144,7 @@ public class TestSub extends TestCase implements I_Callback
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                      "<key oid='' contentMime='text/xml'>\n" +
+                      "<key oid='' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
                       "      </TestSub-DRIVER>"+
@@ -201,6 +203,8 @@ public class TestSub extends TestCase implements I_Callback
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+      assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
 
       messageArrived = true;
    }
