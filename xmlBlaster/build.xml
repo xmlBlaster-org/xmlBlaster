@@ -8,6 +8,7 @@ Authors:
  James Birchfield "jmbirchfield@proteustechnologies.com"
  Marcel Ruff "xmlBlaster@marcelruff.info"
  Martin Johnson  mjhn@bigpond.net.au"  (Windows C++ TAO support)
+ Guy Donadio  (SunOS C++ ORBIX support)
 
 Installing the build tools
 ==========================
@@ -146,6 +147,7 @@ TODO
    <!-- Force from outside compiler: build.bat -Duse-msvc=1 ...             -->
    <!-- =================================================================== -->
    <property name="compiler" value="msvc"/> <!-- "gcc" "VC6" "bcc" "msvc" -->
+   <!-- property name="use-CC" value="1" / --> <!-- SunOS C++ -->
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
@@ -218,6 +220,10 @@ TODO
       <compilerarg value="-D${thread.impl}" />
    </compiler>
 
+  <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 -->
+    <compilerarg value="-Kpic"/>
+    <compilerarg value="-Bdynamic"/>
+  </compiler>   
 
 
    <!-- =================================================================== -->
@@ -316,30 +322,18 @@ TODO
    <target name="prepare" description="For internal use only">
       <mkdir dir="${build.dir}"/>
       <osfamily property="os.family" />
-      <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
+
+      <echo message="os.family=${os.family} os.name=${os.name}"/>  <!-- os.family = "dos", "mac", "netware", "os/2", "unix", "windows", "win9x", "z/os" -->
       <property name="${os.family}" value="true" />    <!-- set e.g unix=true to be used in if="unix" conditions -->
-      <!--
-      <switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="BUILD_UNIX" value="true" />
-            <property name="unix" value="true" />
-         </case>
-         <case value="mac">
-            <property name="BUILD_MAC" value="true" />
-            <property name="mac" value="true" />
-         </case>
-         <case value="dos">
-            <property name="BUILD_DOS" value="true" />
-            <property name="dos" value="true" />
-         </case>
-         <default>
-            <property name="BUILD_WINDOWS" value="true" />
-            <property name="windows" value="true" />
-         </default>
-      </switch>
-      -->
+
+      <!-- See http://www.vamphq.com/osp.html for other os.name settings -->
+
       <condition property="linux">
          <equals arg1="${os.name}" arg2="Linux"/>
+      </condition>
+
+      <condition property="sun"> <!-- "sun" is used below for if="sun" conditions -->
+         <equals arg1="${os.name}" arg2="SunOS"/>
       </condition>
 
       <!--
@@ -1306,10 +1300,10 @@ TODO
 
       <if><equals arg1="${idlBuild.done}" arg2="true" />
          <then>
-            <echo message="IDL stubs and skeletons are up to date" />
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
          </then>
          <else>
-            <echo message="Generating IDL stubs and skeletons for os=${os.family}" />
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <!-- A typical MICO idl CORBA compile:
               /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
             -->
@@ -1350,10 +1344,10 @@ TODO
 
       <if><equals arg1="${idlBuild.done}" arg2="true" />
          <then>
-            <echo message="IDL stubs and skeletons are up to date" />
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
          </then>
          <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl stubs and skeletons for os=${os.family}" />
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
@@ -1380,12 +1374,47 @@ TODO
       </uptodate>
       <if><equals arg1="${idlBuild.done}" arg2="true" />
          <then>
-            <echo message="IDL stubs and skeletons are up to date" />
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
          </then>
          <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl stubs and skeletons for os=${os.family}" />
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-bcxx -Wbh=.h"/>
+               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+            </exec>
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
+         </else>
+      </if>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for ORBIX to create C++ CORBA stubs            -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-ORBIX" description="Compiles xmlBlaster.idl for CORBA C++ clients">
+      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
+      <switch value="${os.family}" caseinsensitive="true">
+         <case value="unix">
+            <property name="idl.cmd" value="${CORBACPP_HOME}/${CORBACPP_VER}/bin/idl" />
+         </case>
+         <default>
+            <echo message="ERROR: Orbix IDL compilation support is missing for ${os.family}, please add it to build.xml" />
+         </default>
+      </switch>
+
+      <!-- Start IDL compiler to create CORBA stubs -->
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster-cS.cpp" value="true">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
+         <then>
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
+         </then>
+         <else>
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <arg line="-base:-cS.cpp:-hS.h"/> 
+               <arg line="-poa:-c.cpp:-h.h:-bS.h"/> 
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
@@ -1421,28 +1450,32 @@ TODO
           outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
-         <compiler refid="msvc"/>
-         <compiler refid="bcc"/>
+         <compiler refid="msvc"/> <!-- MS VC++ 7 -->
+         <compiler refid="bcc"/>  <!-- Borland -->
+         <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
          <fileset dir="${src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
+
          <includepath location="${src.cpp.dir}" />
+
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/.." /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/include" if="ORBIX" />          
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
          <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->                  
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
-           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" or "ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
            <define name="_WIN32_WINNT" value="0x0400" if="windows"/> <!-- omnithread, OMNIORB -->
@@ -1458,9 +1491,18 @@ TODO
            <!--define name="_USRDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
            <!--define name="_WINDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
            <!-- undefine name="UNWANTEDDEF" / -->                 <!-- example only -->
+
+           <define name="__sunos__" value="1" if="sun" />
+           <define name="__sparc__" value="1" if="sun" />
+           <define name="__OSVERSION__" value="5" if="sun" />
+           <define name="SVR4" value="1" if="sun" />
+           <define name="UsePthread" value="1" if="sun" />
+           <define name="_REENTRANT" value="1" if="sun" />
+           <define name="PthreadDraftVersion" value="10" if="sun" />
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
+
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="aced.lib" if="TAO,windows" />
@@ -1478,7 +1520,13 @@ TODO
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
          </linker>
+
          <linker name="bcc"  if="use-bcc" />
+
+         <linker name="CC"  if="use-CC">
+           <linkerarg value="-mt"/>
+           <linkerarg value="-lpthread"/>
+         </linker>
       </cc>
    </target>
 
@@ -1535,20 +1583,25 @@ TODO
          <compiler refid="gcc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
+         <compiler refid="CC"/>
          <fileset dir="${compileCppSourcePath}" includes="${exeName}.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
+
          <sysincludepath location="${CORBACPP_HOME}" if="TAO" />          <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/include" if="ORBIX" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+
          <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />     <!-- Since xerces 1.7.0 -->
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset>
-           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" or "ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="WIN32" value="1" if="windows" />        
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
@@ -1573,6 +1626,9 @@ TODO
             <!-- MICO -->
             <libset dir="${CORBACPP_HOME}/bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
             <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
+
+            <!-- ORBIX -->
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1606,6 +1662,27 @@ TODO
          </linker>
 
          <linker name="bcc"  if="use-bcc" />
+
+         <linker name="CC">
+            <!-- ORBIX -->
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+
+            <!-- xmlBlasterClient.dll -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+
+            <linkerarg value="-i"/>
+            <linkerarg value="-lpthread"/>
+            <linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" if="ORBIX" />
+            <linkerarg value="-L${XMLCPP_HOME}/lib" />
+            <linkerarg value="-L${lib.dir.absolute}" />
+            <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
+            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:/data/xmlBlaster/orbix_build:${XMLCPP_HOME}/lib" if="ORBIX" />
+         </linker>
+
+         <syslibset dir="/lib" libs="dl"/>
       </cc>
    </target>
 
