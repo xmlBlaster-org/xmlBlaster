@@ -30,8 +30,8 @@
       <nodeId>heron</nodeId>
       <version>0.79f</version>
       
-      <hostname>server.mycomp.com</hostname>
-      <port>3412</host>
+      <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
+      <port>3412</port>
 
       <buildTimestamp>06/17/2002 01:59 PM</buildTimestamp>
       <buildJavaVendor>Sun Microsystems Inc.</buildJavaVendor>
@@ -40,23 +40,30 @@
       <gc/>   <!-- run garbage collector in xmlBlaster JVM -->
       <exit/> <!-- exit xmlBlaster server -->
 
-      <dump>heronDump.txt</dump>
+      <dump>heronDump.txt</dump>  <!-- dump internal state -->
 
       <numClients>4</numClients>
       <maxClients>10000</maxClients>
+      <clientThresholdOverflow type='event'/>
+
       <clientList>joe,jack,averell,william</clientList>
       <client>
          <joe>
             <uptime>10050</uptime>
+            <killClient/>
 
-            <cbQueueNumMsgs>247</cbQueueMumMsgs>
+
+            <cbQueueNumMsgs>247</cbQueueMumMsgs> <!-- PtP queue -->
             <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
 
             <numSessions>2</numSessions>
             <maxSessions>10</maxSessions>
+            <sessionThresholdOverflow type='event'/>
+
             <sessionList>ses3,ses17</sessionList>
-            <ses17>
+            <ses3>
                <uptime>10050</uptime>
+               <killSession/>
 
                <numPublished>4</numPublished>
                <numGets>7</numGets>
@@ -64,14 +71,14 @@
 
                <cbQueueNumMsgs>37</cbQueueNumMsgs>
                <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
-               <cbQueueThreshold>80</cbQueueThreshold> <!-- 80% -->
-               <cbQueueThresholdOverflow>numMsg=199,
-                 maxMsg=203</cbQueueThresholdOverflow> <!-- a trap -->
-            </ses17>
+               <cbQueueThreshold>80</cbQueueThreshold>  <!-- 80% -->
+               <cbQueueThresholdOverflow type='event'/> <!-- a trap -->
+               <clearCbQueue>DEAD_LETTER | DISCARD</clearCbQueue>
+            </ses3>
 
-            <ses32>
+            <ses17>
                ...
-            </ses32>
+            </ses17>
          </joe>
 
          <jack>
@@ -80,6 +87,8 @@
 
       </client>
 
+      <!-- System properties, xmlBlaster.properties and
+           command line arguments -->
       <numSysprop>117</numSysprop>
       <syspropList>java.io.tmpdir,java.vm.version,...</syspropList>
       <sysprop>
@@ -87,16 +96,18 @@
          <java.vm.version>1.3.1</java.vm.version>
          <user.language>es</user.language>
          <Persistence.Path>/home/mom/data</Persistence.Path>
+         <logFile>/var/log/xmlBlaster-heron.log</logFile>
          ...
       </sysprop>
 
+      <!-- xmlBlaster messages -->
       <numMsgs>7140</numMsgs>
       <msgList>hello,radar.track,myMessage,...</msgList>
       <msg>
          <hello>
-            <key></key>
-            <content>world</content>
-            <qos></qos>
+            <key oid='hello' contentMime='text/plain'/>
+            <content>Hi world</content>
+            <qos><isDurable/></qos>
          </hello>
 
          <radar.track>
@@ -129,6 +140,10 @@
         <li><i>sysprop</i> Inspect the system properties, xmlBlaster.properties and command line arguments</li>
         <li><i>msg</i> Examine or manipulate the messages in xmlBlaster</li>
       </ol>
+      <p>
+         The <i>cb</i> in for example <i>cbQueueMaxMsg</i> is the abbreviation for <i>callback</i>.
+      </p>
+
       <h3>
          What is allowed to do with these attributes?
       </h3>
@@ -149,7 +164,7 @@
             <td>get</td>
             <td>get</td>
             <td>getAttributes()</td>
-            <td>only telnet</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>SET</td>
@@ -158,7 +173,7 @@
             <td>set</td>
             <td>set</td>
             <td>setAttributes()</td>
-            <td>only telnet</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>SUBSCRIBE</td>
@@ -206,82 +221,102 @@
          <tr>
             <td>Command</td>
             <td>Description</td>
+            <td>Impl</td>
          </tr>
          <tr>
             <td>/node/?numNodes</td>
             <td>Query the number of xmlBlaster cluster nodes (running xmlBlaster instances)</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/?freeMem</td>
             <td>Query the free memory in bytes</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/?runlevel=3</td>
             <td>Switch run level of heron to 3 (STANDBY)</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/?numClients</td>
             <td>How many clients are logged in to heron</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/client/joe/?sessionList</td>
             <td>Retrieve the public session IDs of joe (if joe is logged in three times, there will be three entries)</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>client/joe/?sessionList</td>
             <td>Same as above but relative addressed</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>client/joe/ses17/?uptime</td>
             <td>How long is session ID 17 logged in (in seconds)</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>client/*/?uptime</td>
-            <td>The uptime of all users (in seconds)</td>
+            <td>The uptime of all users (in seconds). Wildcards are not implemented yet.</td>
+            <td>no</td>
          </tr>
          <tr>
             <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
-            <td>Change to max. callback queue size of joe-session-ID 17 to 30 thousand messages</td>
+            <td>Change max. callback queue size of client joe with login session ID 17 to 30 thousand messages</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/sysprop/?java.vm.version</td>
             <td>Access the JDK version</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>sysprop/?user.language=es</td>
             <td>Change the language to spanish (relative addressed)</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>sysprop/?info=false</td>
             <td>Switch off logging of infos</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>sysprop/?trace[corba]=true</td>
             <td>Switch on trace mode for the corba layer</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/?numMsgs</td>
             <td>How many messages are currently in heron</td>
-         </tr>
-         <tr>
-            <td>/node/heron/msg/Hello/?content</td>
-            <td>Access the message content of the message with key-oid="Hello"</td>
-         </tr>
-         <tr>
-            <td>/node/heron/msg/Hello/?content=How are you</td>
-            <td>Change the message content of the message with key-oid="Hello" to "How are you"</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>/node/heron/msg/?Hello</td>
             <td>Return the complete message (oid=Hello)</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?content</td>
+            <td>Access the message content of the message with key-oid="Hello"</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?content=How are you</td>
+            <td>Change the message content of the message with key-oid="Hello" to "How are you"</td>
+            <td>no</td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?key</td>
             <td>Return the complete key of this message</td>
+            <td>no</td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?key.contentMime</td>
             <td>Return the MIME type of this message</td>
+            <td>no</td>
          </tr>
       </table>
       <p>
@@ -376,14 +411,19 @@ set sysprop/?trace[corba]=true
 
       </table>
 
+      <p></p>
+
       <h3>
          How does authentication work?
       </h3>
-      For MoM clients the usual authentication applies.<br />
-      For telnet clients you have to use the connect command on startup.<br />
-      For SNMP access the authentication is done in SNMP<br />
-      For JMX we have not investigated yet.
+      <ul>
+        <li>For MoM clients the usual authentication applies.</li>
+        <li>For telnet clients you have to use the <pre><i>connect &lt;loginName> &lt;password></i></pre> command on startup.</li>
+        <li>For SNMP access the authentication is done in SNMP</li>
+        <li>For JMX we have not investigated yet</li>
+      </ul>
 
+      <p></p>
    </description>
 
 
@@ -404,6 +444,10 @@ Query:    key.oid=MyMessage
 Ref:      myFragment
 UserInfo: joe:mypasswd
       </pre>
+      <p>
+      The problem is that the <i>UserInfo</i> is cut away from the browser,
+      we need to pass it somewhere in the path.
+      </p>
    </example>
 
    <configuration where="server">
@@ -458,9 +502,14 @@ UserInfo: joe:mypasswd
    </configuration>
 
    <todo type="HTML">
-      Read/Write access with telnet and MoM clients on system properties, internal states
-      and messages is implemented.<br />
-      SNMP and JMX support is missing.
+      <ul>
+        <li>Read/Write access with telnet and MoM clients on system properties, internal states
+            and messages is implemented.</li>
+        <li>SNMP (SnmpGateway.java) support is missing.</li>
+        <li>JMX (JmxGateway.java) support is missing.</li>
+        <li>A swing or browser based GUI interface for administration.</li>
+        <li>Wildcard queries.</li>
+      </ul>
    </todo>
 
    <see type="API">org.xmlBlaster.engine.admin.I_AdminNode</see>
@@ -476,7 +525,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
