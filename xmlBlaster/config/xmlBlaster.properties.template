@@ -249,7 +249,7 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:\
 # Now you can configure your database access.
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables,connectionErrorCodes=1089:17002
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=LONG RAW,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME,connectionErrorCodes=1089:17002
-JdbcDriver.mapping[MicrosoftSQLServer]=string=CHAR(128),longint=numeric (19),boolean=char(1),blob=image,tables=pg_tables,tablename=tablename,connectionErrorCodes=1089:17002
+JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image,tables=pg_tables,tablename=tablename,connectionErrorCodes=1089:17002
 
 #------------------------------------------------------------------------------
 # Add here your MIME based plugins which allow to filter update messages
