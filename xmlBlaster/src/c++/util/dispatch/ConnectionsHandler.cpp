@@ -38,15 +38,17 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
    timestamp_          = 0;
    pingIsStarted_      = false;
    lastSessionId_      = "";
+   hasConnected_       = false;
 }
 
 ConnectionsHandler::~ConnectionsHandler()
 {
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
-
-   global_.getDeliveryManager().releasePlugin(instanceName_, type, version);
-   connection_ = NULL;
+   if (connection_) {
+      global_.getDeliveryManager().releasePlugin(instanceName_, type, version);
+      connection_ = NULL;
+   }
 
    if (timestamp_ != 0) {
 //      Lock lock(connectionMutex_);
@@ -69,6 +71,12 @@ ConnectionsHandler::~ConnectionsHandler()
 ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 {
 //   Lock lock(connectionMutex_);
+   if (hasConnected_) {
+      log_.warn(ME, "connect: you are already connected");
+      return *connectReturnQos_;
+   }
+
+   hasConnected_ = true;
    if (log_.CALL) log_.call(ME, "::connect");
    if (connectQos_) {
       delete connectQos_;
@@ -84,19 +92,33 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
-   connection_ = &(global_.getDeliveryManager().getPlugin(instanceName_, type, version));
+   if (!connection_) {
+      connection_ = &(global_.getDeliveryManager().getPlugin(instanceName_, type, version));
+   }
    if (connectReturnQos_) {
       delete connectReturnQos_;
       connectReturnQos_ = NULL;
    }
 
-   ConnectReturnQos retQos = connection_->connect(*connectQos_);
-   connectReturnQos_ = new ConnectReturnQos(retQos);
+   try {
+      connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+   }
+   catch (XmlBlasterException &ex) {
+      if ( ex.isCommunication() ) return queueConnect();
+      hasConnected_ = false; // since it was not able to connect ...
+      throw ex;
+   }
+   
    lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
    log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
+
+   /*
    SessionQos tmp = connectQos_->getSessionQos();
    tmp.setSecretSessionId(lastSessionId_);
    connectQos_->setSessionQos(tmp);
+   */
+   connectQos_->getSessionQos().setSecretSessionId(lastSessionId_);
+
    if (log_.TRACE) {
       log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
    }
@@ -121,14 +143,10 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
       return false;
    }
 
-   try {
-      return connection_->disconnect(qos);
-      status_ = DEAD;
-   }   
-   catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) toPollingOrDead();
-      throw ex;
-   }
+   return connection_->disconnect(qos);
+   status_ = DEAD;
+   hasConnected_ = false;
+   return true;
 }
 
 string ConnectionsHandler::getProtocol()
@@ -283,7 +301,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 
    // fill in the sender absolute name
    if (connectReturnQos_) {
-   		for (int i=0;i<msgUnitArr.size();i++) {
+                for (int i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
       }
    }
@@ -314,7 +332,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 
    // fill in the sender absolute name
    if (connectReturnQos_) {
-   		for (int i=0;i<msgUnitArr.size();i++) {
+                for (int i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
       }
    }
@@ -378,6 +396,7 @@ void ConnectionsHandler::toPollingOrDead()
       status_ = DEAD;
       connection_->shutdown();
       if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
+      hasConnected_ = false;
       return;
    }
 
@@ -501,6 +520,30 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
    queue_->put(entry);
    return retQos;
 }
+
+ConnectReturnQos& ConnectionsHandler::queueConnect()
+{
+   if (connectQos_->getSessionQos().getPubSessionId() <= 0) {
+      hasConnected_ = false;
+      throw XmlBlasterException(USER_CONNECT, ME + "::queueConnect", "queueing connection request not possible because you did not specify a positive public sessionId");
+   }
+
+   if (!queue_) {
+      log_.info(ME, "created a client queue");
+      queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
+   }
+   if (log_.TRACE) 
+      log_.trace(ME, string("queueConnect: entry '") + connectQos_->getSessionQos().getAbsoluteName() + "' has been queued");
+
+   connectReturnQos_ = new ConnectReturnQos(*connectQos_);
+
+   ConnectQueueEntry entry(global_, *connectQos_);
+   queue_->put(entry);
+   status_ = POLLING;
+   startPinger();
+   return *connectReturnQos_;
+}
+
 
 
 /**

@@ -75,7 +75,7 @@ void ConnectQosData::setSessionQos(const SessionQos& sessionQos)
    sessionQos_ = sessionQos;
 }
 
-SessionQos ConnectQosData::getSessionQos() const
+SessionQos& ConnectQosData::getSessionQos() const
 {
    return sessionQos_;
 }
@@ -100,7 +100,7 @@ void ConnectQosData::setSecurityQos(const SecurityQos& securityQos)
    securityQos_ = securityQos;
 }
 
-SecurityQos ConnectQosData::getSecurityQos() const
+SecurityQos& ConnectQosData::getSecurityQos() const
 {
    return securityQos_;
 }
@@ -137,7 +137,9 @@ vector<ServerRef> ConnectQosData::getServerReferences() const
 
 ServerRef ConnectQosData::getServerRef() const
 {
-   if (serverReferences_.empty()) return ServerRef("IOR");
+   if (serverReferences_.empty()) {
+      return ServerRef("IOR");
+   }
    return *(serverReferences_.begin());
 }
 

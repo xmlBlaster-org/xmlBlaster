@@ -329,6 +329,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_CONNECT = new ErrorCode("user.connect",
+         "Your connection request could not be handled, check your QoS",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+         }
+      );
+
    public static final ErrorCode USER_PUBLISH = new ErrorCode("user.publish",
          "Your published message could not be handled, check your QoS",
          new ResourceInfo[] {

@@ -65,8 +65,8 @@ class Dll_Export ConnectQosData
 private:
    Global&     global_;
    Log&        log_;
-   SecurityQos securityQos_;
-   SessionQos  sessionQos_;
+   mutable SecurityQos securityQos_;
+   mutable SessionQos  sessionQos_;
 //   ServerRef   serverRef_;
    bool        ptp_;
    bool        isDirty_;
@@ -107,12 +107,12 @@ public:
    string getBoolAsString(bool boolVal) const;
    void setPtp(bool ptp);
    void setSessionQos(const SessionQos& sessionQos);
-   SessionQos getSessionQos() const;
+   SessionQos& getSessionQos() const;
    string getSecretSessionId() const;
    string getUserId() const;
    string getCallbackType() const;
    void setSecurityQos(const SecurityQos& securityQos);
-   SecurityQos getSecurityQos() const;
+   SecurityQos& getSecurityQos() const;
 //   void setServerRef(const ServerRef& serverRef);
 //   ServerRef getServerRef() const;
    void setClusterNode(bool clusterNode);

@@ -213,6 +213,10 @@ namespace org { namespace xmlBlaster { namespace util {
          "Your published message could not be handled, check your QoS"
    );
 
+   const ErrorCode USER_CONNECT("user.connect",
+         "Your connection request could not be handled, check your QoS"
+   );
+
    const ErrorCode USER_PTP_UNKNOWNSESSION("user.ptp.unknownSession",
       string("You have send a point to point message to a specific user ") +
       string("session but the receiver is not known.")

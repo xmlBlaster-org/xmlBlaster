@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.3 2003/01/22 16:04:36 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.4 2003/01/23 21:44:24 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -52,7 +52,7 @@ private:
 
 public:
    TestRam(int args, char *argc[], const string &loginName) 
-      :	 TestSuite(args, argc, "TestRam"), stopWatch_()
+      :  TestSuite(args, argc, "TestRam"), stopWatch_()
    {
       senderName_   = loginName;
       publishOid_   = "";
@@ -203,7 +203,7 @@ public:
 
    void usage() const
    {
-   		TestSuite::usage();
+                TestSuite::usage();
       log_.plain(ME, "----------------------------------------------------------");
       log_.plain(ME, "Testing C++ access to xmlBlaster");
       log_.plain(ME, "Usage:");
@@ -220,10 +220,16 @@ public:
 using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
-   TestRam *testSub = new TestRam(args, argc, "Tim");
-   testSub->setUp();
-   testSub->testManyPublish();
-   testSub->tearDown();
+   try {
+      TestRam *testSub = new TestRam(args, argc, "Tim");
+      testSub->setUp();
+      testSub->testManyPublish();
+      testSub->tearDown();
+   }
+   catch (...) {
+   }
+   delete testSub;
+   testSub = NULL;
    return 0;
 }
 

@@ -58,7 +58,7 @@ private:
    MsgQueue*               adminQueue_;
    string                  lastSessionId_;
    const string            instanceName_;
-   bool                    hasConnectEntries_; // there can be a maximum of one ConnectQueueEntry in the queue, otherwise session leak.
+   bool                    hasConnected_; // there can be a maximum of one ConnectQueueEntry in the queue, otherwise session leak.
 
 public:
    ConnectionsHandler(Global& global, const string& instanceName);
@@ -142,6 +142,7 @@ protected:
    /** only used inside the class to avoid deadlock */
    long flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove=true);
    PublishReturnQos queuePublish(const MessageUnit& msgUnit);
+   ConnectReturnQos& queueConnect();
    bool startPinger();
 
    /**

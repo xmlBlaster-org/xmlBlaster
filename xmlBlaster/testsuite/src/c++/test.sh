@@ -27,7 +27,7 @@ sleep $DELAY_TIME
 bin/TestGet $USE_EMBEDDED
 echo "going to test the 'subscribe' method"
 sleep $DELAY_TIME
-# bin/TestSub $USE_EMBEDDED
+bin/TestSub $USE_EMBEDDED
 echo "going to test the 'subscribe to XPath feature"
 sleep $DELAY_TIME
 bin/TestSubXPath $USE_EMBEDDED
