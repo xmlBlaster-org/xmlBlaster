@@ -3,7 +3,7 @@ Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.20 2004/05/02 18:59:57 ruff Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.21 2004/05/04 09:30:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -15,16 +15,21 @@ Version:   $Id: xmlBlasterDef.h,v 1.20 2004/05/02 18:59:57 ruff Exp $
 #endif
 
 #include <util/XmlBCfg.h>
+//NEW: #include <util/basicDefs.h> // definition for Dll_Export, int64_t, the timestamps ... (see C-client library xmlBlaster/src/c/util/basicDefs.h)
 
 // definition for the timestamps (see xmlBlaster/src/c/util/basicDefs.h)
 namespace org { namespace xmlBlaster { namespace util {
+//  replace by basicDefs.h:
 #if defined(_WINDOWS)
   typedef __int64 int64_t;
-  typedef __int64 Timestamp;
+  typedef __int32 int32_t;
+  typedef __uint32 uint32_t;
 #else
   typedef long long int int64_t;        // C99 standard: #include<stdint.h> has uint64_t etc.
-  typedef long long int Timestamp;
+  typedef int int32_t;
+  typedef unsigned int uint32_t;
 #endif
+typedef int64_t Timestamp;
 
 // change this if it does not compile correctly
 // #define STRING_TO_TIMESTAMP(x) atoll(x)
