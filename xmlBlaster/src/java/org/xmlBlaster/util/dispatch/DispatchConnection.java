@@ -84,6 +84,7 @@ abstract public class DispatchConnection implements I_Timeout
       this.glob = glob;
       this.log = glob.getLog("dispatch");
       this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
+      if (log.TRACE) log.trace(ME, "dispatch/logRetryEveryMillis=" + this.logEveryMillis);
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDispatchManager().getQueue().getStorageId().getId();
       this.address = address;
@@ -111,6 +112,14 @@ abstract public class DispatchConnection implements I_Timeout
    public final void initialize() throws XmlBlasterException {
       this.retryCounter = 0;
 
+      if (this.logEveryMillis <= 0) {
+         logInterval = -1; // no logging
+      }
+      else if (address.getDelay() < 1 || address.getDelay() > this.logEveryMillis)  // millisec
+         logInterval = 1;
+      else
+         logInterval = (int)(this.logEveryMillis / address.getDelay());
+
       try {
          connectLowlevel();
          handleTransition(true, null);
@@ -133,13 +142,6 @@ abstract public class DispatchConnection implements I_Timeout
          throw e;
       }
 
-      if (this.logEveryMillis <= 0) {
-         logInterval = -1; // no logging
-      }
-      else if (address.getDelay() < 1 || address.getDelay() > this.logEveryMillis)  // millisec
-         logInterval = 1;
-      else
-         logInterval = (int)(this.logEveryMillis / address.getDelay());
       if (log.TRACE) log.trace(ME, "Created driver for protocol '" + this.address.getType() + "'");
    }
 
