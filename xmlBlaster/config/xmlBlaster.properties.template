@@ -53,6 +53,7 @@ Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # NONE switches off security checks in passwd file:
 Security.Server.Plugin.htpasswd.secretfile=NONE
 #Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
+Security.Server.Plugin.htpasswd.allowPartialUsername=false
 
 # Force on client side a specified plugin (as default)
 # Only if you access xmlBlaster with java clients and
