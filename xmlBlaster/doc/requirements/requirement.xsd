@@ -103,7 +103,18 @@
          </xsd:attribute>
       </xsd:complexType>
    </xsd:element>
-   <xsd:element name="todo"/>
+   <xsd:element name="todo">
+      <xsd:complexType>
+         <xsd:attribute name="type" use="default" value="RAW">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="RAW"/>
+                  <xsd:enumeration value="HTML"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
    <xsd:element name="done"/>
    <xsd:element name="see">
       <xsd:complexType mixed="true">
