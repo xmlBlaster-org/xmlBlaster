@@ -428,11 +428,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
             }
             //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
 
-            I_MapEntry[] persistEntries = this.persistentStore.getAll();
-            for(int i=0; i<persistEntries.length; i++) {
-               map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+            if (this.persistentStore != null) {
+               I_MapEntry[] persistEntries = this.persistentStore.getAll();
+               for(int i=0; i<persistEntries.length; i++) {
+                  map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+               }
+               //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
             }
-            //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
 
             return (I_MapEntry[])map.values().toArray(new I_MapEntry[map.size()]);
          }
