@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.106 2002/09/19 20:59:28 ruff Exp $
+Version:   $Id: Main.java,v 1.107 2002/10/01 09:52:04 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -384,8 +384,14 @@ public class Main implements I_RunlevelListener, I_Main
                log.info(ME, line);
                String ver = bound + " xmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp();
                log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
-               String help = bound + " READY - press <?> and <enter> for options";
-               log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
+               boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
+               if (useKeyboard) {
+                 String help = bound + " READY - press <?> and <enter> for options";
+                 log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
+               } else {
+                 String help = bound + " READY - no keyboard input available";
+                 log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
+               }
                log.info(ME, line);
             }
             else
