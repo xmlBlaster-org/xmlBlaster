@@ -38,7 +38,7 @@ import org.xmlBlaster.util.qos.address.Address;
 public interface I_XmlBlasterConnection extends I_Plugin
 {
    /**
-    * Intialize the driver and verify if the remote side is reachable on the low-level protocol layer. 
+    * Initialize the driver and verify if the remote side is reachable on the low-level protocol layer. 
     * Calling this method multiple times will do noting if a low level connection is available.
     * @param  address Contains the remote address,
     *         e.g. the host and port where the remote server listens
@@ -93,6 +93,12 @@ public interface I_XmlBlasterConnection extends I_Plugin
 
    public boolean isLoggedIn();
 
+   /**
+    * Ping the server on physical level and/or application level (see AvailabilityChecker). 
+    * This ping must be successful if the client can reach the server,
+    * with or without authentication (with or without connect()).
+    * @return The StatusQosData string
+    */
    public String ping(String qos) throws XmlBlasterException;
 
    public java.lang.String subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
