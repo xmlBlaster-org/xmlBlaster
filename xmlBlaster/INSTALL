@@ -73,6 +73,7 @@ You need JDK 2 or better to run xmlBlaster.
 
     Good. You have done it!
 
+
 -------------------------------------------------------------------------
 For developers
 
@@ -84,4 +85,39 @@ For developers
      export PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
 
 
+-------------------------------------------------------------------------
+C++ Clients with MICO 2.3.0 (http://www.mico.org)
 
+1) Install mico
+   ./configure
+   make
+	 make install
+
+2) cd ${XMLBLASTER_HOME}/src/idl
+   ${MICO_HOME}/idl/idl --poa --no-boa xmlBlaster.idl
+
+
+-------------------------------------------------------------------------
+COPE 0.50_51: Perl for xmlBlaster (http://www.lunatech.com/research/corba/cope/)
+You need MICO first
+
+1) get Exception-0.97_01A.tgz (ftp://ftp.matematik.su.se/pub/teke.)
+
+   perl Makefile.PL
+  	make
+	 make install    (su)
+
+2) get COPE
+   cvs -z3 -d :pserver:anonymous@cvs.lunatech.com:/home/cvscope/repo login
+ 	 <password just type enter>
+   cvs -z3 -d :pserver:anonymous@cvs.lunatech.com:/home/cvscope/repo checkout
+
+	 perl Makefile.PL
+	 make
+	 make install    (su)
+
+3) cd COPE/compat/MICO
+   c++  -I. -I$MICO_HOME/include -I$MICO_HOME/include/ministl  -O   -fno-exceptions -fexceptions -O0 -I/usr/local/include  -c irior.cc -o irior.o
+   c++  -I. -I$MICO_HOME/include -I$MICO_HOME/include/ministl  -O   -fno-exceptions -fexceptions -O0 -L$MICO_HOME/libs -L/usr/local/lib  -rdynamic irior.o -lmico2.3.0 -lreadline -lncurses -ldl -lm   -o irior
+
+4) idl2perl -imp xmlBlaster.idl
