@@ -86,7 +86,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    * @see I_Timeout#timeout(Object)
    */
    public void timeout(Object userData) {
-      this.log.warn(ME, "timeout, current index: " + this.connections.size() + ", waiting for reentrant connections: " + this.waitingForReentrantConnections);
+      this.log.info(ME, "Timeout, trying DB reconnect, current index: " + this.connections.size() + ", waiting for reentrant connections: " + this.waitingForReentrantConnections);
 
       synchronized (this) {
          if (this.waitingForReentrantConnections) {
@@ -102,15 +102,15 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          }
          // try a connection ...
          try {
-            this.log.warn(ME, "timeout:retrying to establish connections");
+            if (log.TRACE) this.log.trace(ME, "timeout:retrying to establish connections");
             // initializing and establishing of connections to DB but first clearing the connections ...
-            connect(true);
+            connect(false);
          }
          catch (Throwable ex) {
             // clean up the connections which might have been established
             //for (int i = 0; i < this.connections.size(); i++) disconnect(i);
             // respan the timer ...
-            disconnect(-1L);
+            disconnect(-1L, true);
             this.glob.getJdbcConnectionPoolTimer().addTimeoutListener(this, this.reconnectionTimeout, null);
          }
       }
@@ -435,7 +435,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
          // clean up the connections which might have been established
          // even if it probably won't help that much ...
-         disconnect(-1L);
+         disconnect(-1L, false);
          throw ex;
       }
       this.log.info(ME, "Connections to DB '" + url + "' successfully established.");
@@ -536,7 +536,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       return this.mapping;
    }
 
-   synchronized private final void disconnect(long waitTime) {
+   synchronized private final void disconnect(long waitTime, boolean silent) {
       if (waitTime < 5L) waitTime = 5L;
       Connection conn = null;
       for (int i=0; i < this.connections.size(); i++) {
@@ -547,7 +547,12 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             if (this.log.TRACE) this.log.trace(ME, "connection " + conn + " disconnected ( object address: " + conn + ")");
          }
          catch (Throwable ex) {
-            log.error(ME, "could not close connection " + conn + " correctly but resource is set to null. reason " + ex.toString());
+            if (silent) {
+               if (log.TRACE) log.trace(ME, "could not close connection " + conn + " correctly but resource is set to null. reason " + ex.toString());
+            }
+            else {
+               log.error(ME, "could not close connection " + conn + " correctly but resource is set to null. reason " + ex.toString());
+            }
             ex.printStackTrace();
          }
       }
@@ -560,7 +565,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     */
    synchronized public void disconnect() {
       if (this.log.CALL) this.log.call(ME, "disconnect invoked");
-      disconnect(-1L);
+      disconnect(-1L, false);
    }
 
    public void finalize() {
