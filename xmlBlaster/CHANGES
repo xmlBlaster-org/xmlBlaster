@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.x
 ===============
 
+ o #13237 C++ client library XmlBlasterAccess:
+   Added getGlobal() and getCallback() accessors
+   Added XmlBlasterAccessRef to support reference counted handling
+
+ o #13236 C++ client library Global:
+   Added GlobalRef to support reference counted handling
+   Added createInstance() and destroyInstance() to handle multiple instances of Global
+
  o #13233 Added I_Map.remove(long uniqueId)
 
  o #13230 Removed bug on persistent subscriptions. Recovered persistent subscriptions where
