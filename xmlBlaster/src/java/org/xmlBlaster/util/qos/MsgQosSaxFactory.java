@@ -458,8 +458,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
             }
 
-            if (log.TRACE) log.trace(ME, "Found node tag");
-
             routeInfo = new RouteInfo(nodeId, stratum, timestamp);
             if (tmpDirty != null)
                routeInfo.setDirtyRead(dirtyRead);
