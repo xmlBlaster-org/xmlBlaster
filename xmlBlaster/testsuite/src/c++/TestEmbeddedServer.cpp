@@ -59,7 +59,7 @@ public:
       Thread::sleepSecs(15);
       log_.info(ME, "stopping the embedded server now");
       server.stop();
-      server.sleepSecs(10);
+      Thread::sleepSecs(10);
       log_.info(ME, "starting the embedded server now");
       server.start();
       Thread::sleepSecs(15);

@@ -18,18 +18,11 @@
      <p><b>XERCES-C</b><br/>
         you can download the xerces-c library from <a href="http://xml.apache.org/xerces-c/index.html">
 	apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
-	library for your platform.
+	library for your platform. <b>The version must be 2.2.0 or older</b>.
 	<br/>
-	<b>NOTE for unix users:</b> once you have installed xerces-c you need to make a little adjustment
-	by hand. Lets call the directory where you installed xerces-c $XMLCPP_HOME. 
-	Then you can go to $XMLCPP_HOME/lib. There you will find a shared library
-	libxerces-c.so.$XMLCPP_VER where $XMLCPP_VER is the version you just installed (for example 21.0). 
-	Then you must create two symbolic links to that library as<br/>
-<pre>ln -s libxerces-c.so.21.0 libxerces-c.so
-ln -s libxerces-c.so.21.0 libxerces-c.so.21</pre>
-        <br/>
 	Now, when building with ant, the xerces-c library will be used. In build.properties make sure that
-	the $XMLCPP_VER is empty.
+	the $XMLCPP_VER is empty and that the links to the directories for xerces and the used CORBA are
+	correct.
      </p>
      <p><b>CORBA</b><br/>
      <b>MICO</b><br/>
@@ -78,6 +71,6 @@ THREAD_INC    = src/c++
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
