@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.start.asService' type='NEW' prio='LOW' status="CLOSED">
+   <topic>Setting up xmlBlaster to start as a service</topic>
+   <description>
+     <p>
+     XmlBlaster can now be configed to startup as either an Windows NT/2000 service
+     or a Linux/Unix service with the help of an optional packaged called the 
+     <a href="http://wrapper.sourceforge.net">Java Service Wrapper</a>.
+     This requirement will instruct you how to configure
+     xmlBlaster with the Wrapper library.
+     </p>
+   </description>
+
+
+   <configuration where="server">
+      <h3>Windows NT/2000 Setup</h3>
+      <ol>
+         <li>Download the Java Service Wrapper library</li>
+         You can download the library from <a href="http://wrapper.sourceforge.net">http://wrapper.sourceforge.net</a>.
+         Make sure you grap the Windows version of the library. It will contain the needed executables and Dlls
+         needed to launch xmlBlaster as a service.
+         <li>Modify the wrapper.conf file</li>
+         This file is in the config subdirectory. See the documentation in the file wrapper.conf.template 
+         for instructions on how
+         to edit it.
+         <li>Install the Windows service</li>
+         This is done by executing the following command:<br></br><br></br>
+         <![CDATA[wrapper -i xmlBlaster/config/wrapper.conf]]>
+         <li>From the control panel, start the xmlBlaster service</li>
+      </ol>
+      <h3>Linux Setup</h3>
+      <ol>
+         <li>Download the Java Service Wrapper library</li>
+         You can download the library from <a href="http://wrapper.sourceforge.net">http://wrapper.sourceforge.net</a>.
+         Make sure you grap the Linux version of the library. It will contain the needed executables and shared
+         libraries
+         needed to launch xmlBlaster as a service.
+         <li>Modify the wrapper.conf file</li>
+         This file is in the config subdirectory. See the documentation in this file for instructions on how
+         to edit it.
+         <li>Modify the startup file</li>
+         These files are in the rc subdirectory.
+      </ol>
+   </configuration>
+
+
+   <see type="INTERNET">http://wrapper.sourceforge.net</see>
+
+   <author>drrobison@openroadsconsulting.com</author>
+   <date>2002 12 20</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">-</test>
+   </testcase>
+</requirement>
+
