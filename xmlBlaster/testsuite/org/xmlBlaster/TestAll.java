@@ -47,6 +47,7 @@ public class TestAll
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
+      suite.addTest(new TestSuite(testsuite.org.xmlBlaster.TestSubXPathMany.class));
       suite.addTest(TestSubMulti.suite());
       suite.addTest(TestUnSub.suite());
       suite.addTest(TestSubscribeFilter.suite());
