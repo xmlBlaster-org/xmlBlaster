@@ -311,6 +311,10 @@ Else add it manually.
      <copy todir="${build.war}/WEB-INF/classes/http">
        <fileset dir="${build.dest}/http"/>
      </copy>
+     <copy file="${lib.dir}/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
+     <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
+     <copy file="${lib.dir}/parser.jar" tofile="${build.war}/WEB-INF/lib/parser.jar"/>
+
      <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
      <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
      <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
