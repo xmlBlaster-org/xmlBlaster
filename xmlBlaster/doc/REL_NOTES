@@ -4,6 +4,7 @@
 Changes for 0.76 [?, 2000]
 ===============================
 
+   - Peter added the sweet rainbow fish to our control panel
 
 Changes for 0.75 [Mar.28, 2000]
 ===============================
@@ -34,7 +35,7 @@ Changes for 0.75 [Mar.28, 2000]
 
    - Bugfix if the Callback of a PtP receiver is disappeared,
      this usually happens when the receiver crashes without a logout.
-     Now the XmlBlasterException with e.id="CallbackFailed" it thrown
+     Now the XmlBlasterException with e.id="CallbackFailed" is thrown
      to the sender,  and the message is queued for the receiver
      if the qos flag <ForceQueuing> was set.
 
