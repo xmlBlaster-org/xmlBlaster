@@ -171,6 +171,14 @@ public final class CommandWrapper
     * @return "ses17" in the above example
     */
    public final String getSessionIdLevel() {
+      return getFifthLevel();
+   }
+
+   /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * @return "ses17" in the above example
+    */
+   public final String getFifthLevel() {
       return fifth;
    }
 
