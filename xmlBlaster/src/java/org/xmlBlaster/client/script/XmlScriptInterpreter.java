@@ -34,8 +34,6 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-//import org.xmlBlaster.engine.qos.ConnectQosServer;
-//port org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
