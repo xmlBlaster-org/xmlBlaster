@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.6 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.7 1999/11/22 21:58:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -88,7 +88,7 @@ public class ClientXml
          String publishOid = "";
 
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                         "<key oid=''>\n" +
+                         "<key oid='' contentMime='text/xml'>\n" +
                          "<AGENT id='192.168.124.10' subId='1' type='generic'>" +
                          "<DRIVER id='FileProof' pollingFreq='10'>" +
                          "</DRIVER>"+
@@ -115,7 +115,7 @@ public class ClientXml
          //----------- Subscribe to the previous message OID -------
          Log.trace(ME, "Subscribing using the exact oid ...");
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                  "<key oid='" + publishOid + "'>\n" +
+                  "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                   "</key>";
          stop.restart();
          try {
@@ -162,7 +162,7 @@ public class ClientXml
                //----------- Construct a message and publish it ---------
                String content = "Yeahh, i'm the new content " + ii + ", ";
                xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                           "<key oid='" + publishOid + "'>\n" +
+                           "<key oid='" + publishOid + "' contentMime='text/xml'>\n" +
                            "</key>";
                MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
                Log.trace(ME, "Publishing ...");
