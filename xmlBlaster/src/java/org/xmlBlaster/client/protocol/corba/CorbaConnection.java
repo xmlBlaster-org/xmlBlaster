@@ -90,7 +90,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    protected Server xmlBlaster = null;
    protected String loginName = ""; //null;
    private   String passwd = null; //null;
-   protected ConnectQos loginQos = null;
+   protected ConnectQos connectQos = null;
    protected ConnectReturnQos connectReturnQos = null;
 
    private   String               sessionId = null;
@@ -307,7 +307,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       // To avoid the name service, one can access the AuthServer IOR directly
       // using a http connection.
       try {
-         authServerIOR = glob.accessFromInternalHttpServer("AuthenticationService.ior", verbose);
+         authServerIOR = glob.accessFromInternalHttpServer(connectQos.getAddress(), "AuthenticationService.ior", verbose);
          if (System.getProperty("java.version").startsWith("1") &&  !authServerIOR.startsWith("IOR:")) {
             authServerIOR = "IOR:000" + authServerIOR; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
             Log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
@@ -384,9 +384,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
       this.passwd=passwd;
 
       if (qos == null)
-         this.loginQos = new ConnectQos(glob);
+         this.connectQos = new ConnectQos(glob);
       else
-         this.loginQos = qos;
+         this.connectQos = qos;
 
       doLogin(true);
    }
@@ -415,7 +415,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return this.connectReturnQos;
       }
 
-      this.loginQos = qos;
+      this.connectQos = qos;
       this.loginName=qos.getUserId();
       this.passwd=null; // not necessary here
 
@@ -450,10 +450,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
          AuthServer authServer = getAuthenticationService(verbose);
          if (passwd != null) {
             Log.warn(ME, "No security Plugin. Switched back to the old login scheme!");
-            xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
+            xmlBlaster = authServer.login(loginName, passwd, connectQos.toXml());
          }
          else {
-            String tmp = authServer.connect(loginQos.toXml());
+            String tmp = authServer.connect(connectQos.toXml());
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             sessionId = this.connectReturnQos.getSessionId();
             String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
@@ -461,7 +461,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          }
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
-         if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+         if (Log.DUMP) Log.dump(ME, connectQos.toXml());
          return this.connectReturnQos;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
