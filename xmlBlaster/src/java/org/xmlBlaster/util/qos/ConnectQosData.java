@@ -206,6 +206,10 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     */
    public void setSecurityQos(I_SecurityQos securityQos) {
       this.securityQos = securityQos;
+      if (!this.sessionQos.isSessionNameModified()) {
+         SessionName sessionName = new SessionName(glob, this.securityQos.getUserId()); // parse it and strip it if user has given an absolute name
+         this.sessionQos.setSessionName(sessionName, false);
+      }
    }
 
    /**
@@ -235,7 +239,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
       this.securityQos.setUserId(sessionName.getLoginName());
 
       if (!this.sessionQos.isSessionNameModified()) {
-         this.sessionQos.setSessionName(sessionName);
+         this.sessionQos.setSessionName(sessionName, false);
       }
    }
 
@@ -292,7 +296,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     */
    public SessionName getSessionName() {
       if (this.sessionQos.getSessionName() == null && this.securityQos != null) {
-         this.sessionQos.setSessionName(new SessionName(glob, this.securityQos.getUserId()));
+         this.sessionQos.setSessionName(new SessionName(glob, this.securityQos.getUserId()), false);
       }
       return this.sessionQos.getSessionName();
    }
