@@ -15,7 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
  */
-public class ConnectReturnQosServer {
+public final class ConnectReturnQosServer {
    public static final String ME = "ConnectReturnQosServer";
    private Global glob;
    private ConnectQosData connectQosData;
@@ -24,37 +24,69 @@ public class ConnectReturnQosServer {
       this.glob = glob;
       this.connectQosData = connectQosData;
    }
-   public final String toXml() {
+
+   public String toXml() {
       return this.connectQosData.toXml();
    }
-   public final String toXml(String extraOffset) {
+
+   public String toXml(String extraOffset) {
       return this.connectQosData.toXml(extraOffset);
    }
-   public final void setSessionId(String id) {
-      this.connectQosData.getSessionQos().setSessionId(id);
+
+   public void setSecretSessionId(String id) {
+      this.connectQosData.getSessionQos().setSecretSessionId(id);
    }
-   public final void setSessionName(SessionName sessionName) {
+
+   public void setSessionName(SessionName sessionName) {
       this.connectQosData.getSessionQos().setSessionName(sessionName);
    }
+
    /**
     * Adds a server reference
     */
-   public final void addServerRef(ServerRef addr) {
+   public void addServerRef(ServerRef addr) {
       this.connectQosData.addServerRef(addr);
    }
-   public final ServerRef getServerRef() {
+
+   public ServerRef getServerRef() {
       return this.connectQosData.getServerRef();
    }
+
+   /**
+    * @return true If the entry of protocol given by type was found and removed
+    */
+   public boolean removeServerRef(String type) {
+      return this.connectQosData.removeServerRef(type);
+   }
+
    public SessionQos getSessionQos() {
       return this.connectQosData.getSessionQos();
    }
-   public String getSessionId() {
-      return this.connectQosData.getSessionQos().getSessionId();
+
+   public String getSecretSessionId() {
+      return this.connectQosData.getSessionQos().getSecretSessionId();
    }
+
    public SessionName getSessionName() {
       return this.connectQosData.getSessionQos().getSessionName();
    }
+
    public String getUserId() {
       return this.connectQosData.getUserId();
    }
+
+   /**
+    * If reconnected==true a client has reconnected to an existing session
+    */
+   public void setReconnected(boolean reconnected) {
+      this.connectQosData.setReconnected(reconnected);
+   }
+
+   /**
+    * @return true A client has reconnected to an existing session
+    */
+   public boolean isReconnected() {
+      return this.connectQosData.isReconnected();
+   }
+
 }
