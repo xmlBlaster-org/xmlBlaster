@@ -2010,12 +2010,12 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
       return sb.toString();
    }
-   public int getNumMsgs() {
+   public int getNumTopics() {
       synchronized (this.messageContainerMap) {
          return this.messageContainerMap.size();
       }
    }
-   public String getMsgList() {
+   public String getTopicList() {
       TopicHandler[] topicHandlerArr = getTopicHandlerArr();
       StringBuffer sb = new StringBuffer(topicHandlerArr.length*60);
       for(int ii=0; ii<topicHandlerArr.length; ii++) {

@@ -49,8 +49,8 @@ public interface I_AdminNode {
    public String getClientList();
    public int getNumSysprop();
    public String getSyspropList();
-   public int getNumMsgs();
-   public String getMsgList();
+   public int getNumTopics();
+   public String getTopicList();
 
    //public void setMaxClients(int maxClients);
 }
