@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.login.callback' type='NEW' prio='MEDIUM' status="CLOSED">
+   <topic>Clients of XmlBlaster can specify their desired callbacks during login</topic>
+   <description>
+   <![CDATA[
+      <p>
+      When you subscribe to messages or get sent a PtP message, xmlBlaster will
+      deliver this to you through a callback.
+      </p>
+      <p>
+      You can specify your preferred callback protocol and your address through the
+      qos (Quality of Service) parameter of the login method.<br />
+      </p>
+      <p>
+      The default callback protocol is "IOR" which stands for a CORBA callback.
+      The client must supply a Corba callback interface with the
+      method update(), see xmlBlaster.idl. This method is called by xmlBlaster for callbacks.
+      </p>
+      <p>
+      Other scheduled protocols are "EMAIL" or "XML-RPC".<br />
+      </p>
+      <p>
+      Further protocols may be plugged into xmlBlaster very easy - 
+      you only need to implement the interface I_CallbackDriver.java
+      with your protocol driver and register it in ClientInfo.java.
+      </p>
+      <p>
+      You can specify zero to many callbacks for one single client,
+      with mixed protocols, all of them will be invoked for new messages.
+      </p>
+   ]]>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      <!-- QoS of a login method, this raw string is delivered to xmlBlaster -->
+      <qos>
+
+         <callback type='IOR'>     <!-- Use CORBA to deliver messages -->
+            IOR:00011200070009990000....
+         </callback>
+
+         <callback type='EMAIL'>   <!-- You get new updates sent with email -->
+            et@mars.universe
+         </callback>
+
+         <callback type='XML-RPC'> <!-- You must have a xml-rpc server running
+                                        to receive the updates -->
+            http:/www.mars.universe:8080/RPC2
+         </callback>
+      
+      </qos>
+
+
+      // Java clients usually use some helper classes which generate the above
+      // xml string for them:
+
+      ////////////////////////////////////////////////////
+      // Simplest login using the builtin callback server:
+      // (see e.g. testsuite/org.xmlBlaster/TestSub.java)
+      try {
+         corbaConnection = new CorbaConnection(); // Find orb
+
+         // this class needs to implement I_Callback - the update() method
+         // the qos is set to null, the CorbaConnection helper will use the default:
+         xmlBlaster = corbaConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
+      }
+      catch (Exception e) {
+          System.error.println(e.toString());
+      }
+
+
+      ////////////////////////////////////////////////////
+      // If you provide your own Callback implementation:
+      // (see e.g. demo/javaclients/ClientSub.java)
+      CallbackAddress addr = new CallbackAddress("IOR",
+                                 corbaConnection.getOrb().object_to_string(myCallback));
+      LoginQosWrapper qos = new LoginQosWrapper(addr);
+                       // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
+
+      xmlBlaster = corbaConnection.login("joe", "secret", qos);
+
+
+      ////////////////////////////////////////////////////
+      // If you like raw Corba, see
+      // demo/javaclients/ClientRaw.java
+      // testsuite/c++/clientPOA.cc
+      ]]>
+   </example>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 05 16</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
