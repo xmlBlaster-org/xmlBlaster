@@ -3,6 +3,17 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79b [???, ?? 2000]
 ================================
 
+ - Subscribe Bug fixed (reported by Stefan Nickisch)
+   If a subscriber crashes without logout, this will disturb all other
+   subscribers.
+   No more communication is possible until the crashed subscriber will log on
+   again.
+
+ - Added proper RMI server and callback server shutdown 
+
+ - Added servlet.jar from tomcat 4.0
+   (Java Servlet 2.3 and JSP 1.2 specifications)
+
  - Added a simple Python hello world demo,
    see xmlBlaster/demo/python/README
 
@@ -12,6 +23,8 @@ Changes for 0.79b [???, ?? 2000]
  - Persistent Db integration (code, but no release).
 
  - Changed to JAXP and DOM2 Sun/crimson XML parser
+
+ - Changed code to conform to SAX2
 
  - Login QoS has no <noPtP> element anymore, this is set
    for each CallbackAddress from now on.
