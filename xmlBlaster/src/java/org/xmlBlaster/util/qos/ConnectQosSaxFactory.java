@@ -37,7 +37,7 @@ import java.io.Serializable;
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCII-XML string with the toXml() method.
  * <br />
- * A typical <b>login</b> qos could look like this:<br />
+ * A typical <b>connect QoS</b> could look like this:<br />
  * <pre>
  *&lt;qos>
  *   &lt;securityService type="htpasswd" version="1.0">
@@ -47,19 +47,20 @@ import java.io.Serializable;
  *     ]]>
  *   &lt;/securityService>
  *
- *   &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'
- *               sessionId='4e56890ghdFzj0'/>
+ *   &lt;session name='/node/heron/client/joe' timeout='3600000' maxSessions='10' clearSessions='false'/>
  *
  *   &lt;ptp>true&lt;/ptp>  <!-- Allow receiving PtP messages (no SPAM protection) -->
  *
- *   &lt;!-- The client side queue: -->
+ *   &lt;duplicateUpdates>true&lt;/duplicateUpdates>
+ *
+ *   &lt;!-- The client side queue (is ignored on server side): -->
  *   &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
- *      &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
+ *      &lt;address type='IOR'>
  *         IOR:10000010033200000099000010....
  *      &lt;/address>
  *   &lt;queue>
  *
- *   &lt;!-- The server side callback queue: -->
+ *   &lt;!-- Configures the server side callback queue: -->
  *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *      &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *         IOR:10000010033200000099000010....
@@ -72,9 +73,36 @@ import java.io.Serializable;
  * you don't need to create the <pre>&lt;callback></pre> element.
  * This is generated automatically from the XmlBlasterConnection class when instantiating
  * the callback driver.
+ *
  * <p />
- * see xmlBlaster/src/dtd/XmlQoS.xml
+ *
+ * A typical <b>connect return QoS</b> could look like this (this is the acknowledge returned by
+ * the server to the client on successful connect):<br />
+ * <pre>
+ *&lt;qos>
+ *   &lt;securityService type="htpasswd" version="1.0">
+ *     &lt;![CDATA[
+ *     &lt;user>joe&lt;/user>
+ *     &lt;passwd>secret&lt;/passwd>
+ *     ]]>
+ *   &lt;/securityService>
+ *
+ *   &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'
+ *               clearSessions='false' sessionId='sessionId:192.168.1.4-null-1042823803521-2074317763-3'/>
+ *
+ *   &lt;reconnected>false&lt;/reconnected>  &lt;!-- Has the client reconnected to an existing session? -->
+ *
+ *   &lt;!-- The server side callback queue: -->
+ *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *      &lt;callback type='XML-RPC' hostname='192.168.1.4' dispatchPlugin='4e56890ghdFzj0'>
+ *         http://192.168.1.4:8081/
+ *         &lt;burstMode collectTime='400' />
+ *      &lt;/callback>
+ *   &lt;queue>
+ *&lt;/qos>
+ * </pre>
  * @see org.xmlBlaster.test.classtest.ConnectQosTest
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html">connect interface</a>
  */
 public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_ConnectQosFactory
 {
@@ -269,7 +297,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
                   sessionQos.clearSessions((new Boolean(attrs.getValue(ii).trim())).booleanValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("sessionId"))
-                  sessionQos.setSessionId(attrs.getValue(ii));
+                  sessionQos.setSecretSessionId(attrs.getValue(ii));
                else
                   log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
@@ -293,6 +321,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 
       if (name.equalsIgnoreCase("duplicateUpdates")) {
          this.connectQosData.setDuplicateUpdates(true);
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("reconnected")) {
+         this.connectQosData.setReconnected(true);
          character.setLength(0);
          return;
       }
@@ -371,6 +405,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setDuplicateUpdates(new Boolean(tmp).booleanValue());
+         return;
+      }
+
+      if (name.equalsIgnoreCase("reconnected")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            this.connectQosData.setReconnected(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -453,10 +494,17 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             sb.append(offset).append(" <duplicateUpdates>false</duplicateUpdates>");
       }
 
+      if (data.getReconnectedProp().isModified()) {
+         if (data.isReconnected())
+            sb.append(offset).append(" <reconnected/>");
+         else
+            sb.append(offset).append(" <reconnected>false</reconnected>");
+      }
+
       sb.append(data.getSessionQos().toXml(extraOffset+Constants.INDENT));
 
       {
-         QueueProperty[] arr = data.getQueuePropertyArr();
+         QueueProperty[] arr = data.getClientQueuePropertyArr();
          for (int ii=0; arr!=null && ii<arr.length; ii++) {
             sb.append(arr[ii].toXml(extraOffset+Constants.INDENT));
          }
