@@ -3,10 +3,11 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.5 2002/12/10 22:21:09 laghi Exp $
+Version:   $Id: Global.cpp,v 1.6 2002/12/10 22:58:39 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
+#include <util/dispatch/DeliveryManager.h>
 
 
 using org::xmlBlaster::client::protocol::CbServerPluginManager;
@@ -129,6 +130,13 @@ namespace org { namespace xmlBlaster { namespace util {
       return *cbServerPluginManager_;
    }
 
+   DeliveryManager& Global::getDeliveryManager()
+   {
+      if (deliveryManager_ == NULL) {
+         deliveryManager_ = new DeliveryManager(*this);
+      }
+      return *deliveryManager_;
+   }
 
 }}}; // namespace
 

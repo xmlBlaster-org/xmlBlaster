@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.5 2002/12/10 22:21:09 laghi Exp $
+Version:   $Id: Global.h,v 1.6 2002/12/10 22:58:39 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -23,8 +23,15 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 }}}}
 #endif
 
+#ifndef _DELIVERYMANAGER_CLASS
+namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
+   class DeliveryManager;
+}}}}
+#endif
+
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;
+using namespace org::xmlBlaster::util::dispatch;
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -55,6 +62,7 @@ class Dll_Export HappyCompilerFriend
       const char * const*    argc_;
       bool                   isInitialized_;
       CbServerPluginManager* cbServerPluginManager_;
+      DeliveryManager*       deliveryManager_;
       /**
        * The default constructor is made private to implement the singleton
        * pattern.
@@ -110,7 +118,9 @@ class Dll_Export HappyCompilerFriend
 
        string getCbHostname() const;
 
-       org::xmlBlaster::client::protocol::CbServerPluginManager& getCbServerPluginManager();
+       CbServerPluginManager& getCbServerPluginManager();
+
+       DeliveryManager& getDeliveryManager();
 
    };
 
