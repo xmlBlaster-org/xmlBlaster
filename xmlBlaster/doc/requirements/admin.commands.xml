@@ -183,58 +183,6 @@
 
             <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
             
-            <!-- The settings used on the client side -->
-            <dispatch id='clientSide'>
-               <queue>
-                  <plugin refid='queue:CACHE'/>
-                  <maxEntries>200</maxEntries>
-                  <entry id='1046976320188000000' type='publish'>
-                     <!-- client side queued entries -->
-                     <key oid='hello' contentMime='text/plain'/>
-                     <content>Salute</content>
-                     <qos>
-                        <persistent/>
-                        <sender>/node/heron/client/joe</sender>
-                        <expiration lifeTime='-1'/>
-                     </qos>
-                  </entry>
-               </queue>
-               <address id='clientSide'>
-                  <plugin refid='protocol:IOR'/>
-                  IOR:54863965868
-               </address>
-               <retries>-1</retries>
-               <pingInterval>10000</pingInterval>
-               <delay>10000</delay>
-               <burstModeCollectTime>0</burstModeCollectTime>
-               <cbSessionId>rcxxy77C</cbSessionId>
-               <cbOneway>false</cbOneway>
-               <cbPtpAllowed>true</cbPtpAllowed>
-            </dispatch>
-<!-- command line (or telnet) example -->
-<!--
-java HelloWorld3
-
-   -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue/clientSide/maxEntries 200
-   -dispatch/clientSide/queue/clientSide/maxEntries 200
-   -dispatch/clientSide/queue//maxEntries 200
-   -queue/clientSide/maxEntries 200
-   -queue//maxEntries 200
-
-   -dispatch/clientSide/pingInterval 10000
-
-   -dispatch/callback/address/callback/  http://x.y.com:8089
-   -dispatch/callback/address//  http://x.y.com:8089
-
-   -dispatch/callback/pingInterval 20000
-
-Old style:
- java HelloWorld3 -queue.maxEntries 200
-                  -pingInterval 10000
-                  -ior??
-                  -cb.pingInterval 20000
--->
-
          </session> <!-- -3 -->
 
          <session id='17'>
@@ -748,7 +696,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.48 $</revision>
+   <revision>$Revision: 1.49 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
