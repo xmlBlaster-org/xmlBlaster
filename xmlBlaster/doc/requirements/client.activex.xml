@@ -150,44 +150,78 @@ Catch e As SystemException
 
    <example lang="Csharp" type="HTML">
       <h3><a NAME="example"></a>C# example</h3>
-   <pre><![CDATA[
-// HelloWorld.cs
-using System;
-namespace demo
-{
-   class XmlBlasterCSharp
-   {
-      [STAThread]
-      static void Main(string[] args)
-      {
-         // See registry: 
-         //   regedit -> HKEY_CLASSES_ROOT
-         //           -> CLSID
-         //           -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
-         //           -> XmlScriptAccess Bean Control
-         // org.xmlBlaster.client.activex.XmlScriptAccess
+   <pre><style type="text/css">
+<!--
+              .LINE_NO {color: #000000; background: #ffffff}
+              .Unknown {color: #ffffff; background: #ffffff}
+              .NOTHING {color: #000000; background: #ffffff}
+               .STRING {color: red; background: #ffffff}
+              .COMMENT {color: #000000; background: #b1b1b1}
+              .SYMBOL1 {color: #000000; background: #ffffff}
+              .SYMBOL2 {color: #000000; background: #ffffff}
+              .SYMBOL3 {color: #000000; background: #ffffff}
+              .SYMBOL4 {color: #000000; background: #ffffff}
+              .SYMBOL5 {color: #000000; background: #ffffff}
+              .SYMBOL6 {color: #000000; background: #ffffff}
+              .SYMBOL7 {color: #000000; background: #ffffff}
+              .SYMBOL8 {color: #000000; background: #ffffff}
+              .SYMBOL9 {color: #000000; background: #ffffff}
+              .KEYWORD {color: green; background: #ffffff}
+             .OPERATOR {color: #000000; background: #ffffff}
+                .LABEL {color: #000000; background: #ffffff}
+               .NUMBER {color: #ff005a; background: #ffffff}
+        .CHAR_CONSTANT {color: #000000; background: #ffffff}
+            .DIRECTIVE {color: #ff00ff; background: #ffffff}
+              .NUMBER2 {color: #ff005a; background: #ffffff}
+                 .TYPE {color: #4e4eff; background: #ffffff}
+             .FUNCTION {color: #4e4eff; background: #ffffff}
+              .COMMAND {color: #4e4eff; background: #ffffff}
+               .OBJECT {color: #4e4eff; background: #ffffff}
+             .CONSTANT {color: #4e4eff; background: #ffffff}
+                .CLASS {color: #4e4eff; background: #ffffff}
+             .INSTANCE {color: #4e4eff; background: #ffffff}
+               .METHOD {color: #4e4eff; background: #ffffff}
+            .ATTRIBUTE {color: #000000; background: #ffffff}
+                .VALUE {color: #4e4eff; background: #ffffff}
+-->
+</style><font face="Terminal,10,Regular,1,Lucida Console,Fixed"/>
+<span class="COMMENT">// HelloWorld.cs</span>
+<span class="KEYWORD">using</span><span class="NOTHING"> System;</span>
+<span class="KEYWORD">namespace</span><span class="NOTHING"> demo</span>
+<span class="NOTHING">{</span>
+<span class="NOTHING">   </span><span class="KEYWORD">class</span><span class="NOTHING"> XmlBlasterCSharp</span>
+<span class="NOTHING">   {</span>
+<span class="NOTHING">      </span><span class="OPERATOR">[</span><span class="NOTHING">STAThread</span><span class="OPERATOR">]</span>
+<span class="NOTHING">      </span><span class="KEYWORD">static</span><span class="NOTHING"> </span><span class="KEYWORD">void</span><span class="NOTHING"> Main</span><span class="OPERATOR">(</span><span class="NOTHING">string</span><span class="OPERATOR">[]</span><span class="NOTHING"> args</span><span class="OPERATOR">)</span>
+<span class="NOTHING">      {</span>
+<span class="NOTHING">         </span><span class="COMMENT">// See registry: </span>
+<span class="NOTHING">         </span><span class="COMMENT">//   regedit -&gt; HKEY_CLASSES_ROOT</span>
+<span class="NOTHING">         </span><span class="COMMENT">//           -&gt; CLSID</span>
+<span class="NOTHING">         </span><span class="COMMENT">//           -&gt; D824B185-AE3C-11D6-ABF5-00B0D07B8581</span>
+<span class="NOTHING">         </span><span class="COMMENT">//           -&gt; XmlScriptAccess Bean Control</span>
+<span class="NOTHING">         </span><span class="COMMENT">// org.xmlBlaster.client.activex.XmlScriptAccess</span>
 
-         XmlScriptAccess.XmlScriptAccessClass xmlBlaster;
-         xmlBlaster = new XmlScriptAccess.XmlScriptAccessClass();
+<span class="NOTHING">         XmlScriptAccess.XmlScriptAccessClass xmlBlaster;</span>
+<span class="NOTHING">         xmlBlaster </span><span class="OPERATOR">=</span><span class="NOTHING"> </span><span class="KEYWORD">new</span><span class="NOTHING"> XmlScriptAccess.XmlScriptAccessClass</span><span class="OPERATOR">()</span><span class="NOTHING">;</span>
 
-         string[] argArr = { "-protocol", "SOCKET" };
-         xmlBlaster.initArgs(argArr);
+<span class="NOTHING">         string</span><span class="OPERATOR">[]</span><span class="NOTHING"> argArr </span><span class="OPERATOR">=</span><span class="NOTHING"> { </span><span class="STRING">"-protocol"</span><span class="NOTHING">, </span><span class="STRING">"SOCKET"</span><span class="NOTHING"> };</span>
+<span class="NOTHING">         xmlBlaster.initArgs</span><span class="OPERATOR">(</span><span class="NOTHING">argArr</span><span class="OPERATOR">)</span><span class="NOTHING">;</span>
 
-         string request = "<xmlBlaster>" +
-                          "   <connect/>" +
-                          "   <wait delay='1000' />" +
-                          "   <publish>" +
-                          "      <key oid='test'><airport name='london' /></key>" +
-                          "      <content>This is a simple script test</content>" +
-                          "      <qos/>" +
-                          "   </publish>" +
-                          "</xmlBlaster>";
-         string response = xmlBlaster.sendRequest(request);
-         Console.WriteLine("Got response from xmlBlaster: " + response);
-      }
-   }
-}
-   ]]></pre>
+<span class="NOTHING">         string request </span><span class="OPERATOR">=</span><span class="NOTHING"> </span><span class="STRING">"&lt;xmlBlaster&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"   &lt;connect/&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"   &lt;wait delay='1000' /&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"   &lt;publish&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"      &lt;key oid='test'&gt;&lt;airport name='london' /&gt;&lt;/key&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"      &lt;content&gt;This is a simple script test&lt;/content&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"      &lt;qos/&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"   &lt;/publish&gt;"</span><span class="NOTHING"> </span><span class="OPERATOR">+</span>
+<span class="NOTHING">                          </span><span class="STRING">"&lt;/xmlBlaster&gt;"</span><span class="NOTHING">;</span>
+<span class="NOTHING">         string response </span><span class="OPERATOR">=</span><span class="NOTHING"> xmlBlaster.sendRequest</span><span class="OPERATOR">(</span><span class="NOTHING">request</span><span class="OPERATOR">)</span><span class="NOTHING">;</span>
+<span class="NOTHING">         Console.WriteLine</span><span class="OPERATOR">(</span><span class="STRING">"Got response from xmlBlaster: "</span><span class="NOTHING"> </span><span class="OPERATOR">+</span><span class="NOTHING"> response</span><span class="OPERATOR">)</span><span class="NOTHING">;</span>
+<span class="NOTHING">      }</span>
+<span class="NOTHING">   }</span>
+<span class="NOTHING">}</span>
+   </pre>
    </example>
 
    <example lang="VisualBasic" type="HTML">
@@ -611,6 +645,6 @@ End Sub
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 </requirement>
 
