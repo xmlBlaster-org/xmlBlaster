@@ -90,6 +90,8 @@ RM_RECURSIVE= rm -rf
 CP= cp -f
 CP_RECURSIVE= cp -Rf
 
+SYMBOLIC_LINK=$(CP_RECURSIVE)
+
 JAR= jar
 #------------------------------------------------------------------------------
 
