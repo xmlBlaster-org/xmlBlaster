@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='util.classloader.ClassLoaderFactory' type='NEW' prio='MEDIUM' status='DONE'>
+<requirement id='util.classloader.ClassLoaderFactory' type='NEW' prio='MEDIUM' status='CLOSED'>
 
    <topic>XmlBlaster provides a ClassLoaderFactory to create instances of xmlBlaster specific classloaders.</topic>
 
@@ -29,7 +29,7 @@
 
    <author>konrad.krafft@doubleslash.de</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name></name>

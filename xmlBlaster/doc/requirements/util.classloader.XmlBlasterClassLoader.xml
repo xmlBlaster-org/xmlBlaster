@@ -1,17 +1,33 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='util.XmlBlasterClassLoader' type='NEW' prio='LOW' status='DONE'>
+<requirement id='util.classloader.XmlBlasterClassLoader' type='NEW' prio='LOW' status='CLOSED'>
 
    <topic>XmlBlaster provides an own ClassLoder.</topic>
 
    <description>
       <p>
+      Assume you have an application, which should start xmlBlaster in an extra thread,
+      but have own ORB or XML classes.
+      </p>
+      
+      <p>
+      The XmlBlasterClassloader has its own classpath, which based on the applications
+      classpath, but put the xmlBlaster.jar on the first place.
+      </p>
+      
+      <p>
+      EmbeddedXmlBlaster loads the first class of xmlBlaster ('org.xmlBlaster.Main') with
+      the XmlBlasterClassloader. All depending classes are loaded also by
+      XmlBlasterClassLoader.
+      </p>
+      
+      <p>
       XmlBlasterClassLoader is a derivation of URLClassLoader.
       </p>
 
       <p>
-      This ClassLoader is used by the ServerThread and can be set to a dedicated
+      This ClassLoader is used by the EmbeddedXmlBlaster and can be set to a dedicated
       classpath which is derived users classpath.
       </p>
 
@@ -28,43 +44,46 @@
 
    <example lang="any" type="HTML">
       <p>
-      Assume you have an application, which should start xmlBlaster in an extra thread,
-      but have own ORB or XML classes.
-      </p>
-      
-      <p>
-      The XmlBlasterClassloader has its own classpath, which based on the applications
-      classpath, but put the xmlBlaster.jar on the first place.
-      </p>
-      
-      <p>
-      ServerThread loads the first class of xmlBlaster ('org.xmlBlaster.Main') with
-      the XmlBlasterClassloader. All depending classes are loaded also by
-      XmlBlasterClassLoader.
-      </p>
-      
-      <p>
       <pre>
-         ServerThread server = ServerThread.startXmlBlaster(args);
-         ...
-         ServerThread.stopXmlBlaster( server );
+EmbeddedXmlBlaster server = EmbeddedXmlBlaster.startXmlBlaster(args);
+...
+EmbeddedXmlBlaster.stopXmlBlaster( server );
       </pre>
       </p>   
 
    </example>
 
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>classloader.xmlBlaster</td>
+            <td>false</td>
+            <td>As default the specific xmlBlaster classloader is switched off
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
    <todo>
       Write some TestCase!?
    </todo>
 
-   <see type="REQ">util.ClassLoaderFactory</see>
-   <see type="API">org.xmlBlaster.util.XmlBlasterClassLoader</see>
-   <see type="API">org.xmlBlaster.util.ClassLoaderFactory</see>
+   <see type="REQ">util.classloader.ClassLoaderFactory</see>
+   <see type="API">org.xmlBlaster.util.classloader.XmlBlasterClassLoader</see>
+   <see type="API">org.xmlBlaster.util.classloader.ClassLoaderFactory</see>
    <see type="API">java.net.URLClassLoader</see>
 
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

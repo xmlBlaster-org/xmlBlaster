@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='util.classloader.PluginClassLoader' type='NEW' prio='LOW' status='CLOSED'>
+
+   <topic>XmlBlaster provides an own classloader for its plugins.</topic>
+
+   <description>
+      <p>
+      Assume you write a new plugin for xmlBlaster with conflicting jar files, e.g.
+      you have your own ORB or XML classes.
+      </p>
+      
+      <p>
+      The PluginClassLoader has its own classpath, which is specified in the xmlBlaster.properties
+      file. The xmlBlaster.jar file is attached to this classpath at the end (with lowest priority).
+      </p>
+   </description>
+
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>ProtocolPlugin[SOAP][1.0]</td>
+            <td><pre>
+org.xmlBlaster.protocol.soap.SoapDriver,\
+   classpath=soap/jdom.jar:soap/log4j-core.jar:\
+   soap/log4j.jar:soap/saw.jar:\
+   soap/soap.jar:soap/xerces.jar</pre>
+            </td>
+            <td>This example loads a SOAP plugin with the SOAP specific jar files attached.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <todo>
+      Write some TestCase!?
+   </todo>
+
+   <see type="REQ">util.classloader.ClassLoaderFactory</see>
+   <see type="API">org.xmlBlaster.util.classloader.PluginClassLoader</see>
+   <see type="API">org.xmlBlaster.util.classloader.ClassLoaderFactory</see>
+   <see type="API">java.net.URLClassLoader</see>
+
+   <author>goetzger@gmx.net</author>
+   <date>2002 07 12</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+
+</requirement>
