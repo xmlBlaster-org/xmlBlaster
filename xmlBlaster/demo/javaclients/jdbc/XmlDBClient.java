@@ -1,5 +1,3 @@
-/*--- formatted by Jindent 2.1, (www.c-lab.de/~jindent) ---*/
-
 package javaclients.jdbc;
 
 import org.jutils.log.Log;
@@ -7,18 +5,21 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.jdbc.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.XmlDbMessageWrapper;
+import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 
-import java.io.*;
 
 /**
- * Class declaration
- *
- *
- * @author
- * @version %I%, %G%
+ * Example code how to access the xmlBlaster JDBC service
+ * asynchronous with the subscribe() method. 
+ * <p />
+ * The result of the query is delivered asynchronously
+ * with the callback update() method.
+ * <p />
+ * The publishing of the query is not blocking.
  */
 public class XmlDBClient implements I_Callback
  {
@@ -90,25 +91,13 @@ public class XmlDBClient implements I_Callback
 
 
    /**
-    * unsubsrcibe and logout from xmlBlaster
+    * Logout from xmlBlaster
     */
    public void logout()
    {
       if (corbaConnection == null) return;
       Log.info(ME, "Logout ...");
       corbaConnection.logout();
-   }
-
-   /**
-    * @param args Command line
-    */
-   public static void main(String args[])
-   {
-      try {
-         XmlDBClient client = new XmlDBClient(args);
-      } catch (JUtilsException e) {
-         Log.panic("DBClient", e.toString());
-      }
    }
 
    /**
@@ -141,4 +130,15 @@ public class XmlDBClient implements I_Callback
       }
    }
 
+   /**
+    * @param args Command line
+    */
+   public static void main(String args[])
+   {
+      try {
+         XmlDBClient client = new XmlDBClient(args);
+      } catch (JUtilsException e) {
+         Log.panic("DBClient", e.toString());
+      }
+   }
 }
