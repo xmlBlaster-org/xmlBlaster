@@ -208,6 +208,16 @@ public abstract class AddressBase
    }
 
    /**
+    * @return A human readable address for logging only
+    */
+   public String getLogId() {
+      if (getAddress() != null && getAddress().length() < 50) {
+         return getAddress();
+      }
+      return getHostname() + ":" + getPort();
+   }
+
+   /**
     * Updates the internal address as well. 
     * <p>NOTE:</p>
     * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
