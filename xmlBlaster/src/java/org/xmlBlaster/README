@@ -16,13 +16,17 @@ Howto start the xmlBlaster server:
    which pops up a control panel with query interface and
    performance/logging display
 
+   Specify the IP address for the CORBA server (multi homed hosts):
+
+     java -DOAIAddr=196.197.24.11 org.xmlBlaster.Main
+
    This example redirects the logging output to a file:
 
       jaco org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log
 
    and finally, this example just displays the usage:
 
-      jaco org.xmlBlaster.Main -?
+      java org.xmlBlaster.Main -?
 
    Note: If you have not compiled xmlBlaster yourself, try to use the jar file:
 
@@ -46,32 +50,3 @@ Howto start the xmlBlaster server:
   Other options:
 
      java javaclients.ClientSub -help
-
-
-
-3. Overview of some xmlBlaster.org packages
-
-   - client
-     Some helper for Java clients.
-     You may use these as a base if you are a Java programmer,
-     for easy access to xmlBlaster
-
-
-   - util
-     The directory 'util' contains some helper classes
-     which are used by the server.
-     They may also be used by clients, but you are free to use
-     or not to use them.
-
-
-   - engine
-     Contains the xmlBlaster server code.
-
-
-   - engine.helper
-     Classes which you usually need in Java clients and
-     for the server.
-
-
-   - authentication
-     Contains the login/logout code
