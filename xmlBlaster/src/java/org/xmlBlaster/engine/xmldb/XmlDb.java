@@ -3,7 +3,7 @@ Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Store MessageUnits in a File-database or holds in a Cache
-Version:   $Id: XmlDb.java,v 1.4 2000/08/23 14:14:05 kron Exp $
+Version:   $Id: XmlDb.java,v 1.5 2000/08/26 14:48:50 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;
@@ -16,6 +16,7 @@ import org.xmlBlaster.util.*;
 import org.jutils.log.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.PMessageUnit;
 
 import org.xmlBlaster.engine.xmldb.*;
@@ -31,6 +32,8 @@ import com.fujitsu.xml.omquery.JAXP_ProcessorImpl;
 
 import com.sun.xml.tree.XmlDocument;
 import com.sun.xml.tree.ElementNode;
+
+import gnu.regexp.*;
 
 public class XmlDb
 {
@@ -64,16 +67,24 @@ public class XmlDb
     * @return 0  : insert was ok
     *         oid: MessageUnit exists 
     */
-    public final String insert(MessageUnit mu, boolean isDurable)
+    public final String insert(MessageUnit mu)
     {
        if(mu == null){
          Log.error(ME + ".insert", "The arguments of insert() are invalid (null)");
       }
 
+      // Is Message durable ?
+      boolean isDurable = false;
+      try{
+         RE expression = new RE("(.*)<isDurable(.*)");
+         isDurable = expression.isMatch(mu.qos);
+      }catch(REException e){
+         Log.warning(ME,"Can't recognize QoS of this MessageUnit! I set isDurable=false");
+      }
+
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);
 
-      // Check if key exists in cache
-      //if(_cache.keyExists(pmu.oid)){
+      // Check if Xmlkey exists in DOM 
       if(_pdomInstance.keyExists(pmu.oid)){
          return pmu.oid;
       }
@@ -88,7 +99,7 @@ public class XmlDb
     }
 
     /**
-    * Delete a MessageUnit from Cache and File-database by OID.
+    * Delete a MessageUnit by from Cache and File-database by OID.
     * <br>
     * @param oid The oid of the MessageUnit
     */
@@ -96,6 +107,15 @@ public class XmlDb
     {
        _pdomInstance.delete(oid);
        _cache.delete(oid);
+    }
+
+    /**
+    * Delete a stored MessageUnit by XmlKey from Cache and File-database by OID.
+    * <br>
+    * @param xmlkey The XmlKey for deleted MessageUnits 
+    */
+    public final void delete(XmlKey xmlkey)
+    {
     }
 
     /**
@@ -141,6 +161,26 @@ public class XmlDb
        PMessageUnit pmu = _cache.read(oid);
        return pmu;
     }
+
+   /**
+   * Set the max Cachesize.
+   * <br>
+   * @param size The Cachesize in Byte
+   */ 
+   public void setMaxCacheSize(long size)
+   {
+      _cache.setMaxCacheSize(size);
+   }
+
+   /**
+   * Set the max MessageUnit-Size.
+   * <br>
+   * @param size The MessageUnit-Size
+   */
+   public void setMaxMsgSize(long size)
+   {
+      _cache.setMaxMsgSize(size);
+   }
 }
 
 

@@ -1,48 +1,53 @@
-
-
-
-
+/*------------------------------------------------------------------------------
+Name:      Cache.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Caches MessageUnits by LRU. 
+Version:   $Id: Cache.java,v 1.5 2000/08/26 14:48:49 kron Exp $
+Author:    manuel.kron@gmx.net
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb.cache;
-
-
-import java.lang.ref.*;
-import org.jutils.JUtilsException;
-import org.jutils.log.Log;
-import org.jutils.init.Property;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.jutils.runtime.Memory;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.PMessageUnit;
-import org.xmlBlaster.engine.xmldb.file.*;
 
 import java.io.*;
 import java.util.*;
+import java.lang.ref.*;
+
+import org.jutils.JUtilsException;
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+import org.jutils.runtime.Memory;
+
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.PMessageUnit;
+import org.xmlBlaster.engine.xmldb.file.*;
 
 
 public class Cache
 {
    private static final String ME = "Cache";
-   private long _maxCacheSize = 0L;
-   private long _cacheSize = 0L;
-   private long _maxMsgSize = 0L;
-   private String _dbPath = "";
+   private long     _maxCacheSize = 0L;
+   private long        _cacheSize = 0L;
+   private long       _maxMsgSize = 0L;
+   private String         _dbPath = "";
 
    private static RecordsFile _fileDb;
-   private SortedMap _cacheMap;
-   private LRU _lru;
+   private static RecordsFile _fileSwap;
+   private          SortedMap _cacheMap;
+   private                Lru _lru;
 
    private static int _overflowCount = 0;
-   private static int _msgToBig      = 0;
-   public  static int  msgInDb       = 0;
-   public static int  msgDurable    = 0;
+   private static int      _msgToBig = 0;
+   public  static int        msgInDb = 0;
+   public static int      msgDurable = 0;
 
    public Cache()
    {
       _maxCacheSize = XmlBlasterProperty.get("xmldb.Cachesize", 20000000L);
       _maxMsgSize   = XmlBlasterProperty.get("xmldb.Messagesize",5000L);
 
-      _lru = new LRU(this);
+      _lru = new Lru();
 
       /** Cache Map */
       _cacheMap = Collections.synchronizedSortedMap(new TreeMap());
@@ -54,6 +59,9 @@ public class Cache
 
         /** Test now if databasefile exists */
         File dbfile = new File(_dbPath+"/xmlBlaster.msg");
+        File swapfile = new File(_dbPath+"/swap.msg");
+
+        // Database-File
         if(!dbfile.exists())
         {
            /** Create a new dbfile */
@@ -63,9 +71,13 @@ public class Cache
            /** Dbfile exists and open it with "RW" access. */
            _fileDb    =  new RecordsFile(_dbPath+"/xmlBlaster.msg","rw");
         }
+      
+        /** Create a Swap-File */
+        _fileSwap    =  new RecordsFile(_dbPath+"/swap.msg", 64);
+
       }catch(XmlBlasterException e){
       }catch(IOException e){
-         Log.error(ME,"Error while opening filedb."+e.toString());
+         Log.error(ME,"Error while opening file from database."+e.toString());
       }
    }
 
@@ -84,51 +96,36 @@ public class Cache
    {
 
       if(pmsgUnit.oid == null){
-         Log.error(ME,"Sorry can't write to cache, because no oid is spezified.");
+         Log.warning(ME,"Sorry can't write to cache, because no oid was given.");
          return;
       }
 
-      /** write-through with no-write-allocation */
       if(pmsgUnit.size > _maxMsgSize)
       {
-         _msgToBig++;
-         msgInDb++;
-         // No Copy-Back
-         // Message can be durable or NOT durable
+         // No Copy-Back. Message can be durable or NOT durable
          writeThroughNoWA(pmsgUnit);
-
          if(pmsgUnit.isDurable){msgDurable++;}
-
          return;
       }
 
-      // It's only a filedb
+      // Max Cachesize is null. It's a filedatabse with no Caching 
       if(_maxCacheSize == 0)
       {
-         msgInDb++;
          writeThroughNoWA(pmsgUnit);
-
          if(pmsgUnit.isDurable){msgDurable++;}
-
          return;
       }
 
-      /** copy-back  */
       if(_cacheSize < _maxCacheSize)
       {
          // Message is durable and present in filedb and cache
-         if(pmsgUnit.isDurable)
-         {
-            msgInDb++;
+         if(pmsgUnit.isDurable){
             msgDurable++;
             writeThroughNoWA(pmsgUnit);
          }
 
          // Message is only present in cache
          copyBack(pmsgUnit);
-
-         // Update LRU
-         _lru.setTimestampToOid(pmsgUnit);
 
          // Set new cachesize
          _cacheSize = _cacheSize + pmsgUnit.size;
@@ -140,14 +137,35 @@ public class Cache
       if(_cacheSize > _maxCacheSize)
       {
          _overflowCount++;
-         /** Cache is full, make LRU and copy-back  */
-         Log.trace(ME,"Cachesize : "+ Memory.byteString(_cacheSize)+" is overflow. Use LRU and write-back for :"+ pmsgUnit.oid);
-         _lru.removeCacheEntryAndReplace(pmsgUnit);
+
+         // Swap Messages in swap.msg
+         while(isFull()){
+            // Get the oldest timestamp 
+            String oldOid = _lru.removeOldest();
+            if(oldOid == null)
+               return;
+
+            PMessageUnit oldPmu = getPmuByOid(oldOid);
+            if(oldPmu == null)
+               return;         
+            writeBack(oldPmu);
+
+            Object o = _cacheMap.remove(oldOid);
+            o = null;
+         } 
          return;
       }
-
-
    } //write
+
+
+   private boolean isFull()
+   {
+      if(_cacheSize > _maxCacheSize)
+         return true;
+      else
+         return false;
+   }
+
 
    public PMessageUnit getPmuByOid(String oid)
    {
@@ -155,72 +173,9 @@ public class Cache
          Log.warning(ME,"Sorry no key : "+oid+" found in Cache.");
          return null;
       }
-/*      PMessageUnit pmu = null;
-      SoftReference sr = null;
-      sr = (SoftReference)_cacheMap.get(oid);
-
-      if(sr != null)
-      {
-         pmu = (PMessageUnit)sr.get();
-      }
-      if(pmu == null){
-         Log.warning(ME,"PMU was null by oid : "+oid+" PMU :"+pmu);
-      }
-      return pmu;*/
       return (PMessageUnit)_cacheMap.get(oid);
    }
 
-   private void dumpCache()
-   {
-      Log.calls(ME,"Enter dumpCache...");
-      Set keys = _cacheMap.keySet();
-      Iterator it = keys.iterator();
-
-      String key = "";
-      SoftReference mysr = null;
-      PMessageUnit mypmu = null;
-      Log.dump(ME,"-------- DUMP CACHE --------");
-      while (it.hasNext())
-      {
-          Log.calls(ME,"Enter dumpCache...while");
-          key = (it.next()).toString();
-          mysr = (SoftReference)_cacheMap.get(key);
-          mypmu = (PMessageUnit)mysr.get();
-          Log.dump(ME,"OID : "+key+" PMU : "+mypmu.oid);
-      }
-      Log.dump(ME,"----------------------------");
-   }
-
-   public boolean keyExists(String oid)
-   {
-      boolean exists = false;
-
-      //First look up in cache
-      PMessageUnit pmu = null;
-      pmu = (PMessageUnit)_cacheMap.get(oid);
-      if(pmu==null)
-      {
-         exists = false;
-      }else{
-         return true;
-      }
-
-      //Second look up in filedb
-      if(!_fileDb.recordExists(oid)){
-         exists = false;
-      }else{
-         return true;
-      }
-
-      return exists;
-   }
-
-
-   public void removeKeyObject(String key)
-   {
-      Object o = _cacheMap.remove(key);
-      o = null;
-   }
 
    public void writeThroughNoWA(PMessageUnit pmu)
    {
@@ -247,49 +202,29 @@ public class Cache
     */
    public void delete(String oid)
    {
-      if(keyExists(oid))
+
+      PMessageUnit pmu = (PMessageUnit)_cacheMap.get(oid);
+  
+      // Check Message in Cache and then delete it.
+      if(pmu!=null){
+         Object o = _cacheMap.remove(oid);
+         o = null;
+         String deletedOid = _lru.removeEntry(oid);
+         if(deletedOid == null)
+            Log.warning(ME,"Can't delete oid:"+deletedOid+" from LRU.");
+      }
+
+      // Check Message in filedb and then delete it.
+      if(_fileDb.recordExists(oid))
       {
          try{
-            PMessageUnit pmu = null;
-            pmu = (PMessageUnit)_cacheMap.get(oid);
-            if(pmu==null)
-            {
-               //Msg is durable
-               msgDurable--;
-
-               //Msg was maybe to big
-               try{
-                  RecordReader rr = _fileDb.readRecord(oid);
-                  PMessageUnit p = (PMessageUnit)rr.readObject();
-                  if(p!=null){
-                     if(p.size > _maxMsgSize){
-                        _msgToBig--;
-                     } 
-                  }
-              }catch(XmlBlasterException e){
-                 Log.error(ME,"Can't read PMessageUnit from database : "+e.reason);
-              }catch(IOException io){
-                 Log.error(ME,io.toString());
-              }catch(ClassNotFoundException cnfe){
-                 Log.error(ME,"Can't find PMessageUnit for TypeCast."+cnfe.toString());
-              }
-            }
-
             _fileDb.deleteRecord(oid);
-            removeKeyObject(oid);
-            msgInDb--;
-            _lru.removeKeyObjectByOid(oid);
-       
-            Log.trace(ME,"Delete PMU with oid : "+oid+" from cache and filedb.");
          }catch(XmlBlasterException e){
-            Log.warning(ME,"Can't delete PMessageUnit from database : "+e.reason);
+            Log.warning(ME,"Can't delete PMessageUnit from filedb : "+e.reason);
          }catch(IOException io){
             Log.warning(ME,io.toString());
          }
-      }else{
-         Log.warning(ME,"Can't delete, because key doesn't exists.");
       }
-
    }
 
 
@@ -298,7 +233,8 @@ public class Cache
 //      SoftReference sr = new SoftReference(pmu);
 //      _cacheMap.put(pmu.oid,sr);
       _cacheMap.put(pmu.oid,pmu);
-      Log.trace(ME,"COPY-BACK "+" OID : "+pmu.oid);
+      // Add Message to LRU.
+      _lru.addEntry(pmu.oid);
    }
 
 
@@ -323,18 +259,18 @@ public class Cache
       {
          // Read miss
          pmu = readMiss(oid);
-
          if(pmu==null){
             return pmu;
          }
 
          /** Write-Back to Cache and set LRU */
+         // TODO wenn pmu > maxPMU oder isDurable -> nicht write
          write(pmu);
 
-         Log.trace(ME,"READ OID from FILEDB: "+pmu.oid);
       }else{
         /** PMU was in Cache present and set new LRU */
-        _lru.setNewLRU(pmu);
+        _lru.removeEntry(oid);
+        _lru.addEntry(oid);
       }
 
       return pmu;
@@ -346,18 +282,17 @@ public class Cache
       PMessageUnit pmu = null;
 
       if(!_fileDb.recordExists(oid)){
-         Log.warning(ME,"Can't read pmu with oid : "+oid+" from filedb by read-miss.");
          return null;
       }
 
       try{
          RecordReader rr = _fileDb.readRecord(oid);
          pmu = (PMessageUnit)rr.readObject();
-         /** delete PMU from file and and write-back */
-         if(!pmu.isDurable){
-            _fileDb.deleteRecord(oid);
-            Log.trace(ME,"Delete OID : "+oid+ " from filedb.");
-         }
+
+         /** delete PMU from filedb and and write-back */
+         // TODO not durable messages will be read from swap.msg in future
+         _fileDb.deleteRecord(oid);
+
       }catch(XmlBlasterException e){
          Log.error(ME,"Can't read PMessageUnit from database : "+e.reason);
       }catch(IOException io){
@@ -386,34 +321,12 @@ public class Cache
       _maxCacheSize = sizeInByte;
    }
 
-   private int getPMUCount()
-   {
-      return _cacheMap.size();
+   public void setMaxMsgSize(long sizeInByte){
+      _maxMsgSize = sizeInByte;
    }
 
-
-   // Gets a vector of the current cachestate.
-   public Vector getCacheState()
-   {
-      /* Format : Current CacheSize
-                  Max-CacheSize
-                  Max-MsgSize
-                  PMU's in Cache
-                  Cacheoverflow
-                  PMU's in db
-                  Durable PMU's
-                  Big PMU's
-      */
-      Vector state = new Vector();
-      state.addElement(Memory.byteString(getCacheSize()));
-      state.addElement(Memory.byteString(_maxCacheSize));
-      state.addElement(Memory.byteString(_maxMsgSize));
-      state.addElement(String.valueOf(getPMUCount()));
-      state.addElement(String.valueOf(_overflowCount));
-      state.addElement(String.valueOf(msgInDb));
-      state.addElement(String.valueOf(msgDurable));
-      state.addElement(String.valueOf(_msgToBig));
-      return state;
+   private int getPMUCount(){
+      return _cacheMap.size();
    }
 
 }
