@@ -192,6 +192,8 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_CONFIGURATION = new ErrorCode("resource.configuration",
          "Please check your configuration.",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "client.configuration", "client.configuration"),
+            new ResourceInfo(ResourceInfo.REQ, "The CORBA protocol plugin", "protocol.corba.JacORB")
          }
       );
 
@@ -256,6 +258,8 @@ public final class ErrorCode implements java.io.Serializable
          "The remote connection is not established and we have given up to poll for it.",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
+            new ResourceInfo(ResourceInfo.REQ, "client.configuration", "client.configuration"),
+            new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
             new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.address.Address"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.address.CallbackAddress")
          }
