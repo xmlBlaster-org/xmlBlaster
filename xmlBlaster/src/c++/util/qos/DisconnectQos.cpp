@@ -65,7 +65,7 @@ void DisconnectQos::setClearSessions(bool del)
 }
 
 void DisconnectQos::addClientProperty(const std::string& key, const std::string& value,
-            const std::string& type, const std::string& encoding)
+            const std::string& /*type*/, const std::string& /*encoding*/)
 {
    clientProperties_.insert(ClientPropertyMap::value_type(key, value)); // TODO: Port to ClientProperty, type, encoding
 }

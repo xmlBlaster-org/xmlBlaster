@@ -102,7 +102,7 @@ void Global::copy()
    property_    = NULL;
    pingTimer_   = NULL;
    dispatchManager_ = NULL;
-   cbServerPluginManager_;
+   cbServerPluginManager_ = NULL;
    id_          = "";
 }
 
