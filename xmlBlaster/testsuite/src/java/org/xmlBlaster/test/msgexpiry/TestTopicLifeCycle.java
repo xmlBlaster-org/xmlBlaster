@@ -33,6 +33,9 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.test.Util;
+
 import junit.framework.*;
 
 
@@ -67,6 +70,10 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    private SubscribeReturnQos subscribeReturnQos;
    private long blockUpdateTime = 0L;
 
+   private EmbeddedXmlBlaster serverThread;
+   private int serverPort = 9566;
+   private boolean startEmbedded = true;
+
    private int numReceived = 0;
 
    /**
@@ -88,6 +95,15 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
     * - One connection for the sender client<br />
     */
    protected void setUp() {
+      this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
+      if (this.startEmbedded) {
+         glob.init(Util.getOtherServerPorts(serverPort));
+         String[] args = { };
+         glob.init(args);
+         serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
+         log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+      }
+
       try {
          String passwd = "secret";
          con = new XmlBlasterConnection(glob);
@@ -112,10 +128,21 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       String qos = "<qos></qos>";
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
+         if (arr.length != 0) {
+            log.error(ME, "Erased " + arr.length + " messages instead of 0");
+         }
          assertEquals("Erase", 0, arr.length);   // The volatile message schould not exist !!
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
+
+      if (this.startEmbedded) {
+         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      }
+
+      // reset to default server port (necessary if other tests follow in the same JVM).
+      Util.resetPorts();
    }
 
    public EraseReturnQos[] sendErase(boolean forceDestroy) {
@@ -272,6 +299,75 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
     * <p>
     * We traverse the transitions
     * <pre>
+    * Start -[2]->  ALIVE (3 sec)
+    *       -[6]->  UNREFERENCED (3 sec)
+    *       -[5]->  ALIVE (3 sec)
+    *       -[11]-> DEAD
+    * <pre>
+    * as described in requirement engine.message.lifecycle by sending some expiring messages (see
+    * state transition brackets in requirement)
+    * </p>
+    */
+   public void testUnreferencedAlive() {
+      this.ME = "TestTopicLifeCycle-testUnreferencedAlive";
+      log.info(ME, "Entering testUnreferencedAlive ...");
+      numReceived = 0;
+
+      {  // topic transition from START -> [2] -> ALIVE (3 sec)
+         long topicDestroyDelay = 6000L;
+         long msgLifeTime = 3000L;
+         sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
+         waitOnUpdate(1000L, 0);
+         assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
+      }
+
+      {  // topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)
+         try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
+         String dump = getDump();
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNREFERENCED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNREFERENCED'") != -1);
+      }
+
+      {  // topic transition from UNREFERENCED -> [5] -> ALIVE (3 sec)
+         long msgLifeTime = 3000L;
+         sendExpiringMsg(true, 0L, msgLifeTime); 
+         waitOnUpdate(1000L, 0);
+         assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
+      }
+
+      {  // topic transition from ALIVE -> [10] -> DEAD
+         boolean forceDestroy = true;
+         EraseReturnQos[] erq = sendErase(forceDestroy);
+         assertEquals("erase failed", 1, erq.length);
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+
+      log.info(ME, "SUCCESS testUnreferencedAlive");
+   }
+
+   /**
+    * THIS IS THE TEST
+    * <p>
+    * We traverse the transitions
+    * <pre>
     * Start -[2]->  ALIVE (0 sec)
     *       -[6]->  UNREFERENCED (0 sec)
     *       -[11]-> DEAD
@@ -340,6 +436,48 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
       log.info(ME, "SUCCESS testSubscribeVolatile");
+   }
+
+   /**
+    * THIS IS THE TEST
+    * Transitions [1] -> [13] -> [9]
+    */
+   public void testUnconfiguredSubscribeSubscribe() {
+      this.ME = "TestTopicLifeCycle-testUnconfiguredSubscribeSubscribe";
+      log.info(ME, "Entering testUnconfiguredSubscribeSubscribe ...");
+      numReceived = 0;
+
+      {  // topic transition from START -> [1] -> UNCONFIGURED
+         subscribeMsg();
+         if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
+      }
+
+      {  // topic transition from START -> [1] -> UNCONFIGURED
+         subscribeMsg();
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
+      }
+
+      {  // topic transition from UNCONFIGURED -> [9] -> DEAD
+         boolean forceDestroy = false;
+         EraseReturnQos[] erq = sendErase(forceDestroy);
+         assertEquals("erase failed", 1, erq.length);
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+      log.info(ME, "SUCCESS testUnconfiguredSubscribeSubscribe");
    }
 
    /**
@@ -433,7 +571,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
       }
 
-      {  // topic transition from ALIVE -> [10]
+      {  // topic transition from ALIVE -> [10] -> DEAD
          boolean forceDestroy = true;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
@@ -558,8 +696,10 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public static Test suite() {
        TestSuite suite= new TestSuite();
        suite.addTest(new TestTopicLifeCycle(new Global(), "testExpiry"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testUnreferencedAlive"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testVolatile"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testSubscribeVolatile"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testUnconfiguredSubscribeSubscribe"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testSoftErased"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testForcedErased"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testUnconfiguredErased"));
@@ -576,8 +716,10 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
       testSub.setUp();
       testSub.testExpiry();
+      testSub.testUnreferencedAlive();
       testSub.testVolatile();
       testSub.testSubscribeVolatile();
+      testSub.testUnconfiguredSubscribeSubscribe();
       testSub.testSoftErased();
       testSub.testForcedErased();
       testSub.testUnconfiguredErased();
