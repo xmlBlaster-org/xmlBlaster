@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.12 2000/10/29 19:20:20 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.13 2002/04/22 07:01:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,6 +12,7 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.Log;
 
 import java.util.Properties;
+import java.util.Map;
 
 import java.applet.Applet;
 
@@ -118,6 +119,44 @@ public class XmlBlasterProperty
       return getProps().get(key, defaultVal);
    }
 
+
+   /**
+    * Try to find the given key, the key is a praefix of an array. 
+    * <p />
+    * Example:
+    * <pre>
+    *   Map map = get(key, (Map)null);
+    *   if (map != null) {
+    *      ...
+    *   }
+    * </pre>
+    * <p>
+    * We look for keys containing [] brackets and collect them into a map
+    * </p>
+    * <pre>
+    *  val[A]=AAA
+    *  val[B]=BBB
+    * </pre>
+    *  Accessing the map with the array praefix (here it is "val")
+    * <pre>
+    *   Map map = get("val", (Map)null);
+    * </pre>
+    *   returns a Map containing keys { "A", "B" }
+    *   and values { "AAA", "BBB" }
+    * <br />
+    * <br />
+    * Two dimensional arrays are supported as well:
+    * <pre>
+    *   val[C][1]=cccc   -> map entry with key "C:1" and value "cccc"
+    * </pre>
+    * @param key the key praefix to look for
+    * @param defaultVal the default Map to return if key is not found
+    * @return The Map or null if not found
+    */
+   public final Map get(String key, Map defaultVal)
+   {
+      return getProps().get(key, defaultVal);
+   }
 
    /**
     * Try to find the given key in xmlBlaster.properties or on command line
@@ -228,14 +267,20 @@ public class XmlBlasterProperty
       try {
          boolean showUsage = XmlBlasterProperty.init(args);  // initialize
          if (showUsage) Log.plain("Usage: java org.xmlBlaster.util.XmlBlasterProperty -isNice true -Persistence.Driver myDriver -isCool yes");
+
+         System.out.println("Persistence=" + XmlBlasterProperty.get("Persistence", false));
+         System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", false));
+         System.out.println("Persistence.Driver=" + XmlBlasterProperty.get("Persistence.Driver", "NONE"));
+         System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", "NONE"));
+
+         // Testing arrays
+         XmlBlasterProperty.set("A[0]", "23");
+         XmlBlasterProperty.set("A[1]", "27");
+         XmlBlasterProperty.set("C[a][b]", "ok");
+         
+         System.out.println("All properties as XML:\n" + XmlBlasterProperty.toXml());
       } catch (JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-
-      System.out.println("Persistence=" + XmlBlasterProperty.get("Persistence", false));
-      System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", false));
-      System.out.println("Persistence.Driver=" + XmlBlasterProperty.get("Persistence.Driver", "NONE"));
-      System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", "NONE"));
-      System.out.println("All properties as XML:\n" + XmlBlasterProperty.toXml());
    }
 }
