@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.4 2001/08/31 15:25:54 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.5 2001/11/24 23:23:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -63,7 +63,7 @@ public class CallbackAddress
 
    /**
     * Returns the address.
-    * @return e.g. "IOR:00001100022...."
+    * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
    public final String getAddress()
    {
