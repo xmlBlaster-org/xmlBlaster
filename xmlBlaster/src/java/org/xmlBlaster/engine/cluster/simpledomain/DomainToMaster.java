@@ -187,7 +187,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          if (xmlKey.match(keyMappings[ii])) {
             log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
             AccessFilterQos[] filterQos = keyMappings[ii].getFilterQos();
-            if (filterQos != null) {
+            if (filterQos != null && filterQos.length > 0) {
                log.info(ME, "Found " + filterQos.length + " filter rules in XmlKey ...");
                for (int jj=0; jj<filterQos.length; jj++) {
                   I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
