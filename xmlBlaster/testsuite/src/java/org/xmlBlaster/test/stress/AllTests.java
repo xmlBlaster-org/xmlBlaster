@@ -18,6 +18,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.stress.LoadTestSub.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.stress.RamTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.stress.BigMessage.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.stress.MassiveSubTest.class));
       return suite;
    }
    // To force compilation:
