@@ -7,7 +7,7 @@
 
 - Change our XmlKey <key> tag name to avoid conflicts with <xsl:key>
 
-- get for OID request
+- QoS support is still missing
 
 - xmlBlaster.idl
   * rename AuthServer to AuthenticationService
