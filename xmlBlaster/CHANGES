@@ -9,18 +9,20 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
-   - #12823 Added sax usage
-            Added virtual destructor to avoid memory leak
-	    Fixed SAX parsing for encodings different to US-ASCII, changed default SAX encoding to "iso-8859-1"
-	    ("UTF-8" has still problems with our std::string usage)
-	    Added configuration possibility for SAX parse encoding with '-xmlBlaster/encoding'
-	    Fixed error message for SAX parse errors
+   - #12823
+      Added sax usage
+      Added virtual destructor to avoid memory leak
+      Fixed SAX parsing for encodings different to US-ASCII, changed default SAX encoding to "iso-8859-1"
+      ("UTF-8" has still problems with our std::string usage)
+      Added configuration possibility for SAX parse encoding with '-xmlBlaster/encoding'
+      Fixed error message for SAX parse errors
    - #12820 Extending XmlBlasterException from std::exception to support catching by base class,
             added what() method, removed dummy stack trace output.
    - #12799 Added leaveServer(), still buggy under certain multi threading states
    See: http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1client_1_1XmlBlasterAccess.html#a28
 
  o C client library:
+   - #12828 Fixed multithreading bug on shutdown, now we can savely leave the server without disconnect()
    - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
    - #12777 Memory leak fix for Udp return
    - #12778 Memory leak fix for calling connect() multiple times
