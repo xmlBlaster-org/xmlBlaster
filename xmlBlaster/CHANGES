@@ -27,6 +27,10 @@ DONE:
     mico 2.3.7 and xerces 1.7.0
     Removed 'loginName' parameter in update() method
 
+  - A get() which doesn't find a message returns now a MessageUnit[]
+    of length 0.
+    In older releases there was thrown an XmlBlasterException.
+
 
 Changes for 0.79e [Mar, 27 2002]
 ================================
