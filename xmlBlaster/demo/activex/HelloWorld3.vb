@@ -11,6 +11,7 @@ Imports System
 
 Module HelloWorld3
    Private WithEvents xmlBlaster As XmlScriptAccess.XmlScriptAccessClass
+   Dim ascii As System.Text.ASCIIEncoding = New System.Text.ASCIIEncoding
 
    Sub Main()
       Call HelloWorld3()
@@ -34,7 +35,11 @@ Module HelloWorld3
                  ", oid=" & msg.getKey().getOid() & _
                  ", content=" & msg.getContentStr() & _
                  ", myAge=" & age)
-         ' MsgBox("Success, message arrived:" & msg.getKey().toXml())
+         ' How to pass a byte[]?
+         'Dim len As Int32 = msg.getContent().length
+         'Dim content() As Byte = msg.getContent()
+         'Dim str As String = ascii.GetString(content, 0, len)
+         'MsgBox("Success, message arrived:" & str)
          xmlBlaster.setUpdateReturn("<qos><state id='OK'/></qos>")
       Catch e As SystemException
          Console.WriteLine("Exception in update:" & e.ToString())
@@ -47,13 +52,10 @@ Module HelloWorld3
    '---------------------------------------------------------------------------
    Sub HelloWorld3()
       Dim key, qos As String
-      'Dim content As Byte()
-      Dim contentStr As String
-      Dim prop As Object, msg As Object, response As Object
 
       xmlBlaster = New XmlScriptAccess.XmlScriptAccessClass
 
-      prop = xmlBlaster.createPropertiesInstance()
+      Dim prop As Object = xmlBlaster.createPropertiesInstance()
       prop.setProperty("protocol", "SOCKET")
       prop.setProperty("trace", "false")
       xmlBlaster.initialize(prop)
@@ -68,26 +70,28 @@ Module HelloWorld3
                "   ]]>" & _
                "  </securityService>" & _
                "</qos>"
-         response = xmlBlaster.connect(qos)
+         Dim connectReturnQos As Object
+         connectReturnQos = xmlBlaster.connect(qos)
          Console.WriteLine("Connected to xmlBlaster, sessionId=" & _
-                           response.getSecretSessionId())
+                           connectReturnQos.getSecretSessionId())
 
          ' Publish a message
          key = "<key oid='HelloWorld3' contentMime='text/xml'>" & _
                "  <org.xmlBlaster><demo/></org.xmlBlaster>" & _
                "</key>"
-         contentStr = "Hi"
+         Dim content As Byte() = ascii.GetBytes("Hi")
          qos = "<qos>" & _
                "<clientProperty name='myAge' type='int'>18</clientProperty>" & _
                "</qos>"
          Dim publishReturnQos As Object
-         publishReturnQos = xmlBlaster.publish(key, contentStr, qos)
+         publishReturnQos = xmlBlaster.publishBlob(key, content, qos)
          Console.WriteLine("Published message id=" & _
                        publishReturnQos.getRcvTimestamp().toXml("", True))
 
          ' Get synchronous the above message
          Dim getMsgArr As Object()
          getMsgArr = xmlBlaster.get("<key oid='HelloWorld3'/>", "<qos/>")
+         Dim msg As Object
          For Each msg In getMsgArr
             Console.WriteLine("Get returned:" & msg.toXml())
          Next
