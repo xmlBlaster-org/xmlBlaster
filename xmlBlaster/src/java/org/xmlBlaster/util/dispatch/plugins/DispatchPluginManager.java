@@ -21,9 +21,9 @@ import org.xmlBlaster.util.XmlBlasterException;
  * // xmlBlaster.properties or on command line
  * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
  * DispatchPlugin[FeedMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.FeedMotionDeliveryPlugin
- * DispatchPlugin.defaultPlugin=Priority,1.0
+ * DispatchPlugin/defaultPlugin=Priority,1.0
  * # Switch off:
- * # DispatchPlugin.defaultPlugin=undef
+ * # DispatchPlugin/defaultPlugin=undef
  * </pre>
  * <pre>
  *    I_MsgDeliveryInterceptor interceptor = glob.getDispatchPluginManager().getPlugin("Priority", "1.0", "XY", queuePropertyBase);

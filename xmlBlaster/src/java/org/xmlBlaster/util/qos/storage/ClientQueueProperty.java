@@ -23,7 +23,7 @@ public class ClientQueueProperty extends QueuePropertyBase
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue/maxEntries and -queue/client/maxEntries[heron] will be searched
+    * e.g. -queue/maxEntries and -queue/clientSide/maxEntries[heron] will be searched
     */
    public ClientQueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);

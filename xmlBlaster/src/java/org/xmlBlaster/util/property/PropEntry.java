@@ -96,6 +96,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     *  /node/heron/persistence/msgUnitStore/maxEntries
     *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
     * </pre>
+    * @return the matching key
     */
    public final String setFromEnv(org.xmlBlaster.util.Global glob,
                              String nodeId, String context, String className,
