@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.842 [xx]
 ================================
+ o Bugfix in Timeout.java: Closed synchronization gap -
+   could cause a timeout event to be delayed until another fires
+
  o Bugfix for duplicate table names in postgres.
 
  o Bugfix in persistent layer for Oracle, blobs where limited to 2000 bytes,
