@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    xmlBlaster@marcelruff.info
-Version:   $Id: xmlBlaster.idl,v 1.14 2003/05/22 18:52:21 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.15 2003/10/12 10:10:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -243,7 +243,7 @@ module serverIdl
        *                See xmlBlaster/src/dtd/XmlKey.xml for a description
        * @param qos     Quality of Service, flags to control canceling of a subscription<br>
        *                See xmlBlaster/src/dtd/XmlQoS.xml for a description
-       * @return XML string array with the subscription id's
+       * @return XML string array with the subscription id's in XML markup
        * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html" target="others">the interface.unSubscribe requirement</a>
        */
       XmlTypeArr unSubscribe(in XmlType xmlKey, in XmlType qos)
