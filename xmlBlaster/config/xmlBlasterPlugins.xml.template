@@ -77,8 +77,8 @@
    <!--========== NATIVE SERVICE PLUGINS =============-->
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
    <plugin id='JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
-      <action do='LOAD' onStartupRunlevel='4' sequence='5' />
-      <action do='STOP' onShutdownRunlevel='3' sequence='1'/>   
+      <action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='4' sequence='1'/>   
    </plugin>
    <!--===============================================-->
 
