@@ -8,8 +8,10 @@ package org.xmlBlaster.test.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
@@ -50,13 +52,7 @@ public class TestPtPPersistent extends TestCase  {
    private EmbeddedXmlBlaster serverThread;
 
    private MsgInterceptor updateInterceptor;
-   private I_XmlBlasterAccess con;
    private String senderName;
-
-   private int numPublish = 8;
-   private int numStop = 3;
-   private int numStart = 5;
-   private final String contentMime = "text/plain";
 
    private final long reconnectDelay = 500L;
    private PtPDestination destination;
@@ -84,7 +80,7 @@ public class TestPtPPersistent extends TestCase  {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
-         con = glob.getXmlBlasterAccess(); // Find orb
+         I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
          // Setup fail save handling for connection ...
@@ -112,48 +108,78 @@ public class TestPtPPersistent extends TestCase  {
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
-      PropString defaultPlugin = new PropString("CACHE,1.0");
-      String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-      log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
-      con.disconnect(null);
-      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
-      this.serverThread = null;
-      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
-      Util.resetPorts(glob);
-      this.glob = null;
-      this.con = null;
-      Global.instance().shutdown();
+      I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
+      try {
+         log.info(ME, "Entering tearDown(), test is finished");
+         PropString defaultPlugin = new PropString("CACHE,1.0");
+         String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
+         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         EraseKey eraseKey = new EraseKey(this.glob, "//airport", "XPATH");      
+         EraseQos eraseQos = new EraseQos(this.glob);
+         con.erase(eraseKey, eraseQos);
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+      }
+      finally {
+         con.disconnect(null);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
+         // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
+         Util.resetPorts(glob);
+         this.glob = null;
+         con = null;
+         Global.instance().shutdown();
+      }
    }
 
    /**
     * TEST: Construct a message and publish it.
+    * 
     * <p />
     */
-   public void doPublish(int counter) throws XmlBlasterException {
+   public void doPublish(int counter, String oid, boolean doGc) throws XmlBlasterException {
       String content = "" + counter;
       log.info(ME, "Publishing message " + content);
 
       PublishKey key = new PublishKey(this.glob);
+      if (oid != null) key.setOid(oid);
+      key.setClientTags("<airport/>");
       PublishQos qos = new PublishQos(glob);
       qos.setPersistent(true);
+      qos.setVolatile(true);
       qos.addDestination(new Destination(new SessionName(this.glob, "joe")));
       MsgUnit msgUnit = new MsgUnit(key, content, qos);
 
-      con.publish(msgUnit);
-      System.gc(); // to make sure possbile weak references are cleaned up on the server side
+      this.glob.getXmlBlasterAccess().publish(msgUnit);
+      if (doGc) Util.gc(2);
       log.info(ME, "Success: Publishing of " + content + " done");
    }
 
+   public void testPersistentPtPOneOidWithGc() {
+      persistentPtP("persistentPtP", true);
+   }
+
+   public void testPersistentPtPOneOidNoGc() {
+      persistentPtP("persistentPtP", false);
+   }
+
+   public void testPersistentPtPNoOidWithGc() {
+      persistentPtP(null, true);
+   }
+
+   public void testPersistentPtPNoOidNoGc() {
+      persistentPtP(null, false);
+   }
    /**
     * TEST: <br />
     * Sets up a PtP destination (a subject)
     * 
     */
-   public void testPersistentPtP() {
-      long cbMaxEntries = 5;
+   public void persistentPtP(String oid, boolean doGc) {
+      long cbMaxEntries = 3;
       long cbMaxEntriesCache = 2;
-      long subjMaxEntries = 5;
+      long subjMaxEntries = 3;
       long subjMaxEntriesCache = 2;
       
       long exLimit = cbMaxEntries + subjMaxEntries + 2;
@@ -161,9 +187,10 @@ public class TestPtPPersistent extends TestCase  {
       
       this.destination = new PtPDestination(this.glob, "joe/1");
       /** wants PtP messages and does not shutdown */
-      
+      boolean wantsPtP = true;
+      boolean shutdownCB = false;
       try {
-         this.destination.init(true, false, cbMaxEntries, cbMaxEntriesCache, subjMaxEntries, subjMaxEntriesCache);
+         this.destination.init(wantsPtP, shutdownCB, cbMaxEntries, cbMaxEntriesCache, subjMaxEntries, subjMaxEntriesCache);
       }
       catch (XmlBlasterException ex) {
          assertTrue("an exception while initing the destination should not occur " + ex.getMessage(), false);               
@@ -171,7 +198,7 @@ public class TestPtPPersistent extends TestCase  {
       
       for (int i=0; i < exLimit; i++) {
          try {
-            doPublish(i);
+            doPublish(i, oid, doGc);
             Thread.sleep(250L);
          }
          catch (Exception ex) {
@@ -191,7 +218,7 @@ public class TestPtPPersistent extends TestCase  {
 
       for (long i=exLimit; i < 2 * exLimit; i++) {
          try {
-            doPublish((int)i);
+            doPublish((int)i, oid, doGc);
          }
          catch (XmlBlasterException ex) {
             assertTrue("an exception on publish '" + i + "' should not occur " + ex.getMessage(), false);
@@ -199,9 +226,9 @@ public class TestPtPPersistent extends TestCase  {
       }
       this.destination.check(250L, 0);
       
-      for (long i=2*exLimit; i < 2*exLimit + 5; i++) {
+      for (long i=2*exLimit; i < 2*exLimit + 2; i++) {
          try {
-            doPublish((int)i);
+            doPublish((int)i, oid, doGc);
             assertTrue("an exception on publish '" + i + "' should have occurred ", false);
          }
          catch (XmlBlasterException ex) {
@@ -211,15 +238,9 @@ public class TestPtPPersistent extends TestCase  {
 
       this.destination.check(250L, 0);
 
-      // stop and restart the server      
+      // stop and restart the server
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
-
-      try {
-         Thread.sleep(2500L);
-      }
-      catch (Exception ex) {
-      }
 
       // reconnect to server (for the destination, the publisher never left) 
       this.destination = new PtPDestination(this.glob, "joe/1");
@@ -235,10 +256,9 @@ public class TestPtPPersistent extends TestCase  {
          assertTrue("an exception while initing the destination should not occur " + ex.getMessage(), false);
       }
 
-
       for (long i=2*exLimit; i < 3*exLimit; i++) {
          try {
-            doPublish((int)i);
+            doPublish((int)i, oid, doGc);
             Thread.sleep(500L);
          }
          catch (Exception ex) {
@@ -253,8 +273,10 @@ public class TestPtPPersistent extends TestCase  {
       }
       
       msg = this.destination.getUpdateInterceptor().getMsgs();
-      for (int i=0; i < msg.length; i++) {
-         assertEquals("wrong message sequence", i+(int)exLimit, msg[i].getContentInt());
+      if (oid != null) { // if oid is different sequence is not garanteed
+         for (int i=0; i < msg.length; i++) {
+            assertEquals("wrong message sequence (number of entries arrived: " + msg.length + ") ", i+(int)exLimit, msg[i].getContentInt());
+         }
       }
       assertEquals("wrong number of entries arrived", exLimit*2, (long)msg.length);
       this.destination.getUpdateInterceptor().clear();            
@@ -277,11 +299,24 @@ public class TestPtPPersistent extends TestCase  {
          System.exit(1);
       }
 
-      TestPtPPersistent testSub = new TestPtPPersistent(glob, "TestPtPPersistent/1");
+      TestPtPPersistent test = new TestPtPPersistent(glob, "TestPtPPersistent/1");
 
-      testSub.setUp();
-      testSub.testPersistentPtP();
-      testSub.tearDown();
+      test.setUp();
+      test.testPersistentPtPOneOidWithGc();
+      test.tearDown();
+
+      test.setUp();
+      test.testPersistentPtPOneOidNoGc();
+      test.tearDown();
+
+      test.setUp();
+      test.testPersistentPtPNoOidWithGc();
+      test.tearDown();
+
+      test.setUp();
+      test.testPersistentPtPNoOidNoGc();
+      test.tearDown();
+
    }
 }
 

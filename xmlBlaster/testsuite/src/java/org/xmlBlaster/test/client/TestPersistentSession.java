@@ -62,7 +62,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private EmbeddedXmlBlaster serverThread;
 
    private MsgInterceptor[] updateInterceptors;
-   private I_XmlBlasterAccess con;
+   //private I_XmlBlasterAccess con;
    private String senderName;
 
    private int numPublish = 8;
@@ -118,7 +118,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
-         this.con = this.glob.getXmlBlasterAccess(); // Find orb
+         I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
 
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(this.glob, senderName, passwd); // == "<qos>...</qos>";
@@ -167,6 +167,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                       "</key>";
 
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
+      I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
 
@@ -186,7 +187,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          Util.resetPorts(this.glob);
          Util.resetPorts(this.origGlobal);
          this.glob = null;
-         this.con = null;
+         con = null;
          Global.instance().shutdown();
       }
    }
@@ -207,7 +208,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
          this.updateInterceptors[num] = new MsgInterceptor(this.glob, log, null); // Collect received msgs
          this.updateInterceptors[num].setLogPrefix("interceptor-" + num);
-         SubscribeReturnQos subscriptionId = con.subscribe(key, qos, this.updateInterceptors[num]);
+         SubscribeReturnQos subscriptionId = this.glob.getXmlBlasterAccess().subscribe(key, qos, this.updateInterceptors[num]);
 
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
@@ -224,7 +225,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          else key = new UnSubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
 
          UnSubscribeQos qos = new UnSubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
-         con.unSubscribe(key, qos);
+         this.glob.getXmlBlasterAccess().unSubscribe(key, qos);
       } 
       catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -247,7 +248,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
-      con.publish(msgUnit);
+      this.glob.getXmlBlasterAccess().publish(msgUnit);
       log.info(ME, "Success: Publishing of " + oid + " done");
    }
 
@@ -416,35 +417,22 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     *
     */
    public void testOverflow() {
-/*
-      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
-      this.serverThread = null;
-      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
-      Util.resetPorts(this.serverGlobal);
-      Util.resetPorts(glob);
-
-      this.glob.init(Util.getOtherServerPorts(serverPort));
-      String[] args = new String[] {"-persistence/session/maxEntriesCache", "1",
-                                    "-persistence/session/maxEntries","2",
-                                    "-persistence/subscribe/maxEntriesCache", "2",
-                                    "-persistence/subscribe/maxEntries","3",
-                                   };
-      this.serverGlobal = this.glob.getClone(args);
-      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
-*/
+      // to change the configuration on server side (limit the queue sizes)
       tearDown();
       setup(true);
 
       Global[] globals = new Global[5];
-      globals[0] = createConnection(this.origGlobal, "bjoern/1", true , false);
-      globals[1] = createConnection(this.origGlobal, "fritz/2", false, false);
-      globals[3] = createConnection(this.origGlobal, "dimitri/3", true , true); // <-- exception (since main connection also persistent)
-      globals[2] = createConnection(this.origGlobal, "pandora/4", false , false); // OK since transient
-      globals[4] = createConnection(this.origGlobal, "jonny/5", true, true);
-
-      for (int i=0; i < 3; i++) {
-         globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
+      try {
+         globals[0] = createConnection(this.origGlobal, "bjoern/1", true , false);
+         globals[1] = createConnection(this.origGlobal, "fritz/2", false, false);
+         globals[3] = createConnection(this.origGlobal, "dimitri/3", true , true); // <-- exception (since main connection also persistent)
+         globals[2] = createConnection(this.origGlobal, "pandora/4", false , false); // OK since transient
+         globals[4] = createConnection(this.origGlobal, "jonny/5", true, true);
+      }
+      finally {
+         for (int i=0; i < 3; i++) {
+            globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
+         }
       }
    }
 
