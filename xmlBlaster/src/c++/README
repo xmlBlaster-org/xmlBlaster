@@ -114,7 +114,7 @@ I will implement the reading from http as an option later.
      In writing the c++ client classes I tried to keep the implementor-
      specific stuff in a header- and a source file:
 
-        util/CompatibleCorba.h and util/CompatibleCorba.cc
+        util/CompatibleCorba.h and util/CompatibleCorba.cpp
 
      In the header file, macros, header file names etc. are specified, while
      in the source file, special non-standard functions encapsulate

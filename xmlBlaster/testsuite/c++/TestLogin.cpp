@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------
-Name:      TestLogin.cc
+Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cc,v 1.9 2001/11/26 09:21:33 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**

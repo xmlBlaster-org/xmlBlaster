@@ -1,6 +1,6 @@
 These are examples on how to access xmlBlaster from a C++ client
 
-- clientBOA.cc and clientPOA.cc use the MICO (C++) CORBA library
+- clientBOA.cpp and clientPOA.cpp use the MICO (C++) CORBA library
 
 - xmlBlaster runs with JacORB (Java)
 
@@ -19,7 +19,7 @@ These are examples on how to access xmlBlaster from a C++ client
 To run the clients:
 
 
-Using BOA (clientBOA.cc):
+Using BOA (clientBOA.cpp):
 
 3) Start the xmlBlaster server
 
@@ -31,7 +31,7 @@ Using BOA (clientBOA.cc):
    ./TestGet  -ior `cat /tmp/ior.dat`
 
 
-Using POA (clientPOA.cc) with a naming service:
+Using POA (clientPOA.cpp) with a naming service:
 
 You need to have a running web server and set the DocumentRoot to e.g.
 

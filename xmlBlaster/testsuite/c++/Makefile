@@ -17,7 +17,7 @@ ALL=$(EVERYTHING)
 endif
 
 
-.cc.o:
+.cpp.o:
 	$(CC) $(CORBA_INC) $(XMLCPP_INC) -I$(CPP_DIR) -c $<
 
 all: bin $(ALL)

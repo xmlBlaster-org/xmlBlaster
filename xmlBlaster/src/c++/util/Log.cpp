@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------------
-Name:      Log.cc
+Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cc,v 1.5 2001/12/03 16:32:23 ruff Exp $
+Version:   $Id: Log.cpp,v 1.1 2001/12/12 17:30:22 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>

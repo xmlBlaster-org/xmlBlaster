@@ -18,8 +18,6 @@ RM       = rm
 
 .c.o:
 	$(CC) $(CFLAGS) $(DEB) -c $<
-.cc.o:
-	$(CC) $(CFLAGS) $(DEB) -c $<
 .cpp.o:
 	$(CC) $(CFLAGS) $(DEB) -c $<
 

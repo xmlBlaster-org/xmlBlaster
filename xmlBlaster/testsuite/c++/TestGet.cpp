@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------
-Name:      TestGet.cc
+Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cc,v 1.7 2001/11/26 09:21:33 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <strstream.h>

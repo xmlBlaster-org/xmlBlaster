@@ -105,12 +105,12 @@ endif
 
 .depend:
 	echo '# Module dependencies' > .depend
-	$(MKDEPEND) $(CXXFLAGS) *.c *.cc >> .depend
+	$(MKDEPEND) $(CXXFLAGS) *.c *.cpp >> .depend
 
 XMLBLASTER_IDL  = ${XMLBLASTER_HOME}/src/idl/xmlBlaster.idl
 
 INSTALL_DIR     = redlich/Hello-1
-INSTALL_SRCS    = Makefile client.cc ${XMLBLASTER_IDL}
+INSTALL_SRCS    = Makefile client.cpp ${XMLBLASTER_IDL}
 INSTALL_SCRIPTS =
 
 server: xmlBlaster.h xmlBlaster.o server.o $(DEPS)
@@ -123,9 +123,9 @@ clientPOA: xmlBlaster.h xmlBlaster.o clientPOA.o $(DEPS)
 	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o clientPOA.o $(LDLIBS) -o clientPOA 
 
 
-xmlBlaster.h xmlBlaster.cc : ${XMLBLASTER_IDL} $(IDLGEN)
+xmlBlaster.h xmlBlaster.cpp : ${XMLBLASTER_IDL} $(IDLGEN)
 	$(IDL) --poa ${XMLBLASTER_IDL}
 
 clean:
-	rm -f xmlBlaster.cc xmlBlaster.h *.o core clientBOA clientPOA server *~ .depend
+	rm -f xmlBlaster.cpp xmlBlaster.h *.o core clientBOA clientPOA server *~ .depend
 

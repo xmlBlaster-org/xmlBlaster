@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------
-Name:      TestSub.cc
+Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cc,v 1.7 2001/11/26 09:21:33 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.1 2001/12/12 17:30:54 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
@@ -85,6 +85,8 @@ private:
     * cleaning up .... erase() the previous message OID and logout
     */
    void tearDown() {
+      senderConnection_->run();
+
       cerr << "TEAR DOWN " << endl;
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
          + "<key oid='" + publishOid_ + "' queryType='EXACT'>\n</key>";
