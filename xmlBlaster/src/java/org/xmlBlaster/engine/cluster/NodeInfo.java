@@ -76,6 +76,7 @@ public final class NodeInfo
 
    /**
     * Access the currently used address to access the node
+    * @return null if not specified
     */
    public Address getAddress() {
       if (addressMap == null) return null;
@@ -97,6 +98,17 @@ public final class NodeInfo
     */
    public Map getAddressMap() {
       return addressMap;
+   }
+
+   /**
+    * Access the currently used callback address for this node
+    * @return Never null, returns a default if none specified
+    */
+   public CallbackAddress getCbAddress() {
+      if (cbAddressMap == null) {
+         addCbAddress(new CallbackAddress(glob));
+      }
+      return (CallbackAddress)cbAddressMap.values().iterator().next();
    }
 
    /**
