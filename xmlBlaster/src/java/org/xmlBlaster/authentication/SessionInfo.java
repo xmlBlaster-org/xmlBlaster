@@ -419,18 +419,18 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
     * we are willing to accept messages again. 
     * Enforced by I_QueueSizeListener
     */
-   public void changed(long numEntries, long numBytes) {
+   public void changed(I_Queue queue, long numEntries, long numBytes) {
       if (lastNumEntries != numEntries) {
          long max = getSessionQueue().getMaxNumOfEntries();
          if (lastNumEntries >= max && numEntries < max) {
             if (log.TRACE) log.trace(ME, "SessionQueue has emptied from " + lastNumEntries +
                            " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
             lastNumEntries = numEntries; // to avoid recursion
-            this.sessionQueue.removeQueueSizeListener(this);
-            
+            //queue.removeQueueSizeListener(this);
             //subjectInfo.forwardToSessionQueue();
+            //queue.addQueueSizeListener(this);
+            
             this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
-            this.sessionQueue.addQueueSizeListener(this);
          }
       }
       lastNumEntries = numEntries;
