@@ -82,7 +82,7 @@ public class PluginLoader {
    /**
     * Load another plugin.
     * <p/>
-    * @param String The type of the plugin, e.g. "a2Blaster"
+    * @param String The type of the plugin, e.g. "ldap"
     * @param String The version of the plugin, e.g. "1.0"
     * @return I_ClientPlugin
     * @exception XmlBlasterException Thrown if the plugin wasn't loadable or initializable
