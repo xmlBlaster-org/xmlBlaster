@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.22 2002/06/02 21:28:43 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.23 2002/06/18 09:42:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -31,7 +31,7 @@ import java.io.File;
  * Use this as a command line tool to publish files, images, etc. as messages to xmlBlaster.
  * Invoke examples:<br />
  * <pre>
- *    jaco org.xmlBlaster.client.feeder.PublishFile -c &lt;content-file> -k &lt;key-file> -q &lt;qos-file> -m &lt;mime-type>
+ *    java org.xmlBlaster.client.feeder.PublishFile -c &lt;content-file> -k &lt;key-file> -q &lt;qos-file> -m &lt;mime-type>
  * </pre>
  * For other supported options type
  * <pre>
@@ -103,7 +103,9 @@ public class PublishFile
          content = contentGiven.getBytes();
       }
       if (content == null) {
-         Log.panic(ME, "File content is missing, specify content as '-c <file>' or '-content <the content text>' (get help with -?)");
+         content = new byte[0];
+         // allow empty contents
+         //Log.panic(ME, "File content is missing, specify content as '-c <file>' or '-content <the content text>' (get help with -?)");
       }
 
       // Determine XmlKey ...
@@ -208,7 +210,8 @@ public class PublishFile
       try {
          StopWatch stop = new StopWatch();
          PublishRetQos publish = senderConnection.publish(msgUnit);
-         Log.info(ME, "Success: Publishing done, returned message oid=" + publish.getOid() + stop.nice());
+         Log.info(ME, "Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
+         //Log.info(ME, "Success: Publishing done, returned message oid=" + publish.getOid() + stop.nice());
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
       }
@@ -221,7 +224,7 @@ public class PublishFile
    private void usage()
    {
       Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "jaco org.xmlBlaster.client.feeder.PublishFile <options>");
+      Log.plain(ME, "java org.xmlBlaster.client.feeder.PublishFile <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Options:");
       Log.plain(ME, "   -?                  Print this message.");
@@ -245,18 +248,20 @@ public class PublishFile
       //Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
-      Log.plain(ME, "jaco org.xmlBlaster.client.feeder.PublishFile -c Hello.xml");
+      Log.plain(ME, "java org.xmlBlaster.client.feeder.PublishFile -c Hello.xml");
       Log.plain(ME, "   The message will be named automatically 'Hello' and the MIME will be set to 'text/xml'");
       Log.plain(ME, "   and the qos (quality of service) is set to default");
       Log.plain(ME, "");
-      Log.plain(ME, "jaco org.xmlBlaster.client.feeder.PublishFile -content \"Hello World\" -xmlKey \"<key oid='number12' contentMime='text/plain'></key>\"");
+      Log.plain(ME, "java org.xmlBlaster.client.feeder.PublishFile -content \"Hello World\" -xmlKey \"<key oid='number12' contentMime='text/plain'></key>\"");
+      Log.plain(ME, "");
+      Log.plain(ME, "java org.xmlBlaster.client.feeder.PublishFile -xmlKey \"<key oid='__cmd:sysprop/?trace=true'/>\"");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "");
    }
 
 
    /**
-    * Invoke:  jaco org.xmlBlaster.client.feeder.PublishFile -c <content-file> -k <key-file> -q <qos-file> -m <mime-type>
+    * Invoke:  java org.xmlBlaster.client.feeder.PublishFile -c <content-file> -k <key-file> -q <qos-file> -m <mime-type>
     */
    public static void main(String args[])
    {

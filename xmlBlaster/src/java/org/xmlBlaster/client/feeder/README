@@ -19,6 +19,13 @@ Example feeding a text file (key and qos are also specified in a text file):
        -q Hello-Qos.xml
 
 
+Sending an administrative command (here: exit xmlBlaster with value 9):
+============================================================================
+
+
+   java org.xmlBlaster.client.feeder.PublishFile -xmlKey "<key oid='__cmd:?exit=9'/>"
+
+
 How to get help:
 ================
 
