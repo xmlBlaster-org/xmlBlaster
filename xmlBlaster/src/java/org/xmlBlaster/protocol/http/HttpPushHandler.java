@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.29 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.30 2000/06/29 10:52:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -155,15 +155,16 @@ public class HttpPushHandler
          readyStr = "\n  if (parent.browserReady != null) parent.browserReady();\n";
       }
 
-      if (this.tail == null) {
-         this.tail  ="\n   </script>\n</BODY></HTML>";
-      }
-
       if (handlesMultipart) {
+         if (this.tail == null)
+            this.tail  ="\n   </script>\n</BODY></HTML>";
          res.setContentType("multipart/x-mixed-replace;boundary=End");
 
          outMulti.println();
          outMulti.println("--End");
+      }
+      else {
+         res.setContentType("text/html"); // bugfix, thanks to Just van den Broecke <just@justobjects.nl>
       }
    }
 
@@ -371,8 +372,6 @@ public class HttpPushHandler
                   the previous one resulting in a list of ten rows.
             */
             synchronized(outPlain) {
-               res.setContentType("text/html");
-
                StringBuffer buf = new StringBuffer();
                if (firstPush) {
                   buf.append(head);
@@ -388,7 +387,7 @@ public class HttpPushHandler
                   setBrowserIsReady(false);
                }
 
-               buf.append(tail);
+               // bug, thanks to Just: buf.append(tail);
 
                if (Log.DUMP) Log.dump(ME, "Sending plain to callbackFrame:\n" + buf.toString());
 
