@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.6 2002/02/16 12:13:00 ruff Exp $
+Version:   $Id: Executor.java,v 1.7 2002/02/16 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -38,7 +38,7 @@ import java.util.Collections;
  */
 public abstract class Executor implements ExecutorBase
 {
-   private String ME = "ExecutorRequest";
+   private String ME = "SocketExecutor";
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
@@ -57,7 +57,12 @@ public abstract class Executor implements ExecutorBase
    protected I_CallbackExtended callback = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
    protected I_XmlBlaster xmlBlasterImpl = null;
+   /** To avoid creating a new dummy on each request, we do it here */
    private final String DUMMY_OBJECT = "";
+   /** Set debug level */
+   protected boolean SOCKET_DEBUG=false;
+   /** Temporary helper to only show one time the Log.warn for updateIsOneway */
+   protected boolean warnUpdateIsOneway = updateIsOneway ? true : false;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -113,7 +118,7 @@ public abstract class Executor implements ExecutorBase
    /**
     * Sets the loginName and automatically the requestId as well
     */
-   protected void setLoginName(String loginName) {
+   protected final void setLoginName(String loginName) {
       this.loginName = loginName;
       if (loginName != null && loginName.length() > 0)
          this.praefix = this.loginName + ":";
@@ -124,7 +129,7 @@ public abstract class Executor implements ExecutorBase
    /**
     * Adds the specified subscription listener to receive subscribe/unSubscribe events.
     */
-   public void addResponseListener(String requestId, I_ResponseListener l) {
+   public final void addResponseListener(String requestId, I_ResponseListener l) {
       if (requestId == null || l == null) {
          throw new IllegalArgumentException("addResponseListener() with requestId=null");
       }
@@ -137,7 +142,7 @@ public abstract class Executor implements ExecutorBase
    /**
     * Removes the specified listener.
     */
-   public void removeResponseListener(String requestId) {
+   public final void removeResponseListener(String requestId) {
       if (requestId == null) {
          throw new IllegalArgumentException("removeResponseListener() with requestId=null");
       }
@@ -145,6 +150,17 @@ public abstract class Executor implements ExecutorBase
          Object o = responseListenerMap.remove(requestId);
          if (o == null) Log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
       }
+   }
+
+
+   /**
+    * Get the response listener object
+    */
+   public final I_ResponseListener getResponseListener(String requestId) {
+      if (requestId == null) {
+         throw new IllegalArgumentException("getResponseListener() with requestId=null");
+      }
+      return (I_ResponseListener)responseListenerMap.get(requestId);
    }
 
 
@@ -197,7 +213,12 @@ public abstract class Executor implements ExecutorBase
             String[] response = new String[arr.length];      // !!! TODO response from update
             for (int ii=0; ii<arr.length; ii++)
                response[ii] = "<qos><state>OK</state></qos>";
-            executeResponse(receiver, response);
+            if (updateIsOneway && warnUpdateIsOneway) {
+               Log.info(ME, "blocking update() mode is currently switched of");
+               warnUpdateIsOneway = false;
+            }
+            else
+               executeResponse(receiver, response);
          }
          else if (Constants.ERASE.equals(receiver.getMethodName())) {
             MessageUnit[] arr = receiver.getMessageArr();
@@ -214,18 +235,20 @@ public abstract class Executor implements ExecutorBase
          }
          else {
             Log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
-            if (Log.DUMP) Log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+            if (Log.DUMP || SOCKET_DEBUG) Log.info(ME, "Ignoring received message, nobody is interested in it:\n>" + Parser.toLiteral(receiver.createRawMsg()) + "<");
          }
+         
          return true;
       }
 
       // Handling response or exception ...
-      I_ResponseListener listener = (I_ResponseListener)responseListenerMap.get(receiver.getRequestId());
+      I_ResponseListener listener = getResponseListener(receiver.getRequestId());
       if (listener == null) {
          // logging should not dump whole message:!!!
          Log.warn(ME, "Ignoring received message, nobody is interested in it: >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
          return true;
       }
+      removeResponseListener(receiver.getRequestId());
 
       if (receiver.isResponse()) {
          if (Constants.GET.equals(receiver.getMethodName())) {
@@ -262,10 +285,13 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Invoking " + parser.getMethodName() + "(" + requestId + ")");
+
       final Object[] response = new Object[3];  // As only final variables are accessable from the inner class, we put changeable variables in this array
       response[0] = response[1] = response[2] = null;
       final Object monitor = new Object();
 
+      // Register the return value / Exception listener ...
       if (expectingResponse) {
          addResponseListener(requestId, new I_ResponseListener() {
             public void responseEvent(String reqId, Object responseObj) {
@@ -279,7 +305,7 @@ public abstract class Executor implements ExecutorBase
                   // If response is faster, we will go into wait() after notify()
                   // In these cases we need to call notify() again (to be shure we awake from wait())
                   Thread.currentThread().yield();
-                  if (response[2] == null) {
+                  if (response[2] == null) {  // not awaken?
                      if (Log.TRACE) Log.trace(ME, "Retrying notify ...");
                      try { Thread.currentThread().sleep(1); } catch(Exception e) {}
                   }
@@ -290,6 +316,7 @@ public abstract class Executor implements ExecutorBase
          });
       }
 
+      // Send the message / method invocation ...
       byte[] rawMsg = parser.createRawMsg();
       if (Log.DUMP) Log.dump(ME, Parser.toLiteral(rawMsg));
       oStream.write(rawMsg);
@@ -298,15 +325,14 @@ public abstract class Executor implements ExecutorBase
       if (!expectingResponse)
          return null;
       
-      //if (Log.TRACE) Log.trace(ME, parser.getMethodName() + "(" + requestId + ") send, waiting for response ...");
-      
+      // Waiting for the response to arrive ...
       try {
          synchronized(monitor) {
             monitor.wait(responseWaitTime);
             response[2] = DUMMY_OBJECT; // marker that we are waked up
             if (response[1] != null) {
-               if (Log.TRACE) Log.trace(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response)");
-               if (Log.DUMP) Log.dump(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + response[0]);
+               if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(" + requestId + ")");
+               if (Log.DUMP) Log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
                if (response[0] instanceof XmlBlasterException)
                   throw (XmlBlasterException)response[0];
                return response[0];
@@ -341,7 +367,7 @@ public abstract class Executor implements ExecutorBase
       if (Log.DUMP) Log.dump(ME, "Successful " + receiver.getMethodName() + "(), sending back to client '" + Parser.toLiteral(returner.createRawMsg()) + "'");
       oStream.write(returner.createRawMsg());
       oStream.flush();
-      Log.info(ME, "Successful sent response for " + receiver.getMethodName() + "()");
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
    }
 
    /**
@@ -364,6 +390,7 @@ public abstract class Executor implements ExecutorBase
          shutdown();
       }
       */
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Successfully sent execption for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
    }
 
    //abstract boolean shutdown();

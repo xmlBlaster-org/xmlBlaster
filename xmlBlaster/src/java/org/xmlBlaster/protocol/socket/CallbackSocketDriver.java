@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.3 2002/02/15 22:45:54 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.4 2002/02/16 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -48,7 +48,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void init(CallbackAddress callbackAddress) {
-      Log.warn(ME, "Implement init()");
+      if (Log.CALL) Log.call(ME, "Implement init() - nothing to do");
    }
 
    public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr)
@@ -57,6 +57,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void shutdown() {
+      if (Log.CALL) Log.call(ME, "shutdown()");
       handler.shutdown();
    }
 }

@@ -3,7 +3,7 @@ Name:      ExecutorBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ExecutorBase base class for Executor, defines common constants
-Version:   $Id: ExecutorBase.java,v 1.1 2002/02/16 11:23:21 ruff Exp $
+Version:   $Id: ExecutorBase.java,v 1.2 2002/02/16 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -19,5 +19,9 @@ public interface ExecutorBase
    public final boolean WAIT_ON_RESPONSE = true;
    /** Used for execute() */
    public final boolean ONEWAY = false;
+   /** Temporary send update() WITHOUT waiting on response,
+    *  Change this as soon as the new callback framework is running
+    */
+   public final boolean updateIsOneway = true;
 }
 

@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.7 2002/02/16 11:51:37 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.8 2002/02/16 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -50,6 +50,7 @@ public class HandleClient extends Executor implements Runnable
       super(sock, driver.getXmlBlaster(), null);
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
+      this.SOCKET_DEBUG = driver.SOCKET_DEBUG;
       Thread t = new Thread(this);
       t.start();
    }
@@ -58,10 +59,12 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
-      Log.info(ME, "Schutdown connection ...");
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Schutdown connection ...");
       if (sessionId != null) {
+         String tmp = sessionId;
+         sessionId = null;
          try {
-            authenticate.disconnect(sessionId, "<qos/>");
+            authenticate.disconnect(tmp, "<qos/>");
          }
          catch(Throwable e) {
             Log.warn(ME, e.toString());
@@ -69,6 +72,8 @@ public class HandleClient extends Executor implements Runnable
          }
       }
       running = false;
+      if (responseListenerMap.size() > 0)
+         Log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
    }
 
    /**
@@ -89,10 +94,20 @@ public class HandleClient extends Executor implements Runnable
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got update response " + response.toString());
-         String[] arr = (String[])response; // return the QoS
-         return arr[0]; // Hack until every update uses arrays (one qos for each message
+         if (updateIsOneway) {
+            if (warnUpdateIsOneway) {
+               Log.info(ME, "blocking update() mode is currently switched of");
+               warnUpdateIsOneway = false;
+            }
+            execute(parser, ONEWAY);
+            return "<qos><state>OK</state></qos>";
+         }
+         else {
+            Object response = execute(parser, WAIT_ON_RESPONSE);
+            if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got update response " + response.toString());
+            String[] arr = (String[])response; // return the QoS
+            return arr[0]; // Hack until every update uses arrays (one qos for each message
+         }
       }
       catch (IOException e1) {
          Log.error(ME+".update", "IO exception: " + e1.toString());
@@ -108,16 +123,17 @@ public class HandleClient extends Executor implements Runnable
       if (Log.CALL) Log.call(ME, "Handling client request ...");
       Parser receiver = new Parser();
       try {
-         Log.info(ME, "Client accepted ...");
+         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Client accepted ...");
 
          while (running) {
             try {
                //iStream = sock.getInputStream();
                receiver.parse(iStream);  // blocks until a message arrive
 
-               Log.info(ME, "Receiving message " + receiver.getMethodName() + "()");
+               if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
                if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
+               // receive() processes all invocations, only connect()/disconnect() we do locally ...
                if (receive(receiver) == false) {
                   if (Constants.CONNECT.equals(receiver.getMethodName())) {
                      ConnectQos conQos = new ConnectQos(receiver.getQos());
@@ -164,10 +180,10 @@ public class HandleClient extends Executor implements Runnable
          } // while(running)
       }
       finally {
-         Log.info(ME, "Schutdown thread ...");
          try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
+         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
 }

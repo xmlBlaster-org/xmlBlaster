@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.8 2002/02/16 11:51:37 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.9 2002/02/16 16:33:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -75,6 +75,7 @@ public class SocketDriver extends Thread implements I_Driver
    private java.net.InetAddress inetAddr = null;
    /** State of server */
    private boolean running = true;
+   boolean SOCKET_DEBUG=false;
 
 
    /**
@@ -84,6 +85,7 @@ public class SocketDriver extends Thread implements I_Driver
    public SocketDriver()
    {
       super(ME);
+      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", false);
    }
 
    /**
@@ -116,7 +118,7 @@ public class SocketDriver extends Thread implements I_Driver
       socketPort = XmlBlasterProperty.get("socket.port", 7607);
 
       if (socketPort < 1) {
-         Log.info(ME, "Option socket.port set to " + socketPort + ", xmlRpc server not started");
+         Log.info(ME, "Option socket.port set to " + socketPort + ", socket server not started");
          return;
       }
 
@@ -149,7 +151,7 @@ public class SocketDriver extends Thread implements I_Driver
       try {
          int backlog = XmlBlasterProperty.get("socket.backlog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(socketPort, backlog, inetAddr);
-         Log.info(ME, "Started successfully socket driver, access hostname=" + hostname + " port=" + socketPort);
+         Log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
          while (running) {
             Socket accept = listen.accept();
             //Log.trace(ME, "New incoming request on port=" + socketPort + " ...");
@@ -229,7 +231,8 @@ public class SocketDriver extends Thread implements I_Driver
       text += "   -socket.port        The SOCKET web server port [7607].\n";
       text += "   -socket.hostname    Specify a hostname where the SOCKET web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -socket.backlog     Queue size for incmming connection request [50].\n";
+      text += "   -socket.backlog     Queue size for incomming connection request [50].\n";
+      text += "   -socket.debug       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
    }
