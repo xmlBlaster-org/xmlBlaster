@@ -1259,16 +1259,13 @@ TODO
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
 
-      <!-- switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="use-gcc" value="true" />
-         </case>
-         <case value="windows">
-            <property name="use-msvc" value="true" />
-         </case>
-         <default>
+      <switch value="${os.name}" caseinsensitive="false">
+         <case value="Linux">
+            <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no change to change this (e.g. for Intel compiler) -->
+         </case>                                     <!-- Probably we need to set it all the time in build.properties -->
+         <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
          </default>
-      </switch -->
+      </switch>
       <echo message=" use-gcc       = ${use-gcc}"/>  <!-- Linux/UNIX default -->
       <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
