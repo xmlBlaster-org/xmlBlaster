@@ -3,7 +3,7 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.2 2002/05/16 15:42:28 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.3 2002/05/20 13:33:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,9 +12,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.helper.Constants;
+
 import org.xml.sax.Attributes;
 
+import java.util.Vector;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
@@ -95,6 +99,13 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    private boolean inRedeliver = false;
    /** the number of resend tries on failure */
    private int redeliver = 0;
+
+   /**
+    * Vector containing RouteInfo objects
+    */
+   protected Vector routeNodeVec = null;
+   /** Cache for RouteInfo in an array */
+   protected RouteInfo[] routeNodes = null;
 
 
    /**
@@ -210,6 +221,17 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    {
       if (expirationTimestamp == -1L)  return -1L;
       return expirationTimestamp - System.currentTimeMillis();
+   }
+
+   /**
+    * @return never null, but may have length==0
+    */
+   public final RouteInfo[] getRouteNodes() {
+      if (routeNodeVec == null)
+         this.routeNodes = new RouteInfo[0];
+      if (this.routeNodes == null)
+         this.routeNodes = (RouteInfo[]) routeNodeVec.toArray(new RouteInfo[0]);
+      return this.routeNodes;
    }
 
    /**
@@ -365,11 +387,16 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (!inRoute) return;
          inNode = true;
          String tmp = attrs.getValue("id");
-         if (tmp != null) nodeId = tmp.trim();
+         String id = null;
+         if (tmp != null) id = tmp.trim();
          tmp = attrs.getValue("stratum");
-         if (tmp != null) { try { /* Integer.parseInt(tmp.trim()); */ } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node stratum='" + tmp + "'"); }; }
+         int stratum = 0;
+         if (tmp != null) { try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node stratum='" + tmp + "'"); }; }
          tmp = attrs.getValue("timestamp");
-         if (tmp != null) { try { /* Long.parseLong(tmp.trim()); */ } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node timestamp='" + tmp + "'"); }; }
+         long timestamp = 0L;
+         if (tmp != null) { try { timestamp = Long.parseLong(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node timestamp='" + tmp + "'"); }; }
+         if (routeNodeVec == null) routeNodeVec = new Vector(5);
+         routeNodeVec.addElement(new RouteInfo(new NodeId(id), stratum, new Timestamp(timestamp)));
          return;
       }
    }
@@ -512,6 +539,14 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          sb.append(offset).append("   <redeliver>").append(getRedeliver()).append("</redeliver>");
       }
 
+      org.xmlBlaster.engine.cluster.RouteInfo[] routes = getRouteNodes();
+      if (routes.length > 0) {
+         sb.append(offset).append("<route>");
+         for (int ii=0; ii<routes.length; ii++)
+            sb.append(offset).append(routes[ii].toXml());
+         sb.append(offset).append("</route>");
+      }
+
       sb.append(offset).append("</qos>\n");
 
       return sb.toString();
@@ -537,34 +572,44 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       }
 
       // Check with RequestBroker.get() !!!
-      StringBuffer buf = new StringBuffer(512);
-      buf.append("\n<qos>");
+      StringBuffer sb = new StringBuffer(512);
+      sb.append("\n<qos>");
 
       if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state))
-         buf.append("\n <state id='").append(state).append("'/>");
+         sb.append("\n <state id='").append(state).append("'/>");
 
-      buf.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
-      buf.append("\n <priority>").append(msgUnitWrapper.getPublishQos().getPriority()).append("</priority>");
+      sb.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
+      sb.append("\n <priority>").append(msgUnitWrapper.getPublishQos().getPriority()).append("</priority>");
 
       if (subscriptionId != null)
-         buf.append("\n <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
+         sb.append("\n <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
       
-      buf.append(msgUnitWrapper.getXmlRcvTimestamp());
+      sb.append(msgUnitWrapper.getXmlRcvTimestamp());
 
       if (msgUnitWrapper.getPublishQos().getRemainingLife() > 0L)
-         buf.append("\n <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>");
+         sb.append("\n <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>");
 
       if (max > 0)
-         buf.append("\n <queue index='").append(index).append("' size='").append(max).append("'/>");
+         sb.append("\n <queue index='").append(index).append("' size='").append(max).append("'/>");
       if (redeliver > 0)
-         buf.append("\n <redeliver>").append(redeliver).append("</redeliver>");
-      if (nodeId != null && nodeId.length() > 0) {
-         buf.append("\n <route>"); // server internal added routing informations
-         buf.append("\n  <node id='").append(nodeId).append("'/>");
-         buf.append("\n </route>"); // server internal added routing informations
+         sb.append("\n <redeliver>").append(redeliver).append("</redeliver>");
+
+      org.xmlBlaster.engine.cluster.RouteInfo[] routes = msgUnitWrapper.getPublishQos().getRouteNodes();
+      if (routes.length > 0) {
+         sb.append("\n <route>");
+         for (int ii=0; ii<routes.length; ii++)
+            sb.append(routes[ii].toXml());
+         sb.append("\n </route>");
       }
-      buf.append("\n</qos>");
-      return buf.toString();
+      /*
+      if (nodeId != null && nodeId.length() > 0) {
+         sb.append("\n <route>"); // server internal added routing informations
+         sb.append("\n  <node id='").append(nodeId).append("'/>");
+         sb.append("\n </route>"); // server internal added routing informations
+      }
+      */
+      sb.append("\n</qos>");
+      return sb.toString();
    }
 
    public final String toString()
