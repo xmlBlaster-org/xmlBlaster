@@ -7,7 +7,7 @@
 #
 
 # number of retries if connection cannot directly be established
-jacorb.retries=2
+jacorb.retries=1
 jacorb.retry_interval=1000
 
 # size of network buffers for outgoing messages
