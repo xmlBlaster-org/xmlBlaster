@@ -152,7 +152,7 @@ public class XmlBlasterImpl
       throws XmlBlasterException
    {
 
-      if (log.CALL) log.call(ME, "Entering publish() ...");
+      if (log.CALL) log.call(ME, "Entering publishArr() for " + msgUnitArrWrap.size() + " entries ...");
       int arrayLength = msgUnitArrWrap.size();
 
       if (arrayLength < 1) {
@@ -178,7 +178,7 @@ public class XmlBlasterImpl
     */
    public void publishOneway(String sessionId, Vector msgUnitArrWrap)
    {
-      if (log.CALL) log.call(ME, "Entering publishOneway() ...");
+      if (log.CALL) log.call(ME, "Entering publishOneway() for " + msgUnitArrWrap.size() + " entries ...");
       int arrayLength = msgUnitArrWrap.size();
 
       if (arrayLength < 1) {
