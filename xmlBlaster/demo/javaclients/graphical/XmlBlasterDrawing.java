@@ -25,6 +25,7 @@ import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.client.I_Callback;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -163,7 +164,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       if (this.doPublishEvent) {
       	if (this.log.TRACE) traceToFront("figureChanged", e.getFigure()); 
          if (this.isBurstPublish) this.newChanged[this.currentIndex].add(e.getFigure()); 
-         else recursivePublish(e.getFigure());
+         else publishAll(e.getFigure());
       }
       if (this.log.CALL) this.log.call(ME, "figureChanged " + e.getFigure());
    }
@@ -229,7 +230,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       if (this.doPublishEvent) {
 			String figureId = getFigureId(figure);
 			if (this.isBurstPublish) this.newChanged[this.currentIndex].add(figure);
-			else recursivePublish(figure);
+			else publishAll(figure);
          if (this.log.TRACE) this.log.trace(ME, "add: adding '" + figureId + "'");
       }
       return super.add(figure);
@@ -348,7 +349,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 			while (iter.hasNext()) {
 				Figure fig = (Figure)iter.next();
 				if (fig instanceof Drawing) continue;
-				recursivePublish(fig);
+				publishAll(fig);
 			}
    		this.newChanged[this.publishIndex].clear();
       }
@@ -364,7 +365,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    private void publish(Figure figure) {
 		if (this.log.CALL) this.log.call(ME, "publish");
       // publish the message here ...
-		if (figure == null) return;
+		if (figure == null || figure instanceof Drawing) return;
       try {
 			if (this.log.TRACE) traceToFront("publish", figure);
          String figureId = getFigureId(figure);
@@ -411,12 +412,30 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 		}
 	}
 
-	private void recursivePublish(Figure fig) {
-		publish(fig);
+	private ArrayList recursivePublish(Figure fig, ArrayList entries) {
+		if (entries == null) entries = new ArrayList();
+		// publish(fig);
+		if (fig instanceof Drawing) return null;
+		entries.add(fig);
 		FigureEnumeration iter = fig.figures();
 		while (iter.hasNextFigure()) {
 			Figure child = iter.nextFigure();
-			recursivePublish(child);
+			entries = recursivePublish(child, entries);
+		}
+		iter = fig.getDependendFigures();
+		while (iter.hasNextFigure()) {
+			Figure child = iter.nextFigure();
+			entries = recursivePublish(child, entries);
+		}
+		return entries;
+	}
+
+	private void publishAll(Figure fig) {
+		ArrayList entries = recursivePublish(fig, null);
+		if (entries != null) {
+			for (int i=0; i < entries.size(); i++) {
+				publish((Figure)entries.get(i));	
+			}
 		}
 	}
 

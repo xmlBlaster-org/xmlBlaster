@@ -81,6 +81,7 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
 	 * Create a file chooser for the open file dialog. Subclasses may override this
 	 * method in order to customize the open file dialog.
 	 */
+/*
 	protected JFileChooser createOpenFileChooser() {
 		JFileChooser openDialog = new JFileChooser();
 		openDialog.setDialogTitle("Open Online Drawing...");
@@ -95,7 +96,7 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
 		
 		return openDialog;
 	}
-
+*/
 
    /**
     * Factory method to create a StorageFormatManager for supported storage formats.
