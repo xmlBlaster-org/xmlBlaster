@@ -38,7 +38,10 @@
    <configuration where="server">
 
       <p>
-      These parameters allow to configure a cache queue
+      These parameters allow to configure a cache queue, the 'queueName' needs
+      to be replaced by 'history', 'callback' or 'subject' to configure those
+      specific queues or additionally by 'connection' on client side to
+      configure the client side tail back queue.
       </p>
       <table border="1">
          <tr>
@@ -56,28 +59,28 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue/maxEntries</td>
-            <td>1000</td>
+            <td>queue/'queueName'/maxEntries</td>
+            <td>queue/history/maxEntries = 1000</td>
             <td>specifies the maximum number of entries allowed in the persistence portion of this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue/maxBytes</td>
+            <td>queue/'queueName'/maxBytes</td>
             <td>10485760L</td>
             <td>(10MB) specifies the maximum total size for the persistence portion allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue/maxEntriesCache</td>
+            <td>queue/'queueName'/maxEntriesCache</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in the RAM portion of this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue/maxBytesCache</td>
+            <td>queue/'queueName'/maxBytesCache</td>
             <td>2097152</td>
             <td>(2MB) specifies the maximum total size for the RAM portion allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -112,8 +115,8 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>queue/defaultPlugin</td>
-            <td>CACHE,1.0</td>
+            <td>queue/'queueName'/defaultPlugin</td>
+            <td>queue/callback/defaultPlugin  = CACHE,1.0</td>
             <td>The default implementation to be used for queues, it defaults to the here described cache plugin.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -172,7 +175,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
