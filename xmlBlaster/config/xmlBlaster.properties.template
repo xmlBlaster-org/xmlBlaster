@@ -132,3 +132,11 @@ LogFormat.Time=MEDIUM
 #LogFormat.Language=de
 #LogFormat.Country=DE
 #------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Any other custom properties can be added here. 
+# These are available through the API e.g.
+# String str = XmlBlasterProperty.get("MyApp.mykey", "defaultValue");
+#------------------------------------------------------------------------------
+
