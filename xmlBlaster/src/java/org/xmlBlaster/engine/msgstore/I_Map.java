@@ -161,7 +161,9 @@ public interface I_Map extends I_StorageProblemNotifier
 
    /**
     * @param entry the entry to change. This is the old entry, i.e. the entry on which the modification
-    *        has to take place. IMPORTANT: This method is not threadsafe since it does not make a lookup
+    *        has to take place by callback.
+    *        Or it is the new entry and you can pass null for callback.
+    *        IMPORTANT: This method is not threadsafe since it does not make a lookup
     *        to get the actual entry. The specified entry could be a dirty read, in which case the 
     *        current entry would be overwritten with this dirty value. If you want to work threadsafe 
     *        you should invoke change(long, callback). That method makes a lookup within the same 

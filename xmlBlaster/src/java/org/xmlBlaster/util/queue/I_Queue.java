@@ -107,13 +107,8 @@ public interface I_Queue extends I_StorageProblemNotifier
    // This is not true: Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
 
    /**
-    * Puts one queue entry on top of the queue. It does not wait. If the queue is ALREADY full at the time of
-    * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
-    * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
-    *
-    * You are not allowed to put identical entries twice. The behaviour is
-    * undefined.
-    *
+    * Puts one queue entry on top of the queue. 
+    * See the other put() for a detailed description.
     * @param msgQueueEntry the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'IGNORE_PUT_INTERCEPTOR=true' the put will not inform the
     *        QueuePutListener that a put occurred.
@@ -121,7 +116,7 @@ public interface I_Queue extends I_StorageProblemNotifier
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
     * @see I_QueuePutListener#putPre(I_QueueEntry)
     * @see I_QueuePutListener#putPost(I_QueueEntry)
-    * 
+    * @see #put(I_QueueEntry[], boolean)
     */
    void put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
       throws XmlBlasterException;
@@ -131,9 +126,10 @@ public interface I_Queue extends I_StorageProblemNotifier
     * Puts one queue entry on top of the queue. It does not wait. If the queue is ALREADY full at the time of
     * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
     * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
-    *
-    * You are not allowed to put identical entries twice. The behaviour is
-    * undefined.
+    * </p>
+    * The implementation must assure that identical entries which are put
+    * twice are only once in the store.
+    * The behavior if the new entry overwrites the old entry is undefined.
     *
     * @param msgQueueEntries the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'IGNORE_PUT_INTERCEPTOR=true' the put will not inform the

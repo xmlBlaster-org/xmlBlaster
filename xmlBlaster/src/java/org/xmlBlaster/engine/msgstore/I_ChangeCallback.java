@@ -15,6 +15,6 @@ public interface I_ChangeCallback
     * @param entry the entry to modify.
     * @return I_MapEntry the modified entry.
     * @throws XmlBlasterException if something has gone wrong and the change must be rolled back.
-    */				   
-    I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException;
+    */                             
+   I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException;
 }
