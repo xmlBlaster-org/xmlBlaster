@@ -14,6 +14,7 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #ifndef _CLIENT_UPDATEQOS_H
 #define _CLIENT_UPDATEQOS_H
 
+#include <util/Log.h>
 #include <util/XmlQoSBase.h>
 
 using namespace std;
@@ -140,6 +141,27 @@ namespace org { namespace xmlBlaster {
        */
       void startElement(const XMLCh* const name, AttributeList &attrs) {
          XmlQoSBase::startElement(name, attrs);
+
+         if (caseCompare(name,"state")) {
+            inState_ = true;
+            
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               XMLCh* attrName = XMLString::replicate(attrs.getName(i));
+               if ( caseCompare(attrName, "id") ) {
+                  XMLCh* oidHelper = xmlChTrimmer_.trim(attrs.getValue(i));
+                  char *buffer = XMLString::transcode(oidHelper);
+                  state_       = buffer;
+                  //log_.warn(me(), "state id = " + state_);
+                  delete buffer;
+                  delete oidHelper;
+               }
+               delete attrName;
+            }
+            return;
+         }
+
+
          if (!setFlagForAttribute(name, "state" , inState_,  attrs)) return;
          if (!setFlagForAttribute(name, "sender", inSender_, attrs)) return;
          setFlagForAttribute(name,"subscriptionId", inSubscriptionId_, attrs);
@@ -155,10 +177,12 @@ namespace org { namespace xmlBlaster {
          XmlQoSBase::endElement(name);
          if (caseCompare(name, "state")) {
             inState_ = false;
+            /*
             char *stateHelper = charTrimmer_.trim(character_.c_str());
             state_ = stateHelper;
             character_ = "";
             delete stateHelper;
+            */
             return;
          }
 
