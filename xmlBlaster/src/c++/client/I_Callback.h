@@ -19,8 +19,8 @@ namespace org { namespace xmlBlaster { namespace client {
  * You may use this, if you don't want to program with the rawer CORBA 
  * BlasterCallback.update()
  *
- * @version $Revision: 1.17 $
- * @author $Author: ruff $
+ * @version $Revision: 1.18 $
+ * @author $Author: laghi $
  */
 class Dll_Export I_Callback {
    /**
@@ -39,7 +39,8 @@ class Dll_Export I_Callback {
     *                  This sessionId was passed on subscription
     *                  we can use it to decide if we trust this update()
     * @param updateKey The arrived key
-    * @param content   The arrived message content
+    * @param content   The arrived message content. If the size is 0 it is NULL
+    * @param contentSize the size of the content of the message
     * @param qos       Quality of Service of the org::xmlBlaster::util::MessageUnit
     * @return The status std::string
     */

@@ -90,7 +90,8 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
          string oneRes = "<qos><state id='OK'/></qos>";
          if (!forCache) {
             if (boss_) {
-               int size = msgUnit.content.length();
+               int size = 0;
+               if (size > 0) size = msgUnit.content.length();
                void *content = NULL;
                if (size > 0) content = (void*)&msgUnit.content[0];
                if (log_.trace()) log_.trace(me(), "going to invoke client specific update");

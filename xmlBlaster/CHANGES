@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Fixed update problem when content is empty
+
  o Fixed dead letter handling on callback queue overflow
 
  o C client library: Fixed bug in trim() which lead on stress tests
@@ -27,6 +29,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o Fixed hsqldb.jar to compile/run with JDK 1.3 and 1.2 again.
 
+>>>>>>> 1.302
  o Fixed dead message loop if a dead message subscriber subribed
    on other messages as well and than crashed.
 
