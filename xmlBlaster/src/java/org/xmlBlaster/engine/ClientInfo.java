@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.16 1999/12/09 16:12:27 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.17 1999/12/09 17:37:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -20,12 +20,12 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * is instantiated here.<br />
  * Note that only CORBA is supported in this version.<br />
  * To add a new driver protocol, you only need to implement the empty
- * CallbackEmailDriver.java or CallbackHttpDriver.java
+ * CallbackEmailDriver.java or CallbackHttpDriver.java or any other protocol.
  * <p />
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -149,7 +149,7 @@ public class ClientInfo
 
 
    /**
-    * The QoS for the update callback, containing the <sender> name. 
+    * The QoS for the update callback, containing the <sender> name.
     * @param messageUnitWrapper The wrapper containing all message infos
     * @return the QoS (quality of service) for the update callback<br />
     *   Example:<br />
