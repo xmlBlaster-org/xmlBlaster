@@ -23,7 +23,7 @@ jacorb.ProxyServerURL=http://www.inf.fu-berlin.de/~brose/Proxy_Ref
 #jacorb.reference_caching=off
 
 # amount of diagnostic output, 0 is off
-jacorb.verbosity=4
+jacorb.verbosity=1
 
 # standard name for servers if none is specified
 jacorb.implname=StandardImplName
