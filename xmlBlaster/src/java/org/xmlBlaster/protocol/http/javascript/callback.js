@@ -231,6 +231,10 @@ function queue_( message )
       var call = "sendMessageQueue('"+this.frame.name+"')";
       this.timeOutHandle = window.setTimeout( call, this.queueTime );
    }
+   else {
+      //this is irrelevant, because the queue has to sent with size > 10 within 100msec
+      //The timer is already set and the message queue continue filling.
+   }
 }
 
 function sendMessageQueue(queueName)
