@@ -112,6 +112,7 @@ public class XmlBlasterAccessTest extends TestCase {
             address.setRetries(0);       // switch off polling
             connectQos.setAddress(address);
             ConnectReturnQos connectReturnQos = xmlBlasterAccess.connect(connectQos, null);
+            fail("Not expected successful connect");
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
@@ -152,11 +153,11 @@ public class XmlBlasterAccessTest extends TestCase {
          }
 
          assertTrue("", xmlBlasterAccess.getSecurityPlugin() != null);
-         assertEquals("", false, xmlBlasterAccess.disconnect(null));
+         assertEquals("", true, xmlBlasterAccess.disconnect(null));
          assertTrue("", xmlBlasterAccess.getConnectReturnQos() == null);
-         assertTrue("", xmlBlasterAccess.getConnectQos() != null);
+         assertTrue("", xmlBlasterAccess.getConnectQos() == null);
          assertTrue("", xmlBlasterAccess.getId() != null);
-         assertTrue("", xmlBlasterAccess.getSessionName() != null);
+         assertTrue("", xmlBlasterAccess.getSessionName() == null);
 
          xmlBlasterAccess.setServerNodeId(null);
          assertTrue("", xmlBlasterAccess.getServerNodeId() == null);
