@@ -3,7 +3,7 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.1 2002/08/23 21:24:57 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.2 2002/08/24 18:05:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
@@ -22,6 +22,7 @@ import org.jafw.saw.util.*;
 import org.jafw.saw.transport.*;
 import org.jafw.saw.server.*;
 import java.io.IOException;
+import java.io.File;
 
 
 /**
@@ -38,7 +39,7 @@ import java.io.IOException;
  * The variable soap.port (default 8686) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -soap.port 9090
+ * java java -Djafw.saw.server.config=/home/xmlblast/xmlBlaster/config/config.xml -jar lib/xmlBlaster.jar  -soap.port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -62,8 +63,18 @@ public class SoapDriver implements I_Driver
    /** The URL which clients need to use to access this server */
    private String serverUrl = null;
 
+   private final String CONFIG_SYSTEM_PROPERTY = "jafw.saw.server.config";
+
+
    private java.net.InetAddress inetAddr = null;
 
+   public SoapDriver() {
+      String vers = System.getProperty("java.version"); // "1.3.1" or "1.4.1-rc"
+      if (vers.compareTo("1.4") < 0)
+         Global.instance().getLog("soap").error(ME, "The SOAP plugin requires JDK 1.4 or higher to execute, you have JDK " + vers + ", please upgrade.");
+      else
+         Global.instance().getLog("soap").trace(ME, "The SOAP plugin requires JDK 1.4 or higher to execute, you have JDK " + vers + ", OK!");
+   }
 
    /**
     * Get a human readable name of this driver.
@@ -120,6 +131,28 @@ public class SoapDriver implements I_Driver
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
+
+      // try to find the xmlBlaster/config/conf.xml file
+      if (System.getProperty(CONFIG_SYSTEM_PROPERTY) == null) {
+         java.net.URL url = this.getClass().getResource("SoapDriver");
+         //java.net.URL url = this.getClass().getResource("org.xmlBlaster.protocol.soap.SoapDriver");
+         String confPath = null;
+         if (url != null) {
+            String libPath = url.getFile().toString();
+            libPath = libPath.substring(0, libPath.lastIndexOf("org/xmlBlaster/protocol/soap/SoapDriver"));
+            confPath = libPath + ".." + File.separator + "config" + File.separator + "config.xml";
+         }
+         else {
+            confPath = "config" + File.separator + "config.xml";
+         }
+         File f = new File(confPath);
+         if (f.exists() && f.canRead()) {
+            log.info(ME, "Using " + CONFIG_SYSTEM_PROPERTY + "=" + confPath);
+            System.setProperty(CONFIG_SYSTEM_PROPERTY, confPath);
+         }
+         else
+            log.warn(ME, "Can't locate " + confPath + ", specify with " + CONFIG_SYSTEM_PROPERTY + "=<file>");
+      }
 
       if (System.getProperty("saw.home") == null)
          System.setProperty("saw.home", glob.getProperty().get("saw.home", "/home/xmlblast/saw_0.995"));
