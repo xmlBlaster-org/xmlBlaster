@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.telnet' type='NEW' prio='LOW' status="CLOSED">
+   <topic>You can administer XmlBlaster sending messages</topic>
+   <description>
+    <p>
+      Messages marked in their key oid with <i>__cmd:</i> are handled as administrative messages.
+    </p>
+    <p>
+      Responses of <i>get()</i> commands are returned in the message content.
+    </p>
+   </description>
+
+   <example lang="any" type="HTML">
+    Start xmlBlaster.
+    We configure the server to have a nice and short name <i>heron</i>:
+    <pre>
+  java org.xmlBlaster.Main -cluster.node.id heron
+    </pre>
+
+    <p>
+      Check who is logged in:
+    </p>
+    <pre><![CDATA[
+  java org.xmlBlaster.client.reader.GetMessage -oid __cmd:?clientList
+
+    <key oid='__cmd:/node/heron/?clientList' contentMime='text/plain'/>
+    <content>guest,__sys__jdbc</content>
+    <qos/>
+
+    ]]></pre>
+
+    <p>
+      Now lets query and change the run level, the returned data is shown as well:
+    </p>
+    <pre><![CDATA[
+  java org.xmlBlaster.client.reader.GetMessage -oid __cmd:/node/heron/?runlevel
+
+    <key oid='__cmd:/node/heron/?runlevel' contentMime='text/plain'/>
+    <content>9</content>
+    <qos/>
+
+  java org.xmlBlaster.client.feeder.PublishFile -xmlKey "<key oid='__cmd:?runlevel=6'/>"
+
+    <qos>
+      <state id='OK' info='/node/heron/?runlevel=6'/>
+      <key oid='__cmd:?runlevel=6'/>
+    </qos>
+    ]]></pre>
+
+   <p>
+     Here we shutdown the server, the returned QoS is showed as well:
+    </p>
+    <pre><![CDATA[
+  java org.xmlBlaster.client.feeder.PublishFile -xmlKey "<key oid='__cmd:?exit=-1'/>"
+
+    <qos>
+      <state id='OK' info='/node/heron/?exit=-1'/>
+      <key oid='__cmd:?exit=-1'/>
+    </qos>
+    ]]></pre>
+
+    <p>
+      Usually you do this in your client code directly, PublishFile and GetMessage
+      are examples only to show usage from command line.
+   </p>
+
+    <p>
+       Please read the <a href="admin.commands.html">admin.commands requirement</a>
+       for a description of the command syntax.
+    </p>
+
+   </example>
+
+   <todo type='HTML'>
+      <p>
+      Testsuite is missing.
+      </p>
+   </todo>
+   
+   <see type="API">org.xmlBlaster.engine.admin.extern.MomClientGateway</see>
+   <see type="REQ">admin</see>
+   <see type="REQ">admin.commands</see>
+   
+   <author>ruff@swand.lake.de</author>
+   
+   <date>2002 05 18</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Currently not available</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
