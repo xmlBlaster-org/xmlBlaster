@@ -83,7 +83,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
-    * Should be avoided to call directly.
+    * Check the query type, Constants.XPATH, Constants.EXACT, Constants.DOMAIN are currently supported
     */
    public String checkQueryType(String queryType) throws XmlBlasterException {
       queryType = queryType.toUpperCase();
@@ -176,18 +176,6 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
 
    public String getQueryString() {
       return this.queryString;
-   }
-
-   public boolean isExact() {
-      return Constants.EXACT.equals(this.queryType);
-   }
-
-   public boolean isXPath() {
-      return Constants.XPATH.equals(this.queryType);
-   }
-
-   public boolean isDomain() {
-      return Constants.DOMAIN.equals(this.queryType);
    }
 
    /**
