@@ -12,19 +12,25 @@
       Every xmlBlaster client can address this service with any valid SQL statement.
       If the SQL statement was a 'SELECT' the result set is delivered xml encoded.
       </p>
+      <p>
       You need to setup the xmlBlaster JDBC driver in xmlBlaster.properties to use the RDBMS service.<br />
       First the xmlBlaster driver has to be activated (which is default):
-      <pre>
-      Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
-                       JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+      </p>
+      <table border="1"><tr><td><pre>
+Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+                  JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
 
-      Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
-                       JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
-      </pre>
-      Second, you have to activate the JDBC driver of your databases:<br />
-      <pre>
-      JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
-      </pre>
+Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+                  JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+      </pre></td></tr></table>
+      <p>
+      Second, you have to activate the JDBC driver of your databases:
+      </p>
+      <table border="1"><tr><td><pre>
+JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,\
+                   org.gjt.mm.mysql.Driver,\
+                   postgresql.Driver
+      </pre></td></tr></table>
       <p>
       JdbcDriver.drivers is a comma delimited list of database drivers.
       Use as many as you like.
@@ -44,41 +50,47 @@
       <p>
       To invoke the client, try something similar to the following:
       </p>
-      <pre>
-      java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:postgresql://24.3.47.214/postgres" \
-        -user postgres \
-        -pass secret \
-        -type query \
-        -query "select * from foo_table" \
-        -limit 50 \
-        -confirm true
-      </pre>
+      <table border="1"><tr><td><pre>
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:postgresql://24.3.47.214/postgres" \
+   -user postgres \
+   -pass secret \
+   -type query \
+   -query "select * from foo_table" \
+   -limit 50 \
+   -confirm true
+      </pre></td></tr></table>
+      <p>
       or to invoke an update:
-      <pre>
-      java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
-        -user marcel \
-        -pass secret \
-        -type update \
-        -query "INSERT INTO myTable VALUES( '1', to_date('0816', 'hh24mi'), 'james', 'START')"
-      </pre>
+      </p>
+      <table border="1"><tr><td><pre>
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
+   -user marcel \
+   -pass secret \
+   -type update \
+   -query "INSERT INTO myTable VALUES( '1', to_date('0816', 'hh24mi'), 'james', 'START')"
+      </pre></td></tr></table>
+      <p>
       Options:
-      <pre>
-      -url (any valid JDBC url)
-      -user (valid DB username)
-      -pass (valid DB password)
-      -query (any valid SQL syntax)
-      -type (query|update) query by default - determines the interaction with db
-      -confirm (true|false) true by default - when set to true, you get an answer
-      -limit (any integer) 50 by default - used to limit the number of rows returned
-      </pre>
+      </p>
+      <table border="1"><tr><td><pre>
+   -url (any valid JDBC url)
+   -user (valid DB username)
+   -pass (valid DB password)
+   -query (any valid SQL syntax)
+   -type (query|update) query by default - determines the interaction with db
+   -confirm (true|false) true by default - when set to true, you get an answer
+   -limit (any integer) 50 by default - used to limit the number of rows returned
+      </pre></td></tr></table>
+      <p>
       NOTE:
-      <pre>
-      If you are querying, set your -type to 'query'.<br />
-      If you are updating (insert, update, delete) set -type to 'update'.<br />
-      If you are updating and don't want a confirmation, set -confirm to 'false'.<br />
-      </pre>
+      </p>
+      <ol>
+         <li>If you are querying, set your -type to 'query'.</li>
+         <li>If you are updating (insert, update, delete) set -type to 'update'.</li>
+         <li>If you are updating and don't want a confirmation, set -confirm to 'false'.</li>
+      </ol>
       <p>
       More examples are in xmlBlaster/demo/javaclients/jdbc
       </p>
@@ -86,68 +98,78 @@
       If you want to do queries synchronously, for example if you
       don't want to establish a callback server in your client,
       see the example in
-      <pre>
-         xmlBlaster/demo/javaclients/jdbc/XmlDBClientSync.java
-      </pre>
+      </p>
+      <table border="1"><tr><td><pre>
+xmlBlaster/demo/javaclients/jdbc/XmlDBClientSync.java
+      </pre></td></tr></table>
+      <p>
       get() requests on key oid="__sys__jdbc" are handled by xmlBlaster (see RequestBroker.java)
       directly and the result set is delivered as the return value of the get() request.
       </p>
    </description>
-   <example lang="Java">
-      <![CDATA[
-We demonstrate RDBMS access with a simple command line example,
-creating, inserting and querying a table 'person' with Oracle:
 
-   java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
-        -query "CREATE TABLE person (name VARCHAR(32), age NUMBER)"
+   <example lang="any" type="HTML">
+      <p>
+      We demonstrate RDBMS access with a simple command line example,
+      creating, inserting and querying a table 'person' with Oracle:
+      </p>
 
-   java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
-        -query "INSERT INTO person VALUES( 'Ben', '6' )"
+      <table border="1"><tr><td><pre>
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+   -query "CREATE TABLE person (name VARCHAR(32), age NUMBER)"
 
-   java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
-        -query "INSERT INTO person VALUES( 'Tim', '8' )"
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+   -query "INSERT INTO person VALUES( 'Ben', '6' )"
 
-   java javaclients.jdbc.XmlDBClient \
-        -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf \
-        -query "SELECT * FROM person"
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+   -query "INSERT INTO person VALUES( 'Tim', '8' )"
 
-The result looks like this:
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf \
+   -query "SELECT * FROM person"
+      </pre></td></tr></table>
 
-   <?xml version="1.0" encoding="UTF-8"?>
-   <dbadapterresults>
-     <desc>
-       <numcolumns>2</numcolumns>
-       <columnnames>
-         <column>NAME</column>
-         <column>AGE</column>
-       </columnnames>
-       <rownum>2</rownum>
-     </desc>
-     <results>
-       <row>
-         <NAME>
+      <p>
+      The result looks like this:
+      </p>
+
+      <table border="1"><tr><td><pre>
+   &lt;?xml version="1.0" encoding="UTF-8"?>
+   &lt;dbadapterresults>
+     &lt;desc>
+       &lt;numcolumns>2&lt;/numcolumns>
+       &lt;columnnames>
+         &lt;column>NAME&lt;/column>
+         &lt;column>AGE&lt;/column>
+       &lt;/columnnames>
+       &lt;rownum>2&lt;/rownum>
+     &lt;/desc>
+     &lt;results>
+       &lt;row>
+         &lt;NAME>
            Ben
-         </NAME>
-         <AGE>
+         &lt;/NAME>
+         &lt;AGE>
            6
-         </AGE>
-       </row>
-       <row>
-         <NAME>
+         &lt;/AGE>
+       &lt;/row>
+       &lt;row>
+         &lt;NAME>
            Tim
-         </NAME>
-         <AGE>
+         &lt;/NAME>
+         &lt;AGE>
            8
-         </AGE>
-       </row>
-     </results>
-   </dbadapterresults>
-
-Note that the result values are encapsulated by CDATA sections (not shown here).
-      ]]>
+         &lt;/AGE>
+       &lt;/row>
+     &lt;/results>
+   &lt;/dbadapterresults>
+      </pre></td></tr></table>
+      <p>
+      Note that the result values are encapsulated by CDATA sections (not shown here).
+      </p>
    </example>
    <todo>
    INSERT and UPDATE are currently literally given, there should
@@ -163,7 +185,7 @@ Note that the result values are encapsulated by CDATA sections (not shown here).
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>
