@@ -13,7 +13,18 @@ Author:    laghi@swissinfo.org
                 exclude-result-prefixes="#default">
 
 <xsl:output method="xml"/>
-
+ 
+  <!--
+      If you put this stylesheet in the directory where the requirements reside, you don't need
+      to pass this paramterer.
+      For some (to me unknown) reason forrest takes everything relative to the forrest:context
+      directory, so this has to be set to:
+      
+      <map:parameter name="offset" value="../src/documentation/xdocs/xmlBlaster/doc/requirements"/>
+      
+   -->
+  <xsl:param name="offset" select="''"/>
+   
   <xsl:template match="@*|*|text()|processing-instruction()|comment()">
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()|processing-instruction()|comment()"/>
@@ -22,7 +33,7 @@ Author:    laghi@swissinfo.org
 
    <xsl:template match="html:a[@class='source'] | a[@class='source']">
       <img class="embed" src="embedded.gif"></img><br/>
-      <xsl:apply-templates select="document(@href)/html:html//html:pre"/>
+      <xsl:apply-templates select="document(concat($offset, @href))/html:html//html:pre"/>
    </xsl:template>
 
    <!-- this is to remove the links inside the 'pre' tag since they are wrong anyway -->      
