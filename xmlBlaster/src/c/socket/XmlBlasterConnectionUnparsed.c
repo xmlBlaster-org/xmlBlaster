@@ -166,7 +166,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
                strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
 #              endif
                xb->log(xb->logLevel, LOG_WARN, __FILE__,
-                  "Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed, %s",
+                  "Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, %s",
                   serverHostName, servTcpPort, errnoStr);
             }
             return false;
@@ -174,14 +174,14 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
       }
       else {
          if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
-            "Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d",
+            "Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
             serverHostName, servTcpPort, errno);
          return false;
       }
    }
    else {
       if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
-         "Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d", serverHostName, servTcpPort, errno);
+         "Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d", serverHostName, servTcpPort, errno);
       return false;
    }
    xb->isInitialized = true;

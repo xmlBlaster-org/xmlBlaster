@@ -91,7 +91,7 @@ extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAcc
 /**
  * Help usage
  */
-extern const char *xmlBlasterAccessUnparsedUsage();
+extern const char *xmlBlasterAccessUnparsedUsage(char *usage);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
