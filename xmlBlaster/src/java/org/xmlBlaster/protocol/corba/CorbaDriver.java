@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.16 2001/03/11 18:31:10 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.17 2001/03/26 14:15:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -206,7 +206,21 @@ public class CorbaDriver implements I_Driver
 
 
    /**
-    *  Instructs the ORB to shut down, which causes all object adapters to shut down.
+    *  Instructs the ORB to shut down, which causes all object adapters to shut down. 
+    * <p />
+    * JacORB behavior:<br />
+    * The POA is not "connected" to the ORB in any particular way
+    * other than that is exists. You can call destroy() on a POA
+    * to make it disappear. Calling shutdown() on the ORB will 
+    * implicitly destroy all POAs.
+    * <p />
+    * Ports are not linked to POAs in JacORB. Rather, there is a single
+    * master port in any server-side ORB which gets created when the
+    * root poa is retrieved for the first time. The server process
+    * accepts incoming connections on this port and creates new
+    * ports for every client process. Because of this connection
+    * multiplexing, ports are not released when POAs are destroyed, 
+    * but when clients exit, or when server-side timouts occur.
     */
    public void shutdown()
    {
