@@ -3,7 +3,6 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -11,11 +10,18 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.Msgs;
+import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
 
@@ -31,25 +37,25 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubXPath
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubXPath
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestSubXPath
  * </pre>
  */
-public class TestSubXPath extends TestCase implements I_Callback
+public class TestSubXPath extends TestCase
 {
-   private static String ME = "TestSubXPath";
+   private String ME = "TestSubXPath";
    private final Global glob;
    private final LogChannel log;
-   private boolean messageArrived = false;
 
    private String publishOid = "";
    private XmlBlasterConnection senderConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
 
-   private int numReceived = 0;         // error checking
    private int numPublish = 5;
    private final String contentMime = "text/xml";
    private String subscribeOid = null;
+
+   private MsgInterceptor updateInterceptor;
 
    /**
     * Constructs the TestSubXPath object.
@@ -73,14 +79,16 @@ public class TestSubXPath extends TestCase implements I_Callback
    protected void setUp() {
       try {
          senderConnection = new XmlBlasterConnection(glob); // Find orb
-         String passwd = "secret";
-         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(this.glob, this.senderName, "secret");
+         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
+         senderConnection.connect(qos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
+      this.updateInterceptor.getMsgs().clear();
    }
 
    /**
@@ -89,14 +97,6 @@ public class TestSubXPath extends TestCase implements I_Callback
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   /xmlBlaster/key/AGENT" +
-                      "</key>";
-      try {
-         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
-         assertEquals("Erase", numPublish, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
-
       senderConnection.disconnect(null);
    }
 
@@ -104,14 +104,13 @@ public class TestSubXPath extends TestCase implements I_Callback
     * TEST: Subscribe to message number 3 with XPATH.
     * <p />
     */
-   private void subscribeXPath() {
+   private void subscribeXPath(String query) {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   /xmlBlaster/key/AGENT[@id='message_3']" +
+                      query +
                       "</key>";
-      String qos = "<qos></qos>";
-      numReceived = 0;
+      String qos = "<qos/>";
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
@@ -158,64 +157,67 @@ public class TestSubXPath extends TestCase implements I_Callback
     * TEST: Construct 5 messages and publish them,<br />
     * the previous XPath subscription should match message #3 and send an update.
     */
-   public void testPublishAfterSubscribeXPath()  {
-      subscribeXPath();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Wait some time for callback to arrive ...
-      assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
+   public void testInitial()  {
+      ME = "TestSubXPath:testInitial()";
 
-      numReceived = 0;
-      doPublish();
-      waitOnUpdate(5000L);
-      assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
+      String oid = "INITIAL";
 
-      numReceived = 0;
-      doPublish();
-      waitOnUpdate(5000L);
-      assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
-   }
+      subscribeXPath("//demo");
+      assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, null, null));
+      this.updateInterceptor.getMsgs().clear();
 
-   /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " subId=" + updateQos.getSubscriptionId() + " ...");
-
-      numReceived += 1;
-
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
-      String contentStr = new String(content);
-      assertEquals("Message content is corrupted", "Content: message_3", contentStr);
-      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
-      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
-
-      messageArrived = true;
-      return "";
-   }
-
-   /**
-    * Little helper, waits until the variable 'messageArrive' is set
-    * to true, or returns when the given timeout occurs.
-    * @param timeout in milliseconds
-    */
-   private void waitOnUpdate(final long timeout) {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (!messageArrived) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
+      try {
+         PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
+         pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+         PublishQos pq = new PublishQos(glob);
+         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         PublishReturnQos tmp = senderConnection.publish(msgUnit);
+         assertEquals("returned oid", oid, tmp.getKeyOid());
       }
-      messageArrived = false;
+      catch (XmlBlasterException e) {
+         log.error(ME, e.getMessage());
+         fail(e.getMessage());
+      }
+
+      try {
+         EraseReturnQos[] arr = senderConnection.erase("<key oid='"+oid+"'/>", "<qos/>");
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
+   }
+
+   /**
+    * TEST: Construct 5 messages and publish them,<br />
+    * the previous XPath subscription should match message #3 and send an update.
+    */
+   public void testPublishAfterSubscribeXPath()  {
+      ME = "TestSubXPath:testPublishAfterSubscribeXPath()";
+
+      subscribeXPath("/xmlBlaster/key/AGENT[@id='message_3']");
+      // there should be no Callback
+      assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, null, null));
+      this.updateInterceptor.getMsgs().clear();
+
+      int n = 4;
+      for(int i=0; i<n; i++) {
+         log.info(ME, "TEST " + (i+1) + " - publishing 5 messages, expecting No.3");
+         doPublish();
+         assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, "3", Constants.STATE_OK));
+         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
+         Msg msg = this.updateInterceptor.getMsgs().getMsgs()[0];
+         assertEquals("Corrupt content", senderName, msg.getUpdateQos().getSender().getLoginName());
+         assertEquals("Corrupt content", "Content: message_3", msg.getContentStr());
+         assertEquals("Message contentMime is corrupted", contentMime, msg.getUpdateKey().getContentMime());
+         assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, msg.getUpdateQos().getSubscriptionId());
+         this.updateInterceptor.getMsgs().clear();
+      }
+
+      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
+                      "   /xmlBlaster/key/AGENT" +
+                      "</key>";
+      try {
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         assertEquals("Erase", numPublish, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
    }
 
    /**
@@ -224,19 +226,19 @@ public class TestSubXPath extends TestCase implements I_Callback
    public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
+       suite.addTest(new TestSubXPath(new Global(), "testInitial", loginName));
        suite.addTest(new TestSubXPath(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubXPath
-    * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubXPath</pre>
     */
    public static void main(String args[]) {
       TestSubXPath testSub = new TestSubXPath(new Global(args), "TestSubXPath", "Tim");
       testSub.setUp();
-      testSub.testPublishAfterSubscribeXPath();
+      testSub.testInitial();
+      //testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
    }
 }
