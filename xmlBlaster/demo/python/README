@@ -35,20 +35,22 @@ Get more informations at
 This is the simplest Python client code:
 -------------------------------------------------------------------
 import xmlrpclib
-server_url = 'http://localhost:8080/';
+
+server_url = 'http://myHost:8080/';
 server = xmlrpclib.Server(server_url);
-print "SUCCESS: Connected to", server_url;
+print "\nSUCCESS: Connected to", server_url;
 
 # Login to xmlBlaster
 sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "mySessionId");
-print "login success with sessionId=", sessionId;
+print "\nLogin success with sessionId=", sessionId;
 
 # Call the server and get our result.
 message = server.xmlBlaster.get( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
-print "get result=", message;
+print "Result for a get():\n\n", message;
 
-# Asynchronous access - not yet implemented
-#server.xmlBlaster.subscribe( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+# Logout from xmlBlaster
+server.authenticate.logout( sessionId );
+print "\nLogout done, bye.\n";
 -------------------------------------------------------------------
 
 
