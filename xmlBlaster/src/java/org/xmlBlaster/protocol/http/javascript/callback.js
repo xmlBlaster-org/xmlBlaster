@@ -407,9 +407,8 @@ function getListeners()
 function reloadListener()
 {
    for( var i = 0; i < listenerList.length; i++ ) {
-      listenerList[i].frame.document.location.reload();
+      listenerList[i].frame.location.reload();
    }
-
 }
 
 
