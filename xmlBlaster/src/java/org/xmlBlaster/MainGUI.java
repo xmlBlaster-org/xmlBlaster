@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.56 2003/10/03 19:36:51 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.57 2003/10/05 17:30:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
@@ -21,6 +21,9 @@ import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.UpdateKey;
 
@@ -41,7 +44,10 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
  *   <li>Invoke XPath queries on messages in xmlBlaster</li>
  * </ul>
  * The available start parameters are similar to Main
- * @see Main
+ * <p>
+ * The login name "__sys__GuiQuery" is reserved!<br />
+ * </p>
+ * @see org.xmlBlaster.Main
  */
 public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
@@ -57,14 +63,6 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    private Button hideButton;
    private Button clearLogButton;
    private Button dumpButton;
-
-   /**
-    * This client is only for internal use, it is un secure to pass it outside because
-    * there is no authentication.<br />
-    * The login name "__sys__GuiQuery" is reserved!<br />
-    * TODO: security discussion
-    */
-   private SessionInfo unsecureSessionInfo = null;
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
@@ -618,7 +616,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             }
          }
          catch (Exception e) {
-            System.err.println("PollingThread problem: "+ e.toString());
+            log.trace(ME, "PollingThread problem: "+ e.toString());
+            //e.printStackTrace();
          }
       }
    }
@@ -644,7 +643,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                   }
                   queryOutput.setText("");
                   getQueryHistory().changedHistory(inputTextField.getText());
-                  MsgUnit[] msgArr = clientQuery.get(inputTextField.getText());
+                  MsgUnitRaw[] msgArr = clientQuery.get(inputTextField.getText());
                   for (int ii=0; ii<msgArr.length; ii++) {
                      /*
                      UpdateKey updateKey = new UpdateKey();
@@ -707,11 +706,11 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       private String queryType = Constants.XPATH;
       private StopWatch stop = new StopWatch();
       /** Handle to login */
-      I_Authenticate authenticate = null;
+      I_Authenticate authenticate;
       /** The handle to access xmlBlaster */
-      private I_XmlBlaster xmlBlasterImpl = null;
+      private I_XmlBlaster xmlBlasterImpl;
       /** The session id on successful authentication */
-      private String sessionId = null;
+      private String secretSessionId;
 
       /**
        * Login to xmlBlaster and get a sessionId.
@@ -720,39 +719,37 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       {
          this.xmlBlasterImpl = xmlBlasterImpl;
          this.authenticate = authenticate;
-         /*
          String loginName = glob.getProperty().get("__sys__GuiQuery.loginName", "__sys__GuiQuery");
          String passwd = glob.getProperty().get("__sys__GuiQuery.password", "secret");
-         ConnectQos con = new ConnectQos(authenticate.getGlobal());
-         con.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
-         sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
-         */
-         SessionName subjectName = new SessionName(glob, "__sys__GuiQuery");
-         unsecureSessionInfo = this.authenticate.unsecureCreateSession(subjectName);
-         log.info(ME, "login for '" + subjectName.getAbsoluteName() + "' successful.");
+         ConnectQos connectQos = new ConnectQos(authenticate.getGlobal());
+         connectQos.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
+         connectQos.getSessionQos().setSessionTimeout(0L);
+         String ret = authenticate.connect(connectQos.toXml(), null); // synchronous access only, no callback.
+         ConnectReturnQos retQos = new ConnectReturnQos(authenticate.getGlobal(), ret);
+         this.secretSessionId = retQos.getSecretSessionId();
+         log.info(ME, "login for '" + loginName + "' successful.");
       }
 
       /**
        * Query xmlBlaster.
        */
-      MsgUnit[] get(String queryString)
+      MsgUnitRaw[] get(String queryString)
       {
          try {
             GetKey getKey = new GetKey(this.authenticate.getGlobal(), queryString, queryType);
             stop.restart();
-            MsgUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(
-                     unsecureSessionInfo, getKey.getData(), new GetQosServer(this.authenticate.getGlobal(), "<qos/>"));
+            MsgUnitRaw[] msgArr = this.xmlBlasterImpl.get(this.secretSessionId, getKey.toXml(), "<qos/>");
             log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
             log.error(ME, "XmlBlasterException: " + e.getMessage());
-            return new MsgUnit[0];
+            return new MsgUnitRaw[0];
          }
       }
 
       /** Logout. */
       void logout() {
-         try { this.authenticate.disconnect(sessionId, null); } catch (XmlBlasterException e) { }
+         try { this.authenticate.disconnect(this.secretSessionId, null); } catch (XmlBlasterException e) { }
       }
    }
 
