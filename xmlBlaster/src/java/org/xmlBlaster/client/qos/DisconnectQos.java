@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.3 2003/05/06 16:06:26 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.4 2003/07/11 15:07:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
@@ -133,7 +133,7 @@ public class DisconnectQos
     * <p>
     * Controls client side behavior.
     * </p>
-    * @param clearClientQueue true Removes all entries of the client side tailback queue<br />
+    * @param clearClientQueue true Removes all entries of the client side tailback queue which is default<br />
     *                         false Keep persistent entries in client side queue, will be sent on next connect
     *                               of the same client with the same public session ID.
     */
