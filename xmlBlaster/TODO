@@ -4,7 +4,7 @@ TODO for release 0.79
 (1) Generic support for DOM  and SAX in the xmlBlaster                [--]
 (2) Integrate persistence support with mudb                           [--]
 (3) Perl support(src/perl) with xmlrpc and not with COPE.             [--]
-(4) Suuport for searching in out Maillinglist by Majorcool            [--]
+(4) Suport for searching in our Maillinglist                          [--]
 (5) Integrate XmlRpc                                                  [ok]
 (6) Integrate XmlRpc for Perl                                         [--]
 (7) Autoconf for C++                                                  [--]
