@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.31 2000/07/11 13:59:48 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.32 2000/07/12 12:55:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -29,13 +29,16 @@ import javax.servlet.http.*;
  * TODO:
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
- *
+ * <p />
+ * This could (should) be an interface and the different https methods
+ * should be implemented in derived classes, but this is better performing :-)
+ * <p />
  * @author Marcel Ruff ruff@swand.lake.de
  * @see Java Servlet Programming from Jason Hunter
  */
 public class HttpPushHandler
 {
-   static private final String ME  = "HttpPushHandler";
+   private String ME  = "HttpPushHandler";
    /**
     * Ping the browser every 10 seconds.
     * <br />
@@ -76,45 +79,26 @@ public class HttpPushHandler
 
 
    /**
-    * Use on browser request.
-    * This could (should) be an interface and the different https methods
-    * should be implemented in derived classes, but this is better performing :-)
-    * @param req The request object
-    * @param res The response object
-    * @param sessionId The browser id
-    * @param head The HTML header section including the body start tag
-    * @param tail The HTML tail section including the body end tag
-    */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res,
-                          String sessionId, String head, String tail)
-                               throws ServletException, IOException
-   {
-      this.req = req;
-      this.res = res;
-      this.sessionId = sessionId;
-      initialize(head, tail);
-   }
-
-
-   /**
     * Use this constructor if you are too lazy to pass a HTML header, a default will be used.
     * @param req The request object
     * @param res The response object
     * @param sessionId The browser id
+    * @param loginName For debugging only
     */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId)
+   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId, String loginName)
                                throws ServletException, IOException
    {
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
+      this.ME  = "HttpPushHandler-" + req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
       initialize(null, null);
 
       pushQueue = new Vector();
       setBrowserIsReady(true);
 
       Log.trace(ME,"Creating PingThread ...");
-      pingThread = new HttpPingThread( this, PING_INTERVAL );
+      pingThread = new HttpPingThread( this, PING_INTERVAL, loginName );
    }
 
 
@@ -198,13 +182,16 @@ public class HttpPushHandler
     */
    private void cleanup()
    {
-      if (Log.CALLS) Log.calls(ME, "Entering cleanup() ...");
+      if (Log.CALLS) Log.calls(ME, "Entering cleanup(" + sessionId + ") ...");
       try {
          ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
-         if (pc != null) pc.cleanup(sessionId);
+         if (pc != null) {
+            pc.cleanup(sessionId);
+            if (Log.TRACE) Log.trace(ME, "Deleted " + sessionId + " ...");
+         }
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId);
+         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + Log.getStackTrace());
       }
    }
 
@@ -453,7 +440,7 @@ public class HttpPushHandler
       retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");
       retStr.append("</body></html>\n");
-      Log.warning(ME, "Sending alert to browser: " + text);
+      Log.warning("HttpPushHandler", "Sending alert to browser: " + text);
       return retStr.toString();
    }
 
@@ -530,7 +517,7 @@ public class HttpPushHandler
     */
    private class HttpPingThread extends Thread
    {
-      private final String ME = "HttpPingThread";
+      private String ME = "HttpPingThread";
       private HttpPushHandler pushHandler;
       private final long PING_INTERVAL;
       private boolean pingRunning = true;
@@ -552,8 +539,10 @@ public class HttpPushHandler
 
       /**
        * @param pingInterval How many milli seconds sleeping between the pings
+       * @param loginName For debugging only
        */
-      HttpPingThread(HttpPushHandler pushHandler, long pingInterval) {
+      HttpPingThread(HttpPushHandler pushHandler, long pingInterval, String loginName) {
+         this.ME = "HttpPingThread-" + loginName;
          this.pushHandler = pushHandler;
          this.PING_INTERVAL = pingInterval;
          if (Log.CALLS) Log.calls(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");

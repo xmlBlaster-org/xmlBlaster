@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.22 2000/07/11 13:59:48 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.23 2000/07/12 12:55:28 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -38,12 +38,12 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
 {
-   private final String ME                 = "ProxyConnection";
+   private String ME                 = "ProxyConnection";
    private final String loginName;
    private final String passwd;
    private CorbaConnection corbaConnection = null;
@@ -57,6 +57,8 @@ public class ProxyConnection implements I_Callback
    {
       this.loginName = loginName;
       this.passwd = passwd; // remember it to allow multiple browser logins for the same user
+      this.ME = "ProxyConnection-" + loginName;
+
       if (Log.TRACE) Log.trace(ME, "Creating ProxyConnection ...");
 
       if (loginName == null || loginName.length() < 1 || passwd == null || passwd.length() < 1)
@@ -203,6 +205,16 @@ public class ProxyConnection implements I_Callback
          throw new XmlBlasterException(ME+".BrowserLost", "Your sessionId '" + sessionId + "' is invalid");
 
       return ph;
+   }
+
+   /**
+    * @return The HttpPushHandler object or null if not found
+    */
+   public final HttpPushHandler getHttpPushHandlerOrNull( String sessionId )
+   {
+      if (sessionId == null) return null;
+
+      return (HttpPushHandler)httpConnections.get( sessionId );
    }
 
    /**

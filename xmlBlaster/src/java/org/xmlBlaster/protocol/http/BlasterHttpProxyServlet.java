@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.43 2000/07/11 17:45:52 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.44 2000/07/12 12:55:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,11 +39,11 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
 {
-   private static final String ME = "BlasterHttpProxyServlet";
+   private static boolean propertyRead = false;
 
    /**
     * This method is invoked only once when the servlet is startet.
@@ -52,18 +52,28 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
+      
+      if (!propertyRead) {
+         propertyRead = true;
+         try {
+            org.xmlBlaster.util.XmlBlasterProperty.init(new String[0]);
+         } catch(org.jutils.JUtilsException e) {
+            Log.error("BlasterHttpProxyServlet", e.toString());
+         }
+      }
+
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      // Log.addLogLevel("TRACE"); // Use this to trace the code
-      // Log.addLogLevel("CALLS");
+      Log.addLogLevel("TRACE"); // Use this to trace the code
+      Log.addLogLevel("CALLS");
       // Log.addLogLevel("TIME");
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
       // outcomment this line:
       //Log.addLogListener(this);
 
-      Log.trace(ME, "Initialize ...");
+      Log.trace("BlasterHttpProxyServlet", "Initialize ...");
 
       initSystemProperties(conf); // Using JacORB and Suns XML parser as a default ...
    }
@@ -87,7 +97,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      if (Log.TRACE) Log.trace(ME, "Entering doGet() ... " + Memory.getStatistic());
+      if (Log.CALLS) Log.calls("BlasterHttpProxyServlet", "Entering doGet() ... " + Memory.getStatistic());
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
@@ -102,7 +112,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          session = req.getSession(true);
       }
       String sessionId = session.getId();
-      if (Log.TRACE) Log.trace(ME, "Processing doGet() for sessionId=" + sessionId);
+
+      String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
+      if (Log.TRACE) Log.trace(ME, "Processing doGet()");
 
       if (sessionId == null) {
          PrintWriter out = res.getWriter();
@@ -121,9 +133,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             if (passwd == null || passwd.length() < 1)
                throw new XmlBlasterException(ME, "Missing passwd");
 
-            Log.info(ME, "Login action for user " + loginName);
+            ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
+            Log.info(ME, "Login action");
 
-            HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId);
+            HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId, loginName);
 
             ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(loginName, passwd);
             pushHandler.startPing();
@@ -165,7 +178,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                }
             }
             pushHandler = null;
-            Log.info(ME, "Persistent HTTP connection lost, leaving doGet(sessionId=" + sessionId + ") ....");
+            Log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
             /*
             System.out.println("Currently consumed threads:");
             System.out.println("===========================");
@@ -225,7 +238,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          //------------------ logout ---------------------------------------------------------
          else if (actionType.equals("logout")) {
-            Log.info(ME, "Logout for sessionId '" + sessionId + "' arrived ...");
+            Log.info(ME, "Logout arrived ...");
             try {
                ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
                pc.cleanup(sessionId);
@@ -296,7 +309,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       //HttpSession session = req.getSession();
       HttpSession session = req.getSession(false);
       String sessionId = req.getRequestedSessionId();
-      Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
+
+      String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
+      Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet");
+
       ProxyConnection proxyConnection = null;
       CorbaConnection xmlBlaster = null;
       HttpPushHandler pushHandler = null;
@@ -382,6 +398,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     */
    static public final void initSystemProperties(ServletConfig conf)
    {
+      String ME  = "BlasterHttpProxyServlet";
+
       Properties props = System.getProperties();
 
       // XmlBlaster uses as a default JacORB
