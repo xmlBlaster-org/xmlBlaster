@@ -616,7 +616,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *                See XmlKey.dtd for a description
     * @param qos     Quality of Service, flags to control subscription<br>
     *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
-    * @return A sequence of 0 - n MessageUnit structs
+    * @return A sequence of 0 - n MessageUnit structs. 0 if no message matched.
+    * @exception XmlBlasterException on internal errors
     * @see org.xmlBlaster.client.GetQosWrapper
     */
    MessageUnit[] get(SessionInfo sessionInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
@@ -647,8 +648,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
 
             if( msgUnitHandler == null ) {
-               Log.warn(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
-               throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+               Log.warn(ME, "get(): The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+               continue NEXT_MSG;
+               //throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
             }
 
             if (msgUnitHandler.isPublishedWithData()) {
