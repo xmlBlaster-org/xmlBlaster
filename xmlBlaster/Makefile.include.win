@@ -118,17 +118,26 @@ help:
 	@echo "   make test      --> makes everything new and starts a test scenario"
 	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
 
+
 all_SUB_DIRS:
-	@for i in $(SUB_DIRS) ; do \
-	   (cd $$i; \
-	   echo "Making $$i" ; \
-	   $(MAKE) all;) \
+	@for i in $(SUB_DIRS) "ignore" ; do \
+	   ( \
+	   if [ -d $$i ]; then \
+		   cd $$i; \
+	      echo "Making $$i" ; \
+	      $(MAKE) all; \
+		fi \
+		) \
 	done
 
 clean_SUB_DIRS:
-	@for i in $(SUB_DIRS) ; do \
-	   (cd $$i; \
-	   echo "Cleaning $$i" ; \
-	   $(MAKE) clean;) \
+	@for i in $(SUB_DIRS) "ignore" ; do \
+	   ( \
+	   if [ -d $$i ]; then \
+		   cd $$i; \
+		   echo "Cleaning $$i" ; \
+		   $(MAKE) clean; \
+		fi \
+		) \
 	done
 
