@@ -32,13 +32,15 @@ Dll_Export const char * INFO_QUEUED = "QUEUED";
 Dll_Export const char * RELATING_SESSION = "session";
 Dll_Export const char * RELATING_SUBJECT = "subject";
 Dll_Export const char * RELATING_UNRELATED = "unrelated";
+Dll_Export const char * RELATING_UNRELATED = "unrelated";
+Dll_Export const char * RELATING_CLIENT = "client";
 
 Dll_Export const char * ONOVERFLOW_BLOCK = "block";
 Dll_Export const char * ONOVERFLOW_DEADLETTER = "deadLetter";
 Dll_Export const char * ONOVERFLOW_DISCARD = "discard";
 Dll_Export const char * ONOVERFLOW_DISCARDOLDEST = "discardOldest";
 Dll_Export const char * ONOVERFLOW_EXCEPTION = "exception";
-
+Dll_Export const char * ONOVERFLOW_DEADMESSAGE = "deadMessage";
 Dll_Export const char * ONEXHAUST_KILL_SESSION = "killSession";
 
 Dll_Export const char * SESSIONID_PRAEFIX = "sessionId:";

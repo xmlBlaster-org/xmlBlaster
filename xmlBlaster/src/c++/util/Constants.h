@@ -134,6 +134,8 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * RELATING_SUBJECT;
    /** Type of a message queue */
    extern Dll_Export const char * RELATING_UNRELATED;
+   /** Type of a message queue  on client side */
+   extern Dll_Export const char * RELATING_CLIENT;
 
    /** message queue onOverflow handling, default is blocking until queue takes messages again */
    extern Dll_Export const char * ONOVERFLOW_BLOCK;
@@ -145,6 +147,9 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * ONOVERFLOW_DISCARDOLDEST;
    /** message queue onOverflow handling */
    extern Dll_Export const char * ONOVERFLOW_EXCEPTION;
+   /** message queue onOverflow handling */
+   extern Dll_Export const char * ONOVERFLOW_DEADMESSAGE;
+
 
    /** If callback fails more often than is configured the login session is destroyed */
    extern Dll_Export const char * ONEXHAUST_KILL_SESSION;
