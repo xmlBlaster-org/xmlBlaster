@@ -499,7 +499,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    private DeliveryManagerEntry changeManagerState(DeliveryManager deliveryManager, ConnectionStateEnum newState, boolean flush) {
       DeliveryManagerEntry managerEntry = getDeliveryManagerEntry(deliveryManager);
       if (managerEntry == null) {
-         throw new IllegalArgumentException("Internal error in " + newState + ": deliveryManager=" + deliveryManager + " is unknown, deliveryManagerEntryMap.size()=" + deliveryManagerEntryMap.size());
+         throw new IllegalArgumentException("Internal error in " + newState + ": deliveryManager=" + deliveryManager.toXml("") + " is unknown, deliveryManagerEntryMap.size()=" + deliveryManagerEntryMap.size());
       }
       managerEntry.setCurrConnectionState(newState);
       StatusConfiguration tmp = parser.getStatusConfiguration(newState);
@@ -533,7 +533,9 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
       }
       if (de != null) {
          if (de.getHoldbackQueue() != null) {
-            try { de.getHoldbackQueue().destroy(); } catch (XmlBlasterException e) { log.error(ME, "Problems on shutdown of holdback queue: " + e.toString()); }
+            // org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback throws an exception if
+            // we activate the following line -> we need to investigate this issue
+            //try { de.getHoldbackQueue().destroy(); } catch (XmlBlasterException e) { log.error(ME, "Problems on shutdown of holdback queue: " + e.toString()); }
             de.getHoldbackQueue().shutdown(true);
          }
       }
