@@ -20,4 +20,6 @@
 
    Query xmlBlaster:
 
+      jaco javaclients.ClientQuery -queryXpath "/xmlBlaster/key"
+      
       jaco javaclients.ClientQuery -queryXpath "//AGENT/DRIVER"
