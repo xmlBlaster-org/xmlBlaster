@@ -1,8 +1,22 @@
 How to install and compile xmlBlaster
 ====================================
 
-You need CD 2 or better to run xmlBlaster.
+You need JDK 1.2 or better to run xmlBlaster.
 
+If you use sh, ksh or bash, you may chose to source
+the xmlBlaster/.bashrc into your environment, for example:
+
+   export JDK_HOME=/usr/local/jdk
+	export JacORB_HOME=/usr/local/JacORB
+	export XMLBLASTER_HOME=${HOME}/xmlBlaster
+	export MICO_HOME=/usr/local/mico           (optional)
+	. xmlBlaster/.bashrc
+
+and after a new login type 'make all' in the XMLBLASTER_HOME directory.
+See step 5.) below how to start xmlBlaster.
+
+
+Manual setup of xmlBlaster:
 
 1) Install the JacORB CORBA library first (JacORB1_0-beta13):
 
