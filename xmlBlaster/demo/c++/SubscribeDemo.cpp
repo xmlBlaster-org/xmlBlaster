@@ -4,16 +4,11 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Little demo to show how a subscribe is done
 -----------------------------------------------------------------------------*/
-
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
 #include <util/PlatformUtils.hpp>
 #include <util/lexical_cast.h>
-
-
-/**
- *
- */
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::client;

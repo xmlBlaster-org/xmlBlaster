@@ -1,6 +1,7 @@
 #define MICO_CONF_IMR
 #include <CORBA-SMALL.h>
 #include "xmlBlaster.h"    // xmlBlaster.h generated from 'xmlBlaster.idl'
+#include <iostream>
 
 using namespace std;
 using namespace authenticateIdl;

@@ -9,6 +9,7 @@ Comment:   Little demo to show how a publish is done
 #include <util/Global.h>
 #include <util/PlatformUtils.hpp>
 #include <util/lexical_cast.h>
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::client;
@@ -103,7 +104,7 @@ int main(int args, char ** argv)
       XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
-      Log&    log  = glob.getLog("demo");
+      Log& log  = glob.getLog("demo");
 
       for (int i=0; i < args; i++) {
          string help = argv[i];
@@ -138,9 +139,7 @@ int main(int args, char ** argv)
    catch (char* ex) {
       cout << "char* :  " << ex << endl;
    }
-
-   catch (...)
-   {
+   catch (...) {
       cout << "unknown exception occured" << endl;
       XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");
       cout << e.toXml() << endl;

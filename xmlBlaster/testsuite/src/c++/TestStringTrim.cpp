@@ -4,13 +4,13 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
-
 #include <util/StringTrim.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

@@ -4,9 +4,9 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
-
 #include "TestSuite.h"
 #include <vector>
+#include <iostream>
 
 /**
  * Tests the queue entry and queue functionality. The following is tested here:

@@ -8,6 +8,7 @@ Comment:   Testing the Timeout Features
 
 #include <client/protocol/corba/CorbaDriverFactory.h>
 #include "TestSuite.h"
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

@@ -3,10 +3,10 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.24 2003/07/03 21:01:55 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.25 2003/07/07 12:09:27 ruff Exp $
 -----------------------------------------------------------------------------*/
-
 #include "TestSuite.h"
+#include <iostream>
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath

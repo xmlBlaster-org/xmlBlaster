@@ -118,7 +118,7 @@ public:
             org::xmlBlaster::util::thread::Thread::sleepSecs(1);
          }
          catch(XmlBlasterException e) {
-            cout << e.toXml() << endl;
+            log_.error(ME, e.toXml());
          }
 
          // now an update should have come. Its time to erase the message,
@@ -144,7 +144,7 @@ public:
          con.disconnect(disconnectQos);
       }
       catch (XmlBlasterException e) {
-         cout << e.toXml() << endl;
+         log_.error(ME, e.toXml());
       }
    }
 

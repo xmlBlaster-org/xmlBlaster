@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.12 2003/05/23 09:05:00 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.13 2003/07/07 12:09:27 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -29,6 +29,7 @@ Version:   $Id: TestLogin.cpp,v 1.12 2003/05/23 09:05:00 ruff Exp $
 #include <util/StopWatch.h>
 #include <util/Global.h>
 #include <client/I_Callback.h>
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

@@ -4,7 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
-
 #include <util/qos/ConnectQos.h>
 #include <util/qos/ConnectQosFactory.h>
 #include <util/XmlBlasterException.h>
@@ -12,6 +11,7 @@ Comment:   Testing the Timeout Features
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
+#include <iostream>
 
 namespace org { namespace xmlBlaster { namespace test {
 

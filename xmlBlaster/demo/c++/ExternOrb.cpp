@@ -7,6 +7,7 @@
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
 #include <client/protocol/corba/CorbaDriverFactory.h>
+#include <iostream>
 
 /**
  * This demo shows how to use XmlBlasterAccess with an orb which is already initialized. Since

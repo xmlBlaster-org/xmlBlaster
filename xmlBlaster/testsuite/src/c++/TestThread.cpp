@@ -4,8 +4,8 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Thread cleanup
 -----------------------------------------------------------------------------*/
-
 #include "TestSuite.h"
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

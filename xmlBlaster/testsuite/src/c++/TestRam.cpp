@@ -3,12 +3,12 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.10 2003/05/21 20:21:33 ruff Exp $
+Version:   $Id: TestRam.cpp,v 1.11 2003/07/07 12:09:27 ruff Exp $
 ---------------------------------------------------------------------------*/
-
 #include <util/XmlBCfg.h>
 #include "TestSuite.h"
 #include <util/StopWatch.h>
+#include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::client;

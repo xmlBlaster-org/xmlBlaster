@@ -2,9 +2,9 @@
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 #include <generated/xmlBlaster.h>
-
 #include <fstream>
 #include <string>
+#include <iostream>
 
 using namespace std;
 using namespace authenticateIdl;
