@@ -367,11 +367,11 @@ public final class ClusterManager
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
          if (clusterNode.isAllowed() == false) {
-            log.info(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
+            if (log.TRACE) log.trace(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
             continue;
          }
          if (!clusterNode.isLocalNode() && publishQos.count(clusterNode.getNodeId()) > 0) {
-            log.info(ME, "Ignoring node id='" + clusterNode.getId() + "' for routing, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
+            if (log.TRACE) log.trace(ME, "Ignoring node id='" + clusterNode.getId() + "' for routing, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
                "' has been there already");
             continue;
          }
@@ -405,12 +405,12 @@ public final class ClusterManager
             if (log.TRACE) log.trace(ME, "Using local node for message, no master mapping rules are known.");
          }
          else {
-            log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+            log.info(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' mime='" + msgWrapper.getContentMime() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "', using local node.");
          }
          return null;
       }
       if (masterSet.size() > 1) {
-         log.info(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         if (log.TRACE) log.trace(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
       }
 
       ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
@@ -421,7 +421,12 @@ public final class ClusterManager
          return null;
       }
 
-      log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
+      if (clusterNode.isLocalNode()) {
+         if (log.TRACE) log.trace(ME, "Using local node '" + clusterNode.getId() + "' as master for message oid='"
+               + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+      }
+      else
+         log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
 
       return clusterNode.getXmlBlasterConnection();

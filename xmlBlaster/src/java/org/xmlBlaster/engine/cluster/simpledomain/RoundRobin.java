@@ -157,12 +157,12 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
                     + " nodes, but we are only stratum=" + nodeDomainInfo.getStratum() + ". The message is not routed further!");
             }
             else {
-               log.info(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
+               if (log.TRACE) log.trace(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
             }
             return clusterManager.getMyClusterNode();
          }
          ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
-         log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+         if (log.TRACE) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
          return clusterNode;
       }
 
@@ -175,7 +175,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
          if (ii == counter) {
             NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)obj;
             ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
-            log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+            if (log.TRACE) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
             counter++;
             return clusterNode;
          }

@@ -32,6 +32,8 @@ import java.util.Iterator;
  * can be loaded depending on the mime type of a message, we
  * register it here for all messages, see getMessages().
  * <p />
+ * Switch on logging with '-trace[cluster] true'
+ * <p />
  * @author ruff@swand.lake.de 
  * @since 0.79e
  */
@@ -186,21 +188,21 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       ClusterNode clusterNode = null;
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
          if (xmlKey.match(keyMappings[ii])) {
-            log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
+            if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
             AccessFilterQos[] filterQos = keyMappings[ii].getFilterQos();
             if (filterQos != null && filterQos.length > 0) {
-               log.info(ME, "Found " + filterQos.length + " filter rules in XmlKey ...");
+               if (log.TRACE) log.trace(ME, "Found " + filterQos.length + " key specific filter rules in XmlKey ...");
                for (int jj=0; jj<filterQos.length; jj++) {
                   I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
                                                 filterQos[jj].getType(),
                                                 filterQos[jj].getVersion(), 
                                                 xmlKey.getContentMime(),
                                                 xmlKey.getContentMimeExtended());
-                  log.info(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
+                  if (log.TRACE) log.trace(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
                   SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
                   if (filter != null && filter.match(subjectInfo, subjectInfo,
                                                 msgWrapper, filterQos[jj].getQuery())) {
-                     log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+                     if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
                      return nodeDomainInfo.getClusterNode(); // Found the master
                   }
                }
@@ -213,24 +215,24 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       // Check for user supplied filters <master><filter>... These are the filter based queries
       AccessFilterQos[] filterQos = nodeDomainInfo.getFilterQos();
       if (filterQos != null && filterQos.length > 0) {
-         log.info(ME, "Found " + filterQos.length + " filter rules ...");
+         if (log.TRACE) log.trace(ME, "Found " + filterQos.length + " global filter rules ...");
          for (int jj=0; jj<filterQos.length; jj++) {
             I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
                                           filterQos[jj].getType(),
                                           filterQos[jj].getVersion(), 
                                           xmlKey.getContentMime(),
                                           xmlKey.getContentMimeExtended());
-            log.info(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
+            if (log.TRACE) log.trace(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
             SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
             if (filter != null && filter.match(subjectInfo, subjectInfo,
                                           msgWrapper, filterQos[jj].getQuery())) {
-               log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+               if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
                return nodeDomainInfo.getClusterNode(); // Found the master
             }
          }
       }
 
-      if (log.TRACE) log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' with given rules=" + nodeDomainInfo.toXml());
+      if (log.TRACE) log.trace(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' with given rules=" + nodeDomainInfo.toXml());
       // Another rule can still choose this node as a master
 
       return null; // This clusternode is not the master
