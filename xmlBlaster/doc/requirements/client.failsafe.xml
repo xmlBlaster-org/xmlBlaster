@@ -324,31 +324,31 @@
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
 ...
 
 con.registerConnectionListener(new I_ConnectionStateListener() {
       
       public void reachedAlive(ConnectionStateEnum oldState,
-                               I_ConnectionHandler connectionHandler) {
-         conRetQos = connectionHandler.getConnectReturnQos();
+                               I_XmlBlasterAccess connection) {
+         ConnectReturnQos conRetQos = connection.getConnectReturnQos();
          log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " +
-                      glob.getId() + " as " + conRetQos.getSessionName());
-         // we can access the queue via connectionHandler and for example
-         // erase the entries ...
+            connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
+         // we can access the queue via 'connection' and for example
+         // erase the entries:
+         //connection.getQueue().clear();
       }
       public void reachedPolling(ConnectionStateEnum oldState,
-                                 I_ConnectionHandler connectionHandler) {
+                                 I_XmlBlasterAccess connection) {
          log.warn(ME, "I_ConnectionStateListener: No connection to " +
-                      glob.getId() + ", we are polling ...");
+                  connection.getGlobal().getId() + ", we are polling ...");
       }
       public void reachedDead(ConnectionStateEnum oldState,
-                              I_ConnectionHandler connectionHandler) {
+                              I_XmlBlasterAccess connection) {
          log.warn(ME, "I_ConnectionStateListener: Connection to " +
-                      glob.getId() + " is DEAD");
+                  connection.getGlobal().getId() + " is DEAD");
       }
    });
-
+ 
 ConnectReturnQos conRetQos = con.connect(qos, this);
 
 log.info(ME, "Connected to xmlBlaster.");
@@ -521,7 +521,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
