@@ -30,7 +30,7 @@ logDevice[cb]=console,file
    </description>
    <example lang="Java" type="HTML">
      
-      <b>This is an example of a Log4j I_LogDeviceFactory</b>
+      <h2 id="LOG4J">This is an example of a Log4j I_LogDeviceFactory</h2>
       
       <pre>
       <![CDATA[
@@ -58,6 +58,7 @@ public class Log4jDeviceFactory implements I_LogDeviceFactory {
    
    public String getType() {return "log4j";}
    public String getVersion() {return "1.0";}
+   public void shutdown() {}
 
    public  LogableDevice getLogDevice(LogChannel channel) {
       String key = channel.getChannelKey();
@@ -117,6 +118,20 @@ public class Log4jDeviceFactory implements I_LogDeviceFactory {
        LoggableDevicePlugin[log4j][1.0]=org.backsource.in.blaster.Log4jDeviceFactory
        logDevice=log4j
       </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+   <h2 id="JDK14">Redirect logging into JDK 1.4 (or higher) java.util.logging framework</h2>
+   <p>
+   XmlBlaster provides a plugin, called <tt>LogJdkDeviceFactory</tt>,
+   which redirects xmlBlaster logging output to
+   the JDK native logging facility which is available since JDK 1.4.
+   To activate it please add those lines to <tt>xmlBlaster.properties</tt>:
+   </p>
+   <pre>
+LoggableDevicePlugin[jdk14logging][1.0]=org.xmlBlaster.util.log.LogJdkDeviceFactory
+logDevice=jdk14logging
+   </pre>
    </example>
 
    <configuration where="server">
