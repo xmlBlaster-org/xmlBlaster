@@ -697,7 +697,7 @@ final public class Authenticate implements I_RunlevelListener
          Iterator iterator = clientListenerSet.iterator();
          while (iterator.hasNext()) {
             I_ClientListener cli = (I_ClientListener)iterator.next();
-            cli.clientQosUpdated(sessionInfo, qos);
+            // cli.clientQosUpdated(sessionInfo, qos);
          }
       }
    }

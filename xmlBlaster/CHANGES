@@ -2,7 +2,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o the EntryFactories are now threadsafe and the Global.getEntryFactory now
    does not take any name and the factory is a singleton. EntryFactory.getName
-   does not exist anymore.
+   does not exist anymore. I_StoragePlugin.getType can be used instead
  
  o added XmlScriptInterpreter which can execute xmlBlaster commands from an
    xml file (in a way similar to ant, maven and jelly)
