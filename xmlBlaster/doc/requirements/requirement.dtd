@@ -93,4 +93,5 @@ Comment:   Validates xml requirements
 <!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">
 
 <!-- The type SUITE allows the XSL to create a link into the xmlBlaster testsuite -->
-<!ATTLIST test tool (SUITE | MANUAL) "SUITE">
+<!ATTLIST test tool (SUITE | MANUAL) "SUITE"
+               lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript | XmlRpc) "Java">

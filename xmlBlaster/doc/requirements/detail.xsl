@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.27 2003/05/23 08:54:43 ruff Exp $
+Version:   $Id: detail.xsl,v 1.28 2003/06/18 12:45:51 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -82,7 +82,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2003/05/23 08:54:43 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2003/06/18 12:45:51 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -296,10 +296,26 @@ Author:    xmlBlaster@marcelruff.info
                <xsl:if test="@tool='SUITE'">
                   <td class="reqId">See TEST</td>
                     <td>
-                  <a>
-                    <xsl:attribute name="href">../../testsuite/src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>
-                    <xsl:value-of select="."/>
-                  </a>
+                     <xsl:if test="@lang='Java'">
+                       <a>
+                         <xsl:attribute name="href">../../testsuite/src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>
+                         <xsl:value-of select="."/>
+                       </a>
+                     </xsl:if>
+
+                     <xsl:if test="@lang='C'">
+                       <a>
+                         <xsl:attribute name="href">../../testsuite/src/c/<xsl:value-of select="translate(.,'.','/')"/>.c.html</xsl:attribute>
+                         <xsl:value-of select="."/>
+                       </a>
+                     </xsl:if>
+
+                     <xsl:if test="@lang='CPP'">
+                       <a>
+                         <xsl:attribute name="href">../../testsuite/src/cpp/<xsl:value-of select="translate(.,'.','/')"/>.cpp.html</xsl:attribute>
+                         <xsl:value-of select="."/>
+                       </a>
+                     </xsl:if>
                   </td>
                </xsl:if>
 
