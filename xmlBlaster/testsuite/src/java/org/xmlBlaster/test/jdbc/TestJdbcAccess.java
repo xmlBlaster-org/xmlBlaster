@@ -156,7 +156,8 @@ public class TestJdbcAccess extends TestCase
 
       wrap.initQuery(100, true, "SELECT * from cars");
       result = invokeSyncQuery(wrap);
-      log.info(ME, "Retrieved cars:\n" + result);
+      log.info(ME, "Successful retrieved cars, dump ommitted to not disturb JUNIT test report generation");
+      log.trace(ME, "Retrieved cars:\n" + result);
    }
 
    /**
@@ -164,7 +165,8 @@ public class TestJdbcAccess extends TestCase
     */
    private String invokeSyncQuery(XmlDbMessageWrapper wrap) {
       try {
-         log.info(ME, "Sending command string:\n" + wrap.toXml());
+         log.info(ME, "Sending command string");
+         log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
          GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQosWrapper qos = new GetQosWrapper();
