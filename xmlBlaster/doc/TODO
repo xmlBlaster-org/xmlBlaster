@@ -40,7 +40,7 @@
   Action: read, write, erase, change
   Data:   Any data in xmlBlaster (XPath query)
 
-- reliability of update() callback
+- Reliability of update() callback
   The update() method is declared oneway, so the xmlBlaster
   can't guarantee if the update is delivered.
 
@@ -50,6 +50,13 @@
   In the blocking mode, xmlBlaster would need a timeout
   or an extra thread per update client, so that not
   one client can block the whole update sequence.
+
+- Transaction support, based on:
+  Java(tm) Transaction Service (JTS) 1.0 Specification.    
+  JTS specifies the implementation of a Transaction Manager which 
+  supports the Java(tm) Transaction API (JTA) 1.0 Specification.
+  http://java.sun.com/products/jts/
+
 
 Clients
 -------
