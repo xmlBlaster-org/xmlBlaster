@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.6 2000/03/13 17:04:02 ruff Exp $
+Version:   $Id: Property.java,v 1.7 2000/03/14 10:50:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -115,7 +115,7 @@ public class Property
 
 
    /**
-    * Remove the given property. 
+    * Remove the given property.
     * <p />
     * This method does nothing if the key is not in the property hashtable.
     * @param key the key to remove
@@ -252,7 +252,7 @@ public class Property
    /**
     * Look for properties file.
     * 1) In $HOME
-    * 2) Im $XMLBLASTER_HOME
+    * 2) In $XMLBLASTER_HOME
     * 3) Local directory
     * 4) Fallback: \xmlBlaster oder /usr/local/xmlBlaster
     *

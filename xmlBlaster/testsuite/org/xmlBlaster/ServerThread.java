@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.2 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.3 2000/03/14 10:50:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,8 +19,8 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 public class ServerThread extends Thread
 {
    private static final String ME = "ServerThread";
-   /** This is the default xmlBlaster server port, which is probably blocked by another xmlBlaster server */
-   private int port = 7609;
+   /** Key/value array, containing command line arguments or xmlBlaster.properties variables to be used */
+   private String[] args;
    /** Invoke thread.stopServer=true; to stop it. */
    private boolean stopServer = false;
    private org.xmlBlaster.Main xmlBlasterMain = null;
@@ -37,7 +37,36 @@ public class ServerThread extends Thread
     */
    public static ServerThread startXmlBlaster(int serverPort)
    {
-      ServerThread serverThread = new ServerThread(serverPort);
+      String[] args = new String[4];
+      args[0] = "-iorPort";
+      args[1] = "" + serverPort;
+      args[2] = "-doBlocking";
+      args[3] = "false";
+      ServerThread serverThread = new ServerThread(args);
+      serverThread.start();
+      Util.delay(3000L);    // Wait some time
+      Log.info(ME, "Server is up!");
+      return serverThread;
+   }
+
+
+   /**
+    * Creates an instance of xmlBlaster and starts the server.
+    * <p />
+    * @param args Key/value array, containing command line arguments or xmlBlaster.properties variables to be used
+    * @return the xmlBlaster handle, pass this to method stopXmlBlaster
+    *         to shutdown the server again.
+    */
+   public static ServerThread startXmlBlaster(String[] args)
+   {
+      if (args==null) args = new String[0];
+
+      String[] args2 = new String[args.length + 2];
+      for (int ii=0; ii<args.length; ii++)
+         args2[ii] = args[ii];
+      args2[args.length]   = "-doBlocking";
+      args2[args.length+1] = "false";
+      ServerThread serverThread = new ServerThread(args2);
       serverThread.start();
       Util.delay(3000L);    // Wait some time
       Log.info(ME, "Server is up!");
@@ -60,7 +89,7 @@ public class ServerThread extends Thread
    /*
     * Constructor is private, create an instance through ServerThread.starXmlBlaster()
     */
-   private ServerThread(int port) { this.port = port; }
+   private ServerThread(String[] args) { this.args = args; }
 
 
    /*
@@ -68,11 +97,6 @@ public class ServerThread extends Thread
     */
    public void run() {
       Log.info(ME, "Starting a xmlBlaster server instance for testing ...");
-      String[] args = new String[4];
-      args[0] = "-iorPort";
-      args[1] = "" + port;
-      args[2] = "-doBlocking";
-      args[3] = "false";
       xmlBlasterMain = new org.xmlBlaster.Main(args);
       while(!stopServer) {
          try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}

@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.6 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.7 2000/03/14 10:50:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -56,8 +56,7 @@ public class PublishFile
          usage();
          return;
       }
-
-      Log.setLogLevel(args);
+      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
       loginName = Args.getArg(args, "-name", ME);
       passwd = Args.getArg(args, "-passwd", "secret");
@@ -133,6 +132,26 @@ public class PublishFile
          xmlQos = publishQos.toXml();  // default qos = "<qos></qos>"
       }
 
+      feed(xmlKey, content, xmlQos);
+   }
+
+
+   /**
+    * Open the connection, publish the message, close the connection. 
+    */
+   public PublishFile(String loginName, String passwd, String xmlKey, byte[] content, String xmlQos)
+   {
+      this.loginName = loginName;
+      this.passwd = passwd;
+      feed(xmlKey, content, xmlQos);
+   }
+
+
+   /**
+    * open the connection, publish the message, close the connection
+    */
+   protected void feed(String xmlKey, byte[] content, String xmlQos)
+   {
       setUp();  // login
 
       publish(xmlKey, content, xmlQos); // publish message
@@ -150,7 +169,6 @@ public class PublishFile
    {
       try {
          senderConnection = new CorbaConnection(); // Find orb
-         String passwd = "secret";
          String loginQos = "<qos></qos>";
          xmlBlaster = senderConnection.login(loginName, passwd, loginQos); // Login to xmlBlaster
       }
@@ -214,6 +232,7 @@ public class PublishFile
       Log.plain(ME, "   These options only if you didn't specify -k or -xmlKey explicitly");
       Log.plain(ME, "   -m  <MIMEtype>      The MIME type of the message.");
       Log.plain(ME, "   -me <MIMEextendend> The extenden MIME type (for your own use).");
+      //CorbaConnection.usage();
       //Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
