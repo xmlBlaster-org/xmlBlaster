@@ -104,7 +104,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 
    ME = string("XmlBlasterAccess-") + connectReturnQos_.getSessionQos().getAbsoluteName();
    
-   global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
+   // Is done in ConnectionsHandler.cpp
+   //global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
    
    return connectReturnQos_;
 }
