@@ -25,6 +25,7 @@ public class PluginRegistry {
    private static String ME = "PluginRegistry";
    private final Global glob;
    private final LogChannel log;
+   /** key=pluginId String, value=I_Plugin */
    private Hashtable plugins;
 
 
@@ -77,17 +78,15 @@ public class PluginRegistry {
       } 
    }
 
-
-   /**
+   /*
     * Returns the plugins which are registered in the cache with a name prefix
     * as the one specified in 'type'.
     * Example:
     * plugin is registered as:
     * protocol:IOR
     * type is 'protocol', then the plugin is found.
-    */
-   public Vector getPluginsOfType(String type) {
-      if (this.log.CALL) this.log.call(ME, "getPluginsOfType '" + type + "'");
+   public Vector getPluginsOfGroup(String type) {
+      if (this.log.CALL) this.log.call(ME, "getPluginsOfGroup '" + type + "'");
       Vector ret = new Vector();
       synchronized(this) {
          Enumeration enum = this.plugins.keys();
@@ -96,7 +95,7 @@ public class PluginRegistry {
             StringTokenizer tokenizer = new StringTokenizer(key, ":");
             if (tokenizer.hasMoreTokens()) {
                String token = tokenizer.nextToken();
-               if (this.log.TRACE) this.log.trace(ME, "getPluginsOfType: token '" + token + "'");
+               if (this.log.TRACE) this.log.trace(ME, "getPluginsOfGroup: token '" + token + "'");
                if (type.equalsIgnoreCase(token))
                   ret.add(this.plugins.get(key));
             }
@@ -104,5 +103,47 @@ public class PluginRegistry {
       }
       return ret;
    }
+   */
 
+   /**
+    * Returns the plugins which are implementing the interface I_Driver. 
+    * @return Vector with matching I_Driver entries
+    */
+   public Vector getPluginsOfInterfaceI_Driver() {
+      if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Driver()");
+      Vector ret = new Vector();
+      synchronized(this) {
+         Enumeration enum = this.plugins.elements();
+         while (enum.hasMoreElements()) {
+            Object next = enum.nextElement();
+            //log.error(ME, "Compare I_Driver: " + next.getClass().getName());
+            if (next instanceof org.xmlBlaster.protocol.I_Driver) {
+               if (log.TRACE) log.trace(ME, "Added I_Driver implementation " + next.getClass().getName());
+               ret.add(next);
+            }
+         }
+      }
+      return ret;
+   }
+
+   /**
+    * Returns the plugins which are implementing the interface I_Queue. 
+    * @return Vector with matching I_Queue entries
+    */
+   public Vector getPluginsOfInterfaceI_Queue() {
+      if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Queue()");
+      Vector ret = new Vector();
+      synchronized(this) {
+         Enumeration enum = this.plugins.elements();
+         while (enum.hasMoreElements()) {
+            Object next = enum.nextElement();
+            //log.error(ME, "Compare I_Queue: " + next.getClass().getName());
+            if (next instanceof org.xmlBlaster.util.queue.I_Queue) {
+               if (log.TRACE) log.trace(ME, "Added I_Queue implementation " + next.getClass().getName());
+               ret.add(next);
+            }
+         }
+      }
+      return ret;
+   }
 }
