@@ -199,6 +199,8 @@ public class Timeout extends Thread
     *             Your callback handle (you need to implement this interface).
     * @param      delay 
     *             The timeout in milliseconds.
+    *             You can pass 0L and the Timeout thread will fire immediately,
+    *             this can be useful to dispatch a task to the timeoutlistener
     * @param      userData 
     *             Some arbitrary data you supply, it will be routed back 
     *             to you when the timeout occurs through method 
@@ -212,7 +214,7 @@ public class Timeout extends Thread
          throw new IllegalArgumentException(ME+": addTimeoutListener() with listener=null");
       }
       Timestamp key = null;
-      if (delay < 1) System.out.println(ME + ": addTimeoutListener with delay = " + delay);
+      //if (delay < 1) System.out.println(ME + ": addTimeoutListener with delay = " + delay);
       int nanoCounter = 0;
       long timeMillis = System.currentTimeMillis();
       synchronized (map) {
