@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-   The first frame: little helper to load the login servlet 'BlasterHttpProxyServlet'
+   The "callbackFrame": little helper to load the login servlet 'BlasterHttpProxyServlet'
 
    This will be replaced by a call to the servlet.
 
@@ -9,11 +9,25 @@
 <html>
 <head>
    <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
-</head>
-<body bgcolor="white">
    <script language="JavaScript1.2">
-      var servlet = '/servlet/BlasterHttpProxyServlet'+parent.location.search;
-      top.callbackFrame.location.href=servlet;
+      function doLogin()
+      {
+         var urlParams = parent.location.search;
+         if (urlParams == null || urlParams < 1) {
+            var err = "Please add loginName and passwd to your URL, for example: http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret";
+            top.Log.warning(err);
+            // return;
+         }
+         var action = top.getFromUrlParam(urlParams, "ActionType", "login");
+         var loginName = top.getFromUrlParam(urlParams, "loginName", "peter");
+         var passwd = top.getFromUrlParam(urlParams, "passwd", "secret");
+
+         top.Log.info("Login request from '" + loginName + "', calling BlasterHttpProxyServlet ...");
+         var servlet = "/servlet/BlasterHttpProxyServlet?ActionType=" + action + "&loginName=" + loginName + "&passwd=" + passwd;
+         top.callbackFrame.location.href=servlet;
+      }
    </script>
+</head>
+<body bgcolor="white" onLoad="doLogin();">
 </body>
 </html>
