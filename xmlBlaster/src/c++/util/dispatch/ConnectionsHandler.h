@@ -21,9 +21,15 @@ Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 #include <util/XmlBlasterException.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Timeout.h>
-#include <util/queue/I_Queue.h>
+//#include <util/queue/I_Queue.h>
 // #include <util/queue/PublishQueueEntry.h>
 // #include <util/queue/ConnectQueueEntry.h>
+
+#ifndef _UTIL_QUEUE_I_QUEUE_H
+namespace org { namespace xmlBlaster { namespace util { namespace queue {
+class I_Queue;
+}}}}
+#endif
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
