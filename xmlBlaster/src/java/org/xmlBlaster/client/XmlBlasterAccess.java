@@ -92,14 +92,15 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    private I_ClientPlugin secPlgn;
    /** The callback server */
    private I_CallbackServer cbServer;
-   /** Allow to cache updated messages for simulated synchronous access with get() */
-   private BlasterCache updateCache;
    /** Handles the registered callback interfaces for given subscriptions. */
    private final UpdateDispatcher updateDispatcher;
    /** Used to callback the clients default update() method (as given on connect()) */
    private I_Callback updateListener;
    /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
    private I_ConnectionStateListener connectionListener;
+   /** Allow to cache updated messages for simulated synchronous access with get(). 
+    * Do behind a get() a subscribe to allow cached synchronus get() access */
+   private SynchronousCache synchronousCache;
    private boolean disconnectInProgress;
    private boolean connectInProgress;
 
@@ -159,6 +160,18 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    public synchronized void registerConnectionListener(I_ConnectionStateListener connectionListener) {
       if (log.CALL) log.call(ME, "Initializing registering connectionListener");
       this.connectionListener = connectionListener;
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(int)
+    */
+   public SynchronousCache createSynchronousCache(int size) {
+      if (this.synchronousCache != null)
+         return this.synchronousCache; // Is initialized already
+      if (log.CALL) log.call(ME, "Initializing synchronous cache: size=" + size);
+      this.synchronousCache = new SynchronousCache(glob, size);
+      log.info(ME, "SynchronousCache has been initialized with size="+size);
+      return this.synchronousCache;
    }
 
    /**
@@ -373,6 +386,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          }
       }
 
+      if (this.synchronousCache != null) {
+         this.synchronousCache.clear();
+      }
+
       if (this.clientQueue != null) {
          this.clientQueue.clear();
       }
@@ -558,6 +575,34 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * @see I_XmlBlasterAccess#getCached(GetKey, GetQos)
+    */
+   public MsgUnit[] getCached(GetKey getKey, GetQos getQos) throws XmlBlasterException {
+      if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
+      if (this.synchronousCache == null) {  //Is synchronousCache installed?
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
+              "Can't handle getCached(), please install a cache with createSynchronousCache() first");
+      }
+
+      MsgUnit[] msgUnitArr = null;
+      msgUnitArr = this.synchronousCache.get(getKey, getQos);
+      log.info(ME, "CHACHE msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
+      //not found in this.synchronousCache
+      if(msgUnitArr == null) {
+         msgUnitArr = get(getKey, getQos);  //get messages from xmlBlaster (synchronous)
+         SubscribeKey subscribeKey = new SubscribeKey(glob, getKey.getData());
+         SubscribeQos subscribeQos = new SubscribeQos(glob, getQos.getData());
+         SubscribeReturnQos subscribeReturnQos = null;
+         synchronized (this.synchronousCache) {
+            subscribeReturnQos = subscribe(subscribeKey, subscribeQos); //subscribe to this messages (asynchronous)
+            this.synchronousCache.newEntry(subscribeReturnQos.getSubscriptionId(), getKey, msgUnitArr);     //fill messages to this.synchronousCache
+         }
+         log.info(ME, "New entry in this.synchronousCache created (subscriptionId="+subscribeReturnQos.getSubscriptionId()+")");
+      }
+      return msgUnitArr;
+   }
+
+   /**
     * @see I_XmlBlasterAccess#get(GetKey, GetQos)
     */
    public MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException {
@@ -646,11 +691,19 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering update(" + ((updateCache != null) ? "using updateCache" : "no updateCache") + ") ...");
+      if (log.CALL) log.call(ME, "Entering update(updateKey=" + updateKey.getOid() +
+                    ", subscriptionId=" + updateQos.getSubscriptionId() + ", " + ((this.synchronousCache != null) ? "using synchronousCache" : "no synchronousCache") + ") ...");
 
-      if( updateCache != null ) {
-         if (updateCache.update(updateQos.getSubscriptionId(), updateKey, content, updateQos))
+      if (this.synchronousCache != null) {
+         boolean retVal;
+         synchronized (this.synchronousCache) {
+            retVal = this.synchronousCache.update(updateQos.getSubscriptionId(), updateKey, content, updateQos);
+         }
+         if (retVal) {
+            if (log.TRACE) log.trace(ME, "Putting update message " + updateQos.getSubscriptionId() + " into cache");
             return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+         }
+         if (log.TRACE) log.trace(ME, "Update message " + updateQos.getSubscriptionId() + " is not for cache");
       }
 
       Object obj = null;
@@ -823,10 +876,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<XmlBlasterAccess id='").append(this.getId()).append("'>");
+      sb.append(offset).append("<XmlBlasterAccess id='").append(this.getId());
+      sb.append("' state='").append(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+      sb.append("'>");
       sb.append(offset).append(" <connected>").append(isConnected()).append("</connected>");
-      if (isAlive()) {
-      }
       sb.append(offset).append("</XmlBlasterAccess>");
 
       return sb.toString();
@@ -924,12 +977,25 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // wait for update
             }
 
-            log.info(ME, "Hit a key to get '" + oid + "'");
-            try { System.in.read(); } catch(java.io.IOException e) {}
-            GetKey gk = new GetKey(glob, oid);
-            GetQos gq = new GetQos(glob);
-            MsgUnit[] msgs = xmlBlasterAccess.get(gk, gq);
-            log.info(ME, "Successfully got message from xmlBlaster, msg=" + msgs[0].toXml());
+            {
+               log.info(ME, "Hit a key to get '" + oid + "'");
+               try { System.in.read(); } catch(java.io.IOException e) {}
+               GetKey gk = new GetKey(glob, oid);
+               GetQos gq = new GetQos(glob);
+               MsgUnit[] msgs = xmlBlasterAccess.get(gk, gq);
+               log.info(ME, "Successfully got message from xmlBlaster, msg=" + msgs[0].toXml());
+            }
+
+            int numGetCached = 4;
+            SynchronousCache syncCache = xmlBlasterAccess.createSynchronousCache(100);
+            for (int i=0; i<numGetCached; i++) {
+               log.info(ME, "Hit a key to getCached '" + oid + "' #"+i+"/"+numGetCached);
+               try { System.in.read(); } catch(java.io.IOException e) {}
+               GetKey gk = new GetKey(glob, oid);
+               GetQos gq = new GetQos(glob);
+               MsgUnit[] msgs = xmlBlasterAccess.getCached(gk, gq);
+               log.info(ME, "Successfully got message from xmlBlaster, msg=" + msgs[0].toXml());
+            }
 
             log.info(ME, "Hit a key to unSubscribe on topic '" + oid + "' and '" + subRet.getSubscriptionId() + "'");
             try { System.in.read(); } catch(java.io.IOException e) {}

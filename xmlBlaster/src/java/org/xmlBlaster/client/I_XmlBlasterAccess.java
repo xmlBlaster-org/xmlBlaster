@@ -59,6 +59,24 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    void registerConnectionListener(I_ConnectionStateListener connectionListener);
 
    /**
+    * Setup the cache mode.
+    * <p />
+    * This installs a cache. When you call get(), a subscribe() is done
+    * in the background that we always have a current value in our client side cache.
+    * Further get() calls retrieve the value from the client cache.
+    * <p />
+    * Only the first call is used to setup the cache, following calls
+    * are ignored silently (and return the original handle)
+    *
+    * @param size Size of the cache. This number specifies the count of subscriptions the cache
+    *             can hold. It specifies NOT the number of messages.
+    * @return The cache handle, usually of no interest
+    * @see #getCached(GetKey, GetQos)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
+    */
+   public SynchronousCache createSynchronousCache(int size);
+
+   /**
     * Login to xmlBlaster. 
     * <p>
     * Connecting with the default configuration (which checks xmlBlaster.properties and
@@ -288,6 +306,37 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
     */
    SubscribeReturnQos subscribe(String xmlKey, String xmlQos, I_Callback cb) throws XmlBlasterException;
+
+   /**
+    * Access synchronously messages. They are on first request subscribed
+    * and cached on client side. 
+    * <p>
+    * A typical use case is a servlet which receives many HTML requests and
+    * usually the message has not changed. This way we avoid asking xmlBlaster
+    * every time for the information but take it directly from the cache.
+    * </p>
+    * <p>
+    * The cache is always up to date as it has subscribed on this topic
+    * </p>
+    * <p>
+    * You need to call <i>createSynchronousCache()</i> before using <i>getCached()</i>.
+    * </p>
+    * <p>
+    * NOTE: Passing two similar getKey but with different getQos filters is currently not supported.
+    * </p>
+    * <p>
+    * NOTE: GetKey requests with EXACT oid are automatically removed from cache when
+    *       the topic with this oid is erased. XPATH queries are removed from cache
+    *       when the last topic oid which matched the XPATH disappears.
+    * </p>
+    * @param getKey Which message topics to retrieve
+    * @param getQos Control the behavior and further filter messages with mime based filter plugins
+    * @return An array of messages, the sequence is arbitrary
+    * @exception XmlBlasterException if <i>createSynchronousCache()</i> was not used to establish a cache first
+    * @see #createSynchronousCache(int)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
+    */
+   public MsgUnit[] getCached(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
    //MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
