@@ -3,6 +3,8 @@
 
 Changes for 0.76 [?, 2000]
 ===============================
+   - Bugfix when logging to file with missing permissions in Util.java
+	  The bug resulted in a never ending loop.
 
    - xmlBlaster.properties can now be placed in 'java.home' directory
      as well (this is for example /opt/jdk1.2.2/jre/lib).
