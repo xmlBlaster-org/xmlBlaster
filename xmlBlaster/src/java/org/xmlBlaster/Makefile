@@ -17,13 +17,17 @@ SUB_DIRS = util protocol engine authentication client
 LOCAL_FILES = \
 			$(CLASS_DIR)/Main.class \
 			$(CLASS_DIR)/MainGUI.class
+
 #------------------------------------------------------------------------------
 
 
 $(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
 	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
 
-all: 	all_SUB_DIRS precond java
+all: 	all_SUB_DIRS precond java gif
+
+gif:
+	$(CP) $(SRC_JAVA_DIR)/*.gif $(CLASS_DIR)
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
