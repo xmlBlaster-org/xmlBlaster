@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.52 2000/09/18 06:24:59 ruff Exp $
+Version:   $Id: Log.java,v 1.53 2000/09/18 06:27:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -91,7 +91,7 @@ public class Log
    /**
     * Produce logging output on important method calls.
     * <p />
-    * Logging output in the xmlBlaster code looks typically like this:
+    * Logging output in the xmlBlaster code looks typically like this:<br />
     * <code>if (Log.TRACE) Log.trace(....); </code><br />
     * <p />
     * Switch CALL mode to <code>false</code> for performance reasons<br />
@@ -103,7 +103,7 @@ public class Log
     * Note that you need to uncomment the final declaration, set all booleans to false.
     * Then recompile to achieve real dead code elimination.
     * <p />
-    * The same applies for CALL, TIME, TRACE and DUMP
+    * The same applies for TIME, TRACE, DUMP and PLAIN
     */
    public /*final*/ static boolean CALL = true;  // trace method calls
    /**
