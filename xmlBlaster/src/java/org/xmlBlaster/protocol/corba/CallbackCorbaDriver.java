@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.25 2002/05/31 05:44:20 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.26 2002/06/25 17:43:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -86,7 +86,10 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (msg == null || msg.length < 1 || msg[0] == null) {
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "Illegal update argument");
+      }
       if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
       //log.info(ME, "xmlBlaster.update(" + msg.length + ")");
 
@@ -98,9 +101,21 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       try {
          return cb.update(callbackAddress.getSessionId(), updateArr);
       } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" + e.id + " reason=" + e.reason);
+         if (callbackAddress == null)
+            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length +
+                   " messages '" + msg[0].getUniqueKey() + "' to callback address NULL from [" +
+                   msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" +
+                   e.id + " reason=" + e.reason);
+         else
+            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length +
+                   " messages '" + msg[0].getUniqueKey() + "' to client [" +
+                   callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" +
+                   e.id + " reason=" + e.reason);
       } catch (Throwable e) {
-         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
+         if (callbackAddress == null)
+            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to callbackAddress=null from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
+         else
+            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
       }
    }
 
