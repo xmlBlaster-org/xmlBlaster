@@ -1,0 +1,137 @@
+package org.xmlBlaster.test.classtest.qos;
+
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.client.qos.GetReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+
+import junit.framework.*;
+
+import org.apache.commons.codec.binary.Base64;
+import java.util.Hashtable;
+
+/**
+ * Test MsgQosSaxFactory. 
+ * <p />
+ * All methods starting with 'test' and without arguments are invoked automatically
+ * <p />
+ * TODO: http://xmlunit.sourceforge.net/
+ * <p />
+ * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.qos.MsgQosTest
+ * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
+ */
+public class MsgQosTest extends TestCase {
+   private final String ME = "MsgQosTest";
+   protected Global glob;
+   protected LogChannel log;
+   int counter = 0;
+
+   public MsgQosTest(String name) {
+      super(name);
+   }
+
+   protected void setUp() {
+      this.glob = Global.instance();
+      this.log = glob.getLog("test");
+   }
+
+   public void testMethods() {
+      System.out.println("***MsgQosTest: testMethods ...");
+      
+      MsgQosData qos = new MsgQosData(this.glob, MethodName.UPDATE);
+
+      qos.setState("AA");
+      assertEquals("state", "AA", qos.getState());
+
+      ClientProperty cp = new ClientProperty(this.glob, "aKey", "byte[]", Constants.ENCODING_BASE64, "bla");
+      qos.addClientProperty(cp);
+      Hashtable jxPath = qos.toJXPath();
+      String value = (String)jxPath.get("/qos/clientProperty[@name='aKey']/text()");
+      byte[] bla = Base64.encodeBase64("bla".getBytes(), false);
+      assertEquals("JXPATH", new String(bla), value);
+      String type = (String)jxPath.get("/qos/clientProperty[@name='aKey']/@type");
+      assertEquals("JXPATH", "byte[]", type);
+      String encoding = (String)jxPath.get("/qos/clientProperty[@name='aKey']/@encoding");
+      assertEquals("JXPATH", Constants.ENCODING_BASE64, encoding);
+
+
+      /*
+      //qos.addRouteInfo(new RouteInfo(new NodeId("master"), 0, new Timestamp(9408630587L)));
+      assertEquals("", true, qos.isSubscribable());
+      assertEquals("", false, qos.isPtp());
+      assertEquals("", false, qos.isVolatile());
+      assertEquals("", false, qos.isAdministrative());
+      assertEquals("", false, qos.isPersistent());
+      assertEquals("", true, qos.isForceUpdate());
+      assertEquals("", false, qos.isReadonly());
+      assertEquals("", null, qos.getSender());
+      assertEquals("", 0, qos.getRouteNodes().length);
+      assertEquals("", PriorityEnum.NORM_PRIORITY, qos.getPriority());
+      assertEquals("", false, qos.isFromPersistenceStore());
+      assertTrue("", qos.getRcvTimestamp() == null);
+      assertEquals("", null, qos.getDestinations());
+
+
+
+      assertEquals("", "SOMETHING", qos.getStateInfo());
+      assertEquals("", true, qos.isPtp());
+      assertEquals("", true, qos.isAdministrative());
+      assertEquals("", true, qos.isPersistent());
+      assertEquals("", false, qos.isForceUpdate());
+      assertEquals("", false, qos.isReadonly());
+      assertEquals("", "Gesa", qos.getSender().getLoginName());
+
+      assertEquals("", 0L, qos.getLifeTime()); // PtP message (because of Destination) is volatile
+      assertEquals("", -1L, qos.getRemainingLifeStatic());
+
+      assertEquals("", 3, qos.getRouteNodes().length);
+      assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
+      assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
+      assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
+      assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
+
+      assertEquals("", PriorityEnum.MIN_PRIORITY, qos.getPriority());
+      assertEquals("", false, qos.isFromPersistenceStore());
+      assertTrue("no receive timestamp expected", qos.getRcvTimestamp() == null);
+      assertEquals("", true, qos.isSubscribable());
+      assertEquals("", 2, qos.getDestinations().size());
+      assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
+      assertEquals("", true, ((Destination)qos.getDestinations().get(0)).isExactAddress());
+      assertEquals("", false, ((Destination)qos.getDestinations().get(0)).isXPathQuery());
+      // XPath is currently not supported
+      //assertEquals("", false, ((Destination)qos.getDestinations().get(2)).isExactAddress());
+      //assertEquals("", true, ((Destination)qos.getDestinations().get(2)).isXPathQuery());
+      */
+
+      System.out.println("***MsgQosTest: testParse [SUCCESS]");
+   }
+
+   /**
+    * <pre>
+    *  java org.xmlBlaster.test.classtest.qos.MsgQosTest
+    * </pre>
+    */
+   public static void main(String args[])
+   {
+      MsgQosTest testSub = new MsgQosTest("MsgQosTest");
+      testSub.setUp();
+      testSub.testMethods();
+      //testSub.tearDown();
+   }
+}
