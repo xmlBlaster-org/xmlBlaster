@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      PublishQoSWrapper.java
+Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQoSWrapper.java,v 1.1 1999/12/14 23:18:00 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.1 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -27,9 +27,9 @@ import java.util.Vector;
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
-public class PublishQoSWrapper extends QoSWrapper
+public class PublishQosWrapper extends QosWrapper
 {
-   private String ME = "PublishQoSWrapper";
+   private String ME = "PublishQosWrapper";
    private Vector destVec = null;
    private Vector xpathVec = null;
    private boolean isDurable = false;
@@ -45,13 +45,13 @@ public class PublishQoSWrapper extends QoSWrapper
     * @param oid is optional and will be generated if ""
     * @param mimeType the MIME type of the content e.g. "text/xml" or "image/gif"
     */
-   public PublishQoSWrapper()
+   public PublishQosWrapper()
    {
    }
 
 
    /**
-    * Add a destination where to send the message. 
+    * Add a destination where to send the message.
     * <p />
     * Note you can invoke this multiple times to send to multiple destinations.
     * @param destination  The loginName of a receiver
@@ -65,7 +65,7 @@ public class PublishQoSWrapper extends QoSWrapper
 
 
    /**
-    * Add a destination (XPath query syntax) where to send the message. 
+    * Add a destination (XPath query syntax) where to send the message.
     * <p />
     * Note you can invoke this multiple times to send to multiple destinations.
     * @param xpath The XPath query over the client meta data
@@ -79,10 +79,20 @@ public class PublishQoSWrapper extends QoSWrapper
 
 
    /**
-    * Converts the data in XML ASCII string.
+    * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */
    public String toString()
+   {
+      return toXml();
+   }
+
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toXml()
    {
       StringBuffer sb = new StringBuffer();
       sb.append("<qos>\n");

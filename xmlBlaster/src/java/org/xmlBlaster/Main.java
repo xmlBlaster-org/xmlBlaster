@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.17 2000/01/15 15:25:40 ruff Exp $
+Version:   $Id: Main.java,v 1.18 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -31,11 +31,13 @@ import org.omg.CosNaming.*;
  *    </li>
  * </ul>
  * <p />
- * Examples hot to start the xmlBlaster server:
+ * Examples how to start the xmlBlaster server:
  * <p />
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 8080</code>
  * <p />
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref</code>
+ * <p />
+ * <code>   jaco org.xmlBlaster.Main +trace +dump +calls +time</code>
  */
 public class Main
 {
@@ -45,6 +47,10 @@ public class Main
 
    public Main( String[] args )
    {
+      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
+         usage();
+         return;
+      }
       Log.setLogLevel(args);
 
       orb = org.omg.CORBA.ORB.init(args, null);
@@ -63,7 +69,7 @@ public class Main
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
 
          // 1) Write IOR to given file
-         String iorFile = Args.getArg(args, "-iorFile", null);
+         String iorFile = Args.getArg(args, "-iorFile", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
@@ -151,6 +157,29 @@ public class Main
          Log.warning(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
+   }
+
+
+   /**
+    * Command line usage.
+    */
+   private void usage()
+   {
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "jaco org.xmlBlaster.Main <options>");
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "Options:");
+      Log.plain(ME, "   -?                  Print this message.");
+      Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
+      Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
+      Log.plain(ME, "                       the port -1 switches this feature off.");
+      Log.usage();
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "Example:");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main +trace +dump +calls +time");
+      Log.plain(ME, "");
    }
 
 

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.2 2000/01/07 20:44:25 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.3 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -38,7 +38,7 @@ public class ClientQuery
          ME = Args.getArg(args, "-name", ME); // check if parameter -name <userName> is given at startup of client
          String loginName = ME;
 
-         queryString = Args.getArg(args, "-queryXpath", null);
+         queryString = Args.getArg(args, "-queryXpath", (String)null);
          if (queryString != null)
             queryType = "XPATH";
          else
@@ -54,7 +54,6 @@ public class ClientQuery
          String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
                             queryString +
                          "</key>";
-         StopWatch stop = new StopWatch();
          MessageUnitContainer[] msgArr = null;
          try {
             msgArr = xmlBlaster.get(xmlKey, qos);

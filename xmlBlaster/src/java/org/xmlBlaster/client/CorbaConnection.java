@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.18 2000/01/17 20:06:06 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.19 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -128,7 +128,7 @@ public class CorbaConnection
       java.util.Properties props = new java.util.Properties();
       props.put("org.omg.CORBA.ORBClass", orbClassName);
       props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
-   
+
       Log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
       */
 
@@ -300,13 +300,13 @@ public class CorbaConnection
 
 
       // 1) check if argument -IOR at program startup is given
-      String authServerIOR = Args.getArg(args, "-ior", null);  // IOR string is directly given
+      String authServerIOR = Args.getArg(args, "-ior", (String)null);  // IOR string is directly given
       if (authServerIOR != null) {
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
          Log.info(ME, "Accessing xmlBlaster using your given IOR string");
          return authServer;
       }
-      String authServerIORFile = Args.getArg(args, "-iorFile", null);  // IOR string is given through a file
+      String authServerIORFile = Args.getArg(args, "-iorFile", (String)null);  // IOR string is given through a file
       if (authServerIORFile != null) {
          authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));

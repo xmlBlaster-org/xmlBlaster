@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.3 1999/12/20 15:35:53 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.4 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -67,6 +67,16 @@ public class PublishKeyWrapper extends KeyWrapper
     * @return An XML ASCII string
     */
    public String toString()
+   {
+      return toXml();
+   }
+
+
+   /**
+    * Converts the data in XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toXml()
    {
       return this.wrap(clientTags);
    }

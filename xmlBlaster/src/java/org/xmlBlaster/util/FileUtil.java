@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.4 1999/12/22 19:12:34 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.5 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -37,6 +37,67 @@ public class FileUtil
       if (bb == null) return null;
       return new String(bb);
    }
+
+
+   /**
+    * Return the file name extension.
+    * @param fileName for example "/tmp/hello.txt"
+    * @return extension of the filename "txt"
+    */
+   public static String getExtension(String fileName)
+   {
+      if (fileName == null) return null;
+      int dot = fileName.lastIndexOf(".");
+      if (dot == -1)
+         return null;
+      return fileName.substring(dot + 1);
+   }
+
+
+   /**
+    * Strip the path and the file name extension.
+    * @param fileName for example "/tmp/hello.txt"
+    * @return filename without extension "hello"
+    */
+   public static String getBody(String fileName)
+   {
+      if (fileName == null) return null;
+      int dot = fileName.lastIndexOf(".");
+      String body = null;
+      if (dot == -1)
+         body = fileName;
+      else
+         body = fileName.substring(0, dot);
+      int sep = body.lastIndexOf(File.separator);
+      if (sep == -1)
+         return body;
+      return body.substring(sep + 1);
+   }
+
+
+   /**
+    * Convert some file extensions to MIME types.
+    * <p />
+    * A candidate for a property file :-)
+    * @param extension for example "xml"
+    * @param defaultVal for example "text/plain"
+    * @return for example "text/xml"
+    */
+   public static String extensionToMime(String extension, String defaultVal)
+   {
+      if (extension == null) return defaultVal;
+      if (extension.equalsIgnoreCase("xml")) return "text/xml";
+      if (extension.equalsIgnoreCase("html")) return "text/html";
+      if (extension.equalsIgnoreCase("gml")) return "text/gml";  // grafic markup language http://infosun.fmi.uni-passau.de/Graphlet/GML
+      if (extension.equalsIgnoreCase("sgml")) return "text/sgml";
+      if (extension.equalsIgnoreCase("gif")) return "image/gif";
+      if (extension.equalsIgnoreCase("png")) return "image/png";
+      if (extension.equalsIgnoreCase("jpeg")) return "image/jpeg";
+      if (extension.equalsIgnoreCase("jpg")) return "image/jpg";
+      if (extension.equalsIgnoreCase("pdf")) return "application/pdf";
+      if (extension.equalsIgnoreCase("rtf")) return "text/rtf";
+      return defaultVal;
+  }
 
 
    /**
@@ -121,7 +182,7 @@ public class FileUtil
          FileOutputStream to = new FileOutputStream(to_file);
          to.write(arr);
          to.close();
-         if (Log.TRACE) Log.trace(ME, "Erfolgreich Datei " + outName + " mit der Grösse = " + arr.length + " Bytes geschrieben");
+         if (Log.TRACE) Log.trace(ME, "Wrote " + outName + " with size = " + arr.length + " bytes.");
          return true;
       }
       catch (Exception e) {
@@ -187,6 +248,34 @@ public class FileUtil
       File f_new = new File(newName);
       boolean ret = f_old.renameTo(f_new);
       return ret;
+   }
+
+
+   /**
+    * Invoke for testing: jaco org.xmlBlaster.util.FileUtil
+    */
+   public static void main(String args[])
+   {
+      String ME = "FileUtil";
+      String name = "Hello.txt";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = ".";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = "Hello";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = "....";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = ".xml";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = "";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = null;
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+
+      name = File.separator + "home" + File.separator + "joe" + File.separator + "Hello.txt";
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
+      name = File.separator + File.separator + File.separator;
+      Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
    }
 }
 

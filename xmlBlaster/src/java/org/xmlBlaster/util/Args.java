@@ -3,7 +3,7 @@ Name:      Args.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Evaluate parameters at process startup
-Version:   $Id: Args.java,v 1.2 1999/12/16 12:23:34 ruff Exp $
+Version:   $Id: Args.java,v 1.3 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -45,6 +45,29 @@ public class Args
     * @param the argument array
     * @param key the key to look for
     * @param defaultVal the default value to return if key is not found
+    * @return The byte[] value for the given key
+    */
+   public final static byte[] getArg(String[] args, String key, byte[] defaultVal)
+   {
+      if (args == null)
+         return defaultVal;
+
+      for (int ii=0; ii<args.length; ii++) {
+         if (args[ii].equals(key)) {
+            if (ii >= args.length-1) Log.panic(ME, "Please specify a value for parameter " + key );
+            return args[++ii].getBytes();
+         }
+      }
+      return defaultVal;
+   }
+
+
+   /**
+    * Try to find the given key in the args list.
+    *
+    * @param the argument array
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
     * @return The int value for the given key
     */
    public final static int getArg(String[] args, String key, int defaultVal)
@@ -70,7 +93,7 @@ public class Args
 
 
    /**
-    * Try to find the given arg. 
+    * Try to find the given arg.
     *
     * @param the argument array
     * @param arg The argument to find (without a value)

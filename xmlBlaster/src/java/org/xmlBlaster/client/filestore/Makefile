@@ -7,28 +7,21 @@
 
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
-CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/client
-SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client
+CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/client/filestore
+SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client/filestore
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = filestore
 LOCAL_FILES = \
-			$(CLASS_DIR)/CorbaConnection.class \
-			$(CLASS_DIR)/UpdateQoS.class \
-			$(CLASS_DIR)/UpdateKey.class \
-			$(CLASS_DIR)/KeyWrapper.class \
-			$(CLASS_DIR)/PublishKeyWrapper.class  \
-			$(CLASS_DIR)/QosWrapper.class \
-			$(CLASS_DIR)/PublishQosWrapper.class
+			$(CLASS_DIR)/PublishFile.class
 #------------------------------------------------------------------------------
 
 
 $(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
 	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
 
-all: 	all_SUB_DIRS precond java
+all: 	precond java
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)

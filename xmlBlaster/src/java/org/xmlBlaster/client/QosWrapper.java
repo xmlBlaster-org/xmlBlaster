@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      QoSWrapper.java
+Name:      QosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QoSWrapper.java,v 1.2 1999/12/16 11:29:51 ruff Exp $
+Version:   $Id: QosWrapper.java,v 1.1 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -23,21 +23,21 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
-public class QoSWrapper
+public class QosWrapper
 {
-   private String ME = "QoSWrapper";
+   private String ME = "QosWrapper";
 
 
    /**
     * Constructs this base object
     */
-   public QoSWrapper()
+   public QosWrapper()
    {
    }
 
 
    /**
-    * Converts the data in XML ASCII string. 
+    * Converts the data in XML ASCII string.
     * <p />
     * This is the minimal key representation.<br />
     * You should provide your own toString() method.

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.32 2000/01/15 15:26:22 ruff Exp $
+Version:   $Id: Log.java,v 1.33 2000/01/19 21:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -171,9 +171,9 @@ public class Log
       setPreLogLevelCheck();
    }
 
-   
+
    /**
-    * Set logging level from start parameter. 
+    * Set logging level from start parameter.
     * <br />
     * Example:<br />
     * <pre>jaco org.xmlBlaster.Main +trace +dump +calls +dump</pre>
@@ -329,7 +329,11 @@ public class Log
     */
    public static final void log(final StringBuffer levelStr, String instance, String text)
    {
-      StringBuffer strBuf = logHeader(levelStr).append(" [").append(instance).append("]  ").append(text);
+      StringBuffer strBuf;
+      if (instance == null)
+         strBuf = logHeader(levelStr).append(" ").append(text);
+      else
+         strBuf = logHeader(levelStr).append(" [").append(instance).append("]  ").append(text);
 
       if (logListener != null) {
          logListener.log(strBuf.toString());
@@ -361,7 +365,7 @@ public class Log
       {
          log((withXtermEscapeColor) ? panicE : panicX, instance, text);
          numErrorInvocations++;
-         displayStatistics();
+         // displayStatistics();
          exitLow(1);
       }
    }
@@ -430,11 +434,13 @@ public class Log
    */
 
    /*
-    * Log without time/date
+    * Log without time/date/instance
+    * @param instance (not currently used)
+    * @param text the string to log
     */
    public static final void plain(String instance, String text)
    {
-      log(null, instance, text);
+      log(null, null, text);
    }
 
    /*
@@ -498,6 +504,19 @@ public class Log
    }
 
 
+   /**
+    * Command line usage.
+    */
+   public static void usage()
+   {
+      Log.plain(ME, "");
+      Log.plain(ME, "Logging options:");
+      Log.plain(ME, "   +trace              Show code trace.");
+      Log.plain(ME, "   +dump               Dump internal state.");
+      Log.plain(ME, "   +calls              Show important method entries");
+      Log.plain(ME, "   +time               Display some performance data.");
+      Log.plain(ME, "");
+   }
 
 
    /**
