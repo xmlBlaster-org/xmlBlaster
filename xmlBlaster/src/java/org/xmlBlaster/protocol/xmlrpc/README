@@ -34,8 +34,8 @@ Start an xml-rpc client:
 and the proxy receives the updates.
 
 TODO:
- - Implement a wrapper for CorbaConnection to xml-rpc
-   which transforms MessageUnitContainer[] into <array>
+ - Implement a native xml-rpc driver.
+ - Transform MessageUnitContainer[] into <array>
    for the get() call
  - How to do asynchronous callbacks?
  - How to do authentication
