@@ -1348,7 +1348,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
 
    //      String req = "delete from " + tableName + " where durable='false'";
-         String req = "delete from " + this.entriesTableName + " where durable='F'";
+         String req = "delete from " + this.entriesTableName  + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='F'";
          return update(req);
       }
       catch (SQLException ex) {
