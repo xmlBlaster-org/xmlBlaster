@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.11 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.12 2002/02/26 10:49:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -134,7 +134,6 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
-      assertEquals("returned subscribeOid is wrong", oid, subscribeOid);
    }
 
 

@@ -3,7 +3,7 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.10 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestSubExact.java,v 1.11 2002/02/26 10:48:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -132,7 +132,6 @@ public class TestSubExact extends TestCase implements I_Callback
       }
       assert("returned null subscribeOid", subscribeOid != null);
       assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
-      assertEquals("returned subscribeOid is wrong", oidExact, subscribeOid);
    }
 
 
@@ -203,7 +202,7 @@ public class TestSubExact extends TestCase implements I_Callback
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
-      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", oidExact, updateQoS.getSubscriptionId());
+      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
