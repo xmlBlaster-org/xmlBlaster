@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o C++ client library
+   - Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
+
  o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
    authentication of connecting clients as well, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL2
