@@ -13,8 +13,10 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
 
-ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool persistent, Timestamp uniqueId)
-   : MsgQueueEntry(global, connectQos, type, priority, persistent, uniqueId)
+ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, int priority, Timestamp uniqueId)
+   : MsgQueueEntry(global, connectQos,
+                   org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::CONNECT,
+                   priority, connectQos.isPersistent(), uniqueId)
 {
    ME = "ConnectQueueEntry";
    if (log_.call()) log_.call(ME, "ctor ...");

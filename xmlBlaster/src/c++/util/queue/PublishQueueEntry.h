@@ -39,9 +39,7 @@ public:
     */
    PublishQueueEntry(org::xmlBlaster::util::Global& global,
                      const org::xmlBlaster::util::MessageUnit& msgUnit,
-                     const std::string& type=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::PUBLISH,
                      int priority=NORM_PRIORITY,
-                     bool persistent=false,
                      org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
    ~PublishQueueEntry();

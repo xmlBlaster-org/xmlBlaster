@@ -9,6 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
 #include <util/queue/MsgQueueEntry.h>
+#include <util/plugin/I_Plugin.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -23,7 +24,7 @@ typedef ReferenceHolder<MsgQueueEntry> EntryType;
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  * @author <a href='mailto:xmlblast@marcelruff.info'>Marcel Ruff</a>
  */
-class Dll_Export I_Queue
+class Dll_Export I_Queue : public virtual org::xmlBlaster::util::plugin::I_Plugin
 {
 public:
    virtual ~I_Queue() {};

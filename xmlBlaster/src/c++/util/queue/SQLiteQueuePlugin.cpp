@@ -33,77 +33,6 @@ static void myLogger(void *logUserP,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
 
-/**
- * Customized logging output is handled by this method. 
- * We redirect logging output from the C implementation to our C++ logging plugin.
- * <p>
- * Please compile with <code>XMLBLASTER_PERSISTENT_QUEUE</code> defined.
- * </p>
- * @param queueP
- * @param currLevel The actual log level of the client
- * @param level The level of this log entry
- * @param location A string describing the code place
- * @param fmt The formatting string
- * @param ... Other variables to log, corresponds to 'fmt'
- * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
- *      implementation
- */
-static void myLogger(void *logUserP, 
-                     XMLBLASTER_LOG_LEVEL currLevel,
-                     XMLBLASTER_LOG_LEVEL level,
-                     const char *location, const char *fmt, ...)
-{
-   /* Guess we need no more than 200 bytes. */
-   int n, size = 200;
-   char *p = 0;
-   va_list ap;
-   ::I_Queue *queueP = (::I_Queue *)logUserP;
-
-   //org::xmlBlaster::util::queue::SQLiteQueuePlugin *pluginP =
-   //      (org::xmlBlaster::util::queue::SQLiteQueuePlugin *)queueP->userObject;
-   //org::xmlBlaster::util::I_Log& log = pluginP->getLog();
-
-   if (queueP->userObject == 0) {
-      std::cout << "myLogger not initialized" << std::endl;
-      return;
-   }
-   org::xmlBlaster::util::I_Log& log = *((org::xmlBlaster::util::I_Log*)queueP->userObject);
-
-   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
-      return;
-   }
-   if ((p = (char *)malloc (size)) == NULL)
-      return;
-
-   for (;;) {
-      /* Try to print in the allocated space. */
-      va_start(ap, fmt);
-      n = VSNPRINTF(p, size, fmt, ap); /* UNIX: vsnprintf(), WINDOWS: _vsnprintf() */
-      va_end(ap);
-      /* If that worked, print the string to console. */
-      if (n > -1 && n < size) {
-         if (level == LOG_INFO)
-            log.info(location, p);
-         else if (level == LOG_WARN)
-            log.warn(location, p);
-         else if (level == LOG_ERROR)
-            log.error(location, p);
-         else
-            log.trace(location, p);
-         free(p);
-         return;
-      }
-      /* Else try again with more space. */
-      if (n > -1)    /* glibc 2.1 */
-         size = n+1; /* precisely what is needed */
-      else           /* glibc 2.0 */
-         size *= 2;  /* twice the old size */
-      if ((p = (char *)realloc (p, size)) == NULL) {
-         return;
-      }
-   }
-}
-
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& property)
@@ -143,7 +72,14 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
       log_.warn(ME, "Your setting of property '" + classRelating + "' is not supported");
    }
 
-   const std::string dbName = global_.getProperty().get("queue/"+instanceRelating+"/url", "xmlBlasterClientCpp.db");  // "queue/connection/url"
+   std::string defaultPath = ""; // for example: "/home/joe/tmp/" or "C:\Documents and Settings\marcel\tmp"
+   if (global_.getProperty().get("user.home", "") != "")
+      defaultPath = global_.getProperty().get("user.home", "") +
+                    global_.getProperty().get("file.separator", "");
+                    //+ "tmp" +                                     // We currently can't create missing directories, TODO!!!
+                    //global_.getProperty().get("file.separator", "");
+
+   const std::string url = global_.getProperty().get("queue/"+instanceRelating+"/url", defaultPath+"xmlBlasterClientCpp.db");  // "queue/connection/url"
    const std::string nodeId = global_.getProperty().get("queue/"+instanceRelating+"/nodeId", global_.getId());        // "client/joe/2" or property.getNodeId() ?
    const std::string queueName = global_.getProperty().get("queue/"+instanceRelating+"/queueName", instanceRelating + "_" + global_.getStrippedId()); // "connection_clientJoe2"
    const std::string tableNamePrefix = global_.getProperty().get("queue/"+instanceRelating+"/tableNamePrefix", "XB_");// "queue/connection/tableNamePrefix"
@@ -152,7 +88,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    ::QueueProperties queueProperties;
    memset(&queueProperties, 0, sizeof(QueueProperties));
 
-   strncpy0(queueProperties.dbName, dbName.c_str(), QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.dbName, url.c_str(), QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, nodeId.c_str(), QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, queueName.c_str(), QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, tableNamePrefix.c_str(), QUEUE_PREFIX_MAX);
@@ -165,7 +101,9 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    queueP_ = createQueue(&queueProperties, &exception); // &log_ Used in myLogger(), see above
    if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 
-   log_.info(ME, "Created queue [" + getType() + "][" + getVersion() + "]");
+   log_.info(ME, "Created queue [" + getType() + "][" + getVersion() + "], queue/"+instanceRelating+"/url='" +
+                 queueProperties.dbName + "', queue/"+instanceRelating+"/queueName='" + queueProperties.queueName +
+                 "', queue/"+instanceRelating+"/maxEntries=" + lexical_cast<string>(queueProperties.maxNumOfEntries));
 }
 
 /*
@@ -288,16 +226,16 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
             MsgKeyData msgKeyData = msgKeyFactory_.readObject(string(msgUnit.key));
             MsgQosData msgQosData = msgQosFactory_.readObject(string(msgUnit.qos));
             MessageUnit messageUnit(msgKeyData, msgUnit.contentLen, (const unsigned char*)msgUnit.content, msgQosData);
-            PublishQueueEntry *pq = new PublishQueueEntry(global_, messageUnit, queueEntryC.embeddedType,
-                                           queueEntryC.priority, queueEntryC.isPersistent, queueEntryC.uniqueId);
+            PublishQueueEntry *pq = new PublishQueueEntry(global_, messageUnit,
+                                           queueEntryC.priority, queueEntryC.uniqueId);
             if (log_.trace()) log_.trace(ME, "Got PublishQueueEntry from queue");
             ret.insert(ret.end(), EntryType(*pq));
             if (log_.trace()) log_.trace(ME, "PublishQueueEntry is reference countet");
          }
-         else if (methodName == MethodName::CONNECT || methodName == MethodName::DISCONNECT) {
+         else if (methodName == MethodName::CONNECT) {
             ConnectQos connectQos = connectQosFactory_.readObject(string(msgUnit.qos));
-            ConnectQueueEntry *pq = new ConnectQueueEntry(global_, connectQos, queueEntryC.embeddedType,
-                                           queueEntryC.priority, queueEntryC.isPersistent, queueEntryC.uniqueId);
+            ConnectQueueEntry *pq = new ConnectQueueEntry(global_, connectQos,
+                                           queueEntryC.priority, queueEntryC.uniqueId);
             if (log_.trace()) log_.trace(ME, "Got ConnectQueueEntry from queue");
             ret.insert(ret.end(), EntryType(*pq));
             if (log_.trace()) log_.trace(ME, "ConnectQueueEntry is reference countet");
@@ -458,4 +396,74 @@ string SQLiteQueuePlugin::usage()
 }}}} // namespace
 
 
+/**
+ * Customized logging output is handled by this method. 
+ * We redirect logging output from the C implementation to our C++ logging plugin.
+ * <p>
+ * Please compile with <code>XMLBLASTER_PERSISTENT_QUEUE</code> defined.
+ * </p>
+ * @param queueP
+ * @param currLevel The actual log level of the client
+ * @param level The level of this log entry
+ * @param location A string describing the code place
+ * @param fmt The formatting string
+ * @param ... Other variables to log, corresponds to 'fmt'
+ * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
+ *      implementation
+ */
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...)
+{
+   /* Guess we need no more than 200 bytes. */
+   int n, size = 200;
+   char *p = 0;
+   va_list ap;
+   ::I_Queue *queueP = (::I_Queue *)logUserP;
+
+   //org::xmlBlaster::util::queue::SQLiteQueuePlugin *pluginP =
+   //      (org::xmlBlaster::util::queue::SQLiteQueuePlugin *)queueP->userObject;
+   //org::xmlBlaster::util::I_Log& log = pluginP->getLog();
+
+   if (queueP->userObject == 0) {
+      std::cout << "myLogger not initialized" << std::endl;
+      return;
+   }
+   org::xmlBlaster::util::I_Log& log = *((org::xmlBlaster::util::I_Log*)queueP->userObject);
+
+   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
+      return;
+   }
+   if ((p = (char *)malloc (size)) == NULL)
+      return;
+
+   for (;;) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = VSNPRINTF(p, size, fmt, ap); /* UNIX: vsnprintf(), WINDOWS: _vsnprintf() */
+      va_end(ap);
+      /* If that worked, print the string to console. */
+      if (n > -1 && n < size) {
+         if (level == LOG_INFO)
+            log.info(location, p);
+         else if (level == LOG_WARN)
+            log.warn(location, p);
+         else if (level == LOG_ERROR)
+            log.error(location, p);
+         else
+            log.trace(location, p);
+         free(p);
+         return;
+      }
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      if ((p = (char *)realloc (p, size)) == NULL) {
+         return;
+      }
+   }
+}
 

@@ -50,12 +50,12 @@ class Dll_Export QueueFactory {
     * Creates a queue implementation. It is the responsibility of the user to delete the I_Queue
     * object once it is not needed anymore by calling <code>releasePlugin()</code>. 
     * @param property The configuration settings
-    * @param type The queue type, for example "RAM", "SQLite"
-    * @param version The queue version, defaults to "1.0"
+    * @param type The queue type, for example "RAM", "SQLite", if empty the setting from argument 'property' is used
+    * @param version The queue version, defaults to "1.0", if empty the setting from argument 'property' is used
     * @throws XmlBlasterException: "resource.configuration.pluginFailed" if plugin is not known or other errorCodes if it can't be initialized. 
     */
-   I_Queue& getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property);
-                                    /*const std::string& type="RAM", const std::string& version="1.0");*/
+   I_Queue& getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property,
+                      const std::string& type="", const std::string& version="");
 
    /**
     * After calling this the <code>queue</code> argument in not usable anymore. 

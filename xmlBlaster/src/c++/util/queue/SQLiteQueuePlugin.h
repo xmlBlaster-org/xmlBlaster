@@ -8,7 +8,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
-#include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/qos/ConnectQosFactory.h>
@@ -31,10 +30,10 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
  *
  * @see <a href="http://www.sqlite.org">The embedded SQLite SQL database</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html">The client.c.queue requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html">The client.cpp.queue requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-class Dll_Export SQLiteQueuePlugin : public I_Queue, 
-                                     public virtual org::xmlBlaster::util::plugin::I_Plugin
+class Dll_Export SQLiteQueuePlugin : public I_Queue
 {
 private:
    SQLiteQueuePlugin(const SQLiteQueuePlugin& queue);

@@ -11,6 +11,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * delete it when its destructor is called).
  *
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html">The client.cpp.queue requirement</a>
  */
 
 #ifndef _UTIL_QUEUE_RAMQUEUE_H
@@ -18,7 +19,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
-#include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/thread/ThreadImpl.h>
@@ -29,8 +29,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
-class Dll_Export RamQueuePlugin : public I_Queue,
-                                  public virtual org::xmlBlaster::util::plugin::I_Plugin
+class Dll_Export RamQueuePlugin : public I_Queue
 {
 protected:
    std::string        ME;

@@ -18,6 +18,7 @@ Comment:   Factory to create different queue implementations
 #include <util/PlatformUtils.hpp>
 #include <util/queue/QueueFactory.h>
 #include <util/queue/RamQueuePlugin.h>
+#include <util/queue/CacheQueuePlugin.h>
 #ifdef XMLBLASTER_PERSISTENT_QUEUE
 #  include <util/queue/SQLiteQueuePlugin.h>
 #endif
@@ -65,15 +66,19 @@ QueueFactory::~QueueFactory()
    if (log_.call()) log_.call(ME, "~QueueFactory()");
 }
 
-I_Queue& QueueFactory::getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property) //, const string& type, const string& version)
+I_Queue& QueueFactory::getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property, const string& type, const string& version)
 {
    if (log_.call()) log_.call(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
+   string typ = type.empty() ? property.getType() : type;
+   string ver = version.empty() ? property.getVersion() : version;
 
-   if (property.getType() == Constants::RAM ||
-       property.getType() == Constants::CACHE) { // HACK! The default in QueuePropertyBase is CACHE, so we use our RAM in this case, see ClientQueueProperty.cpp for another hack
+   if (typ == Constants::CACHE) {
+      return *(new CacheQueuePlugin(global_, property));
+   }
+   else if (typ == Constants::RAM) {
       return *(new RamQueuePlugin(global_, property));
    }
-   else if (property.getType() == Constants::SQLITE) {
+   else if (typ == Constants::SQLITE) {
 #     ifdef XMLBLASTER_PERSISTENT_QUEUE
          return *(new SQLiteQueuePlugin(global_, property));  //#ifdef XMLBLASTER_PERSISTENT_QUEUE
 #     else

@@ -41,9 +41,7 @@ public:
     */
    ConnectQueueEntry(org::xmlBlaster::util::Global& global,
                      const org::xmlBlaster::util::qos::ConnectQos& connectQos,
-                     const std::string& type=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::CONNECT,
                      int priority=MAX_PRIORITY,
-                     bool persistent=false,
                      org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
    /**
