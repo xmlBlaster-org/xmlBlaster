@@ -187,6 +187,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
 
       /* Here we block until a message arrives, see parseSocketData() */
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+         "Going to block on socket read until a new message arrives ...");
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
 
       if (success == false) { /* EOF */
@@ -212,7 +214,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             listener->responseEventFp(r->userP, &socketDataHolder);
             freeXmlBlasterBlobContent(&socketDataHolder.blob);
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-               "Dispatched requestId '%s' to response listener", socketDataHolder.requestId);
+               "Forwarded message with requestId '%s' to response listener", socketDataHolder.requestId);
             continue;
          }
          else {
