@@ -444,7 +444,7 @@ public class MessageUnitHandler
       }
 
       try {
-         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getXmlKey().getKeyOid() + "' into '" + sub.getSessionInfo().getLoginName() + "' callback queue");
+         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getXmlKey().getKeyOid() + "' into '" + sub.getSessionInfo().getId() + "' callback queue");
          sub.getMsgQueue().putMsg(new MsgQueueEntry(glob, sub, msgUnitWrapper));
       }
       catch(XmlBlasterException e) {
@@ -461,7 +461,9 @@ public class MessageUnitHandler
 
    /**
     * Returns a Vector with SubscriptionInfo instances of this session
-    * (a session may subscribe the same message multiple times)
+    * (a session may subscribe the same message multiple times). 
+    * <p />
+    * This searches from a given SessionInfo.
     */
    public final Vector findSubscriber(SessionInfo sessionInfo) {
       Vector vec = null;
