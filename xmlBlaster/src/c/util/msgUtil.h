@@ -94,6 +94,7 @@ Dll_Export extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob
 Dll_Export extern const char *getXmlBlasterVersion(void);
 Dll_Export extern char *getStackTrace(int maxNumOfLines);
 Dll_Export extern void sleepMillis(long millis);
+Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime);
 Dll_Export extern void xmlBlasterFree(char *p);
 Dll_Export extern void freeMsgUnitData(MsgUnit *msgUnit);
 Dll_Export extern void freeMsgUnit(MsgUnit *msgUnit);

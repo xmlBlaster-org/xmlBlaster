@@ -25,17 +25,20 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <unistd.h>         /* sleep(), only used in main */
 #  include <netdb.h>          /* gethostbyname_re() */
 #  include <errno.h>          /* gethostbyname_re() */
-#  include <sys/time.h>       /* sleep with select() */
+#  include <sys/time.h>       /* sleep with select(), gettimeofday() */
 #  include <sys/types.h>      /* sleep with select() */
 #endif
 
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.12 2003/07/26 13:26:28 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.13 2003/10/12 08:49:59 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.12 2003/07/26 13:26:28 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.13 2003/10/12 08:49:59 ruff Exp $ xmlBlaster @version@";
 #endif
+
+#define  MICRO_SECS_PER_SECOND 1000000
+#define  NANO_SECS_PER_SECOND MICRO_SECS_PER_SECOND * 1000
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
 static const int numLOG_TEXT = 9; /* sizeof(LOG_TEXT) returns 36 which is not what we want */
@@ -182,6 +185,62 @@ Dll_Export void sleepMillis(long millisecs)
       printf("[msgUtil.c] ERROR: sleepMillis(%ld) returned errnor %d", millisecs, errno);
    }
 #endif
+}
+
+/**
+ * Fills the given abstime with absolute time, using the given timeout relativeTimeFromNow in milliseconds
+ * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
+ * but patches are available at http://sourceforge.net/projects/high-res-timers
+ * @param relativeTimeFromNow the relative time from now in milliseconds
+ * @return true If implemented
+ */
+Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime)
+{
+# ifdef _WINDOWS
+   time_t t1;
+   struct tm *now;
+   
+   (void) time(&t1);
+   now = localtime(&t1);
+
+   abstime->tv_sec = t1;
+   abstime->tv_nsec = 0; /* TODO !!! How to get the more precise current time on Win? */
+
+   abstime->tv_sec += relativeTimeFromNow / 1000;
+   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
+# else /* LINUX, __sun */
+   struct timeval tv;
+
+   memset(abstime, 0, sizeof(struct timespec));
+
+   gettimeofday(&tv, 0);
+   abstime->tv_sec = tv.tv_sec;
+   abstime->tv_nsec = tv.tv_usec * 1000;  /* microseconds to nanoseconds */
+
+   abstime->tv_sec += relativeTimeFromNow / 1000;
+   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
+# endif
+# if MORE_REALTIME
+   clock_gettime(CLOCK_REALTIME, abstime);
+
+   abstime->tv_sec += relativeTimeFromNow / 1000;
+   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
+# endif
 }
 
 /**
@@ -431,7 +490,7 @@ Dll_Export void trim(char *s)
       return;
    }
    else
-      strcpy((char *) s, (char *) s+first);
+      memmove((char *) s, (char *) s+first, strlen(s+first));
 
    for (i=(int)strlen((char *) s)-1; i >= 0; i--)
       if (!isspace((unsigned char)s[i])) {
