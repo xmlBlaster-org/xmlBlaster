@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.callback.authenticate' type='NEW' prio='HIGH' status="OPEN">
+   <topic>
+      The callback server, instantiated from clients, needs to authenticate xmlBlaster
+   </topic>
+   <description>
+      <![CDATA[
+      When xmlBlaster sends a message asynchronous back to the client callback
+      server, we must attach some credentials to the message.
+      The client callback server must protect itself against intruder messages.
+      ]]>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      Not specified yet.
+      Possibly we need to attach some xmlBlaster credentials or
+      some client credentials of the sender to the update QoS
+      ]]>
+   </example>
+   <see type="REQ">engine.qos.login.callback</see>
+   <author>?</author>
+   <hacker>?</hacker>
+   <date>2002 01 22</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
