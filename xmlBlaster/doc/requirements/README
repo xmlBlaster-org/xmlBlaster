@@ -37,14 +37,26 @@ Generate HTML output with Sun XML parser:
 =========================================
 Table with all requirements:
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
+  or:
+   java -Dcom.jclark.xsl.sax.parser=com.sun.xml.parser.Parser com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
 
 Detail info of one requirement:
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver engine.qos.publish.destination.PtX.xml detail.xsl engine.qos.publish.destination.PtX.html
+  or:
+   java -Dcom.jclark.xsl.sax.parser=com.sun.xml.parser.Parser com.jclark.xsl.sax.Driver engine.qos.publish.destination.PtX.xml detail.xsl engine.qos.publish.destination.PtX.html
+  or:
+   java -Dcom.jclark.xsl.sax.parser=com.sun.xml.parser.ValidatingParser com.jclark.xsl.sax.Driver engine.qos.publish.destination.PtX.xml detail.xsl engine.qos.publish.destination.PtX.html
 
-Generate HTML output with James Clarks XML parser:
-================================================w==
+
+Generate HTML output with James Clarks XML parser XP:
+=====================================================
    export CLASSPATH=/www/xp/xp.jar:$CLASSPATH
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xml.sax.CommentDriver com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
+
+
+Validating with Sun jaxp parser:
+================================
+   java -Djavax.xml.parsers.validation=true main engine.transaction.xml
 
 
 Validating with IBM parser:
