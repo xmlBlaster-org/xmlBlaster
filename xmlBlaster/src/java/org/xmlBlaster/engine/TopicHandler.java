@@ -136,7 +136,7 @@ public final class TopicHandler implements I_Timeout
 
    private final Object ADMIN_MONITOR = new Object();
 
-   private SubscriptionListener subscriptionListener;
+   private I_SubscriptionListener subscriptionListener;
 
    /**
     * Use this constructor if a subscription is made on a yet unknown object.

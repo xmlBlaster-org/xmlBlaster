@@ -1918,7 +1918,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    /**
     * Adds the specified subscription listener to receive subscribe/unSubscribe events.
     */
-   public void addSubscriptionListener(SubscriptionListener l) {
+   public void addSubscriptionListener(I_SubscriptionListener l) {
       if (l == null) {
          return;
       }
@@ -1931,7 +1931,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    /**
     * Removes the specified listener.
     */
-   public void removeSubscriptionListener(SubscriptionListener l) {
+   public void removeSubscriptionListener(I_SubscriptionListener l) {
       if (l == null) {
          return;
       }
@@ -1965,7 +1965,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          Iterator iterator = subscriptionListenerSet.iterator();
 
          while (iterator.hasNext()) {
-            SubscriptionListener subli = (SubscriptionListener)iterator.next();
+            I_SubscriptionListener subli = (I_SubscriptionListener)iterator.next();
             if (subscribe)
                subli.subscriptionAdd(event);
             else

@@ -27,7 +27,7 @@ import java.util.*;
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
  * @author Marcel Ruff
  */
-public class ClientSubscriptions implements I_ClientListener, SubscriptionListener
+public class ClientSubscriptions implements I_ClientListener, I_SubscriptionListener
 {
    private final String ME;
 
