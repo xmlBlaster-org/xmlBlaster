@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Cluster support: PtP messages now use the same cluster lookup code as Pub/Sub
+   and are fully cluster routing enabled.
+
  o Java client library:
    Changed ClientErrorHandler to not remove client side queue entries on certain exceptions
 
