@@ -28,12 +28,12 @@ import org.xml.sax.Attributes;
 public class CallbackAddress extends AddressBase
 {
    private static final String ME = "CallbackAddress";
-   private String nodeId = null;
 
    /**
     */
    public CallbackAddress(Global glob) {
       super(glob, "callback");
+      this.instanceName = Constants.RELATING_CALLBACK;
       initialize();
    }
 
@@ -42,6 +42,7 @@ public class CallbackAddress extends AddressBase
     */
    public CallbackAddress(Global glob, String type) {
       super(glob, "callback");
+      this.instanceName = Constants.RELATING_CALLBACK;
       initialize();
       setType(type);
    }
@@ -75,45 +76,9 @@ public class CallbackAddress extends AddressBase
    /**
     * Configure property settings
     */
-   private void initialize() {
+   protected void initialize() {
       initHostname(glob.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
-
-      // Choose same protocol for callback as for sending (as a default)
-      String protocolType = glob.getProperty().get("client.protocol", getType());
-      setType(glob.getProperty().get("cb.protocol", protocolType));
-
-      setPort(glob.getProperty().get("cb.port", getPort()));
-      setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
-      setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
-      setPingInterval(glob.getProperty().get("cb.pingInterval", getDefaultPingInterval()));
-      setRetries(glob.getProperty().get("cb.retries", getDefaultRetries()));
-      setDelay(glob.getProperty().get("cb.delay", getDefaultDelay()));
-      useForSubjectQueue(glob.getProperty().get("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue));
-      setOneway(glob.getProperty().get("cb.oneway", DEFAULT_oneway));
-      setCompressType(glob.getProperty().get("cb.compress.type", DEFAULT_compressType));
-      setMinSize(glob.getProperty().get("cb.compress.minSize", DEFAULT_minSize));
-      setPtpAllowed(glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed));
-      setSecretSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
-      setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
-      if (nodeId != null) {
-         // Choose same protocol for callback as for sending (as a default)
-         String protocolTypeNode = glob.getProperty().get("client.protocol["+nodeId+"]", getType());
-         setType(glob.getProperty().get("cb.protocol["+nodeId+"]", protocolTypeNode));
-
-         setPort(glob.getProperty().get("cb.port["+nodeId+"]", getPort()));
-         setCollectTime(glob.getProperty().get("cb.burstMode.collectTime["+nodeId+"]", collectTime));
-         setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));
-         setPingInterval(glob.getProperty().get("cb.pingInterval["+nodeId+"]", pingInterval));
-         setRetries(glob.getProperty().get("cb.retries["+nodeId+"]", retries));
-         setDelay(glob.getProperty().get("cb.delay["+nodeId+"]", delay));
-         useForSubjectQueue(glob.getProperty().get("cb.useForSubjectQueue["+nodeId+"]", useForSubjectQueue));
-         setOneway(glob.getProperty().get("cb.oneway["+nodeId+"]", oneway));
-         setCompressType(glob.getProperty().get("cb.compress.type["+nodeId+"]", compressType));
-         setMinSize(glob.getProperty().get("cb.compress.minSize["+nodeId+"]", minSize));
-         setPtpAllowed(glob.getProperty().get("cb.ptpAllowed["+nodeId+"]", ptpAllowed));
-         setSecretSessionId(glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId));
-         setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
-      }
+      super.initialize();
    }
 
    /**
@@ -121,7 +86,7 @@ public class CallbackAddress extends AddressBase
     * @return false if address is for session queue only
     */
    public boolean useForSubjectQueue() {
-      return useForSubjectQueue;
+      return useForSubjectQueue.getValue();
    }
 
    /**
@@ -129,7 +94,7 @@ public class CallbackAddress extends AddressBase
     * @param useForSubjectQueue false if address is for session queue only
     */
    public void useForSubjectQueue(boolean useForSubjectQueue) {
-      this.useForSubjectQueue = useForSubjectQueue;
+      this.useForSubjectQueue.setValue(useForSubjectQueue);
    }
 
    /**
@@ -143,28 +108,6 @@ public class CallbackAddress extends AddressBase
    /** @return The literal address as given by getAddress() */
    public String toString() {
       return getAddress();
-   }
-
-   /**
-    * Get a usage string for the server side supported callback connection parameters
-    */
-   public String usage()
-   {
-      String text = "\n";
-      text += "Control xmlBlaster server side callback (if we install a local callback server):\n";
-      text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
-      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
-      text += "                         The burst mode allows performance tuning, try set it to 200.\n";
-      text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
-      text += "   -cb.pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
-      text += "   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [" + getDefaultRetries() + "]\n";
-      text += "   -cb.delay           Delay between callback retries in milliseconds [" + getDefaultDelay() + "]\n";
-      text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
-      text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
-      text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
-      text += "   -cb.protocol        You can choose another protocol for the callback server [defaults to -client.protocol]\n";
-      //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
-      return text;
    }
 
    /** For testing: java org.xmlBlaster.util.qos.address.CallbackAddress */

@@ -128,7 +128,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          addressProp.setDelay(400L);          // retry connecting every 400 milli sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(400L);   // ping every 400 milli second
-         addressProp.setMaxEntries(10000);        // queue up to 10000 messages
+//         addressProp.setMaxEntries(10000);        // queue up to 10000 messages
          con.initFailSave(this);
 
          connectQos.setAddress(addressProp);

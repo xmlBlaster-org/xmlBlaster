@@ -97,7 +97,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          addressProp.setDelay(4000L);         // retry connecting every 4 sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(1000L);  // ping every second
-         addressProp.setMaxEntries(1000);         // queue up to 1000 messages
+//         addressProp.setMaxEntries(1000);         // queue up to 1000 messages
          con.initFailSave(this);
 
          connectQos.setAddress(addressProp);

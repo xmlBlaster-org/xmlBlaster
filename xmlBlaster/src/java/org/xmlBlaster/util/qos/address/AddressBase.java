@@ -11,6 +11,11 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
+import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.property.PropInt;
+import org.xmlBlaster.util.property.PropLong;
+import org.xmlBlaster.util.property.PropBoolean;
+
 
 /**
  * Abstract helper class holding connect address and callback address string
@@ -29,6 +34,8 @@ public abstract class AddressBase
    /** The root xml element: &lt;callback> or &lt;address>, is set from the derived class */
    protected String rootTag = null;
 
+   protected String instanceName;
+
    /** The unique address, e.g. the CORBA IOR string */
    private String address;
 
@@ -36,35 +43,35 @@ public abstract class AddressBase
    protected boolean isHardcodedHostname = false; // set to true if setHostname() was explicitly called by user
 
    public static final int DEFAULT_port = 3412;
-   private int port = DEFAULT_port;
+   private PropInt port = new PropInt(DEFAULT_port);
 
    /** The unique protocol type, e.g. "IOR" */
    public static final String DEFAULT_type = "IOR";
-   protected String type = DEFAULT_type;
+   protected PropString type = new PropString(DEFAULT_type);
    
    /** The protocol version, e.g. "1.0" */
    public static final String DEFAULT_version = "1.0";
-   protected String version = DEFAULT_version;
+   protected PropString version = new PropString(DEFAULT_version);
    
    /** BurstMode: The time to collect messages for publish/update */
    public static final long DEFAULT_collectTime = 0L;
-   protected long collectTime = DEFAULT_collectTime;
+   protected PropLong collectTime = new PropLong(DEFAULT_collectTime);
    
    /** BurstMode: The time to collect messages for oneway publish/update */
    public static final long DEFAULT_collectTimeOneway = 0L;
-   protected long collectTimeOneway = DEFAULT_collectTimeOneway;
+   protected PropLong collectTimeOneway = new PropLong(DEFAULT_collectTimeOneway);
 
    /** Ping interval: pinging every given milliseconds */
    abstract public long getDefaultPingInterval();
-   protected long pingInterval = getDefaultPingInterval();
+   protected PropLong pingInterval = new PropLong(getDefaultPingInterval());
    
    /** How often to retry if connection fails */
    abstract public int getDefaultRetries();
-   protected int retries = getDefaultRetries();
+   protected PropInt retries = new PropInt(getDefaultRetries());
    
    /** Delay between connection retries in milliseconds */
    abstract public long getDefaultDelay();
-   protected long delay = getDefaultDelay();
+   protected PropLong delay = new PropLong(getDefaultDelay());
    
    /**
     * Shall the update() or publish() messages be send oneway (no application level ACK). 
@@ -73,27 +80,27 @@ public abstract class AddressBase
     * Defaults to false (the update() or publish() has a return value and can throw an exception).
     */
    public static final boolean DEFAULT_oneway = false;
-   protected boolean oneway = DEFAULT_oneway;
+   protected PropBoolean oneway = new  PropBoolean(DEFAULT_oneway);
    
    /** Compress messages if set to "gzip" or "zip" */
    public static final String DEFAULT_compressType = "";
-   protected String compressType = DEFAULT_compressType;
+   protected PropString compressType = new PropString(DEFAULT_compressType);
    
    /** Messages bigger this size in bytes are compressed */
    public static final long DEFAULT_minSize = 0L;
-   protected long minSize = DEFAULT_minSize;
+   protected PropLong minSize = new PropLong(DEFAULT_minSize);
    
    /** PtP messages wanted? Defaults to true, false prevents spamming */
    public static final boolean DEFAULT_ptpAllowed = true;
-   protected boolean ptpAllowed = DEFAULT_ptpAllowed;
+   protected PropBoolean ptpAllowed = new  PropBoolean(DEFAULT_ptpAllowed);
    
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
    public static final String DEFAULT_sessionId = "unknown";
-   protected String sessionId = DEFAULT_sessionId;
+   protected PropString sessionId = new PropString(DEFAULT_sessionId);
 
    /** Shall this session callback be used for subjectQueue messages as well? For &lt;callback> only */
    public static final boolean DEFAULT_useForSubjectQueue = true;
-   protected boolean useForSubjectQueue = DEFAULT_useForSubjectQueue;
+   protected PropBoolean useForSubjectQueue = new  PropBoolean(DEFAULT_useForSubjectQueue);
 
    /**
     * Does client whish a dispatcher plugin. 
@@ -106,7 +113,11 @@ public abstract class AddressBase
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
    public String DEFAULT_dispatchPlugin = null;
-   protected String dispatchPlugin = DEFAULT_dispatchPlugin;
+   protected PropString dispatchPlugin = new PropString(DEFAULT_dispatchPlugin);
+
+
+   /** The node id to which we want to connect */
+   protected String nodeId;
 
    /**
     */
@@ -115,6 +126,32 @@ public abstract class AddressBase
       this.log = glob.getLog("core");
       setRootTag(rootTag);
    }
+
+
+   /**
+    * Configure property settings. 
+    * "-delay[heron] 20" has precedence over "-delay 10"
+    * @see #Address(String, String)
+    */
+   protected void initialize()
+   {
+      String context = null;
+      String className = "dispatch";
+      this.port.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "port");
+      this.type.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "protocol");
+      this.collectTime.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTime");
+      this.collectTimeOneway.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTimeOneway");
+      this.pingInterval.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "pingInterval");
+      this.retries.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "retries");
+      this.delay.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "delay");
+      this.oneway.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "oneway");
+      this.compressType.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "compress/type");
+      this.minSize.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "compress/minSize");
+      this.ptpAllowed.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "ptpAllowed");
+      this.sessionId.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "sessionId");
+      this.dispatchPlugin.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "DispatchPlugin/defaultPlugin");
+   }
+
 
    /**
     * A nice human readable name for this address (used for logging)
@@ -157,17 +194,15 @@ public abstract class AddressBase
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
     */
    public final void setType(String type) {
-      if (type == null)
-         this.type = "";
-      else
-         this.type = type;
+      if (type == null) this.type.setValue("");
+      else this.type.setValue(type);
    }
 
    /**
     * @param version   The protocol version, e.g. "1.0"
     */
    public final void setVersion(String version) {
-      this.version = version;
+      this.version.setValue(version);
    }
 
    /**
@@ -215,18 +250,12 @@ public abstract class AddressBase
     * Updates the internal address as well. 
     */
    public final void setPort(int port) {
-      this.port = port;
+      this.port.setValue(port);
       this.address = null; // reset cache
    }
 
    public final int getPort() {
-      /*
-      if (this.port == 0) {
-         this.port = glob.getBootstrapPort();
-         this.address = null; // reset cache
-      }
-      */
-      return this.port;
+      return this.port.getValue();
    }
 
    /**
@@ -257,7 +286,7 @@ public abstract class AddressBase
     * @return e.g. "EMAIL" or "IOR" (never null).
     */
    public final String getType() {
-      return type;
+      return type.getValue();
    }
 
    /**
@@ -265,7 +294,7 @@ public abstract class AddressBase
     * @return e.g. "1.0" or null
     */
    public final String getVersion() {
-      return version;
+      return version.getValue();
    }
 
    /**
@@ -291,7 +320,7 @@ public abstract class AddressBase
     * @return The time to collect in milliseconds
     */
    public final long getCollectTime() {
-      return collectTime;
+      return this.collectTime.getValue();
    }
 
    /**
@@ -299,7 +328,7 @@ public abstract class AddressBase
     * @return The time to collect in milliseconds
     */
    public final long getCollectTimeOneway() {
-      return collectTimeOneway;
+      return this.collectTimeOneway.getValue();
    }
 
    /**
@@ -307,10 +336,8 @@ public abstract class AddressBase
     * @param The time to collect in milliseconds
     */
    public void setCollectTime(long collectTime) {
-      if (collectTime < 0L)
-         this.collectTime = 0L;
-      else
-         this.collectTime = collectTime;
+      if (collectTime < 0L) this.collectTime.setValue(0L);
+      else this.collectTime.setValue(collectTime);
    }
 
    /**
@@ -318,10 +345,8 @@ public abstract class AddressBase
     * @param The time to collect in milliseconds
     */
    public void setCollectTimeOneway(long collectTimeOneway) {
-      if (collectTimeOneway < 0L)
-         this.collectTimeOneway = 0L;
-      else
-         this.collectTimeOneway = collectTimeOneway;
+      if (collectTimeOneway < 0L) this.collectTimeOneway.setValue(0L);
+      else this.collectTimeOneway.setValue(collectTimeOneway);
    }
 
    /**
@@ -329,7 +354,7 @@ public abstract class AddressBase
     * @return The pause time between pings in millis
     */
    public final long getPingInterval() {
-      return pingInterval;
+      return pingInterval.getValue();
    }
 
    /**
@@ -337,14 +362,13 @@ public abstract class AddressBase
     * @param pingInterval The pause time between pings in millis
     */
    public void setPingInterval(long pingInterval) {
-      if (pingInterval <= 0L)
-         this.pingInterval = 0L;
+      if (pingInterval <= 0L) this.pingInterval.setValue(0L);
       else if (pingInterval < 10L) {
          log.warn(ME, "pingInterval=" + pingInterval + " msec is too short, setting it to 10 millis");
-         this.pingInterval = 10L;
+         this.pingInterval.setValue(10L);
       }
       else
-         this.pingInterval = pingInterval;
+         this.pingInterval.setValue(pingInterval);
    }
 
    /**
@@ -352,7 +376,7 @@ public abstract class AddressBase
     * @return -1 forever, 0 no retry, > 0 number of retries
     */
    public final int getRetries() {
-      return retries;
+      return retries.getValue();
    }
 
    /**
@@ -360,10 +384,8 @@ public abstract class AddressBase
     * @param -1 forever, 0 no retry, > 0 number of retries
     */
    public void setRetries(int retries) {
-      if (retries < -1)
-         this.retries = -1;
-      else
-         this.retries = retries;
+      if (retries < -1) this.retries.setValue(-1);
+      else this.retries.setValue(retries);
    }
 
    /**
@@ -371,17 +393,15 @@ public abstract class AddressBase
     * @return The delay in millisconds
     */
    public final long getDelay() {
-      return delay;
+      return delay.getValue();
    }
 
    /**
     * Delay between callback retries in milliseconds, defaults to one minute
     */
    public void setDelay(long delay) {
-      if (delay <= 0L)
-         this.delay = getDefaultDelay();
-      else
-         this.delay = delay;
+      if (delay <= 0L) this.delay.setValue(getDefaultDelay());
+      else this.delay.setValue(delay);
    }
 
    /**
@@ -390,7 +410,7 @@ public abstract class AddressBase
     * @return true if you want to force oneway sending
     */
    public final boolean oneway() {
-      return oneway;
+      return oneway.getValue();
    }
 
    /**
@@ -399,26 +419,26 @@ public abstract class AddressBase
     * @param oneway false is default
     */
    public void setOneway(boolean oneway) {
-      this.oneway = oneway;
+      this.oneway.setValue(oneway);
    }
 
    /**
     * @param Set if we accept point to point messages
     */
    public void setPtpAllowed(boolean ptpAllowed) {
-      this.ptpAllowed = ptpAllowed;
+      this.ptpAllowed.setValue(ptpAllowed);
    }
 
    /**
     * @return true if we may send PtP messages
     */
    public final boolean isPtpAllowed() {
-      return this.ptpAllowed;
+      return this.ptpAllowed.getValue();
    }
 
    public void setCompressType(String compressType) {
-      if (compressType == null) compressType = "";
-      this.compressType = compressType;
+      if (compressType == null) this.compressType.setValue("");
+      this.compressType.setValue(compressType);
 
       // TODO !!!
       if (compressType.length() > 0)
@@ -430,12 +450,12 @@ public abstract class AddressBase
     * @return never null
     */
    public final String getSecretSessionId() {
-      return sessionId;
+      return sessionId.getValue();
    }
 
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
    public void setSecretSessionId(String sessionId) {
-      this.sessionId = sessionId;
+      this.sessionId.setValue(sessionId);
    }
 
    /**
@@ -443,7 +463,7 @@ public abstract class AddressBase
     * @return "" No compression
     */
    public final String getCompressType() {
-      return compressType;
+      return this.compressType.getValue();
    }
 
    /** 
@@ -453,7 +473,7 @@ public abstract class AddressBase
     * @return size in bytes
     */
    public long getMinSize() {
-      return minSize;
+      return this.minSize.getValue();
    }
 
    /** 
@@ -463,7 +483,7 @@ public abstract class AddressBase
     * @return size in bytes
     */
    public void setMinSize(long minSize) {
-      this.minSize = minSize;
+      this.minSize.setValue(minSize);
    }
 
    /**
@@ -482,14 +502,14 @@ public abstract class AddressBase
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
    public void setDispatchPlugin(String dispatchPlugin) {
-      this.dispatchPlugin = dispatchPlugin;
+      this.dispatchPlugin.setValue(dispatchPlugin);
    }
 
    /**
     * @return "undef" or e.g. "Priority,1.0"
     */
    public String getDispatchPlugin() {
-      return this.dispatchPlugin;
+      return this.dispatchPlugin.getValue();
    }
 
    /**
@@ -556,10 +576,10 @@ public abstract class AddressBase
                   setOneway(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
-                  this.useForSubjectQueue = new Boolean(attrs.getValue(i).trim()).booleanValue();
+                  this.useForSubjectQueue.setValue(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("dispatchPlugin") ) {
-                  this.dispatchPlugin = attrs.getValue(i).trim();
+                  this.dispatchPlugin.setValue(attrs.getValue(i).trim());
                }
                else {
                   log.error(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
@@ -680,41 +700,41 @@ public abstract class AddressBase
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
-      if (getVersion() != null && !getVersion().equals(DEFAULT_version))
+      if (this.version.isModified())
           sb.append(" version='").append(getVersion()).append("'");
       if (getHostname() != null)
           sb.append(" hostname='").append(getHostname()).append("'");
-      if (DEFAULT_port != getPort())
+      if (this.port.isModified())
           sb.append(" port='").append(getPort()).append("'");
-      if (!DEFAULT_sessionId.equals(getSecretSessionId()))
+      if (this.sessionId.isModified())
           sb.append(" sessionId='").append(getSecretSessionId()).append("'");
-      if (getDefaultPingInterval() != getPingInterval())
+      if (this.pingInterval.isModified())
           sb.append(" pingInterval='").append(getPingInterval()).append("'");
-      if (getDefaultRetries() != getRetries())
+      if (this.retries.isModified())
           sb.append(" retries='").append(getRetries()).append("'");
-      if (getDefaultDelay() != getDelay())
+      if (this.delay.isModified())
           sb.append(" delay='").append(getDelay()).append("'");
-      if (DEFAULT_oneway != oneway())
+      if (this.oneway.isModified())
           sb.append(" oneway='").append(oneway()).append("'");
-      if (DEFAULT_useForSubjectQueue != this.useForSubjectQueue)
+      if (this.useForSubjectQueue.isModified())
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue).append("'");
-      if (DEFAULT_dispatchPlugin != this.dispatchPlugin)
+      if (this.dispatchPlugin.isModified())
           sb.append(" dispatchPlugin='").append(this.dispatchPlugin).append("'");
       sb.append(">");
       if (getAddress() != null)
          sb.append(offset).append("   ").append(getAddress());
-      if (getCollectTime() != DEFAULT_collectTime || getCollectTimeOneway() != DEFAULT_collectTimeOneway) {
+      if (this.collectTime.isModified() || this.collectTime.isModified()) {
          sb.append(offset).append("   ").append("<burstMode");
-         if (getCollectTime() != DEFAULT_collectTime)
+         if (this.collectTime.isModified())
             sb.append(" collectTime='").append(getCollectTime()).append("'");
-         if (getCollectTimeOneway() != DEFAULT_collectTimeOneway)
+         if (this.collectTimeOneway.isModified())
             sb.append(" collectTimeOneway='").append(getCollectTimeOneway()).append("'");
          sb.append("/>");
       }
-      if (!getCompressType().equals(DEFAULT_compressType))
+      if (this.compressType.isModified())
          sb.append(offset).append(" ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("'/>");
-      if (this.ptpAllowed != DEFAULT_ptpAllowed) {
-         if (this.ptpAllowed) {
+      if (this.ptpAllowed.isModified()) {
+         if (this.ptpAllowed.getValue()) {
             sb.append(offset).append(" ").append("<ptp/>");
          }
          else {
@@ -725,6 +745,57 @@ public abstract class AddressBase
 
       return sb.toString();
    }
+
+
+
+
+
+
+
+
+
+   /**
+    * Get a usage string for the connection parameters
+    */
+   public final String usage()
+   {
+      String text = "";
+      text += "Control fail save connection to xmlBlaster server:\n";
+    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
+    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
+      text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";
+      text += "                       This allows performance tuning, try set it to 200.\n";
+    //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
+      text += "   -pingInterval       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -retries            How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
+      text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
+    //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+    //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
+    //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
+      text += "\n";
+      text += "Control xmlBlaster server side callback (if we install a local callback server):\n";
+      text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
+      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
+      text += "                         The burst mode allows performance tuning, try set it to 200.\n";
+      text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
+      text += "   -cb.pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [" + getDefaultRetries() + "]\n";
+      text += "   -cb.delay           Delay between callback retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      text += "   -cb.protocol        You can choose another protocol for the callback server [defaults to -client.protocol]\n";
+      //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+      return text;
+   }
+
+
+
+
+
+
+
 }
 
 

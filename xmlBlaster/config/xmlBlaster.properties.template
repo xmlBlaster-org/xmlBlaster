@@ -112,10 +112,14 @@ EmailDriver.from=xmlblast@localhost
 # Customize dispatcher plugin
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
 DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
-#DispatchPlugin.defaultPlugin=Priority,1.0
-DispatchPlugin.defaultPlugin=undef
+#DispatchPlugin/defaultPlugin=Priority,1.0
+dispatch/callback/DispatchPlugin/defaultPlugin=undef
+#dispatch/callback/DispatchPlugin/defaultPlugin=undef
+#DispatchPlugin/defaultPlugin=undef
+
+
 #cb.DispatchPlugin.defaultPlugin=Priority,1.0
-cb.DispatchPlugin.defaultPlugin=undef
+#cb.DispatchPlugin.defaultPlugin=undef
 
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
 PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='send'> \

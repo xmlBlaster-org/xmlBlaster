@@ -519,7 +519,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.clientProblemCallback = connCallback;
       this.addressFailSaveSettings.setDelay(retryInterval);
       this.addressFailSaveSettings.setRetries(retries);
-      this.addressFailSaveSettings.setMaxEntries(maxInvocations);
       this.addressFailSaveSettings.setPingInterval(pingInterval);
    }
 

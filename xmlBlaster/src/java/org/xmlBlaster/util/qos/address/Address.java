@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
-
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Helper class holding address string, protocol string and client side connection properties.
@@ -27,16 +27,11 @@ public class Address extends AddressBase
 {
    private static final String ME = "Address";
 
-   /** The node id to which we want to connect */
-   private String nodeId = null;
-
-   /** TODO: Move this attribute to CbQueueProperty.java */
-   private long maxEntries;
-
    /**
     */
    public Address(Global glob) {
       super(glob, "address");
+      this.instanceName = Constants.RELATING_CLIENT;
       initialize();
    }
 
@@ -45,17 +40,10 @@ public class Address extends AddressBase
     */
    public Address(Global glob, String type) {
       super(glob, "address");
+      this.instanceName = Constants.RELATING_CLIENT;
       initialize();
       setType(type);
    }
-
-   public void setMaxEntries(long maxEntries) {
-      this.maxEntries = maxEntries;
-   }
-
-   //public long getMaxEntries() {
-   //   return this.maxEntries;
-   //}
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
@@ -70,50 +58,11 @@ public class Address extends AddressBase
    public Address(Global glob, String type, String nodeId) {
       super(glob, "address");
       this.nodeId = nodeId;
+      this.instanceName = Constants.RELATING_CLIENT;
       initialize();
       setType(type);
    }
 
-   /**
-    * Configure property settings. 
-    * "-delay[heron] 20" has precedence over "-delay 10"
-    * @see #Address(String, String)
-    */
-   private void initialize()
-   {
-      setPort(glob.getProperty().get("port", getPort()));
-      setPort(glob.getProperty().get("client.port", getPort())); // this is stronger (do we need it?)
-
-      setType(glob.getProperty().get("client.protocol", getType()));
-      setCollectTime(glob.getProperty().get("burstMode.collectTime", DEFAULT_collectTime));
-      setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
-      setPingInterval(glob.getProperty().get("pingInterval", getDefaultPingInterval()));
-      setRetries(glob.getProperty().get("retries", getDefaultRetries()));
-      setDelay(glob.getProperty().get("delay", getDefaultDelay()));
-      setOneway(glob.getProperty().get("oneway", DEFAULT_oneway));
-      setCompressType(glob.getProperty().get("compress.type", DEFAULT_compressType));
-      setMinSize(glob.getProperty().get("compress.minSize", DEFAULT_minSize));
-      setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
-      setSecretSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
-      setDispatchPlugin(glob.getProperty().get("DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
-      if (nodeId != null) {
-         setPort(glob.getProperty().get("port["+nodeId+"]", getPort()));
-         setPort(glob.getProperty().get("client.port["+nodeId+"]", getPort())); // this is stronger (do we need it?)
-
-         setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
-         setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", getCollectTime()));
-         setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", getCollectTimeOneway()));
-         setPingInterval(glob.getProperty().get("pingInterval["+nodeId+"]", getPingInterval()));
-         setRetries(glob.getProperty().get("retries["+nodeId+"]", getRetries()));
-         setDelay(glob.getProperty().get("delay["+nodeId+"]", getDelay()));
-         setOneway(glob.getProperty().get("oneway["+nodeId+"]", oneway()));
-         setCompressType(glob.getProperty().get("compress.type["+nodeId+"]", getCompressType()));
-         setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", getMinSize()));
-         setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", isPtpAllowed()));
-         setSecretSessionId(glob.getProperty().get("sessionId["+nodeId+"]", getSecretSessionId()));
-         setDispatchPlugin(glob.getProperty().get("DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
-      }
-   }
 
    /** How often to retry if connection fails: defaults to -1 (retry forever), 0 switches failsafe mode off */
    public int getDefaultRetries() { return -1; }
@@ -138,27 +87,6 @@ public class Address extends AddressBase
       return getAddress();
    }
 
-   /**
-    * Get a usage string for the connection parameters
-    */
-   public final String usage()
-   {
-      String text = "";
-      text += "Control fail save connection to xmlBlaster server:\n";
-    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
-    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
-      text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";
-      text += "                       This allows performance tuning, try set it to 200.\n";
-    //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
-      text += "   -pingInterval       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
-      text += "   -retries            How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
-      text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
-      text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
-    //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
-    //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
-    //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
-      return text;
-   }
 
    /** For testing: java org.xmlBlaster.util.qos.address.Address */
    public static void main(String[] argsDefault)
