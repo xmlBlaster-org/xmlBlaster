@@ -62,8 +62,8 @@
                   </entry>
                </queue>
                <address>
-                  <plugin refid='protocol:SOCKET:users'/>
-                  myHost.com:3098
+                  <plugin refid='protocol:XML-RPC:users'/>
+                  http://server.mycomp.com:6901/xmlrpc
                </address>
             </dispatch>
 
@@ -202,7 +202,7 @@ Old style:
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
