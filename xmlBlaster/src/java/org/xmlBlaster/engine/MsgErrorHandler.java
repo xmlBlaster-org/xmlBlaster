@@ -80,18 +80,12 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       String message = xmlBlasterException.getMessage();
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
       DeliveryManager deliveryManager = sessionInfo.getDeliveryManager();
-
-      if (deliveryManager == null) {
-         log.error(ME, "PANIC: DeliveryManager is still null, error handling failed and message is lost" + msgErrorInfo.toXml());
-         return;
-      }
+      I_Queue msgQueue = (deliveryManager == null) ? null: deliveryManager.getQueue();
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
 
       // 1. Generate dead letters from passed messages
-      glob.getRequestBroker().deadMessage(msgQueueEntries, deliveryManager.getQueue(), message);
-
-      I_Queue msgQueue = deliveryManager.getQueue();
+      glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
 
       // Remove the above published dead message from the queue
       try {
@@ -135,10 +129,10 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          }
       }
 
-      if (deliveryManager.isDead()) {
+      if (deliveryManager == null || deliveryManager.isDead()) {
          if (log.TRACE) log.trace(ME, "Doing error handling for dead connection state ...");
 
-         deliveryManager.shutdown();
+         if (deliveryManager!=null) deliveryManager.shutdown();
 
          // 3. Kill login session
          try {
