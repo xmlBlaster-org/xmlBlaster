@@ -20,6 +20,11 @@
       Sometimes this is not enough.
       This is a use case where you may want to write a little plugin, having some specific
       behavior.
+      </p>
+
+
+      <h3>An example plugin</h3>
+      <p>
       Please study the following illustration which shows an example for this use case.
       </p>
       <br />
@@ -47,7 +52,12 @@
       When the line is fine again, the router sends a status message which contains the '2M' state
       and our plugin switches to send all messages, including the hold back messages in the queue.
       </p>
+      
+      
+      <h3>How to write my own plugin</h3>
+      <p>
       As a plugin coder, you have to implement two interfaces
+      </p>
       <ul>
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
          <li>I_MsgDeliveryInterceptor: Which forces you to implement some methods which allows you to control the message flow</li>
@@ -69,19 +79,51 @@
       </p>
    </description>
    <configuration where="server">
-      <p>
+
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>DispatchPlugin[MyPlugin][1]</td>
+            <td>com.xy.MyPlugin</td>
+            <td>Register your plugin</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>DispatchPlugin[Another][1.0]</td>
+            <td>com.xy.MySpecial</td>
+            <td>Register your plugin</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>DispatchPlugin.defaultPlugin</td>
+            <td>"MyPlugin,1" or "Another,1.0" or "undef"</td>
+            <td>Specifiy the plugin to use as a default.<br />
+                Default is <i>undef</i> that is no default plugin is loaded which is usually the correct setting:<br />
+                The client normally chooses on login its desired plugin by specifying it in the connect QoS</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+      <!-- p>
       For coding and configuration of plugins please read the
       requirement delivery.control.plugin.howto (see link below)
-      </p>
+      </p -->
    </configuration>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor</see>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin</see>
-   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">delivery.control.plugin.howto</see>
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 10 30</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
