@@ -9,6 +9,15 @@ export ORBACUS_CONFIG=${XMLBLASTER_HOME}/config/orbacus.cfg
 #export CLASSPATH=$ORBACUS_HOME/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:$JDK_HOME/jre/lib/rt.jar:$(CLASSPATH):.
 export CLASSPATH=${ORBACUS_HOME}/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:${CLASSPATH}:.
 
+# check if the mico library really exists
+ORBACUS_LIBRARY_BASE=${ORBACUS_HOME}/lib/libOB
+if [ ! -f ${ORBACUS_LIBRARY_BASE}.so ] && [ ! -f ${ORBACUS_LIBRARY_BASE}.dll ] && [ ! -f ${ORBACUS_LIBRARY_BASE}.a ] ; then 
+  ${ECHO} "$BLACK_RED Could not find the ORBACUS library. Check ORBACUS_HOME $ESC"
+fi
+
+#
+# The version variable is currently not used in ORBACUS.
+#
 export CORBA_CPP="orbacus"
 export CORBACPP_HOME=${ORBACUS_HOME}
 export CORBACPP_VER=${ORBACUS_VER}
