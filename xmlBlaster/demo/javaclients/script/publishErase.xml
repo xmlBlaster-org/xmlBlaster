@@ -1,0 +1,17 @@
+<!--
+   java javaclients.script.XmlScript -requestFile publishErase.xml
+-->
+
+<xmlBlaster>
+
+  <connect/>
+  <publish><key oid="1"><airport /></key><content>Hi</content></publish>
+  <subscribe><key queryType="XPATH">//airport</key><qos/></subscribe>
+  <publish><key oid="2"><airport /></key><content>Hi again</content></publish>
+  <wait delay="2000" />
+  <erase><key oid="1"></key><qos><force/></qos></erase>
+  <erase><key oid="2"></key><qos/></erase>
+  <wait delay="500" />
+  <disconnect />
+</xmlBlaster>
+

@@ -19,8 +19,8 @@
   </connect>
 
   <wait delay="1000" />
-
-  <disconnect />
-
+<!--
+  <disconnect /> 
+-->
 </xmlBlaster>
 
