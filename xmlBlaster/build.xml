@@ -1877,11 +1877,14 @@ TODO
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
     <target name="c-clean" depends="prepare" description="Remove C object files">
+       <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj"/>
+       </delete>
     </target>
 
     <target name="c-delete" depends="c-clean" description="Remove all generated C files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.c.dir}" includes="client"/>
+          <fileset dir="${src.c.dir}" includes="client,*.exe"/>
        </delete>
     </target>
 
