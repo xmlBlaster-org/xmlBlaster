@@ -337,8 +337,8 @@ final public class Authenticate implements I_RunlevelListener
 
          synchronized(subjectInfo) {
             if (subjectIsAlive) {
-               // TODO: Reconfigure subject queue only when queue relating='subject' was used
-               subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
+               if (connectQos.getData().hasSubjectQueueProperty()) 
+                  subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
             // Check if client does a relogin and wants to destroy old sessions
             if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
