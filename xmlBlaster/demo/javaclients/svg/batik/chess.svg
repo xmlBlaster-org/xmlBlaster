@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"
 "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 
-<svg width="400" height="400" viewBox="0 0 400 400">
+<svg width="500" height="500" viewBox="0 0 500 500">
 
   <defs>
     <symbol id="raw" viewbox="0 0 350 50">
@@ -11,7 +11,6 @@
       <rect x="0" y="0" width="50" height="50" transform="translate(200,  0)" style="fill:black"/>
       <rect x="0" y="0" width="50" height="50" transform="translate(300,  0)" style="fill:black"/>
     </symbol>
-
 
     <symbol id="whiteQueen" viewbox="0 0 50 50">
       <g>
@@ -25,8 +24,6 @@
       </g>
     </symbol>
 
-
-
     <symbol id="whiteKing" viewbox="0 0 50 50">
       <g>
         <path d="M 20 40 L 10 10 L 20 20 L 25 10 L 30 20 L 40 10 L 30 40 z" fill="red" />
@@ -39,7 +36,6 @@
       </g>
     </symbol>
 
-
     <symbol id="whiteHorse" viewbox="0 0 50 50">
       <g>
         <path d="M 10 40 L 10 35 L 20 35 L 20 25 L 10 25 L 10 20 L 20 15 L 20 10 L 30 20 L 30 35 L 40 35 L 40 40 L 10 40 z" fill="red" />
@@ -51,7 +47,6 @@
         <path d="M 10 40 L 10 35 L 20 35 L 20 25 L 10 25 L 10 20 L 20 15 L 20 10 L 30 20 L 30 35 L 40 35 L 40 40 L 10 40 z" fill="blue" />
       </g>
     </symbol>
-
 
     <symbol id="whiteRunner" viewbox="0 0 50 50">
       <g>
@@ -68,7 +63,6 @@
         <circle cx="25" cy="18" r="9" style="fill:blue"/>
       </g>
     </symbol>
-
 
     <symbol id="whitePiece" viewbox="0 0 50 50">
       <g>
@@ -108,9 +102,9 @@
       </g>
     </symbol>
 
-
 </defs>
 
+<g transform="translate(50,50)">
   <g>
     <use x="0" y="0" width="350" height="50" xlink:href="#raw"/>
     <use x="50" y="50" width="350" height="50" xlink:href="#raw"/>
@@ -156,8 +150,6 @@
     <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
     <rect x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/>
   </g>
-
-
 
   <g id="xmlBlaster.blackPiece1" transform="translate(0,300)">
     <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
@@ -271,5 +263,6 @@
     <rect x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/>
   </g>
 
+</g>
 
 </svg>
