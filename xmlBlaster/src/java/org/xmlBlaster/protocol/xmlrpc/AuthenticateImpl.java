@@ -3,7 +3,7 @@ Name:      AuthenticateImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: AuthenticateImpl.java,v 1.2 2000/10/24 11:46:27 ruff Exp $
+Version:   $Id: AuthenticateImpl.java,v 1.3 2001/07/03 20:34:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -15,6 +15,8 @@ import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * The methods of this class are callable bei XML-RPC clients.
+ * <p />
+ * void return is not allowed so we return an empty string instead
  * <p />
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -55,15 +57,18 @@ public class AuthenticateImpl
 
    /**
     * Logout of a client.
+    * <p />
+    * void return is not allowed so we return an empty string instead
     * <p>
     * @exception XmlBlasterException If client is unknown
     */
-   public void logout(String sessionId) throws XmlBlasterException
+   public String logout(String sessionId) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout() ...");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       authenticateNative.logout(sessionId);
       if (Log.TIME) Log.time(ME, "Elapsed time in logout()" + stop.nice());
+      return "";
    }
 
 

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.9 2001/02/14 10:55:21 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.10 2001/07/03 20:34:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -26,6 +26,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  * MessageUnit[] are converted to Vector (of Vector)
  * String[] are converted to Vector (of String)
  * boolean are converted to int
+ * void return is not allowed so we return an empty string instead
  * </pre>
  * <p />
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
@@ -68,9 +69,10 @@ public class XmlBlasterImpl
 
 
    /**
+    * void return is not allowed so we return an empty string instead
     * @see xmlBlaster.idl
     */
-   public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
+   public String unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
@@ -79,6 +81,8 @@ public class XmlBlasterImpl
       blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
+
+      return "";
    }
 
 
