@@ -1,0 +1,34 @@
+<!ELEMENT database:adapter (
+	database:url,
+	database:username,
+	database:password,
+	database:interaction,
+	database:command,
+	database:connectionKey,
+	database:connectionlifespan,
+	database:confirmation,
+	database:documentrootnode,
+	database:rowrootnode,
+	database:rowlimit,
+	database:columnnamecase)>
+
+<!ENTITY % text "#PCDATA">
+
+<!ELEMENT database:url (%text;)>
+<!ELEMENT database:username  (%text;)> 
+<!ELEMENT database:password  (%text;)> 
+<!ELEMENT database:interaction EMPTY> 
+<!ELEMENT database:command (%text;)> 
+<!ELEMENT database:connectionKey (%text;)> 
+<!ELEMENT database:connectionlifespan EMPTY> 
+<!ELEMENT database:confirmation EMPTY> 
+<!ELEMENT database:documentrootnode (%text;)> 
+<!ELEMENT database:rowrootnode (%text;)> 
+<!ELEMENT database:rowlimit EMPTY> 
+<!ELEMENT database:columnnamecase EMPTY> 
+ 
+<!ATTLIST columnnamecase case (  UPPER | LOWER | DEFAULT ) "DEFAULT">
+<!ATTLIST interaction type (UPDATE | QUERY) "QUERY">
+<!ATTLIST rowlimit max CDATA #REQUIRED>  
+<!ATTLIST connectionlifespan ttl CDATA #REQUIRED>  
+<!ATTLIST confirmation confirm (YES | NO) "YES">
