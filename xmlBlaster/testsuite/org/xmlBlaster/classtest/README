@@ -1,5 +1,0 @@
-Test xmlBlaster on class level.
-
-Invoke:
-
-    java -Djava.compiler= junit.swingui.TestRunner -noloading classtest.AllTests

@@ -1,5 +1,0 @@
-Test xmlBlaster authentication.
-
-Invoke:
-
-    java -Djava.compiler= junit.swingui.TestRunner -noloading authentication.AllTests

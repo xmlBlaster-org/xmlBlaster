@@ -1,7 +1,0 @@
-Test cluster features of xmlBlaster:
-
-http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
-
-Invoke:
-
-    java -Djava.compiler= junit.swingui.TestRunner -noloading clustertest.AllTests
