@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.20 1999/12/22 12:26:18 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.21 2000/01/30 18:50:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -35,6 +35,8 @@ public class ClientInfo
    private String loginName = null;            // the unique client identifier
    private AuthenticationInfo authInfo = null; // all client informations
    private I_CallbackDriver myCallbackDriver = null;
+   private static long instanceCounter = 0L;
+   private long instanceId = 0L;
 
    /**
     * All MessageUnit which can't be delivered to the client (if he is not logged in)
@@ -52,6 +54,8 @@ public class ClientInfo
     */
    public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
    {
+      instanceId = instanceCounter; 
+      instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
       notifyAboutLogin(authInfo);
    }
@@ -64,6 +68,8 @@ public class ClientInfo
     */
    public ClientInfo(String loginName)
    {
+      instanceId = instanceCounter; 
+      instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
       this.loginName = loginName;
    }
@@ -131,7 +137,9 @@ public class ClientInfo
       this.authInfo = authInfo;
       this.loginName = authInfo.getLoginName();
 
-      // Get the appropriate callback protocol driver
+      if (Log.TRACE) Log.trace(ME, "notifyAboutLogin()");
+
+      // Get the appropriate callback protocol driver (Future: add driver by reflection with xmlBlaster.properties)
       if (authInfo.useCorbaCB())
          myCallbackDriver = CallbackCorbaDriver.getInstance();
       else if (authInfo.useEmailCB())
@@ -177,11 +185,14 @@ public class ClientInfo
 
 
    /**
-    * Get notification that the client did a logout.
+    * Get notification that the client did a logout. 
+    * <br />
+    * Note that the loginName is not reset.
+    * @param clearQueue Shall the message queue of the client be destroyed as well?
     */
-   public final void notifyAboutLogout() throws XmlBlasterException
+   public final void notifyAboutLogout(boolean clearQueue) throws XmlBlasterException
    {
-      if (messageQueue != null) {
+      if (clearQueue && messageQueue != null) {
          while (true) {
             MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
             if (messageUnitWrapper == null)
@@ -272,5 +283,49 @@ public class ClientInfo
    public final String getCallbackIOR() throws XmlBlasterException
    {
       return authInfo.getCallbackIOR();
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @return internal state of ClientInfo as a XML ASCII string
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of ClientInfo as a XML ASCII string
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset + "<ClientInfo id='" + instanceId + "'>");
+      sb.append(offset + "   <loginName>" + loginName + "</loginName>");
+      if (isLoggedIn())
+         sb.append(offset + "   <isLoggedIn />");
+      else
+         sb.append(offset + "   <isNotLoggedIn />");
+      if (myCallbackDriver == null)
+         sb.append(offset + "   <noCallbackDriver />");
+      else if (myCallbackDriver instanceof CallbackCorbaDriver)
+         sb.append(offset + "   <CallbackCorbaDriver />");
+      else if (myCallbackDriver instanceof CallbackEmailDriver)
+         sb.append(offset + "   <CallbackEmailDriver />");
+      else if (myCallbackDriver instanceof CallbackHttpDriver)
+         sb.append(offset + "   <CallbackHttpDriver />");
+      sb.append(offset + "</ClientInfo>\n");
+
+      return sb;
    }
 }

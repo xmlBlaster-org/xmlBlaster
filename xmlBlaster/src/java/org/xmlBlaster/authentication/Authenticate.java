@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.22 2000/01/13 06:18:25 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.23 2000/01/30 18:50:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -191,6 +191,7 @@ public class Authenticate
                        BlasterCallback callback, String callbackIOR,
                        String xmlQoS_literal) throws XmlBlasterException
    {
+      if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + printOn().toString());
       String uniqueClientKey;
       org.omg.CORBA.Object certificatedServerRef = null;
 
@@ -198,14 +199,10 @@ public class Authenticate
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
          Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in");
-         // throw new XmlBlasterException(ME+".AlreadyLoggedIn", "Sorry, you are already logged in");
-         // allowing re-login: if the client crashed without proper logout, he should
-         // be allowed to login again, so - first logout the last session:
-         try {
-            logout(clientInfo.getAuthenticationInfo().getXmlBlaster());
-         } catch (XmlBlasterException e) {
-            Log.warning(ME, "Exception during forced logout: " + e.toString());
-         }
+         resetClientInfo(clientInfo.getAuthenticationInfo().getXmlBlaster(), false);
+         // allowing re-login: if the client crashed without proper logout, she should
+         // be allowed to login again, so - first logout the last session (but keep messages in client queue)
+         // We need to clean up clientInfo, usually the callback reference is another one, etc.
       }
 
       try {
@@ -243,6 +240,7 @@ public class Authenticate
 
       fireClientEvent(clientInfo, true);
 
+      if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + printOn().toString());
       return xmlBlaster;
    }
 
@@ -292,6 +290,27 @@ public class Authenticate
     */
    public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
    {
+      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + printOn().toString());
+      ClientInfo clientInfo = resetClientInfo(xmlServer, true);
+
+      String loginName = clientInfo.getLoginName();
+
+      synchronized(loginNameClientInfoMap) {
+         loginNameClientInfoMap.remove(loginName);
+      }
+
+      Log.info(ME, "Successful logout for client " + loginName);
+      clientInfo = null;
+      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + printOn().toString());
+   }
+
+
+   /**
+    * @param xmlServer xmlBlaster CORBA handle
+    * @param clearQueue Shall the message queue of the client be destroyed as well?
+    */
+   private ClientInfo resetClientInfo(org.xmlBlaster.serverIdl.Server xmlServer, boolean clearQueue) throws XmlBlasterException
+   {
       byte[] oid;
 
       try {
@@ -301,14 +320,14 @@ public class Authenticate
          throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout possible");
       }
 
-      String uniqueClientKey = new String(oid);
-
       try {
          xmlServer._release();
       } catch (Exception e) {
          e.printStackTrace();
          Log.error(ME, e.toString());
       }
+
+      String uniqueClientKey = new String(oid);
 
       Object obj;
       synchronized(aomClientInfoMap) {
@@ -319,18 +338,14 @@ public class Authenticate
          Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
          throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
       }
-
+      
       ClientInfo clientInfo = (ClientInfo)obj;
-
-      synchronized(loginNameClientInfoMap) {
-         loginNameClientInfoMap.remove(clientInfo.getLoginName());
-      }
 
       fireClientEvent(clientInfo, false); // informs all ClientListener
 
-      Log.info(ME, "Successful logout for client " + clientInfo.toString());
-      clientInfo.notifyAboutLogout();
-      clientInfo = null;
+      clientInfo.notifyAboutLogout(true);
+
+      return clientInfo;
    }
 
 
@@ -434,5 +449,43 @@ public class Authenticate
       }
    }
 
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @return internal state of Authenticate as a XML ASCII string
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of Authenticate as a XML ASCII string
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      if (aomClientInfoMap.size() != loginNameClientInfoMap.size())
+         Log.error(ME, "Inconsistent client maps, aomClientInfoMap.size()=" + aomClientInfoMap.size() + " and loginNameClientInfoMap.size()=" + loginNameClientInfoMap.size());
+      Iterator iterator = loginNameClientInfoMap.values().iterator();
+
+      sb.append(offset + "<Authenticate>");
+      while (iterator.hasNext()) {
+         ClientInfo clientInfo = (ClientInfo)iterator.next();
+         sb.append(clientInfo.printOn(extraOffset + "   ").toString());
+      }
+      sb.append(offset + "</Authenticate>\n");
+
+      return sb;
+   }
 
 }
