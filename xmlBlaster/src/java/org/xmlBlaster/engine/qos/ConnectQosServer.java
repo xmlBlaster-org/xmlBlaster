@@ -216,8 +216,8 @@ public final class ConnectQosServer
     * @param prop The property object of the callback queue which shall be established in the server for calling us back.
     * @see org.xmlBlaster.util.qos.address.CallbackAddress
     */
-   public void addCbQueueProperty(CbQueueProperty prop) {
-      this.connectQosData.addCbQueueProperty(prop);
+   public void setSessionCbQueueProperty(CbQueueProperty prop) {
+      this.connectQosData.setSessionCbQueueProperty(prop);
    }
 
    /**
@@ -232,8 +232,8 @@ public final class ConnectQosServer
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
     */
-   public CbQueueProperty getSubjectCbQueueProperty() {
-      return this.connectQosData.getSubjectCbQueueProperty();
+   public CbQueueProperty getSubjectQueueProperty() {
+      return this.connectQosData.getSubjectQueueProperty();
    }
 
    /**
