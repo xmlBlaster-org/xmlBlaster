@@ -99,7 +99,7 @@
       <qos>
          ...
          <!-- default SessionQueue callback: Use CORBA to send messages back -->
-         <callback type='IOR'>
+         <callback type='IOR' sessionId='sd3lXjs9Fdlggh'>
             IOR:00011200070009990000....
          </callback>
       </qos>
@@ -160,9 +160,16 @@
          </callback>
 
 
-         <callback type='IOR'> <!-- Sends message via CORBA as well -->
+         <callback type='IOR' sessionId='sd3lXjs9Fdlggh'> <!-- Sends message via CORBA as well -->
             IOR:00011200070009990000....
          </callback>
+
+         <callback type='XML-RPC' sessionId='8sd3lXjspx9Fdlggh'>
+            http:/www.mars.universe:8080/RPC2
+         </callback>
+
+         <!-- The session id is passed to the client callback server, he can check
+              if he trusts this sender -->
       </qos>
       
       ]]>
@@ -173,7 +180,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
