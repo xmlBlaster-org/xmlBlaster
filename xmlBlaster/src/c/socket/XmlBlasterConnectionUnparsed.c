@@ -14,6 +14,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <errno.h>
 #include <sys/types.h>
 #include <socket/xmlBlasterSocket.h>
+#include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
 #define SOCKET_TCP false
@@ -33,6 +34,10 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
 static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterConnectionUnparsed *xb);
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
+static ssize_t writenPlain(void *xb, const int fd, const char *ptr, const size_t nbytes);
+static ssize_t writenCompressed(void *xb, const int fd, const char *ptr, const size_t nbytes);
+static ssize_t readnPlain(void *xb, const int fd, char *ptr, const size_t nbytes);
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes);
 static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
 
 /**
@@ -77,7 +82,13 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
-   xb->useUdpForOneway = false; /* For publishOneway() AND to start callback UDP server (for updateOneway()) */
+   xb->useUdpForOneway = false;
+   xb->writeToSocket.funcP = 0;
+   xb->writeToSocket.userP = xb;
+   xb->zlibWriteBuf = 0;
+   xb->readFromSocket.funcP = 0;
+   xb->readFromSocket.userP = xb;
+   xb->zlibReadBuf = 0;
    return xb;
 }
 
@@ -85,6 +96,16 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0) {
       freeProperties(xb->props);
+      if (xb->zlibWriteBuf) {
+         xmlBlaster_endZlibWriter(xb->zlibWriteBuf);
+         free(xb->zlibWriteBuf);
+         xb->zlibWriteBuf = 0;
+      }
+      if (xb->zlibReadBuf) {
+         xmlBlaster_endZlibReader(xb->zlibReadBuf);
+         free(xb->zlibReadBuf);
+         xb->zlibReadBuf = 0;
+      }
       xmlBlasterConnectionShutdown(xb);
       free(xb);
    }
@@ -133,6 +154,62 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    if (xb->isInitialized) {
       return true;
    }
+
+   {  /* Switch on compression? */
+      const char *compressType = xb->props->getString(xb->props, "plugin/socket/compress/type", "");
+      compressType = xb->props->getString(xb->props, "dispatch/connection/plugin/compress/type", compressType);
+
+      if (!strcmp(compressType, "zlib:stream")) {
+         
+         xb->zlibWriteBuf = (XmlBlasterZlibWriteBuffers *)malloc(sizeof(struct XmlBlasterZlibWriteBuffers));
+         xb->zlibReadBuf = (XmlBlasterZlibReadBuffers *)malloc(sizeof(struct XmlBlasterZlibReadBuffers));
+
+         if (xmlBlaster_initZlibWriter(xb->zlibWriteBuf) != 0/*Z_OK*/) {
+            if (xb->logLevel>=LOG_ERROR) xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__,
+                  "Failed switching on 'plugin/socket/compress/type=%s'", compressType);
+            strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                     "[%.100s:%d] Failed switching on 'plugin/socket/compress/type=%s'",
+                     __FILE__, __LINE__, compressType);
+            free(xb->zlibWriteBuf);
+            xb->zlibWriteBuf = 0;
+            free(xb->zlibReadBuf);
+            xb->zlibReadBuf = 0;
+            return false;
+         }
+
+         if (xmlBlaster_initZlibReader(xb->zlibReadBuf) != 0/*Z_OK*/) {
+            if (xb->logLevel>=LOG_ERROR) xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__,
+                  "Failed switching on 'plugin/socket/compress/type=%s'", compressType);
+            strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                     "[%.100s:%d] Failed switching on 'plugin/socket/compress/type=%s'",
+                     __FILE__, __LINE__, compressType);
+            free(xb->zlibWriteBuf);
+            xb->zlibWriteBuf = 0;
+            free(xb->zlibReadBuf);
+            xb->zlibReadBuf = 0;
+            return false;
+         }
+
+         if (xb->logLevel>=LOG_DUMP) {
+            xb->zlibWriteBuf->debug = true;
+            xb->zlibReadBuf->debug = true;
+         }
+
+         if (!xb->writeToSocket.funcP) {  /* Accept setting from XmlBlasterAccessUnparsed */
+            xb->writeToSocket.funcP = writenCompressed;
+            xb->readFromSocket.funcP = readnCompressed;
+         }
+      }
+      else {
+         if (!xb->writeToSocket.funcP) {  /* Accept setting from XmlBlasterAccessUnparsed */
+            xb->writeToSocket.funcP = writenPlain;
+            xb->readFromSocket.funcP = readnPlain;
+         }
+      }
+   }
+
 
    servTcpPort = xb->props->getString(xb->props, "plugin/socket/port", "7607");
    servTcpPort = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/port", servTcpPort);
@@ -213,6 +290,8 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                      localHostName, localPort);
             }
          }
+
+         /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
 
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
             if (xb->logLevel>=LOG_INFO) xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
@@ -389,17 +468,29 @@ static bool isConnected(XmlBlasterConnectionUnparsed *xb)
 
 const char *xmlBlasterConnectionUnparsedUsage()
 {
-   return 
+   /* To prevent compiler warning */
+   /*   "string length `596' is greater than the length `509' ISO C89 compilers are required to support" */
+   /* we have a static variable */
+   static char usage[1024];
+   strcpy(usage, 
       "\n   -dispatch/connection/plugin/socket/hostname [localhost]"
       "\n                       Where to find xmlBlaster."
       "\n   -dispatch/connection/plugin/socket/port [7607]"
       "\n                       The port where xmlBlaster listens."
-      "\n   -dispatch/connection/plugin/socket/localHostname [NULL]"
+      "\n   -dispatch/connection/plugin/socket/localHostname [NULL]");
+   strcat(usage,
       "\n                       Force the local IP, useful on multi homed computers."
       "\n   -dispatch/connection/plugin/socket/localPort [0]"
       "\n                       Force the local port, useful to tunnel firewalls."
+      "\n   -dispatch/connection/plugin/socket/compress/type []"
+#if XMLBLASTER_ZLIB==1
+      "\n                       Switch on compression with 'zlib:stream'."
+#else
+      "\n                       No compression support. Try recompiling with with '-DXMLBLASTER_ZLIB==1'."
+#endif
       "\n   -dispatch/connection/plugin/socket/useUdpForOneway [false]"
-      "\n                       Use UDP for publishOneway() calls.";
+      "\n                       Use UDP for publishOneway() calls.");
+   return usage;
 }
 
 /**
@@ -522,7 +613,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    
    /* send the header ... */
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Lowlevel writing data to socket ...");
-   numSent = writen(udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
+   numSent = xb->writeToSocket.funcP(xb->writeToSocket.userP, udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
    if (numSent == -1) {
       if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
                                    "Lost connection to xmlBlaster server");
@@ -634,7 +725,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
  */
 static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception, bool udp)
 {
-   return parseSocketData(xb->socketToXmlBlaster, responseSocketDataHolder, exception, udp, xb->logLevel >= LOG_DUMP);
+   return parseSocketData(xb->socketToXmlBlaster, &xb->readFromSocket, responseSocketDataHolder, exception, udp, xb->logLevel >= LOG_DUMP);
 }
 
 /**
@@ -1179,6 +1270,42 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
       "Returned %u messages for get()", msgUnitArr->len);
 
    return msgUnitArr;
+}
+
+/**
+ * Write uncompressed to socket (not thread safe)
+ */
+static ssize_t writenPlain(void *userP, const int fd, const char *ptr, const size_t nbytes) {
+   XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,  "writenPlain(%u)", nbytes);
+   return writen(fd, ptr, nbytes);
+}
+
+/**
+ * Compress data and send to socket. 
+ */
+static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, const size_t nbytes) {
+   XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,  "writenCompressed(%u)", nbytes);
+   return xmlBlaster_writenCompressed(xb->zlibWriteBuf, fd, ptr, nbytes);
+}
+
+/**
+ * Write uncompressed to socket (not thread safe)
+ */
+static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes) {
+   XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,  "readnPlain(%u)", nbytes);
+   return readn(fd, ptr, nbytes);
+}
+
+/**
+ * Compress data and send to socket. 
+ */
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes) {
+   XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,  "readnCompressed(%u)", nbytes);
+   return xmlBlaster_readnCompressed(xb->zlibReadBuf, fd, ptr, nbytes);
 }
 
 /**
