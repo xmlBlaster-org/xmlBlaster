@@ -146,6 +146,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       fi
    fi
 
+   #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/jdom.jar
+   #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/saw.jar
+   #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/soap.jar
+
+
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    fi
