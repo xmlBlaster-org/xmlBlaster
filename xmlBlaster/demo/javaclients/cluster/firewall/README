@@ -1,3 +1,7 @@
+#
+# xmlBlaster/demo/javaclients/cluster/firewall/README
+#
+
 Example of a slave xmlBlaster cluster node 'frodo' running behind
 a firewall which allows outbound socket connection only.
 
