@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.3 1999/12/14 12:19:54 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.4 2000/01/07 20:44:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -79,7 +79,7 @@ public class ClientGet
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             stop.restart();
-            MessageUnit[] msgArr = null;
+            MessageUnitContainer[] msgArr = null;
             try {
                msgArr = xmlBlaster.get(xmlKey, qos);
             } catch(XmlBlasterException e) {
@@ -88,9 +88,9 @@ public class ClientGet
 
             Log.info(ME, "Got " + msgArr.length + " messages:");
             for (int ii=0; ii<msgArr.length; ii++) {
-               Log.plain(ME, msgArr[ii].xmlKey +
+               Log.plain(ME, msgArr[ii].messageUnit.xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                           new String(msgArr[ii].content) +
+                           new String(msgArr[ii].messageUnit.content) +
                           "\n\n#######################################");
             }
          }
@@ -128,7 +128,7 @@ public class ClientGet
                          "   //DRIVER[@id='ProgramExecute']" +
                          "</key>";
          stop.restart();
-         MessageUnit[] msgArr = null;
+         MessageUnitContainer[] msgArr = null;
          try {
             msgArr = xmlBlaster.get(xmlKey, qos);
          } catch(XmlBlasterException e) {
@@ -140,9 +140,9 @@ public class ClientGet
          else
             Log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            Log.plain(ME, msgArr[ii].xmlKey +
+            Log.plain(ME, msgArr[ii].messageUnit.xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                          new String(msgArr[ii].content) +
+                          new String(msgArr[ii].messageUnit.content) +
                           "\n\n#######################################");
          }
 
