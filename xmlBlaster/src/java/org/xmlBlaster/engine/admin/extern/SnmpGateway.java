@@ -21,7 +21,7 @@ import org.xmlBlaster.authentication.SessionInfo;
  * <p />
  * @author ruff@swand.lake.de
  * @since 0.79f
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.SNMP.html">admin.snmp requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.snmp.html">admin.snmp requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.command.html">admin.command requirement</a>
  */
 public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
