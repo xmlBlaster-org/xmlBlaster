@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.4 2002/06/27 12:42:36 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.5 2002/09/09 13:39:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
@@ -49,7 +49,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7624;
    private int filterMessageContentBiggerAs = 10;
 
@@ -94,7 +94,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       args[13] = "0";
       glob.init(args);
 
-      serverThread = ServerThread.startXmlBlaster(args);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
@@ -138,7 +138,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       con.disconnect(null);
 
       Util.delay(500L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.2 2002/06/27 12:42:36 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.3 2002/09/09 13:39:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.GetQosWrapper;
 import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
@@ -48,7 +48,7 @@ public class TestGetRegexFilter extends TestCase
    private XmlBlasterConnection con = null;
    private String name;
    private String passwd = "secret";
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7604;
 
    /**
@@ -88,7 +88,7 @@ public class TestGetRegexFilter extends TestCase
       args[9] = "org.xmlBlaster.engine.mime.regex.GnuRegexFilter";
       glob.init(args);
 
-      serverThread = ServerThread.startXmlBlaster(args);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
@@ -120,7 +120,7 @@ public class TestGetRegexFilter extends TestCase
       con.disconnect(null);
 
       Util.delay(500L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

@@ -30,7 +30,7 @@ import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 import junit.framework.*;
 
@@ -59,7 +59,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
    private int numReceived = 0;
 
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7604;
 
    /**
@@ -83,7 +83,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
 
@@ -126,7 +126,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
       senderConnection.logout();
 
       Util.delay(500L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
    }
@@ -208,11 +208,11 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       try {
          senderConnection.logout();
-         ServerThread.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
          serverThread = null ;
          Util.delay( delay4Server );    // Wait some time
 
-         serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+         serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
          Util.delay( delay4Server );    // Wait some time
          ConnectQos conectqos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, senderPasswd, conectqos, this);

@@ -3,7 +3,7 @@ Name:      TestFailSaveAsync.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSaveAsync.java,v 1.3 2002/06/27 12:56:46 ruff Exp $
+Version:   $Id: TestFailSaveAsync.java,v 1.4 2002/09/09 13:39:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import org.jutils.init.Property;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -55,7 +55,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
 
    private XmlBlasterConnection con;
    private String senderName;
@@ -113,7 +113,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
       glob.init(Util.getOtherServerPorts(serverPort));
 
-      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try {
          numReceived = 0;
 
@@ -177,7 +177,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       }
       finally {
          Util.delay(200L);    // Wait some time
-         ServerThread.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
          // reset to default server port (necessary if other tests follow in the same JVM).
          Util.resetPorts();
@@ -238,13 +238,13 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
       for (int ii=0; ii<maxMsg; ii++) {
          if (ii==failMsg) {
-            ServerThread.stopXmlBlaster(serverThread);
+            EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
             Util.delay(600L);    // Wait some time, ping should activate login polling
             log.info(ME, "lostConnection, sending message " + ii + " - " + (reconnectMsg-1));
          }
 
          if (ii==reconnectMsg) {
-            serverThread = ServerThread.startXmlBlaster(serverPort);
+            serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
             while (true) {
                if (reconnected == true)
                   break;

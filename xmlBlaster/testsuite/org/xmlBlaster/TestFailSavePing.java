@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.24 2002/06/27 12:56:46 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.25 2002/09/09 13:39:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishQosWrapper;
@@ -51,7 +51,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
 
    private XmlBlasterConnection con;
    private String senderName;
@@ -82,7 +82,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    {
       glob.init(Util.getOtherServerPorts(serverPort));
 
-      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try {
          numReceived = 0;
 
@@ -143,7 +143,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       con.logout();
 
       Util.delay(200L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
@@ -201,18 +201,18 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    {
       testSubscribe();
       Util.delay(200L);
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
       Util.delay(3000L);    // Wait some time, ping should activate login polling
 
-      serverThread = ServerThread.startXmlBlaster(serverPort);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
       Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
 
       numReceived = 0;
 
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
       Util.delay(5000L);    // Wait some time, ping should activate login polling
 
-      serverThread = ServerThread.startXmlBlaster(serverPort);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
       Util.delay(5000L);    // Wait some time, to allow the ping to reconnect
    }
 

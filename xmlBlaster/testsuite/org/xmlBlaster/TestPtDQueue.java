@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.29 2002/06/27 12:54:16 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.30 2002/09/09 13:39:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,11 +21,11 @@ import junit.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a message.
+ * This client tests the PtP (or PtD = point to destination) style, William sends to Averell a message.
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
- * Manuel is the 'sender' and Ulrike the 'receiver'<br />
- * Ulrike is not online when Manuel sends the message, and will receive the message
+ * William is the 'sender' and Averell the 'receiver'<br />
+ * Averell is not online when William sends the message, and will receive the message
  * from her queue in the xmlBlaster when she logs in.
  * <p>
  * A second test checks if there is an Exception thrown, if the receiver
@@ -114,7 +114,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       {
          Log.info(ME, "Testing point to a unknown destination with NO forceQueuing set ...");
 
-         // Construct a message and send it to "Ulrike"
+         // Construct a message and send it to "Averell"
          String xmlKey = "<key oid='' contentMime='text/plain'/>";
          String qos = "<qos>" +
                       "   <destination queryType='EXACT' forceQueuing='false'>" +

@@ -18,6 +18,7 @@ SUB_DIRS = classtest clustertest query xmldb authentication mime snmp jdbc
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
     $(CLASS_DIR)/TestCorbaThreads.class \
+    $(CLASS_DIR)/TestEmbeddedXmlBlaster.class \
     $(CLASS_DIR)/LoadTestSub.class \
     $(CLASS_DIR)/RamTest.class \
     $(CLASS_DIR)/TestCallback.class \

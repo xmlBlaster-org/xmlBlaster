@@ -13,7 +13,7 @@ import junit.framework.*;
 
 public class TestAuthenticationHtPassWd extends TestCase
 {
-  private ServerThread serverThread = null;
+  private EmbeddedXmlBlaster serverThread = null;
   private final String RIGHT_USERNAME = "existingUser";
   private final String PARTIAL_USERNAME = "existingSomeThingElseStandsBehind";
   private final String RIGHT_PASSWORD = "existingUserPW";
@@ -78,7 +78,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       args[i+4] = ports[i];
     }
     glob.init(args);
-    serverThread = ServerThread.startXmlBlaster(glob);
+    serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
   }
 
   protected void tearDown() {

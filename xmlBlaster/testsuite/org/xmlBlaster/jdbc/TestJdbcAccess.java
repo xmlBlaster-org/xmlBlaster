@@ -16,7 +16,7 @@ import org.xmlBlaster.client.GetKeyWrapper;
 import org.xmlBlaster.client.GetQosWrapper;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
@@ -45,7 +45,7 @@ public class TestJdbcAccess extends TestCase
    private XmlBlasterConnection con = null;
    private String name;
    private String passwd = "secret";
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7615;
 
    private XmlDbMessageWrapper wrap = null;
@@ -97,7 +97,7 @@ public class TestJdbcAccess extends TestCase
       };
       glob.init(args);
 
-      serverThread = ServerThread.startXmlBlaster(glob);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing JDBC access");
 
       try {
@@ -132,7 +132,7 @@ public class TestJdbcAccess extends TestCase
       con.disconnect(null);
 
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

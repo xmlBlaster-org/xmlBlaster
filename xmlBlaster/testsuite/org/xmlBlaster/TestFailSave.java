@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.37 2002/06/27 12:56:46 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.38 2002/09/09 13:39:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
@@ -35,8 +35,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *   java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestFailSave
+ *   java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestFailSave
  * </pre>
  * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
  */
@@ -49,7 +49,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
 
    private XmlBlasterConnection con;
    private String senderName;
@@ -58,6 +58,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private int numPublish = 8;
    private int numStop = 3;
    private final String contentMime = "text/plain";
+
+   private final long reconnectDelay = 2000L;
 
    private String assertInUpdate = null;
 
@@ -85,7 +87,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       glob.init(Util.getOtherServerPorts(serverPort));
 
-      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       try {
          numReceived = 0;
@@ -97,7 +99,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
          // Setup fail save handling ...
          Address addressProp = new Address(glob);
-         addressProp.setDelay(4000L);      // retry connecting every 4 sec
+         addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
          addressProp.setRetries(-1);       // -1 == forever
          addressProp.setPingInterval(-1L); // switched off
          addressProp.setMaxMsg(1000);      // queue up to 1000 messages
@@ -140,8 +142,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       Util.delay(500L);    // Wait some time
       con.logout();
 
-      Util.delay(500L);    // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
@@ -202,12 +203,14 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          try {
             if (ii == numStop) { // 3
                log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
-               ServerThread.stopXmlBlaster(serverThread);
+               EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
             }
             if (ii == 5) {
-               log.info(ME, "Starting xmlBlaster again, expecting the previous published messages ...");
-               serverThread = ServerThread.startXmlBlaster(serverPort);
-               waitOnUpdate(4000L);
+               log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
+               serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+               log.info(ME, "xmlBlaster started, waiting on tail back messsages");
+               waitOnUpdate(reconnectDelay*2L); // Message-4 We need to wait until the client reconnected (reconnect interval)
+               waitOnUpdate(4000L); // Message-5
             }
             testPublish(ii+1);
             waitOnUpdate(4000L);
@@ -223,11 +226,10 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             else
                assertTrue("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
-         //Util.delay(3000L);    // Wait some time
       }
 
+      Util.delay(2000L);    // Wait some time
       assertEquals("numReceived is wrong", numPublish, numReceived);
-      Util.delay(1000L);    // Wait some time
    }
 
 

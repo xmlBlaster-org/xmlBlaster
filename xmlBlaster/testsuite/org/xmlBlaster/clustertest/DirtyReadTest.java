@@ -2,7 +2,6 @@ package clustertest;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ServerThread;
 
 // for client connections:
 import org.xmlBlaster.util.*;

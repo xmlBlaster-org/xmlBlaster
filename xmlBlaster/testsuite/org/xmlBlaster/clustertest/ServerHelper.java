@@ -2,7 +2,7 @@ package clustertest;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 // for client connections:
 import org.xmlBlaster.util.*;
@@ -34,7 +34,7 @@ public class ServerHelper {
    public static int frodoPort = 7603;
    public static int bilboPort = 7604;
 
-   private ServerThread heronThread, avalonThread, golanThread, frodoThread, bilboThread;
+   private EmbeddedXmlBlaster heronThread, avalonThread, golanThread, frodoThread, bilboThread;
 
    private Global heronGlob, avalonGlob, golanGlob, frodoGlob, bilboGlob;
 
@@ -113,27 +113,27 @@ public class ServerHelper {
    }
 
    public void startHeron() {
-      heronThread = ServerThread.startXmlBlaster(heronGlob);
+      heronThread = EmbeddedXmlBlaster.startXmlBlaster(heronGlob);
       log.info(ME, "'heron' is ready for testing on port " + heronPort);
    }
 
    public void startAvalon() {
-      avalonThread = ServerThread.startXmlBlaster(avalonGlob);
+      avalonThread = EmbeddedXmlBlaster.startXmlBlaster(avalonGlob);
       log.info(ME, "'avalon' is ready for testing on port " + avalonPort);
    }
 
    public void startGolan() {
-      golanThread = ServerThread.startXmlBlaster(golanGlob);
+      golanThread = EmbeddedXmlBlaster.startXmlBlaster(golanGlob);
       log.info(ME, "'golan' is ready for testing on port " + golanPort);
    }
 
    public void startFrodo() {
-      frodoThread = ServerThread.startXmlBlaster(frodoGlob);
+      frodoThread = EmbeddedXmlBlaster.startXmlBlaster(frodoGlob);
       log.info(ME, "'frodo' is ready for testing on port " + frodoPort);
    }
 
    public void startBilbo() {
-      bilboThread = ServerThread.startXmlBlaster(bilboGlob);
+      bilboThread = EmbeddedXmlBlaster.startXmlBlaster(bilboGlob);
       log.info(ME, "'bilbo' is ready for testing on port " + bilboPort);
    }
 

@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.13 2002/07/13 20:59:09 goetzger Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.14 2002/09/09 13:39:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 import junit.framework.*;
 
@@ -51,9 +51,9 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
    private int numReceived = 0;
 
-   private ServerThread st;
-   private ServerThread serverThread1;
-   private ServerThread serverThread2;
+   private EmbeddedXmlBlaster st;
+   private EmbeddedXmlBlaster serverThread1;
+   private EmbeddedXmlBlaster serverThread2;
    private int serverPort = 7604;
 
    /**
@@ -72,8 +72,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * Starts a xmlBlaster serverthread.
     * @return the server thread.
     */
-   protected ServerThread startServer() {
-      ServerThread st;
+   protected EmbeddedXmlBlaster startServer() {
+      EmbeddedXmlBlaster st;
       glob.init(Util.getOtherServerPorts(serverPort));
       /*
       How to get the PersistenceDriver switched on fromrunning xmlBlaster embedded?
@@ -90,10 +90,10 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
                          "-appServ.password", "xx"
                        };
        glob.init(args);
-       serverThread = ServerThread.startXmlBlaster(glob);
+       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       */
 
-      st = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      st = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       return st;
    } // end of startServer
@@ -103,8 +103,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * Stops a xmlBlaster serverthread.
     * @param st keeps the server thread
     */
-   protected void stopServer(ServerThread st) {
-         ServerThread.stopXmlBlaster(st);
+   protected void stopServer(EmbeddedXmlBlaster st) {
+         EmbeddedXmlBlaster.stopXmlBlaster(st);
          Log.info( ME, "Xmlblaster stopped");
          st = null;
    } // end of stopServer

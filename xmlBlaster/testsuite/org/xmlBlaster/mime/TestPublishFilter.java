@@ -3,7 +3,7 @@ Name:      TestPublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestPublishFilter.java,v 1.3 2002/06/27 12:42:36 ruff Exp $
+Version:   $Id: TestPublishFilter.java,v 1.4 2002/09/09 13:39:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import testsuite.org.xmlBlaster.Util;
 
 import junit.framework.*;
@@ -51,7 +51,7 @@ public class TestPublishFilter extends TestCase
    private XmlBlasterConnection con = null;
    private String name;
    private String passwd = "secret";
-   private ServerThread serverThread;
+   private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7619;
    private int filterMessageContentBiggerAs = 10;
    private int numUpdated = 0;
@@ -96,7 +96,7 @@ public class TestPublishFilter extends TestCase
       args[11] = "" + serverPort;
       glob.init(args);
 
-      serverThread = ServerThread.startXmlBlaster(glob);
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing publish MIME filter");
 
       try {
@@ -129,7 +129,7 @@ public class TestPublishFilter extends TestCase
       con.disconnect(null);
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
-      ServerThread.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
