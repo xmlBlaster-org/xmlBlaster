@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.28 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.29 2002/06/27 12:54:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  * </pre>
  */
 public class TestPtDQueue extends TestCase implements I_Callback
@@ -42,12 +42,12 @@ public class TestPtDQueue extends TestCase implements I_Callback
    private final static String ME = "TestPtDQueue";
    private final Global glob;
 
-   private final String senderName = "Manuel";
+   private final String senderName = "William";
    private String publishOid = "";
    private XmlBlasterConnection senderConnection = null;
    private String senderContent;
 
-   private final String receiverName = "Ulrike";
+   private final String receiverName = "Averell";
    private XmlBlasterConnection receiverConnection = null;
 
    private String passwd = "secret";
@@ -79,7 +79,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       try {
          senderConnection = new XmlBlasterConnection(glob);
-         senderConnection.login(senderName, passwd, new ConnectQos(glob), this);
+         senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
          Log.info(ME, "Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
@@ -98,8 +98,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
    protected void tearDown()
    {
       Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
-      receiverConnection.logout();
-      senderConnection.logout();
+      receiverConnection.disconnect(null);
+      senderConnection.disconnect(null);
    }
 
 
