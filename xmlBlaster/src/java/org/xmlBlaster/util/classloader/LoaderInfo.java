@@ -43,17 +43,6 @@ public class LoaderInfo {
       this.jarName = jarName;
       this.pluginSlashed = pluginSlashed;
       this.basePath = this.rootPath + this.pluginSlashed;
-      doHack();
-   }
-
-   private void doHack() {
-      // The Makefile puts the .class files into xmlBlaster/classes
-      // but the plugin jars are searched under xmlBlaster/lib
-      // Remove this hack when the Makefiles are replaced by ant
-      int cl = this.rootPath.indexOf("xmlBlaster/classes/");
-      if (cl >= 0) {
-         this.basePath = this.rootPath.substring(0, cl) + "xmlBlaster/lib/" + this.pluginSlashed;
-      }
    }
 
    public String toString() {
