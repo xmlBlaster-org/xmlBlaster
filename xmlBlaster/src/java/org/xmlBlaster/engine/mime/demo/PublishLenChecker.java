@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.7 2002/06/08 23:00:48 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.8 2002/06/15 16:05:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -50,7 +50,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
    public void initialize(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types if content is not to long");
+      log.info(ME, "Filter is initialized, we check all mime types if content is not too long");
    }
 
    /**
@@ -178,6 +178,9 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
          log.error(ME, tmp);
          throw new XmlBlasterException(ME, tmp);
       }
+   }
+
+   public void shutdown() {
    }
 }
 

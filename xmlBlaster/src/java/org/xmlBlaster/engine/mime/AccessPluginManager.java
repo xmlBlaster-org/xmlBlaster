@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.14 2002/06/10 22:35:31 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.15 2002/06/15 16:05:31 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -13,11 +13,14 @@ import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.I_RunlevelListener;
+import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * Loads subscribe()/get() filter plugin depending on message MIME type. 
@@ -26,7 +29,7 @@ import java.util.Collections;
  * MimeAccessPlugin[MyFilter][1.0]=com.mycompany.MyFilter
  * </pre>
  */
-public class AccessPluginManager extends PluginManagerBase {
+public class AccessPluginManager extends PluginManagerBase implements I_RunlevelListener {
 
    private static final String ME = "AccessPluginManager";
    public static final String pluginPropertyName = "MimeAccessPlugin";
@@ -39,6 +42,7 @@ public class AccessPluginManager extends PluginManagerBase {
       super(glob);
       this.glob = glob;
       this.log = this.glob.getLog("mime");
+      glob.getRunlevelManager().addRunlevelListener(this);
    }
 
    /**
@@ -233,5 +237,45 @@ public class AccessPluginManager extends PluginManagerBase {
          e.printStackTrace();
       }
       return false;
+   }
+
+   public void shutdown(boolean force) {
+      Iterator iterator = accessFilterMap.values().iterator();
+      while (iterator.hasNext()) {
+         I_AccessFilter plugin = (I_AccessFilter)iterator.next();
+         plugin.shutdown();
+      }
+      accessFilterMap.clear();
+   }
+
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+            //initializePlugins();
+         }
+      }
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            shutdown(force);
+         }
+      }
    }
 }

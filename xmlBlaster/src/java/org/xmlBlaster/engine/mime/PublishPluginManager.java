@@ -3,12 +3,14 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.10 2002/06/10 08:23:41 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.11 2002/06/15 16:05:31 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.engine.I_RunlevelListener;
+import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -25,7 +27,7 @@ import java.util.Iterator;
  * MimePublishPlugin[MyFilter][1.0]=com.mycompany.MyFilter
  * </pre>
  */
-public class PublishPluginManager extends PluginManagerBase {
+public class PublishPluginManager extends PluginManagerBase implements I_RunlevelListener {
 
    private static final String ME = "PublishPluginManager";
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
@@ -48,7 +50,7 @@ public class PublishPluginManager extends PluginManagerBase {
       this.glob = glob;
       this.log = this.glob.getLog("mime");
       this.maxMimeCacheSize = glob.getProperty().get("MimePublishPlugin.maxMimeCacheSize", 1000);
-      initializePlugins();
+      glob.getRunlevelManager().addRunlevelListener(this);
    }
 
    /**
@@ -176,5 +178,46 @@ public class PublishPluginManager extends PluginManagerBase {
     */
    public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
+   }
+
+   public void shutdown(boolean force) {
+      Iterator iterator = pluginMap.values().iterator();
+      while (iterator.hasNext()) {
+         I_PublishFilter plugin = (I_PublishFilter)iterator.next();
+         plugin.shutdown();
+      }
+      pluginMap.clear();
+      mimeCache.clear();
+   }
+
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+            initializePlugins();
+         }
+      }
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            shutdown(force);
+         }
+      }
    }
 }

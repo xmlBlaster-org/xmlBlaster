@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.12 2002/05/16 18:34:42 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.13 2002/06/15 16:05:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -185,6 +185,9 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
          log.error(ME, tmp);
          throw new XmlBlasterException(ME, tmp);
       }
+   }
+
+   public void shutdown() {
    }
 }
 

@@ -3,7 +3,7 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.3 2002/05/06 07:29:25 ruff Exp $
+Version:   $Id: I_AccessFilter.java,v 1.4 2002/06/15 16:05:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -42,7 +42,7 @@ import org.xmlBlaster.engine.mime.Query;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author ruff@swand.lake.de
  */
 public interface I_AccessFilter
@@ -95,5 +95,7 @@ public interface I_AccessFilter
     *            best to return 'false' instead and log the situation.
     */
    public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException;
+
+   public void shutdown();
 }
 

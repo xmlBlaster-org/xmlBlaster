@@ -169,5 +169,8 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
       MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
       return expression.isMatch(msgUnit.getContentStr());
    }
+
+   public void shutdown() {
+   }
 }
 
