@@ -3,11 +3,11 @@ Name:      TestClientProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestClientProperty.java,v 1.1 2003/09/18 19:11:24 laghi Exp $
+Version:   $Id: TestClientProperty.java,v 1.2 2003/09/22 09:18:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -86,7 +86,7 @@ public class TestClientProperty extends TestCase implements I_Callback
    protected void tearDown() {
    }
 
-   private void checkValues(HashMap map) {
+   private void checkValues(Map map) {
       assertEquals("", 3, map.size());
       assertEquals("", "oneValue", (String)map.get("oneKey"));
       assertEquals("", "twoValue", (String)map.get("twoKey"));
@@ -288,7 +288,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       assertEquals("Wrong oid of message returned", "clientProp", updateKey.getOid());
 
 
-      HashMap map = updateQos.getData().getClientProperties();
+      Map map = updateQos.getData().getClientProperties();
 
       this.checkValues(map);
       this.messageArrived = true;
