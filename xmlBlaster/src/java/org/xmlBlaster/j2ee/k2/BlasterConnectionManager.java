@@ -22,9 +22,15 @@ import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ConnectionEventListener;
+import javax.resource.spi.ConnectionEvent;
 /**
  * The resource adapters own ConnectionManager, used in non managed
  environments. 
+
+ <p>Since this implements is "invisible", pooling is not possible since
+ there are no hooks to do thing. This simply means that each connection
+ is allways created/closed.</p>
 
  Will handle some of the houskeeping an appserver nomaly does.
 
@@ -47,7 +53,52 @@ public class BlasterConnectionManager implements ConnectionManager{
                                      ConnectionRequestInfo cxRequestInfo) 
         throws ResourceException{
         ManagedConnection mc = mcf.createManagedConnection(null,cxRequestInfo);
+        ConnectionListener l = new ConnectionListener(mc);
+        mc.addConnectionEventListener(l);
         return mc.getConnection(null,cxRequestInfo);
 
     }
+
+   class ConnectionListener implements ConnectionEventListener {
+      ManagedConnection mc;
+      public ConnectionListener(ManagedConnection mc) {
+         this.mc = mc;
+      }
+      public void connectionClosed(ConnectionEvent event) {
+         try {
+            mc.cleanup();
+            mc.destroy();
+         } catch (ResourceException e) {
+            System.err.println("Could not close managed connection "+e);
+            e.printStackTrace();
+         } // end of try-catch
+
+      }
+
+      
+      public void connectionErrorOccurred(ConnectionEvent event) {
+         try {
+            mc.cleanup();
+            mc.destroy();
+         } catch (ResourceException e) {
+            System.err.println("Could not destroy managed connection "+e);
+            e.printStackTrace();
+         } // end of try-catch
+         
+      }
+
+      public void localTransactionStarted(ConnectionEvent event) {
+         ;//NOOP
+      }
+
+      public void localTransactionCommitted(ConnectionEvent event) {
+         ;//NOOP
+      }
+
+      public void localTransactionRolledback(ConnectionEvent event) {
+         ;//NOOP
+      }
+      
+   }
+
 } // BlasterConnectionManager
