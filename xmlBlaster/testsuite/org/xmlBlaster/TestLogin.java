@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.3 2000/01/11 22:47:44 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.4 2000/01/15 15:22:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,18 +34,19 @@ import test.framework.*;
  */
 public class TestLogin extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
 
    private String publishOid = "";
    private String oid = "TestLogin";
    private CorbaConnection senderConnection;
+   private Server xmlBlaster = null;
    private String senderName;
    private String senderContent;
 
    private CorbaConnection secondConnection;
    private Server secondBlaster;
    private String secondName;
+   private String secondOid = "SecondOid";
 
    private MessageUnit messageUnit;     // a message to play with
 
@@ -107,13 +108,25 @@ public class TestLogin extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
-      String qos = "<qos></qos>";
-      String[] strArr = null;
-      try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+      {
+         String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
+         String qos = "<qos></qos>";
+         String[] strArr = null;
+         try {
+            strArr = xmlBlaster.erase(xmlKey, qos);
+         } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+         if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+      }
+
+      {
+         String xmlKey = "<key oid='" + secondOid + "' queryType='EXACT'>\n</key>";
+         String qos = "<qos></qos>";
+         String[] strArr = null;
+         try {
+            strArr = xmlBlaster.erase(xmlKey, qos);
+         } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+         if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+      }
 
       senderConnection.logout(xmlBlaster);
       secondConnection.logout(secondBlaster);
@@ -177,6 +190,7 @@ public class TestLogin extends TestCase implements I_Callback
    public void testLoginLogout()
    {
       // test ordinary login
+      numReceived = 0;
       testSubscribeXPath();
       testPublish();
       waitOnUpdate(1000L, 1);              // message arrived?
@@ -186,6 +200,7 @@ public class TestLogin extends TestCase implements I_Callback
       testPublish();
       try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
       assertEquals("Didn't expect an update", 0, numReceived);
+      numReceived = 0;
       testSubscribeXPath();
       waitOnUpdate(1000L, 1);              // message arrived?
 
@@ -193,7 +208,7 @@ public class TestLogin extends TestCase implements I_Callback
       numReceived = 0;
       try {
          // a sample message unit
-         String xmlKey = "<key oid='Temporary' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+         String xmlKey = "<key oid='" + secondOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                          "   <TestLogin-AGENT>" +
                          "   </TestLogin-AGENT>" +
                          "</key>";
@@ -206,9 +221,9 @@ public class TestLogin extends TestCase implements I_Callback
       }
       waitOnUpdate(1000L, 1);              // message arrived?
 
+
       assert("returned publishOid == null", publishOid != null);
       assertNotEquals("returned publishOid", 0, publishOid.length());
-
       // test logout with following subscribe()
       senderConnection.logout(xmlBlaster);
       try {
@@ -222,6 +237,7 @@ public class TestLogin extends TestCase implements I_Callback
 
       // login again
       setUp();
+
    }
 
 
