@@ -338,6 +338,9 @@ public abstract class Executor implements ExecutorBase
                String response = xmlBlasterImpl.ping(/*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
                executeResponse(receiver, response); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
             }
+            else {
+               executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>" or current run level
+            }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
