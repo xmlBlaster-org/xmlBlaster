@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.10 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.11 2002/05/17 09:54:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -34,7 +34,7 @@ public abstract class AddressBase
    public static final String DEFAULT_hostname = "";
    protected String hostname = DEFAULT_hostname;
 
-   public static final int DEFAULT_port = 0;
+   public static final int DEFAULT_port = 3412;
    protected int port = DEFAULT_port;
 
    /** The unique protocol type, e.g. "IOR" */

@@ -3,13 +3,14 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: Util.java,v 1.9 2002/05/17 09:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Vector;
 
@@ -55,7 +56,7 @@ public class Util
    {
       String[] argsDefault = new String[8];
       argsDefault[0] = "-port";
-      argsDefault[1] = "" + Global.XMLBLASTER_PORT;
+      argsDefault[1] = "" + Constants.XMLBLASTER_PORT;
       argsDefault[2] = "-socket.port";
       argsDefault[3] = "" + org.xmlBlaster.protocol.socket.SocketDriver.DEFAULT_SERVER_PORT;
       argsDefault[4] = "-rmi.registryPort";

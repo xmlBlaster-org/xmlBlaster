@@ -9,8 +9,8 @@ import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
- * This client connects to xmlBlaster node "avalon.mycomp.com" and publishes
- * a "RUGBY_NEWS" message, which is routed to the master node "heron.mycomp.com". 
+ * This client connects to xmlBlaster node "avalon.mycomp.com" or any other specified by -port
+ * and subscribes to "PublishToSlave" message. 
  *
  * Invoke examples:
  * <pre>
@@ -22,7 +22,7 @@ import org.xmlBlaster.engine.helper.Constants;
  * several node hops to the master. The message content is "We win".
  *
  * <pre>
- *  java javaclients.cluster.Subscribe -port 7601 -domain STOCK_EXCHANGE
+ *  java javaclients.cluster.Subscribe -port 7601
  * </pre>
  * Now our message is sent with domain='STOCK_EXCHANGE', it should be routed to avalon
  *

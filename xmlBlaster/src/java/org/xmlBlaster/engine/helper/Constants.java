@@ -22,6 +22,18 @@ public class Constants
    public final static long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
 
 
+   /**
+    * The IANA registered xmlBlaster port,
+    * see <a href="http://www.iana.org/assignments/port-numbers">IANA Port Numbers</a>
+    * and <a href="http://andrew.triumf.ca/cgi-bin/port">Network Service Query</a>.
+    * <pre>
+    *  xmlblaster      3412/tcp   xmlBlaster
+    *  xmlblaster      3412/udp   xmlBlaster
+    *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
+    * </pre>
+    */
+   public static final int XMLBLASTER_PORT = 3412;
+
 
    /**
     * The minimum priority of a message (0).

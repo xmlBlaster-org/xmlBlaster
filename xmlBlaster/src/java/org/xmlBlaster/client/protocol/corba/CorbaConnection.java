@@ -20,6 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
@@ -225,7 +226,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       catch (Exception e) {
          String text = "Can't access naming service, is there any running?\n" +
                        " - try to specify '-ior.file <fileName>' if server is running on same host (not using any naming service)\n" +
-                       " - try to specify '-hostname <hostName> -port " + Global.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
+                       " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact the server administrator to start a naming service";
          Log.warn(ME + ".NoNameService", text);
          throw new XmlBlasterException("NoNameService", text);
@@ -329,7 +330,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
       String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                   " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
-                  " - try to specify '-host <hostName> -port " + Global.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
+                  " - try to specify '-host <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
                   " - or start a naming service";
 
       // 3) asking Name Service CORBA compliant
@@ -700,7 +701,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       text += "   -ior <IOR:00459...  The IOR string from the running xmlBlaster server.\n";
       text += "   -ior.file <fileName>A file with the xmlBlaster IOR.\n";
       text += "   -hostname <host>    The host where to find xmlBlaster internal HTTP IOR download [localhost]\n";
-      text += "   -port <port>        The port where xmlBlaster publishes its IOR [" + Global.XMLBLASTER_PORT + "]\n";
+      text += "   -port <port>        The port where xmlBlaster publishes its IOR [" + Constants.XMLBLASTER_PORT + "]\n";
       text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]\n";
       text += "   -ior.hostname       Allows to set the callback-server's IP address for multi-homed hosts.\n";
       text += "   -ior.port           Allows to set the callback-server's port number.\n";

@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.17 2002/05/16 19:57:31 ruff Exp $
+Version:   $Id: Global.java,v 1.18 2002/05/17 09:54:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,6 +15,7 @@ import org.jutils.log.LogDeviceFile;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
 
 import java.util.Properties;
@@ -41,18 +42,6 @@ public class Global implements Cloneable
    private final static String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
-
-   /**
-    * The IANA registered xmlBlaster port,
-    * see <a href="http://www.iana.org/assignments/port-numbers">IANA Port Numbers</a>
-    * and <a href="http://andrew.triumf.ca/cgi-bin/port">Network Service Query</a>.
-    * <pre>
-    *  xmlblaster      3412/tcp   xmlBlaster
-    *  xmlblaster      3412/udp   xmlBlaster
-    *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
-    * </pre>
-    */
-   public static final int XMLBLASTER_PORT = 3412;
 
    protected String[] args;
    protected Property property = null;
@@ -503,13 +492,13 @@ public class Global implements Cloneable
          boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
          if (supportOldStyle) {
             String iorHost = getProperty().get("iorHost", getLocalIP());
-            int iorPort = getProperty().get("iorPort", XMLBLASTER_PORT);
+            int iorPort = getProperty().get("iorPort", Constants.XMLBLASTER_PORT);
             bootstrapAddress.setHostname(getProperty().get("hostname", iorHost));
             bootstrapAddress.setPort(getProperty().get("port", iorPort));
          }
          else {
             bootstrapAddress.setHostname(getProperty().get("hostname", getLocalIP()));
-            bootstrapAddress.setPort(getProperty().get("port", XMLBLASTER_PORT));
+            bootstrapAddress.setPort(getProperty().get("port", Constants.XMLBLASTER_PORT));
          }
          bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
       }
