@@ -1,5 +1,5 @@
-#This file was created by <ruff> Thu Jan 20 11:22:54 2000
-#LyX 0.12 (C) 1995-1998 Matthias Ettrich and the LyX Team
+#This file was created by <ruff> Sat Mar 25 22:53:58 2000
+#LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
 \language default
@@ -37,7 +37,7 @@ ruff@swand.lake.de, manuel.kron@gmx.net
 \layout Standard
 
 
-\begin_inset LatexCommand \tableofcontents
+\begin_inset LatexCommand \tableofcontents{}
 
 \end_inset 
 
@@ -160,7 +160,7 @@ multicol5
 0 8 0 1 0 0 0 "" ""
 0 8 0 1 0 0 0 "" ""
 
-Konfiguration Parameter
+Configuration Parameter
 \newline 
 Default
 \newline 
