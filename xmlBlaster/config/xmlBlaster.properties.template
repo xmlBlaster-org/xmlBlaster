@@ -374,11 +374,16 @@ MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledo
 
 
 #------------------------------------------------------------------------------
-# Pluggable Loggers
+# Pluggable Loggers (console,file,log4j,jdk14logging)
+# http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.log.plugin.html
 LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
+LoggableDevicePlugin[jdk14logging][1.0]=org.xmlBlaster.util.log.LogJdkDeviceFactory
+LoggableDevicePlugin[log4j][1.0]=org.xmlBlaster.util.log.Log4jDeviceFactory
 LoggableDevicePlugin[file][1.0]=org.xmlBlaster.util.log.FileLogDeviceFactory,logFile=mylogfile
 # Control wich logger to use globaly, comma separated list
 logDevice=console
+#logDevice=console,file
+#logDevice=jdk14logging
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
