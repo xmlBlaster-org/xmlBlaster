@@ -43,7 +43,7 @@ AUTHOR:
          /**
           * Callback from callbackFrame that the persistent http connection
           * is established.
-          * Now (and not earlier) we may load our application. 
+          * Now (and not earlier) we may load our application.
           */
          function loginSucceeded(persistentWindow)
          {
@@ -57,7 +57,7 @@ AUTHOR:
             //top.systemInfoWindow.northFrame.location.href = "../systemInfo/northFrame.html";
 
             isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
-            if (isExplorer) { // With MSIE 5 the reload seems to be more reliable!
+            if (isExplorer) { // With MSIE 5 the replace() seems to be more reliable!
                //alert("Explorer");
                northFrame.location.replace("../systemInfo/northFrame.html");
                cpuinfoFrame.location.replace("/servlet/SystemInfo?ActionType=cpuinfo");
@@ -76,7 +76,7 @@ AUTHOR:
          <frame name="northFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin="0" frameborder="0" framespacing="0">
          <frame name="cpuinfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
          <frame name="meminfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
-         <!--
+         <!-- Calling of servlets not yet possible, we first need to do a successful login
          <frame name="cpuinfoFrame" src="/servlet/SystemInfo?ActionType=cpuinfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
          -->
          <!--
