@@ -16,8 +16,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * A full specified <b>erase</b> qos could look like this:<br />
  * <pre>
  *&lt;qos>
- *   &lt;!-- The subscribers shall not be notified when this message is destroyed -->
- *   &lt;notify>false&lt;/notify> <!-- currently not implemented -->
+ *   &lt;erase forceDestroy='false'/>
  *&lt;/qos>
  * </pre>
  * <p />
