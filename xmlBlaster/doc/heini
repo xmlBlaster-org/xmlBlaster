@@ -1,12 +1,13 @@
-BUGS
-CVS
-Change.callback
-LICENSE
-LICENSE-LGPL
-Makefile
-ROADMAP
-heini
-howto
-requirements
-whitepaper
-xmlBlaster
+insgesamt 52
+-rw-r--r--    1 goetzger develop       181 Jan 17  2001 BUGS
+drwxr-xr-x    2 goetzger develop       104 Dez  5 11:11 CVS
+-rw-r--r--    1 goetzger develop       168 Sep  9 22:24 Change.callback
+-rw-r--r--    1 goetzger develop       959 Nov 15  2000 LICENSE
+-rw-r--r--    1 goetzger develop     25273 Okt 11  2000 LICENSE-LGPL
+-rw-r--r--    1 goetzger develop       400 Mär 25  2000 Makefile
+-rw-r--r--    1 goetzger develop       794 Okt 11  2000 ROADMAP
+-rw-r--r--    1 goetzger CVSROOT         0 Dez  5 11:13 heini
+drwxr-xr-x    4 goetzger develop       240 Sep  4 17:51 howto
+drwxr-xr-x    3 goetzger develop      2024 Dez  4 18:46 requirements
+drwxr-xr-x    3 goetzger develop       218 Feb 18  2001 whitepaper
+drwxr-xr-x    3 goetzger develop       295 Mai 10  2001 xmlBlaster
