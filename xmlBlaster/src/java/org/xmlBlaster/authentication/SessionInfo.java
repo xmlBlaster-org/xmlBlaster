@@ -32,7 +32,6 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.engine.MsgErrorHandler;
 
 
@@ -312,14 +311,7 @@ public class SessionInfo implements I_Timeout
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       if (!hasCallback())
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
-
-      try {
-         this.sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-      }
-      catch (Throwable e) {
-         log.warn(ME, e.toString());
-         this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, null, e));
-      }
+      this.sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
    }
 
    public final ConnectQosServer getConnectQos() {
