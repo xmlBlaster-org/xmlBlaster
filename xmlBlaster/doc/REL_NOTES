@@ -8,6 +8,13 @@ Changes for 0.75 [???, 2000]
 	  Java clients may use CorbaConnection.java to automatically test ping
 	  the connection.
 
+	- Added <qos> tag <subscriptionId> for update messages.
+	  This allows the client to find out which of his subscriptions caused this
+	  update.
+
+	- Added <qos> tag <state> for update messages.
+	  This is not finished, it always shows OK for the moment.
+
 
 Changes for 0.74 [Feb.29, 2000]
 ==============================
