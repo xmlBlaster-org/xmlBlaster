@@ -3,11 +3,11 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.9 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.10 2002/08/03 10:13:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -28,19 +28,19 @@ public class CallbackSocketDriver implements I_CallbackDriver
 {
    private String ME = "CallbackSocketDriver";
    private Global glob = null;
+   private LogChannel log;
    private String loginName;
    private HandleClient handler;
    private CallbackAddress callbackAddress;
 
    /* Should not be instantiated by plugin loader.
    public CallbackSocketDriver() {
-      Log.error(ME, "Empty Constructor!");
+      log.error(ME, "Empty Constructor!");
       (new Exception("")).printStackTrace();
    }
    */
 
    public CallbackSocketDriver(String loginName, HandleClient handler) {
-      if (Log.CALL) Log.call(ME, "Constructor"); // (new Exception("")).printStackTrace());
       this.loginName = loginName;
       this.handler = handler;
    }
@@ -67,6 +67,8 @@ public class CallbackSocketDriver implements I_CallbackDriver
 
    public void init(Global glob, CallbackAddress callbackAddress) {
       this.glob = glob;
+      this.log = glob.getLog("socket");
+      if (log.CALL) log.call(ME, "init()");
       this.ME = "CallbackSocketDriver" + this.glob.getLogPraefixDashed();
       this.callbackAddress = callbackAddress;
    }
@@ -106,7 +108,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void shutdown() {
-      if (Log.CALL) Log.call(ME, "shutdown()");
+      if (log.CALL) log.call(ME, "shutdown()");
       handler.shutdown();
    }
 }

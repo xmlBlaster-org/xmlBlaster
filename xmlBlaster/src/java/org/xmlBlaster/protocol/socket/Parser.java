@@ -3,11 +3,11 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.24 2002/04/30 16:41:40 ruff Exp $
+Version:   $Id: Parser.java,v 1.25 2002/08/03 10:13:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.Constants;
@@ -82,6 +82,8 @@ public class Parser
    */
 
    private static final String ME = "Parser";
+
+   private final LogChannel log;
    
    public static final int NUM_FIELD_LEN = 10;
    public static final int FLAG_FIELD_LEN = 6;
@@ -139,21 +141,17 @@ public class Parser
     * The same parser object may be reused. 
     */
    public Parser() {
-      msgVec = new Vector();
-      initialize();
+      this((byte)0, (String)null, (String)null, (String)null);
    }
 
 
    public Parser(byte type, String methodName, String sessionId) {
-      msgVec = new Vector();
-      initialize();
-      setType(type);
-      setMethodName(methodName);
-      setSessionId(sessionId);
+      this(type, (String)null, methodName, sessionId);
    }
 
 
    public Parser(byte type, String requestId, String methodName, String sessionId) {
+      log = org.xmlBlaster.util.Global.instance().getLog("socket");
       msgVec = new Vector();
       initialize();
       setType(type);
@@ -283,7 +281,7 @@ public class Parser
    /** Enable checksum? */
    public final void setChecksum(boolean checksum) {
       if (checksum == true) {
-         Log.warn(ME, "Checksum for raw socket message is not supported");
+         log.warn(ME, "Checksum for raw socket message is not supported");
          return;
       }
       this.checksum = checksum;
@@ -292,7 +290,7 @@ public class Parser
    /** Compress message? */
    public final void setCompressed(boolean compressed) {
       if (compressed == true) {
-         Log.warn(ME, "Compression for raw socket message is not supported");
+         log.warn(ME, "Compression for raw socket message is not supported");
          return;
       }
       this.compressed = compressed;
@@ -450,7 +448,7 @@ public class Parser
     */
    public final Buf readOneMsg(InputStream in) throws IOException
    {
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Entering readOneMsg(), waiting on inputStream");
+      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Entering readOneMsg(), waiting on inputStream");
 
       // First we extract the first 10 bytes to get the msgLength ...
       int remainLength = NUM_FIELD_LEN;
@@ -461,7 +459,7 @@ public class Parser
             remainLength -= lenRead;
             if (remainLength == 0) break;
             off += lenRead;
-            //Log.info(ME, "Receive: lenRead=" + lenRead + " off=" + off + " remainLength=" + remainLength);
+            //log.info(ME, "Receive: lenRead=" + lenRead + " off=" + off + " remainLength=" + remainLength);
          }
       }
 
@@ -476,7 +474,7 @@ public class Parser
          throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
       }
 
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got first 10 bytes of total length=" + msgLength);
       if (msgLength == NUM_FIELD_LEN)
          return null; // An empty message only contains the header 10 bytes
       else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
@@ -495,7 +493,7 @@ public class Parser
          remainLength -= lenRead;
          if (remainLength == 0) break;
          buf.offset += lenRead;
-         //Log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
+         //log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
       }
 
       if (lenRead == -1)
@@ -524,18 +522,18 @@ public class Parser
 
       checksum = (buf.buf[NUM_FIELD_LEN] > 0);
       if (checksum) {
-         Log.warn(ME, "Ignoring checksum flag");
+         log.warn(ME, "Ignoring checksum flag");
       }
       compressed = (buf.buf[NUM_FIELD_LEN+1] > 0);
       if (compressed) {
-         Log.warn(ME, "Ignoring compress flag");
+         log.warn(ME, "Ignoring compress flag");
       }
       type = buf.buf[NUM_FIELD_LEN+2];
       byte4 = buf.buf[NUM_FIELD_LEN+3];
       byte5 = buf.buf[NUM_FIELD_LEN+4];
       version = (int)buf.buf[NUM_FIELD_LEN+5] - 48;
       if (version != 1) {
-         Log.warn(ME, "Ignoring version=" + version + " on 1 is supported");
+         log.warn(ME, "Ignoring version=" + version + " on 1 is supported");
       }
 
       buf.offset = NUM_FIELD_LEN+FLAG_FIELD_LEN;
@@ -546,7 +544,7 @@ public class Parser
 
       lenUnzipped = toInt0(buf, -1);
       if (lenUnzipped != -1) {
-         Log.warn(ME, "Ignoring given unzipped message length");
+         log.warn(ME, "Ignoring given unzipped message length");
       }
 
       String qos = null;
@@ -561,7 +559,7 @@ public class Parser
          msgUnit.setKey(toString(buf));
          if (buf.offset >= buf.buf.length) break;
 
-         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit content index=" + index);
+         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Getting messageUnit content index=" + index);
          msgUnit.setContent(toByte(buf));
          if (buf.offset >= buf.buf.length) break;
       }
@@ -574,7 +572,7 @@ public class Parser
          throw new IOException(str);
       }
 
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "messageUnit OK index=" + index);
+      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "messageUnit OK index=" + index);
    }
 
    /**
@@ -616,7 +614,7 @@ public class Parser
 
       if (Constants.checkMethodName(methodName) == false) {
          String str = "Can't send message, method '" + methodName + " is unknown";
-         //Log.error(ME, str);
+         //log.error(ME, str);
          throw new IllegalArgumentException(ME + ": " + str);
       }
 
@@ -703,7 +701,7 @@ public class Parser
       }
       catch(IOException e) {
          String text = "Creation of message failed.";
-         Log.warn(ME, text + " " + e.toString());
+         log.warn(ME, text + " " + e.toString());
          throw new XmlBlasterException(ME, text);
       }
    }
@@ -735,7 +733,7 @@ public class Parser
       }
       catch (NumberFormatException e) {
          e.printStackTrace();
-         Log.error(ME, "toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         log.error(ME, "toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
          throw new IOException("Format is corrupted '" + dump() + "', expected long integral value");
       }
    }
@@ -752,7 +750,7 @@ public class Parser
       }
       catch (NumberFormatException e) {
          e.printStackTrace();
-         Log.error(ME, "toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         log.error(ME, "toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
          throw new IOException("Format is corrupted '" + dump() + "', expected integral value");
       }
    }
@@ -1139,7 +1137,7 @@ public class Parser
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("", e.toString());
+         System.err.println(e.toString());
       }
    }
 }

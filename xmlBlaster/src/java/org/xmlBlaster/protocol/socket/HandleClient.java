@@ -3,11 +3,11 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.19 2002/05/11 09:36:34 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.20 2002/08/03 10:13:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
@@ -35,6 +35,7 @@ import java.io.OutputStream;
 public class HandleClient extends Executor implements Runnable
 {
    private String ME = "HandleClientRequest";
+   private final LogChannel log;
    private SocketDriver driver;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
@@ -48,6 +49,7 @@ public class HandleClient extends Executor implements Runnable
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock) throws IOException {
       super(glob, sock, driver.getXmlBlaster());
+      this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
       this.SOCKET_DEBUG = driver.SOCKET_DEBUG;
@@ -60,7 +62,7 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Schutdown connection ...");
+      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Schutdown connection ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
    
@@ -71,13 +73,13 @@ public class HandleClient extends Executor implements Runnable
             authenticate.disconnect(tmp, "<qos/>");
          }
          catch(Throwable e) {
-            Log.warn(ME, e.toString());
+            log.warn(ME, e.toString());
             e.printStackTrace();
          }
       }
       running = false;
       if (responseListenerMap.size() > 0)
-         Log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
+         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
    }
 
    /**
@@ -89,10 +91,10 @@ public class HandleClient extends Executor implements Runnable
     */
    public final String[] sendUpdate(String cbSessionId, MsgQueueEntry[] msg, boolean expectingResponse) throws XmlBlasterException, ConnectionException
    {
-      if (Log.CALL) Log.call(ME, "Entering update: id=" + cbSessionId);
+      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
 
       if (msg == null || msg.length < 1) {
-         Log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
+         log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
          throw new XmlBlasterException(ME + ".InvalidArguments",
                                        "The argument of method update() are invalid");
       }
@@ -105,7 +107,7 @@ public class HandleClient extends Executor implements Runnable
          parser.addMessage(msgUnitArr);
          if (expectingResponse) {
             Object response = execute(parser, WAIT_ON_RESPONSE);
-            if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got update response " + response.toString());
+            if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
@@ -114,7 +116,7 @@ public class HandleClient extends Executor implements Runnable
          }
       }
       catch (IOException e1) {
-         Log.error(ME+".update", "IO exception: " + e1.toString());
+         log.error(ME+".update", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".update", e1.toString());
       }
    }
@@ -133,7 +135,7 @@ public class HandleClient extends Executor implements Runnable
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, cbSessionId);
          parser.addMessage(qos);
          Object response = execute(parser, WAIT_ON_RESPONSE);
-         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got ping response " + response.toString());
+         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
          throw new XmlBlasterException("CallbackPingFailed", "SOCKET callback ping failed: " + e.toString());
@@ -144,20 +146,20 @@ public class HandleClient extends Executor implements Runnable
     * Serve a client
     */
    public void run() {
-      if (Log.CALL) Log.call(ME, "Handling client request ...");
+      if (log.CALL) log.call(ME, "Handling client request ...");
       Parser receiver = new Parser();
       receiver.SOCKET_DEBUG = SOCKET_DEBUG;
 
       try {
-         if (Log.TRACE) Log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+         if (log.TRACE) log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
          while (running) {
             try {
                //iStream = sock.getInputStream();
                receiver.parse(iStream);  // blocks until a message arrive
 
-               if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-               if (SOCKET_DEBUG>1) Log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+               if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+               if (SOCKET_DEBUG>1) log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
                // receive() processes all invocations, only connect()/disconnect() we do locally ...
                if (receive(receiver) == false) {
@@ -165,7 +167,7 @@ public class HandleClient extends Executor implements Runnable
                      ConnectQos conQos = new ConnectQos(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
                      this.ME += "-" + this.loginName;
-                     Log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+                     log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
                      callback = new CallbackSocketDriver(this.loginName, this);
 
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
@@ -191,31 +193,31 @@ public class HandleClient extends Executor implements Runnable
                }
             }
             catch (XmlBlasterException e) {
-               if (Log.TRACE) Log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
+               if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
                try {
                   executeExecption(receiver, e);
                }
                catch (Throwable e2) {
-                  Log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+                  log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
                   shutdown();
                }
             }
             catch (IOException e) {
-               Log.error(ME, "Lost connection to client: " + e.toString());
+               log.error(ME, "Lost connection to client: " + e.toString());
                shutdown();
             }
             catch (Throwable e) {
                e.printStackTrace();
-               Log.error(ME, "Lost connection to client: " + e.toString());
+               log.error(ME, "Lost connection to client: " + e.toString());
                shutdown();
             }
          } // while(running)
       }
       finally {
-         try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Deleted thread for '" + loginName + "'.");
+         try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
 }

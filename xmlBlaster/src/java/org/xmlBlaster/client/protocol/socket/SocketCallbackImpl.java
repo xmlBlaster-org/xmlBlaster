@@ -3,13 +3,13 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.19 2002/05/19 10:13:24 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.20 2002/08/03 10:17:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -32,7 +32,8 @@ import java.io.IOException;
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
 {
    private final String ME;
-   private Global glob = null;
+   private final Global glob;
+   private final LogChannel log;
    /** The connection manager 'singleton' */
    private final SocketConnection sockCon;
    /** A unique name for this client socket */
@@ -51,6 +52,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       super(sockCon.getGlobal(), sockCon.getSocket(), null);
       setLoginName(sockCon.getLoginName());
       this.glob = sockCon.getGlobal();
+      this.log = glob.getLog("socket");
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
       this.callbackAddressStr = sockCon.getLocalAddress();
@@ -64,7 +66,6 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    /** Initialize and start the callback server */
    public final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException
    {
-      this.glob = glob;
       setCbClient(cbClient); // access callback client in super class Executor:callback
    }
 
@@ -94,7 +95,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public void run()
    {
-      Log.info(ME, "Started callback receiver");
+      log.info(ME, "Started callback receiver");
       Parser receiver = new Parser();
       receiver.SOCKET_DEBUG = SOCKET_DEBUG;
       
@@ -102,16 +103,16 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
          try {
             receiver.parse(iStream);
-            if (SOCKET_DEBUG>1) Log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+            if (SOCKET_DEBUG>1) log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
             receive(receiver);
          }
          catch(XmlBlasterException e) {
-            Log.error(ME, e.toString());
+            log.error(ME, e.toString());
          }
          catch(Throwable e) {
             if (!(e instanceof IOException)) e.printStackTrace();
             if (running == true) {
-               Log.error(ME, "Closing connection to server: " + e.toString());
+               log.error(ME, "Closing connection to server: " + e.toString());
                sockCon.shutdown();
                throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
             }
@@ -136,9 +137,9 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public boolean shutdownCb() {
       running = false;
-      try { iStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
+      try { iStream.close(); } catch(IOException e) { log.warn(ME, e.toString()); }
       if (responseListenerMap.size() > 0) {
-         Log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
+         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
          return false;
       }
       return true;
