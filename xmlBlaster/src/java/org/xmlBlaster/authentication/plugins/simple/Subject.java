@@ -2,33 +2,16 @@ package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Log;
 
 /**
- *
- *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
- * Last Changes:
- *    ($Log: Subject.java,v $
- *    (Revision 1.2  2001/08/30 17:14:49  ruff
- *    (Renamed security stuff
- *    (
- *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
- *    (changed naming schema
- *    (
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 09:13:48  ruff
- *    (Changed locations for security stuff, added RMI support
- *    (
- *    (Revision 1.1.2.1  2001/05/17 13:54:30  kleinertz
- *    (wkl: the first version with security framework
- *    ()
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/04 15:09:30 $)
  */
 
 public class Subject implements I_Subject {
-   private String           name = null;
+   private String ME="SimpleSecuritySubject";
+   private String name = null;
 
 
    public Subject() {
@@ -67,7 +50,7 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-
+      Log.info(ME, "Access for " + getName() + " granted, without further checks.");
    }
 
 }
