@@ -1,6 +1,29 @@
 1. Copy this to your $HOME/xmlBlaster.properties to configure a cluster
 =======================================================================
 
+
+2. Start avalon (the slave):
+============================
+
+   cd xmlBlaster/demo/javaclients/cluster
+
+ Edit avalon.properties and change the IP variable
+ to your host (the host where golan runs later).
+  
+   java org.xmlBlaster.Main -propertyFile avalon.properties
+
+
+3. Start a client connecting to avalon:
+=======================================
+
+   java javaclients.cluster.PublishToSlave -iorPort 7601
+
+ The port is the same as specified for avalon in avalon.properties
+
+
+
+Example configuration:
+========================================
 # Replace this with your IP:
 IP=192.168.1.2
 
@@ -41,20 +64,3 @@ cluster.node.master[golan.mycomp.com]=\
    </clusternode>
 
 
-2. Start avalon (the slave):
-============================
-
-   cd xmlBlaster/demo/javaclients/cluster
-
- Edit avalon.properties and change the IP variable
- to your host (the host where golan runs later).
-  
-   java org.xmlBlaster.Main -propertyFile avalon.properties
-
-
-3. Start a client connecting to avalon:
-=======================================
-
-   java javaclients.cluster.PublishToSlave -iorPort 7601
-
- The port is the same as specified for avalon in avalon.properties

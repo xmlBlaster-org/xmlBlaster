@@ -23,7 +23,7 @@ public class PublishToSlave implements I_Callback
          String name = glob.getProperty().get("name", "PublishToSlave");
          String passwd = glob.getProperty().get("passwd", "secret");
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", name, passwd);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", "RUGBY_NEWS");
