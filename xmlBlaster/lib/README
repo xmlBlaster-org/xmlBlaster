@@ -64,8 +64,8 @@ All packages allow free use for both commercial and non-commercial applications.
    Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
 
-6) jacorb.jar and idl.jar
-=========================
+6) jacorb.jar and idl.jar 1.2.1
+===============================
    This is the JacORB 1.2.1 CORBA library, on which xmlBlaster is based.
    It us under LGPL.
 
@@ -122,8 +122,9 @@ All packages allow free use for both commercial and non-commercial applications.
    modifications, provided that the modifications are prominently documented.
 
 
-11) ant.jar
-===========
+11) ant.jar 1.1
+===============
   Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
+  (needs parser.jar)
   http://jakarta.apache.org/ant/index.html
   http://jakarta.apache.org/builds/ant/release/
