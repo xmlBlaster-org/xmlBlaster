@@ -13,6 +13,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.client.protocol.rmi.RmiConnection;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
+import org.xmlBlaster.client.protocol.socket.SocketConnection;
 
 import org.xmlBlaster.client.BlasterCache;
 import org.xmlBlaster.client.PluginLoader;
@@ -43,7 +44,7 @@ import java.util.Iterator;
 
 /**
  * This is a helper class, helping a Java client to connect to xmlBlaster
- * using IIOP (CORBA), RMI, XML-RPC or any other supported protocol.
+ * using IIOP (CORBA), RMI, XML-RPC, SOCKET or any other supported protocol.
  * <p />
  * Please note that you don't need to use this wrapper, you can use the raw I_XmlBlasterConnection
  * interface as well. You can also hack your own little wrapper, which does exactly
@@ -90,7 +91,7 @@ import java.util.Iterator;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see testsuite.org.xmlBlaster.TestFailSave
  *
- * @author $Author: kkrafft2 $
+ * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
 {
@@ -154,6 +155,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * You can choose the protocol with this command line option: <br />
     * <pre>
+    * java ... -client.protocol SOCKET
     * java ... -client.protocol RMI
     * java ... -client.protocol IOR
     * java ... -client.protocol XML-RPC
@@ -176,6 +178,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * java ... -client.protocol RMI
     * java ... -client.protocol IOR
     * java ... -client.protocol XML-RPC
+    * java ... -client.protocol SOCKET
     * </pre>
     * @param arg  parameters given on command line, or coded e.g.:
     * <pre>
@@ -196,7 +199,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
     * @param arg  parameters given on command line
-    * @param protocol e.g. "IOR", "RMI", "XML-RPC"
+    * @param protocol e.g. "IOR", "RMI", "XML-RPC", "SOCKET"
     *                 IOR is the CORBA driver.
     */
    public XmlBlasterConnection(String[] args, String driverType) throws XmlBlasterException
@@ -270,21 +273,23 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       Log.info(ME, "Using 'client.protocol=" + driverType + "' to access xmlBlaster");
 
-      if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
+      if (driverType.equalsIgnoreCase("SOCKET"))
+         driver = new SocketConnection(this.args);
+      else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          driver = new CorbaConnection(this.args);
       else if (driverType.equalsIgnoreCase("RMI"))
          driver = new RmiConnection(this.args);
       else if (driverType.equalsIgnoreCase("XML-RPC"))
          driver = new XmlRpcConnection(this.args);
       else {
-         String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI or XML-RPC.";
+         String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use SOCKET, IOR, RMI or XML-RPC.";
          Log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
    }
 
    /**
-    * Load the desired protocol driver like CORBA or RMI driver.
+    * Load the desired protocol driver like SOCKET, CORBA(IOR), RMI or XML-RPC driver.
     */
    private void initDriver(String driverType, String driverClassName) throws XmlBlasterException
    {
@@ -376,7 +381,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection(Applet ap, String driverType) throws XmlBlasterException
    {
-      if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
+      if (driverType.equalsIgnoreCase("SOCKET"))
+         driver = new SocketConnection(ap);
+      else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          driver = new CorbaConnection(ap);
       else if (driverType.equalsIgnoreCase("RMI"))
          driver = new RmiConnection(ap);
@@ -1294,7 +1301,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       String text = "\n";
       text += "Choose a connection protocol:\n";
-      text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'IOR' or 'RMI' or 'XML-RPC'.\n";
+      text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
       text += "Security features:\n";
@@ -1308,6 +1315,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -client.failSave.retries         Number of retries if connection cannot directly be established [-1] (-1 is forever)\n";
       text += "   -client.failSave.maxInvocations  How many messages shall we queue max (using the InvocationRecorder) [10000]\n";
       Log.plain(text);
+      Log.plain(SocketConnection.usage());
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());
       Log.plain(XmlRpcConnection.usage());
