@@ -184,7 +184,7 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:\
 # has precedence.
 
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables,connectionErrorCodes=1089:17002
-JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=long raw,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME,connectionErrorCodes=1089:17002
+JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=LONG RAW,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME,connectionErrorCodes=1089:17002
 # further database specifications here ...
 
 # settings for postgres ... (check that JdbcDriver.drivers contains org.postgresql.Driver)
@@ -200,7 +200,7 @@ queue.persistent.password=
 queue.persistent.connectionPoolSize=1
 queue.persistent.connectionBusyTimeout=90000
 queue.persistent.maxWaitingThreads=300
-queue.persistent.tablePrefix=xmlBlaster
+queue.persistent.tableNamePrefix=xb
 queue.persistent.tableAllocationIncrement=2
 #------------------------------------------------------------------------------
 
