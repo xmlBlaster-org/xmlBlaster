@@ -17,6 +17,11 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster authentication tests");
       suite.addTest(new TestSuite(authentication.TestAuthenticationHtPassWd.class));
+      suite.addTest(TestSession.suite());
+      suite.addTest(TestSessionCb.suite());
+      suite.addTest(TestLogin.suite());
+      suite.addTest(TestLoginLogoutEvent.suite());
+      suite.addTest(new TestSuite(authentication.TestLogout.class));
       return suite;
    }
    // To force compilation:

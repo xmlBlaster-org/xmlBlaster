@@ -1,0 +1,5 @@
+Test xmlBlaster on class level.
+
+Invoke:
+
+    java -Djava.compiler= junit.ui.TestRunner -noloading authentication.AllTests
