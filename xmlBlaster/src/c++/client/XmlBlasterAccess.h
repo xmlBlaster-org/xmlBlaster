@@ -7,10 +7,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _CLIENT_XMLBLASTERACCESS_H
 
 #include <util/xmlBlasterDef.h>
+#include <util/Global.h>
 #include <util/qos/ConnectQos.h>
 #include <client/I_ConnectionProblems.h>
 #include <client/I_Callback.h>
 #include <util/thread/ThreadImpl.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -61,22 +64,26 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 namespace org { namespace xmlBlaster { namespace client {
 
 /*
- * <p>
  * The interface org::xmlBlaster::client::I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
- * </p>
  */
-
 typedef std::map<std::string, I_Callback*> CallbackMapType;
 typedef std::map<std::string, std::string> StringMap;
 
 /**
  * This is the main entry point for programmers to the C++ client library. 
  */
-class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback
+class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback,
+                                    public org::xmlBlaster::util::ReferenceCounterBase
 {
 private:
    std::string ME;
+
+   org::xmlBlaster::util::Global&   global_;
+   org::xmlBlaster::util::GlobalRef globalRef_;
+   org::xmlBlaster::util::I_Log&    log_;
+   std::string  instanceName_;
+
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
    std::string serverNodeId_;
    org::xmlBlaster::util::qos::ConnectQos connectQos_;
@@ -98,9 +105,6 @@ private:
     * called XmlBlasterAccess::initFailsafe before the connection_ member has been created.
     */
    org::xmlBlaster::client::I_ConnectionProblems* connectionProblems_;
-   org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::I_Log&    log_;
-   std::string  instanceName_;
    CallbackMapType subscriptionCallbackMap_;
    org::xmlBlaster::util::thread::Mutex updateMutex_;
    /** this makes sure only one invocation is done at a time on this connection. The update method is not blocked by this mutex. The shutdown is blocked */
@@ -120,15 +124,23 @@ public:
    /**
     * Create an xmlBlaster accessor. 
     * @param glob Your environment handle or null to use the default org::xmlBlaster::util::Global.instance()
-    * @param instanceName is the name to give to this instance of xmlBlasterAccess. It is used to std::map the
-    * connections to a particular instance of XmlBlasterAccess (there will be one connection set 
-    * such instance name. This way you can use the same connections for several instances of xmlBlasterAccess
-    * provided they all have the same name. This name is also used to identify instances on logging and when
-    * throwing exceptions.
     */
    XmlBlasterAccess(org::xmlBlaster::util::Global& global);
 
+   /**
+    * Create an xmlBlaster accessor. 
+    * @param glob Your environment handle or null to use the default org::xmlBlaster::util::Global.instance()
+    */
+   XmlBlasterAccess(org::xmlBlaster::util::GlobalRef global);
+
    virtual ~XmlBlasterAccess();
+
+   /**
+    * Access the global handle of this connection. 
+    * The returned Global lifetime is limited by XmlBlasterAccess lifetime.
+    * @return The global handle containing the connection specific settings. 
+    */
+   org::xmlBlaster::util::Global& getGlobal();
 
    /**
     * Login to xmlBlaster
@@ -136,6 +148,12 @@ public:
     * @param client If not null callback messages will be routed to client.update()
     */
    org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos, org::xmlBlaster::client::I_Callback *clientCb);
+
+   /**
+    * Access the previously with connect() registered callback pointer. 
+    * @return Can be NULL
+    */
+   org::xmlBlaster::client::I_Callback* getCallback();
 
    /**
     * Extracts address data from org::xmlBlaster::util::qos::ConnectQos (or adds default if missing)
@@ -323,6 +341,8 @@ public:
     */
    void leaveServer(const StringMap &map);
 };
+
+typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::client::XmlBlasterAccess> XmlBlasterAccessRef;
 
 }}} // namespaces
 

@@ -27,11 +27,36 @@ using namespace org::xmlBlaster::client::qos;
 
 XmlBlasterAccess::XmlBlasterAccess(Global& global)
    : ME(string("XmlBlasterAccess-UNCONNECTED")),
+     global_(global), 
+     globalRef_(NULL), 
+     log_(global.getLog("org.xmlBlaster.client")),
      serverNodeId_("xmlBlaster"), 
      connectQos_(global), 
      connectReturnQos_(global),
-     global_(global), 
-     log_(global.getLog("org.xmlBlaster.client")),
+     subscriptionCallbackMap_(),
+     updateMutex_(),
+     invocationMutex_()
+{
+   log_.call(ME, "::constructor");
+   cbServer_           = NULL;
+   updateClient_       = NULL;
+   connection_         = NULL;
+   dispatchManager_    = NULL;
+   connectionProblems_ = NULL;
+   instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
+
+   // Hack for Windows: Initialize it from main thread, using the callback thread fails undeterminable (with xerces)
+   org::xmlBlaster::util::parser::ParserFactory::getFactory().initialize(global);
+}
+
+XmlBlasterAccess::XmlBlasterAccess(GlobalRef globalRef)
+   : ME(string("XmlBlasterAccess-UNCONNECTED")),
+     global_(*globalRef), 
+     globalRef_(globalRef), 
+     log_(global_.getLog("org.xmlBlaster.client")),
+     serverNodeId_("xmlBlaster"), 
+     connectQos_(global_), 
+     connectReturnQos_(global_),
      subscriptionCallbackMap_(),
      updateMutex_(),
      invocationMutex_()
@@ -45,7 +70,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
 
         // Hack for Windows: Initialize it from main thread, using the callback thread fails undeterminable (with xerces)
-   org::xmlBlaster::util::parser::ParserFactory::getFactory().initialize(global);
+   org::xmlBlaster::util::parser::ParserFactory::getFactory().initialize(global_);
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
@@ -126,6 +151,16 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    //global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
 
    return connectReturnQos_;
+}
+
+org::xmlBlaster::util::Global& XmlBlasterAccess::getGlobal()
+{
+   return this->global_;
+}
+
+org::xmlBlaster::client::I_Callback* XmlBlasterAccess::getCallback()
+{
+   return this->updateClient_;
 }
 
 void XmlBlasterAccess::createDefaultCbServer()
