@@ -23,6 +23,13 @@ public class PublishKey
    private final MsgKeyData msgKeyData;
 
    /**
+    * Create a key data holder, the message oid is randomly generated. 
+    */
+   public PublishKey(Global glob) {
+      this.msgKeyData = new MsgKeyData(glob);
+   }
+
+   /**
     * Create a key data holder with the given message oid. 
     */
    public PublishKey(Global glob, String oid) {
