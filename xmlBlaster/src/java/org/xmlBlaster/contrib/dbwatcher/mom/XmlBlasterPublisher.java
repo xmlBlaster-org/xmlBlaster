@@ -85,6 +85,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    protected String alertSubscriptionId;
    protected ConnectQos connectQos;
    protected boolean eraseOnDrop;
+   protected boolean eraseOnDelete;
 
    /**
     * Default constructor. 
@@ -165,6 +166,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       this.password  = info.get("mom.password", "secret");
 
       this.eraseOnDrop = info.getBoolean("mom.eraseOnDrop", false);
+      this.eraseOnDelete = info.getBoolean("mom.eraseOnDelete", false);
 
       this.publishKey = info.get("mom.publishKey", (String)null);
       if (this.publishKey != null && this.topicNameTemplate != null) {
@@ -241,6 +243,14 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
       if (this.eraseOnDrop && "DROP".equals(command)) {
+         String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
+         EraseKey ek = new EraseKey(glob, oid);
+         EraseQos eq = new EraseQos(glob);
+         EraseReturnQos[] eraseArr = con.erase(ek, eq);
+         log.info("Topic '" + pk + "' is erased:" + out);
+         return "0";
+      }
+      if (this.eraseOnDelete && "DELETE".equals(command)) {
          String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
          EraseKey ek = new EraseKey(glob, oid);
          EraseQos eq = new EraseQos(glob);
