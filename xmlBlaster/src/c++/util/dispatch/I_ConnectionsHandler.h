@@ -20,7 +20,7 @@ Comment:   Extended Interface to org::xmlBlaster::client::protocol::I_XmlBlaster
 // circular dependency I_ConnectionsHandler -> org::xmlBlaster::util::queue::Queue -> org::xmlBlaster::util::queue::MsgQueueEntry
 #ifndef _UTIL_QUEUE_QUEUE_H
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
-class org::xmlBlaster::util::queue::Queue;
+class Queue;
 }}}}
 #endif
 
