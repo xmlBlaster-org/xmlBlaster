@@ -26,6 +26,7 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.authentication.Authenticate;
@@ -655,7 +656,9 @@ public final class TopicHandler implements I_Timeout
                        Constants.SUBSCRIPTIONID_PtP);
                destinationClient.queueMessage(msgEntrySubject);
                */
-               receiverSessionInfo = authenticate.unsecureCreateSession(destinationSessionName);
+               ConnectQos connectQos = new ConnectQos(glob);
+               connectQos.setSessionName(destinationSessionName);
+               receiverSessionInfo = authenticate.unsecureCreateSession(connectQos);
                sessionExists = receiverSessionInfo != null;
             } 
 
