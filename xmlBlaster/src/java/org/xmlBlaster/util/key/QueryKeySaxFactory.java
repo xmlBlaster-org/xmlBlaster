@@ -59,6 +59,9 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
    private transient boolean inFilter = false;
    private transient AccessFilterQos tmpFilter = null;
 
+   private StringBuffer innerTags;
+   private boolean inCdata = false;
+
    /**
     * Can be used as singleton. 
     */
@@ -92,15 +95,11 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
     * @param attrs the attributes of the tag
     */
    public final void startElement(String uri, String localName, String name, Attributes attrs) {
-      if (name.equalsIgnoreCase("key")) {
+      if (inKey == 0 && name.equalsIgnoreCase("key")) { // allow nested key tags
          inKey++;
-         if (inKey > 1) return; // ignore nested key tags
          if (attrs != null) {
             String tmp = attrs.getValue("oid");
             if (tmp != null) queryKeyData.setOid(tmp.trim());
-            tmp = attrs.getValue("queryType");
-            // Only for query keys:
-            //if (tmp != null) queryKeyData.setQueryType(tmp.trim());
             tmp = attrs.getValue("contentMime");
             if (tmp != null) queryKeyData.setContentMime(tmp.trim());
             tmp = attrs.getValue("contentMimeExtended");
@@ -119,16 +118,15 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
          return;
       }
 
-      if (inKey == 1) {
-         String tmp = character.toString().trim(); // The xpath query (if before inner tags)
-         if (tmp.length() > 0) {
-            queryKeyData.setQueryString(tmp);
-            character.setLength(0);
-         }
-      }
-
       if (inKey == 1 && name.equalsIgnoreCase("filter")) {
          inFilter = true;
+
+         if (character.length() > 0) {
+            if (innerTags == null) innerTags = new StringBuffer();
+            innerTags.append(character.toString().trim());
+            character.setLength(0);
+         }
+
          tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
@@ -140,15 +138,30 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       }
 
       if (inKey > 0) {
-         // Collect all sub tags
-         character.append("<").append(name);
+         if (innerTags == null) innerTags = new StringBuffer();
+         
+         // Collect all sub tags with their attributes
+         innerTags.append("<").append(name);
          if (attrs != null) {
             int len = attrs.getLength();
             for (int ii=0; ii<len; ii++) {
-                character.append(" ").append(attrs.getQName(ii)).append("='").append(attrs.getValue(ii)).append("'");
+                innerTags.append(" ").append(attrs.getQName(ii)).append("='").append(attrs.getValue(ii)).append("'");
             }
          }
-         character.append(">");
+         innerTags.append(">");
+
+         // Collect text between tags
+         if (character.length() > 0) {
+            String tmp = character.toString().trim();
+            character.setLength(0);
+            // try to protect '<' text with CDATA section
+            if (tmp.indexOf("<") > -1) {
+               inCdata = true;
+               innerTags.append("<![CDATA["); 
+            }
+            innerTags.append(tmp);
+         }
+
          return;
       }
    }
@@ -159,12 +172,16 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (name.equalsIgnoreCase("key")) {
+      if (inKey == 1 && name.equalsIgnoreCase("key")) {
          inKey--;
-         if (inKey > 0) return; // ignore nested key tags
          String tmp = character.toString().trim(); // The xpath query (if after inner tags)
          if (tmp.length() > 0)
-            queryKeyData.setQueryString(tmp);
+            queryKeyData.appendQueryString(tmp);
+         if (innerTags != null && innerTags.length() > 0) {
+            queryKeyData.appendQueryString(innerTags.toString());
+            innerTags.setLength(0);
+            innerTags = null; // free memory
+         }
          character.setLength(0);
       }
 
@@ -175,8 +192,27 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
          return;
       }
 
-      if (inKey > 0)
-         character.append("</"+name+">");
+      if (inKey > 0) {
+         if (innerTags == null) {
+            innerTags = new StringBuffer();
+         }
+         String tmp = character.toString();
+         character.setLength(0);
+
+         // try to protect '<' text with CDATA section
+         if (tmp.indexOf("<") > -1) {
+            inCdata = true;
+            innerTags.append("<![CDATA["); 
+         }
+
+         innerTags.append(tmp);
+
+         if (inCdata) {
+            inCdata = false;
+            innerTags.append("]]>");
+         }
+         innerTags.append("</"+name+">");
+      }
    }
 
    /**
@@ -191,7 +227,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<key oid='").append(queryKeyData.getOid()).append("'");
-      if (queryKeyData.getContentMime() != null)
+      if (queryKeyData.getContentMime() != null && !queryKeyData.getContentMime().equals(KeyData.CONTENTMIME_DEFAULT))
          sb.append(" contentMime='").append(queryKeyData.getContentMime()).append("'");
       if (queryKeyData.getContentMimeExtended() != null)
          sb.append(" contentMimeExtended='").append(queryKeyData.getContentMimeExtended()).append("'");
