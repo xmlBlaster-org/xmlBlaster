@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.22 2001/12/23 19:52:23 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.23 2001/12/30 13:00:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -34,6 +34,8 @@ import java.io.*;
  *     &lt;sender>
  *        Tim
  *     &lt;/sender>
+ *     &lt;expiration rcvTimestamp='1009709317836' timeToLive='129595811'/>
+ *     &lt;isVolatile>false&lt;/isVolatile>
  *  &lt;/qos>
  * </pre>
  */
@@ -44,7 +46,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * A message lease lasts a maximum of one and a half day (36 hours). <p />
     * This value can be modified in XmlBlaster.properties:<br />
-    * <code>Message.lease.maxTimeToLive=3600000 # One our lease</code><br />
+    * <code>Message.lease.maxTimeToLive=3600000 # One hour lease</code><br />
     * Every message can set the timeToLive value between 1 and maxTimeToLive
     */
    private static long maxTimeToLive = XmlBlasterProperty.get("Message.lease.maxTimeToLive", 36L*60*60*1000);
@@ -266,7 +268,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (timeToLive <= getMaxTimeToLive())
          this.expirationTimestamp = rcvTimestamp + timeToLive;
       else {
-         Log.warn(ME, "Ignoring timeToLive=" + timeToLive + ", setting maximum message lifespan to " + getMaxTimeToLive() + " millis");
+         if (Log.TRACE) Log.trace(ME, "Ignoring timeToLive=" + timeToLive + ", setting maximum message lifespan to " + getMaxTimeToLive() + " millis");
          if (getMaxTimeToLive() == Long.MAX_VALUE)
             this.expirationTimestamp = Long.MAX_VALUE;
          else
