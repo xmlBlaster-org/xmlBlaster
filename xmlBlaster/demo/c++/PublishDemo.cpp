@@ -259,9 +259,18 @@ void PublishDemo::publish()
       }
 
       MessageUnit msgUnit(key, contentTmp, pq);
-      log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
-      PublishReturnQos tmp = connection_.publish(msgUnit);
-      log_.trace(ME, string("publish return qos: ") + tmp.toXml());
+      if (oneway) {
+         log_.trace(ME, string("publishOneway() message unit: ") + msgUnit.toXml());
+         vector<MessageUnit> msgUnitArr;
+         msgUnitArr.push_back(msgUnit);
+         connection_.publishOneway(msgUnitArr);
+         log_.trace(ME, "publishOneway() done");
+      }
+      else {
+         log_.trace(ME, string("publish() message unit: ") + msgUnit.toXml());
+         PublishReturnQos tmp = connection_.publish(msgUnit);
+         log_.trace(ME, string("publish return qos: ") + tmp.toXml());
+      }
    }
 }
 
