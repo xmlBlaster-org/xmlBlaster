@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.1 2000/02/22 04:23:23 jsrbirch Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.2 2000/02/23 10:08:01 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -28,8 +28,8 @@ import java.io.*;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
@@ -46,17 +46,17 @@ public class XmlDBAdapterWorker extends Thread {
 
    /**
     * Constructor declaration
-    * 
-    * 
+    *
+    *
     * @param args
     * @param cust
     * @param content
     * @param qos
     * @param xmlBlaster
-    * 
+    *
     * @see
     */
-   public XmlDBAdapterWorker(String[] args, String cust, byte[] content, 
+   public XmlDBAdapterWorker(String[] args, String cust, byte[] content,
                              String qos, Server xmlBlaster) {
       this.args = args;
       this.cust = cust;
@@ -67,12 +67,12 @@ public class XmlDBAdapterWorker extends Thread {
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @throws Exception
-    * 
+    *
     * @see
     */
    private XmlDocument createDocument() throws Exception {
@@ -81,29 +81,29 @@ public class XmlDBAdapterWorker extends Thread {
 
       try {
          document = XmlDocument.createXmlDocument(bais, false);
-      } 
+      }
       catch (Exception e) {
          Log.warning(ME, "Exception in create: " + e);
 
          throw (e);
-      } 
+      }
 
       return document;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param descriptor
-    * 
+    *
     * @return
-    * 
+    *
     * @throws SQLException
-    * 
+    *
     * @see
     */
-   private XmlDocument queryDB(ConnectionDescriptor descriptor) 
+   private XmlDocument queryDB(ConnectionDescriptor descriptor)
            throws SQLException {
 
       Connection  conn = null;
@@ -112,7 +112,7 @@ public class XmlDBAdapterWorker extends Thread {
       XmlDocument doc = null;
 
       try {
-         conn = 
+         conn =
             ConnectionManager.getInstance().getConnectionWrapper(descriptor).getConnection();
          s = conn.createStatement();
 
@@ -122,65 +122,65 @@ public class XmlDBAdapterWorker extends Thread {
             int   rowsAffected = s.executeUpdate(command);
 
             doc = createUpdateDocument(rowsAffected, descriptor);
-         } 
+         }
          else {
             rs = s.executeQuery(command);
-            doc = 
-               DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(), 
-                                             descriptor.getRowrootnode(), 
+            doc =
+               DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
+                                             descriptor.getRowrootnode(),
                                              descriptor.getRowlimit(), rs);
-         } 
-      } 
+         }
+      }
       catch (SQLException e) {
          Log.warning(ME, "Exception in query: " + e);
 
          throw e;
-      } 
+      }
 
       return doc;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param rowsAffected
     * @param descriptor
-    * 
+    *
     * @return
-    * 
+    *
     * @see
     */
-   private XmlDocument createUpdateDocument(int rowsAffected, 
+   private XmlDocument createUpdateDocument(int rowsAffected,
                                             ConnectionDescriptor descriptor) {
       XmlDocument document = new XmlDocument();
-      ElementNode root = 
+      ElementNode root =
          (ElementNode) document.createElement(descriptor.getDocumentrootnode());
 
       document.appendChild(root);
 
-      ElementNode row = 
+      ElementNode row =
          (ElementNode) document.createElement(descriptor.getRowrootnode());
 
       root.appendChild(row);
 
-      Text  rows = 
-         (Text) document.createTextNode(rowsAffected 
+      Text  rows =
+         (Text) document.createTextNode(rowsAffected
                                         + "row(s) were affected during the update.");
 
       row.appendChild(rows);
 
       return document;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param exception
-    * 
+    *
     * @return
-    * 
+    *
     * @see
     */
    private XmlDocument createErrorDocument(Exception exception) {
@@ -193,7 +193,7 @@ public class XmlDBAdapterWorker extends Thread {
 
       root.appendChild(extype);
 
-      Text  extypevalue = 
+      Text  extypevalue =
          (Text) document.createTextNode(exception.toString());
 
       extype.appendChild(extypevalue);
@@ -202,29 +202,29 @@ public class XmlDBAdapterWorker extends Thread {
 
       root.appendChild(exmessage);
 
-      Text  exmessagevalue = 
+      Text  exmessagevalue =
          (Text) document.createTextNode(exception.getMessage());
 
       exmessage.appendChild(exmessagevalue);
 
       return document;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param doc
-    * 
+    *
     * @see
     */
    private void notifyCust(XmlDocument doc) {
-      String                  qos = "" + "<qos>" 
-                                    + " <destination queryType='EXACT'>" 
+      String                  qos = "" + "<qos>"
+                                    + " <destination queryType='EXACT'>"
                                     + cust + " </destination>" + "</qos>";
 
-      String                  xmlKey = 
-         "" + "<?xml version='1.0' encoding='ISO-8859-1' ?>" + "<key oid='" 
+      String                  xmlKey =
+         "" + "<?xml version='1.0' encoding='ISO-8859-1' ?>" + "<key oid='"
          + ME + "' contentMime = 'text/xml'>" + "</key>";
 
       ByteArrayOutputStream   bais = new ByteArrayOutputStream();
@@ -236,19 +236,19 @@ public class XmlDBAdapterWorker extends Thread {
          String      oid = xmlBlaster.publish(mu, qos);
 
          System.out.println("Delivered Results...");
-      } 
+      }
       catch (XmlBlasterException e) {
          System.out.println("Exception in notify: " + e.reason);
-      } 
+      }
       catch (Exception e) {
          System.out.println("Exception in notify: " + e);
-      } 
-   } 
+      }
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    public void run() {
@@ -256,31 +256,26 @@ public class XmlDBAdapterWorker extends Thread {
 
       try {
          document = createDocument();
-      } 
+      }
       catch (Exception e) {
          document = createErrorDocument(e);
-      } 
+      }
 
       ConnectionDescriptor descriptor = null;
 
-      try {
-         descriptor = new ConnectionDescriptor(document);
-      } 
-      catch (Exception e) {
-         document = createErrorDocument(e);
-      } 
+      descriptor = new ConnectionDescriptor(document);
 
       try {
          document = queryDB(descriptor);
-      } 
+      }
       catch (Exception e) {
          document = createErrorDocument(e);
-      } 
+      }
 
       if (descriptor.getConfirmation()) {
          notifyCust(document);
-      } 
-   } 
+      }
+   }
 
 }
 
