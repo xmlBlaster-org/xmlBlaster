@@ -2,10 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
+ o Bugfix for queueing PtP messages when there are session which have
+   set isPtpAllowed==false
+
  o Fixed to not put none subscribeable PtP messages to the history queue
 
  o Added limited support to reconfigure a subject queue
-   from CACHE to RAM.
+   from CACHE to RAM during operation.
 
  o Fixed internal error dump when expired history entry
    is subscribed.
