@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.8 2002/06/10 22:35:55 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.9 2002/07/13 12:07:39 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -34,7 +34,7 @@ public class PersistencePluginManager extends PluginManagerBase
       this.glob = glob;
 
       try {
-         // super.choosePlugin reads pluginName and parameters from porperties
+         // super.choosePlugin reads pluginName and parameters from properties
          // so read property file, if it's not there, write it to the properties
          glob.getProperty().set(pluginPropertyName + "[filestore][1.0]",
             glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
