@@ -18,6 +18,10 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 
+import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
+
 import junit.framework.*;
 
 
@@ -39,14 +43,14 @@ public class TestErase extends TestCase implements I_Callback
 
    private String subscribeId;
    private String oidExact = "HelloMessage";
+   private String oidXpath = "//key[@oid=\""+oidExact+"\"]";
+   private MsgUnit msgUnit;
    private String publishOid = null;
    private I_XmlBlasterAccess con;
-   private String senderContent;
 
-   private boolean expectingErase = false;
-
-   private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
+
+   private MsgInterceptor updateInterceptor;
 
    /**
     * Constructs the TestErase object.
@@ -65,8 +69,6 @@ public class TestErase extends TestCase implements I_Callback
     * Connect to xmlBlaster and login
     */
    protected void setUp() {
-      numReceived = 0;
-      expectingErase = false;
    }
 
    /**
@@ -94,12 +96,15 @@ public class TestErase extends TestCase implements I_Callback
     * <p />
     * The returned subscribeId is checked
     */
-   private void subscribe() {
+   private void subscribe(boolean exact) {
       if (log.TRACE) log.trace(ME, "Subscribing ...");
 
-      String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'/>";
+      String xmlKey;
+      if (exact)
+         xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'/>";
+      else
+         xmlKey = "<key oid='' queryType='XPATH'>" + oidXpath + "</key>";
       String qos = "<qos/>";
-      numReceived = 0;
       subscribeId = null;
       try {
          subscribeId = con.subscribe(xmlKey, qos).getSubscriptionId();
@@ -121,11 +126,10 @@ public class TestErase extends TestCase implements I_Callback
    private void publish() {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
-      numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "'/>";
-      senderContent = "Yeahh, i'm the new content";
+      String senderContent = "Yeahh, i'm the new content";
       try {
-         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
+         msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
          publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
@@ -145,7 +149,6 @@ public class TestErase extends TestCase implements I_Callback
       if (log.TRACE) log.trace(ME, "unSubscribing ...");
 
       String qos = "<qos/>";
-      numReceived = 0;
       try {
          con.unSubscribe("<key oid='" + subscribeId + "'/>", qos);
          log.info(ME, "Success: unSubscribe on " + subscribeId + " done");
@@ -167,15 +170,17 @@ public class TestErase extends TestCase implements I_Callback
 
    private void connect() {
       try {
+         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, this);
          con = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
-         con.connect(qos, this);
+         con.connect(qos, this.updateInterceptor);
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
+      this.updateInterceptor.clear();
    }
 
    /**
@@ -183,28 +188,79 @@ public class TestErase extends TestCase implements I_Callback
     * about the erased message
     * <br />
     */
-   public void testEraseEvent() {
+   public void testEraseEvent() throws Exception {
       log.info(ME, "testEraseEvent ...");
-      numReceived = 0;
       
       connect();
 
-      subscribe();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}   // Wait some time for callback to arrive ...
-      assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
+      subscribe(true);
+      assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
+      
+      {
+         publish();
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(1500L, oidExact, Constants.STATE_OK, 1));
+         Msg msg = this.updateInterceptor.getMsg(oidExact, Constants.STATE_OK);
+         assertTrue("Wrong update state", msg.getUpdateQos().isOk());
 
-      numReceived = 0;
-      publish();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
-      assertEquals("numReceived after publishing", 1, numReceived); // only one message arrived?
+         msg.compareMsg(msgUnit);
+         assertEquals("Message contentMime is corrupted", contentMime, msg.getUpdateKey().getContentMime());
 
-      numReceived = 0;
-      expectingErase = true;
-      erase();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}   // Wait some time for callback to arrive ...
-      assertEquals("numReceived after erase", 1, numReceived);  // erase event arrived
+         this.updateInterceptor.clear();
+      }
+
+      {
+         this.updateInterceptor.countErased(true);
+         erase();
+         assertEquals("erase event is missing", 1, this.updateInterceptor.waitOnUpdate(2500L, oidExact, Constants.STATE_ERASED, 1));
+         Msg msg = this.updateInterceptor.getMsg(oidExact, Constants.STATE_ERASED);
+         assertEquals("wrong subscriptionId expected=" + subscribeId, subscribeId, msg.getUpdateQos().getSubscriptionId());
+         assertTrue("wrong update state", msg.getUpdateQos().isErased());
+         
+         this.updateInterceptor.clear();
+      }
 
       log.info(ME, "testEraseEvent SUCCESS");
+   }
+
+   /**
+    * TEST: Subscribe to a message, publish it, erase it and check if we are notified
+    * about the erased message
+    * <br />
+    */
+   public void testXPathEraseEvent() throws Exception {
+      log.info(ME, "testXPathEraseEvent ...");
+      
+      connect();
+
+      subscribe(false);
+      assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
+
+      {
+         publish();
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(1500L, oidExact, Constants.STATE_OK, 1));
+         Msg msg = this.updateInterceptor.getMsg(oidExact, Constants.STATE_OK);
+         assertTrue("Wrong update state", msg.getUpdateQos().isOk());
+
+         msg.compareMsg(msgUnit);
+         assertEquals("Message contentMime is corrupted", contentMime, msg.getUpdateKey().getContentMime());
+
+         this.updateInterceptor.clear();
+      }
+
+      {
+         log.info(ME, "Erasing now ...");
+         this.updateInterceptor.countErased(true);
+
+         erase();
+         assertEquals("erase event is missing", 1, this.updateInterceptor.waitOnUpdate(2500L, oidExact, Constants.STATE_ERASED, 1));
+         Msg msg = this.updateInterceptor.getMsg(oidExact, Constants.STATE_ERASED);
+         assertEquals("wrong subscriptionId expected=" + subscribeId, subscribeId, msg.getUpdateQos().getSubscriptionId());
+         assertTrue("wrong update state", msg.getUpdateQos().isErased());
+         
+         this.updateInterceptor.clear();
+      }
+
+      log.info(ME, "testXPathEraseEvent SUCCESS");
    }
 
    /**
@@ -214,29 +270,6 @@ public class TestErase extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
-
-      numReceived += 1;
-
-      if (updateQos.isErased()) {
-         return "";
-      }
-
-      if (expectingErase) {
-         assertEquals("Wrong update state", Constants.STATE_ERASED, updateQos.getState());
-         assertTrue("Wrong update state", updateQos.isErased());
-      }
-      else {
-         assertEquals("Wrong update state", Constants.STATE_OK, updateQos.getState());
-         assertTrue("Wrong update state", updateQos.isOk());
-      }
-
-      // Wait that publish() returns and set 'publishOid' properly
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
-
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
-      assertEquals("Message content is corrupted", new String(senderContent), new String(content));
-      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
-
       return "";
    }
 
@@ -260,10 +293,17 @@ public class TestErase extends TestCase implements I_Callback
          System.err.println("Init failed");
          System.exit(1);
       }
-      TestErase testSub = new TestErase(glob, "TestErase");
-      testSub.setUp();
-      testSub.testEraseEvent();
-      testSub.tearDown();
+      try {
+         TestErase testSub = new TestErase(glob, "TestErase");
+         testSub.setUp();
+         //testSub.testEraseEvent();
+         testSub.testXPathEraseEvent();
+         testSub.tearDown();
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+         System.out.println("EERRRROR: " + e.toString());
+      }
 
    }
 }
