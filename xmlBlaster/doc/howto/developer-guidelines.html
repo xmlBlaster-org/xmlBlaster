@@ -9,7 +9,7 @@
 <body>
 
 <!--   <p class=sideend>
-      Last updated $Date: 2003/05/29 10:49:54 $ $Author: ruff $
+      Last updated $Date: 2003/06/19 20:41:58 $ $Author: ruff $
    </p>-->
    <p class=sitetitel>Guidelines for XmlBlaster core developers</p>
 
@@ -62,9 +62,9 @@
             of the code you didn't understand or wasn't aware of.<p />
             Please minimize manual tests on the screen, nobody will run them. There is
             hopefully always a possibility to test your feature automatically with the test suite.
-            <p class="celltitel">
+            <h3>
             Steps for testing
-            </p>
+            </h3>
             <p><b>
             You need to start Postgres or Oracle for persistent storage
             to run the tests, otherwise most tests will fail, see 
@@ -76,24 +76,50 @@
    cd xmlBlaster
    build.sh delete
    build.sh all
+   build.sh c
 
    build.sh runTests
             </pre>
             <p>To get a HTML based test report please invoke after <i>runTests</i>:
             <pre>
    build.sh report
+
+   Open in your browser:
+
+   xmlBlaster/doc/test/report/html/index.html
             </pre>
             <p>
-            <b>IMPORTANT NOTE:</b> Currently the <i>runTests</i> task will run all tests in a bulk.
-            This consumes on half the way all available threads on your system.
-            This issue is currently on the way to be fixed. For the time being please test on UNIX/Linux like this
-            (after compiling everything with <i>build.sh all</i>):
+            <b>NOTE:</b> During development you often want to run only some specific
+            tests manually. Here is an example to run the <i>topic</i> specific tests
+            manually (after compiling everything with <i>build.sh all</i>):
             </p>
             <pre>
-   cd xmlBlaster/testsuite/src/java/org/xmlBlaster/test
+   cd xmlBlaster/testsuite/src/java/org/xmlBlaster/test/topic
    export CLASSPATH=../../../../../../lib/xmlBlaster.jar:../../../../../../lib/junit.jar
-   test.sh
+   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.topic.AllTests
             </pre>
+            <h3>Adding a single new test</h3>
+            <p>
+            Every test needs to be added to the <i>AllTests.java</i> file
+            to be automatically invoked. See for example 
+            <i>xmlBlaster/testsuite/src/java/org/xmlBlaster/test/topic/AllTests.java</i>
+            </p>
+            <h3>Adding new test subdirectories</h3>
+            <p>
+            If you add a new subdirectory to <i>xmlBlaster/testsuite/src/java/org/xmlBlaster/test</i>
+            for a group of new tests you should add it to the <i>runJunit</i> task
+            in <i>xmlBlaster/build.xml</i>, e.g.:
+            <pre>
+   &lt;test name="org.xmlBlaster.test.MYNEWTESTS.AllTests" fork="yes" todir="${report.dir}"/>
+            </pre>
+            </p>
+            <h3>Testing client libraries other than Java</h3>
+            <p>
+            To have the tests of client libraries for C, C++, Python etc.
+            integrated into the HTML report you need to add a little wrapper
+            around your native coded tests. You can use the C client library 
+            wrapper as an example, see <i>xmlBlaster/testsuite/src/java/org/xmlBlaster/test/C/TestC.java</i>
+            </p>
          </td>
       </tr>
 
