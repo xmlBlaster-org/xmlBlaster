@@ -98,10 +98,8 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
-     subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
      sender_(data.sender_),
-     destinationList_(data.destinationList_),
-     forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
+     destinationList_(data.destinationList_)
 {
    copy(data);
 }
@@ -109,6 +107,8 @@ MsgQosData::MsgQosData(const MsgQosData& data)
 MsgQosData& MsgQosData::operator=(const MsgQosData& data)
 {
    QosData::copy(data);
+   sender_ = data.sender_;
+   destinationList_ = data.destinationList_;
    copy(data);
    return *this;
 }
