@@ -3,7 +3,7 @@ Name:      ChessMover.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The demo class which moves around the chess peaces
-Version:   $Id: ChessMover.java,v 1.2 2002/03/29 20:52:02 laghi Exp $
+Version:   $Id: ChessMover.java,v 1.3 2002/03/29 21:05:22 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.rhino;
 
@@ -66,6 +66,7 @@ public class ChessMover
 
    public static void main (String[] args) {
       try {
+
          ChessMover mover = new ChessMover(args);
          while (true) {
             mover.publish();
@@ -73,6 +74,11 @@ public class ChessMover
       }
       catch (Exception ex) {
          System.err.println(ex.toString());
+
+	    System.err.println("usage: java javaclients.svg.rhino.ChessMover -interval updateInterval");
+	    System.err.println("where updateInterval is the time in ms between each move");
+	    System.exit(1);
+
       }
    }
 
