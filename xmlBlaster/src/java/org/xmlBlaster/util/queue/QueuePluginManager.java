@@ -13,6 +13,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 
 /**
  * QueuePluginManager loads the I_Queue implementation plugins. 
@@ -37,13 +38,16 @@ public class QueuePluginManager extends PluginManagerBase
    private final String ME;
    private final Global glob;
    private final LogChannel log;
-   private static final String defaultPluginName = "org.xmlBlaster.util.queue.ram.RamQueuePlugin";
+   private final String pluginEnvClass = "queue"; // Used for env lookup like "queue/history/QueuePlugin[JDBC][1.0]=..."
    public static final String pluginPropertyName = "QueuePlugin";
+   private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.util.queue.ram.RamQueuePlugin"},
+                                                          {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
+                                                          {"CACHE", "org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin"} };
 
    public QueuePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("queue");
+      this.log = glob.getLog("core");
       this.ME = "QueuePluginManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Constructor QueuePluginManager");
    }
@@ -51,47 +55,32 @@ public class QueuePluginManager extends PluginManagerBase
    /**
     * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
-   public I_Queue getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
-      if (typeVersion == null)
-         return null;
-      String version;
-      String type;
-      int i = typeVersion.indexOf(',');
-      if (i==-1) {  // version is optional
-         version = null;
-      }
-      else {
-         version = typeVersion.substring(i+1);
-      }
-      type = typeVersion.substring(0,i);
-      return getPlugin(type, version, uniqueQueueId, props);
+   public I_Queue getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, typeVersion, 
+              new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+              storageId, props);
    }
 
    /**
-    * Return a specific queue implementation plugin from cache (on first request create it). 
+    * Return a new created (persistent) queue plugin. 
     * <p/>
-    * @param String The type of the requested plugin, pass 'undef' to suppress using a queue.
+    * @param String The type of the requested plugin, pass 'undef' to suppress using a storage.
     * @param String The version of the requested plugin.
     * @param fn The file name for persistence or null (will be generated or ignored if RAM based)
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
-   public I_Queue getPlugin(String type, String version, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
+   public I_Queue getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, type, version,
+              new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+              storageId, props);
+   }
 
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + createPluginPropertyKey(type, version));
-      I_Queue plugin = null;
-
-      PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
+   public I_Queue getPlugin(PluginInfo pluginInfo, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       if (pluginInfo.ignorePlugin())
          return null;
 
-      /*
-      plugin = getFromPluginCache(pluginInfo.getClassName());
-      if (plugin!=null) return plugin; // from cache
-      */
-
-      // create a new one ...
-      plugin = (I_Queue)super.instantiatePlugin(pluginInfo, false);
-      plugin.initialize(uniqueQueueId, props);
+      I_Queue plugin = (I_Queue)super.instantiatePlugin(pluginInfo, false);
+      plugin.initialize(storageId, props);
 
       return plugin;
    }
@@ -112,7 +101,13 @@ public class QueuePluginManager extends PluginManagerBase
     * @return please return your default plugin class name or null if not specified
     */
    public String getDefaultPluginName(String type, String version) {
-      return defaultPluginName;
+      for (int i=0; i<defaultPluginNames.length; i++) {
+         if (defaultPluginNames[i][0].equalsIgnoreCase(type)) {
+            if (log.TRACE) log.trace(ME, "Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
+            return defaultPluginNames[i][1];
+         }
+      }
+      log.warn(ME, "Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
+      return defaultPluginNames[0][1];
    }
 }
-
