@@ -3,7 +3,8 @@
 <!ELEMENT requirement (
 	topic,
 	description,
-	example,
+	example*,
+	see*,
 	author,
 	date,
 	revision,
@@ -15,6 +16,7 @@
 <!ELEMENT topic  (%text;)>
 <!ELEMENT description  (%text;)> 
 <!ELEMENT example  (%text;)> 
+<!ELEMENT see  (%text;)> 
 <!ELEMENT author  (%text;)> 
 <!ELEMENT date  (%text;)> 
 <!ELEMENT revision  (%text;)> 
