@@ -36,11 +36,17 @@ Module HelloWorld3
                  ", content=" & msg.getContentStr() & _
                  ", state=" & msg.getQos().getState() & _
                  ", myAge=" & age)
-         ' How to pass a byte[]?
+         
+         ' Access the raw content bytes ...
          'Dim len As Int32 = msg.getContent().length
-         'Dim content() As Byte = msg.getContent()
-         'Dim str As String = ascii.GetString(content, 0, len)
-         'MsgBox("Success, message arrived:" & str)
+         'Dim str As String
+         'Dim contentSBytes As SByte()
+         'contentSBytes = msg.getContent()
+         'Dim contentBytes As Byte() = New Byte(contentSBytes.Length)
+         'Buffer.BlockCopy(contentSBytes, 0, contentBytes, 0, contentSBytes.Length)
+         'str = System.Text.Encoding.ASCII.GetString(contentBytes)
+         'MsgBox("Success, message arrived:" & str) 
+
          xmlBlaster.setUpdateReturn("<qos><state id='OK'/></qos>")
       Catch e As SystemException
          Console.WriteLine("Exception in update:" & e.ToString())
