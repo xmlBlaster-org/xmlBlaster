@@ -138,6 +138,7 @@ All packages allow free use for both commercial and non-commercial applications.
    The file helma/xmlrpc/XmlRpc.java is modified to run with JAXP parsers.
 
    The file Base64.java is patched to fix a bug for long data length (2001-03-11)
+   (see http://www.ruralnet.net/~kelley/java/Base64.java)
 
 
 11) ant.jar 1.2
@@ -155,3 +156,13 @@ All packages allow free use for both commercial and non-commercial applications.
   Java Servlet 2.3 and JSP 1.2 specifications
   http://jakarta.apache.org/builds/jakarta-tomcat-4.0/release)
 
+
+13) connector.jar jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar
+  J2EE connector support by Peter Antman
+
+  connector.jar      javax.resource.cci  and  javax.resource.spi packages
+  jaas.jar           javax.security  and  com.sun.security packages
+  jta-spec1_0_1.jar  javax.transaction package
+  jms.jar            javax.jms
+  ejb2.0.jar         javax.ejb
+  jndi-jdk1_3_1.jar  javax.naming (only required for JDK 1.2, not for JDK1.3)
