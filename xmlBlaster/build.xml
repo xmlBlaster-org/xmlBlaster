@@ -156,8 +156,7 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
-   <!-- On Windows "shared" failes (bug with malloc/free over lib boundaries), on UNIX shared runs fine -->
-   <property name="CPP_LINK" value="static"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
+   <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
@@ -1536,10 +1535,6 @@ TODO
       </if>
    </target>
 
-
-
-
-
    <!-- =================================================================== -->
    <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
    <!-- =================================================================== -->
@@ -1998,29 +1993,6 @@ TODO
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
    <target name="c-lib" depends="prepare-cpp" description="C client integration - create libxmlBlasterClientC.sl (dll)">
-
-      <!-- Build a shared library xmlBlasterClient.so, xmlBlasterClient.sl or xmlBlasterClient.dll -->
-      <!-- A typical compile:
-        g++ -g
-            -fpic -I/opt/local/mico/include -c /opt/local/xmlBlaster/src/c/msgUtil.c
-       -->
-      <!-- A typical shared library link:
-        g++ -shared -g
-            -o /opt/local/xmlBlaster/lib/libxmlBlasterClientC.so.0.848
-            /opt/local/xmlBlaster/src/c/msgUtil.o /opt/local/xmlBlaster/src/c/socket/xmlBlasterSocket.o
-      -->
-      <!--
-        g++ -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I. -Wl,-rpath=../../lib -D_REENTRANT  -lpthread
-      -->
-      <!-- 
-        [cc] link /NOLOGO /DEBUG /DLL /INCREMENTAL:NO /OUT:xmlBlasterClientC.dll '"..\..\..\Program Files\Microsoft Visual Studio .NET 2003\Vc7\Platfor
-        mSDK\Lib\WS2_32.Lib"' ..\src\c\socket\pthreadVC.lib ..\build\obj\Properties.obj ..\build\obj\xmlBlasterSocket.obj ..\build\obj\CallbackServerUnparsed.
-        obj ..\build\obj\msgUtil_CopyByAnt.obj ..\build\obj\XmlBlasterConnectionUnparsed.obj ..\build\obj\XmlBlasterAccessUnparsed.obj
-
-       RESULT:
-         06/24/2003  11:41 AM            73,728 xmlBlasterClientC.dll
-         06/24/2003  11:41 AM           175,104 xmlBlasterClientC.pdb
-      -->
       <mkdir dir="${build.dir}/obj"/>
 
       <!-- Copy msgUtil.c so that "@version@" is replaced to current values by ant -->
@@ -2070,9 +2042,16 @@ TODO
          </linker>
       </cc>
 
-      <!-- Was only needed for "@version@" replacement during compilation -->
-      <delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" /> <!-- Leave it for lookup for debugger? -->
+      <copy file="${src.c.dir}/socket/pthreadVC.dll" tofile="${lib.dir}/pthreadVC.dll"/>
 
+      <!-- Was only needed for "@version@" replacement during compilation -->
+      <!-- delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger, the c-clean task does it. -->
+
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="windows">
+            <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll and pthreadVC.dll"/>
+         </case>
+      </switch>
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
@@ -2128,26 +2107,12 @@ TODO
          </linker>
 
          <linker name="msvc" if="use-msvc">
-            <!-- C++
-             06/16/2003  02:34 PM         3,178,496 xmlBlasterClient.dll
-             06/16/2003  02:34 PM           668,081 xmlBlasterClient.exp
-             06/16/2003  02:34 PM         1,098,054 xmlBlasterClient.lib
-             06/16/2003  02:34 PM         7,220,224 xmlBlasterClient.pdb
-             06/16/2003  02:34 PM             2,957 xmlBlasterClient.rsp
-            -->
-            <!-- C
-             06/23/2003  12:14 PM            73,728 xmlBlasterClientC.dll
-             06/23/2003  12:14 PM           175,104 xmlBlasterClientC.pdb
-            -->
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
             <syslibset libs="ws2_32" />
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
-            <!-- [cc] link /NOLOGO /DEBUG /INCREMENTAL:NO /OUT:LogRedirect.exe '"..\..\..\..\..\..\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformS
-                 DK\Lib\WS2_32.Lib"' ..\..\..\..\src\c\socket\pthreadVC.lib ..\..\..\..\build\obj\LogRedirect.obj
-            -->
          </linker>
 
          <linker name="bcc"  if="use-bcc" />
@@ -2188,6 +2153,7 @@ TODO
           <fileset dir="${demo.dir}/c/socket/bin" includes="*"/>
           <fileset dir="${demo.dir}/c/bin" includes="*"/>
           <fileset dir="${testsuite.dir}/src/c/bin" includes="*"/>
+          <fileset dir="${lib.dir}" includes="pthreadVC.dll,*xmlBlasterClientC.*"/>
        </delete>
     </target>
 
@@ -2202,7 +2168,7 @@ TODO
     <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.hh, *.i"/>
-          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll,xmlBlasterClient.rsp,xmlBlasterClient.exp,xmlBlasterClient.pdb,history.xml"/>
+          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
           <fileset dir="${demo.dir}/c++/bin" includes="*"/>
           <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
