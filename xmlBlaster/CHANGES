@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Bugfix for UserList event message, now the
+   correct users are returned
+
  o Update QoS markup change:
       <subscriptionId>__subId:1</subscriptionId>
    is now
