@@ -134,6 +134,7 @@ public class HelloWorldPublish
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
          log.info(ME, "   -clientTags     " + clientTags);
+         log.info(ME, "   -domain         " + (domain==null)?"":domain);
          if (contentSize >= 0) {
             log.info(ME, "   -content        [generated]");
             log.info(ME, "   -contentSize    " + contentSize);
