@@ -5,20 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 /**
- * This class encapsulates the QoS of an erase() request. 
- * <p />
- * A full specified <b>erase</b> qos could look like this:<br />
- * <pre>
- *&lt;qos>
- *   &lt;!-- The subscribers shall not be notified when this message is destroyed -->
- *   &lt;notify>false&lt;/notify> <!-- currently not implemented -->
- *&lt;/qos>
- * </pre>
+ * This class encapsulates the QoS of an subscribe() request. 
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  * @see org.xmlBlaster.util.qos.QueryQosData
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
- * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html">erase interface</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">subscribe interface</a>
  */
 
 #include <client/qos/SubscribeQos.h>
@@ -76,6 +68,11 @@ void SubscribeQos::setMultiSubscribe(bool multiSubscribe)
 void SubscribeQos::setWantLocal(bool local)
 {
    data_.setWantLocal(local);
+}
+
+void SubscribeQos::setWantNotify(bool notifyOnErase)
+{
+   data_.setWantNotify(notifyOnErase);
 }
 
 /**
