@@ -21,16 +21,15 @@
      <table border="1"><tr><td><pre>
      <!-- pre class="BORDER" netscape does not like this -->
      <![CDATA[
-<node>
+<xmlBlaster>
    <numNodes>5</numNodes>
    <nodeList>heron,avalon,golan,frodo,bilbo</nodeList>
-   <heron>
+   <node id='heron'>
       <uptime>34000</uptime>      <!-- sec -->
       <runlevel>9</runlevel>
       <freeMem>13000000</freeMem> <!-- bytes -->
-      
       <nodeId>heron</nodeId>
-      <version>0.79f</version>
+      <version>0.84</version>
       
       <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
       <port>3412</port>
@@ -49,87 +48,159 @@
       <clientThresholdOverflow type='event'/>
 
       <clientList>joe,jack,averell,william</clientList>
-      <client>
-         <joe>
+      <client id='joe'>
+         <uptime>10050</uptime>
+         <state>ALIVE</state>
+         <killClient/>
+
+         <queue id='subject'> <!-- PtP queue -->
+            <plugin refid='${QueuePluginCache}'/>
+            <numEntries>247</numEntries>
+            <numBytes>467900</numBytes>
+            <maxEntries>1000</maxEntries>
+            <maxBytes>2000000</maxBytes>
+         </queue>
+
+         <numSessions>2</numSessions>
+         <maxSessions>10</maxSessions>
+         <sessionThresholdOverflow type='event'/>
+
+         <sessionList>ses3,ses17</sessionList>
+         <session id='-3'>
             <uptime>10050</uptime>
-            <killClient/>
+            <killSession/>
 
+            <numPublished>4</numPublished>
+            <numGets>7</numGets>
+            <numUpdates>614050</numUpdates>
+            <queue id='callback'>
+               <plugin refid='${QueuePluginCache}'/>
+               <numEntries>7</numEntries>
+               <numBytes>90023</numBytes>
+               <maxEntries>1000</maxEntries>
+               <maxBytes>2000000</maxBytes>
+               <maxEntriesCache>100</maxEntriesCache>
+               <maxBytesCache>200000</maxBytesCache>
+               <treshold>80</threshold>  <!-- 80% -->
+               <thresholdOverflow type='event'/> <!-- a trap -->
+               <clearAction>DEAD_LETTER | DISCARD</clearAction>
+               <address type='XML-RPC'>
+                  http://www.dummy.com:8080/XmlRpc
+               </address>
+               <entry id='556643'>
+                  <topic refid='hello'>
+                     <entry refid='1046976320144000020'/>
+                  </topic>
+               </entry>
+            </queue>
+         </session> <!-- -3 -->
 
-            <cbQueueNumMsgs>247</cbQueueMumMsgs> <!-- PtP queue -->
-            <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
-
-            <numSessions>2</numSessions>
-            <maxSessions>10</maxSessions>
-            <sessionThresholdOverflow type='event'/>
-
-            <sessionList>ses3,ses17</sessionList>
-            <ses3>
-               <uptime>10050</uptime>
-               <killSession/>
-
-               <numPublished>4</numPublished>
-               <numGets>7</numGets>
-               <numUpdates>614050</numUpdates>
-
-               <cbQueueNumMsgs>37</cbQueueNumMsgs>
-               <cbQueueMaxMsgs>1000</cbQueueMaxMsgs>
-               <cbQueueThreshold>80</cbQueueThreshold>  <!-- 80% -->
-               <cbQueueThresholdOverflow type='event'/> <!-- a trap -->
-               <clearCbQueue>DEAD_LETTER | DISCARD</clearCbQueue>
-            </ses3>
-
-            <ses17>
-               ...
-            </ses17>
-         </joe>
-
-         <jack>
+         <session id='17'>
             ...
-         </jack>
+         </session>
+      </client> <!-- joe -->
 
+      <client id='jack'>
+         ...
       </client>
 
       <!-- System properties, xmlBlaster.properties and
            command line arguments -->
       <numSysprop>117</numSysprop>
       <syspropList>java.io.tmpdir,java.vm.version,...</syspropList>
-      <sysprop>
-         <java.io.tmpdir>/tmp</java.io.tmpdir>
-         <java.vm.version>1.3.1</java.vm.version>
-         <user.language>es</user.language>
-         <Persistence.Path>/home/mom/data</Persistence.Path>
-         <logFile>/var/log/xmlBlaster-heron.log</logFile>
+      <attribute id='java.io.tmpdir'>/tmp</sysprop>
+      <attribute id='java.vm.version'>1.3.1</sysprop>
+      <attribute id='user.language'>es</sysprop>
+      <attribute id='Persistence.Path'>/home/mom/data</sysprop>
+      <attribute id='logFile'>/var/log/xmlBlaster-heron.log</sysprop>
          ...
-      </sysprop>
+
+      <plugin id='QueuePluginCache' code='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+         <plugin refid='${QueuePluginRAM}'/>
+         <plugin refid='${QueuePluginJDBC}'/>
+      </plugin>
+
+      <plugin id='QueuePluginRAM' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'/>
+
+      <plugin id='QueuePluginJDBC' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</sysprop>
+         <attribute id='user'>joe</sysprop>
+         <attribute id='password'>secret</sysprop>
+         <attribute id='connectionBusyTimeout'>90000</sysprop>
+         <attribute id='maxWaitingThreads'>300</sysprop>
+      </plugin>
 
       <!-- xmlBlaster messages -->
       <numTopics>7140</numTopics>
       <topicList>hello,radar.track,myMessage,...</topicList>
-      <topic>
-         <hello>
-            <key oid='hello' contentMime='text/plain'/>
-            <content>Hi world</content>
-            <qos><persistent/></qos>
-         </hello>
 
-         <radar.track>
-            ...
-         </radar.track>
+      <topic id='hello' contentMime='text/plain'>
+         <state>ALIVE</state>
+         <persistence id='msgUnitStore'>
+            <plugin refid='${QueuePluginCache}'/>
+            <numEntries>7</numEntries>
+            <numBytes>90023</numBytes>
+            <maxEntries>1000</maxEntries>
+            <maxBytes>2000000</maxBytes>
+            <maxEntriesCache>100</maxEntriesCache>
+            <maxBytesCache>200000</maxBytesCache>
+            <entry id='1046976320144000000'>  <!-- history entries -->
+               <key oid='hello' contentMime='text/plain'/>
+               <content>Hi world</content>
+               <qos>
+                  <persistent/>
+                  <sender>/node/heron/client/jack</sender>
+                  <expiration lifeTime='-1'/>
+                  <rcvTimestamp nanos='1046976320144000000'/>
+               </qos>
+            </entry>
+            <entry id='1046976320144000020'>
+               <key oid='hello' contentMime='text/plain'/>
+               <content>Bye world </content>
+               <qos>
+                  <sender>/node/heron/client/jack</sender>
+                  <expiration lifeTime='-1'/>
+                  <rcvTimestamp nanos='1046976320144000020'/>
+               </qos>
+            </entry>
+         </persistence>
+         <queue id='history'>
+            <plugin refid='${QueuePluginCache}'/>
+            <numEntries>7</numEntries>
+            <numBytes>90023</numBytes>
+            <maxEntries>10</maxEntries>
+            <maxBytes>2000000</maxBytes>
+            <clearAction>DISCARD</clearAction>
+            <entry id='34455'>
+               <topic refid='hello'>
+                  <entry refid='1046976320144000000'/>
+               </topic>
+            </entry>
+            <entry id='6643'>
+               <topic refid='hello'>
+                  <entry refid='1046976320144000020'/>
+               </topic>
+            </entry>
+         </queue>
       </topic>
-   </heron>
 
-   <avalon>
+      <topic id='radar.track'>
+         <state>UNREFERENCED</state>
+            ...
+      </topic>
+   </node> <!-- heron -->
+
+   <node id='avalon'>
       ...
-   </avalon>
-</node>
+   </node>
+</xmlBlaster>
      ]]>
      </pre></td></tr></table>
 
       <p>
-         As you have probably noticed, the tree syntax is a mixture of class names
-         like <i>node</i> or <i>client</i> and instance names
-         like <i>heron</i> or <i>joe</i>. This is conceptually a bit strange
-         but it resulted in a simple view of xmlBlaster so we have chosen it like this.
+         As you have probably noticed, the tree syntax has class names
+         like <i>node</i> or <i>client</i> and identifier which are instance names
+         like <i>heron</i> or <i>joe</i>.
       </p>
       <p>
          Lets have a look at the xmlBlaster cluster node <i>heron</i>. This is 
@@ -534,7 +605,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.34 $</revision>
+   <revision>$Revision: 1.35 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
