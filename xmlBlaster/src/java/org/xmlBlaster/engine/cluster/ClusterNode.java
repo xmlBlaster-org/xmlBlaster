@@ -131,7 +131,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *   <li>passwd[heron] defaults to secret</li>
     * </ul>
     * @see org.xmlBlaster.client.I_XmlBlasterAccess
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#initFailSave
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener
     */
    public I_XmlBlasterAccess getXmlBlasterAccess() throws XmlBlasterException {
       if (isLocalNode())
