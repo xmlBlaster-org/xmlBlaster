@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.87 2002/01/07 10:21:23 goetzger Exp $
+# $Id: .bashrc,v 1.88 2002/01/07 16:14:36 ruff Exp $
 #-----------------------------------------------------------
 
 
@@ -282,9 +282,9 @@ if [ "${USE_CPP}" = "true" ] ; then
     fi
   else
     if [ ! -d ${XMLCPP_HOME} ] ; then 
-      ${ECHO} "$BLACK_RED XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
+      ${ECHO} "$BLACK_RED   XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
     else
-      ${ECHO} "$BLACK_LTGREEN XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
+      ${ECHO} "$BLACK_LTGREEN   XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
     fi  
   fi  
 
