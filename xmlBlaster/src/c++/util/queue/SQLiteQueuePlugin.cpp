@@ -11,6 +11,9 @@ Author:    xmlBlaster@marcelruff.info
 #include <stdio.h>            // vsnprintf for g++ 2.9x only
 #include <util/lexical_cast.h>
 #include <util/MessageUnit.h>
+#include <util/queue/ConnectQueueEntry.h>
+#include <util/queue/SubscribeQueueEntry.h>
+#include <util/queue/UnSubscribeQueueEntry.h>
 #include <util/queue/PublishQueueEntry.h>
 #include <socket/xmlBlasterSocket.h> // C xmlBlaster client library: for msgUnit serialize
 #include <util/queue/QueueInterface.h> // The C implementation interface
@@ -109,6 +112,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
      log_(global.getLog("org.xmlBlaster.util.queue")), 
      property_(property), 
      queueP_(0), 
+     connectQosFactory_(global_),
      statusQosFactory_(global_),
      msgKeyFactory_(global_),
      msgQosFactory_(global_),
@@ -216,6 +220,7 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
    queueEntry.priority = entry.getPriority();
    queueEntry.isPersistent = entry.isPersistent();
    queueEntry.uniqueId = entry.getUniqueId();
+   queueEntry.sizeInBytes = entry.getSizeInBytes();
    strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish"
    queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
 
@@ -289,8 +294,14 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
             ret.insert(ret.end(), EntryType(*pq));
             if (log_.trace()) log_.trace(ME, "PublishQueueEntry is reference countet");
          }
-         //else if (methodName == MethodName::CONNECT) {
-         //}
+         else if (methodName == MethodName::CONNECT || methodName == MethodName::DISCONNECT) {
+            ConnectQos connectQos = connectQosFactory_.readObject(string(msgUnit.qos));
+            ConnectQueueEntry *pq = new ConnectQueueEntry(global_, connectQos, queueEntryC.embeddedType,
+                                           queueEntryC.priority, queueEntryC.isPersistent, queueEntryC.uniqueId);
+            if (log_.trace()) log_.trace(ME, "Got ConnectQueueEntry from queue");
+            ret.insert(ret.end(), EntryType(*pq));
+            if (log_.trace()) log_.trace(ME, "ConnectQueueEntry is reference countet");
+         }
          else {  // TODO: How to handle: throw exception or remove the buggy entry?
             log_.error(ME + "::peekWithSamePriority", string("The queue entry embeddedType '") + queueEntryC.embeddedType + "' methodName='" + methodName + "' is not supported, we ignore it.");
          }
@@ -347,7 +358,8 @@ long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &st
       queueEntry.priority = entry.getPriority();
       queueEntry.isPersistent = entry.isPersistent();
       queueEntry.uniqueId = entry.getUniqueId();
-      strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish"
+      queueEntry.sizeInBytes = entry.getSizeInBytes();
+      strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish" "MSG_RAW|connect"
       queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
       /*
       const BlobHolder *blob = (const BlobHolder *)entry.getEmbeddedObject();
@@ -393,7 +405,7 @@ int64_t SQLiteQueuePlugin::getNumOfBytes() const
 int64_t SQLiteQueuePlugin::getMaxNumOfBytes() const
 {  
    if (queueP_ == 0) return property_.getMaxBytes(); // throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, getMaxNumOfBytes() failed");
-   return queueP_->getMaxNumOfEntries(queueP_);
+   return queueP_->getMaxNumOfBytes(queueP_);
 }
 
 void SQLiteQueuePlugin::clear()

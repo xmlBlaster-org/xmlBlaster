@@ -11,6 +11,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
+#include <util/qos/ConnectQosFactory.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
 #include <util/key/MsgKeyFactory.h>
@@ -45,6 +46,7 @@ protected:
    org::xmlBlaster::util::I_Log& log_;
    org::xmlBlaster::util::qos::storage::QueuePropertyBase property_;
    struct ::I_QueueStruct *queueP_; // The C based xmlBlaster SQLite queue implementation
+   mutable org::xmlBlaster::util::qos::ConnectQosFactory connectQosFactory_;
    mutable org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
    mutable org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
    mutable org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
