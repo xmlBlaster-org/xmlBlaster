@@ -54,9 +54,9 @@ WARN_LOGFILE           = doxygen_warn.log
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../src/ \
-                         ../testsuite/ \
-                         ../demo/
+INPUT                  = ../src/java \
+                         ../testsuite/src/java \
+                         ../demo/javaclients
 FILE_PATTERNS          = 
 RECURSIVE              = YES
 EXCLUDE                = 
