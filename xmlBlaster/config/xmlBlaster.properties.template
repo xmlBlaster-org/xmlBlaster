@@ -152,7 +152,7 @@ MsgDistributorPlugin/defaultPlugin=undef,1.0
 # Settings for the persistence plugins (StoragePlugin and QueuePlugin) for POSTGRES
 #
 JdbcStorage[postgres]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                      url=jdbc:postgresql://localhost/test,\
+                      url=jdbc:postgresql://localhost:5432/test,\
                       user=postgres,\
                       password=,\
                       connectionPoolSize=1,\
