@@ -221,7 +221,7 @@ Else add it manually.
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
-      <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should user your own [false]"/>
+      <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should use your own [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
