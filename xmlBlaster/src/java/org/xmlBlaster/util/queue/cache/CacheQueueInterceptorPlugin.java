@@ -989,6 +989,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    public void destroy() throws XmlBlasterException {
       XmlBlasterException e = null;
       this.isDown = true;
+      this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
       try {
          if (this.persistentQueue != null && this.isConnected)
             this.persistentQueue.destroy();
