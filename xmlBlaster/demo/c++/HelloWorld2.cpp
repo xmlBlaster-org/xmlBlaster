@@ -138,6 +138,7 @@ public:
             log_.info(ME, string("successfully erased the message. return qos: ") +
                           eraseRetQos[i].toXml());
          }
+         org::xmlBlaster::util::thread::Thread::sleep(500); // wait for erase notification
 
          log_.info(ME, "Disconnect, bye.");
          DisconnectQos disconnectQos(global_);
