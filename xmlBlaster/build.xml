@@ -157,7 +157,7 @@ TODO
    <property name="XMLCPP_VER" value=""/>  <!-- 1_7_0 -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
-   <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" used in if="" clause below -->
+   <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
