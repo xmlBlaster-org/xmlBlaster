@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------
 #Name:      Makefile
-#Project:   xmlBlaster
+#Project:   xmlBlaster.org
 #Comment:   Makefile for sub directories
 #------------------------------------------------------------------------------
 
@@ -28,17 +28,19 @@ PACKGS = org.xmlBlaster \
 TEST_PACKGS = testsuite.org.xmlBlaster
 
 javadoc:
-	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath ./src/java $(PACKGS) 
+	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java $(PACKGS) 
  
 
 javadoc_testsuite:
-	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath . $(TEST_PACKGS) 
+	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath . $(TEST_PACKGS) 
  
 
 jar: all
-	( cd $(CLASS_TOP_DIR); jar cvf $(JAR_DIR)/xmlBlaster.jar ./org )
+	( cd ${CLASS_TOP_DIR}; jar cvf ${JAR_DIR}/xmlBlaster.jar ./org )
 
 
 test: all
-	( cd $(XMLBLASTER_HOME)/testsuite/org/xmlBlaster; make test )
+	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test )
 
