@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.32 2000/05/16 20:57:35 ruff Exp $
+Version:   $Id: Main.java,v 1.33 2000/05/19 20:33:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -29,7 +29,7 @@ import org.omg.CosNaming.*;
  *    </li>
  *    <li><code>-iorPort 'port number'   </code>default is port 7609<br />
  *        Specify a port number where the builtin http server publishes its AuthServer IOR<br />
- *        the port -1 switches this feature off
+ *        the port 0 switches this feature off
  *    </li>
  * </ul>
  * Please invoke with "-?" to get a more complete list of the supported parameters.
@@ -118,7 +118,7 @@ public class Main
             Log.info(ME, "Published AuthServer IOR to file " + iorFile);
          }
 
-         // 2) Publish IOR on given port (switch off this feature with '-iorPort -1'
+         // 2) Publish IOR on given port (switch off this feature with '-iorPort 0'
          int iorPort = Property.getProperty("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
             httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
@@ -374,7 +374,7 @@ public class Main
       Log.plain(ME, "   -?                  Print this message.");
       Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
       Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
-      Log.plain(ME, "                       Default is port "+DEFAULT_HTTP_PORT+", the port -1 switches this feature off.");
+      Log.plain(ME, "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.");
       Log.plain(ME, "   -ns false           Don't publish the IOR to a naming service.");
       Log.plain(ME, "                       Default is to publish the IOR to a naming service.");
       Log.usage();
