@@ -61,7 +61,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_.getSubscriptionId();
    }
 
-   string SubscribeReturnQos::toXml(const string& extraOffset="") const
+   string SubscribeReturnQos::toXml(const string& extraOffset) const
    {
       return data_.toXml(extraOffset);
    }
