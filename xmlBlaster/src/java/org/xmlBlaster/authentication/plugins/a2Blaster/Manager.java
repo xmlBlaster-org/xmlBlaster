@@ -125,8 +125,8 @@ public class Manager implements I_Manager{
       return a2Blaster;
    }
 
-   void changeSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
-      if (log.CALL) log.call(ME + ".changeSessionId(String oldSessionId=" + oldSessionId +
+   void changeSecretSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
+      if (log.CALL) log.call(ME + ".changeSecretSessionId(String oldSessionId=" + oldSessionId +
                              ", String newSessionID=" +newSessionId+")", "-------START------\n");
       synchronized(sessions) {
          Session session = (Session)sessions.get(oldSessionId);
@@ -135,7 +135,7 @@ public class Manager implements I_Manager{
          sessions.put(newSessionId, session);
          sessions.remove(oldSessionId);
       }
-      if (log.CALL) log.call(ME+".changeSessionId(...)", "-------END-------\n");
+      if (log.CALL) log.call(ME+".changeSecretSessionId(...)", "-------END-------\n");
    }
 
 }

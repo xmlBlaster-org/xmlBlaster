@@ -70,12 +70,12 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     * @exception XmlBlasterException Thrown if the new sessionId is already in use.
     */
     // @deprecated
-   public void changeSessionId(String sessionId) throws XmlBlasterException;
+   public void changeSecretSessionId(String sessionId) throws XmlBlasterException;
 
    /**
     * Return the id of this session.
     * <p>
     * @param String The sessionId.
     */
-   public String getSessionId();
+   public String getSecretSessionId();
 }

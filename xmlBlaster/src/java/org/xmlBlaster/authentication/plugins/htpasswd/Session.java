@@ -34,7 +34,7 @@ public class Session implements I_Session, I_Subject {
    private final LogChannel log;
 
    protected Manager secMgr = null;
-   protected String sessionId = null;
+   protected String secretSessionId = null;
    protected boolean authenticated = false;
 
    // no final in order to enable inheritance for new features
@@ -51,7 +51,7 @@ public class Session implements I_Session, I_Subject {
       log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
 
       this.secMgr = sm;
-      this.sessionId = sessionId;
+      this.secretSessionId = sessionId;
 
       this.htpasswd = new HtPasswd(sm.getGlobal());
    }
@@ -143,16 +143,16 @@ public class Session implements I_Session, I_Subject {
       return true;
    }
 
-   public void changeSessionId(String sessionId) throws XmlBlasterException {
-      if(this.sessionId.endsWith(sessionId)) return;
-      synchronized(sessionId) {
-         secMgr.changeSessionId(this.sessionId, sessionId);
-         this.sessionId = sessionId;
+   public void changeSecretSessionId(String sessionId) throws XmlBlasterException {
+      if(this.secretSessionId.endsWith(sessionId)) return;
+      synchronized(this) {
+         secMgr.changeSecretSessionId(this.secretSessionId, sessionId);
+         this.secretSessionId = sessionId;
       }
    }
 
-   public String getSessionId() {
-      return sessionId;
+   public String getSecretSessionId() {
+      return secretSessionId;
    }
 
    /**

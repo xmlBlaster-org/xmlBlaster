@@ -173,7 +173,7 @@ public class Session implements I_Session, I_Subject {
     * @exception XmlBlasterException Thrown if the new sessionId is already in use.
     * @deprecated
     */
-   public void changeSessionId(String sessionId) throws XmlBlasterException {
+   public void changeSecretSessionId(String sessionId) throws XmlBlasterException {
       if (log.CALL) log.call(ME+".importMessage(String sessionId="+sessionId+") [DEPRECATED]",
                              "-------START-----\n");
 
@@ -182,7 +182,7 @@ public class Session implements I_Session, I_Subject {
 
       if(this.sessionId.endsWith(sessionId)) return;
       synchronized(sessionId) {
-         secMgr.changeSessionId(this.sessionId, sessionId);
+         secMgr.changeSecretSessionId(this.sessionId, sessionId);
          this.sessionId = sessionId;
       }
 
@@ -195,7 +195,7 @@ public class Session implements I_Session, I_Subject {
     * <p>
     * @return String sessionId
     */
-   public String getSessionId() {
+   public String getSecretSessionId() {
       return sessionId;
    }
 

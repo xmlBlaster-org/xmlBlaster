@@ -62,7 +62,7 @@ public class Manager implements I_Manager{
       }
    }
 
-   void changeSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
+   void changeSecretSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
       synchronized(sessions) {
          Session session = (Session)sessions.get(oldSessionId);
          if (session == null) throw new XmlBlasterException(ME+".unknownSessionId", "Unknown sessionId!");

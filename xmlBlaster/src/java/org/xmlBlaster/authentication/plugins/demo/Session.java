@@ -82,15 +82,15 @@ public class Session implements I_Session {
       }
    }
 
-   public void changeSessionId(String sessionId) throws XmlBlasterException {
+   public void changeSecretSessionId(String sessionId) throws XmlBlasterException {
       if(this.sessionId.equals(sessionId)) return;
       synchronized(sessionId) {
-         secMgr.changeSessionId(this.sessionId, sessionId);
+         secMgr.changeSecretSessionId(this.sessionId, sessionId);
          this.sessionId = sessionId;
       }
    }
 
-   public String getSessionId() {
+   public String getSecretSessionId() {
       return sessionId;
    }
 
