@@ -175,7 +175,7 @@ only the SNMP subagent module jax.jar is GPL only!
 
 15) cpptasks.jar & ant-contrib.jar, cvs from Mar 30, 2002
 =========================================================
-  cpptasks.jar     cvs from Jan 10, 2002
+  cpptasks.jar     cpptasks CVS snapshot from Thu Aug 15 12:59:37 CEST 2002
   ant-contrib.jar  cvs from Apr 16, 2002
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
@@ -185,10 +185,8 @@ only the SNMP subagent module jax.jar is GPL only!
 16) xerces.jar
 ==============
   Is used by ant.
-  The Xerces Java Parser 1.4.4 supports the XML 1.0 recommendation
-  and contains advanced parser functionality, such as support for the W3C's
-  XML Schema recommendation version 1.0, DOM Level 2 version 1.0, and SAX Version 2, in
-  addition to supporting the industry-standard DOM Level 1 and SAX version 1 APIs.
+  xerces-2_0_2 from 21-Jun-2002 11:32  4.6M distribution
+  Contains xercesImpl.jar and xmlParserAPIs.jar
   See http://xml.apache.org/
 
 
@@ -257,3 +255,8 @@ only the SNMP subagent module jax.jar is GPL only!
    http://www.jepstone.net/tinySQL/
    It is delivered with xmlBlaster to allow regression tests of our JDBC plugin
 	See http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+
+24) concurrent.jar
+==================
+   Doug Lea's concurrent package downloaded 2002-02-03
+   http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
