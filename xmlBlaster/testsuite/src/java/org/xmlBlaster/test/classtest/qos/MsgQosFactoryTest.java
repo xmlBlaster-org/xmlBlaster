@@ -7,10 +7,13 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.engine.helper.HistoryQueueProperty;
+import org.xmlBlaster.engine.helper.TopicCacheProperty;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 
 import junit.framework.*;
@@ -73,7 +76,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <isVolatile>true</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
@@ -91,7 +93,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", true, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
          assertEquals("", false, qos.isForceUpdate());
-         assertEquals("", true, qos.isReadonly());
+         assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
          assertEquals("", 2400L, qos.getLifeTime());
@@ -156,12 +158,15 @@ public class MsgQosFactoryTest extends TestCase {
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
+            "   <topic readonly='true' destroyDelay='120000'>\n" +
+            "      <msgstore relating='topic' type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
+            "      <queue relating='history' type='HI' version='2.0' maxMsg='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
+            "   </topic>\n" +
             "</qos>\n";
 
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
@@ -202,6 +207,29 @@ public class MsgQosFactoryTest extends TestCase {
          // XPATH is currently not supported
          //assertEquals("", false, ((Destination)qos.getDestinations().get(2)).isExactAddress());
          //assertEquals("", true, ((Destination)qos.getDestinations().get(2)).isXPathQuery());
+
+         assertEquals("", true, qos.hasTopicProperty());
+         TopicProperty topicProperty = qos.getTopicProperty();
+         assertEquals("", true, topicProperty.isReadonly());
+         assertEquals("", 120000, topicProperty.getDestroyDelay());
+
+         assertEquals("", true, topicProperty.hasTopicCacheProperty());
+         TopicCacheProperty cache = topicProperty.getTopicCacheProperty();
+         assertEquals("", "topic", cache.getRelating());
+         assertEquals("", "TO", cache.getType());
+         assertEquals("", "3.0", cache.getVersion());
+         assertEquals("", 4L, cache.getMaxMsg());
+         assertEquals("", 40L, cache.getMaxBytes());
+         assertEquals("", "deadMessage", cache.getOnOverflow());
+
+         assertEquals("", true, topicProperty.hasHistoryQueueProperty());
+         HistoryQueueProperty hist = topicProperty.getHistoryQueueProperty();
+         assertEquals("", "history", hist.getRelating());
+         assertEquals("", "HI", hist.getType());
+         assertEquals("", "2.0", hist.getVersion());
+         assertEquals("", 3L, hist.getMaxMsg());
+         assertEquals("", 30L, hist.getMaxBytes());
+         assertEquals("", "deadMessage", hist.getOnOverflow());
       }
       catch (XmlBlasterException e) {
          fail("testToXml failed: " + e.toString());
@@ -241,7 +269,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
@@ -249,14 +276,14 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "</qos>\n";
 
-         PublishQosServer qos = new PublishQosServer(glob, xml);
+         PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.Global(), xml);
 
          assertEquals("", false, qos.isPubSubStyle());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
          assertEquals("", false, qos.isForceUpdate());
-         assertEquals("", true, qos.isReadonly());
+         assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
          assertEquals("", 3, qos.getRouteNodes().length);
@@ -315,7 +342,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
@@ -327,7 +353,7 @@ public class MsgQosFactoryTest extends TestCase {
 
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
-         assertEquals("", true, qos.isReadonly());
+         assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
          assertEquals("", 3, qos.getRouteNodes().length);
@@ -381,12 +407,12 @@ public class MsgQosFactoryTest extends TestCase {
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
+            "   <topic readonly='true'/>\n" +
             "</qos>\n";
 
          UpdateQos qos = new UpdateQos(glob, xml);
@@ -480,7 +506,7 @@ public class MsgQosFactoryTest extends TestCase {
    {
       MsgQosFactoryTest testSub = new MsgQosFactoryTest("MsgQosFactoryTest");
       testSub.setUp();
-      testSub.testParse();
+      //testSub.testParse();
       testSub.testToXml();
       testSub.testFromPersistentStore();
       testSub.testPublishQosServer();
