@@ -3,12 +3,18 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79b [???, ?? 2000]
 ================================
 
+ - Added a simple Python hello world demo,
+   see xmlBlaster/demo/python/README
+
  - Messages from the persistent store now deliver the correct
    sender name (the unique login name of the publisher)
 
  - Persistent Db integration (code, but no release).
 
  - Changed to JAXP and DOM2 Sun/crimson XML parser
+
+ - Login QoS has no <noPtP> element anymore, this is set
+   for each CallbackAddress from now on.
 
 
 Changes for 0.79a [Nov, 16 2000]
