@@ -34,7 +34,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
@@ -96,9 +96,9 @@ public class ProxyConnection implements I_Callback
    {
       log.trace(ME,"----------Update:"+updateKey.getOid());
       String[] s_arr = new String[3];
-      s_arr[0] = updateKey.toString();
+      s_arr[0] = updateKey.toXml();
       s_arr[1] = new String(content);
-      s_arr[2] = updateQos.toString();
+      s_arr[2] = updateQos.toXml();
       if(interceptor != null) {
          s_arr = interceptor.update(s_arr[0], s_arr[1], s_arr[2]);
       }
