@@ -69,6 +69,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionErrorCode;
    private String updateExceptionMessage;
    private String updateExceptionRuntime;
+	private int maxContentLength;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -94,6 +95,7 @@ public class HelloWorldSubscribe implements I_Callback
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
          String filterQuery = glob.getProperty().get("filter.query", "");
          boolean unSubscribe = glob.getProperty().get("unSubscribe", true);
+         maxContentLength = glob.getProperty().get("maxContentLength", 250);
 
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
@@ -245,7 +247,7 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println(updateKey.toXml());
       System.out.println("");
       System.out.println("<content>");
-      if (content.length > 100) {
+      if (content.length > maxContentLength) {
          System.out.println("  <length>"+content.length+"</length>");
       }
       else {
