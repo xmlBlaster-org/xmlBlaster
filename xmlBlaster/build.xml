@@ -1279,10 +1279,6 @@ TODO
       <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNITHREAD" to be used in if="" clause below -->
       <echo message=" Setting ${thread.impl} = true" />
 
-      <!-- set the "@version@" and "@build.timestamp@" in Global.cpp -->
-      <copy file="${src.cpp.dir}/util/Global.cpp" tofile="${src.cpp.dir}/util/Global.cpp.BackupByAnt" filtering="false" overwrite="true" />
-      <copy file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" tofile="${src.cpp.dir}/util/Global.cpp" filtering="true" overwrite="true" />
-      
       <condition property="tao.lib.type" value="d">
          <equals arg1="${cpp.debug}" arg2="true" />
       </condition>
@@ -1460,6 +1456,10 @@ TODO
 
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
 
+      <!-- Copy Global.cpp so that "@version@" and "@build.timestamp@" is replaced to current values by ant -->
+      <!-- Below we exclude Global.cpp from compilation and compile Global_CopyByAnt.cpp with the current version etc. instead -->
+      <copy file="${src.cpp.dir}/util/Global.cpp" tofile="${src.cpp.dir}/util/Global_CopyByAnt.cpp" filtering="true" overwrite="true" />
+
       <cc debug="${cpp.debug}" link="shared"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
@@ -1468,7 +1468,7 @@ TODO
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${src.cpp.dir}/generated" includes="**/*.cpp"/>
-         <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" />
+         <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" excludes="Global.cpp"/>
          <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
@@ -1547,9 +1547,8 @@ TODO
          </linker>
       </cc>
 
-      <!-- Restore Global.cpp from set the "@version@" and "@build.timestamp@" -->
-      <copy file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" tofile="${src.cpp.dir}/util/Global.cpp" filtering="false" overwrite="true" />
-      <delete file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" />
+      <!-- Was only needed for "@version@" and "@build.timestamp@" replacement during compilation -->
+      <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
    </target>
 
 
