@@ -32,8 +32,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.I_InvocationRecorder;
-import org.xmlBlaster.util.InvocationRecorder;
+import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
@@ -126,7 +125,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private ConnectReturnQos connectReturnQos = null;
 
    /** queue all the messages, and play them back through interface I_InvocationRecorder */
-   private InvocationRecorder recorder = null;
+   private I_InvocationRecorder recorder = null;
 
    /** This interface needs to be implemented by the client in fail save mode
        The client gets notified about abnormal connection loss or reconnect */
@@ -445,7 +444,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param maxInvocations How many messages shall we queue max (using the InvocationRecorder)
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
-    * @see org.xmlBlaster.util.InvocationRecorder
+    * @see org.xmlBlaster.util.recorder.RamRecorder
     * @deprecated Use explicit Address settings, e.g.:
     * <pre>
     *  // Setup fail save handling ...
@@ -690,15 +689,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       // You should call initFailSave(I_ConnectionProblems) first
       if (this.clientProblemCallback != null && address.getDelay() < 1) {
          address.setDelay(4 * 1000L);
-         Log.warn(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
+         if (Log.TRACE) Log.trace(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
       }
       if (this.clientProblemCallback == null && address.getDelay() > 0) {
          Log.warn(ME, "You have set -delay " + address.getDelay() + ", but not called initFailSave(), using default error recovery on connection problems");
          this.clientProblemCallback = new DummyConnectionProblemHandler(this);
       }
-      if (this.clientProblemCallback != null) { // fail save mode:
-         //this.clientProblemCallback = new DummyConnectionProblemHandler(this);
-         this.recorder = new InvocationRecorder(glob, address.getMaxMsg(), this, null);
+      if (this.clientProblemCallback != null) { // fail save mode (RamRecorder or FileRecorder):
+         String type = glob.getProperty().get("recorder.type", (String)null);
+         type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
+         
+         String version = glob.getProperty().get("recorder.version", "1.0");
+         version = glob.getProperty().get("recorder.version["+getServerNodeId()+"]", version);
+
+         this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, address.getMaxMsg(), this, null);
          Log.info(ME, "Activated fail save mode: " + address.getSettings());
       }
 
@@ -745,7 +749,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          numLogins++;
       }
       catch(ConnectionException e) {
-         if (Log.TRACE) Log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ". Authentication string is\n" + connectQos.toXml());
+         if (Log.TRACE) Log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
+         if (Log.DUMP) Log.dump(ME, "Authentication string is\n" + connectQos.toXml());
          if (numLogins == 0)
             startPinging();
          throw new XmlBlasterException(e);
@@ -1251,7 +1256,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode).
+    * Enforced by I_XmlBlaster interface (fail save mode).
     * see explanations of publish() method.
     * @return oid    The oid of your subscribed Message<br>
     *                If you subscribed using a query, the subscription ID of this<br>
@@ -1277,7 +1282,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
@@ -1312,7 +1317,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * If the server disappears you get an exception.
     * This call will not block.
     * <p />
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlaster interface (fail save mode)
     * <p />
     * See private method handleConnectionException(ConnectionException)
     *
@@ -1344,7 +1349,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
@@ -1450,7 +1455,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
@@ -1493,7 +1498,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
@@ -1784,6 +1789,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
       text += "                       Force the given authentication schema, here the GUI is enforced\n";
       text += "                       Clients can overwrite this with ConnectQos.java\n";
+      text += "\n";
+      text += "Invocation recorder:\n";
+      text += "   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n";
+      text += "   -recorder.version   The version of the plugin [1.0]\n";
 
       Log.plain(text);
       try {

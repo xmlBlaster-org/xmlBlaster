@@ -4,8 +4,9 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.InvocationRecorder;
-import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.util.recorder.ram.RamRecorder;
+import org.xmlBlaster.util.recorder.file.FileRecorder;
+import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.engine.helper.Constants;
@@ -14,7 +15,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import junit.framework.*;
 
 /**
- * Test InvocationRecorder. 
+ * Test RamRecorder. 
  * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner classtest.InvocationRecorderTest
  * @see org.xmlBlaster.util.InvocationRecorder
@@ -43,7 +44,8 @@ public class InvocationRecorderTest extends TestCase {
          Tester tester = new Tester();
 
          int maxEntries = 10000;
-         InvocationRecorder recorder = new InvocationRecorder(glob, maxEntries, tester, tester);
+         I_InvocationRecorder recorder = new RamRecorder();
+         recorder.initialize(glob, maxEntries, tester, tester);
 
          {
             String methodName = "subscribe";
@@ -191,7 +193,8 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         InvocationRecorder recorder = new InvocationRecorder(glob, maxQueueSize, tester, tester);
+         I_InvocationRecorder recorder = new RamRecorder();
+         recorder.initialize(glob, maxQueueSize, tester, tester);
 
          {
             String methodName = "publish";
@@ -261,7 +264,8 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         InvocationRecorder recorder = new InvocationRecorder(glob, maxQueueSize, tester, tester);
+         I_InvocationRecorder recorder = new RamRecorder();
+         recorder.initialize(glob, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARDOLDEST);
 
          {
@@ -298,7 +302,8 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         InvocationRecorder recorder = new InvocationRecorder(glob, maxQueueSize, tester, tester);
+         I_InvocationRecorder recorder = new RamRecorder();
+         recorder.initialize(glob, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARD);
 
          {

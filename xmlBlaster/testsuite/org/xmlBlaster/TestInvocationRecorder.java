@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.20 2002/05/27 16:28:09 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.21 2002/05/27 20:57:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,8 +11,9 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.InvocationRecorder;
-import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.util.recorder.ram.RamRecorder;
+import org.xmlBlaster.util.recorder.file.FileRecorder;
+import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -26,7 +27,7 @@ import junit.framework.*;
 
 
 /**
- * This client tests the InvocationRecorder.
+ * This client tests the RamRecorder.
  * <p />
  * This test invokes every method, and compares the values of the playback
  * messages with their originals.
@@ -43,7 +44,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    private static String ME = "TestInvocationRecorder";
    private final Global glob;
 
-   private InvocationRecorder recorder = null;
+   private RamRecorder recorder = null;
 
    private String subscribeOid;
    private String publishOid = "";
@@ -80,7 +81,8 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    {
       Log.info(ME, "setup test");
       numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
-      recorder = new InvocationRecorder(glob, 1000, this, this);
+      recorder = new RamRecorder();
+      recorder.initialize(glob, 1000, this, this);
    }
 
 
