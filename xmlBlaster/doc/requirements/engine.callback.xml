@@ -187,7 +187,7 @@
             <td>cb.pingInterval</td>
             <td>60000 (one minute)</td>
             <td>Ping interval: pinging every given milliseconds</td>
-            <td>yes</td>
+            <td>no</td>
          </tr>
          <tr>
             <td>cb.retries</td>
@@ -245,7 +245,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
