@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.28 2001/01/30 14:07:54 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.29 2001/02/23 00:37:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -130,7 +130,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /**
     * Telling my container that i am not subscribing any more.
     */
-   public void removeSubscribe() throws XmlBlasterException
+   void removeSubscribe()
    {
       if (myHandler == null) {
          Log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it");

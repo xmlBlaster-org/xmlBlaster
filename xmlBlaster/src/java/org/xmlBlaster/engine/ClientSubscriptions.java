@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.19 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.20 2001/02/23 00:37:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -24,7 +24,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.19 2000/09/15 17:16:14 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.20 2001/02/23 00:37:49 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -223,7 +223,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    private boolean isAQuery(XmlKey xmlKey) throws XmlBlasterException
    {
-      if (xmlKey.getQueryType() != XmlKey.PUBLISH && xmlKey.getQueryType() != XmlKey.EXACT_QUERY)
+      if (xmlKey == null || xmlKey.getQueryType() != XmlKey.PUBLISH && xmlKey.getQueryType() != XmlKey.EXACT_QUERY)
          return true;
       return false;
    }

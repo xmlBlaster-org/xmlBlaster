@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.40 2001/02/14 00:42:58 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.41 2001/02/23 00:37:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -260,8 +260,33 @@ public class MessageUnitHandler
 
       if (Log.TRACE) Log.trace(ME, "You have successfully subscribed to " + uniqueKey);
 
-      invokeCallback(sub);
+      if (invokeCallback(sub) == false) {
+         Set removeSet = new HashSet();
+         removeSet.add(sub);
+         handleCallbackFailed(removeSet);
+      }
+
       return true;
+   }
+
+
+   /**
+    * If a callback fails, we remove it from the subscription
+    * TODO: !!! -> generate dead letter
+    * TODO: !!! -> shouldn't we do a auto-logout to release all resources?
+    */
+   private void handleCallbackFailed(Set removeSet) throws XmlBlasterException
+   {
+      if (removeSet != null) {
+         Iterator iterator = removeSet.iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            Log.info(ME, "Removed subcriber [" + sub.getClientInfo().getLoginName() + "] from message '" + sub.getXmlKey().getKeyOid() + "'");
+            sub.removeSubscribe();
+         }
+         removeSet.clear();
+         removeSet = null;
+      }
    }
 
 
@@ -269,7 +294,7 @@ public class MessageUnitHandler
     * A client wants to unSubscribe from this message
     * @return the removed SubscriptionInfo object or null if not found
     */
-   public SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey) throws XmlBlasterException
+   SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey)
    {
       if (Log.TRACE) Log.trace(ME, "Size of subscriberMap = " + subscriberMap.size());
 
@@ -336,27 +361,34 @@ public class MessageUnitHandler
    {
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
+      Set removeSet = null;
       // PERFORMANCE: All updates for each client should be collected !!!
       //              This "Burst mode" code increases performance if the messages are small
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
 
          while (iterator.hasNext()) {
-            invokeCallback((SubscriptionInfo)iterator.next());
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            if (invokeCallback(sub) == false) {
+               if (removeSet == null) removeSet = new HashSet();
+               removeSet.add(sub); // We can't delete directly since we are in the iterator
+            }
          }
       }
+      if (removeSet != null) handleCallbackFailed(removeSet);
    }
 
 
    /**
     * Send update to subscribed client (Pub/Sub mode only).
     * @param sub The subscription handle of the client
+    * @return false if the callback failed
     */
-   public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
+   private final boolean invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
       if (!isPublishedWithData()) {
          if (Log.TRACE) Log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
-         return;
+         return true;
       }
       ClientInfo clientInfo = sub.getClientInfo();
       try {
@@ -365,11 +397,13 @@ public class MessageUnitHandler
       catch(XmlBlasterException e) {
          if (e.id.equals("CallbackFailed")) {
             Log.warn(ME, e.toString());
-            // Error handling missing !!! -> generate dead letter
+            // Error handling is to unsubscribe this client
+            return false;
          }
          else
             throw e;
       }
+      return true;
    }
 
 
