@@ -1,0 +1,196 @@
+/*------------------------------------------------------------------------------
+Name:      JdbcDriver.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
+Version:   $Id: JdbcDriver.java,v 1.1 2000/07/02 18:06:47 ruff Exp $
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.protocol.jdbc;
+
+import org.jutils.log.Log;
+
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.pool.jdbc.ConnectionManager;
+import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.client.LoginQosWrapper;
+
+import java.util.StringTokenizer;
+
+
+/**
+ * JDBC driver class using the native interface. 
+ * <p />
+ * The jdbc driver needs to be registered in xmlBlaster.properties
+ * and will be started on xmlBlaster startup, for example:
+ * <pre>
+ *   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+ *                    RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
+ *                    JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+ *
+ *   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+ *                            RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
+ *                            JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+ * </pre>
+ * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
+ * this driver implementation.
+ * @author ruff@swand.lake.de
+ */
+public class JdbcDriver implements I_Driver, I_Publish
+{
+   private static final String ME = "JdbcDriver";
+   /** The singleton handle for this xmlBlaster server */
+   private Authenticate authenticate = null;
+   /** The singleton handle for this xmlBlaster server */
+   private I_XmlBlaster xmlBlasterImpl = null;
+   /** The authentication session identifier */
+   private String sessionId = null;
+   /** This is the handle on this singleton */
+   static JdbcDriver instance = null;
+
+
+   /** Get a human readable name of this driver.
+    * <p />
+    * Enforced by interface I_Driver.
+    */
+   public String getName()
+   {
+      return ME;
+   }
+
+
+   /**
+    * Start xmlBlaster jdbc access.
+    * <p />
+    * Enforced by interface I_Driver.
+    * @param args The command line parameters
+    */
+   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   {
+      JdbcDriver.instance = this;
+      this.authenticate = authenticate;
+      this.xmlBlasterImpl = xmlBlasterImpl;
+
+      initDrivers();
+
+      // ------------------------------
+      // login and get a session id ...
+      String loginName = XmlBlasterProperty.get("JdbcDriver.loginName", "__sys__jdbc");
+      String passwd = XmlBlasterProperty.get("JdbcDriver.password", "secret");
+      // "JDBC" below is the 'callback protocol type', which results in instantiation of the given class:
+      CallbackAddress callback = new CallbackAddress("JDBC", "org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
+      LoginQosWrapper loginQos = new LoginQosWrapper(callback);
+      sessionId = login(loginName, passwd, loginQos.toXml());
+      
+      Log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
+   }
+
+
+   /**
+    * Instructs jdbc driver to shut down.
+    * <p />
+    * Enforced by interface I_Driver.
+    */
+   public void shutdown()
+   {
+      Log.info(ME, "Shutting down JDBC driver ...");
+      ConnectionManager.getInstance().release();
+      try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
+   }
+
+
+   /**
+    * Command line usage.
+    * <p />
+    * Enforced by interface I_Driver.
+    */
+   public String usage()
+   {
+      String text = "\n";
+      text += "JdbcDriver options:\n";
+      text += "   -JdbcDriver.password     The password for the JDBC driver.\n";
+      text += "   -JdbcDriver.drivers      List of all jdbc drivers to initalize, e.g.\n";
+      text += "                            oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
+      text += "\n";
+      return text;
+   }
+
+
+   /**
+    * Does a login, returns a valid session id.
+    * <p />
+    * @param loginName The unique login name
+    * @param password
+    * @param qos_literal The login quality of service "<qos></qos>"
+    * @return sessionId The unique ID for this client
+    * @exception XmlBlasterException If user is unknown
+    */
+   private String login(String loginName, String password, String qos_literal) throws XmlBlasterException
+   {
+      String sessionId = null;
+      if (loginName==null || password==null || qos_literal==null) {
+         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
+      }
+
+      String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
+      if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
+         Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+         throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
+      }
+      Log.info(ME, "login for '" + loginName + "' successful.");
+      return tmpSessionId;
+   }
+
+
+   /**
+    * Callback of xmlBlaster, a client wants to do a query ...
+    */
+   public void update(String sender, byte[] content)
+   {
+      if (Log.CALLS) Log.calls(ME, "SQL message from '" + sender + "' received");
+      XmlDBAdapterWorker worker = new XmlDBAdapterWorker(sender, content, this);
+      worker.start();
+   }
+
+
+   /**
+    * Send the XML based result set to the client. 
+    */
+   public String publish(MessageUnit msgUnit) throws XmlBlasterException
+   {
+      return xmlBlasterImpl.publish(sessionId, msgUnit);
+   }
+
+
+   /**
+    * Load the JDBC drivers from xmlBlaster.properties. 
+    */
+   private void initDrivers() {
+      String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "");
+      StringTokenizer   st = new StringTokenizer(drivers, ",");
+      int               numDrivers = st.countTokens();
+      String            driver = "";
+
+      for (int i = 0; i < numDrivers; i++) {
+         try {
+            driver = st.nextToken().trim();
+            if (Log.TRACE) Log.trace(ME, "Trying JDBC driver Class.forName(´" + driver + "´) ...");
+            Class cl = Class.forName(driver);
+            java.sql.Driver dr = (java.sql.Driver)cl.newInstance();
+            java.sql.DriverManager.registerDriver(dr);
+            Log.info(ME, "Jdbc driver '" + driver + "' loaded.");
+         }
+         catch (Throwable e) {
+            Log.warning(ME, "Couldn't initialize driver =>" + driver);
+         }
+      }
+      if (numDrivers == 0) {
+         Log.warning(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers");
+      }
+   }
+}

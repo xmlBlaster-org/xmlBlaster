@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.10 2000/06/27 14:50:46 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.11 2000/07/02 18:06:47 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -27,7 +27,7 @@ import java.util.*;
  * @author
  * @version %I%, %G%
  */
-public class XmlDBAdapter implements I_Callback {
+public class XmlDBAdapter implements I_Callback, I_Publish {
 
    private static String   ME = "XmlDBAdapter";
    private static String   passwd = "some";
@@ -67,9 +67,7 @@ public class XmlDBAdapter implements I_Callback {
                       UpdateQoS updateQos) {
       if (Log.CALLS) Log.calls(ME, "Message '" + key.getUniqueKey() + "' from '" + updateQos.getSender() + "' received");
       String               cust = updateQos.getSender();
-      String               qos = updateQos.printOn().toString();
-      XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust,
-              content, qos, this);
+      XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(cust, content, this);
 
       worker.start();
    }
@@ -89,7 +87,7 @@ public class XmlDBAdapter implements I_Callback {
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
 
          // ----------- Login to xmlBlaster -----------------------
-         corbaConnection.login(ME, passwd, null, this);
+         corbaConnection.login("__sys__jdbc", passwd, null, this);
 
       }
       catch (Exception e) {
@@ -130,7 +128,7 @@ public class XmlDBAdapter implements I_Callback {
     * @see
     */
    private void initDrivers() {
-      String            drivers = XmlBlasterProperty.get("JDBCDrivers", "");
+      String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "");
       StringTokenizer   st = new StringTokenizer(drivers, ",");
       int               numDrivers = st.countTokens();
 

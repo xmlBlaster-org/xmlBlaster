@@ -1,9 +1,12 @@
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
 Add the following line to your xmlBlaster.properties file:
-JDBCDrivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
+JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
 
-It is a comma delimited list of databse drivers.  Use as many as you like.  The appropriate driver class files(jar) must be in your classpath.  (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.  It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)
+It is a comma delimited list of databse drivers.  Use as many as you like.
+The appropriate driver class files(jar) must be in your classpath.
+ (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
+  It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)
 
 Start up the server (jaco org.xmlBlaster.Main)
 
@@ -32,9 +35,13 @@ Options:
         -limit (any integer) 50 by default - used to limit the number of rows returned
 
 NOTE:
-        If you are querying, set your -type to 'query'.  If you are updating (insert, update, delete) set -type to 'update'.  If you are updating and don't want a confirmation, set -confirm to 'false'.
+        If you are querying, set your -type to 'query'.
+        If you are updating (insert, update, delete) set -type to 'update'.
+        If you are updating and don't want a confirmation, set -confirm to 'false'.
 
-For an example of what to expect, please look over the .xml files located in demo/javaclients/jdbc.  Most exceptions are caught and returned in the appropriate xml message.  There are still one or two bugs that need to be squashed,
+For an example of what to expect, please look over the .xml files located in demo/javaclients/jdbc.
+Most exceptions are caught and returned in the appropriate xml message.
+There are still one or two bugs that need to be squashed,
 but I am working on those.
 
 If you have any difficulty or questions, feel free to send me an email at

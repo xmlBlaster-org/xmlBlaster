@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.8 2000/06/27 14:50:46 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.9 2000/07/02 18:06:47 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -34,33 +34,22 @@ import java.io.*;
 public class XmlDBAdapterWorker extends Thread {
 
    private static final String   ME = "WorkerThread";
-   private String[]              args;
    private String                cust;
    private byte[]                content;
-   private String                qos;
-   private XmlDBAdapter          adapter = null;
-
-   private XmlDocument           erorDocument = null;
+   private I_Publish             callback = null;
 
    /**
     * Constructor declaration
     *
-    *
-    * @param args
-    * @param cust
-    * @param content
-    * @param qos
-    * @param adapter
-    *
-    * @see
+    * @param cust The sender of the SQL message
+    * @param content The SQL statement
+    * @param callback Interface to publish the XML based result set
     */
-   public XmlDBAdapterWorker(String[] args, String cust, byte[] content,
-                             String qos, XmlDBAdapter adapter) {
-      this.args = args;
+   public XmlDBAdapterWorker(String cust, byte[] content,
+                             I_Publish callback) {
       this.cust = cust;
       this.content = content;
-      this.qos = qos;
-      this.adapter = adapter;
+      this.callback = callback;
    }
 
    /**
@@ -124,7 +113,7 @@ public class XmlDBAdapterWorker extends Thread {
             doc = createUpdateDocument(rowsAffected, descriptor);
          }
          else {
-            Log.info(ME, "Trying DB select '" + command + "' ...");
+            Log.info(ME, "Trying SQL query '" + command + "' ...");
             rs = s.executeQuery(command);
             doc =
                DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
@@ -133,7 +122,7 @@ public class XmlDBAdapterWorker extends Thread {
          }
       }
       catch (SQLException e) {
-         Log.warning(ME, "Exception in query: " + e);
+         Log.warning(ME, "Exception in query '" + descriptor.getCommand() + "' : " + e);
 
          throw e;
       }
@@ -234,9 +223,9 @@ public class XmlDBAdapterWorker extends Thread {
          doc.write(bais);
 
          MessageUnit mu = new MessageUnit(xmlKey, bais.toByteArray(), qos);
-         String      oid = adapter.publish(mu);
+         String      oid = callback.publish(mu);
 
-         System.out.println("Delivered Results...\n" + bais);
+         if (Log.DUMP) Log.plain("Delivered Results...\n" + bais);
       }
       catch (XmlBlasterException e) {
          System.out.println("Exception in notify: " + e.reason);
