@@ -3,7 +3,7 @@ Name:      xmlBlaster.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.4 2002/11/27 10:53:40 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.5 2002/11/29 03:38:45 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -22,7 +22,11 @@ namespace boost {
 
 // definition for the timestamps
 namespace org { namespace xmlBlaster { namespace util {
+#if defined(_WINDOWS)
+  typedef __int64 Timestamp;
+#else
 	typedef long long int Timestamp;
+#endif
 }}}
 
 #endif
