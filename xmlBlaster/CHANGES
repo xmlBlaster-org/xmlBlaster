@@ -2,6 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Update QoS markup change:
+      <subscriptionId>__subId:1</subscriptionId>
+   is now
+      <subscribe id='__subId:1'/>
+   to be compatible with other QoS.
+   PtP messages are marked with '__subId:PtP'
+
  o Fixed many memory leaks with new queue/msgstore framework
 
  o Bugfix for broken returned subscriptionID
@@ -41,7 +48,7 @@ Changes for 0.8x [xxx, xx 200x]
  o PtP messages are now subscribeable as well.
    So take care which keyOid you choose for PtP messages.
    In past releases PtP messages were completely invisible for subscribes.
-   Use <pubSub>false</pubSub> to make PtP messages invisible for subscribers.
+   Use <subscribeable>false</subscribeable> to make PtP messages invisible for subscribers.
 
  o Renamed
       org.xmlBlaster.engine.MessageUnit
@@ -129,7 +136,7 @@ Changes for 0.8x [xxx, xx 200x]
     * EraseRetQos.pm               -> EraseReturnQos.pm
     * PublishRetQos.pm;            -> PublishReturnQos.pm
    Incompatible subscribe XML QoS change for forced subscriptionId:
-    *  <qos><subscribe id='_subId:1'/></qos>
+    *  <qos><subscribe id='__subId:1'/></qos>
 
  o Made key/content/qos in MsgUnit.java private,
    use the corresponding get() methods to access the data.
