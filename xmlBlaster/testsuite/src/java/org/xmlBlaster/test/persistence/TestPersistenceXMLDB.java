@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.3 2002/09/15 18:58:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -169,6 +169,11 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       senderConnection = null;
    } // end of setUp
 
+   protected void tearDown()
+   {
+      // reset to default server port (necessary if other tests follow in the same JVM).
+      Util.resetPorts();
+   }
 
    /**
     * Publish a durable message.
@@ -230,7 +235,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       senderConnection = connectClient(senderName, senderPasswd);
 
       subscribe(senderConnection);
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       disconnectClient(senderConnection);
       stopServer(serverThread2);
