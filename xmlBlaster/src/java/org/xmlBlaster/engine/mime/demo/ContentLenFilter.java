@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.2 2002/03/15 13:04:56 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.3 2002/03/15 18:54:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -68,28 +68,43 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
       }
    }
 
-   /** Return plugin type for Plugin loader */
+   /**
+    * Return plugin type for Plugin loader
+    * @return "ContentLenFilter"
+    */
    public String getType() {
       return "ContentLenFilter";
    }
 
-   /** Return plugin version for Plugin loader */
+   /**
+    * Return plugin version for Plugin loader
+    * @return "1.0"
+    */
    public String getVersion() {
       return "1.0";
    }
 
-   /** Get a human readable name of this filter implementation */
+   /**
+    * Get a human readable name of this filter implementation
+    * @return "ContentLenFilter"
+    */
    public String getName() {
       return "ContentLenFilter";
    }
 
-   /** Get the content MIME type for which this plugin applies */
+   /**
+    * Get the content MIME type for which this plugin applies
+    * @return "*" This plugin handles all mime types
+    */
    public String[] getMimeTypes() {
       String[] mimeTypes = { "*" };
       return mimeTypes;
    }
 
-   /** Get the content MIME version number for which this plugin applies */
+   /**
+    * Get the content MIME version number for which this plugin applies
+    * @return "1.0" (this is the default version number)
+    */
    public String[] getMimeExtended() {
       String[] mimeExtended = { XmlKeyBase.DEFAULT_contentMimeExtended }; // "1.0"
       return mimeExtended;
@@ -100,7 +115,7 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
     * @param msgUnit The message to check
     * @param query   The max. message length as given by the subscriber.<br />
     *                If null we use 1 MByte as max size
-    * @return true   If message is not to long
+    * @return true   If message is not too long
     * @exception XmlBlasterException Is thrown on problems, for example if MIME type
     *            does not fit to message content
     */
