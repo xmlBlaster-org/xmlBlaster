@@ -441,11 +441,13 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
 
 /**
  * The blob data is copied into the given exception object. 
+ * Note: exception->remote is always set to true (assuming a remote blob)
  */
-void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug)
+void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug)
 {
    size_t currpos = 0;
    int len;
+   /* initializeXmlBlasterException(exception); */
    exception->remote = true;
    strncpy0(exception->errorCode, blob->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
    currpos += strlen(exception->errorCode) + 1;
@@ -453,6 +455,26 @@ void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exc
    strncpy0(exception->message, blob->data+currpos, len);
    trim(exception->message);
    if (debug) printf("[xmlBlasterSocket] Converted to XmlBlasterException\n");
+}
+
+/**
+ * The given exception is dumped into the blob data. 
+ * @param blob The encoded exception, you need to free the blob struct yourself after usage.
+ * @param exception The given exception struct
+ */
+void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug)
+{
+   MsgUnit msgUnit;
+   BlobHolder b;
+
+   memset(&msgUnit, 0, sizeof(MsgUnit));
+   msgUnit.qos = exception->errorCode;
+   msgUnit.key = exception->message;
+
+   b = encodeMsgUnit(&msgUnit, debug);
+   blob->data = b.data;
+   blob->dataLen = b.dataLen;
+   if (debug) printf("[xmlBlasterSocket] Converted XmlBlasterException to SOCKET blob\n");
 }
 
 /**
