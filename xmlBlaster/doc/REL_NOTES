@@ -1,16 +1,30 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
-Changes for 0.74 [Feb.??, 2000]
+Changes for 0.74 [Feb.29, 2000]
 ==============================
-   - CorbaConnection: logout(boolean) deprecated -> use logout() now
+   - New XML based requirements framework.
+	  See xmlBlaster/doc/requirements
+
+   - 'Fail save' client connection for Java clients added.
+	  Clients begin polling and automatic local recording of messages
+	  if xmlBlaster server disappears.
+	  See CorbaConnection.java
+
+   - C++ POA demo client added [Michele Laghi].
+	  See xmlBlaster/testsuite/c++
+
+   - Recorder to record/playback of messages in slow/fast motion added.
+	  See InvocationRecorder.java
+
+   - CorbaConnection: logout(boolean) deprecated -> use logout() now.
 
    - Changed xmlBlaster.idl: messageUnit    -> msgUnit
                              messageUnitArr -> msgUnitArr
      Case does not matter, IDL is case-insensitive when detecting name clashes.
 	  (Thanks to Michele Laghi)
 
-   - Added a guide line for xmlBLaster core developer, see
-	  xmlBlaster/doc/developer-guidelines.html
+   - Added a guide line for xmlBLaster core developer.
+	  See xmlBlaster/doc/developer-guidelines.html
 
    - Set up xmlBLaster to use Ant as it's build system
 
