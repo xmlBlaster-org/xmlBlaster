@@ -17,12 +17,12 @@ This is an example to access xmlBlaster from a Perl client
 
 3) Start the xmlBlaster server
 
-    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/ior.txt
+    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
 4) And connect with the Perl client
 
-    ./client `cat /tmp/ior.txt`
+    ./client `cat /tmp/ior.dat`
 
 
 NOTE: Callbacks are not possible in the current COPE Perl library.
@@ -122,7 +122,7 @@ my $hello = new hello_impl;
 # start the hello_impl in a separate thread
 my $t = new Thread (\&hello_thread, $boa);
 
-open (IOR, "ior.txt");
+open (IOR, "ior.dat");
 my $ior = <IOR>;
 close (IOR);
 
@@ -160,7 +160,7 @@ my $boa = $orb->BOA_init();
 my $callback = new callback_impl;
 
 my $ior  = $orb->object_to_string($callback);
-open (IOR, ">ior.txt");
+open (IOR, ">ior.dat");
 print IOR $ior;
 close (IOR);
 $boa->impl_is_ready();              
