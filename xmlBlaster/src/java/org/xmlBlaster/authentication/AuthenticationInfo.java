@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.2 1999/12/01 15:40:11 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.3 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -46,12 +46,13 @@ public class AuthenticationInfo
    }
 
    /**
-    * The CORBA callback reference of the client. 
+    * The CORBA callback reference of the client.
     * @return BlasterCallback The client callback implementation
     */
    public final BlasterCallback getCB() throws XmlBlasterException
    {
       if (this.callback == null) {
+         Log.error(ME+"NoCallback", "Sorry, no Callback for " + loginName);
          throw new XmlBlasterException(ME+"NoCallback", "Sorry, no Callback for " + loginName);
       }
       return callback;
@@ -63,7 +64,7 @@ public class AuthenticationInfo
     * it is currently the byte[] oid from the POA active object map.
     * @return oid
     */
-   public String getUniqueKey() throws XmlBlasterException
+   public final String getUniqueKey() throws XmlBlasterException
    {
       return uniqueKey;
    }
@@ -73,24 +74,58 @@ public class AuthenticationInfo
     * The unique Client ID in HEX format, to be able to dump it
     * @return the uniqueKey in hex notation for dumping it (readable form)
     */
-   public String getUniqueKeyHex() throws XmlBlasterException
+   public final String getUniqueKeyHex() throws XmlBlasterException
    {
       return jacorb.poa.util.POAUtil.convert(getUniqueKey().getBytes(), true);
    }
 
 
    /**
-    * 
+    * email callbacks are not yet supported
+    * @return false
     */
-   public String toString()
+   public final boolean useEmailCB()
+   {
+      // !!! TODO: inspect QoS which callback type is wanted from the client
+      return false;
+   }
+
+
+   /**
+    * Http callbacks are not yet supported
+    * @return false
+    */
+   public final boolean useHttpCB()
+   {
+      // !!! TODO: inspect QoS which callback type is wanted from the client
+      return false;
+   }
+
+
+   /**
+    * Only CORBA callbacks are supported this version
+    * @return false
+    */
+   public final boolean useCorbaCB()
+   {
+      // !!! TODO: inspect QoS which callback type is wanted from the client
+      return true;
+   }
+
+
+   /**
+    *
+    */
+   public final String toString()
    {
       return loginName;
    }
 
 
-   public String getCallbackIOR() throws XmlBlasterException
+   public final String getCallbackIOR() throws XmlBlasterException
    {
       if (this.callbackIOR == null) {
+         Log.error(ME+"NoCallback", "Sorry, no CallbackIOR for " + loginName);
          throw new XmlBlasterException(ME+"NoCallback", "Sorry, no CallbackIOR for " + loginName);
       }
       return callbackIOR;

@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.14 1999/11/29 18:39:21 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.15 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -333,7 +333,7 @@ public class XmlKeyBase
             for (int i = 0; i < len; i++) {
                Node childNode = children.item(i);
                if (childNode.getNodeType() == Node.TEXT_NODE) {
-                  queryString = childNode.getNodeValue();
+                  queryString = childNode.getNodeValue().trim();
                }
             }
          }

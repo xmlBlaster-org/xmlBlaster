@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.30 1999/12/01 16:49:01 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.31 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -20,12 +20,15 @@ import java.util.*;
 import java.io.*;
 
 /**
- * This is the central message broker, all requests are routed through this singleton. 
+ * This is the central message broker, all requests are routed through this singleton.
  * <p>
  * The interface ClientListener informs about Client login/logout<br />
  * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
+ *
+ * @version $Revision: 1.31 $
+ * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
 {
@@ -209,9 +212,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * @param oid == XmlKey:uniqueKey
+    * Try to access the XmlKey by its oid. 
+    *
+    * @param oid == XmlKey.uniqueKey
+    * @return the XmlKey object if found in the Map<br />
+    *         or null if not found
     */
-   public XmlKey getXmlKeyFromOid(String oid)
+   public final XmlKey getXmlKeyFromOid(String oid) throws XmlBlasterException
    {
       MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(oid);
       if (messageUnitHandler == null) {
@@ -224,7 +231,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * @param oid == XmlKey:uniqueKey
     */
-   public MessageUnitHandler getMessageHandlerFromOid(String oid)
+   public final MessageUnitHandler getMessageHandlerFromOid(String oid)
    {
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(oid);
@@ -252,7 +259,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          Object obj = messageContainerMap.get(uniqueKey);
          if (obj == null) {
             // This is a new Message, yet unknown ...
-            messageUnitHandler = new MessageUnitHandler(this, subs.getXmlKey());
+            messageUnitHandler = new MessageUnitHandler(this, subs.getXmlKey().getUniqueKey());
             messageContainerMap.put(uniqueKey, messageUnitHandler);
          }
          else {
@@ -269,6 +276,10 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
+    * Incoming un subscribe request from a client. 
+    * <p>
+    * @param clientInfo
+    *
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
@@ -292,8 +303,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * if MessageUnit is created from subscribe or MessageUnit is new, we need to add the
+    * Publishing a new message. 
+    * <p />
+    * If MessageUnit is created from subscribe or the MessageUnit is new, we need to add the
     * DOM here once; XmlKeyBase takes care of that
+    *
+    * @param clientInfo  The ClientInfo object, describing the publishing client
+    * @param messageUnit The CORBA MessageUnit struct
+    * @param publishQoS  Quality of Service, flags to control the publishing
     *
     * @see xmlBlaster.idl for comments
     */
@@ -313,7 +330,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
       //----- 1. set new value or create the new message:
-      MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit);
+      MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit, xmlQoS);
 
       // this gap is not 100% thread save
 
@@ -401,9 +418,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *
     * @param xmlKey       so the messageUnit.xmlKey_literal is not parsed twice
     * @param messageUnit  containing the new, published data
+    * @param qos          the quality of service of this publish() message
     * @return messageUnitHandler MessageUnitHandler object, holding the new MessageUnit
     */
-   private MessageUnitHandler setMessageUnit(XmlKey xmlKey, MessageUnit messageUnit) throws XmlBlasterException
+   private MessageUnitHandler setMessageUnit(XmlKey xmlKey, MessageUnit messageUnit,
+                                             XmlQoS publishQoS) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
       boolean messageExisted = false; // to shorten the synchronize block
@@ -412,7 +431,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
          if (obj == null) {
-            messageUnitHandler = new MessageUnitHandler(requestBroker, xmlKey, messageUnit);
+            messageUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(xmlKey, messageUnit, publishQoS));
             messageContainerMap.put(xmlKey.getUniqueKey(), messageUnitHandler);
          }
          else {
@@ -422,7 +441,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       if (messageExisted) {
-         messageUnitHandler.setContent(xmlKey, messageUnit.content);
+         messageUnitHandler.setContent(xmlKey, messageUnit, publishQoS);
       }
       else {
          try {
@@ -537,14 +556,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    public final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent() ...");
-      
+
       synchronized (subscriptionListenerSet) {
          if (subscriptionListenerSet.size() == 0)
             return;
-         
+
          SubscriptionEvent event = new SubscriptionEvent(subscriptionInfo);
          Iterator iterator = subscriptionListenerSet.iterator();
-         
+
          while (iterator.hasNext()) {
             SubscriptionListener subli = (SubscriptionListener)iterator.next();
             if (subscribe)
@@ -552,7 +571,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             else
                subli.subscriptionRemove(event);
          }
-         
+
          event = null;
       }
    }
@@ -585,7 +604,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Notify all Listeners that a message is erased. 
+    * Notify all Listeners that a message is erased.
     *
     * @param clientInfo
     * @param messageUnitHandler
@@ -603,14 +622,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             MessageEraseListener erLi = (MessageEraseListener)iterator.next();
             erLi.messageErase(event);
          }
-         
+
          event = null;
       }
    }
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
@@ -621,7 +640,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string

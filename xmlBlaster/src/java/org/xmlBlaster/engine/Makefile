@@ -17,8 +17,12 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/ClientInfo.class \
 			$(CLASS_DIR)/RequestBroker.class \
 			$(CLASS_DIR)/ClientSubscriptions.class \
+			$(CLASS_DIR)/MessageUnitWrapper.class \
 			$(CLASS_DIR)/MessageUnitHandler.class \
+			$(CLASS_DIR)/ClientUpdateQueue.class \
+			$(CLASS_DIR)/CallbackCorbaDriver.class \
 			$(CLASS_DIR)/XmlKey.class \
+			$(CLASS_DIR)/BigXmlKeyDOM.class \
 			$(CLASS_DIR)/SubscriptionInfo.class \
 			$(CLASS_DIR)/XmlQoS.class
 #------------------------------------------------------------------------------

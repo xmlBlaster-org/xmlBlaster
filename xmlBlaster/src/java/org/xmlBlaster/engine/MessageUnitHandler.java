@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.16 1999/11/23 15:31:42 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.17 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -43,30 +43,31 @@ public class MessageUnitHandler
 
 
    /**
-    * This is the Message itself
+    * This is the wrapper of the Message itself
     */
-   private MessageUnit messageUnit;
-   private XmlKey xmlKey = null;     // may be null until the first publish() arrives
-   //private QoSKey qosPublish;      // the flags from the publisher
-   private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
+   private MessageUnitWrapper messageUnitWrapper = null; // this variable may be null
+                                              // always use the getMessageUnitWrapper() access method, this checks for null
+
+   private String uniqueKey;                  // Attribute oid of key tag: <key oid="..."> </key>
 
    private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MessageUnit is new created
 
 
    /**
-    * Constructor if a subscription is made on a yet unknown object
+    * Use this constructor if a subscription is made on a yet unknown object. 
+    * <p />
+    * @param requestBroker
+    * @param uniqueKey The unique XmlKey-oid from the subscribe() call
     */
-   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, String uniqueKey) throws XmlBlasterException
    {
-      if (requestBroker == null || xmlKey == null) {
+      if (requestBroker == null || uniqueKey == null) {
          Log.error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
 
       this.requestBroker = requestBroker;
-      this.uniqueKey = xmlKey.getUniqueKey();
-      // this.xmlKey = xmlKey; this is not the real xmlKey from a publish, its only the subscription syntax
-      this.messageUnit = new MessageUnit(xmlKey.literal(), new byte[0]);
+      this.uniqueKey = uniqueKey;
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
 
@@ -75,37 +76,46 @@ public class MessageUnitHandler
 
 
    /**
-    * Constructor if a yet unknown object is fed by method publish()
+    * Use this constructor if a yet unknown object is fed by method publish(). 
+    * <p />
     * @param requestBroker
-    * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from messageUnit.xmlKey_literal
-    * @param the CORBA MessageUnit data container
+    * @param a MessageUnitWrapper containing the CORBA MessageUnit data container
     */
-   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit messageUnit/*, QoSKey qosPublish*/) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
    {
-      if (requestBroker == null || messageUnit == null || messageUnit.xmlKey == null) {
+      if (requestBroker == null || messageUnitWrapper == null) {
          Log.error(ME, "Invalid constructor parameters");
          throw new XmlBlasterException(ME, "Invalid constructor parameters");
       }
 
-      if (messageUnit.content == null)
-         messageUnit.content = new byte[0];
-
       this.requestBroker = requestBroker;
-      this.messageUnit = messageUnit;
-      this.xmlKey = xmlKey;
-      this.uniqueKey = this.xmlKey.getUniqueKey();
-      //this.qosPublish = qosPublish;
+      this.messageUnitWrapper = messageUnitWrapper;
+      this.uniqueKey = messageUnitWrapper.getXmlKey().getUniqueKey();
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
    }
 
 
    /**
+    * Accessing the wrapper object of the MessageUnit
+    * @return MessageUnitWrapper object
+    */
+   public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
+   {
+      if (messageUnitWrapper == null) {
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null, there was not yet any message published, only subscription exists on this unpublished message");
+         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, messageUnitWrapper = null");
+      }
+      return messageUnitWrapper;
+   }
+
+
+   /**
     * Accessing the key of this message
     */
-   public XmlKey getXmlKey()
+   public final XmlKey getXmlKey() throws XmlBlasterException
    {
-      return xmlKey;
+      return getMessageUnitWrapper().getXmlKey();
    }
 
 
@@ -136,48 +146,31 @@ public class MessageUnitHandler
       subscriberMap.clear();
       // subscriberMap = null;    is final, can't assign null
 
-      // xmlKey = null; not my business
-      messageUnit = null;
+      messageUnitWrapper = null;
       uniqueKey = null;
    }
 
 
    /**
-    * setting update of a changed content
+    * Setting update of a new content. 
+    * 
+    * @param xmlKey      The XmlKey object, derived from messageUnit.xmlKey string
+    * @param messageUnit The CORBA MessageUnit struct
+    * @param publishQoS  Quality of Service, flags to control the publishing
+    *
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey xmlKey, byte[] content)
+   public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, XmlQoS publishQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
-      if (this.xmlKey == null) {
-         this.xmlKey = xmlKey; // storing the key from the first publish() invocation
-         this.messageUnit.xmlKey = xmlKey.literal();
-      }
-
-      if (content == null)
-         content = new byte[0];
-
-      boolean changed = false;
-      if (this.messageUnit.content.length != content.length) {
-         changed = true;
-      }
-      else {
-         for (int ii=0; ii<content.length; ii++)
-            if (this.messageUnit.content[ii] != content[ii]) {
-               changed = true;
-               break;
-            }
-      }
-
-      if (changed) {  // new content is not the same as old one
-         this.messageUnit.content = content;
+      if (messageUnitWrapper == null) {  // storing the key from the first publish() invocation
+         messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
          return true;
       }
-      else {
-         return false;
-      }
+
+      return messageUnitWrapper.setContent(messageUnit.content);
    }
 
 
@@ -197,9 +190,9 @@ public class MessageUnitHandler
    /*
     * The root node of the xmlBlaster DOM tree
     */
-   public org.w3c.dom.Node getRootNode() throws XmlBlasterException
+   public final org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
-      return xmlKey.getRootNode();
+      return getXmlKey().getRootNode();
    }
 
 
@@ -249,7 +242,9 @@ public class MessageUnitHandler
 
 
    /**
-    * This is the unique key of the messageUnit
+    * This is the unique key of the MessageUnit
+    * <p />
+    * @return the &lt;key oid='...'>
     */
    public String getUniqueKey()
    {
@@ -258,15 +253,15 @@ public class MessageUnitHandler
 
 
    /**
+    * What is the MIME type of this message content? 
+    * <p />
+    * @return the MIME type of the MessageUnit.content
     */
    public String getMimeType() throws XmlBlasterException
    {
-      if (getMessageUnit().xmlKey == null) {
-         Log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
-         throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
-      }
-      return xmlKey.getMimeType();
+      return getXmlKey().getMimeType();
    }
+
 
    /**
     * A Set subscriberMap.entrySet() would be enough in most cases
@@ -279,15 +274,12 @@ public class MessageUnitHandler
 
 
    /**
-    * This is the unique key of the messageUnit
+    * Access the raw CORBA messageUnit
+    * @return MessageUnit object
     */
    public MessageUnit getMessageUnit() throws XmlBlasterException
    {
-      if (messageUnit == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
-         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
-      }
-      return messageUnit;
+      return getMessageUnitWrapper().getMessageUnit();
    }
 
 
@@ -301,6 +293,7 @@ public class MessageUnitHandler
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
       // PERFORMANCE: All updates for each client should be collected !!!
+      //              This "Burst mode" code increase performance if the messages are small
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
 
@@ -315,29 +308,12 @@ public class MessageUnitHandler
     */
    public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
-      if (xmlKey == null) {
-         Log.warning(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
+      if (messageUnitWrapper == null) {
+         Log.error(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return;
       }
-      MessageUnitHandler.sendUpdate(sub.getClientInfo(), xmlKey, getMessageUnit());
-   }
-
-
-   /**
-    * This sends the update to the client.
-    * TODO: 1. Create a singleton UpdateHandler.java, supporting CORBA,http,email
-    *       2. change arguments?
-    */
-   public final static void sendUpdate(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit messageUnit) throws XmlBlasterException
-   {
-      BlasterCallback cb = clientInfo.getCB();
-      XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
-      MessageUnit[] updateMsgArr = new MessageUnit[1];
-      updateMsgArr[0] = messageUnit;
-      String[] qarr = new String[1];
-      qarr[0] = xmlQoS.toString();
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + clientInfo.toString());
-      cb.update(updateMsgArr, qarr);
+      ClientInfo clientInfo = sub.getClientInfo();
+      clientInfo.getCallbackDriver().sendUpdate(clientInfo, getMessageUnitWrapper());
    }
 
 
@@ -390,11 +366,12 @@ public class MessageUnitHandler
 
       sb.append(offset + "<MessageUnitHandler>");
       sb.append(offset + "   <uniqueKey>" + getUniqueKey() + "</uniqueKey>");
-      if (xmlKey==null)
-         sb.append(offset + "   <XmlKey>null</XmlKey>");
+
+      if (messageUnitWrapper == null)
+         sb.append(offset + "   <MessageUnitWrapper>null</MessageUnitWrapper>");
       else
-         sb.append(xmlKey.printOn(extraOffset + "   ").toString());
-      sb.append(offset + "   <content>" + (messageUnit.content==null ? "null" : messageUnit.content.toString()) + "</content>");
+         sb.append(getMessageUnitWrapper().printOn(extraOffset + "   ").toString());
+
       if (subscriberMap.size() == 0)
          sb.append(offset + "   <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
       else {
@@ -404,6 +381,7 @@ public class MessageUnitHandler
             sb.append(subs.printOn(extraOffset + "   ").toString());
          }
       }
+      
       sb.append(offset + "   <handlerIsNewCreated>" + handlerIsNewCreated + "</handlerIsNewCreated>");
       sb.append(offset + "</MessageUnitHandler>\n");
       return sb;

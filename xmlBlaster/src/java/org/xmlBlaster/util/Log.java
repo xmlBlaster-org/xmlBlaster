@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.17 1999/11/30 10:52:49 ruff Exp $
+Version:   $Id: Log.java,v 1.18 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -19,10 +19,10 @@ public class Log
     * Switch CALLS mode on or of for performance reasons
     * if (Log.CALLS) Log.trace(....); -> dead code elimination
     */
-   public final static boolean CALLS = false;  // trace method calls
+   public final static boolean CALLS = true;  // trace method calls
    public final static boolean TIME  = true;  // trace performance
-   public final static boolean TRACE = false;  // trace application flow
-   public final static boolean DUMP  = false;  // dump internal state
+   public final static boolean TRACE = true;  // trace application flow
+   public final static boolean DUMP  = true;  // dump internal state
 
    /**
     * Adjust her your local look and feel

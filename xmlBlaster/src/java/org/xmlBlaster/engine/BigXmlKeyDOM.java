@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.1 1999/12/01 16:04:45 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.2 1999/12/01 22:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -34,11 +34,14 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
    private Authenticate authenticate = null;
 
    private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
-   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr;
+   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
    private com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
    //private org.w3c.dom.Document xmlKeyDoc = null;      // Document with the root node
    private org.w3c.dom.Node xmlKeyRootNode = null;       // Root node <xmlBlaster></xmlBlaster>
+
+   private String encoding = "ISO-8859-1";               // !!! TODO: access from xmlBlaster.properties file
+                                                         // default is "UTF-8"
 
 
    /**
@@ -118,6 +121,20 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
+    * Accesing the query manager for XPath. 
+    * <p />
+    * queryMgr is instantiated if null
+    * @return the query manager
+    */
+   private final com.fujitsu.xml.omquery.DomQueryMgr getQueryMgr()
+   {
+      if (queryMgr == null)
+         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
+      return queryMgr;
+   }
+
+
+   /**
     * Adding a new node to the xmlBlaster xmlKey tree
     * @param the node to merge into the DOM tree
     * @return the node added
@@ -135,14 +152,9 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
          if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
 
-         if (Log.DUMP) {  // dump the whole tree
-            Writer out = new OutputStreamWriter (System.out);
-            xmlKeyDoc.write(out);
-         }
+         if (Log.DUMP) Log.dump(ME, printOn().toString());  // dump the whole tree
 
-         // !!! not performaning, should be instantiate only just before needed
-         //     with stale check
-         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
+         queryMgr = null; // needs to be reloaded, since the Document changed
 
          return node;
 
@@ -182,9 +194,10 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
          Enumeration nodeIter;
          try {
             if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
-            nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
+            nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
          } catch (Exception e) {
-            Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
+            Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
+            e.printStackTrace();
             throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
          }
          int n = 0;
@@ -318,7 +331,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
       sb.append(offset + "<BigXmlKeyDOM>");
       try {
          java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         xmlKeyDoc.write(out);
+         xmlKeyDoc.write(out/*, encoding*/); // !!!
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + "   " + st.nextToken());
