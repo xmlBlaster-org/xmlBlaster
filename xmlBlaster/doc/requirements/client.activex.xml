@@ -192,37 +192,70 @@ namespace demo
 
    <example lang="VisualBasic" type="HTML">
       <h3><a NAME="example"></a>VisualBasic.net example</h3>
-   <pre><![CDATA[
-// HelloWorld.vb
-' Simple VisualBasic HelloWorld example how to access xmlBlaster
-' We connect to xmlBlaster and query the free memory of the server
-' @author Marcel Ruff
-Module HelloWorld
-    Sub Main()
-        Dim request, response As String
-        Dim xmlBlaster As XmlScriptAccess.XmlScriptAccessClass
+   <pre><style type="text/css">
+<!--
+              .LINE_NO {color: #000000; background: #ffffff}
+              .Unknown {color: #ffffff; background: #ffffff}
+              .NOTHING {color: #000000; background: #ffffff}
+               .STRING {color: red; background: #ffffff}
+              .COMMENT {color: #000000; background: #b1b1b1}
+              .SYMBOL1 {color: #000000; background: #ffffff}
+              .SYMBOL2 {color: #000000; background: #ffffff}
+              .SYMBOL3 {color: #000000; background: #ffffff}
+              .SYMBOL4 {color: #000000; background: #ffffff}
+              .SYMBOL5 {color: #000000; background: #ffffff}
+              .SYMBOL6 {color: #000000; background: #ffffff}
+              .SYMBOL7 {color: #000000; background: #ffffff}
+              .SYMBOL8 {color: #000000; background: #ffffff}
+              .SYMBOL9 {color: #000000; background: #ffffff}
+              .KEYWORD {color: green; background: #ffffff}
+             .OPERATOR {color: #000000; background: #ffffff}
+                .LABEL {color: #000000; background: #ffffff}
+               .NUMBER {color: #ff005a; background: #ffffff}
+        .CHAR_CONSTANT {color: #000000; background: #ffffff}
+            .DIRECTIVE {color: #ff00ff; background: #ffffff}
+              .NUMBER2 {color: #ff005a; background: #ffffff}
+                 .TYPE {color: #4e4eff; background: #ffffff}
+             .FUNCTION {color: #4e4eff; background: #ffffff}
+              .COMMAND {color: #4e4eff; background: #ffffff}
+               .OBJECT {color: #4e4eff; background: #ffffff}
+             .CONSTANT {color: #4e4eff; background: #ffffff}
+                .CLASS {color: #4e4eff; background: #ffffff}
+             .INSTANCE {color: #4e4eff; background: #ffffff}
+               .METHOD {color: #4e4eff; background: #ffffff}
+            .ATTRIBUTE {color: #000000; background: #ffffff}
+                .VALUE {color: #4e4eff; background: #ffffff}
+-->
+</style><font face="Terminal,10,Regular,1,Lucida Console,Fixed"/>
+<span class="COMMENT">' Simple HelloWorld example how to access xmlBlaster</span>
+<span class="COMMENT">' We connect to xmlBlaster and query the free memory of the server</span>
+<span class="COMMENT">' @author Marcel Ruff</span>
+<span class="NOTHING">Module HelloWorld</span>
+<span class="NOTHING">    </span><span class="KEYWORD">Sub</span><span class="NOTHING"> Main()</span>
+<span class="NOTHING">        </span><span class="KEYWORD">Dim</span><span class="NOTHING"> request, response </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+<span class="NOTHING">        </span><span class="KEYWORD">Dim</span><span class="NOTHING"> xmlBlaster </span><span class="KEYWORD">As</span><span class="NOTHING"> XmlScriptAccess.XmlScriptAccessClass</span>
 
-        xmlBlaster = New XmlScriptAccess.XmlScriptAccessClass
+<span class="NOTHING">        xmlBlaster = </span><span class="KEYWORD">New</span><span class="NOTHING"> XmlScriptAccess.XmlScriptAccessClass</span>
 
-        ' Configure using the SOCKET protocol
-        Dim argArr(1) As String
-        argArr(0) = "-protocol"
-        argArr(1) = "SOCKET"
-        xmlBlaster.initArgs(argArr)
+<span class="NOTHING">        </span><span class="COMMENT">' Configure using the SOCKET protocol</span>
+<span class="NOTHING">        </span><span class="KEYWORD">Dim</span><span class="NOTHING"> argArr(</span><span class="NUMBER">1</span><span class="NOTHING">) </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+<span class="NOTHING">        argArr(</span><span class="NUMBER">0</span><span class="NOTHING">) = </span><span class="STRING">"-protocol"</span>
+<span class="NOTHING">        argArr(</span><span class="NUMBER">1</span><span class="NOTHING">) = </span><span class="STRING">"SOCKET"</span>
+<span class="NOTHING">        xmlBlaster.initArgs(argArr)</span>
 
-        ' Connect to the server
-        response = xmlBlaster.sendRequest("<xmlBlaster><connect/></xmlBlaster>")
+<span class="NOTHING">        </span><span class="COMMENT">' Connect to the server</span>
+<span class="NOTHING">        response = xmlBlaster.sendRequest(</span><span class="STRING">"&lt;xmlBlaster&gt;&lt;connect/&gt;&lt;/xmlBlaster&gt;"</span><span class="NOTHING">)</span>
 
-        ' Query the free memory
-        request = "<xmlBlaster><get><key oid='__cmd:?freeMem'/></get></xmlBlaster>"
-        response = xmlBlaster.sendRequest(request)
-        Console.WriteLine("Got response:" & response)
+<span class="NOTHING">        </span><span class="COMMENT">' Query the free memory</span>
+<span class="NOTHING">        request = </span><span class="STRING">"&lt;xmlBlaster&gt;&lt;get&gt;&lt;key oid='__cmd:?freeMem'/&gt;&lt;/get&gt;&lt;/xmlBlaster&gt;"</span>
+<span class="NOTHING">        response = xmlBlaster.sendRequest(request)</span>
+<span class="NOTHING">        Console.WriteLine(</span><span class="STRING">"Got response:"</span><span class="NOTHING"> &amp; response)</span>
 
-        ' Leave the server
-        response = xmlBlaster.sendRequest("<xmlBlaster><disconnect/></xmlBlaster>")
-    End Sub
-End Module
-   ]]></pre>
+<span class="NOTHING">        </span><span class="COMMENT">' Leave the server</span>
+<span class="NOTHING">        response = xmlBlaster.sendRequest(</span><span class="STRING">"&lt;xmlBlaster&gt;&lt;disconnect/&gt;&lt;/xmlBlaster&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">    </span><span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> Module</span>
+   </pre>
    </example>
 
    <example lang="VisualBasic" type="HTML">
@@ -578,6 +611,6 @@ End Sub
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 </requirement>
 
