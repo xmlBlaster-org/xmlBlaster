@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
@@ -48,7 +49,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    private final String ME;
    private I_XmlBlasterConnection driver;
    private final I_MsgSecurityInterceptor securityInterceptor;
-   private ConnectReturnQos connectReturnQos;
+   private String encryptedConnectQos;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -61,7 +62,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    }
 
    public final String getDriverName() {
-      return (this.driver != null) ? this.driver.getLoginName() : "unknown";
+      return (this.driver != null) ? this.driver.getProtocol() : "unknown";
    }
 
    /**
@@ -77,9 +78,22 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     * This method is called by our base class during initialization.
     * </p>
     */
-   public final void initDriver() throws XmlBlasterException {
+   public final void loadPlugin() throws XmlBlasterException {
       ProtocolPluginManager loader = glob.getProtocolPluginManager();
       this.driver = loader.getPlugin(super.address.getType(), super.address.getVersion()); // e.g. CorbaConnection(glob);
+      if (this.driver == null)
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, protocol type='" + super.address.getType() + "' is not supported");
+   }
+
+   /**
+    * @see DeliveryConnection#connectLowlevel()
+    */
+   public final void connectLowlevel() throws XmlBlasterException {
+      if (this.driver == null)
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, protocol type='" + super.address.getType() + "' is not supported");
+      this.driver.connectLowlevel((Address)super.address);
+      this.driver.ping("");  // Try a low level ping
+      if (log.TRACE) log.trace(ME, "Connected low level to " + super.address.toString());
    }
 
    /**
@@ -153,10 +167,10 @@ public final class ClientDeliveryConnection extends DeliveryConnection
          for (int i=0; i<msgArr.length; i++) {
             msgUnitRawArr[i] = securityInterceptor.exportMessage(msgArr[i].getMsgUnitRaw());
          }
-         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr.length + " messages.");
+         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr.length + " publish messages.");
       }
       else {
-         log.warn(ME+".accessDenied", "No session security context, sending " + msgArr.length + " messages without encryption");
+         log.warn(ME+".accessDenied", "No session security context, sending " + msgArr.length + " publish messages without encryption");
          for (int i=0; i<msgArr.length; i++) {
             msgUnitRawArr[i] = msgArr[i].getMsgUnitRaw();
          }
@@ -165,7 +179,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       if (MethodName.PUBLISH_ONEWAY == msgArr_[0].getMethodName()) {
          this.driver.publishOneway(msgUnitRawArr);
          connectionsHandler.getDeliveryStatistic().incrNumPublish(msgUnitRawArr.length);
-         if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " oneway messages.");
+         if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " oneway publish messages.");
          return;
       }
 
@@ -174,7 +188,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       String[] rawReturnVal = this.driver.publishArr(msgUnitRawArr);
       connectionsHandler.getDeliveryStatistic().incrNumPublish(rawReturnVal.length);
 
-      if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
+      if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " acknowledged publish messages, return value #1 is '" + rawReturnVal[0] + "'");
 
       if (rawReturnVal != null) {
          for (int i=0; i<rawReturnVal.length; i++) {
@@ -191,12 +205,12 @@ public final class ClientDeliveryConnection extends DeliveryConnection
                msgArr_[i].setReturnObj(new PublishReturnQos(glob, rawReturnVal[i]));
             }
             catch (Throwable e) {
-               log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
+               log.warn(ME, "Can't parse publish returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                //e.printStackTrace();
                msgArr_[i].setReturnObj(new PublishReturnQos(glob, "<qos/>"));
             }
          }
-         if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
+         if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " publish message return values.");
       }
    }
 
@@ -229,7 +243,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
             subscribeEntry.setReturnObj(new SubscribeReturnQos(glob, rawReturnVal));
          }
          catch (Throwable e) {
-            log.warn(ME, "Can't parse returned value '" + rawReturnVal + "', setting to default: " + e.toString());
+            log.warn(ME, "Can't parse returned subscribe value '" + rawReturnVal + "', setting to default: " + e.toString());
             subscribeEntry.setReturnObj(new SubscribeReturnQos(glob, "<qos/>"));
          }
       }
@@ -361,14 +375,39 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
-      connectEntry.getConnectQos().setSecurityInterceptor(this.securityInterceptor);
+      String qosOrig = connectEntry.getConnectQos().toXml();
+      String qos;
+      if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
+         qos = securityInterceptor.exportMessage(qosOrig);
+         if (log.TRACE) log.trace(ME, "Exported/encrypted connect request.");
+      }
+      else {
+         log.warn(ME, "No session security context, connect request is not encrypted");
+         qos = qosOrig;
+      }
 
-      ConnectReturnQos connectReturnQos = this.driver.connect(connectEntry.getConnectQos()); // Invoke remote server
+      this.encryptedConnectQos = qos;
+      String rawReturnVal = this.driver.connect(qos); // Invoke remote server
 
-      connectEntry.getConnectQos().setSecurityInterceptor(null);
       connectionsHandler.getDeliveryStatistic().incrNumConnect(1);
       
-      connectEntry.setReturnObj(connectReturnQos);
+      if (securityInterceptor != null) { // decrypt return value ...
+         rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
+      }
+
+      ConnectReturnQos connectReturnQos = null;
+      try {
+         connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "', setting to default: " + e.toString());
+         connectReturnQos = new ConnectReturnQos(glob, "<qos/>");
+      }
+
+      if (connectEntry.wantReturnObj()) {
+         connectEntry.setReturnObj(connectReturnQos);
+      }
+      this.driver.setConnectReturnQos(connectReturnQos);
    }
 
    /**
@@ -376,10 +415,17 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     */
    private void disconnect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueDisconnectEntry disconnectEntry = (MsgQueueDisconnectEntry)entry;
-      disconnectEntry.getDisconnectQos().setSecurityInterceptor(this.securityInterceptor);
+      String qos = disconnectEntry.getDisconnectQos().toXml();
+      if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
+         qos = securityInterceptor.exportMessage(qos);
+         if (log.TRACE) log.trace(ME, "Exported/encrypted disconnect request.");
+      }
+      else {
+         log.warn(ME, "No session security context, disconnect request is not encrypted");
+      }
 
       //returns void
-      this.driver.disconnect(disconnectEntry.getDisconnectQos()); // Invoke remote server
+      this.driver.disconnect(qos); // Invoke remote server
    }
 
    /**
@@ -402,9 +448,33 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     * On reconnect polling try to establish the connection. 
     */
    protected final void reconnect() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + this.driver.getLoginName() + ")");
-      if (this.driver != null)
-         this.connectReturnQos = this.driver.loginRaw();
+      if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + ")");
+      if (this.driver == null) return;
+
+      if (this.encryptedConnectQos == null) {
+         // We never had connected on application layer, so try low level layer only
+         this.driver.connectLowlevel((Address)super.address);
+         return;
+      }
+
+      // low level connect (e.g. on TCP/IP layer) and remote invoke method connect()
+      String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
+
+      connectionsHandler.getDeliveryStatistic().incrNumConnect(1);
+      
+      if (securityInterceptor != null) { // decrypt return value ...
+         rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
+      }
+
+      ConnectReturnQos connectReturnQos = null;
+      try {
+         connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "', setting to default: " + e.toString());
+         connectReturnQos = new ConnectReturnQos(glob, "<qos/>");
+      }
+      this.driver.setConnectReturnQos(connectReturnQos);
    }
 
    /**
@@ -423,18 +493,17 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     * @param extraOffset indenting of tags for nice output
     * @return internal state as an XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset + "<ClientDeliveryConnection>");
-      address.toXml("   " + offset);
+      super.address.toXml(" " + offset);
       if (driver == null)
-         sb.append(offset).append("   <noProtocolDriver />");
+         sb.append(offset).append(" <noProtocolDriver />");
       else
-         sb.append(offset).append("   <address type='" + driver.getLoginName() + "' state='" + getState() + "'/>");
+         sb.append(offset).append(" <address type='" + driver.getProtocol() + "' state='" + getState() + "'/>");
       sb.append(offset).append("</ClientDeliveryConnection>");
 
       return sb.toString();
