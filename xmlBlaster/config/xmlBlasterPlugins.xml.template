@@ -141,7 +141,6 @@
       <attribute id='forceBase64'>false</attribute>
    </plugin>
    -->
-      <!-- attribute id='directoryName'>/tmp</attribute -->
 
    <!-- FilePollerPlugin[FilePollerPlugin][1.0]  see http://http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html
   <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
@@ -156,7 +155,37 @@
      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
--->
+   -->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html -->
+   <!-- 
+   <plugin id='DbWatcherPlugin.testPollMD5' 
+              className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+      <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
+      <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
+      <attribute id='db.user'>system</attribute>
+      <attribute id='db.password'>secret</attribute>
+      <attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1</attribute>
+      <attribute id='mom.topicName'>db.test_poll.event.${groupColValue}</attribute>
+      <attribute id='alertScheduler.pollInterval'>2000</attribute>
+      <attribute id='changeDetector.class'>
+         org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector
+      </attribute>
+      <attribute id='changeDetector.groupColName'>CAR</attribute>
+      <attribute id='changeDetector.detectStatement'>
+         SELECT color, car from TEST_POLL order by CAR
+      </attribute>
+         <attribute id='db.queryMeatStatement'>
+         SELECT * FROM TEST_POLL WHERE CAR = '${groupColValue}'
+      </attribute>
+      <attribute id='mom.eraseOnDelete'>true</attribute>
+      <attribute id='mom.eraseOnDrop'>true</attribute>
+      <action do='LOAD' onStartupRunlevel='9' sequence='6'
+                 onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+   </plugin>
+   -->
+
    <!--===============================================-->
 
 
