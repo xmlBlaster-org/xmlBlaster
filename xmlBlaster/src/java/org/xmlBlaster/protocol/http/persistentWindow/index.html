@@ -22,7 +22,7 @@
          /**
           * The Servlet is pinging the browser to keep connection alive.
           * This method is invoked from the callbackFrame.
-          * @param state The string "refresh"<br />
+          * @param state The string "refresh-73"<br />
           *        When login is done successfully, state="loginSucceeded" is sent one time
           */
          function ping(state) {
@@ -32,7 +32,9 @@
             }
             else {
                // Response to servlet that we are alive ...
-               self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
+               Log.warning("Received refresh ping '" + state + "', sending pong back to servlet");
+               // Sending the state is for debugging only (or for proxies to let it through?)
+               self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
             if ((typeof pingTimeoutHandler) != "undefined")
                window.clearTimeout(pingTimeoutHandler);

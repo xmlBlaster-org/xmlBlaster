@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.22 2000/05/13 21:29:08 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.23 2000/05/13 22:15:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -522,6 +522,7 @@ public class HttpPushHandler
       private boolean pingRunning = true;
       /** We wait for a browser response (pong) after out ping */
       private boolean waitForPong = false;
+      private long counter = 0L;
 
       /** Response from the browser on our ping */
       public void pong()
@@ -550,12 +551,13 @@ public class HttpPushHandler
                Thread.currentThread().sleep(PING_INTERVAL);
                if (pingRunning == false)
                   break;
+               counter++;
             }
             catch (InterruptedException i) { }
 
             try {
-               if (false) {
-               // if (waitForPong) {  //// Switched off !!!!!
+               //if (false) {
+               if (waitForPong) {  //// Switched off !!!!!
                // This ping doesn't work over the internet??????
                   Log.warning(ME, "Browser seems to have disappeared, no response for my ping. Closing connection.");
                   pushHandler.cleanup();
@@ -563,7 +565,7 @@ public class HttpPushHandler
                }
                else {
                   if (Log.TRACE) Log.trace(ME,"pinging the Browser ...");
-                  pushHandler.ping("refresh");
+                  pushHandler.ping("refresh-" + counter);
                   waitForPong = true;
                }
             } catch(Exception e) {
