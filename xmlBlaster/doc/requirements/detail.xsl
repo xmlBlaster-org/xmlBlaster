@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.4 2000/05/18 13:23:37 ruff Exp $
+Version:   $Id: detail.xsl,v 1.5 2000/10/09 09:54:53 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -27,13 +27,13 @@ Author:    ruff@swand.lake.de
    <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-      <link REL="stylesheet" type="text/css" href="../xmlBlaster.css" />
+      <link REL="stylesheet" type="text/css" href="../howto/xmlBlaster.css" />
       <title>xmlBlaster - Requirement <xsl:value-of select="@id"/></title>
    </head>
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2000/05/18 13:23:37 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2000/10/09 09:54:53 $ $Author: ruff $ </p -->
 
    <p class="sitetitel">REQUIREMENT</p>
    <p class="sitetitel"><xsl:value-of select="@id"/></p>
