@@ -1,4 +1,4 @@
-#This file was created by <prog> Sun Nov 21 15:15:09 1999
+#This file was created by <ruff> Sun Nov 21 18:51:58 1999
 #LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
@@ -754,7 +754,7 @@ DTD for xmlBlaster server
 DTD for xmlBlaster client
 \layout Section
 
-Message protocoll
+Message protocol
 \layout Subsection
 
 Message content
@@ -769,8 +769,8 @@ Message QoS
 QoS (Quality of Service)
 \layout Standard
 
-A distinctive feature of xmlBlaster is its Quality-of-Servive (QoS).
- A buisness-application provides the server any objects, that server with
+A distinctive feature of xmlBlaster is its Quality-of-Service (QoS).
+ A business-application provides the server any objects, that server with
  a QoS administrated.
 \layout Subsection
 
@@ -834,7 +834,7 @@ Writing a server plugin for xmlBlaster
 XmlBlaster utilities
 \layout Chapter
 
-Feedback, LGPL, Standards, Weblinks
+Feedback, LGPL, Standards, Web links
 \layout Section
 
 Feedback
@@ -846,7 +846,7 @@ LGPL and Limitations
 Standards
 \layout Section
 
-Weblinks
+Web links
 \layout Bibliography
 \bibitem {1}
 
