@@ -1412,8 +1412,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *   SubscribeQos qos = new SubscribeQos(glob);
     *   try {
     *      con.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
-    *            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+    *            public String update(String name, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
     *               System.out.println("Receiving message for '//stock' subscription ...");
+    *               return "";
     *            }
     *         });
     *   } catch(XmlBlasterException e) {
