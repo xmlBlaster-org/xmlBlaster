@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.31 2000/01/13 06:18:25 ruff Exp $
+Version:   $Id: Log.java,v 1.32 2000/01/15 15:26:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -169,6 +169,21 @@ public class Log
    {
       LOGLEVEL = level;
       setPreLogLevelCheck();
+   }
+
+   
+   /**
+    * Set logging level from start parameter. 
+    * <br />
+    * Example:<br />
+    * <pre>jaco org.xmlBlaster.Main +trace +dump +calls +dump</pre>
+    */
+   public static final void setLogLevel(String[] args)
+   {
+      if (Args.getArg(args, "+calls")) Log.addLogLevel("CALLS");
+      if (Args.getArg(args, "+time"))  Log.addLogLevel("TIME");
+      if (Args.getArg(args, "+trace")) Log.addLogLevel("TRACE");
+      if (Args.getArg(args, "+dump"))  Log.addLogLevel("DUMP");
    }
 
 
