@@ -25,7 +25,6 @@ import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -276,8 +275,8 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
     * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was established.
     */
-   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.info(ME, "I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
       subscribe();    // initialize subscription again
       reconnected = true;
       allTailbackAreFlushed = true;
@@ -289,12 +288,12 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;
    }
 
-   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 

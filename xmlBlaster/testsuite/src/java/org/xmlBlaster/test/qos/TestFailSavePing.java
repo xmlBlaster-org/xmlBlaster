@@ -21,7 +21,6 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -217,7 +216,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
       try {
@@ -234,7 +233,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
             assertTrue("Publishing problems: " + e.getMessage(), false);
       }
 
-      connectionHandler.getQueue().clear(); // discard messages (dummy)
+      connection.getQueue().clear(); // discard messages (dummy)
    }
 
 
@@ -244,11 +243,11 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
    }
 
-   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 

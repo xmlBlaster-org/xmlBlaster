@@ -24,7 +24,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -210,7 +209,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
     */
    public void testFailSave()
    {
-      testSubscribe();
+      //testSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       for (int ii=0; ii<numPublish; ii++) {
          try {
@@ -252,15 +251,16 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
-      testSubscribe();    // initialize subscription again
+      testSubscribe();    // initialize on startup and on reconnect
    }
 
-   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warn(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }
-   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 

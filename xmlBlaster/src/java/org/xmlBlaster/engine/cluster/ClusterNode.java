@@ -30,7 +30,6 @@ import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -344,19 +343,13 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       available = true;
-      try {
-         if (xmlBlasterConnection.getQueue().getNumOfEntries() > 0) {
-            log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.getQueue().getNumOfEntries() + " tailback messages ...");
-            xmlBlasterConnection.flushQueue();
-         }
-         else
-            log.info(ME, "Connected to " + getId() + ", no backup messages to flush");
+      if (connection.getQueue().getNumOfEntries() > 0) {
+         log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + connection.getQueue().getNumOfEntries() + " tailback messages ...");
       }
-      catch (XmlBlasterException e) {
-         // !!!! TODO: producing dead letters
-         log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
+      else {
+         log.info(ME, "Connected to " + getId() + ", no backup messages to flush");
       }
    }
 
@@ -366,7 +359,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       available = false;
       log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
    }
@@ -377,7 +370,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       available = false;
       log.error(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
    }

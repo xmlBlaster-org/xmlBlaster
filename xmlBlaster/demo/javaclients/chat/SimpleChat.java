@@ -23,7 +23,6 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 import java.awt.event.*;
 import java.awt.*;
@@ -371,12 +370,12 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
      * informing the client in an asynchronous mode if the connection was established.
      * @see I_ConnectionStateListener
      */
-   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
    {
       subscription();
-      if (connectionHandler.getQueue().getNumOfEntries() > 0) {
+      if (connection.getQueue().getNumOfEntries() > 0) {
          log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " +
-                        connectionHandler.getQueue().getNumOfEntries() + " messages ...");
+                        connection.getQueue().getNumOfEntries() + " messages ...");
       }
       else
          log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
@@ -387,7 +386,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
      * informing the client in an asynchronous mode if the connection was lost.
      * @see I_ConnectionStateListener
      */
-   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
    {
       log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
    }
@@ -395,7 +394,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /**
      * @see I_ConnectionStateListener
      */
-   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
    {
       log.warn(ME, "I_ConnectionStateListener: DEAD - Lost connection to xmlBlaster, giving up.");
    }

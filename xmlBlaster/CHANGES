@@ -1,5 +1,20 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xx, xx 2003]
+===============================
+
+ o Cleanup of client side protocol plugin interface
+
+ o Incompatible change in java client library:
+    reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connection) -> 
+    reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+    
+    reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connection) ->
+    reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+    
+    reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) ->
+    reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+
 Changes for 0.845 [03, 27 2003]
 ===============================
 
@@ -32,9 +47,9 @@ Changes for 0.845 [03, 27 2003]
       import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
       import org.xmlBlaster.client.I_ConnectionHandler;
       I_ConnectionProblems  ->  I_ConnectionStateListener
-        reConnected()       ->    reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
-        lostConnection()    ->    reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
-                            ->    reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+        reConnected()       ->    reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+        lostConnection()    ->    reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+                            ->    reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
       con.initFailSave(...  ->  con.registerConnectionListener(...
 
    NOTE: If you use mutliple clients to connect to xmlBlaster

@@ -21,7 +21,6 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 
 /**
@@ -52,10 +51,10 @@ public class HelloWorld4
 
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
-               public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   connected = true;
-                  conRetQos = connectionHandler.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
+                  conRetQos = connection.getConnectReturnQos();
+                  log.error(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   //try {
                   //   connectionHandler.getQueue().clear(); // e.g. discard all msgs (it is our choice)
@@ -64,13 +63,13 @@ public class HelloWorld4
                   //}
                }
 
-               public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-                  log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
+               public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+                  log.error(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
                   connected = false;
                }
 
-               public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-                  log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
+               public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+                  log.error(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
                   connected = false;
                }
             });

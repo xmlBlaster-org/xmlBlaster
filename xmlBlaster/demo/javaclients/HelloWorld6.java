@@ -23,7 +23,6 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 
 /**
@@ -80,17 +79,17 @@ public class HelloWorld6
 
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
-               public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   connected = true;
-                  conRetQos = connectionHandler.getConnectReturnQos();
+                  conRetQos = connection.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   // we can access the queue via connectionHandler and for example erase the entries ...
                }
-               public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
                   connected = false;
                }
-               public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD");
                   connected = false;
                }
@@ -121,7 +120,8 @@ public class HelloWorld6
          });  // Login to xmlBlaster, default handler for updates
 
 
-         connected = (conRetQos != null);
+         log.info(ME, "STATE=" + conRetQos.getInitialConnectionState());
+         connected = (conRetQos.getInitialConnectionState() == ConnectionStateEnum.ALIVE);
          if (connected)
             log.info(ME, "Connected as " + qos.getUserId() + " to xmlBlaster: " + conRetQos.getSessionName());
          else

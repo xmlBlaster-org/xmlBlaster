@@ -14,7 +14,6 @@ import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 
 import java.util.Vector;
@@ -169,17 +168,17 @@ public class ServerHelper {
       I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
       con.registerConnectionListener(new I_ConnectionStateListener() {
-            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.info(clientName, "Changed from connection state " + oldState +
                                      " to " + ConnectionStateEnum.ALIVE + " with " +
-                                     connectionHandler.getQueue().getNumOfEntries() + " queue entries pending" +
+                                     connection.getQueue().getNumOfEntries() + " queue entries pending" +
                                      ": We were lucky, reconnected to " + glob.getId());
             }
-            public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.warn(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
                                     ConnectionStateEnum.POLLING + ": Lost connection to " + glob.getId());
             }
-            public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.error(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
                                      ConnectionStateEnum.DEAD + ": Lost connection to " + glob.getId());
             }
