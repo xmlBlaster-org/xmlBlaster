@@ -219,7 +219,7 @@ catch (XmlBlasterException ex) {
             <th>Property</th>
             <th>Default</th>
             <th>Description</th>
-            <th>Implemented</th>
+            <th>Impl</th>
          </tr>
 
          <tr>
@@ -234,6 +234,60 @@ catch (XmlBlasterException ex) {
             <i>
             errorCode=[resource.overflow.queue.bytes] node=[/node/heron] message=[Bla bla ]
             </i>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.internal</td>
+            <td>Dumps extended inforamtions including the stack trace</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>internal</i> exceptions.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.resource</td>
+            <td>defaults to XmlBlasterException.logFormat</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>resource</i> exceptions.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.communication</td>
+            <td>defaults to XmlBlasterException.logFormat</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>communication</i> exceptions.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.user</td>
+            <td>defaults to XmlBlasterException.logFormat</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>user</i> exceptions.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.transaction</td>
+            <td>defaults to XmlBlasterException.logFormat</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>transaction</i> exceptions.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>XmlBlasterException.logFormat.legacy</td>
+            <td>defaults to XmlBlasterException.logFormat</td>
+            <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
+            specifically for <i>legacy</i> exceptions.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -253,7 +307,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
