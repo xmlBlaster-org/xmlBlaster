@@ -5,8 +5,8 @@
 # Make sure that you run Doxygen from the 'doc' directory
 # where this configuraton file resides.
 
-# Add to you MANPATH for example:
-#   export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/C/man
+# Add to your MANPATH for example:
+#   export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/c/man
 # and try
 #   man XmlBlasterAccessUnparsed
 
