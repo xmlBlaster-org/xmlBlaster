@@ -133,6 +133,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    /**
     * Parses the given xml Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() and connect-return QoS is supported here.
+    * This call is thread safe if not intermixed with <tt>getConnectQosData()</tt> calls.
     * @param the XML based ASCII string
     */
    public synchronized ConnectQosData readObject(String xmlQos) throws XmlBlasterException {
@@ -149,12 +150,32 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    }
 
    /**
+    * This is NOT thread safe so you need a new factory for each parse. 
+    * Use this variant if you have a bigger xml markup and want to delegate
+    * startElement(), endElement() calls to this.
+    * PRECONDITION: Call setConnectQosData() first!
+    */
+   public ConnectQosData getConnectQosData() {
+      return this.connectQosData;
+   }
+   /** If a delegate call startElement() directly */
+   public void setConnectQosData(ConnectQosData data) {
+      this.connectQosData = data;
+   }
+
+   /**
     * Start element, event from SAX parser.
     * <p />
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
    public void startElement(String uri, String localName, String name, Attributes attrs) {
+      startElement(uri, localName, name, this.character, attrs);
+   }
+   /**
+    * Start element from SAX parsing, call as delegate delivers the character
+    */
+   public void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
@@ -204,13 +225,16 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 
       if (name.equalsIgnoreCase("address")) {
          inAddress = true;
+         boolean accepted=true;
          if (!inQueue) {
             tmpProp = new ClientQueueProperty(glob, null); // Use default queue properties for this connection address
-            this.connectQosData.addClientQueueProperty(tmpProp);
+            accepted = this.connectQosData.addClientQueueProperty(tmpProp);
          }
          tmpAddr = new Address(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
-         tmpProp.setAddress(tmpAddr);
+         if (accepted) {
+            tmpProp.setAddress(tmpAddr);
+         }
          return;
       }
 
@@ -230,7 +254,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          if (Constants.RELATING_CLIENT.equalsIgnoreCase(related)) {
             tmpProp = new ClientQueueProperty(glob, null);
             tmpProp.startElement(uri, localName, name, attrs);
-            this.connectQosData.addClientQueueProperty(tmpProp);
+            boolean accepted = this.connectQosData.addClientQueueProperty(tmpProp);
          }
          else if (Constants.RELATING_CALLBACK.equalsIgnoreCase(related)) {
             tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, null);
@@ -362,6 +386,10 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) throws org.xml.sax.SAXException {
+      endElement(uri, localName, name, this.character);
+   }
+
+   public void endElement(String uri, String localName, String name, StringBuffer character) throws org.xml.sax.SAXException {
       if (super.endElementBase(uri, localName, name) == true) {
          if (name.equalsIgnoreCase("clientProperty")) {
             this.connectQosData.addClientProperty(this.clientProperty);
@@ -488,11 +516,18 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public static final String toXml(ConnectQosData data, String extraOffset) {
+      return toXml("qos", data, extraOffset);
+   }
+
+   /**
+    * @param rootTag Usually "qos" to form "&lt;qos>", but could be "connectQos". 
+    */
+   public static final String toXml(String rootTag, ConnectQosData data, String extraOffset) {
       StringBuffer sb = new StringBuffer(2000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<qos>");
+      sb.append(offset).append("<").append(rootTag).append(">");
 
       if (data.getSecurityQos() != null)  // <securityService ...
          sb.append(data.getSecurityQos().toXml(extraOffset+Constants.INDENT)); // includes the qos of the ClientSecurityHelper
@@ -560,7 +595,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       }
 
       sb.append(data.writePropertiesXml(extraOffset+Constants.INDENT));
-      sb.append(offset).append("</qos>");
+      sb.append(offset).append("</").append(rootTag).append(">");
 
       return sb.toString();
    }
