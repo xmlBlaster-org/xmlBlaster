@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.18 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.19 2002/06/27 12:53:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -31,7 +31,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubXPath
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubXPath
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestSubXPath
  * </pre>
  */
 public class TestSubXPath extends TestCase implements I_Callback
@@ -172,6 +172,12 @@ public class TestSubXPath extends TestCase implements I_Callback
       Util.delay(1000L);                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
+      numReceived = 0;
+      testPublish();
+      waitOnUpdate(5000L);
+      assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
+
+      numReceived = 0;
       testPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
@@ -184,7 +190,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
 
