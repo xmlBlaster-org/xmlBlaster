@@ -14,7 +14,7 @@
       </p></center>
       <p>
       In this example there are three xmlBlaster server running which have registered
-      themselves under there cluster.node.id names <i>heron</i>, <i>avalon</i> and <i>frodo</i>.
+      themselves under their cluster.node.id names <i>heron</i>, <i>avalon</i> and <i>frodo</i>.
       </p>
       <p>
       Clients can query the root context <i>xmlBlaster.MOM</i> to choose a server they want to connect to.
@@ -34,7 +34,8 @@
    <p>
    We assume that you have started a NameService
    and the IOR of the NameService is dumped to <i>/tmp/ns.ior</i>, here
-   are examples how to start the JacORB or the ORBIX NameService:
+   are examples how to start the JacORB NameService (delivered with the xmlBlaster distribution)
+   or the ORBIX NameService (see http://www.iona.com):
    </p>
 <pre>
 # Start the JacORB NameService
@@ -171,7 +172,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>
