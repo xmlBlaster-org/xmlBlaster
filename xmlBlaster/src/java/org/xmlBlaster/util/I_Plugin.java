@@ -4,7 +4,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author  goetzger
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/03/15 12:54:56 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/04/05 18:57:57 $)
  */
 
 public interface I_Plugin
@@ -18,7 +18,7 @@ public interface I_Plugin
     *
     *   options[0]=DEFAULT_MAX_LEN
     *   options[1]=200
-    *   options[2]=DEFAULT_MAX_LEN
+    *   options[2]=DEFAULT_MIN_LEN
     *   options[3]=20
     * </pre>
     * @param String[] Some arguments from xmlBlaster.properties.
