@@ -581,11 +581,25 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    public void shutdown() {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       removeBurstModeTimer();
+
+      // NOTE: We would need to remove the 'final' qualifier to be able to set to null
+
       if (this.msgInterceptor != null) {
          this.msgInterceptor.shutdown(this);
+         //this.msgInterceptor = null;
       }
-      if (deliveryConnectionsHandler != null)
-         deliveryConnectionsHandler.shutdown();
+      if (deliveryConnectionsHandler != null) {
+         this.deliveryConnectionsHandler.shutdown();
+         //this.deliveryConnectionsHandler = null;
+      }
+      removeBurstModeTimer();
+      //this.burstModeTimer = null;
+      //this.msgQueue = null;
+      //this.failureListener = null;
+      //this.securityInterceptor = null;
+      //this.deliveryWorkerPool = null;
+      if (this.syncDeliveryWorker != null)
+         this.syncDeliveryWorker.shutdown();
    }
 
    /**
