@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.21 2001/08/21 21:17:15 laghi Exp $
+Version:   $Id: SimpleChat.java,v 1.22 2001/08/22 07:58:25 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -101,42 +101,44 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    }
 
 
-  protected void publishMessage(String content) {
-    xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+   protected void publishMessage(String content) {
+      xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                        "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                        "</key>";
-    MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-    Log.trace(ME, "Publishing ...");
-    try {
-       String str = xmlBlasterConnection.publish(msgUnit);
-    } catch(XmlBlasterException e) {
-       Log.warn(ME, "XmlBlasterException: " + e.reason);
-    }
-    Log.trace(ME, "Publishing done");
-  }
-
-  protected void getUserList() {
-    if (xmlBlasterConnection == null) {
-      Log.error(ME, "Please log in first");
-      return;
-    }
-
-
-    publishMessage("I am retrieving the connected users list (ignore this)");
-    try {
-      GetKeyWrapper getKeyWrapper = new GetKeyWrapper("__sys__UserList");
-      MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
-      if (msgUnit != null) {
-        for (int i=0; i < msgUnit.length; i++) {
-          appendOutput(new String(msgUnit[i].content) + System.getProperty("line.separator"));
-        }
-        appendOutput(System.getProperty("line.separator"));
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+      Log.trace(ME, "Publishing ...");
+      try {
+         String str = xmlBlasterConnection.publish(msgUnit);
+      } catch(XmlBlasterException e) {
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
       }
-    }
-    catch (XmlBlasterException ex) {
-      Log.error(ME, "error when getting the list of users");
-    }
-  }
+      Log.trace(ME, "Publishing done");
+   }
+
+   protected void getUserList() {
+      if (xmlBlasterConnection == null) {
+         Log.error(ME, "Please log in first");
+         return;
+      }
+
+      publishMessage("I am retrieving the connected users list (ignore this)");
+      try {
+         GetKeyWrapper getKeyWrapper = new GetKeyWrapper("__sys__UserList");
+         MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
+         if (msgUnit != null) {
+            for (int i=0; i < msgUnit.length; i++) {
+		appendOutput("users: " + System.getProperty("line.separator") +
+			    new String(msgUnit[i].content) + 
+			    System.getProperty("line.separator"));
+            }
+	    appendOutput("these where all users connected" + 
+			 System.getProperty("line.separator"));
+         }
+      }
+      catch (XmlBlasterException ex) {
+         Log.error(ME, "error when getting the list of users");
+      }
+   }
 
    /** initialize UI */
    public void initUI() {
