@@ -161,8 +161,12 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    protected void remove(String uniqueId, Figure figure) {
       synchronized (this.figureTimestampTable) {
-         this.figureTimestampTable.remove(figure);
-         this.timestampFigureTable.remove(uniqueId);
+         if (figure != null) {
+            this.figureTimestampTable.remove(figure);
+         }
+         if (uniqueId != null) {
+            this.timestampFigureTable.remove(uniqueId);
+         }
       }
    }
 
