@@ -82,7 +82,7 @@ Else add it manually.
   <property name="WWW_ROOT"             value="${user.home}/jakarta-tomcat/webapps"/>
 
   <property name="idl" value="org.xmlBlaster.protocol.corba"/>
-  <property name="idl.class" value="jacorb.idl.parser"/>
+  <property name="idl.class" value="org.jacorb.idl.parser"/>
 
   <property name="build.dir" value="./build"/>
   <property name="build.src" value="./build/src"/>
