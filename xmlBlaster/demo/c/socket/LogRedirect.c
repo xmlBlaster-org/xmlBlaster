@@ -134,7 +134,7 @@ static void myLogger(void *logUserP,
    /*XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)logUserP;*/
    if (logUserP) {}  /* To avoid "logUserP was never referenced" compiler warning */
 
-   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
+   if (level > currLevel) { /* XMLBLASTER_LOG_ERROR, XMLBLASTER_LOG_WARN, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_TRACE */
       return;
    }
    if ((p = (char *)malloc (size)) == NULL)
@@ -147,7 +147,7 @@ static void myLogger(void *logUserP,
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
-         if (level == LOG_TRACE)
+         if (level == XMLBLASTER_LOG_TRACE)
             printf("%s %s\n", getLogLevelStr(level), p);
          else
             printf("{%s-%s-%s} [%s] %s\n",

@@ -91,7 +91,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    queueProperties.maxNumOfEntries = property.getMaxEntries();
    queueProperties.maxNumOfBytes = property.getMaxBytes();
    queueProperties.logFp = myLogger;
-   queueProperties.logLevel = (log_.call() || log_.trace()) ? LOG_TRACE : LOG_INFO;
+   queueProperties.logLevel = (log_.call() || log_.trace()) ? XMLBLASTER_LOG_TRACE : XMLBLASTER_LOG_INFO;
    queueProperties.userObject = &log_;
 
    queueP_ = createQueue(&queueProperties, &exception); // &log_ Used in myLogger(), see above
@@ -428,7 +428,7 @@ static void myLogger(void *logUserP,
    }
    org::xmlBlaster::util::I_Log& log = *((org::xmlBlaster::util::I_Log*)queueP->userObject);
 
-   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
+   if (level > currLevel) { /* XMLBLASTER_LOG_ERROR, XMLBLASTER_LOG_WARN, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_TRACE */
       return;
    }
    if ((p = (char *)malloc (size)) == NULL)
@@ -441,11 +441,11 @@ static void myLogger(void *logUserP,
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
-         if (level == LOG_INFO)
+         if (level == XMLBLASTER_LOG_INFO)
             log.info(location, p);
-         else if (level == LOG_WARN)
+         else if (level == XMLBLASTER_LOG_WARN)
             log.warn(location, p);
-         else if (level == LOG_ERROR)
+         else if (level == XMLBLASTER_LOG_ERROR)
             log.error(location, p);
          else
             log.trace(location, p);

@@ -16,6 +16,7 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <XmlBlasterAccessUnparsed.h>
 
 /**

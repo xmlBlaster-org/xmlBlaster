@@ -83,11 +83,11 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
                              ExceptionStruct *exception);
 
 /* Shortcut for:
-    if (queueP->log) queueP->log(queueP, LOG_TRACE, LOG_TRACE, __FILE__, "Persistent queue is created");
+    if (queueP->log) queueP->log(queueP, XMLBLASTER_LOG_TRACE, XMLBLASTER_LOG_TRACE, __FILE__, "Persistent queue is created");
    is
     LOG __FILE__, "Persistent queue is created");
 */
-#define LOG if (queueP && queueP->log) queueP->log(queueP, queueP->logLevel, LOG_TRACE, 
+#define LOG if (queueP && queueP->log) queueP->log(queueP, queueP->logLevel, XMLBLASTER_LOG_TRACE, 
 
 #define LEN512 512  /* ISO C90 forbids variable-size array: const int LEN512=512; */
 #define LEN256 256  /* ISO C90 forbids variable-size array: const int LEN256=256; */
@@ -1265,7 +1265,7 @@ static void testRun(int argc, char **argv) {
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
    queueProperties.logFp = xmlBlasterDefaultLogging;
-   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.logLevel = XMLBLASTER_LOG_TRACE;
    queueProperties.userObject = 0;
 
    queueP = createQueue(&queueProperties, &exception);

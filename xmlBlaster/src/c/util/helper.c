@@ -485,7 +485,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
    if ((p = (char *)malloc (size)) == NULL)
       return;
 
-   if (level <= LOG_ERROR) {
+   if (level <= XMLBLASTER_LOG_ERROR) {
       stackTrace = getStackTrace(10);
    }
 
@@ -535,14 +535,14 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
  * Parses the given string and returns the enum for it.
  * If logLevelStr is NULL or empty or unknown we return the default log level.
  * @param logLevelStr The level e.g. "WARN" or "warn" or "2"
- * @return The enum, e.g. LOG_WARN
+ * @return The enum, e.g. XMLBLASTER_LOG_WARN
  */
 Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
 {
    int i;
    int len = numLOG_TEXT;
    if (logLevelStr == 0 || *logLevelStr == '\0' ) {
-      return LOG_WARN;
+      return XMLBLASTER_LOG_WARN;
    }
    for (i=0; i<len; i++) {
 #     ifdef _WINDOWS
@@ -555,7 +555,7 @@ Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
    }
    if (sscanf(logLevelStr, "%d", &i) == 1)
       return (XMLBLASTER_LOG_LEVEL)i;
-   return LOG_WARN;
+   return XMLBLASTER_LOG_WARN;
 }
 
 /**
@@ -656,7 +656,7 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
 {
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
-	/* %lld on UNIX, %I64d on Windows */
+        /* %lld on UNIX, %I64d on Windows */
    return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 }
 
@@ -727,7 +727,7 @@ int main()
    const char *location = __FILE__;
    const char *p = "OOOO";
    int i = 3;
-   xmlBlasterDefaultLogging(0, currLevel, LOG_WARN, location, "%s i=%d\n", p, i);
+   xmlBlasterDefaultLogging(0, currLevel, XMLBLASTER_LOG_WARN, location, "%s i=%d\n", p, i);
 
    printf("Sleeping now for %ld millis\n", millisecs);
    sleepMillis(millisecs);

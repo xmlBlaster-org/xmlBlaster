@@ -99,16 +99,16 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    xa->lowLevelAutoAck = false;
 
    if (xa->callbackMultiThreaded == true) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
       /*xa->callbackMultiThreaded = false;*/
    }
    xa->responseTimeout = xa->props->getLong(xa->props, "plugin/socket/responseTimeout", 60000L); /* One minute (given in millis) */
    xa->responseTimeout = xa->props->getLong(xa->props, "dispatch/connection/plugin/socket/responseTimeout", xa->responseTimeout);
-   /* ERROR HANDLING ? xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]); */
+   /* ERROR HANDLING ? xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]); */
    xa->callbackThreadId = 0;
    xa->threadCounter = 0;
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
                                 getLogLevelStr(xa->logLevel), xa->responseTimeout);
 
@@ -155,11 +155,11 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
                   break;
                /*pthread_yield(0);*/
                sleepMillis(interval);
-               if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+               if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                    "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for callback thread to join. %d/%d", interval, i, num);
             }
             if (i == num) {
-               xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Proper shutdown of callback thread failed, it seems to block on the socket");
+               xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Proper shutdown of callback thread failed, it seems to block on the socket");
             }
          }
 
@@ -169,7 +169,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
             /*
             retVal = pthread_cancel(xa->callbackThreadId);
             if (retVal != 0) {
-               xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
+               xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
             }
             */
          }
@@ -178,20 +178,20 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       if (USE_DETACH_MODE) {
          retVal = pthread_detach(xa->callbackThreadId); /* Frees resources (even if thread has died already), don't call multiple times on same thread! */
          if (retVal != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching callback thread 0x%x failed with error number %d", __LINE__, xa->callbackThreadId, retVal);
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%d] Detaching callback thread 0x%x failed with error number %d", __LINE__, xa->callbackThreadId, retVal);
          }
          else {
-            if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+            if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                           "pthread_detach(id=%ld) succeeded for callback server thread", (long)xa->callbackThreadId);
          }
       }
       else { /* JOIN mode */
          retVal = pthread_join(xa->callbackThreadId, 0);
          if (retVal != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_join problem return value is %d", retVal);
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_join problem return value is %d", retVal);
          }
          else {
-            if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+            if (xa->logLevel>=XMLBLASTER_LOG_INFO) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
                                           "pthread_join(id=%ld) succeeded for callback server thread", (long)xa->callbackThreadId);
          }
       }
@@ -199,7 +199,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       xa->callbackThreadId = 0;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=0x%x cbP=0x%x", xa->connectionP, xa->callbackP);
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=0x%x cbP=0x%x", xa->connectionP, xa->callbackP);
 
    {  /* Wait for any pending update() dispatcher threads to die */
       int i;
@@ -209,7 +209,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
          if ((int)xa->threadCounter < 1)
             break;
          sleepMillis(interval);
-         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+         if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
              "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for update thread to join. %d/%d", interval, i, num);
       }
    }
@@ -228,11 +228,11 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 
    rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
    if (rc != 0) /* EBUSY */
-      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
 
    rc = pthread_mutex_destroy(&xa->readnMutex);
    if (rc != 0) /* EBUSY */
-      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "pthread_mutex_destroy(readnMutex) returned %d, we ignore it", rc);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "pthread_mutex_destroy(readnMutex) returned %d, we ignore it", rc);
 
    free(xa);
 }
@@ -250,7 +250,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    if (clientUpdateFp == 0) {
       xa->clientsUpdateFp = 0;
-      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, "",
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, "",
         "Your callback UpdateFp pointer is NULL, we use our default callback handler");
    }
    else {
@@ -265,12 +265,12 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Creating XmlBlasterConnectionUnparsed failed", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return false;
    }
    xa->connectionP->log = xa->log;
    xa->connectionP->logUserP = xa->logUserP;
-   xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Created XmlBlasterConnectionUnparsed");
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Created XmlBlasterConnectionUnparsed");
 
 
    /* Switch on compression? */
@@ -285,7 +285,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    }
    else {
       if (strcmp(compressType, "")) {
-         xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode", compressType);
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode", compressType);
       }
       xa->connectionP->writeToSocket.funcP = writenPlain;
       xa->connectionP->writeToSocket.userP = xa;
@@ -305,7 +305,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Creating CallbackServerUnparsed failed", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       return false;
    }
@@ -327,7 +327,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    xa->callbackP->useThisSocket(xa->callbackP, xa->connectionP->socketToXmlBlaster, xa->connectionP->socketToXmlBlasterUdp);
 
-   xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
           "Created CallbackServerUnparsed instance, creating on a separate thread a listener on socket://%s:%d...",
           (xa->callbackP->hostCB == 0) ? "" : xa->callbackP->hostCB, xa->callbackP->portCB);
 
@@ -346,14 +346,14 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Creating thread failed with error number %d",
                __FILE__, __LINE__, threadRet);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       freeCallbackServerUnparsed(xa->callbackP);
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       return false;
    }
 
    xa->isInitialized = true;
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "initialize() successful");
    return xa->isInitialized;
 }
@@ -387,18 +387,18 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
    /* ======== Initialize threading ====== */
    msgRequestInfoP->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "preSendEvent(%s) occurred", msgRequestInfoP->methodName);
    retVal = xa->callbackP->addResponseListener(xa->callbackP, msgRequestInfoP, responseEvent);
    if (retVal == false) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Couldn't register as response listener", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                   "preSendEvent(requestId=%s, msgRequestInfoP->responseBlob.dataLen=%d), entering lock",
                   msgRequestInfoP->requestIdStr, msgRequestInfoP->responseBlob.dataLen);
    pthread_mutex_init(&msgRequestInfoP->responseMutex, NULL); /* returns always 0 */
@@ -406,7 +406,7 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retVal);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
    msgRequestInfoP->responseMutexIsLocked = true; /* Only if the client thread holds the lock */
@@ -428,28 +428,28 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
    if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex is LOCKED");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "responseEvent() responseMutex is LOCKED");
 
    blobcpyAlloc(&msgRequestInfoP->responseBlob, s->blob.data, s->blob.dataLen);
    msgRequestInfoP->responseType = s->type;
 
    if ((retVal = pthread_cond_signal(&msgRequestInfoP->responseCond)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d", retVal);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d", retVal);
       /* return; */
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "responseEvent(requestId '%s', msgType=%c, dataLen=%d) occurred, wake up signal sent",
                                 s->requestId, msgRequestInfoP->responseType, msgRequestInfoP->responseBlob.dataLen);
 
    if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to unlock responseMutex in responseEvent() failed %d", retVal);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to unlock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex is UNLOCKED");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "responseEvent() responseMutex is UNLOCKED");
 }
 
 /**
@@ -476,14 +476,14 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
       useTimeout = true;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfoP->requestIdStr);
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfoP->requestIdStr);
    
    if ((retVal = pthread_cond_init(&msgRequestInfoP->responseCond, NULL)) != 0) {
       xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
       strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] pthread_cond_init() for '%s()' with requestId=%s returned %d.",
                __FILE__, __LINE__, msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
 
@@ -496,19 +496,19 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
             strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis",
                     __FILE__, __LINE__, msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, xa->responseTimeout);
-            if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+            if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
             return (MsgRequestInfo *)0;
          }
       }
       else {
          pthread_cond_wait(&msgRequestInfoP->responseCond, &msgRequestInfoP->responseMutex); /* Wakes up from responseEvent() */
-         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+         if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "Wake up tread, response of length %d arrived", msgRequestInfoP->responseBlob.dataLen);
       }
    }
 
    if ((retVal = pthread_cond_destroy(&msgRequestInfoP->responseCond)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
                  msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
    }
 
@@ -517,8 +517,8 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    msgRequestInfoP->responseBlob.dataLen = 0;
    msgRequestInfoP->responseBlob.data = 0; /* msgRequestInfoP->blob.data is now responsible to free() the data */
 
-   if (xa->logLevel>=LOG_TRACE)
-      xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
          "Thread #%ld woke up in postSendEvent() for msgType=%c and dataLen=%d",
          msgRequestInfoP->requestIdStr, msgRequestInfoP->responseType, msgRequestInfoP->blob.dataLen);
 
@@ -532,7 +532,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 
    msgRequestInfoP->responseType = 0;
    
-   /* if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
+   /* if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
    if (mutexUnlock(msgRequestInfoP, exception) == false)
       return (MsgRequestInfo *)0;
 
@@ -553,31 +553,31 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
       char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
       if (exception == 0) {
          if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
                        msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
          }
          return false;
       }
       if (*exception->errorCode != 0) {
          SNPRINTF(embeddedText, XMLBLASTEREXCEPTION_MESSAGE_LEN, "{%s:%s}", exception->errorCode, exception->message);
-         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
+         if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
       }
       else
          *embeddedText = 0;
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex, return=%d. Embedded %s", __FILE__, __LINE__, retVal, embeddedText);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
 
       if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
-         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
                     msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
       }
       return false;
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent() responseMutex is UNLOCKED");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "postSendEvent() responseMutex is UNLOCKED");
 
    if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
                  msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
    }
    return true;
@@ -607,7 +607,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    if (clientUpdateFp == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid argument 'updateFp' to connect()", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return false;
    }
    */
@@ -615,7 +615,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    if (qos == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid argument 'qos' to connect()", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
@@ -623,7 +623,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
       return false;
    }
    
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Invoking connect()");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Invoking connect()");
 
    if (strstr(qos, "<callback") != 0) {
       /* User has given us a callback address */
@@ -646,14 +646,14 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
       if (pos == 0) {
          strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid 'qos' markup to connect()", __FILE__, __LINE__);
-         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+         if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
          return false;
       }
       strncpy0(qos_, qos, pos-qos+1);
       strcat(qos_, callbackQos);
       strcat(qos_, "</qos>");
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Connecting with qos=%s", qos_);
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connecting with qos=%s", qos_);
 
    /* Register our function responseEvent() to be notified when the response arrives,
       this is done by preSendEvent() callback called during connect() */
@@ -667,7 +667,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
 
    if (response == 0) return response;
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
       "Got response for connect(secretSessionId=%s)", xa->connectionP->secretSessionId);
    return response;
 }
@@ -808,7 +808,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to %.16s() %s",
                    __FILE__, __LINE__, methodName, stack);
-         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, exception->message);
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, exception->message);
       }
       free(stack);
       return false;
@@ -816,7 +816,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
 
    if (exception == 0) {
       char *stack = getStackTrace(10);
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
               __FILE__, __LINE__, methodName, stack);
       free(stack);
       return false;
@@ -829,7 +829,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
                "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
                 __FILE__, __LINE__, methodName, stack);
       free(stack);
-      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, exception->message);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
       return false;
    }
 
@@ -854,7 +854,7 @@ static bool runUpdate(UpdateContainer *container)
    SocketDataHolder *socketDataHolder = &container->socketDataHolder;
    bool retVal;
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Entering runUpdate()");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Entering runUpdate()");
 
    retVal = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
 
@@ -866,7 +866,7 @@ static bool runUpdate(UpdateContainer *container)
 
    free(container);
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "runUpdate: Update thread 0x%x is exiting", (int)pthread_self());
    xa->threadCounter--;
    return (retVal==true) ? 0 : 1;
@@ -890,7 +890,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
 
       for (i=0; i<msgUnitArrP->len; i++) {
          const char *key = msgUnitArrP->msgUnitArr[i].key;
-         xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
              "CALLBACK update() default handler: Asynchronous message update arrived:%s id=%s, we ignore it in this default handler\n",
              key, ((SocketDataHolder*)socketDataHolder)->requestId);
          msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
@@ -907,7 +907,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       return;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "interceptUpdate(): Received message");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "interceptUpdate(): Received message");
 
    if (xa->callbackMultiThreaded == false) {
       bool ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
@@ -949,7 +949,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Creating thread failed with error number %d, we deliver the message in the same thread",
                   __FILE__, __LINE__, threadRet);
-         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, exception->message);
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, exception->message);
          ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
          cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
          xa->threadCounter--;
@@ -960,11 +960,11 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       /* Is done already with above PTHREAD_CREATE_DETACHED 
          threadRet = pthread_detach(tid);
          if (threadRet != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
          }
       */
 
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
 
       pthread_attr_destroy(&attr);
@@ -988,7 +988,7 @@ static ssize_t writenPlain(void * userP, const int fd, const char *ptr, const si
    /* Start mutex */
    rc = pthread_mutex_lock(&xa->writenMutex);
    if (rc != 0) /* EINVAL */
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock(writenMutex) returned %d.", rc);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(writenMutex) returned %d.", rc);
 
    /* Send data */
    ret = writen(fd, ptr, nbytes);
@@ -996,7 +996,7 @@ static ssize_t writenPlain(void * userP, const int fd, const char *ptr, const si
    /* End mutex */
    rc = pthread_mutex_unlock(&xa->writenMutex);
    if (rc != 0) /* EPERM */
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock(writenMutex) returned %d.", rc);
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(writenMutex) returned %d.", rc);
    
    return ret;
 
@@ -1010,18 +1010,18 @@ static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, cons
    ssize_t ret;
 
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "writenCompressed(%u)", nbytes);
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "writenCompressed(%u)", nbytes);
 
    /* Start mutex */
    rc = pthread_mutex_lock(&xa->writenMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock(writenMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(writenMutex) returned %d.", rc);
 
    /* Send data */
    ret = xmlBlaster_writenCompressed(xa->connectionP->zlibWriteBuf, fd, ptr, nbytes);
 
    /* End mutex */
    rc = pthread_mutex_unlock(&xa->writenMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock(writenMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(writenMutex) returned %d.", rc);
 
    return ret;
 }
@@ -1036,12 +1036,12 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
 
    rc = pthread_mutex_lock(&xa->readnMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
 
    ret = readn(fd, ptr, nbytes);
 
    rc = pthread_mutex_unlock(&xa->readnMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
    
    return ret;
 }
@@ -1054,15 +1054,15 @@ static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_
    ssize_t ret;
 
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "readnCompressed(%u)", nbytes);
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "readnCompressed(%u)", nbytes);
 
    rc = pthread_mutex_lock(&xa->readnMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
 
    ret = xmlBlaster_readnCompressed(xa->connectionP->zlibReadBuf, fd, ptr, nbytes);
 
    rc = pthread_mutex_unlock(&xa->readnMutex);
-   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
+   if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
 
    return ret;
 }

@@ -69,15 +69,15 @@ Dll_Export extern void embedException(ExceptionStruct *exception, const char *ne
 Dll_Export extern const char *getExceptionStr(char *out, int outSize, const ExceptionStruct *exception);
 
 typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
-   /*LOG_NOLOG=0,  don't use */
-   LOG_ERROR=1,  /**< supported, use for programming errors */
-   LOG_WARN=2,   /**< supported, use for user errors and wrong configurations */
-   LOG_INFO=3,   /**< supported, use for success information only */
-   /*LOG_CALL=4,  don't use */
-   /*LOG_TIME=5,  don't use */
-   LOG_TRACE=6,  /**< supported, use for debugging purposes */
-   LOG_DUMP=7    /**< supported, use for debugging purposes */
-   /*LOG_PLAIN=8  don't use */
+   /*XMLBLASTER_LOG_NOLOG=0,  don't use */
+   XMLBLASTER_LOG_ERROR=1,  /**< supported, use for programming errors */
+   XMLBLASTER_LOG_WARN=2,   /**< supported, use for user errors and wrong configurations */
+   XMLBLASTER_LOG_INFO=3,   /**< supported, use for success information only */
+   /*XMLBLASTER_LOG_CALL=4,  don't use */
+   /*XMLBLASTER_LOG_TIME=5,  don't use */
+   XMLBLASTER_LOG_TRACE=6,  /**< supported, use for debugging purposes */
+   XMLBLASTER_LOG_DUMP=7    /**< supported, use for debugging purposes */
+   /*XMLBLASTER_LOG_PLAIN=8  don't use */
 } XMLBLASTER_LOG_LEVEL;
 typedef void  ( * XmlBlasterLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 Dll_Export extern void xmlBlasterDefaultLogging(void *logUserP, 

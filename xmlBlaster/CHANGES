@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o C client library:
+   - #13048 Added XMLBLASTER_ prefix to LOG_INFO, LOG_WARN ... to avoid
+     namespace clash with syslog.h; Thanks to David Kerry
+
  o C++ client library:
    - #13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
 

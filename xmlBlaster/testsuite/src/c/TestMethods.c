@@ -78,14 +78,14 @@ static const char * test_methods()
 
    xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__,
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
          "Connection to xmlBlaster failed, please start the server or check your configuration");
       freeXmlBlasterAccessUnparsed(xa);
       mu_assert("Connection to xmlBlaster failed, please start the server or check your configuration",
                 false);
    }
 
-   xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
 
    {  /* connect */
       char connectQos[2048];

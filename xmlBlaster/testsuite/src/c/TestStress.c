@@ -37,8 +37,8 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException
    updateCounter += msgUnitArr->len;
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit *msg = &msgUnitArr->msgUnitArr[i];
-      if (xa->logLevel>=LOG_TRACE)
-         xa->log(0, xa->logLevel, LOG_TRACE, __FILE__, "CALLBACK update(): Asynchronous message update arrived\n"); 
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+         xa->log(0, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "CALLBACK update(): Asynchronous message update arrived\n"); 
       strncpy0(updateContent, msg->content, msg->contentLen+1); /* Adds '\0' to the end */
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
    }
@@ -144,8 +144,8 @@ static const char * test_stress()
          freeXmlBlasterAccessUnparsed(xa);
          mu_assert(errorString, false);
       }
-      if (xa->logLevel>=LOG_TRACE)
-         xa->log(0, xa->logLevel, LOG_TRACE, __FILE__, "Publish #%d messages success\n", iPub); 
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+         xa->log(0, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Publish #%d messages success\n", iPub); 
       mu_assert("Publish response is invalid", strstr(response, "rcvTimestamp nanos=")!=0);
       xmlBlasterFree(response);
    }

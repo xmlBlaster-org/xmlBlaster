@@ -200,7 +200,7 @@ static const char * test_overflow()
    queueProperties.maxNumOfEntries = 4L;
    queueProperties.maxNumOfBytes = 25LL;
    queueProperties.logFp = loggingFp;
-   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.logLevel = XMLBLASTER_LOG_TRACE;
    queueProperties.userObject = 0;
 
    queueP = createQueue(&queueProperties, &exception);
@@ -336,7 +336,7 @@ static const char * test_queue()
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
    queueProperties.logFp = loggingFp;
-   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.logLevel = XMLBLASTER_LOG_TRACE;
    queueProperties.userObject = (void *)dummy;
 
    queueP = createQueue(&queueProperties, &exception);
