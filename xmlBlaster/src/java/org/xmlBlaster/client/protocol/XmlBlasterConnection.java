@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.7 2001/02/14 00:46:08 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.8 2001/05/06 07:38:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -34,17 +34,17 @@ import java.applet.Applet;
 
 /**
  * This is a helper class, helping a Java client to connect to xmlBlaster
- * using IIOP (CORBA).
+ * using IIOP (CORBA), RMI, XML-RPC or any other supported protocol. 
  * <p>
- * Please note that you don't need to use this wrapper, you can use the raw CORBA
+ * Please note that you don't need to use this wrapper, you can use the raw I_XmlBlasterConnection
  * interface as well. You can also hack your own little wrapper, which does exactly
  * what you want.
  * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
- * If you need a fail save client, you can invoke the xmlBlaster CORBA methods
- * through this class as well (for example use xmlBlasterConnection.publish() instead of the direct
- * CORBA/RMI/XML-RPC server.publish()).
+ * If you need a fail save client, you can invoke the xmlBlaster methods
+ * through this class as well (for example use xmlBlasterConnection.publish()
+ * instead of the direct CORBA/RMI/XML-RPC server.publish()).
  * <p />
  * You need to call <b>initFailSave()</b>, to switch this on, and pass it your implementation of I_ConnectionProblems.<br />
  * If suddenly the xmlBlaster server disappears, XmlBlasterConnection
@@ -70,7 +70,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -494,7 +494,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Shut down the callback server. 
+    * Shut down the callback server.
     * Is called by logout() automatically.
     *
     * @return true CB server successfully shut down
