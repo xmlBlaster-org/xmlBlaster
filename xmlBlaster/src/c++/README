@@ -1,0 +1,184 @@
+
+This is the implementation of the xmlBlaster client classes in c++.
+
+
+HOW TO BUILD THE CLIENT CLASSES:
+
+- retrieve xerces from http://xml.apache.org
+- install xerces (lets say in /usr/local/xerces)
+- install one c++ implementation of corba (currently MICO or ORBACUS)
+- define the following environment variables:
+    USE_CPP=true (which tells the compiler to build the c++-classes)	
+    XMLCPP_HOME=<directory-where-you-installed-xerces>
+                (for example XMLCPP_HOME=/usr/local/xerces)
+    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_1")
+    CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
+    ORBACUS_HOME or MICO_HOME (depending if you run with orbacus or mico
+	ex.: ORBACUS_HOME=/usr/local/orbacus
+    ORBACUS_VER or MICO_VER to the version of mico or orbacus
+	ex.: MICO_VER="2.3.1"	 
+ 
+So if you use bash, an example would be:
+
+export XMLCPP_HOME=/usr/local/xerces
+export XMLCPP_VER="1_1"
+export CORBA_CPP="mico"
+export MICO_HOME=/usr/local/mico
+export MICO_VER="2.3.1"
+
+Then you can run make from the $XMLBLASTER_HOME directory or from
+$XMLBLASTER_HOME/src/c++
+
+
+HOW TO RUN THE TESTSUITE:
+call make test from the ${XMLBLASTER_HOME}/testsuite/c++ directory
+to manually start a test look at the file test.sh in that directory.
+
+
+And now some additional notes:
+
+These c++ classes are practically a clone to the java-client & util classes (at
+the time of writing this, some of the util classes in java have moved out from
+xmlBlaster to jutil). Some slight differences are:
+
+- The classes you will not find in the java-implementation:
+	StringStripper, StringStripper2, StringTrim and NameServerControl. 
+	These are used to simplify the use of the NameService. StringTrim 
+	implements methods to handle trimming of strings the same way as 
+	String.trim() does in java.
+
+- Locales are not implemented (this affects the way logging looks like).
+
+- Failsave is not implemeted (yet).
+
+- There is no caching in CorbaConnection (yet)
+
+- No direct way of reading the IOR string via HTTP (see below)
+
+There is a java class called SetCCProperties which is used to generate a 
+header file called util/PropertyDef.h which contains platform specific 
+definitions (I did this because I am laisy, and this is the easiest way to
+retrieve such information). This class is called under the building process.
+
+There is another small java helper application which you might use. 
+It is called HttpIorForCpp. It reads the IOR string of the xmlBlaster server 
+and writes it to the standard output. This is done to avoid
+to use some (big) www library for the only purpose to implement this little 
+feature. So if you want to read the IOR from the HTTP server (as is default 
+in xmlBlaster), do the following when running the client application (in unix):
+
+clientAppl -ior `java -classpath=$CLASSPATH:util HttpIorForCpp`
+
+I will implement the reading from http as an option later.
+
+
+-Some notes on XERCES
+
+  1) Note that the strings in xerces are UNICODE 3.0 compliant and the 
+     characters XMLCh sizes are different from the CORBA and ansi string ones.
+
+  2) To transform the character types from one system to the other, xerces uses
+     the static methods of XMLString. Particularly useful is the transcode()
+     method which comes in different flowers. 
+
+  3) When using methods of the xerces utility classes which return pointers
+     (often pointers to characters XMLCh*) the principle is like a T_ptr type
+     in CORBA, i.e. it is allocated dynamically inside the method and returned
+     to the caller of the method. At this moment the caller becomes the owner
+     of that XMLCh* memory-space, so it is (the caller) the responsible for 
+     deleting that pointer (not deleting results in memory leak).
+
+
+- Notes on corba compatibility
+
+     It is well known that different corba implementors handle things in
+     different ways. This starts with the names of the corba header files, the
+     names of the files generated from the idl compiler, idl-compiler flags,
+     and to some extend method-names (sometimes even things wich are 
+     well-defined by the specification).
+
+     In writing the c++ client classes I tried to keep the implementor-
+     specific stuff in a header- and a source file:
+	
+	util/CompatibleCorba.h and util/CompatibleCorba.cc
+	
+     In the header file, macros, header file names etc. are specified, while
+     in the source file, special non-standard functions encapsulate 
+     implementor-specific (but usefull) functions.
+
+     So if you want to make xmlBlaster work with other corba implementors, you
+     must first define a new name (in CompatibleCorba.h) telling which corba 
+     to use. At present the following names are identified:
+
+	- MICO
+	- ORBACUS
+ 
+     Then you define all the header filenames  (look at the MICO or ORBACUS 
+     case).
+	
+     To use this header do it in the following way:
+
+     For each idl-file (in our case we only have one: xmlBlaster.idl) you 
+     have to assign to either CLIENT_HEADER or SERVER_HEADER the name of the 
+     prefix of the idl file (This is used to build defines for the 
+     idl-generated files). 
+     This is done because some corba implementors have one header file for the 
+     server and another for the client. Note that you have to include 
+     util/CompatibleCorba.h after each definition.
+
+     So if you will use two different idl files in your source, lets say
+     module1.idl and module2.idl, then you will call the following at the start
+     of your implementation:
+
+        #define SERVER_HEADER module1
+	#include <util/CompatibleCorba.h>
+	#define SERVER_HEADER module2
+	#include <util/CompatibleCorba.h>
+ 
+     You need to do this because CompatibleCorba will define macros for the 
+     implementor-names for the different headers (like nameservice, event 
+     service and more).
+
+     You will call CLIENT_HEADER if the code you write will only be a pure 
+     client. In case you write a server, or a mixed client/server, then you 
+     will call SERVER_HEADER. Note that xmlBlaster is always a mixed
+     client/server even if you are only writing a client (because of the 
+     callback).
+
+     After having defined and included what explained, if you want to use
+     a service (for example a naming service), you don't need to call
+     the implementor-specific name for it, just include a macro like this:
+
+     #include COSNAMING
+
+     And from now on you do not bother about implementor specific stuff.
+     The following names are defined for the different services:
+
+	CORBA_HEADER (the corba header: you don't need to include this 
+		implicitly, because it is called already the first time you 
+		include	util/CompatibleCorba.h)
+	COSCONTAINEMENT 
+	COSOBJECTIDENTITY
+	COSREFERENCE
+	COSEVENTCHANNELADMIN
+	COSEVENTCOMM
+	COSRELATIONSHIPS
+	COSGRAPHS
+	COSTIME
+	COSGRAPHEXTENTSION
+	COSTRADING
+	COSNAMING
+	COSPROPERTY
+	COSTRADINGREPOS
+	COSTYPEDEVENTCHANNELADMIN
+	COSTYPEDEVENT
+
+    Note that not all these are implemented by all vendors. If a particular
+    vendor does not implement a certain feature, then it links to a file called
+    not_implemented.h which does not exist. This will automatically result in
+    a compile error.
+
+
+Cheers & good Luck
+
+Michele (michele.laghi@attglobal.net)

@@ -1,131 +1,62 @@
-#
-# MICO --- a CORBA 2.0 implementation
-# Copyright (C) 1997 Kay Roemer & Arno Puder
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# Send comments and/or bug reports to:
-#                mico@informatik.uni-frankfurt.de
-#
+CPP_DIR=$(XMLBLASTER_HOME)/src/c++
 
-all: clientBOA clientPOA
+include $(CPP_DIR)/Makefile.def
 
-DIR_PREFIX=${MICO_HOME}/
+EVERYTHING= $(BIN_DIR)/TestGet \
+	 $(BIN_DIR)/TestSub \
+	 $(BIN_DIR)/RamTest \
+	 $(BIN_DIR)/TestLogin \
+	$(BIN_DIR)/clientPOA 
 
-ifneq ($(wildcard $(DIR_PREFIX)/doc/mico/examples/MakeVars),)
-include $(DIR_PREFIX)doc/mico/examples/MakeVars
-endif
-
-ifneq ($(wildcard $(DIR_PREFIX)/MakeVars),)
-include $(DIR_PREFIX)/MakeVars
-endif
-
-LD = $(CXX)
-
-CONFLIBS := -ldl
-CXXFLAGS := -DWITH_MICO -I. -I$(DIR_PREFIX)include $(CXXFLAGS) $(EHFLAGS)
-CFLAGS   := -I. -I$(DIR_PREFIX)include $(CFLAGS)
-LDLIBS   := -lmico$(VERSION) -lmicocoss$(VERSION) $(CONFLIBS)
-LDFLAGS  := -L$(DIR_PREFIX)lib $(LDFLAGS)
-DEPS     := $(DIR_PREFIX)lib/$(LIBMICO)
-IDLFLAGS := -I. -I$(DIR_PREFIX)include
-IDL      := $(DIR_PREFIX)/bin/idl
-
-AUX_CXXFLAGS =
-AUX_LDLIBS   = -lmicoaux$(VERSION)
-AUX_LDFLAGS  =
-ifeq  ($(HAVE_STATIC), yes)
-AUX_DEPS     = $(DIR_PREFIX)lib/libmicoaux$(VERSION).a
+ifeq ($(CORBA_CPP),mico)
+ALL=$(EVERYTHING) $(BIN_DIR)/clientPOA	
 else
-AUX_DEPS     = $(DIR_PREFIX)lib/libmicoaux$(VERSION).$(SOEXT)
+ALL=$(EVERYTHING)
 endif
 
-X11_CXXFLAGS = $(X_CFLAGS)
-X11_LDLIBS   = -lmicox$(VERSION) -lXaw -lXmu -lXt -lX11 -lXext $(X_LIBS)
-X11_LDFLAGS  =
-ifeq  ($(HAVE_SHARED), yes)
-X11_DEPS     = $(DIR_PREFIX)lib/libmicox$(VERSION).$(SOEXT)
-else
-X11_DEPS     = $(DIR_PREFIX)lib/libmicox$(VERSION).a
+
+.cc.o:
+	$(CC) $(CORBA_INC) $(XMLCPP_INC) -I$(CPP_DIR) -c $<
+
+all: bin $(ALL)
+
+test: all
+	./test.sh
+
+bin:
+	$(MKDIR) bin
+
+$(BIN_DIR)/TestGet: TestGet.o
+ifeq ($(USE_CPP),true) 
+	$(CC) TestGet.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/TestGet $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-QT_CXXFLAGS = $(X_CFLAGS)
-QT_LDLIBS   = -lmicoqt$(VERSION) -lqt -lX11 -lXext $(X_LIBS)
-QT_LDFLAGS  =
-ifeq  ($(HAVE_SHARED), yes)
-QT_DEPS     = $(DIR_PREFIX)lib/libmicoqt$(VERSION).$(SOEXT)
-else
-QT_DEPS     = $(DIR_PREFIX)lib/libmicoqt$(VERSION).a
+$(BIN_DIR)/TestSub: TestSub.o
+ifeq ($(USE_CPP),true) 
+	$(CC) TestSub.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/TestSub $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-GTK_CXXFLAGS = $(GTK_CFLAGS)
-GTK_LDLIBS   = -lmicogtk$(VERSION) $(GTK_LIBS)
-GTK_LDFLAGS  =
-ifeq  ($(HAVE_SHARED), yes)
-GTK_DEPS     = $(DIR_PREFIX)lib/libmicogtk$(VERSION).$(SOEXT)
-else
-GTK_DEPS     = $(DIR_PREFIX)lib/libmicogtk$(VERSION).a
+$(BIN_DIR)/RamTest: RamTest.o
+ifeq ($(USE_CPP),true) 
+	$(CC) RamTest.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/RamTest $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-COS_CXXFLAGS =
-COS_LDLIBS   = -lmicocoss$(VERSION)
-COS_LDFLAGS  =
-ifeq  ($(HAVE_SHARED_EXCEPTS), yes)
-COS_DEPS     = $(DIR_PREFIX)lib/libmicocoss$(VERSION).$(SOEXT)
-else
-COS_DEPS     = $(DIR_PREFIX)lib/libmicocoss$(VERSION).a
+$(BIN_DIR)/TestLogin: TestLogin.o
+ifeq ($(USE_CPP),true) 
+	$(CC) TestLogin.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/TestLogin $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-install:
-	$(IDIRCMD) $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR)
-	test -z "$(INSTALL_SRCS)" || \
-	  eval 'for i in $(INSTALL_SRCS); do \
-	    $(ISRCCMD) $$i $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR); \
-	  done'
-	test -z "$(INSTALL_SCRIPTS)" || \
-	  eval 'for i in $(INSTALL_SCRIPTS); do \
-	    $(ISCRIPTCMD) $$i $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR); \
-	  done'
-
-ifeq (.depend, $(wildcard .depend))
-include .depend
+$(BIN_DIR)/clientPOA: clientPOA.o
+ifeq ($(USE_CPP),true) 
+	$(CC) clientPOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientPOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-.depend:
-	echo '# Module dependencies' > .depend
-	$(MKDEPEND) $(CXXFLAGS) *.c *.cc >> .depend
+$(BIN_DIR)/clientBOA: clientBOA.o
+ifeq ($(USE_CPP),true) 
+ifeq ($(CORBA_CPP),mico)
+	$(CC) clientBOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientBOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+endif
+endif
 
-XMLBLASTER_IDL  = ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
-
-INSTALL_DIR     = redlich/Hello-1
-INSTALL_SRCS    = Makefile client.cc ${XMLBLASTER_IDL}
-INSTALL_SCRIPTS =
-
-server: xmlBlaster.h xmlBlaster.o server.o $(DEPS)
-	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o server.o $(LDLIBS) -o server
-
-clientBOA: xmlBlaster.h xmlBlaster.o clientBOA.o $(DEPS)
-	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o clientBOA.o $(LDLIBS) -o clientBOA 
-
-clientPOA: xmlBlaster.h xmlBlaster.o clientPOA.o $(DEPS)
-	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o clientPOA.o $(LDLIBS) -o clientPOA 
-
-
-xmlBlaster.h xmlBlaster.cc : ${XMLBLASTER_IDL} $(IDLGEN)
-	$(IDL) --poa ${XMLBLASTER_IDL}
-
-clean:
-	rm -f xmlBlaster.cc xmlBlaster.h *.o core clientBOA clientPOA server *~ .depend
-
+clean: 
+	$(RM) *.o $(ALL)

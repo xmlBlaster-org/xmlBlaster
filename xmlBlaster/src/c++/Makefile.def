@@ -1,0 +1,17 @@
+SRC_DIR =$(XMLBLASTER_HOME)/src/c++
+include $(SRC_DIR)/$(CORBA_CPP).def
+IDL_DIR    =$(XMLBLASTER_HOME)/src/java/org/xmlBlaster/protocol/corba
+GEN_DIR    =$(SRC_DIR)/generated
+CLIENT_DIR =$(SRC_DIR)/client
+UTIL_DIR   =$(SRC_DIR)/util
+JUTIL_DIR  =$(SRC_DIR)/jutil
+TEST_DIR   =$(SRC_DIR)/tests
+BIN_DIR    =$(TEST_DIR)/bin
+XMLCPP_INC =-I$(XMLCPP_HOME)
+XMLCPP_LIB =-L$(XMLCPP_HOME)/lib -lxerces-c$(XMLCPP_VER) -lpthread
+CLIENT_OBJ =$(CLIENT_DIR)/CorbaConnection.o $(UTIL_DIR)/CompatibleCorba.o $(UTIL_DIR)/Log.o
+
+MKDIR      =mkdir
+RMDIR      =rm -r
+CD         =cd
+CC         =gcc

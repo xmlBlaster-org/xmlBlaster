@@ -22,12 +22,13 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.66 $
+# $Revision: 1.67 $
 #-----------------------------------------------------------
 
 
 BLACK_LTGREEN="\033[40;46m"
 BLACK_RED="\033[30;41m"
+BLACK_YELLOW="\033[40;43m"
 ESC="\033[0m"
 
 OS="`uname -s`"
@@ -168,10 +169,16 @@ else
 fi
 
 if [ ${#1} == 0 ]; then
+  if [ ${CORBA_CPP:=""} != "orbacus" ] ; then  
     source ${XMLBLASTER_HOME}/config/jacorb.sh
     source ${XMLBLASTER_HOME}/config/mico.sh
     ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
     ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
+  else 
+    source ${XMLBLASTER_HOME}/config/orbacus.sh
+    ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus   $ESC"
+    ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus   $ESC"
+  fi
 else
 
    if [ ${1} == "orbacus" ]; then
@@ -179,13 +186,81 @@ else
       ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
       ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
    else 
-      ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
+#      ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
       source ${XMLBLASTER_HOME}/config/jacorb.sh
       source ${XMLBLASTER_HOME}/config/mico.sh
       ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
       ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
    fi
 fi
+
+# stuff fot the c++ classes
+if [ ${USE_CPP:=""} = "" ] ; then
+  ${ECHO} "$BLACK_RED   c++ classes not activated. If you want to compile them $ESC"
+  ${ECHO} "$BLACK_RED   please set USE_CPP=true  $ESC"
+  export USE_CPP=false  
+else
+  if [ ${USE_CPP:=""} = "true" ] ; then
+    ${ECHO} "$BLACK_LTGREEN   c++ classes activated    $ESC"
+  else 
+    if [ ${USE_CPP:=""} = "false" ] ; then
+      ${ECHO} "$BLACK_LTGREEN   USE_CPP set to false: c++ classes not activated  $ESC"
+    else
+      ${ECHO} "$BLACK_RED   set USE_CPP either to true or false.  $ESC"
+      ${ECHO} "$BLACK_RED   c++ classes not activated.  $ESC"
+      export USE_CPP=false
+    fi
+  fi  
+fi
+
+if [ ${USE_CPP:=""} = "true" ] ; then
+  CPP_ERROR=false
+  #check if xerces is installed
+  if [ ${XMLCPP_HOME:=""} = "" ] ; then
+    ${ECHO} "$BLACK_RED set XMLCPP_CPP to the directory where the c++ XML is installed $ESC"
+    CPP_ERROR=true
+  else
+    if [ ! -d ${XMLCPP_HOME} ] ; then 
+      ${ECHO} "$BLACK_RED XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
+    else
+      ${ECHO} "$BLACK_LTGREEN XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
+    fi  
+  fi  
+  #check if the version of xerces is set
+  if [ ${XMLCPP_VER:=""} = "" ] ; then
+      ${ECHO} "$BLACK_RED XMLCPP_VER is not set. I will set it to 1_1 $ESC"
+      export XMLCPP_VER="1_1"
+      CPP_ERROR=true
+  else
+      ${ECHO} "$BLACK_LTGREEN xerces version set to ${XMLCPP_VER} $ESC"
+  fi  
+
+  #check if the correct corba is installed
+  if [ ${CORBA_CPP:=""} = "" ] ; then
+    ${ECHO} "$BLACK_RED CORBA_CPP is not set. set it to `mico` or `orbacus` $ESC"
+    CPP_ERROR=true
+  fi
+  if [ ${CORBACPP_VER:=""} = "" ] ; then 
+    ${ECHO} "$BLACK_RED CORBACPP_VER is not set. Please set it to the correct version $ESC" 
+    CPP_ERROR=true
+  fi
+  #home directory of the corba implementation
+  if [ ${CORBACPP_HOME:=""} = "" ] ; then  
+    ${ECHO} "$BLACK_RED CORBACPP_HOME is not set. please set it to the directory where corba is installed. $ESC"
+    CPP_ERROR=true
+  fi
+  if [ ! -d ${CORBACPP_HOME} ] ; then
+    ${ECHO} "$BLACK_RED CORBACPP_HOME: ${CORBACPP_HOME} is not a valid directory. $ESC"
+    CPP_ERROR=true
+  fi    
+  ${ECHO} "$BLACK_LTGREEN c++ corba: using ${CORBA_CPP} ${CORBACPP_VER} in ${CORBACPP_HOME} $ESC"
+
+  if [ ${CPP_ERROR:=""} = "true" ] ; then 
+    ${ECHO} "$BLACK_YELLOW Please read the file ${XMLBLASTER_HOME}/src/c++/README"
+    ${ECHO} "on how to correctly use the c++-client-classes $ESC"
+  fi
+fi
+# end of stuff for the c++ classes
 
 
 #-------- Checking jikes version -

@@ -1,8 +1,8 @@
 
 #-------- Checking MICO --------
 if [ ${MICO_HOME:=""} = "" ] || [ ! -d ${MICO_HOME} ] ; then
-   ${ECHO} "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
-   ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
+   ${ECHO} "$BLACK_RED  If you want to use the C++ MICO client, set the MICO_HOME environment variable $ESC"
+   ${ECHO} "$BLACK_RED  Example: 'export MICO_HOME=/usr/local/mico' $ESC"
 else
    if ! [ $LD_LIBRARY_PATH ] ; then
       LD_LIBRARY_PATH=${MICO_HOME}/lib
@@ -13,4 +13,7 @@ else
    ${ECHO} "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
 fi
 
+export CORBA_CPP="mico"
+export CORBACPP_HOME=${MICO_HOME}
+export CORBACPP_VER=${MICO_VER}
 

@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+
+<project default="all" basedir=".">
+
+<!--
+  <property name="src.dir"     value="."/>
+-->
+  <property name="dtd.dir"     value="."/>
+  <property name="idl.dir"     value="${xmlBlaster.home}/src/java/org/xmlBlaster/protocol/corba"/>
+  <property name="doc.dir"     value="."/>
+  <property name="javadoc.dir" value="."/>
+  <property name="obj.dir"     value="${src.dir}/obj"/>
+  <property name="bin.dir"     value="${src.dir}/bin"/>
+  <property name="gen.dir"     value="${src.dir}/generated"/>
+  <property name="client.dir"  value="${src.dir}/client"/>
+  <property name="util.dir"    value="${src.dir}/util"/>
+  <property name="jutil.dir"   value="${src.dir}/jutil"/>
+  <property name="test.dir"    value="${src.dir}/tests"/>
+  <property name="xmlcpp.inc"  value="-I${xmlcpp.home}"/>
+  <property name="xmlcpp.lib"  
+            value="-L${xmlcpp.home}/lib -lxerces-c${xmlcpp.ver} -lpthread"/>
+  <property name="client.obj"  
+            value="${obj.dir}/CorbaConnection.o ${obj.dir}/CompatibleCorba.o ${obj.dir}/Log.o"/>
+
+
+  <!-- =================================================================== -->
+  <!-- Help on usage                                                       -->
+  <!-- =================================================================== -->
+  <target name="usage">
+    <echo message=""/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the xmlBlaster core source directory                       -->
+  <!-- =================================================================== -->
+
+  <target name="init">
+    <taskdef name="gcc" classname="Gcc"/>
+    <taskdef name="idl" classname="Idl"/>
+    <mkdir dir="${bin.dir}"/>
+    <mkdir dir="${obj.dir}"/>
+    <mkdir dir="${gen.dir}"/>
+  </target>  
+
+  <target name="idl" depends="init">
+    <idl name="xmlBlaster.idl" srcdir="${idl.dir}" 
+         flags="${idl.flag}" cmd="${idl.cmd}" outdir="${gen.dir}" 
+         outref="xmlBlaster.h"/>
+  </target>
+
+  <target name="objects" depends="idl">
+    <javac classpath="${ant.home}/classes" srcdir="${jutil.dir}" 
+           destdir="${src.dir}/classes"/>
+    <gcc includes="-I. ${corba.inc} ${xmlcpp.inc}" outdir="${obj.dir}"/>
+    <gcc includes="-I. ${corba.inc}" srcdir="${gen.dir}" suffix=".cpp" 
+         outdir="obj"/>
+    <gcc includes="-I. ${corba.inc}" srcdir="${gen.dir}" outdir="${obj.dir}"/>
+    <gcc includes="-I. ${corba.inc} ${xmlcpp.inc}" srcdir="${util.dir}" 
+         outdir="${obj.dir}"/>
+    <gcc includes="-I. ${corba.inc} ${xmlcpp.inc}" srcdir="${test.dir}" 
+         outdir="${obj.dir}"/>
+    <gcc includes="-I. ${corba.inc} ${xmlcpp.inc}" srcdir="${client.dir}" 
+         outdir="${obj.dir}"/>
+  </target>
+
+  <target name="TestLogin" depends="objects">  
+    <gcc name="TestLogin" srcdir="${test.dir}" outdir="${bin.dir}" 
+         objs="${corba.obj} ${obj.dir}/TestLogin.o ${client.obj}" libs="${corba.libs} ${cos.libs} ${xmlcpp.lib} -lstdc++"/>
+  </target>
+
+  <target name="RamTest" depends="objects">  
+    <gcc name="RamTest" srcdir="${test.dir}" outdir="${bin.dir}" 
+         objs="${obj.dir}/RamTest.o ${client.obj} ${corba.obj}" libs="${corba.libs} ${cos.libs} ${xmlcpp.lib} -lstdc++"/>
+  </target>   
+
+  <target name="TestGet" depends="objects">  
+    <gcc name="TestGet" srcdir="${test.dir}" outdir="${bin.dir}" 
+         objs="${obj.dir}/TestGet.o ${client.obj} ${corba.obj}" libs="${corba.libs} ${cos.libs} ${xmlcpp.lib} -lstdc++"/>
+  </target>   
+
+  <target name="TestSub" depends="objects">  
+    <gcc name="TestSub" srcdir="${test.dir}" outdir="${bin.dir}" 
+         objs="${obj.dir}/TestSub.o ${client.obj} ${corba.obj}" libs="${corba.libs} ${cos.libs} ${xmlcpp.lib} -lstdc++"/>
+  </target>   
+
+  <target name="all" depends="TestLogin,RamTest,TestGet,TestSub"/>
+
+  <target name="test" depends="all">
+    <exec command="./test.sh" dir="${src.dir}"/>
+  </target>
+
+  <target name="clean" depends="init">
+    <deltree dir="${obj.dir}"/>
+    <deltree dir="${bin.dir}"/>
+    <deltree dir="${gen.dir}"/>
+    <deltree dir="${src.dir}/classes"/>
+  </target>
+
+</project>
+
+
+<!-- End of file -->

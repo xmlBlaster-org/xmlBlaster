@@ -9,3 +9,11 @@ export ORBACUS_CONFIG=${XMLBLASTER_HOME}/config/orbacus.cfg
 #export CLASSPATH=$ORBACUS_HOME/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:$JDK_HOME/jre/lib/rt.jar:$(CLASSPATH):.
 export CLASSPATH=${ORBACUS_HOME}/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:${CLASSPATH}:.
 
+export CORBA_CPP="orbacus"
+export CORBACPP_HOME=${ORBACUS_HOME}
+export CORBACPP_VER=${ORBACUS_VER}
+if [ ${CORBACPP_VER:=""} = "" ] ; then 
+  export CORBACPP_VER="4.1"
+fi
+
+
