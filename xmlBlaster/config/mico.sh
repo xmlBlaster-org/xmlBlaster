@@ -1,6 +1,6 @@
-
+# $ Id: $
 #-------- Checking MICO --------
-if [ ${CORBACPP_HOME:=""} = "" ] || [ ! -d ${CORBACPP_HOME} ] ; then
+if [ "${CORBACPP_HOME}" = "" ] || [ ! -d ${CORBACPP_HOME} ] ; then
    ${ECHO} "$BLACK_RED  If you want to use the C++ MICO client, set the CORBACPP_HOME environment variable $ESC"
    ${ECHO} "$BLACK_RED  Example: 'export CORBACPP_HOME=/usr/local/mico' $ESC"
 else
@@ -13,7 +13,7 @@ else
 fi
 
 # check if the MICO Version is set (it is only used to build the name for the libraries)
-if [ ${CORBACPP_VER:=""} = "" ] ; then 
+if [ "${CORBACPP_VER}" = "" ] ; then 
   ${ECHO} "$BLACK_RED   You choosed to use the C++ MICO client but forgot to set CORBACPP_VER $ESC"
   ${ECHO} "$BLACK_RED   Example: export CORBACPP_VER='2.3.6' $ESC"
 fi

@@ -1,3 +1,4 @@
+# $ Id: $
 export IDL_OUTDIR="--output-dir"
 export IDL2JAVA="${ORBACUS_HOME}/bin/jidl --tie --package org.xmlBlaster.protocol.corba"
 export CLASSPATH=${XMLBLASTER_HOME}/lib/miniJacorb.jar:${CLASSPATH}
@@ -21,8 +22,7 @@ fi
 export CORBA_CPP="orbacus"
 export CORBACPP_HOME=${ORBACUS_HOME}
 export CORBACPP_VER=${ORBACUS_VER}
-if [ ${CORBACPP_VER:=""} = "" ] ; then 
+if [ "${CORBACPP_VER}" = "" ] ; then 
   export CORBACPP_VER="4.1"
 fi
-
 
