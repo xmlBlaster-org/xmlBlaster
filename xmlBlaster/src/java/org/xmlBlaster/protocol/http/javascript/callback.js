@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.6 2000/03/19 22:56:06 kkrafft2 Exp $
+Version:   $Id: callback.js,v 1.7 2000/03/21 00:13:12 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -203,7 +203,8 @@ function MessageWrapperDom(key, content, qos)
 }
 
 
-
+var queueing     = false;
+var messageQueue = new Array();
 var listenerList = new Array();
 //----------------------------------------------------------------------------------------------
 // add Callback Listener
@@ -237,14 +238,14 @@ function removeUpdateListener( listenerFrame ) {
          found = true;
       }
    }
-   
+
    if( !found )
       return;
-      
+
    removeUpdateListenerAtPos( i );
-   
-   return;   
-      
+
+   return;
+
 }
 
 //---------------------------------------------------------------------------------------------
@@ -259,13 +260,13 @@ function removeUpdateListenerAtPos( index ) {
       listenerList.length=0;
       return;
    }
-   
+
    for( var j = index; j < listenerList.length-1; j++ ) {
       listenerList[j] = listenerList[j+1];
    }
-   
+
    listenerList.length -= 1;
-   
+
    return;
 }
 
@@ -275,7 +276,37 @@ function showListener()
    for( var i = 0; i < listenerList.length; i++ ) {
       str += "-" + listenerList[i].name + "\n";
    }
+   str += "\n\nMessages:\n\n";
+   for( var i = 0; i < messageQueue.length; i++ ) {
+      str += "-" + messageQueue[i].key.oid + "\n\n";
+   }
    alert( str );
+}
+
+//---------------------------------------------------------------------------------------------
+// This is
+//
+//---------------------------------------------------------------------------------------------
+function fireMessageUpdateQueue()
+{
+   for( var i = 0; i < listenerList.length;  ) {
+      if (listenerList[i].closed ||
+            listenerList[i].update == null) {
+         removeUpdateListenerAtPos( i );
+         continue;
+      }
+      i++;
+   }
+
+   for( var i = 0; i < listenerList.length; i++ ) {
+      //listenerList[i].stop();
+      listenerList[i].update( messageQueue );
+   }
+
+   //showListener();
+   
+   messageQueue.length = 0;
+
 }
 
 
@@ -283,21 +314,24 @@ function showListener()
 // This is
 //
 //---------------------------------------------------------------------------------------------
+var timerHandle;
 function fireMessageUpdateEvent( message )
 {
-   for( var i = 0; i < listenerList.length;  ) {
-      if (listenerList[i].closed || 
-            listenerList[i].update == null) {
-         removeUpdateListenerAtPos( i );
-         continue;
+   if( queueing == true ) {
+      //put in message queue (max size = 10 entries)
+      if( messageQueue.length < 10 ) {
+         window.clearTimeout(timerHandle);
+         timerHandle = window.setTimeout( "fireMessageUpdateQueue()", 100 );
       }
-      i++;
+      messageQueue[messageQueue.length] = message;
    }
-   //showListener();
-   for( var i = 0; i < listenerList.length; i++ ) {
-      listenerList[i].update( message );
+   else {
+      messageQueue[messageQueue.length] = message;
+      fireMessageUpdateQueue();
    }
+
 }
+
 
 
 
@@ -306,16 +340,15 @@ function fireMessageUpdateEvent( message )
 //
 //---------------------------------------------------------------------------------------------
 function update( updateKey, content, updateQoS)
-{													  
-    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
-    var content_d = unescape( content.replace(/\+/g, " ") );
-    var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
+{
+    var updateKey_d 	= unescape( updateKey.replace(/\+/g, " ") );
+    var content_d 	= unescape( content.replace(/\+/g, " ") );
+    var updateQoS_d 	= unescape( updateQoS.replace(/\+/g, " ") );
 
-
-   //alert( "********UPDATE********\n"+updateKey_d+"\n"+content_d+"\n"+updateQoS_d );
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);
 
+   //Log.info("Update coming in key.oid="+key.oid+"<br>content="+content_d);
    if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {
       alert("Exception:\n\n"+content_d );
    }

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.6 2000/03/19 22:56:06 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.7 2000/03/21 00:13:12 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -98,26 +98,27 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             //                        xmlBlaster connection. This is an security problem.
             ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnection( loginName, passwd );
             //pushHandler.message("Successful login.");
+            pushHandler.ping();
 
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
 
             // Don't fall out of doGet() to keep the HTTP connection open
             Log.info(ME, "Waiting forever, permanent HTTP connection ...");
-            
-            
+
+
             while (!pushHandler.closed()) {
                try {
                   Thread.currentThread().sleep(10000L);
-               } 
-               catch (InterruptedException i) { 
-                  Log.error(ME,"Error in Thread handling, don't what to do:"+i.toString()); 
+               }
+               catch (InterruptedException i) {
+                  Log.error(ME,"Error in Thread handling, don't what to do:"+i.toString());
                }
             }
-            
+
             //Thread.currentThread().join();
 
             pushHandler.deinitialize();
-            proxyConnection.removeHttpPushHandler( sessionId );
+            proxyConnection.removeHttpPushHandler( sessionId, pushHandler );
 
 
             Log.info(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet() ....");

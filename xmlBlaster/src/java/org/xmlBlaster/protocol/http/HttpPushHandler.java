@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.8 2000/03/19 22:56:06 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.9 2000/03/21 00:13:12 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -32,7 +32,7 @@ public class HttpPushHandler
 {
 
    private final String ME = "HttpPushHandler";
-   private final long PING_INTERVAL		= 30000L;
+   private final long PING_INTERVAL             = 40000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
    private boolean closed = false;
@@ -206,20 +206,20 @@ public class HttpPushHandler
             1. The watch-wait cursor is displayed, until the doGet() leaves.
             2. Resizing the browser window doesn't resize the content.
          */
-         outMulti.println("Content-Type: text/html");
-         outMulti.println();
+            outMulti.println("Content-Type: text/html");
+            outMulti.println();
 
-         StringBuffer buf = new StringBuffer(head);
-         buf.append(str);
-         buf.append(tail);
+            StringBuffer buf = new StringBuffer(head);
+            buf.append(str);
+            buf.append(tail);
 
-         if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
+            if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
 
-         outMulti.println(buf.toString());
+            outMulti.println(buf.toString());
 
-         outMulti.println();
-         outMulti.println("--End");
-         outMulti.flush();
+            outMulti.println();
+            outMulti.println("--End");
+            outMulti.flush();
       }
       else {
          /*
@@ -232,20 +232,20 @@ public class HttpPushHandler
             4. Every line which is sent again to the browser is written after
                the previous one resulting in a list of ten rows.
          */
-         res.setContentType("text/html");
+            res.setContentType("text/html");
 
-         outPlain.println(head);
+            outPlain.println(head);
 
-         outPlain.println(str);
+            outPlain.println(str);
 
-         // This newline forces a refresh everytime,
-         // only necessary if the str fills less then one line in the netscape browser window
-         //outPlain.println("<P />");
+            // This newline forces a refresh everytime,
+            // only necessary if the str fills less then one line in the netscape browser window
+            //outPlain.println("<P />");
 
-         outPlain.println(tail);
+            outPlain.println(tail);
 
-         outPlain.flush();
-         outPlain.close();
+            outPlain.flush();
+            outPlain.close();
       }
    }
 
@@ -261,6 +261,11 @@ public class HttpPushHandler
          String codedContent           = URLEncoder.encode( content );
          String codedQos               = URLEncoder.encode( updateQos );
 
+         Log.info(ME,"************* Update an Browser *********************");
+         Log.plain(ME,"Key:"+updateKey);
+         Log.plain(ME,"\nContent:"+content);
+         Log.info(ME,"************* End of Update *************************");
+                                                    
          String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
          push(pushStr);
       }

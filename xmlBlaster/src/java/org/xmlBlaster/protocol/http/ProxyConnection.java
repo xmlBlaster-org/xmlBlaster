@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.7 2000/03/19 22:56:06 kkrafft2 Exp $
+Version:   $Id: ProxyConnection.java,v 1.8 2000/03/21 00:13:12 kkrafft2 Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -31,7 +31,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -116,9 +116,12 @@ public class ProxyConnection implements I_Callback
          Log.warning(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
       httpConnections.put( sessionId, pushHandler );
    }
-   public void removeHttpPushHandler( String sessionId )
+   public void removeHttpPushHandler( String sessionId, HttpPushHandler pushHandler )
    {
-      httpConnections.remove( sessionId );
+      HttpPushHandler ph = (HttpPushHandler)httpConnections.get( sessionId );
+      if( pushHandler == ph )
+      	httpConnections.remove( sessionId );
+      //ansonsten wurde der PusHandler durch einen alten überschieben.
    }
    public HttpPushHandler getHttpPushHandler( String sessionId )
    {

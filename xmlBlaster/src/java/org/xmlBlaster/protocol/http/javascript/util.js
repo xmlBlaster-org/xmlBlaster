@@ -3,7 +3,7 @@ Name:      util.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript utility objects
 Author:    ruff@swand.lake.de
-Version:   $Id: util.js,v 1.3 2000/03/17 16:05:18 kkrafft2 Exp $
+Version:   $Id: util.js,v 1.4 2000/03/21 00:13:12 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -105,14 +105,14 @@ function logToStatusBar(level, codePos, strText)
       alert(str);
 }
 
-function logToWindow(level, codePos, text)
+function __logToWindow__(level, codePos, text)
 {
    alert("Level: "+level+"\ncodePos: "+codePos+"\ntext: "+text);
 }
 
 // This function logs to a pop up window
 // Every logging output is a colored row in a table.
-function __logToWindow__(level, codePos, text)
+function logToWindow(level, codePos, text)
 {
    if (text.length <= 0)
       return;
@@ -136,7 +136,6 @@ function __logToWindow__(level, codePos, text)
    var headerStr =
       '<HTML>' +
       '<HEAD>' +
-      '   <link REL="stylesheet" type="text/css" href="xmlBlaster.css">' +
       '   <title>Log your code!</title>' +
       '</HEAD>' +
       '<BODY>' +
