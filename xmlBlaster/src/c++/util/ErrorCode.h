@@ -232,6 +232,11 @@ namespace org { namespace xmlBlaster { namespace util {
       std::string("with an illegal query type, try EXACT or XPATH.")
    );
 
+   const ErrorCode USER_NOT_CONNECTED("user.notConnected",
+      "Your operation is not possible, please login with connect() first"
+   );
+
+
 }}}; // namespaces
 
 #endif
