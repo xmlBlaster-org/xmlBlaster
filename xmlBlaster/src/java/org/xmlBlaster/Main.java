@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.104 2002/09/07 19:05:35 kkrafft2 Exp $
+Version:   $Id: Main.java,v 1.105 2002/09/09 13:38:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -51,9 +51,9 @@ import java.lang.reflect.Method;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
-public class Main implements I_RunlevelListener
+public class Main implements I_RunlevelListener, I_Main
 {
-   final private String ME = "Main";
+   private String ME = "Main";
 
    private Global glob = null;
 
@@ -73,13 +73,15 @@ public class Main implements I_RunlevelListener
     */
    static MainGUI controlPanel = null;
 
+   /**
+    * You need to call init() after construction. 
+    */
    public Main() {
-      System.out.println("Default constructor called...");
+      //System.out.println("Default constructor called ...");
    }
 
 
-   public Main(Global glob, MainGUI controlPanel)
-   {
+   public Main(Global glob, MainGUI controlPanel) {
       this.controlPanel = controlPanel;
       controlPanel.xmlBlasterMain = this;
       init(glob);
@@ -90,8 +92,7 @@ public class Main implements I_RunlevelListener
     * Start xmlBlaster.
     * @param args The command line parameters
     */
-   public Main(org.xmlBlaster.util.Global utilGlob)
-   {
+   public Main(org.xmlBlaster.util.Global utilGlob) {
       Global g = new Global(utilGlob); // engine.Global
       init(g);
    }
@@ -108,10 +109,23 @@ public class Main implements I_RunlevelListener
       return this.glob;
    }
 
-   public void init(Global glob)
+   /*
+   public void init(org.xmlBlaster.util.Global g) {
+      init(new org.xmlBlaster.engine.Global(g));
+   }
+   */
+
+   public void init(java.util.Properties props) {
+      this.init(new org.xmlBlaster.engine.Global(props));
+   }
+
+   public final void init(Global glob)
    {
       this.glob = glob;
       this.log = glob.getLog("core");
+      this.ME = "Main" + glob.getLogPraefixDashed();
+      //try { log.info(ME, glob.getDump()); } catch (Throwable e) { System.out.println(ME + ": " + e.toString()); e.printStackTrace(); }
+
       showUsage = glob.wantsHelp();
       Thread.currentThread().setName("XmlBlaster MainThread");
 
@@ -299,6 +313,13 @@ public class Main implements I_RunlevelListener
       return nodeName;
    }
 
+   class Shutdown extends Thread {
+      public void run() {
+         log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
+         shutdown();
+      }
+   }
+
    /**
     * Add shutdown hook.
     * <p />
@@ -311,13 +332,6 @@ public class Main implements I_RunlevelListener
     */
    public boolean catchSignals()
    {
-      class Shutdown extends Thread {
-         public void run() {
-            log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
-            shutdown();
-         }
-      }
-
       Method method;
       try  {
          Class cls = Runtime.getRuntime().getClass();
