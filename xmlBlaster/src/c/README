@@ -27,13 +27,16 @@ Features:
     for all methods to have object oriented like access,
     see client.c as a usage example
 
+  o The C library is thread safe, multiple instances of
+    client connections can run in parallel.
+
 
 COMPILE:
 ========
 
 cd xmlBlaster/demo/c/socket   (see client.c)
 
-Linux:    gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
+Linux:    gcc -Wall -g -D_REENTRANT -Isocket -I. -o client *.c socket/*.c -lpthread
 
 Windows:  cl /MT /W3 /Wp64 -D_WINDOWS -I. client.c msgUtil.c socket\*.c ws2_32.lib
 
