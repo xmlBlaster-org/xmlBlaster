@@ -26,6 +26,7 @@
       <action do='LOAD' onStartupRunlevel='3' sequence='2' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='compress/type'></attribute>  <!-- Default: no compression for C and C++ access -->
    </plugin>
 
    <!-- Example to start a second SOCKET plugin with different listener port -->
@@ -38,6 +39,7 @@
       <attribute id='useUdpForOneway'>true</attribute>
       <attribute id='port'>7608</attribute>
       <attribute id='threadPrio'>3</attribute>
+      <attribute id='compress/type'>zlib:stream</attribute>
    </plugin>
 -->
 
@@ -54,6 +56,7 @@
       <attribute id='keyStore'>testStore</attribute>
       <attribute id='keyStorePassword'>testtest</attribute>
       <attribute id='port'>7609</attribute>
+      <attribute id='compress/type'>zlib:stream</attribute>
       <attribute id='startUdpListener'>false</attribute>
    </plugin>
 -->
