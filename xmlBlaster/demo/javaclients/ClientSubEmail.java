@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.4 2001/12/03 12:56:20 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.5 2001/12/03 13:04:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -177,8 +177,6 @@ public class ClientSubEmail implements I_Callback
     * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
     *
     * @param loginName The name to whom the callback belongs
     * @param updateKey The arrived key
