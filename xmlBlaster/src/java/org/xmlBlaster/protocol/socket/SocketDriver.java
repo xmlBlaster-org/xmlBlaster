@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.39 2004/08/22 22:38:33 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.40 2004/08/24 15:18:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -113,40 +113,35 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       }
    }
 
-   void removeClient(String sessionId) {
-      synchronized(handleClientMap) {
-         handleClientMap.remove(sessionId);
-      }
-   }
-
    /**
-    * There is exactly one UDP listener thread which receives datagrams for all clients. 
+    * There is exactly one UDP listener thread which receives datagrams for all clients.
     * The datagrams are forwarded to the correct client with the sessionId
     * Only the methods publishOneway() and updateOneway() may use UDP, you can
-    * choose TCP or UDP for those messages with the "
-
+    * choose TCP or UDP for those messages with the
+    * <tt>plugin/socket/useUdpForOneway</tt> setting
     */
-   class UDPListener implements Runnable {
-      static final int MAX_PACKET_SIZE = 1024*10;
+   class UDPListener
+       implements Runnable {
+      static final int MAX_PACKET_SIZE = 1024 * 10;
       public void run() {
          try {
-//         int backlog = this.addressServer.getEnv("backlog", 50).getValue(); // queue for max 50 incoming connection request
-//         if (log.TRACE) log.trace(ME, addressServer.getEnvLookupKey("backlog") + "=" + backlog);
-
-            socketUDP = new DatagramSocket(socketUrl.getPort(), socketUrl.getInetAddress());
-            /*
-            setSoTimeout(addressConfig.getEnv("SoTimeout", 0L).getValue()); // switch off
-            socketUDP.setSoTimeout((int)this.soTimeout);
-            if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
-            */
+            try {
+               socketUDP = new DatagramSocket(socketUrl.getPort(), socketUrl.getInetAddress());
+            }
+            catch (java.net.SocketException e) {
+               log.error(ME, "Cannot open UDP socket '" + socketUrl.getUrl() + "' : " + e.toString());
+               return;
+            }
 
             int threadPrio = getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
             try {
                Thread.currentThread().setPriority(threadPrio);
-               if (log.TRACE) log.trace(ME, "-"+getEnvPrefix()+"threadPrio "+threadPrio);
+               if (log.TRACE)
+                  log.trace(ME, "-" + getEnvPrefix() + "threadPrio " + threadPrio);
             }
             catch (IllegalArgumentException e) {
-               log.warn(ME, "Your -"+getEnvPrefix()+"threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+               log.warn(ME,
+                        "Your -" + getEnvPrefix() + "threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
             }
 
             log.info(ME, "Started successfully " + getType() + " driver on '" + socketUrl.getUrl() + "'");
@@ -156,13 +151,23 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             Parser receiver = new Parser(glob);
             listenerReadyUDP = true;
             while (runningUDP) {
-               socketUDP.receive(packet);
-               //log.trace(ME, "New incoming request on port=" + this.socketUrl.getPort() + " ...");
-
-               if (log.TRACE) log.trace(ME, "UDP packet arrived, size=" + packet.getLength() + " bytes");
+               try {
+                  socketUDP.receive(packet);
+               }
+               catch (IOException e) {
+                  if (e.toString().indexOf("closed") == -1) {
+                     log.error(ME, "Error receiving packet from '" + socketUrl.getUrl() + "' : " + e.toString());
+                  }
+                  else {
+                     if (log.TRACE) log.trace(ME, "UDP datagram socket shutdown '" + socketUrl.getUrl() + "' : " + e.toString());
+                  }
+                  return;
+               }
+               if (log.TRACE)
+                  log.trace(ME, "UDP packet arrived, size=" + packet.getLength() + " bytes");
                if (!runningUDP) {
                   log.info(ME, "Closing server '" + socketUrl.getUrl() + "'");
-                  break;
+                  return;
                }
                int actualSize = packet.getLength();
                if (packet.getLength() > MAX_PACKET_SIZE) {
@@ -170,58 +175,22 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
                   actualSize = MAX_PACKET_SIZE;
                }
                InputStream iStream = new ByteArrayInputStream(packet.getData(), 0, actualSize);
-               HandleClient hh = null;
                try {
                   receiver.parse(iStream);
-                  if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-                  if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-
-                  String sessionId = receiver.getSecretSessionId();
-                  hh = getClient(sessionId);
-                  if (hh == null)
-                     log.warn(ME, "Request from unknown client");
-                  if (hh.receive(receiver, true) == false)
-                     log.warn(ME, "Connect and Disconnect via UDP is not implemented.");
-               }
-               catch (XmlBlasterException e) {
-                  if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
-                  try {
-                     hh.executeException(receiver, e, true);
-                  }
-                  catch (Throwable e2) {
-                     log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
-                     hh.shutdown();
-                  }
-               }
-               catch (IOException e) {
-                  if (runningUDP != false) { // Only if not triggered by our shutdown:sock.close()
-                     if (log.TRACE) log.trace(ME, "Lost connection to client: " + e.toString());
-                     hh.shutdown();
-                  }
                }
                catch (Throwable e) {
-                  e.printStackTrace();
-                  log.error(ME, "Lost connection to client: " + e.toString());
-                  hh.shutdown();
+                  log.error(ME, "Error parsing data from UDP packet: " + e);
+                  continue;
                }
-            }
+               String sessionId = receiver.getSecretSessionId();
+               HandleClient hh = getClient(sessionId);
+               if (hh == null)
+                  log.error(ME, "Request from unknown client, sessionId: " + sessionId);
+               else
+                  hh.handleMessage(receiver, true);
+            } // while (runningUDP) {
          }
-         catch (java.net.UnknownHostException e) {
-            log.error(ME, "Socket server problem, IP address '" + socketUrl.getHostname() + "' is invalid: " + e.toString());
-         }
-         catch (java.net.BindException e) {
-            log.error(ME, "Socket server problem '" + socketUrl.getUrl() + "', the port " + socketUrl.getPort() + " is not available: " + e.toString());
-         }
-         catch (java.net.SocketException e) {
-            log.info(ME, "Socket '" + socketUrl.getUrl() + "' closed successfully: " + e.toString());
-         }
-         catch (IOException e) {
-            log.error(ME, "Socket server problem on '" + socketUrl.getUrl() + "': " + e.toString());
-         }
-         catch (Throwable e) {
-            log.error(ME, "Socket server problem on '" + socketUrl.getUrl() + "': " + e.toString());
-            e.printStackTrace();
-         }
+
          finally {
             listenerReadyUDP = false;
             if (socketUDP != null) {
@@ -230,11 +199,6 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             }
          }
       }
-
-   }
-
-   void sendMessage(byte[] msg) throws IOException {
-
    }
 
    /**
@@ -276,7 +240,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    }
 
    /**
-    * Configuration option to use UDP for updateOneway() calls. 
+    * Configuration option to use UDP for updateOneway() calls.
     * <br />
     * Typically a setting from the plugin configuration, see xmlBlasterPlugins.xml, for example
     * <br />
@@ -412,10 +376,10 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             java.net.Socket socket = new Socket(listen.getInetAddress(), this.socketUrl.getPort());
             socket.close();
          } catch (java.io.IOException e) {
-            log.warn(ME, "shutdown problem: " + e.toString());
+            log.warn(ME, "Tcp shutdown problem: " + e.toString());
          }
       }
-
+      /*
       if (socketUDP != null && closeHack) {
          // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
          // force closing by invoking server with this temporary client:
@@ -423,10 +387,10 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             java.net.DatagramSocket socket = new DatagramSocket(this.socketUrl.getPort(), socketUDP.getLocalAddress());
             socket.close();
          } catch (java.io.IOException e) {
-            log.warn(ME, "shutdown problem: " + e.toString());
+            log.warn(ME, "Udp shutdown problem: " + e.toString());
          }
       }
-
+      */
       try {
          if (listen != null) {
             listen.close();
@@ -439,7 +403,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             //log.info(ME, "Socket driver stopped, all resources released.");
          }
       } catch (java.io.IOException e) {
-         log.warn(ME, "shutdown problem: " + e.toString());
+         log.warn(ME, "Socket shutdown problem: " + e.toString());
       }
 
       // shutdown all clients connected
@@ -469,6 +433,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    final void removeClient(HandleClient h) {
       synchronized (handleClientSet) {
          handleClientSet.remove(h);
+      }
+      synchronized(handleClientMap) {
+         handleClientMap.remove(h.sessionId);
       }
    }
 

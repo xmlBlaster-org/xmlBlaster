@@ -71,6 +71,9 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    synchronized public void shutdown() {
+      if (!running)
+         return;
+
       if (log.TRACE) log.trace(ME, "Schutdown cb connection to " + loginName + " ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
@@ -190,108 +193,114 @@ public class HandleClient extends Executor implements Runnable
       }
    }
 
+   synchronized public void handleMessage(Parser receiver, boolean udp) {
+      try {
+
+         if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+         if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+
+         // receive() processes all invocations, only connect()/disconnect() we do locally ...
+         if (receive(receiver, udp) == false) {
+            if (MethodName.CONNECT == receiver.getMethodName()) {
+               ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
+               setLoginName(conQos.getUserId());
+               Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + ".tcpListener-" + conQos.getUserId());
+               this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
+               log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+
+               CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
+               for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
+                  cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
+                  SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
+                  SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
+                  if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
+                  if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
+                     if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
+                     this.callback = new CallbackSocketDriver(this.loginName, this);
+                     org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
+                     if (oldCallback != null) { // Remove old and lost login of client with same callback address
+                        log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
+                        //oldCallback.shutdown(); don't destroy socket, is done by others
+                        driver.getGlobal().removeNativeCallbackDriver(cbKey);
+                        oldCallback = null;
+                     }
+                     if (this.log.TRACE) this.log.trace(ME, "run: register new callback driver: '" + cbKey + "'");
+                     driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
+                  }
+                  else {
+                     log.error(ME, "Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
+                     this.callback = new CallbackSocketDriver(this.loginName);
+                     // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
+                     // will later call callback.initialize(loginName, callbackAddress)
+                  }
+               }
+
+               ConnectReturnQosServer retQos = authenticate.connect(conQos);
+               this.sessionId = retQos.getSecretSessionId();
+               receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
+               executeResponse(receiver, retQos.toXml(), false);
+               driver.addClient(sessionId, this);
+             }
+            else if (MethodName.DISCONNECT == receiver.getMethodName()) {
+               this.sessionId = null;
+               // Note: the diconnect will call over the CbInfo our shutdown as well
+               // setting sessionId = null prevents that our shutdown calls disconnect() again.
+               authenticate.disconnect(receiver.getSecretSessionId(), receiver.getQos());
+               //executeResponse(receiver, qos);   // The socket is closed already
+               shutdown();
+            }
+         }
+      }
+      catch (XmlBlasterException e) {
+         if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
+         try {
+            if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
+               executeException(receiver, e, false);
+         }
+         catch (Throwable e2) {
+            log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+            shutdown();
+         }
+      }
+      catch (IOException e) {
+         if (running != false) { // Only if not triggered by our shutdown:sock.close()
+            if (log.TRACE) log.trace(ME, "Lost connection to client: " + e.toString());
+            shutdown();
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         log.error(ME, "Lost connection to client: " + e.toString());
+         shutdown();
+      }
+   }
+
    /**
     * Serve a client, we block until a message arrives ...
     */
    public void run() {
       if (log.CALL) log.call(ME, "Handling client request ...");
       Parser receiver = new Parser(glob);
-
       try {
-         if (log.TRACE) log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
-
+         if (log.TRACE)
+            log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
          while (running) {
             try {
-               //iStream = sock.getInputStream();
-               receiver.parse(iStream);  // blocks until a message arrive
-
-               if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-               if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-
-               // receive() processes all invocations, only connect()/disconnect() we do locally ...
-               if (receive(receiver, false) == false) {
-                  if (MethodName.CONNECT == receiver.getMethodName()) {
-                     ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
-                     setLoginName(conQos.getUserId());
-                     Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + ".tcpListener-" + conQos.getUserId());
-                     this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
-                     log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
-
-                     CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
-                     for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
-                        cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
-                        SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
-                        SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
-                        if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
-                        if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
-                           if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
-                           this.callback = new CallbackSocketDriver(this.loginName, this);
-                           org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
-                           if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                              log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
-                              //oldCallback.shutdown(); don't destroy socket, is done by others
-                              driver.getGlobal().removeNativeCallbackDriver(cbKey);
-                              oldCallback = null;
-                           }
-                           if (this.log.TRACE) this.log.trace(ME, "run: register new callback driver: '" + cbKey + "'");
-                           driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
-                        }
-                        else {
-                           log.error(ME, "Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
-                           this.callback = new CallbackSocketDriver(this.loginName);
-                           // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
-                           // will later call callback.initialize(loginName, callbackAddress)
-                        }
-                     }
-
-                     ConnectReturnQosServer retQos = authenticate.connect(conQos);
-                     this.sessionId = retQos.getSecretSessionId();
-                     receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-                     executeResponse(receiver, retQos.toXml(), false);
-                     driver.addClient(sessionId, this);
-                   }
-                  else if (MethodName.DISCONNECT == receiver.getMethodName()) {
-                     this.sessionId = null;
-                     // Note: the diconnect will call over the CbInfo our shutdown as well
-                     // setting sessionId = null prevents that our shutdown calls disconnect() again.
-                     authenticate.disconnect(receiver.getSecretSessionId(), receiver.getQos());
-                     //executeResponse(receiver, qos);   // The socket is closed already
-                     shutdown();
-                  }
-               }
-            }
-            catch (XmlBlasterException e) {
-               if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
-               try {
-                  executeException(receiver, e, false);
-               }
-               catch (Throwable e2) {
-                  log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
-                  shutdown();
-               }
-            }
-            catch (IOException e) {
-               if (running != false) { // Only if not triggered by our shutdown:sock.close()
-                  if (log.TRACE) log.trace(ME, "Lost connection to client: " + e.toString());
-                  shutdown();
-               }
+               receiver.parse(iStream); // blocks until a message arrives
             }
             catch (Throwable e) {
-               e.printStackTrace();
-               log.error(ME, "Lost connection to client: " + e.toString());
+               log.error(ME, "Error parsing data from TCP packet: " + e);
                shutdown();
+               break;
             }
-         } // while(running)
+            handleMessage(receiver, false);
+         }
       }
       finally {
          driver.removeClient(this);
          closeSocket();
          if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
       }
-   }
-
-   protected void sendMessage(byte[] msg) throws IOException {
-      driver.sendMessage(msg);
    }
 
 }

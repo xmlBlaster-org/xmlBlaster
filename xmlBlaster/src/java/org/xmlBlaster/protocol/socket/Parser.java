@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.44 2004/05/09 21:25:35 ruff Exp $
+Version:   $Id: Parser.java,v 1.45 2004/08/24 15:18:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 
 /**
- * Parser class for raw socket messages. 
+ * Parser class for raw socket messages.
  * <br />
  * This class creates and parses raw byte[] messages which can be used
  * to transfer over a socket connection.
@@ -79,7 +79,7 @@ import java.util.Vector;
  */
 public class Parser
 {
-   /* TODO: Try performance with 
+   /* TODO: Try performance with
          b[i*2] = (byte)(c & 0xff);
          b[i*2 + 1] = (byte)((c >> 8) & 0xff);
      to cast char[] into byte[]
@@ -89,7 +89,7 @@ public class Parser
    private final Global glob;
 
    private final LogChannel log;
-   
+
    public static final int NUM_FIELD_LEN = 10;
    public static final int FLAG_FIELD_LEN = 6;
    public static final int MAX_STRING_LEN = Integer.MAX_VALUE;
@@ -138,7 +138,7 @@ public class Parser
 
 
    /**
-    * The same parser object may be reused. 
+    * The same parser object may be reused.
     */
    public Parser(Global glob) {
       this(glob, (byte)0, (String)null, (MethodName)null, (String)null);
@@ -163,7 +163,7 @@ public class Parser
 
 
    /**
-    * This method allows to reuse a Parser instance. 
+    * This method allows to reuse a Parser instance.
     */
    public void initialize() {
       //msgLength = -1;
@@ -226,7 +226,7 @@ public class Parser
    /**
     * Set a unique ID (unique for this client), it
     * will be bounced back with the return value or with an
-    * exception occurred during this request. 
+    * exception occurred during this request.
     * <br />
     * Note that you usually shouldn't set this value, this class generates
     * a unique requestId which you can access with getRequestId()
@@ -278,12 +278,12 @@ public class Parser
    public final MethodName getMethodName() {
       return this.methodName;
    }
-   
+
    /** The authentication sessionId */
    public final void setSecretSessionId(String sessionId) {
       this.sessionId = sessionId;
    }
-   
+
    /** The authentication sessionId */
    public final String getSecretSessionId() {
       if (sessionId == null) return "";
@@ -299,7 +299,7 @@ public class Parser
       }
       this.checksum = checksum;
    }
-   
+
    /** Compress message? */
    public final void setCompressed(boolean compressed) {
       if (compressed == true) {
@@ -334,7 +334,7 @@ public class Parser
    }
 
    /**
-    * Use for methods update, publish. 
+    * Use for methods update, publish.
     * <br />
     * Use for return value of method get.
     * <br />
@@ -349,7 +349,7 @@ public class Parser
    }
 
    /**
-    * Use for methods update, publish. 
+    * Use for methods update, publish.
     * <br />
     * Use for return value of method get.
     * <br />
@@ -361,7 +361,7 @@ public class Parser
    }
 
    /**
-    * Use for methods update, publish. 
+    * Use for methods update, publish.
     * <br />
     * Use for return value of method get.
     * <br />
@@ -391,7 +391,7 @@ public class Parser
    }
 
    /**
-    * Add a QoS array value. 
+    * Add a QoS array value.
     * <br />
     * Use for return value of methods publishArr and erase
     * @exception IllegalArgumentException if invoked multiple times
@@ -465,7 +465,7 @@ public class Parser
    }
 
    /**
-    * On errors. 
+    * On errors.
     * @exception IllegalArgumentException if there is no exception to get
     */
    public final XmlBlasterException getException() {
@@ -477,7 +477,7 @@ public class Parser
    }
 
    /**
-    * Blocks on socket until a complete message is read. 
+    * Blocks on socket until a complete message is read.
     * @return A complete message in a byte[].
     *         NOTE: The first 10 bytes are not initialized.<br />
     *         null: An empty message which only contains the header 10 bytes
@@ -551,7 +551,7 @@ public class Parser
     * <p />
     * This method blocks until a message arrives
     */
-   public final void parse(InputStream in) throws IOException, IllegalArgumentException, XmlBlasterException {
+   public final void parse(InputStream in) throws  IOException, IllegalArgumentException {
       if (log.CALL) log.call(ME, "Entering parse()");
 
       initialize();
@@ -649,7 +649,7 @@ public class Parser
 
 
    /**
-    * Returns a raw data string. 
+    * Returns a raw data string.
     * <pre>
     *  msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkSum[10]
     *  +---------+-------+------ -*----------*-----------*-----------*-----------+----------+
@@ -676,7 +676,7 @@ public class Parser
          int lenProxyHeader = 0;
          if (proxyHost != null) {
              telnet proxy 3128
-             
+
              GET http://192.121.221.46:8080 HTTP/1.0
 
 
@@ -750,14 +750,14 @@ public class Parser
 
    /**
     * Reads the binary content of a message. First we parse the long value which
-    * holds the content length, than we retrieve the binary content. 
+    * holds the content length, than we retrieve the binary content.
     */
    public final byte[] toByte(Buf buf) throws IOException {
       int len = toInt0(buf, 0);
       byte[] b = new byte[(int)len];
       if (len == 0L)
          return b;
-      
+
       System.arraycopy(buf.buf, buf.offset, b, 0, len);
       buf.offset += len;
       return b;
@@ -809,7 +809,7 @@ public class Parser
    /**
     * Extracts string until next null byte '\0'
     */
-   private final String toString(Buf buf) throws IOException {
+   private final String toString(Buf buf) throws IOException  {
       int startOffset = buf.offset;
       for (; buf.offset<buf.buf.length; buf.offset++) {
          if (buf.buf[buf.offset] == 0) {
@@ -1141,7 +1141,7 @@ public class Parser
             else
                System.out.println(testName + ": FAILURE");
          }
-      
+
 
          testName = "Testing qos/key/content return value";
          System.out.println("\n----------------------\n"+testName);
