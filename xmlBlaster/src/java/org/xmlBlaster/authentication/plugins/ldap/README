@@ -1,0 +1,77 @@
+
+To get started with ldap authentication please
+setup an ldap server first.
+
+
+A practical example how to do this is described in
+   
+   xmlBlaster/demo/ldap/README.
+
+
+If your ldap server is running fine and filled
+with the demo data from
+   
+   xmlBlaster/demo/ldap/demoData.ldif
+
+
+you can try this:
+
+
+1. Start the xmlBlaster server:
+
+      java -jar lib/xmlBlaster.jar
+
+2. Start a client (all in one line), e.g.
+
+      java javaclients.ClientSub -name tim -passwd tim -Security.Client.DefaultPlugin ldap,1.0
+
+In the log output of xmlBlaster server you should see something like:
+
+      SecurityPluginManager] Plugin 'org.xmlBlaster.authentication.plugins.ldap.Manager' successfully initialized 
+
+3. Edit xmlBlaster.properties and add this line:
+
+      Security.Client.DefaultPlugin=ldap,1.0
+
+   Now LDAP is switched on as default, try again:
+
+      java javaclients.ClientSub -name tim -passwd tim
+
+4. Now try an invalid password:
+
+      java javaclients.ClientSub -name tim -passwd aaah
+
+   You should get an authentication error from LDAP
+
+
+
+Configuration of the LDAP plugin in xmlBlaster.properties:
+
+   ldap.serverUrl=ldap://localhost:389/o=xmlBlaster, c=ORG
+   ldap.rootDN=cn=Manager,o=xmlBlaster,c=ORG
+   ldap.rootPwd=secret
+   ldap.loginFieldName=cn
+
+You may set these settings on command line as well:
+
+   java -jar lib/xmlBlaster.jar \
+         -ldap.serverUrl "ldap://localhost:389/o=xmlBlaster, c=ORG" \
+         -ldap.rootDN "cn=Manager,o=xmlBlaster,c=ORG" \
+         -ldap.rootPwd "secret" \
+         -ldap.loginFieldName "cn"
+
+NOTE: Authorization for actions is not supported with this plugin,
+      xmlBlaster logs warnings to notify you about this.
+      If you want to implement authorization, please subclass
+
+         org.xmlBlaster.authentication.plugins.ldap.Session
+      
+      and implement the method
+      
+         public boolean isAuthorized(String actionKey, String key)
+         {
+            DirContext ctx.ldap.getRootContext();
+            // ... your LDAP queries to authorize the user action ...
+            // return true if user may do this.
+         }
+         
