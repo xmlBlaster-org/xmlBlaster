@@ -15,20 +15,11 @@ Compile:
 #include <socket/xmlBlasterSocket.h> /* gethostname() */
 #include <CallbackServerUnparsed.h>
 
-#if defined(_WINDOWS)
-#  define socklen_t int
-#  define ssize_t signed int
-#elif defined(__alpha)
-#  define socklen_t int
-#else
-#  include <unistd.h>
-#endif
-
-static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
+static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp);
 static int runCallbackServer(CallbackServerUnparsed *cb);
 static bool createCallbackServer(CallbackServerUnparsed *cb);
 static bool isListening(CallbackServerUnparsed *cb);
-static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
+static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp);
 static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp);
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
 static void voidSendResponse(CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArr);
@@ -54,8 +45,9 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
       freeCallbackServerUnparsed(cb);
       return (CallbackServerUnparsed *)0;
    }
-   cb->listenSocket = -1;
-   cb->acceptSocket = -1;
+   cb->listenSocket = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
+   cb->acceptSocket = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
+   cb->socketUdp = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
    cb->useThisSocket = useThisSocket;
    cb->runCallbackServer = runCallbackServer;
    cb->isListening = isListening;
@@ -81,7 +73,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
 /*
  * @see header
  */
-bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
+bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp)
 {
    struct sockaddr_in localAddr;
    socklen_t size = (socklen_t)sizeof(localAddr);
@@ -96,7 +88,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
 
    cb->listenSocket = socketToUse;
    cb->acceptSocket = socketToUse;
-
+   cb->socketUdp = socketToUseUdp;
    cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
 
    if (cb->logLevel>=LOG_INFO) cb->log(cb->logUserP, cb->logLevel, LOG_INFO, __FILE__,
@@ -166,6 +158,40 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
 }
 
 /**
+ * The run method of the two threads
+ */
+static void listenLoop(ListenLoopArgs* ls)
+{
+   int rc;
+   CallbackServerUnparsed *cb = ls->cb;
+   bool udp = ls->udp;
+   XmlBlasterException xmlBlasterException;
+   SocketDataHolder socketDataHolder;
+   bool success;
+   for(;;) {
+      memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
+      /* Here we block until a message arrives, see parseSocketData() */
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+         "Going to block on socket read until a new message arrives ...");
+      success = readMessage(cb, &socketDataHolder, &xmlBlasterException, udp);
+      rc = pthread_mutex_lock(&cb->listenMutex);
+      if (rc != 0) /* EINVAL */
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
+      cb->success = success;
+      cb->xmlBlasterException = xmlBlasterException;
+      cb->socketDataHolder = socketDataHolder;
+      rc = pthread_cond_signal(&cb->listenCond); /* rc is always 0 */
+      rc = pthread_mutex_unlock(&cb->listenMutex);
+      if (rc != 0) /* EPERM */
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock() returned %d.", rc);
+      if (!success)
+         break;
+   }
+   pthread_exit(NULL);
+}
+
+
+/**
  * Open a socket, this method is usually called from the new thread (see pthread_create())
  * and only leaves when the connection is lost (on EOF),
  * in this case implicit pthread_exit() is called. 
@@ -175,6 +201,11 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
  */
 static int runCallbackServer(CallbackServerUnparsed *cb)
 {
+   int rc;
+   ListenLoopArgs* tcpLoop;
+   ListenLoopArgs* udpLoop;
+   bool enableUdp = cb->socketUdp != -1;
+
    cb->isShutdown = false;
 
    if (cb->listenSocket == -1) {
@@ -186,18 +217,33 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          "Reusing connection socket to tunnel callback messages");
    }
 
+   rc = pthread_mutex_init(&cb->listenMutex, NULL); /* rc is always 0 */
+   rc = pthread_cond_init(&cb->listenCond, NULL); /* rc is always 0 */
+
+   rc = pthread_mutex_lock(&cb->listenMutex);
+   if (rc != 0) { /* EINVAL */
+      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_lock() returned %d.", rc);
+      return 1;
+   }
+   
+   tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
+   rc = pthread_create(&cb->tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
+
+   if (enableUdp) {
+      udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
+      rc = pthread_create(&cb->udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
+   }
+
    for (;;) {
+      MsgUnitArr *msgUnitArrP;
       XmlBlasterException xmlBlasterException;
       SocketDataHolder socketDataHolder;
-      MsgUnitArr *msgUnitArrP;
-      bool success;      
-
-      memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
-
-      /* Here we block until a message arrives, see parseSocketData() */
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-         "Going to block on socket read until a new message arrives ...");
-      success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
+      bool success;
+      
+      pthread_cond_wait(&cb->listenCond, &cb->listenMutex);
+      xmlBlasterException = cb->xmlBlasterException;
+      socketDataHolder = cb->socketDataHolder;
+      success = cb->success;
 
       if (success == false) { /* EOF */
          if (!cb->reusingConnectionSocket)
@@ -263,6 +309,21 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          "Received unknown callback methodName=%s", socketDataHolder.methodName);
       }
    }
+
+   /* Enable listening threads to terminate */
+   pthread_mutex_unlock(&cb->listenMutex);
+   pthread_join(cb->tcpListenThread, NULL);
+   free(tcpLoop);
+   if (enableUdp) {
+      pthread_join(cb->udpListenThread, NULL);
+      free(udpLoop);
+   }
+   rc = pthread_mutex_destroy(&cb->listenMutex);
+   if (rc != 0) /* EBUSY */
+      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
+   rc = pthread_cond_destroy(&cb->listenCond);
+   if (rc != 0) /* EBUSY */
+      cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_cond_destroy() returned %d, we ignore it", rc);
 
    cb->isShutdown = true;
    return 0;
@@ -373,9 +434,9 @@ static bool isListening(CallbackServerUnparsed *cb)
  * @param exception Contains the exception thrown (on error only)
  * @return true if OK or on exception, false on EOF
  */
-static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception)
+static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp)
 {
-   return parseSocketData(cb->acceptSocket, socketDataHolder, exception, cb->logLevel >= LOG_DUMP);
+   return parseSocketData(udp ? cb->socketUdp : cb->acceptSocket, socketDataHolder, exception, udp, cb->logLevel >= LOG_DUMP);
 }
 
 /** A helper to cast to SocketDataHolder */
@@ -505,13 +566,8 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
    if (cb->reusingConnectionSocket) {
       return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
-
    if (cb->acceptSocket != -1) {
-#     ifdef _WINDOWS
-      closesocket(cb->acceptSocket);
-#     else
-      (void)close(cb->acceptSocket);
-#     endif
+      closeSocket(cb->acceptSocket);
       cb->acceptSocket = -1;
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Closed accept socket");
@@ -532,14 +588,11 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
       return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
 
+
    closeAcceptSocket(cb);
 
    if (isListening(cb)) {
-#  ifdef _WINDOWS
-      closesocket(cb->listenSocket);
-#  else
-      (void)close(cb->listenSocket);
-#  endif
+      closeSocket(cb->listenSocket);
       cb->listenSocket = -1;
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Closed listener socket");

@@ -49,6 +49,7 @@ typedef struct SocketDataHolder {
 } SocketDataHolder;
 
 #define MSG_LEN_FIELD_LEN 10
+#define MAX_PACKET_SIZE 10*1024
 #define MSG_FLAG_FIELD_LEN 6
 /* static const int MSG_FLAG_FIELD_LEN = 6; */
 enum MSG_FLAG_POS_ENUM {
@@ -64,8 +65,10 @@ enum MSG_FLAG_POS_ENUM {
 #define XMLBLASTER_SOCKET_VERSION 49
 
 
+extern void closeSocket(int fd);
 extern ssize_t writen(int fd, char *ptr, size_t nbytes);
 extern ssize_t readn(int fd, char *ptr, size_t nbytes);
+
 extern char *encodeSocketMessage(
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
               const char * const requestId, 
@@ -77,7 +80,7 @@ extern char *encodeSocketMessage(
               size_t *rawMsgLen);
 Dll_Export extern BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
 Dll_Export extern BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
-extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
+extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
 extern void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 Dll_Export extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
 extern QosArr *parseQosArr(size_t dataLen, char *data);

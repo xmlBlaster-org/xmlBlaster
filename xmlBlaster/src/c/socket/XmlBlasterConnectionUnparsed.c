@@ -16,13 +16,12 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
-#ifndef _WINDOWS
-#  include <unistd.h>
-#endif
+#define SOCKET_UDP true
+#define SOCKET_TCP false
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
 static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueueProperties *queueProperties, XmlBlasterException *exception);
-static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception);
+static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception, bool udp);
 static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -54,6 +53,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
       return (XmlBlasterConnectionUnparsed *)0;
    }
    xb->socketToXmlBlaster = -1;
+   xb->socketToXmlBlasterUdp = -1;
    xb->isInitialized = false;
    xb->requestId = 0;
    *xb->secretSessionId = 0;
@@ -78,6 +78,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
+   xb->enableUdp = false; /* For publishOneway() only */
    return xb;
 }
 
@@ -85,7 +86,7 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0) {
       freeProperties(xb->props);
-      xmlBlasterConnectionShutdown(xb),
+      xmlBlasterConnectionShutdown(xb);
       free(xb);
    }
 }
@@ -216,8 +217,61 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
             if (xb->logLevel>=LOG_INFO) xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
+            xb->enableUdp = xb->props->getBool(xb->props, "plugin/socket/enableUdp", xb->enableUdp);
+            xb->enableUdp = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/enableUdp", xb->enableUdp);
+
+            if (xb->enableUdp) {
+               struct sockaddr_in localAddr;
+               socklen_t size = (socklen_t)sizeof(localAddr);
+               xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__,
+                  "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/enableUdp true");
+
+               xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
+
+               if (xb->socketToXmlBlasterUdp != -1) {
+                  if (getsockname(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, &size) == -1) {
+                     if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
+                        "Can't determine the local socket host and port (in UDP), errno=%d", errno);
+                     return false;
+                  }
+
+                  if (bind(xb->socketToXmlBlasterUdp, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+                     if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
+                        "Failed binding local port (in UDP) -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                        localHostName, localPort);
+                     return false;
+                  }
+                  if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
+                     "Bound local UDP port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                     localHostName, localPort);
+
+                  if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
+                     char errnoStr[MAX_ERRNO_LEN];
+                     char *p = strerror(errno);
+                     SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
+#                    ifdef _LINUX
+                     strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
+#                    endif
+                     strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                     SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                              "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
+                              __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
+                     if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+                     return false;
+                  }
+                  if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Connected to xmlBlaster with UDP");
+               } /* if (xb->socketToXmlBlasterUdp != -1) */
+               else {
+                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                           "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP) errno=%d",
+                           __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+                  return false;
+               }
+            } /* if (xb->enableUdp) */
+
          }
-         else {
+         else { /* connect(...) == -1 */
             char errnoStr[MAX_ERRNO_LEN];
             char *p = strerror(errno);
             SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
@@ -250,6 +304,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    xb->isInitialized = true;
    return true;
 }
+
 
 /**
  * Set the queue properties. 
@@ -343,7 +398,9 @@ const char *xmlBlasterConnectionUnparsedUsage()
       "\n   -dispatch/connection/plugin/socket/localHostname [NULL]"
       "\n                       Force the local IP, useful on multi homed computers."
       "\n   -dispatch/connection/plugin/socket/localPort [0]"
-      "\n                       Force the local port, useful to tunnel firewalls.";
+      "\n                       Force the local port, useful to tunnel firewalls."
+      "\n   -dispatch/connection/plugin/socket/enableUdp [false]"
+      "\n                       Use UDP for publishOneway() calls.";
 }
 
 /**
@@ -353,7 +410,13 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb->isConnected(xb)) {
       shutdown(xb->socketToXmlBlaster, 2);
+      closeSocket(xb->socketToXmlBlaster);
       xb->socketToXmlBlaster = -1;
+      if (xb->socketToXmlBlasterUdp != -1) {
+         shutdown(xb->socketToXmlBlasterUdp, 2);
+         closeSocket(xb->socketToXmlBlasterUdp);
+         xb->socketToXmlBlasterUdp = -1;
+      }
    }
 }
 
@@ -366,6 +429,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
  *        Supply NULL for oneway messages.
  * @param exception The exception struct, exception->errorCode is filled on exception.
  *        You need to supply it.
+ * @param udp Whether to use UDP or TCP. Supply true for UDP.
  * @return true if OK and response is filled (if not oneway or exception or response itself)<br />
            false on error and exception is filled
  */
@@ -375,7 +439,8 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
               const char *data_,
               size_t dataLen_,
               SocketDataHolder *responseSocketDataHolder,
-              XmlBlasterException *exception)
+              XmlBlasterException *exception,
+              bool udp)
 {
    ssize_t numSent;
    size_t rawMsgLen = 0;
@@ -414,8 +479,8 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
-      "sendData() requestId '%ld' increment to '%ld', dataLen=%d",
-      xb->requestId, xb->requestId+1, dataLen_);
+      "sendData(udp=%s) requestId '%ld' increment to '%ld', dataLen=%d",
+      ((udp==true) ? "true" : "false"), xb->requestId, xb->requestId+1, dataLen_);
 
    {
       long tmp = ++xb->requestId; /* TODO: We need to sync requestId !!!! */
@@ -457,8 +522,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
    
    /* send the header ... */
-   numSent = writen(xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
-
+   numSent = writen(udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
    if (numSent == -1) {
       if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
                                    "Lost connection to xmlBlaster server");
@@ -528,7 +592,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       }
       else {
          /* Wait on the response ourself */
-         if (getResponse(xb, responseSocketDataHolder, exception) == false) {  /* false on EOF */
+         if (getResponse(xb, responseSocketDataHolder, exception, udp) == false) {  /* false on EOF */
             xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, "Lost connection to xmlBlaster server");
             xmlBlasterConnectionShutdown(xb);
             strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -567,9 +631,9 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
  * @param exception Contains the exception thrown (on error only *exception->errorCode!=0)
  * @return true if OK or on exception, false on EOF
  */
-static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception)
+static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception, bool udp)
 {
-   return parseSocketData(xb->socketToXmlBlaster, responseSocketDataHolder, exception, xb->logLevel >= LOG_DUMP);
+   return parseSocketData(xb->socketToXmlBlaster, responseSocketDataHolder, exception, udp, xb->logLevel >= LOG_DUMP);
 }
 
 /**
@@ -601,7 +665,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
 
    if (sendData(xb, XMLBLASTER_CONNECT, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       return (char *)0;
    }
 
@@ -648,7 +712,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 
    if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
-                0, exception) == false) {
+                0, exception, SOCKET_TCP) == false) {
       return false;
    }
 
@@ -759,7 +823,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    msgUnit->responseQos = 0; /* Initialize properly */
 
    if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
 
 #     if XMLBLASTER_PERSISTENT_QUEUE_TEST==1 /* TEST CODE */
          if (strstr(exception->errorCode, "user.notConnected") != 0 ||
@@ -802,7 +866,7 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
 
    if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       free(blob.data);
       return 0;
    }
@@ -823,16 +887,27 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
 {
    size_t i;
    SocketDataHolder responseSocketDataHolder;
+   bool udp = xb->enableUdp;
 
    BlobHolder blob = encodeMsgUnitArr(msgUnitArr, xb->logLevel >= LOG_DUMP);
 
    if (checkArgs(xb, "publishOneway", true, exception) == false ) return;
 
-   for (i=0; i<msgUnitArr->len; i++)
+   for (i=0; i<msgUnitArr->len; i++) {
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
+      /*udp |= strstr(msgUnitArr->msgUnitArr[i].qos, "<clientProperty name='__udp' type='boolean'>true</clientProperty>") != NULL;*/
+   }
+
+   if (udp && !xb->enableUdp) {
+      strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] UDP not enabled, use -dispatch/connection/plugin/socket/enableUDP true", __FILE__, __LINE__);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      free(blob.data);
+      return;
+   }
 
    if (sendData(xb, XMLBLASTER_PUBLISH_ONEWAY, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, udp) == false) {
       free(blob.data);
       return;
    }
@@ -881,7 +956,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    currpos += keyLen+1;
 
    if (sendData(xb, XMLBLASTER_SUBSCRIBE, MSG_TYPE_INVOKE, data, totalLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       free(data);
       return (char *)0;
    }
@@ -937,7 +1012,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    currpos += keyLen+1;
 
    if (sendData(xb, XMLBLASTER_UNSUBSCRIBE, MSG_TYPE_INVOKE, data, totalLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       free(data);
       return (QosArr *)0;
    }
@@ -999,7 +1074,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    currpos += keyLen+1;
 
    if (sendData(xb, XMLBLASTER_ERASE, MSG_TYPE_INVOKE, data, totalLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       free(data);
       return (QosArr *)0;
    }
@@ -1036,7 +1111,7 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
    
    if (sendData(xb, XMLBLASTER_PING, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       return (char *)0;
    }
 
@@ -1084,7 +1159,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    currpos += keyLen+1;
 
    if (sendData(xb, XMLBLASTER_GET, MSG_TYPE_INVOKE, data, totalLen,
-                &responseSocketDataHolder, exception) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       free(data);
       return (MsgUnitArr *)0; /* exception is filled with details */
    }

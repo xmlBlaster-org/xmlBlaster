@@ -27,12 +27,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterAccessUnparsed.h>
 
-#ifdef _WINDOWS
-#  define ssize_t signed int
-#else
-#  include <pthread.h>  /* The original pthreads.h from the OS, only need for gcc 2.9x: I don't know why, it is in XmlBlasterAccessUnparsed.h already */
-#endif
-
 /**
  * Little helper to collect args for the new created thread
  */
@@ -231,7 +225,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    xa->callbackP->log = xa->log;
    xa->callbackP->logUserP = xa->logUserP;
 
-   xa->callbackP->useThisSocket(xa->callbackP, xa->connectionP->socketToXmlBlaster);
+   xa->callbackP->useThisSocket(xa->callbackP, xa->connectionP->socketToXmlBlaster, xa->connectionP->socketToXmlBlasterUdp);
 
    xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
           "Created CallbackServerUnparsed instance, creating on a separate thread a listener on socket://%s:%d...",

@@ -24,6 +24,7 @@ extern "C" {
 
 #include <util/msgUtil.h>
 #include <util/Properties.h>
+#include "socket/xmlBlasterSocket.h"
 
 #define DEFAULT_CALLBACK_SERVER_PORT 7611
 
@@ -40,9 +41,11 @@ typedef struct CallbackServerUnparsedStruct CallbackServerUnparsed;
  *
  * @param socketToUse Usually pass -1 so that we establish a callback server, else
  *               pass an opened socket (e.g. from XmlBlasterConnectionUnparsed->socketToXmlBlaster)
+ * @param socketToUseUdp Usually pass -1 so that we establish a callback server, else
+ *               pass an opened socket (e.g. from XmlBlasterConnectionUnparsed->socketToXmlBlaster)
  * @return true on success
  */
-typedef bool (* UseThisSocket)(CallbackServerUnparsed *cb, int socketToUse);
+typedef bool (* UseThisSocket)(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp);
 
 typedef int (* InitCallbackServer)(CallbackServerUnparsed *cb);
 
@@ -104,6 +107,7 @@ struct CallbackServerUnparsedStruct {
    Properties *props;
    int listenSocket;
    int acceptSocket;
+   int socketUdp;
    char * hostCB;
    int portCB;
    bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
@@ -129,7 +133,24 @@ struct CallbackServerUnparsedStruct {
    CallbackServerUnparsedSendResponse sendResponse;
    CallbackServerUnparsedSendXmlBlasterException sendXmlBlasterException;
    CallbackServerUnparsedDoRespond sendResponseOrException;
+
+   /* two listening threads: TCP, UDP */
+   pthread_t tcpListenThread, udpListenThread;
+   pthread_mutex_t listenMutex;
+   pthread_cond_t listenCond;
+
+   /* for passing results between threads */
+   XmlBlasterException xmlBlasterException;
+   SocketDataHolder socketDataHolder;
+   bool success;
+
 };
+
+/* Auxiliary struct for passing parameters to listening threads */
+typedef struct ListenLoopArgsStruct {
+   CallbackServerUnparsed* cb;
+   bool udp;
+} ListenLoopArgs;
 
 /**
  * Get a new instance of a callback server struct. 

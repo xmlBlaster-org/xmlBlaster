@@ -78,6 +78,15 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  endif
 #endif
 
+#if defined(_WINDOWS)
+#  define socklen_t int
+#  define ssize_t signed int
+#elif defined(__alpha)
+#  define socklen_t int
+#else
+#  include <unistd.h>
+#endif
+
 #define XB_USE_PTHREADS 1 /* Used to dump thread ID in default logging output, undef it if you run single threaded */
 
 #endif /* XMLBLASTER_basicDefs_H */

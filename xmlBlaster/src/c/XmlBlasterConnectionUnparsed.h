@@ -53,6 +53,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    const char * const*argv;
    Properties *props;
    int socketToXmlBlaster;
+   int socketToXmlBlasterUdp;
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
@@ -77,6 +78,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
    void *logUserP;               /* For outside users to pass a user object back to the logging implementation */
+   bool enableUdp;
 };
 
 

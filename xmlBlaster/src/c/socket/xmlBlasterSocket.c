@@ -9,6 +9,14 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <string.h>
 #include <socket/xmlBlasterSocket.h>
 
+void closeSocket(int fd) {
+#ifdef _WINDOWS
+   closesocket(fd);
+#else
+   (void)close(fd);
+#endif
+}
+
 /**
  * Write the given amount of bytes to socket. 
  * This method blocks until data all data is sent, we loop
@@ -274,7 +282,7 @@ char *encodeSocketMessage(
  *         Please check socketDataHolder->type if it is an exception.
  *         false: The socket is closed (EOF)
  */
-bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug) 
+bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug) 
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
    char *rawMsg = 0;
@@ -283,22 +291,30 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    size_t currPos = 0;
    unsigned long msgLenL; /* to have 64 bit portable sscanf */
 
+   char packet[MAX_PACKET_SIZE];
    /* initialize */
    memset(msgLenPtr, 0, MSG_LEN_FIELD_LEN+1);
    memset(socketDataHolder, 0, sizeof(SocketDataHolder));
    memset(exception, 0, sizeof(XmlBlasterException));
    exception->remote = false;
 
-   /* read the first 10 bytes to determine the length */
-   numRead = readn(xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
+   if (udp)
+      numRead = recv(xmlBlasterSocket, packet, MAX_PACKET_SIZE, 0);
+   else
+      /* read the first 10 bytes to determine the length */
+      numRead = readn(xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
       return false; /* EOF on socket */
    }
-   if (numRead != MSG_LEN_FIELD_LEN) {
+   if ((!udp && numRead != MSG_LEN_FIELD_LEN) ||
+       ( udp && numRead < MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes but expected %d", (long)numRead, MSG_LEN_FIELD_LEN);
       if (debug) { printf(exception->message); printf("\n"); }
       return true;
+   }
+   if (udp) {
+      memcpy(msgLenPtr,  packet, MSG_LEN_FIELD_LEN);
    }
    *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0; 
    trim(msgLenPtr);
@@ -325,8 +341,12 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    /* read the complete message */
    rawMsg = (char *)calloc(socketDataHolder->msgLen, sizeof(char));
    memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
-
-   numRead = readn(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
+   if (udp) {
+      memcpy(rawMsg+MSG_LEN_FIELD_LEN, packet+MSG_LEN_FIELD_LEN, socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
+      numRead -= MSG_LEN_FIELD_LEN;
+   }
+   else
+      numRead = readn(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
       return false; /* EOF on socket */
    }
