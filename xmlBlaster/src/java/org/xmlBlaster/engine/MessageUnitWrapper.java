@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.39 2002/05/19 12:55:42 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.40 2002/05/26 16:26:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -147,7 +147,7 @@ public class MessageUnitWrapper implements I_Timeout
     */
    public synchronized void addEnqueueCounter(int val)
    {
-      this.enqueueCounter++;
+      this.enqueueCounter += val;
    }
 
    /**
