@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.cpp.failsafe' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      The c++ client library supports failsafe reconnect where published messages are queued as long as
+      the communication to xmlBlaster is broken.
+   </topic>
+   <description>
+     <p>
+     Hidden inside <b>ConnectionsHandler</b> there is a mechanism which in asynchronous way pings xmlBlaster
+     to check if the communication is ok. When the ping fails, or when a request to xmlBlaster fails due
+     to communication problems, the client library tries to reestablish the connection. This is done
+     in an asynchronous way (an own thread in ConnectionHandler). While the library tries to
+     reconnect all publish requests are queued on ram.<br/>
+     Connect requests are queued too, provided you
+     explicitly specify a public session id. When a connection request is queued, a faked
+     ConnectReturnQos is returned to the client. Note that the private session id is missing but this does not
+     create any problems since the client never uses it explicitly when invoking xmlBlaster (it is handled
+     transparently and individually by the underlying communication protocols).
+     </p>
+     <p>
+     For a detailed explication of the feature have a look at the specific requirement for
+     <a href="./client.failsafe.html">failsafe reconnect</a>.
+     </p>
+     <p>
+     The following methods must be implemented by the object implementing the I_ConnectionProblems
+     interface. It is the object passed in the initFailsafe(...) method in XmlBlasterAccess.
+     <ul>
+     <li>bool reachedAlive(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler)</li>
+     <li>void reachedDead(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler)</li>
+     <li>void reachedPolling(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler)</li>
+     </ul>
+     As the method names suggest, these notifications are invoked <b>after</b> the state of the connection
+     has been taken place. So inside these methods the user can assume that the state of the 
+     I_ConnectionHander is what the method name says (for example when reachedAlive is invoked, the state is
+     already ALIVE).<br/>
+     The reachedAlive method returns a bool. If you return <b>true</b> the queue will be flushed, i.e. the
+     queue entries will be dispatched to xmlBlaster. If you return false, all queue entries will be 
+     discarded.
+     </p>
+   </description>
+   <example lang="CPP">
+   <pre>
+
+<![CDATA[
+
+class HelloWorld2 : public I_Callback,         
+                    public I_ConnectionProblems
+{
+   ......
+
+
+   bool reachedAlive(StatesEnum, I_ConnectionsHandler*)
+   {
+      log_.info(ME, "reconnected");
+      return true;
+   }
+
+   void reachedDead(StatesEnum, I_ConnectionsHandler*)
+   {
+      log_.info(ME, "lost connection");
+   }
+
+   void reachedPolling(StatesEnum, I_ConnectionsHandler*)
+   {
+      log_.info(ME, "going to poll modus");
+   }
+
+   ......
+
+
+   void execute()
+   {
+      try {
+         XmlBlasterAccess con(global_);
+
+	 // here you initialize the failsafe behaviour by giving
+	 // a pointer to the instance to notify when a state change
+	 // occcurs (which in this case is the 'this' object)
+
+         con.initFailsafe(this);
+	 
+	 // do what you want to do here (connect publish subscribe)
+	 .....
+   }
+
+   string update(const string& sessionId, 
+                 UpdateKey& updateKey, 
+		 void *content, 
+		 long contentSize, 
+		 UpdateQos& updateQos)
+   {
+      log_.info(ME, "update: key: " + updateKey.toXml());
+      log_.info(ME, "update: qos: " + updateQos.toXml());
+      return "";
+   }
+
+};
+
+
+]]>
+
+   </pre>
+   </example>
+
+
+   <see type="REQ">client.cpp.precondition</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ">client.failsafe</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2003 01 20</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
