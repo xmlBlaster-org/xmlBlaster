@@ -56,10 +56,45 @@
 &lt;qos>
    &lt;state id='OK' info='QUEUED[bilbo]'/>
    &lt;key oid='MyMessageOid'/>
-   &lt;rcvTimestamp nanos='1042801493152000001'/>
+   &lt;rcvTimestamp nanos='1042815836675000001'/>
 &lt;/qos>
    </pre>
    </td></tr></table>
+   <p>
+     Above you got an acknowledge for your sent message, the <b>state</b> is OK.
+   </p>
+   <p>
+     The topic name <i>MyMessageOid</i> is returned, this is helpful
+     if you have not set an oid on publish and the oid is generated 
+     uniquely by xmlBlaster.
+   </p>
+   <p>
+     Finally you get the approximate <b>receive timestamp</b> (UTC time),
+     when the message arrived in the xmlBlaster server publish() method.
+   </p>
+   <p>
+     It is given in nanoseconds elapsed since midnight, January 1, 1970 UTC.
+     Note that the exact time is milliseconds only but an internal counter
+     is added to have nanosecond precision, guaranteeing a unique timestamp
+     for an xmlBlaster cluster node instance.
+   </p>
+   <p>
+     This <b>rcvTimestamp</b> is unique for a message instance published and may be
+     used to identify this message. For example a publisher and a receiver
+     of a message can identify this message by its topic (key oid) and its
+     receive timestamp. Have a look at requirement <i>interface.update</i> where
+     this timestamp is delivered as well.
+   </p>
+   <p>
+     To get a human readable view on the timestamp try:
+   </p>
+     <pre>
+String time = qos.getRcvTimestamp().toString(); // Java
+
+string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
+
+->    2003-01-17 16:03:56.675000001
+     </pre>
    </example>
 
    <example lang="XML" type="HTML">
@@ -72,18 +107,29 @@
    &lt;priority>5&lt;/priority>
    
    &lt;!-- The message is automatically destroyed after 129595811 milliseconds -->
-   &lt;expiration lifeTime='129595811'/>
+   &lt;expiration lifeTime='60000'/>
    
    &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
    &lt;persistent/>
    
-   &lt;!-- Administration: configure the topic on first publish -->
+   &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+      &lt;persistence relating='msgUnitStore' maxMsg='1000' maxBytes='4000'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
+     <p>
+      The message is sent with NORM priority and dies automatically after one minute.
+      As it is important that the message survives a server crash or shutdown it
+      is marked to be persistent.
+     <p>
+     </p>
+      Finally we send the configuration for the topic. This is only evaluated
+      if the topic didn't exist yet and needs to be created automatically
+      when this publish arrives. We can omit these topic settings as
+      there are choosen useful default values in this case.
+     </p>
    </example>
 
    <example lang="XML" type="HTML">
@@ -102,7 +148,8 @@
    
    &lt;persistent/>  &lt;!-- message is recovered on server crash -->
 
-   &lt;forceUpdate/>  &lt;!-- message is put to destination queue even if destination is not logged in -->
+   &lt;forceUpdate/>  &lt;!-- message is put to destination queue even if destination
+                              is not logged in -->
 
    &lt;!-- Send to all login sessions of user 'Tim', if Tim is offline queue it -->
    &lt;destination queryType='EXACT' forceQueuing='true'>
@@ -118,13 +165,33 @@
       //[GROUP='Manager']
    &lt;/destination>
 
-   &lt;!-- Administration: configure the topic on first publish -->
+   &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000'
+                      maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000'
+                      maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
+     <p>
+     When we want to send a message to specific other clients we address
+     the clients by there login names or session names.
+     If a destination contains the session identifier (like '-2') only this
+     specific login session of the client will receive the message.
+     If we don't specify a publicSessionId, all login sessions of the user
+     will receive the message.
+     </p>
+     <p>
+     If we want to hide the PtP message from other subscribers of this topic
+     we add the <b>subscribeable</b> tag and set it to false.
+     </p>
+     <p>
+     If a destination client is offline the publisher gets thrown back an exception
+     and the message is not delivered.
+     By adding the tag <b>forceUpdate</b> the message will be queued in xmlBlaster
+     until the destination client logs in and will then be delivered to the destination.
+     </p>
    </example>
 
    <example lang="XML" type="HTML">
@@ -146,11 +213,16 @@
    
    &lt;!-- Configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+      &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'
+                       onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000'
+                       maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
+     <p>
+     The supported settings and default values are described in the <i>queue</i> requirements
+     </p>
    </example>
 
    <example lang="XmlRpc" type="HTML">
@@ -292,7 +364,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
