@@ -11,8 +11,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
-#ifndef _UTIL_TOPICCACHEPROPERTY_H
-#define _UTIL_TOPICCACHEPROPERTY_H
+#ifndef _UTIL_MSGUNITSTORE_PROPERTY_H
+#define _UTIL_MSGUNITSTORE_PROPERTY_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/storage/QueuePropertyBase.h>

@@ -26,7 +26,7 @@ MsgUnitStoreProperty::MsgUnitStoreProperty(Global& global, const string& nodeId)
    : QueuePropertyBase(global, nodeId)
 {
    ME = string("MsgUnitStoreProperty");
-   relating_ = Constants::RELATING_TOPICCACHE;
+   relating_ = Constants::RELATING_MSGUNITSTORE;
    initialize();
 }
 
@@ -48,7 +48,7 @@ MsgUnitStoreProperty& MsgUnitStoreProperty::operator =(const QueuePropertyBase& 
  */
 void MsgUnitStoreProperty::initialize()
 {
-   QueuePropertyBase::initialize(""); // "msgUnitStore");
+   QueuePropertyBase::initialize(Constants::RELATING_MSGUNITSTORE);
 }
 
 bool MsgUnitStoreProperty::onOverflowDeadMessage()
@@ -65,16 +65,16 @@ string MsgUnitStoreProperty::usage()
 {
    string text;
    text += "Control the MsgUnit storage properties:\n";
-   text += "   -msgUnitStore.maxMsg       The maximum allowed number of messages in this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
-   text += "   -msgUnitStore.maxMsgCache  The maximum allowed number of messages in the cache of this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
-   text += "   -msgUnitStore.maxBytes      The maximum size in bytes of this storage [" + lexical_cast<string>(DEFAULT_bytesDefault) + "].\n";
-   text += "   -msgUnitStore.maxBytesCache The maximum size in bytes in the cache of this storage [" + lexical_cast<string>(DEFAULT_bytesCacheDefault) + "].\n";
- //text += "   -msgUnitStore.expires  If not otherwise noted a storage dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
- //text += "   -msgUnitStore.onOverflow What happens if storage is full. " + Constants::ONOVERFLOW_BLOCK + " | " + Constants::ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
-   text += "   -msgUnitStore.onOverflow What happens if storage is full [" + DEFAULT_onOverflow + "]\n";
-   text += "   -msgUnitStore.onFailure  Error handling when history failed [" + DEFAULT_onFailure + "]\n";
-   text += "   -msgUnitStore.type       The plugin type [" + DEFAULT_type + "]\n";
-   text += "   -msgUnitStore.version    The plugin version [" + DEFAULT_version + "]\n";
+   text += "   -persistence.maxMsg       The maximum allowed number of messages in this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
+   text += "   -persistence.maxMsgCache  The maximum allowed number of messages in the cache of this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
+   text += "   -persistence.maxBytes      The maximum size in bytes of this storage [" + lexical_cast<string>(DEFAULT_bytesDefault) + "].\n";
+   text += "   -persistence.maxBytesCache The maximum size in bytes in the cache of this storage [" + lexical_cast<string>(DEFAULT_bytesCacheDefault) + "].\n";
+ //text += "   -persistence.expires  If not otherwise noted a storage dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
+ //text += "   -persistence.onOverflow What happens if storage is full. " + Constants::ONOVERFLOW_BLOCK + " | " + Constants::ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
+   text += "   -persistence.onOverflow What happens if storage is full [" + DEFAULT_onOverflow + "]\n";
+   text += "   -persistence.onFailure  Error handling when history failed [" + DEFAULT_onFailure + "]\n";
+   text += "   -persistence.type       The plugin type [" + DEFAULT_type + "]\n";
+   text += "   -persistence.version    The plugin version [" + DEFAULT_version + "]\n";
    return text;
 }
 
@@ -83,7 +83,7 @@ string MsgUnitStoreProperty::usage()
  */
 string MsgUnitStoreProperty::getRootTagName() const
 {
-   return "msgUnitStore";
+   return "persistence";
 }
 
 }}}}}
