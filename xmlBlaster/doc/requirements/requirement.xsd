@@ -47,9 +47,10 @@
                <xsd:restriction base="xsd:string">
                   <xsd:enumeration value="OPEN"/>
                   <xsd:enumeration value="INWORK"/>
-                  <xsd:enumeration value="BUG"/>
+                  <!-- xsd:enumeration value="BUG"/ -->
                   <xsd:enumeration value="CLOSED"/>
-                  <xsd:enumeration value="OBSOLETE"/>
+                  <xsd:enumeration value="DEPRECATED"/>
+                  <!-- xsd:enumeration value="OBSOLETE"/ -->
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>

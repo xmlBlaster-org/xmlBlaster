@@ -52,7 +52,7 @@ Comment:   Validates xml requirements
 <!ATTLIST changerequest
           prio  (LOW | MEDIUM | HIGH) "LOW"
           type (NEW | BUG) "NEW"
-          status (OPEN | INWORK | CLOSED) "OPEN">
+          status (OPEN | INWORK | CLOSED | DEPRECATED) "OPEN">
 
 <!ELEMENT testcase (
    name,
@@ -68,7 +68,7 @@ Comment:   Validates xml requirements
           id ID #REQUIRED
           prio  (LOW | MEDIUM | HIGH) "LOW"
           type (NEW | BUG) "NEW"
-          status (OPEN | INWORK | CLOSED) "OPEN">
+          status (OPEN | INWORK | CLOSED | DEPRECATED) "OPEN">
 
 <!--
    Examples are surrounded by a <pre></pre> in RAW mode

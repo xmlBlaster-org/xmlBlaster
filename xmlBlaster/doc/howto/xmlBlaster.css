@@ -33,6 +33,7 @@ td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR
 td.OPEN { BACKGROUND-COLOR: #E6E6E6; }
 td.INWORK { BACKGROUND-COLOR: #FFFF99; }
 td.CLOSED { BACKGROUND-COLOR: #3DEB3D; }
+td.DEPRECATED { BACKGROUND-COLOR: #E6E6E6; }
 
 code {FONT-FAMILY: courier, monospace; FONT-STYLE: italic; font-size:100%; }
 code.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:80%;
