@@ -433,6 +433,10 @@ TODO
          <equals arg1="${os.name}" arg2="SunOS"/>
       </condition>
 
+      <condition property="hpux"> <!-- "hpux" is used below for if="hpux" conditions, os.family=unix os.name=HP-UX -->
+         <equals arg1="${os.name}" arg2="HP-UX"/>
+      </condition>
+
       <!--
         These filters replace in your code @version@, @build.timestamp@ etc with
         the current values if the copy task contains a filtering="true" attribute.
