@@ -1166,7 +1166,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
          }
 
-         return retVal;
+         StringBuffer buf = new StringBuffer(160);
+         buf.append("<qos><state id='").append(Constants.STATE_OK).append("'/><key oid='").append(retVal).append("'/></qos>");
+         return buf.toString();
       }
       catch (XmlBlasterException e) {
          throw e;
