@@ -2,8 +2,6 @@
 Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.29 2002/11/26 12:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -16,8 +14,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -36,7 +33,7 @@ import java.io.OutputStream;
  *   <li>We send update() and ping() back to the client</li>
  * </ol>
  * 
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class HandleClient extends Executor implements Runnable
 {
@@ -118,22 +115,19 @@ public class HandleClient extends Executor implements Runnable
     * @return null if oneway
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] sendUpdate(String cbSessionId, MsgQueueUpdateEntry[] msg, boolean expectingResponse) throws XmlBlasterException
+   public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
       if (!running)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
 
-      if (msg == null || msg.length < 1) {
+      if (msgArr == null || msgArr.length < 1) {
          log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
-         MessageUnit[] unitArr = new MessageUnit[msg.length];
-         for (int i=0; i<msg.length; i++)
-            unitArr[i] = msg[i].getMessageUnit();
-         parser.addMessage(unitArr);
+         parser.addMessage(msgArr);
          if (expectingResponse) {
             Object response = execute(parser, WAIT_ON_RESPONSE);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
@@ -150,12 +144,12 @@ public class HandleClient extends Executor implements Runnable
             throw xmlBlasterException;
 
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
-                   "SOCKET callback of " + msg.length + " messages failed", xmlBlasterException);
+                   "SOCKET callback of " + msgArr.length + " messages failed", xmlBlasterException);
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-               "SOCKET callback of " + msg.length + " messages failed", e1);
+               "SOCKET callback of " + msgArr.length + " messages failed", e1);
       }
    }
 

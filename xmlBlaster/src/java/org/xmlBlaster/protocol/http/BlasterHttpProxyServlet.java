@@ -15,7 +15,8 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -43,7 +44,7 @@ import javax.servlet.http.*;
  * <p />
  * Invoke for testing:<br />
  *    http://localhost/xmlBlaster/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
- * @author Marcel Ruff ruff@swand.lake.de
+ * @author Marcel Ruff xmlBlaster@marcelruff.info
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
@@ -476,7 +477,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                content = "";
 
             log.info(ME, "Publishing '" + key + "'");
-            MessageUnit msgUnit = new MessageUnit(key, content.getBytes(), qos);
+            MsgUnit msgUnit = new MsgUnit(glob, key, content.getBytes(), qos);
             try {
                PublishReturnQos publish = xmlBlaster.publish(msgUnit);
                log.trace(ME, "Success: Publishing done, returned oid=" + publish.getKeyOid());

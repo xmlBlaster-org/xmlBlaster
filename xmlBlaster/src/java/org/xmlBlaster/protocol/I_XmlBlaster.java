@@ -3,14 +3,12 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.13 2002/11/26 12:39:02 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 
 /**
@@ -20,13 +18,15 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * This interface is implemented by engine/XmlBlasterImpl.java
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_XmlBlaster
 {
    /**
     * Subscribe to messages.
     * <p />
+    * @param xmlKey_literal Depending on the security plugin this key is encrypted
+    * @param subscribeQoS_literal Depending on the security plugin this qos is encrypted
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
@@ -37,6 +37,8 @@ public interface I_XmlBlaster
     * <p />
     * To pass the raw xml ASCII strings, use this method.
     *
+    * @param xmlKey_literal Depending on the security plugin this key is encrypted
+    * @param unSubscribeQoS_literal Depending on the security plugin this qos is encrypted
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String[] unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQos_literal) throws XmlBlasterException;
@@ -44,22 +46,23 @@ public interface I_XmlBlaster
    /**
     * Publish a message.
     * <p />
-    * @param msgUnit The MessageUnit contains the literal ASCII strings of xmlKey and publishQos and the binary content.
+    * @param msgUnit The MsgUnitRaw contains the literal ASCII strings of xmlKey and publishQos and the binary content.
+    *                Depending on the security plugin the msgUnit is encrypted
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
+   public String publish(String sessionId, MsgUnitRaw msgUnit) throws XmlBlasterException;
 
    /**
     * Publish messages.
     * <p />
-    * This variant allows to pass an array of MessageUnit object, for performance reasons and
+    * This variant allows to pass an array of MsgUnitRaw object, for performance reasons and
     * probably in future as an entity for transactions.
     *
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
+   public String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
 
    /**
     * Publish messages.
@@ -71,7 +74,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr);
+   public void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr);
 
    /**
     * Delete messages.
@@ -87,7 +90,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
-   public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
+   public MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
 
    /**
      * Ping to check if xmlBlaster is alive. 

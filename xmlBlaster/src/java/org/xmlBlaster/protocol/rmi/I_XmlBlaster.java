@@ -3,13 +3,13 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.7 2002/11/26 12:39:16 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: I_XmlBlaster.java,v 1.8 2002/12/18 12:39:11 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.rmi.RemoteException;
 
@@ -20,7 +20,7 @@ import java.rmi.RemoteException;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
  * @see org.xmlBlaster.protocol.I_XmlBlaster
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_XmlBlaster extends java.rmi.Remote
 {
@@ -45,7 +45,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String publish(String sessionId, MessageUnit msgUnit)
+   public String publish(String sessionId, MsgUnitRaw msgUnit)
                            throws RemoteException, XmlBlasterException;
 
    /**
@@ -53,7 +53,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr)
+   public String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr)
                            throws RemoteException, XmlBlasterException;
 
    /**
@@ -61,7 +61,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr)
+   public void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr)
                            throws RemoteException;
 
    /**
@@ -77,7 +77,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal)
+   public MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String getQoS_literal)
                            throws RemoteException, XmlBlasterException;
 
    /**

@@ -2,7 +2,7 @@
 Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
-Author:    konrad.krafft@doubleslash.de ruff@swand.lake.de
+Author:    konrad.krafft@doubleslash.de xmlBlaster@marcelruff.info
 See:       persistentWindow/index.html and demo/http/svg/systemInfo/northFrame.html
 ------------------------------------------------------------------------------*/
 

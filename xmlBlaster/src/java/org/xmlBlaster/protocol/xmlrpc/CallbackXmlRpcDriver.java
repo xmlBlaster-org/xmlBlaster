@@ -2,9 +2,6 @@
 Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.21 2002/11/26 12:39:25 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -14,8 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
 
 import org.apache.xmlrpc.XmlRpcClient;
@@ -24,13 +20,13 @@ import java.io.IOException;
 import java.util.Vector;
 
 /**
- * This object sends a MessageUnit back to a client using XML-RPC interface, in
+ * This object sends a MsgUnitRaw back to a client using XML-RPC interface, in
  * the same JVM.
  * <p>
  * The I_CallbackDriver.update() method of the client will be invoked
  *
  * @author Michele Laghi (laghi@swissinfo.org)
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
  */
 public class CallbackXmlRpcDriver implements I_CallbackDriver
@@ -116,16 +112,16 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal update argument");
+      if (msgArr == null || msgArr.length < 1) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal update argument");
  
       // transform the msgUnits to Vectors
       try {
-         String[] retVal = new String[msg.length];
-         for (int ii=0; ii < msg.length; ii++) {
+         String[] retVal = new String[msgArr.length];
+         for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
-            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
@@ -135,8 +131,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
             retVal[ii] = (String)xmlRpcClient.execute("update", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
-                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSessionId() + "'");
          }
          return retVal;
       }
@@ -159,17 +154,17 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1)
+      if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
 
  
       // transform the msgUnits to Vectors
       try {
-         for (int ii=0; ii < msg.length; ii++) {
+         for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
-            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
@@ -179,8 +174,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
             xmlRpcClient.execute("updateOneway", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
-                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSessionId() + "'");
          }
       }
       catch (XmlRpcException ex) {
@@ -192,7 +186,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       catch (Throwable e) {
          String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);
       }
    }

@@ -3,8 +3,8 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.34 2002/11/26 12:39:08 ruff Exp $
-Author:    Marcel Ruff ruff@swand.lake.de
+Version:   $Id: ProxyConnection.java,v 1.35 2002/12/18 12:39:09 ruff Exp $
+Author:    Marcel Ruff xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -35,9 +35,9 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  * @author laghi@swissinfo.org
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class ProxyConnection implements I_Callback
 {

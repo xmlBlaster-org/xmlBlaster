@@ -3,7 +3,7 @@ Name:      I_ProxyInterceptor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_ProxyInterceptor.java,v 1.3 2002/05/01 21:40:11 ruff Exp $
+Version:   $Id: I_ProxyInterceptor.java,v 1.4 2002/12/18 12:39:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -14,7 +14,7 @@ package org.xmlBlaster.protocol.http;
  * before sended to the Browser.
  * <p>
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public interface I_ProxyInterceptor
@@ -25,7 +25,7 @@ public interface I_ProxyInterceptor
     *
     * @param updateKey The arrived key
     * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * @param qos       Quality of Service of the MsgUnitRaw
     */
    public String[] update(String updateKey, String content, String updateQos);
 }

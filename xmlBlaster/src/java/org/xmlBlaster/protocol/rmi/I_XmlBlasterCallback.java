@@ -3,12 +3,12 @@ Name:      I_XmlBlasterCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The client callback server interface.
-Version:   $Id: I_XmlBlasterCallback.java,v 1.6 2002/03/18 00:29:36 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: I_XmlBlasterCallback.java,v 1.7 2002/12/18 12:39:11 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.rmi.RemoteException;
@@ -18,18 +18,18 @@ import java.rmi.RemoteException;
  * <p />
  * You need to register this RMI callback server with rmi-registry and
  * pass this name as the callback address of your subscribe()-QoS.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_XmlBlasterCallback extends java.rmi.Remote
 {
-   public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
                       throws RemoteException, XmlBlasterException;
 
    /**
     * The oneway variant for better performance. 
     * Does RMI implement a real oneway?
     */
-   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
                       throws RemoteException;
 
    /**

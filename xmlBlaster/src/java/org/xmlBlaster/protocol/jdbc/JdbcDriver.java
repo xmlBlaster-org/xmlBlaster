@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.36 2002/11/26 12:39:10 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.37 2002/12/18 12:39:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
  * </pre>
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html" target="others">engine.service.rdbms requirement</a>
  */
 public class JdbcDriver implements I_Driver, I_Publish
@@ -210,7 +210,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    /**
     * Send the XML based result set to the client.
     */
-   public String publish(MessageUnit msgUnit) throws XmlBlasterException
+   public String publish(MsgUnitRaw msgUnit) throws XmlBlasterException
    {
       return xmlBlasterImpl.publish(sessionId, msgUnit);
    }

@@ -2,9 +2,6 @@
 Name:      CallbackSoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   This singleton sends messages to clients using SOAP interface.
-Version:   $Id: CallbackSoapDriver.java,v 1.4 2002/11/26 12:39:20 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
@@ -13,8 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.soap.SoapConnection; // The SoapException to XmlBlasterException converter
 
 import org.jafw.saw.*;
@@ -27,12 +23,12 @@ import java.net.URL;
 import java.util.Vector;
 
 /**
- * This object sends a MessageUnit back to a client using SOAP interface, in
+ * This object sends a MsgUnitRaw back to a client using SOAP interface, in
  * the same JVM.
  * <p>
  * The I_CallbackDriver.update() method of the client will be invoked
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.soap.SoapDriver
  */
 public class CallbackSoapDriver implements I_CallbackDriver
@@ -133,8 +129,8 @@ public class CallbackSoapDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException {
-      if (msg == null || msg.length < 1)
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      if (msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
  
       log.error(ME, "sendUpdate() not implemented");
@@ -142,10 +138,10 @@ public class CallbackSoapDriver implements I_CallbackDriver
       /*
       // transform the msgUnits to Vectors
       try {
-         String[] retVal = new String[msg.length];
-         for (int ii=0; ii < msg.length; ii++) {
+         String[] retVal = new String[msgArr.length];
+         for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
-            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
@@ -180,17 +176,17 @@ public class CallbackSoapDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException {
-      if (msg == null || msg.length < 1)
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
  
       log.error(ME, "sendUpdateOneway() not implemented");
       /*
       // transform the msgUnits to Vectors
       try {
-         for (int ii=0; ii < msg.length; ii++) {
+         for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
-            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
@@ -249,7 +245,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
       try {
          Parameter returnParam = soapClient.invoke(call);
          
-         //Ensure we recieved a non null response, Note: if the call was invoking a 'void' method 
+         //Ensure we received a non null response, Note: if the call was invoking a 'void' method 
          //then the return will always be null, but there will be a SOAPException thrown if an error occurs
          if (returnParam == null) {
             log.error(ME, "I got a null response for ping(), something went wrong");

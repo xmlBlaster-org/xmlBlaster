@@ -3,8 +3,8 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.10 2002/11/26 12:39:17 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: XmlBlasterImpl.java,v 1.11 2002/12/18 12:39:11 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -12,7 +12,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -75,7 +75,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String publish(String sessionId, MessageUnit msgUnit) throws RemoteException, XmlBlasterException
+   public String publish(String sessionId, MsgUnitRaw msgUnit) throws RemoteException, XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering publish() ...");
 
@@ -88,7 +88,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
+   public String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       if (log.CALL) log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
       if (msgUnitArr.length < 1) {
@@ -102,7 +102,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException
+   public void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException
    {
       if (log.CALL) log.trace(ME, "Entering xmlBlaster.publishOneway() for " + msgUnitArr.length + " Messages");
 
@@ -133,12 +133,12 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     * @return content
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public MessageUnit[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
+   public MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+      MsgUnitRaw[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in get()" + stop.nice());
 

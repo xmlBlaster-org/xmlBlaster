@@ -34,7 +34,7 @@ import javax.servlet.http.*;
  * should be implemented in derived classes, but this is better performing :-)
  * <p />
  * See Java Servlet Programming from Jason Hunter
- * @author Marcel Ruff ruff@swand.lake.de
+ * @author Marcel Ruff xmlBlaster@marcelruff.info
  */
 public class HttpPushHandler
 {

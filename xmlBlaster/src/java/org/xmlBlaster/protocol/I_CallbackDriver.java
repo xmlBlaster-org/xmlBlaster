@@ -2,8 +2,6 @@
 Name:      I_CallbackDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Interface hiding the real callback protocol
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -11,13 +9,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 
 /**
  * This interface hides the real protocol used to send a client a callback message
  * <p>
- * @author ruff
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_CallbackDriver extends I_Plugin
 {
@@ -48,9 +46,7 @@ public interface I_CallbackDriver extends I_Plugin
     * <p />
     * The protocol for sending is implemented in the derived class
     *
-    * @param sessionInfo Data about a specific client
-    * @param msgUnitWrapper For Logoutput only (deprecated?)
-    * @param messageUnitArr Array of all messages to send
+    * @param msgArr Array of all messages to send, is guaranteed to never be null
     * @return Clients should return a qos as follows.
     *         An empty qos string "" is valid as well and
     *         interpreted as OK
@@ -65,13 +61,14 @@ public interface I_CallbackDriver extends I_Plugin
     *       and transform it to a e.g ErrorCode.USER_UPDATE_ERROR if it is no user error.<br />
     * NOTE: All connection problems need to be thrown as ErrorCode.COMMUNICATION* errors.
     */
-   public String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException;
+   public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException;
 
    /**
     * The oneway variant, without return value
+    * @param msgArr Array of all messages to send, is guaranteed to never be null
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException;
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException;
 
    /**
     * Ping to check if xmlBlaster is alive. 

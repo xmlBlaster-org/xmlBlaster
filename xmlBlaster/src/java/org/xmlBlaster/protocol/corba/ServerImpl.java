@@ -3,8 +3,8 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.20 2002/11/26 12:39:04 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: ServerImpl.java,v 1.21 2002/12/18 12:39:08 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -139,7 +139,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
             return returnArr;
          }
 
-         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
 
          String[] strArr = blaster.publishArr(getSessionId(), internalUnitArr);
 
@@ -164,7 +164,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.CALL) log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
          log.info(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
 
-         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
          blaster.publishOneway(getSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
@@ -204,7 +204,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.DUMP) log.dump(ME, "get()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
+         org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
 
          org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
 

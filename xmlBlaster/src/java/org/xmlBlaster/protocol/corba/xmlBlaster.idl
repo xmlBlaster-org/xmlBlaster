@@ -12,8 +12,8 @@ Compile:   JacORB Java 1.2:
               $CORBACPP_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.11 2002/11/26 12:39:04 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
+Version:   $Id: xmlBlaster.idl,v 1.12 2002/12/18 12:39:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_

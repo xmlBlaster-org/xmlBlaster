@@ -3,18 +3,18 @@ Name:      I_Publish.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface
-Version:   $Id: I_Publish.java,v 1.2 2002/05/19 12:55:50 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: I_Publish.java,v 1.3 2002/12/18 12:39:09 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
  * Callback interface for Publish. 
  */
 public interface I_Publish
 {
-   public java.lang.String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
+   public java.lang.String publish(org.xmlBlaster.util.MsgUnitRaw msgUnit) throws XmlBlasterException;
 }

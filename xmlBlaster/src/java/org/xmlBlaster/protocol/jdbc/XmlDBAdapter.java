@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.25 2002/11/26 12:39:12 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.26 2002/12/18 12:39:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -11,8 +11,11 @@ import org.xmlBlaster.util.Global;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.client.key.PublishKey;
 
 import org.w3c.dom.Text;
@@ -117,9 +120,9 @@ public class XmlDBAdapter
     *   &lt;/exception>
     * </pre>
     *
-    * @return One MessageUnit with the content as described above.
+    * @return One MsgUnitRaw with the content as described above.
     */
-   public MessageUnit[] query()
+   public MsgUnit[] query()
    {
       Document document = null;
 
@@ -151,7 +154,7 @@ public class XmlDBAdapter
          return getResponseMessage(document);
       }
 
-      return new MessageUnit[0];
+      return new MsgUnit[0];
    }
 
 
@@ -293,7 +296,7 @@ public class XmlDBAdapter
    /**
     * SELECT results in XML.
     */
-   private MessageUnit[] getResponseMessage(Document doc)
+   private MsgUnit[] getResponseMessage(Document doc)
    {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       try { out = XmlNotPortable.write(doc); } catch(IOException e) { log.error(ME, "getResponseMessage failed: " + e.getMessage()); }
@@ -308,15 +311,15 @@ public class XmlDBAdapter
     * @param content
     * @param contentMimeExtended Informative only, "XmlBlasterException" or "QueryResults"
     */
-   private MessageUnit[] getResponseMessage(byte[] content, String contentMimeExtended)
+   private MsgUnit[] getResponseMessage(byte[] content, String contentMimeExtended)
    {
       PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", contentMimeExtended);
-      // GetReturnQoS qos = new GetReturnQos(); !!! still missing, Hack
+      GetReturnQosServer retQos = new GetReturnQosServer(glob, null, Constants.STATE_OK);
 
-      MessageUnit mu = new MessageUnit(key.toXml(), content, "<qos></qos>");
+      MsgUnit mu = new MsgUnit(glob, key.getData(), content, retQos.getData());
 
       if (log.DUMP) log.plain(ME, "SQL Results...\n" + new String(content));
-      MessageUnit[] msgArr = new MessageUnit[1];
+      MsgUnit[] msgArr = new MsgUnit[1];
       msgArr[0] = mu;
       return msgArr;
    }

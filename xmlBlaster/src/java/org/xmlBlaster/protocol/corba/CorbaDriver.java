@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.47 2002/11/26 12:39:03 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.48 2002/12/18 12:39:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -141,11 +141,11 @@ public class CorbaDriver implements I_Driver
          authRef = ((AuthServerPOATie)(authServant))._this(orb);
       }
       catch (org.omg.CORBA.COMM_FAILURE e) {
-         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco", e);
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not initialize CORBA", e);
       }
    }
 
@@ -254,11 +254,11 @@ public class CorbaDriver implements I_Driver
          } // if useNameService
       }
       catch (org.omg.CORBA.COMM_FAILURE e) {
-         throw new XmlBlasterException("activateCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco", e);
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw new XmlBlasterException("activateCorbaFailed", "Could not initialize CORBA: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not initialize CORBA", e);
       }
       // orbacus needs this
       if (orb.work_pending()) orb.perform_work();
@@ -465,14 +465,14 @@ public class CorbaDriver implements I_Driver
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
          if (nameServiceObj == null) {
             //log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
-            throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
          if (log.TRACE) log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
          nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
             log.error(ME + ".NoNameService", "Can't access naming service == null");
-            throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "Can't access naming service (narrow problem)");
          }
          if (log.TRACE) log.trace(ME, "Successfully narrowed handle for naming service");
 
@@ -484,7 +484,7 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (log.TRACE) log.trace(ME + ".NoNameService", e.toString());
-         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
@@ -534,19 +534,20 @@ public class CorbaDriver implements I_Driver
    /**
     * Converts the internal CORBA message unit to the internal representation.
     */
-   public static final org.xmlBlaster.engine.helper.MessageUnit convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu)
+   public static final org.xmlBlaster.util.MsgUnitRaw convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu) throws XmlBlasterException
    {
-      return new org.xmlBlaster.engine.helper.MessageUnit(glob, mu.xmlKey, mu.content, mu.qos);
+      return new org.xmlBlaster.util.MsgUnitRaw(mu.xmlKey, mu.content, mu.qos);
    }
 
 
    /**
     * Converts the internal CORBA message unit array to the internal representation.
     */
-   public static final org.xmlBlaster.engine.helper.MessageUnit[] convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   public static final org.xmlBlaster.util.MsgUnitRaw[] convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+               throws XmlBlasterException
    {
       // convert Corba to internal ...
-      org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = new org.xmlBlaster.engine.helper.MessageUnit[msgUnitArr.length];
+      org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = new org.xmlBlaster.util.MsgUnitRaw[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          internalUnitArr[ii] = CorbaDriver.convert(glob, msgUnitArr[ii]);
       }
@@ -555,18 +556,18 @@ public class CorbaDriver implements I_Driver
 
 
    /**
-    * Converts the internal MessageUnit to the CORBA message unit.
+    * Converts the internal MsgUnitRaw to the CORBA message unit.
     */
-   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.engine.helper.MessageUnit mu)
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.util.MsgUnitRaw mu)
    {
       return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
    }
 
 
    /**
-    * Converts the internal MessageUnit array to the CORBA message unit array.
+    * Converts the internal MsgUnitRaw array to the CORBA message unit array.
     */
-   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] convert(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] convert(org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
    {
       // convert internal to Corba ...
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgUnitArr.length];

@@ -23,7 +23,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  * <p />
  * void return is not allowed so we return an empty string instead
  * <p />
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class AuthenticateImpl
 {

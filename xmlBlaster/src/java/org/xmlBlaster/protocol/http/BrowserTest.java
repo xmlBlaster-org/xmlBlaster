@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.10 2002/09/13 23:18:11 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.11 2002/12/18 12:39:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -25,7 +25,7 @@ import org.jutils.log.LogChannel;
  * http://localhost/xmlBlaster/BrowserTest?mode=push
  * http://localhost/xmlBlaster/BrowserTest?mode=poll
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class BrowserTest extends HttpServlet
 {

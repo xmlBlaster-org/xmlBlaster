@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.35 2002/11/26 12:39:21 ruff Exp $
+Version:   $Id: Parser.java,v 1.36 2002/12/18 12:39:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +73,7 @@ import java.util.Vector;
  *  |       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>*<key oid='x2'/>*6*Hello2|
  * </pre>
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class Parser
@@ -127,7 +127,7 @@ public class Parser
    /** Unique counter */
    private static long counter = 0L;
 
-   /** Holding MessageUnit objects which acts as a holder for the method arguments */
+   /** Holding MsgUnitRaw objects which acts as a holder for the method arguments */
    private Vector msgVec;
 
    // create only once, for low level parsing
@@ -312,10 +312,10 @@ public class Parser
     * Use for methods get, subscribe, unSubscribe, erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public final void addKeyAndQos(String key, String qos) {
+   public final void addKeyAndQos(String key, String qos) throws XmlBlasterException {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addKeyAndQos() may only be invoked once");
-      MessageUnit msg = new MessageUnit(key, (byte[])null, qos);
+      MsgUnitRaw msg = new MsgUnitRaw(key, (byte[])null, qos);
       msgVec.add(msg);
    }
 
@@ -325,10 +325,10 @@ public class Parser
     * NOTE: Exceptions don't return
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public final void addException(XmlBlasterException e) {
+   public final void addException(XmlBlasterException e) throws XmlBlasterException {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addException() may only be invoked once");
-      MessageUnit msg = new MessageUnit(e.getMessage(), e.toByteArr(), e.getErrorCodeStr());
+      MsgUnitRaw msg = new MsgUnitRaw(e.getMessage(), e.toByteArr(), e.getErrorCodeStr());
       msgVec.add(msg);
    }
 
@@ -339,11 +339,11 @@ public class Parser
     * <br />
     * Multiple adds are OK
     */
-   public final void addMessage(MessageUnit msg) {
+   public final void addMessage(MsgUnitRaw msg) {
       msgVec.add(msg);
    }
 
-   public final void removeMessage(MessageUnit msg) {
+   public final void removeMessage(MsgUnitRaw msg) {
       msgVec.remove(msg);
    }
 
@@ -354,7 +354,7 @@ public class Parser
     * <br />
     * Multiple adds are OK
     */
-   public final void addMessage(MessageUnit[] arr) {
+   public final void addMessage(MsgUnitRaw[] arr) {
       for (int ii=0; ii<arr.length; ii++)
          msgVec.add(arr[ii]);
    }
@@ -367,7 +367,7 @@ public class Parser
     * Multiple adds are OK
    public final void addMessage(MsgQueueEntry[] arr) {
       for (int ii=0; ii<arr.length; ii++)
-         msgVec.add(arr[ii].getMessageUnit());
+         msgVec.add(arr[ii].getMsgUnitRaw());
    }
     */
 
@@ -377,15 +377,15 @@ public class Parser
     * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public final void addMessage(String qos) {
+   public final void addMessage(String qos) throws XmlBlasterException {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
-      MessageUnit msg = new MessageUnit(null, (byte[])null, qos);
+      MsgUnitRaw msg = new MsgUnitRaw(null, (byte[])null, qos);
       msgVec.add(msg);
    }
 
    /** @see #addMessage(String qos) */
-   public final void addQos(String qos) {
+   public final void addQos(String qos) throws XmlBlasterException {
       addMessage(qos);
    }
 
@@ -395,17 +395,17 @@ public class Parser
     * Use for return value of methods publishArr and erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public final void addMessage(String[] qos) {
+   public final void addMessage(String[] qos) throws XmlBlasterException {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
       for (int ii=0; ii<qos.length; ii++) {
-         MessageUnit msg = new MessageUnit(null, (byte[])null, qos[ii]);
+         MsgUnitRaw msg = new MsgUnitRaw(null, (byte[])null, qos[ii]);
          msgVec.add(msg);
       }
    }
 
    /** @see #addMessage(String[] qos) */
-   public final void addQos(String[] qos) {
+   public final void addQos(String[] qos) throws XmlBlasterException {
       addMessage(qos);
    }
 
@@ -419,11 +419,11 @@ public class Parser
    /**
     * Returns all messages as an array
     */
-   public final MessageUnit[] getMessageArr() {
-      if (msgVec.isEmpty()) return new MessageUnit[0];
-      MessageUnit[] arr = new MessageUnit[msgVec.size()];
+   public final MsgUnitRaw[] getMessageArr() {
+      if (msgVec.isEmpty()) return new MsgUnitRaw[0];
+      MsgUnitRaw[] arr = new MsgUnitRaw[msgVec.size()];
       for (int ii=0; ii<msgVec.size(); ii++) {
-         arr[ii] = (MessageUnit)msgVec.elementAt(ii); // JDK 1.1 compatible
+         arr[ii] = (MsgUnitRaw)msgVec.elementAt(ii); // JDK 1.1 compatible
       }
       return arr;
    }
@@ -441,7 +441,7 @@ public class Parser
       if (msgVec.isEmpty()) {
          return null;
       }
-      MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
+      MsgUnitRaw msg = (MsgUnitRaw)msgVec.elementAt(0);
       return msg.getQos();
    }
 
@@ -458,7 +458,7 @@ public class Parser
       Vector msgs = getMessages();
       String[] strArr = new String[msgs.size()];
       for (int ii=0; ii<strArr.length; ii++) {
-         strArr[ii] = ((MessageUnit)msgs.elementAt(ii)).getQos();
+         strArr[ii] = ((MsgUnitRaw)msgs.elementAt(ii)).getQos();
       }
       return strArr;
    }
@@ -471,7 +471,7 @@ public class Parser
       if (msgVec.isEmpty()) {
          throw new IllegalArgumentException(ME + ": getException() is called without having an exception");
       }
-      MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
+      MsgUnitRaw msg = (MsgUnitRaw)msgVec.elementAt(0);
       return XmlBlasterException.parseByteArr(glob, msg.getContent());
    }
 
@@ -550,7 +550,7 @@ public class Parser
     * <p />
     * This method blocks until a message arrives
     */
-   public final void parse(InputStream in) throws IOException, IllegalArgumentException {
+   public final void parse(InputStream in) throws IOException, IllegalArgumentException, XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering parse()");
 
       initialize();
@@ -598,13 +598,13 @@ public class Parser
 
          String key = toString(buf);
          if (buf.offset >= buf.buf.length) {
-            MessageUnit msgUnit = new MessageUnit(key, (byte[])null, qos);
+            MsgUnitRaw msgUnit = new MsgUnitRaw(key, (byte[])null, qos);
             addMessage(msgUnit);
             break;
          }
 
          if (log.TRACE) log.trace(ME, "Getting messageUnit #" + ii);
-         MessageUnit msgUnit = new MessageUnit(key, toByte(buf), qos);
+         MsgUnitRaw msgUnit = new MsgUnitRaw(key, toByte(buf), qos);
          addMessage(msgUnit);
 
          if (buf.offset >= buf.buf.length) break;
@@ -628,7 +628,7 @@ public class Parser
    private long getUserDataLen() {
       long len=0L;
       for (int ii=0; ii<msgVec.size(); ii++) {
-         MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
+         MsgUnitRaw unit = (MsgUnitRaw)msgVec.elementAt(ii);
          len += unit.size() + 3;   // three null bytes
          String tmp = ""+unit.getContent().length;
          len += tmp.length();
@@ -709,7 +709,7 @@ public class Parser
          out.write(NULL_BYTE);
 
          for (int ii=0; ii<msgVec.size(); ii++) {
-            MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
+            MsgUnitRaw unit = (MsgUnitRaw)msgVec.elementAt(ii);
             out.write(unit.getQos().getBytes());
             out.write(NULL_BYTE);
             out.write(unit.getKey().getBytes());
@@ -913,7 +913,7 @@ public class Parser
 
          testName = "Testing qos/key/content";
          System.out.println("\n----------------------\n"+testName);
-         {
+         try {
             Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
@@ -921,12 +921,15 @@ public class Parser
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
+            MsgUnitRaw msg = new MsgUnitRaw("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
             parser.addMessage(msg);
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
+         }
+         catch (XmlBlasterException e) {
+            System.out.println(e.getMessage());
          }
          {
             Parser receiver = new Parser(glob);
@@ -943,7 +946,7 @@ public class Parser
 
          testName = "Testing many qos/key/content";
          System.out.println("\n----------------------\n"+testName);
-         {
+         try {
             Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
@@ -951,14 +954,17 @@ public class Parser
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            parser.addMessage(new MessageUnit("<key oid='x1'/>", "Hello1".getBytes(), "<qos/>"));
-            parser.addMessage(new MessageUnit("<key oid='x2'/>", "Hello2".getBytes(), "<qos/>"));
-            //parser.addMessage(new MessageUnit("<key oid='x3'/>", "Hello3".getBytes(), "<qos/>"));
-            //parser.addMessage(new MessageUnit("<key oid='x4'/>", "Hello4".getBytes(), "<qos/>"));
+            parser.addMessage(new MsgUnitRaw("<key oid='x1'/>", "Hello1".getBytes(), "<qos/>"));
+            parser.addMessage(new MsgUnitRaw("<key oid='x2'/>", "Hello2".getBytes(), "<qos/>"));
+            //parser.addMessage(new MsgUnitRaw("<key oid='x3'/>", "Hello3".getBytes(), "<qos/>"));
+            //parser.addMessage(new MsgUnitRaw("<key oid='x4'/>", "Hello4".getBytes(), "<qos/>"));
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
+         }
+         catch (XmlBlasterException e) {
+            System.out.println(e.getMessage());
          }
          {
             Parser receiver = new Parser(glob);
@@ -1129,7 +1135,7 @@ public class Parser
 
          testName = "Testing qos/key/content return value";
          System.out.println("\n----------------------\n"+testName);
-         {
+         try {
             Parser parser = new Parser(glob);
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
@@ -1137,12 +1143,15 @@ public class Parser
             //parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world response".getBytes(), "<qos></qos>");
+            MsgUnitRaw msg = new MsgUnitRaw("<key oid='hello'/>", "Hello world response".getBytes(), "<qos></qos>");
             parser.addMessage(msg);
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
+         }
+         catch (XmlBlasterException e) {
+            System.out.println(e.getMessage());
          }
          {
             Parser receiver = new Parser(glob);

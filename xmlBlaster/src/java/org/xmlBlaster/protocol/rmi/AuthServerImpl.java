@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.19 2002/11/26 12:39:16 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.20 2002/12/18 12:39:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -24,7 +24,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 /**
  * Interface to login to xmlBlaster.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_AuthServer
 {

@@ -2,9 +2,11 @@ package org.xmlBlaster.protocol.email;
 
 import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.Attributes;
 
 import org.xmlBlaster.util.XmlToDom;
+import org.jutils.log.LogChannel;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -13,7 +15,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.Global;
 
 /**
@@ -40,13 +42,13 @@ import org.xmlBlaster.engine.Global;
   *     </key>
   *  </unSubscribe>
   *
-  *  String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
+  *  String publish(String sessionId, MsgUnitRaw msgUnit) throws XmlBlasterException;
   *  <publish sessionId='sss'>
   *     <key></key>
   *     <content link='ff'></content>
   *     <qos>...</qos>  *  </publish>
   *
-  *  String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
+  *  String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
   *  <publishArr sessionId='sss'>
   *     <key></key>
   *     <content link='ff'></content>
@@ -66,7 +68,7 @@ import org.xmlBlaster.engine.Global;
   *     <qos>...</qos>
   *  </erase>
   *
-  *  MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
+  *  MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
   *  <erase sessionId='sss'>
   *     <key></key>
   *     <qos>...</qos>
@@ -75,6 +77,7 @@ import org.xmlBlaster.engine.Global;
 
 public class EmailParserSAX extends SaxHandlerBase
 {
+   private final LogChannel log;
    private I_Authenticate authenticator = null;
    private I_XmlBlaster   xmlBlaster    = null;
 
@@ -94,12 +97,13 @@ public class EmailParserSAX extends SaxHandlerBase
    private Vector       messageVector       = null;
    private boolean      doesDisconnect = false;
    private StringBuffer response    = null;
-   private Global       glob = null;
+   private final Global       glob;
 
    public EmailParserSAX(Global glob)
    {
       super();
       this.glob = glob;
+      this.log = glob.getLog("EMAIL");
       this.commandsToFire.add("connect");
       this.commandsToFire.add("subscribe");
       this.commandsToFire.add("unsubscribe");
@@ -218,7 +222,7 @@ public class EmailParserSAX extends SaxHandlerBase
          }
 
          if ("publish".equals(qName)) {
-            MessageUnit msgUnit = buildMessageUnit();
+            MsgUnitRaw msgUnit = buildMsgUnitRaw();
             String ret = this.xmlBlaster.publish(this.sessionId, msgUnit);
             this.response.append("<publish>\n");
             this.response.append("  <messageId>");
@@ -230,9 +234,9 @@ public class EmailParserSAX extends SaxHandlerBase
 
          if ("publishArr".equals(qName)) {
             int size = this.messageVector.size();
-            MessageUnit[] msgs = new MessageUnit[size];
+            MsgUnitRaw[] msgs = new MsgUnitRaw[size];
             for (int i=0; i < size; i++)
-               msgs[i] = (MessageUnit)this.messageVector.elementAt(i);
+               msgs[i] = (MsgUnitRaw)this.messageVector.elementAt(i);
             String[] ret = this.xmlBlaster.publishArr(this.sessionId, msgs);
             this.response.append("<publishArr>\n");
             for (int i=0; i < ret.length; i++) {
@@ -275,7 +279,7 @@ public class EmailParserSAX extends SaxHandlerBase
          }
 
          if ("get".equals(qName)) {
-            MessageUnit[] ret = this.xmlBlaster.get(this.sessionId.toString(),
+            MsgUnitRaw[] ret = this.xmlBlaster.get(this.sessionId.toString(),
                this.key.toString(), this.qos.toString());
             this.response.append("<get>\n");
             this.response.append("  <message>\n");
@@ -293,7 +297,7 @@ public class EmailParserSAX extends SaxHandlerBase
       }
    }
 
-   private MessageUnit buildMessageUnit ()
+   private MsgUnitRaw buildMsgUnitRaw () throws XmlBlasterException
    {
       byte[] currentContent = null;
       if (this.link == null)
@@ -306,7 +310,7 @@ public class EmailParserSAX extends SaxHandlerBase
             // throw exception
          }
       }
-      MessageUnit msgUnit = new MessageUnit(this.key.toString(),
+      MsgUnitRaw msgUnit = new MsgUnitRaw(this.key.toString(),
          currentContent, this.qos.toString());
       return msgUnit;
    }
@@ -326,7 +330,12 @@ public class EmailParserSAX extends SaxHandlerBase
 
 
       if ("message".equals(qName)) {
-         this.messageVector.add(buildMessageUnit());
+         try {
+            this.messageVector.add(buildMsgUnitRaw());
+         }
+         catch (XmlBlasterException e) {
+            log.error("EmailParserSAX", e.getMessage());
+         }
          return;
       }
       if ("content".equals(qName)) {

@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.19 2002/11/26 12:39:12 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.20 2002/12/18 12:39:10 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -13,7 +13,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.PublishKey;
@@ -65,13 +66,13 @@ public class XmlDBAdapterWorker extends Thread {
    public void run()
    {
       XmlDBAdapter adap = new XmlDBAdapter(glob, content, namedPool);
-      MessageUnit[] msgArr = adap.query();
+      MsgUnit[] msgArr = adap.query();
       try {
          if (msgArr.length > 0) {
             PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
             PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
-            msgArr[0] = new MessageUnit(msgArr[0], key.toXml(), null, qos.toXml());
-            String  oid = callback.publish(msgArr[0]);
+            MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[0], key.toXml(), null, qos.toXml());
+            String  oid = callback.publish(msgUnitRaw);
             if (log.DUMP) log.plain(ME, "Delivered Results...\n" + new String(content));
          }
          else

@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.9 2002/11/26 12:39:02 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.10 2002/12/18 12:39:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 /**
  * ProtocolManager loads the protocol plugins like CORBA/RMI/XmlRpc. 
  * <p />
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html" target="others">protocol</a>
  */
 public class ProtocolManager extends PluginManagerBase implements I_RunlevelListener

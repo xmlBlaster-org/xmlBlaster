@@ -3,8 +3,8 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.22 2002/11/26 12:39:03 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: AuthServerImpl.java,v 1.23 2002/12/18 12:39:08 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 

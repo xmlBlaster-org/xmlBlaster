@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Comment:   Implementing some Javascript utility objects
            - a Logging class, showing the log output in a separate window
            - browser detection
-Author:    ruff@swand.lake.de konrad.krafft@doubleslash.de
+Author:    xmlBlaster@marcelruff.info konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 
 

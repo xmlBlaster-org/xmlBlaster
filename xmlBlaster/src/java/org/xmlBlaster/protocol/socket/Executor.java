@@ -12,8 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -40,7 +39,7 @@ import java.util.Collections;
  * to the waiting thread.
  *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public abstract class Executor implements ExecutorBase
 {
@@ -249,7 +248,7 @@ public abstract class Executor implements ExecutorBase
          // handling invocations ...
 
          if (MethodName.PUBLISH_ONEWAY == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                return true;
@@ -257,14 +256,14 @@ public abstract class Executor implements ExecutorBase
             xmlBlasterImpl.publishOneway(receiver.getSessionId(), arr);
          }
          else if (MethodName.PUBLISH == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(receiver.getSessionId(), arr);
             executeResponse(receiver, response);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                return true;
@@ -272,38 +271,38 @@ public abstract class Executor implements ExecutorBase
             this.cbClient.updateOneway(receiver.getSessionId(), arr);
          }
          else if (MethodName.UPDATE == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = this.cbClient.update(receiver.getSessionId(), arr);
             executeResponse(receiver, response);
          }
          else if (MethodName.GET == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            MessageUnit[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
+            MsgUnitRaw[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
             executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>"
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String response = xmlBlasterImpl.subscribe(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
-            MessageUnit[] arr = receiver.getMessageArr();
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.erase(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
@@ -333,7 +332,7 @@ public abstract class Executor implements ExecutorBase
       removeResponseListener(receiver.getRequestId());
 
       if (receiver.isResponse()) {
-         if (receiver.getMethodName().returnsMsgArr()) { // GET returns MessageUnit[]
+         if (receiver.getMethodName().returnsMsgArr()) { // GET returns MsgUnitRaw[]
             listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
          }
          else if (receiver.getMethodName().returnsStringArr()) {  // PUBLISH etc. return String[]
@@ -365,7 +364,7 @@ public abstract class Executor implements ExecutorBase
     * This should be thread save and may be invoked by many
     * client threads in parallel (though i have not tested it).
     * @param expectingResponse WAIT_ON_RESPONSE=true or ONEWAY=false
-    * @return the response object of the request, of type String(QoS), MessageUnit[] or XmlBlasterException
+    * @return the response object of the request, of type String(QoS), MsgUnitRaw[] or XmlBlasterException
     */
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
@@ -482,10 +481,10 @@ public abstract class Executor implements ExecutorBase
          returner.addMessage((String)response);
       else if (response instanceof String[])
          returner.addMessage((String[])response);
-      else if (response instanceof MessageUnit[])
-         returner.addMessage((MessageUnit[])response);
-      else if (response instanceof MessageUnit)
-         returner.addMessage((MessageUnit)response);
+      else if (response instanceof MsgUnitRaw[])
+         returner.addMessage((MsgUnitRaw[])response);
+      else if (response instanceof MsgUnitRaw)
+         returner.addMessage((MsgUnitRaw)response);
       else
          throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
       synchronized (oStream) {

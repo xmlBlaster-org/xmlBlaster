@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.20 2002/11/26 12:39:13 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.21 2002/12/18 12:39:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
@@ -36,7 +36,7 @@ import org.xmlBlaster.util.DisconnectQos;
  * </pre>
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class NativeDriver implements I_Driver
 {
@@ -141,7 +141,7 @@ public class NativeDriver implements I_Driver
                    "   </destination>" +
                    "</qos>";
       String content = "Hi " + receiverName + "!";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
+      MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey, content.getBytes(), qos);
       try {
          String publishOid = xmlBlasterImpl.publish(sessionId, msgUnit);
          log.info(ME, "Sending done, returned oid=" + publishOid);

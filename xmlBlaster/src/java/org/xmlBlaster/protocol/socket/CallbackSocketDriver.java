@@ -2,8 +2,6 @@
 Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.14 2002/11/26 12:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -12,9 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 
 
 /**
@@ -22,6 +19,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
  * <p />
  * This is sort of a dummy needed by the plugin framework which
  * assumed for CORBA/RMI/XML-RPC a separate callback connection
+ * @author xmlBlaster@marcelruff.info
  */
 public class CallbackSocketDriver implements I_CallbackDriver
 {
@@ -93,18 +91,18 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      return handler.sendUpdate(callbackAddress.getSessionId(), msg, ExecutorBase.WAIT_ON_RESPONSE);
+      return handler.sendUpdate(callbackAddress.getSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
    }
 
    /**
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      handler.sendUpdate(callbackAddress.getSessionId(), msg, ExecutorBase.ONEWAY);
+      handler.sendUpdate(callbackAddress.getSessionId(), msgArr, ExecutorBase.ONEWAY);
    }
 
    /**

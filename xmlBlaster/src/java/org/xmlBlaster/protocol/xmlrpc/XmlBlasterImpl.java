@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 
@@ -22,8 +22,8 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  * something which xml-rpc does understand. That's why following transformations
  * will take place:
  * <pre>
- * MessageUnit are converted to Vector
- * MessageUnit[] are converted to Vector (of Vector)
+ * MsgUnitRaw are converted to Vector
+ * MsgUnitRaw[] are converted to Vector (of Vector)
  * String[] are converted to Vector (of String)
  * boolean are converted to int
  * void return is not allowed so we return an empty string instead
@@ -97,7 +97,7 @@ public class XmlBlasterImpl
       throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering publish() ...");
-      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content, publishQos_literal);
+      MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey_literal, content, publishQos_literal);
       return blasterNative.publish(sessionId, msgUnit);
    }
 
@@ -114,10 +114,9 @@ public class XmlBlasterImpl
    {
       if (log.CALL) log.call(ME, "Entering publish() ....");
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), publishQos_literal);
+      MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey_literal, content.getBytes(), publishQos_literal);
 
 //      // convert the xml literal strings
-//      XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
 //      PublishQos publishQos = new PublishQos(publishQos_literal);
 
       String retVal = blasterNative.publish(sessionId, msgUnit);
@@ -134,10 +133,8 @@ public class XmlBlasterImpl
    {
       if (log.CALL) log.call(ME, "Entering publish() ...");
 
-      MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
+      MsgUnitRaw msgUnit = ProtoConverter.vector2MsgUnitRaw(msgUnitWrap);
 
-      // convert the xml literal strings
-      //XmlKey xmlKey = new XmlKey(msgUnit.getKey(), true);
       //PublishQos publishQos = new PublishQos(msgUnit.getQos());
 
       // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQos);
@@ -166,12 +163,12 @@ public class XmlBlasterImpl
       }
 
       try {
-         MessageUnit[] msgUnitArr = ProtoConverter.vector2MessageUnitArray(msgUnitArrWrap);
+         MsgUnitRaw[] msgUnitArr = ProtoConverter.vector2MsgUnitRawArray(msgUnitArrWrap);
          String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
          return ProtoConverter.stringArray2Vector(strArr);
       }
       catch (ClassCastException e) {
-         log.error(ME+".publish", "not a valid MessageUnit: " + e.toString());
+         log.error(ME+".publish", "not a valid MsgUnitRaw: " + e.toString());
          throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
       }
    }
@@ -191,7 +188,7 @@ public class XmlBlasterImpl
       }
 
       try {
-         MessageUnit[] msgUnitArr = ProtoConverter.vector2MessageUnitArray(msgUnitArrWrap);
+         MsgUnitRaw[] msgUnitArr = ProtoConverter.vector2MsgUnitRawArray(msgUnitArrWrap);
          blasterNative.publishOneway(sessionId, msgUnitArr);
       }
       catch (Throwable e) {
@@ -227,9 +224,9 @@ public class XmlBlasterImpl
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+      MsgUnitRaw[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
 
-      // convert the MessageUnit array to a Vector array
+      // convert the MsgUnitRaw array to a Vector array
       Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
 
       if (log.TIME) log.time(ME, "Elapsed time in get()" + stop.nice());
