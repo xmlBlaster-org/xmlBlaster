@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.4 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.5 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -45,7 +45,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    private Server xmlBlaster = null;
    private String senderName = "HelloWorld-Applet";
 
-   private MessageUnit messageUnit;     // a message to play with
+   private MessageUnit msgUnit;     // a message to play with
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
 
@@ -132,7 +132,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                          "</key>";
          String senderContent = "Hello world!";
-         messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
 
          doSubscribe();
       }
@@ -189,7 +189,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       try {
          // With ForceUpdate, following messages with the same content will be updated
          String qos = "<qos><ForceUpdate /></qos>";
-         xmlBlaster.publish(messageUnit, qos);
+         xmlBlaster.publish(msgUnit, qos);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-doPublish", "XmlBlasterException: " + e.reason);
       }

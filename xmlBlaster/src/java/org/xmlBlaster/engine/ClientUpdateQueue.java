@@ -3,7 +3,7 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.7 2000/02/20 17:38:51 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.8 2000/02/24 22:19:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -81,9 +81,9 @@ public class ClientUpdateQueue
     * @return true successfully stored message
     *         false no more space for this message
     */
-   public final boolean push(MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
+   public final boolean push(MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
    {
-      long size = messageUnitWrapper.getSizeInBytes();
+      long size = msgUnitWrapper.getSizeInBytes();
 
       if (!queueHasPlace(size))
          return false;
@@ -92,7 +92,7 @@ public class ClientUpdateQueue
 
       // we need to clone the message, if new updates of the SAME message arrive
       // we need to keep the content of the old message
-      MessageUnitWrapper newWrapper = messageUnitWrapper.cloneContent();
+      MessageUnitWrapper newWrapper = msgUnitWrapper.cloneContent();
 
       synchronized (messageQueue) {
          messageQueue.addFirst(newWrapper);
@@ -111,10 +111,10 @@ public class ClientUpdateQueue
    {
       try {
          synchronized (messageQueue) {
-            MessageUnitWrapper messageUnitWrapper = (MessageUnitWrapper)messageQueue.removeLast();
-            if (messageUnitWrapper == null) return null;
-            currentBytes -= messageUnitWrapper.getSizeInBytes();
-            return messageUnitWrapper;
+            MessageUnitWrapper msgUnitWrapper = (MessageUnitWrapper)messageQueue.removeLast();
+            if (msgUnitWrapper == null) return null;
+            currentBytes -= msgUnitWrapper.getSizeInBytes();
+            return msgUnitWrapper;
          }
       }
       catch (NoSuchElementException e) {

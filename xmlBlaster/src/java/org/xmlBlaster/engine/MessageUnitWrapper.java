@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.13 2000/02/20 17:38:51 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.14 2000/02/24 22:19:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -33,7 +33,7 @@ public class MessageUnitWrapper
    /** The broker which manages me */
    private RequestBroker requestBroker;
 
-   private MessageUnit messageUnit;  // The CORBA MessageUnit (raw struct)
+   private MessageUnit msgUnit;  // The CORBA MessageUnit (raw struct)
    private XmlKey xmlKey;            // the meta data describing this message
    private PublishQoS publishQoS;    // the flags from the publisher
    private String publisherName;     // the unique loginName of the publisher
@@ -44,19 +44,19 @@ public class MessageUnitWrapper
    /**
     * Use this constructor if a new message object is fed by method publish().
     * <p />
-    * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from messageUnit.xmlKey_literal
-    * @param messageUnit the CORBA MessageUnit data container
+    * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from msgUnit.xmlKey_literal
+    * @param msgUnit the CORBA MessageUnit data container
     * @param publishQoS the quality of service
     * @param publisherName the unique loginName of the publisher
     */
-   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
+   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
-      if (xmlKey == null || messageUnit == null || publishQoS == null) {
+      if (xmlKey == null || msgUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       this.requestBroker = requestBroker;
-      this.messageUnit = messageUnit;
+      this.msgUnit = msgUnit;
       this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();
       this.publishQoS = publishQoS;
@@ -66,11 +66,11 @@ public class MessageUnitWrapper
       if (publisherName == null)
          publisherName = "";
 
-      if (this.messageUnit.content == null)
-         this.messageUnit.content = new byte[0];
+      if (this.msgUnit.content == null)
+         this.msgUnit.content = new byte[0];
 
-      if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the messageUnit.xmlKey as well
-         this.messageUnit.xmlKey = xmlKey.literal();
+      if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the msgUnit.xmlKey as well
+         this.msgUnit.xmlKey = xmlKey.literal();
 
       if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
          persistenceDriver.store(this);
@@ -114,19 +114,19 @@ public class MessageUnitWrapper
          this.publisherName = publisherName;
 
       boolean changed = false;
-      if (this.messageUnit.content.length != newContent.length) {
+      if (this.msgUnit.content.length != newContent.length) {
          changed = true;
       }
       else {
          for (int ii=0; ii<newContent.length; ii++)
-            if (this.messageUnit.content[ii] != newContent[ii]) {
+            if (this.msgUnit.content[ii] != newContent[ii]) {
                changed = true;
                break;
             }
       }
 
       if (changed) {  // new content is not the same as old one
-         this.messageUnit.content = newContent;
+         this.msgUnit.content = newContent;
          if (persistenceDriver != null && publishQoS.isDurable()) // && !publishQoS.fromPersistenceStore())
             persistenceDriver.store(xmlKey, newContent);
          return true;
@@ -147,7 +147,7 @@ public class MessageUnitWrapper
 
 
    /**
-    * This is the unique key of the messageUnit
+    * This is the unique key of the msgUnit
     */
    public final String getUniqueKey()
    {
@@ -175,12 +175,12 @@ public class MessageUnitWrapper
 
 
    /**
-    * This is the unique key of the messageUnit
+    * This is the unique key of the msgUnit
     */
    public final void setXmlKey(XmlKey xmlKey)
    {
       this.xmlKey = xmlKey;
-      this.messageUnit.xmlKey = xmlKey.literal();
+      this.msgUnit.xmlKey = xmlKey.literal();
    }
 
 
@@ -197,15 +197,15 @@ public class MessageUnitWrapper
 
 
    /**
-    * This is the unique key of the messageUnit
+    * This is the unique key of the msgUnit
     */
    public final MessageUnit getMessageUnit() throws XmlBlasterException
    {
-      if (messageUnit == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
-         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
+      if (msgUnit == null) {
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
       }
-      return messageUnit;
+      return msgUnit;
    }
 
 
@@ -218,9 +218,9 @@ public class MessageUnitWrapper
     */
    public MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, messageUnit, publishQoS, publisherName);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS, publisherName);
 
-      byte[] oldContent = this.messageUnit.content;
+      byte[] oldContent = this.msgUnit.content;
       byte[] newContent = new byte[oldContent.length];
 
       for (int ii=0; ii<oldContent.length; ii++)
@@ -238,7 +238,7 @@ public class MessageUnitWrapper
     */
    final void setContentRaw(byte[] content)
    {
-      this.messageUnit.content = content;
+      this.msgUnit.content = content;
    }
 
 
@@ -264,9 +264,9 @@ public class MessageUnitWrapper
       int objectHandlingBytes = 20; // a totally intuitive number
 
       size += objectHandlingBytes;  // this MessageUnitWrapper instance
-      if (messageUnit != null) {
+      if (msgUnit != null) {
          // size += xmlKey.size() + objectHandlingBytes;
-         size += this.messageUnit.content.length;
+         size += this.msgUnit.content.length;
       }
 
       // These are references on the original MessageUnitWrapper and consume almost no memory:
@@ -311,7 +311,7 @@ public class MessageUnitWrapper
          sb.append(offset + "   <PublishQoS>null</PublishQoS>");
       else
          sb.append(publishQoS.printOn(extraOffset + "   ").toString());
-      sb.append(offset + "   <content>" + (messageUnit.content==null ? "null" : messageUnit.content.toString()) + "</content>");
+      sb.append(offset + "   <content>" + (msgUnit.content==null ? "null" : msgUnit.content.toString()) + "</content>");
       sb.append(offset + "</MessageUnitWrapper>\n");
       return sb;
    }

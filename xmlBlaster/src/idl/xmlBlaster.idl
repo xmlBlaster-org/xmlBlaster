@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.31 2000/02/20 17:38:49 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.32 2000/02/24 22:19:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -57,11 +57,11 @@ module serverIdl
    /**
     * This contains a MessageUnit and its corresponding QoS, used as return value for the get() method.
     *
-    * @param messageUnit The message
+    * @param msgUnit The message
     * @param qos         xmlBlaster quality of service infos
     */
    struct MessageUnitContainer {
-      MessageUnit messageUnit;
+      MessageUnit msgUnit;
       XmlType qos;
    };
    typedef sequence<MessageUnitContainer> MessageUnitContainerArr;
@@ -115,10 +115,10 @@ module clientIdl
        * of 'oneway' and 'raises Exception' simultaneously,<br>
        * where as Visigenic and JacORB have no problems with it.
        *
-       * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param msgUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Quality of Service for each MessageUnit
        */
-     oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
+     oneway void update(in serverIdl::MessageUnitArr msgUnitArr,
                         in serverIdl::XmlTypeArr qosArr);
                                 //raises(serverIdl::XmlBlasterException);
    };
@@ -252,15 +252,15 @@ module serverIdl
        * If the given key doesn't exist, it will be automatically added, <br>
        * so this covers the SQL'ish INSERT and UPDATE.<p>
        *
-       * @param messageUnit Contains a MessageUnit struct
+       * @param msgUnit Contains a MessageUnit struct
        * @param qos         Quality of Service for MessageUnit
        *
-       * @return String with the key oid of the messageUnit
+       * @return String with the key oid of the msgUnit
        *         If you let the oid be generated, you need this information
        *         for further publishing to the same MessageUnit<br>
        *         Rejected Messages will contain an empty string ""
        */
-      string publish(in MessageUnit messageUnit, in XmlType qos)
+      string publish(in MessageUnit msgUnit, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -274,16 +274,16 @@ module serverIdl
        * For performance or transaction reasons, you can send a whole array
        * of MessageUnit with one Invocation of publish()
        *
-       * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param msgUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Quality of Service for each MessageUnit
        *
        * @return String array with the key oid's, corresponding to the index
-       *         of messageUnitArr<br>
+       *         of msgUnitArr<br>
        *         If you let the oid be generated, you need this information
        *         for further publishing to the same MessageUnit array<br>
        *         Rejected Messages will contain an empty string ""
        */
-      StringArr publishArr(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
+      StringArr publishArr(in MessageUnitArr msgUnitArr, in XmlTypeArr qosArr)
                                           raises(XmlBlasterException);
 
 

@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.5 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.6 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -124,9 +124,9 @@ public class ClientPubDestination
                          "</qos>";
 
             String content = "Hi " + receiverName + ", i love you, " + senderName;
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             try {
-               publishOid = xmlBlaster.publish(messageUnit, qos);
+               publishOid = xmlBlaster.publish(msgUnit, qos);
                Log.info(ME, "Sending done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.error(ME, "publish() XmlBlasterException: " + e.reason);
@@ -157,23 +157,23 @@ public class ClientPubDestination
     * The SubCallback.update calls this method, to allow some error checking
     * @param name of client installed this Callback
     */
-   public void update(String loginName, MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   public void update(String loginName, MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
    {
       if (Log.CALLS) Log.calls(loginName + "UpdateKey", "Receiving update");
-      if (messageUnitArr.length != 0)
-         numReceived += messageUnitArr.length;
+      if (msgUnitArr.length != 0)
+         numReceived += msgUnitArr.length;
       else
          numReceived = -1;       // error
 
 
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         MessageUnit msgUnit = msgUnitArr[ii];
          UpdateKey updateKey = null;
          UpdateQoS updateQoS = null;
-         byte[] content = messageUnit.content;
+         byte[] content = msgUnit.content;
          try {
             updateKey = new UpdateKey();
-            updateKey.init(messageUnit.xmlKey);
+            updateKey.init(msgUnit.xmlKey);
             updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
@@ -240,9 +240,9 @@ class PubDestinationCallback implements BlasterCallbackOperations
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
     */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   public void update(MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
    {
-      boss.update(loginName, messageUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
+      boss.update(loginName, msgUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
    }
 } // PubDestinationCallback
 

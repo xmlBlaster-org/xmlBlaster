@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.7 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.8 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -65,11 +65,11 @@ public class ClientXml implements I_Callback
          //----------- Construct a message and publish it ---------
          {
             String content = "Yeahh, i'm the new content";
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+               publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
                Log.trace(ME, "Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
@@ -130,11 +130,11 @@ public class ClientXml implements I_Callback
                xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                            "<key oid='" + publishOid + "' contentMime='text/xml'>\n" +
                            "</key>";
-               MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+               MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
                Log.trace(ME, "Publishing ...");
                stop.restart();
                try {
-                  String str = xmlBlaster.publish(messageUnit, "");
+                  String str = xmlBlaster.publish(msgUnit, "");
                   Log.trace(ME, "Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
                   Log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);

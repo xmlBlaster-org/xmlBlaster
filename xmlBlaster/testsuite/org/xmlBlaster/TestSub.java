@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.12 2000/02/20 17:38:55 ruff Exp $
+Version:   $Id: TestSub.java,v 1.13 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -151,9 +151,9 @@ public class TestSub extends TestCase implements I_Callback
                       "   </TestSub-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
-         publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+         publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);

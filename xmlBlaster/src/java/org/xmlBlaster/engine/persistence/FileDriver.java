@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.5 2000/02/20 17:38:52 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.6 2000/02/24 22:19:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -151,12 +151,12 @@ public class FileDriver implements I_PersistenceDriver
 
       byte[] content = FileUtil.readFile(path, oid);
 
-      MessageUnit messageUnit = new MessageUnit(xmlKey_literal, content);
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content);
 
       String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
       PublishQoS publishQos = new PublishQoS(xmlQos_literal, true); // you need true here!
 
-      requestBroker.publish(clientInfo, messageUnit, publishQos);
+      requestBroker.publish(clientInfo, msgUnit, publishQos);
 
       if (Log.TRACE) Log.trace(ME, "Successfully recovered message " + oid);
    }

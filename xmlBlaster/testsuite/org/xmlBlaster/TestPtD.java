@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.9 2000/02/20 17:38:55 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.10 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -132,9 +132,9 @@ public class TestPtD extends TestCase implements I_Callback
                    "</qos>";
 
       senderContent = "Hi " + receiverName + ", i love you, " + senderName;
-      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
-         publishOid = senderXmlBlaster.publish(messageUnit, qos);
+         publishOid = senderXmlBlaster.publish(msgUnit, qos);
          Log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
@@ -169,9 +169,9 @@ public class TestPtD extends TestCase implements I_Callback
                    "</qos>";
 
       senderContent = "Hi " + receiver2Name + ", i know you are listening, " + senderName;
-      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
-         publishOid = senderXmlBlaster.publish(messageUnit, qos);
+         publishOid = senderXmlBlaster.publish(msgUnit, qos);
          Log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.6 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.7 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -60,9 +60,9 @@ public class ClientQuery
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
                UpdateKey updateKey = new UpdateKey();
-               updateKey.init(msgArr[ii].messageUnit.xmlKey);
+               updateKey.init(msgArr[ii].msgUnit.xmlKey);
                Log.info("UpdateKey", "\n" + updateKey.printOn().toString());
-               Log.info("content", "\n" + new String(msgArr[ii].messageUnit.content) + "\n");
+               Log.info("content", "\n" + new String(msgArr[ii].msgUnit.content) + "\n");
             }
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);

@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.6 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.7 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -121,11 +121,11 @@ public class ClientRaw
                             "</AGENT>" +
                             "</key>";
             String content = "Yeahh, i'm the new content";
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.info(ME, "Publishing ...");
             stop.restart();
             try {
-               String publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+               String publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.trace(ME, "Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -214,19 +214,19 @@ class RawCallback implements BlasterCallbackOperations
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
     */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   public void update(MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
    {
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
          try {
-            xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }
          Log.info(ME, "================== BlasterCallback update START =============");
-         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + messageUnit.content.length);
-         Log.info(ME, new String(messageUnit.content));
+         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
+         Log.info(ME, new String(msgUnit.content));
          Log.info(ME, "================== BlasterCallback update END ===============");
       }
    }

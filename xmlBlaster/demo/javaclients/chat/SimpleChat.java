@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.3 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.4 2000/02/24 22:19:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package javaclients.chat;
@@ -119,10 +119,10 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                          "</key>";
-         MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
          Log.trace(ME, "Publishing ...");
          try {
-            String str = xmlBlaster.publish(messageUnit, "");
+            String str = xmlBlaster.publish(msgUnit, "");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -137,22 +137,22 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    }
 
    /** CallBack of xmlBlaster */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] messageUnitArr, java.lang.String[] qosArr)
+   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr, java.lang.String[] qosArr)
    {
 
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
          UpdateQoS updateQoS = null;
          try {
-            xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
             updateQoS = new UpdateQoS(qosArr[ii]);
             String tmp = updateQoS.printOn().toString();
 
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }
-         String msgContent = new String(messageUnit.content);
+         String msgContent = new String(msgUnit.content);
          appendOutput("[" + updateQoS.getSender() +"]: " + msgContent +"\n");
          Log.info(ME, "CallBack\n");
       }

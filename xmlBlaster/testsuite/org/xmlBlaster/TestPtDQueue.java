@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.6 2000/02/20 17:38:55 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.7 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -121,9 +121,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          try {
-            publishOid = senderXmlBlaster.publish(messageUnit, qos);
+            publishOid = senderXmlBlaster.publish(msgUnit, qos);
             Log.error(ME, "Publishing to a not logged in client should throw an exception");
             assert("Publishing to a not logged in client should throw an exception", false);
          } catch(XmlBlasterException e) {
@@ -150,9 +150,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          try {
-            publishOid = senderXmlBlaster.publish(messageUnit, qos);
+            publishOid = senderXmlBlaster.publish(msgUnit, qos);
             Log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.error(ME, "publish() XmlBlasterException: " + e.reason);

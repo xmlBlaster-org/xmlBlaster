@@ -54,7 +54,7 @@ sub GetId ($) {
 
 sub update ($$$) {
     print "*********** INVOKED UPDATE ***********\n";
-    my($self,$messageUnitArr,$qosArr) = @_;
+    my($self,$msgUnitArr,$qosArr) = @_;
     print "*********** INVOKED UPDATE ***********\n";
 }
 

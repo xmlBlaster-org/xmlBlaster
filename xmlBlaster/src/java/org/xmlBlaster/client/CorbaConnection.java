@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.25 2000/02/24 22:08:28 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.26 2000/02/24 22:19:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -44,7 +44,7 @@ import java.util.Properties;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -525,11 +525,11 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
-         return xmlBlaster.publish(messageUnit, qos);
+         return xmlBlaster.publish(msgUnit, qos);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -549,7 +549,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       return dummySArr;
@@ -648,26 +648,26 @@ class DefaultCallback implements BlasterCallbackOperations
     * suppling the update() method.
     *
     * @param loginName        The name to whom the callback belongs
-    * @param messageUnit      Contains a MessageUnit structs (your message)
+    * @param msgUnit      Contains a MessageUnit structs (your message)
     * @param qos              Quality of Service of the MessageUnit
     */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   public void update(MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of " + messageUnitArr.length + " message ...");
+      if (Log.CALLS) Log.calls(ME, "Receiving update of " + msgUnitArr.length + " message ...");
 
-      if (messageUnitArr.length == 0) {
+      if (msgUnitArr.length == 0) {
          Log.warning(ME, "Entering update() with 0 messages");
          return;
       }
 
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         MessageUnit msgUnit = msgUnitArr[ii];
          UpdateKey updateKey = null;
          UpdateQoS updateQoS = null;
-         byte[] content = messageUnit.content;
+         byte[] content = msgUnit.content;
          try {
             updateKey = new UpdateKey();
-            updateKey.init(messageUnit.xmlKey);
+            updateKey.init(msgUnit.xmlKey);
             updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);

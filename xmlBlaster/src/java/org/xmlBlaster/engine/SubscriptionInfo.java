@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.16 2000/02/20 17:38:52 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.17 2000/02/24 22:19:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -231,7 +231,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          sb.append(unSubscribeQoS.printOn(extraOffset + "   ").toString());
       else
          sb.append(offset + "   <UnSubscribeQoS></UnSubscribeQoS>");
-      sb.append(offset + "   <messageUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
+      sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       sb.append(offset + "</SubscriptionInfo>\n");
       return sb;

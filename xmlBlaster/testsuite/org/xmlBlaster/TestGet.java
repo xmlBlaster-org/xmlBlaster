@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.1 2000/02/23 15:04:24 ruff Exp $
+Version:   $Id: TestGet.java,v 1.2 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -117,9 +117,9 @@ public class TestGet extends TestCase
       if (Log.TRACE) Log.trace(ME, "2. Publish a message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
-         MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          PublishQosWrapper qosWrapper = new PublishQosWrapper(); // the same as "<qos></qos>"
-         xmlBlaster.publish(messageUnit, qosWrapper.toXml());
+         xmlBlaster.publish(msgUnit, qosWrapper.toXml());
          Log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
          assert("publish - XmlBlasterException: " + e.reason, false);
@@ -131,7 +131,7 @@ public class TestGet extends TestCase
          String qos = "<qos></qos>";
          MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
          Log.info(ME, "Success, got the message");
-         assertEquals("Corrupted content", senderContent, new String(msgArr[0].messageUnit.content));
+         assertEquals("Corrupted content", senderContent, new String(msgArr[0].msgUnit.content));
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
          assert("Couldn't get() an existing message", false);

@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.2 2000/02/24 22:00:57 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -20,7 +20,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements ServerOperations, BlasterCallbackOperations
@@ -185,7 +185,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       if (serverCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("publish")) {
-            serverCallback.publish(cont.messageUnit, cont.xmlQos);
+            serverCallback.publish(cont.msgUnit, cont.xmlQos);
             return;
          }
          else if (cont.method.equals("get")) {
@@ -201,7 +201,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
             return;
          }
          else if (cont.method.equals("publishArr")) {
-            serverCallback.publishArr(cont.messageUnitArr, cont.qosArr);
+            serverCallback.publishArr(cont.msgUnitArr, cont.qosArr);
             return;
          }
          else if (cont.method.equals("erase")) {
@@ -217,7 +217,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       if (clientCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("update")) {
-            clientCallback.update(cont.messageUnitArr, cont.qosArr);
+            clientCallback.update(cont.msgUnitArr, cont.qosArr);
             return;
          }
       }
@@ -259,11 +259,11 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     * @return dummy to match ServerOperations interface
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publish";
-      cont.messageUnit = messageUnit;
+      cont.msgUnit = msgUnit;
       cont.xmlQos = qos_literal;
       queue.push(cont);
       return dummyS;
@@ -274,11 +274,11 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     * @return dummy to match ServerOperations interface
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
-      cont.messageUnitArr = messageUnitArr;
+      cont.msgUnitArr = msgUnitArr;
       cont.qosArr = qos_literal_Arr;
       queue.push(cont);
       return dummySArr;
@@ -335,11 +335,11 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     * For BlasterCallbackOperations interface
     * @see xmlBlaster.idl
     */
-   public void update(MessageUnit [] messageUnitArr, String [] qos_literal_Arr)
+   public void update(MessageUnit [] msgUnitArr, String [] qos_literal_Arr)
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
-      cont.messageUnitArr = messageUnitArr;
+      cont.msgUnitArr = msgUnitArr;
       cont.qosArr = qos_literal_Arr;
       try {
          queue.push(cont);
@@ -362,8 +362,8 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       String clientName;
       String xmlKey;
       String xmlQos;
-      MessageUnit messageUnit;
-      MessageUnit[] messageUnitArr;
+      MessageUnit msgUnit;
+      MessageUnit[] msgUnitArr;
       String[] qosArr;
 
       InvocationContainer() {

@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.2 2000/02/24 19:59:20 kkrafft2 Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.3 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -94,9 +94,9 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
       String[] qosArr = new String[1];
       qosArr[0] = qos;
       String content = "The content";
-      MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
-      MessageUnit[] messageUnitArr = new MessageUnit[1];
-      messageUnitArr[0] = messageUnit;
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+      MessageUnit[] msgUnitArr = new MessageUnit[1];
+      msgUnitArr[0] = msgUnit;
       String clientName = "Gonzales";
       String xmlAttr = "";
 
@@ -104,11 +104,11 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
          recorder.subscribe(xmlKey_subscribe, qos_subscribe);
          recorder.get(xmlKey_get, qos_get);
          recorder.unSubscribe(xmlKey, qos);
-         recorder.publish(messageUnit, qos);
-         recorder.publishArr(messageUnitArr, qosArr);
+         recorder.publish(msgUnit, qos);
+         recorder.publishArr(msgUnitArr, qosArr);
          recorder.erase(xmlKey, qos);
          recorder.setClientAttributes(clientName, xmlAttr, qos);
-         recorder.update(messageUnitArr, qosArr);
+         recorder.update(msgUnitArr, qosArr);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems feeding the recorder: " + e.reason);
@@ -163,7 +163,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
     * @return dummy to match ServerOperations interface
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publish() ...");
       numPublish++;
@@ -175,7 +175,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
     * @return dummy to match ServerOperations interface
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       numPublishArr++;
@@ -232,7 +232,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] messageUnitArr, java.lang.String[] qosArr)
+   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr, java.lang.String[] qosArr)
    {
       if (Log.CALLS) Log.calls(ME, "update() ...");
       numUpdate++;

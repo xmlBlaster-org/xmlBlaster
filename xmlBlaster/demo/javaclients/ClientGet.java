@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.6 2000/02/20 17:38:48 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.7 2000/02/24 22:19:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -59,11 +59,11 @@ public class ClientGet
                             "   </AGENT>" +
                             "</key>";
             String content = "<file><size>1024 kBytes</size><creation>1.1.2000</creation></file>";
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+               publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -88,9 +88,9 @@ public class ClientGet
 
             Log.info(ME, "Got " + msgArr.length + " messages:");
             for (int ii=0; ii<msgArr.length; ii++) {
-               Log.plain(ME, msgArr[ii].messageUnit.xmlKey +
+               Log.plain(ME, msgArr[ii].msgUnit.xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                           new String(msgArr[ii].messageUnit.content) +
+                           new String(msgArr[ii].msgUnit.content) +
                           "\n\n#######################################");
             }
          }
@@ -108,11 +108,11 @@ public class ClientGet
                             "</AGENT>" +
                             "</key>";
             String content = "Export program started";
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+               publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -140,9 +140,9 @@ public class ClientGet
          else
             Log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            Log.plain(ME, msgArr[ii].messageUnit.xmlKey +
+            Log.plain(ME, msgArr[ii].msgUnit.xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                          new String(msgArr[ii].messageUnit.content) +
+                          new String(msgArr[ii].msgUnit.content) +
                           "\n\n#######################################");
          }
 

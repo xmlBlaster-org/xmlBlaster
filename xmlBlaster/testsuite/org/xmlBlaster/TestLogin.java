@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.6 2000/02/20 17:38:55 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.7 2000/02/24 22:19:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -48,7 +48,7 @@ public class TestLogin extends TestCase implements I_Callback
    private String secondName;
    private String secondOid = "SecondOid";
 
-   private MessageUnit messageUnit;     // a message to play with
+   private MessageUnit msgUnit;     // a message to play with
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
@@ -92,7 +92,7 @@ public class TestLogin extends TestCase implements I_Callback
                          "   </TestLogin-AGENT>" +
                          "</key>";
          senderContent = "Some content";
-         messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -176,7 +176,7 @@ public class TestLogin extends TestCase implements I_Callback
       if (ptp)
          qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
       try {
-         publishOid = xmlBlaster.publish(messageUnit, qos);
+         publishOid = xmlBlaster.publish(msgUnit, qos);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-testPublish", "XmlBlasterException: " + e.reason);
@@ -237,7 +237,7 @@ public class TestLogin extends TestCase implements I_Callback
       // test logout with following subscribe()
       senderConnection.logout(xmlBlaster);
       try {
-         publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+         publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
          assert("Didn't expect successful subscribe after logout", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success: " + e.toString());

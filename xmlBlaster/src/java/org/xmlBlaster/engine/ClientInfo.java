@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.24 2000/02/21 10:15:56 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.25 2000/02/24 22:19:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -31,7 +31,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -95,32 +95,32 @@ public class ClientInfo
 
    /**
     * This sends the update to the client, or stores it in the client queue or throws an exception.
-    * @param messageUnitWrapper Wraps the messageUnit with some more infos
+    * @param msgUnitWrapper Wraps the msgUnit with some more infos
     * @param destination The Destination object of the receiver (is null in Pub/Sub mode!)
     */
-   public final void sendUpdate(MessageUnitWrapper messageUnitWrapper, Destination destination) throws XmlBlasterException
+   public final void sendUpdate(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
-         getCallbackDriver().sendUpdate(this, messageUnitWrapper, getUpdateQoS(messageUnitWrapper));
+         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(msgUnitWrapper));
          sentMessages++;
       }
       else {
          if (destination == null) {
             Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
-            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + messageUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
+            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
          }
 
          if (!destination.forceQueuing()) {
             Log.warning(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
-            throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + messageUnitWrapper.getUniqueKey() + "'");
+            throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + msgUnitWrapper.getUniqueKey() + "'");
          }
 
          if (messageQueue == null) {
             messageQueue = new ClientUpdateQueue();
          }
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is not logged in, queing message");
-         messageQueue.push(messageUnitWrapper);
+         messageQueue.push(msgUnitWrapper);
       }
    }
 
@@ -170,11 +170,11 @@ public class ClientInfo
       // send messages to client, if there are any in the queue
       if (messageQueue != null) {
          while (true) {
-            MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
-            if (messageUnitWrapper == null)
+            MessageUnitWrapper msgUnitWrapper = messageQueue.pull();
+            if (msgUnitWrapper == null)
                break;
 
-            getCallbackDriver().sendUpdate(this, messageUnitWrapper, getUpdateQoS(messageUnitWrapper));
+            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(msgUnitWrapper));
             sentMessages++;
          }
       }
@@ -183,7 +183,7 @@ public class ClientInfo
 
    /**
     * The QoS for the update callback, containing the <sender> name.
-    * @param messageUnitWrapper The wrapper containing all message infos
+    * @param msgUnitWrapper The wrapper containing all message infos
     * @return the QoS (quality of service) for the update callback<br />
     *   Example:<br />
     *   <pre>
@@ -194,9 +194,9 @@ public class ClientInfo
     *      &lt;/qos>
     *   </pre>
     */
-   private String getUpdateQoS(MessageUnitWrapper messageUnitWrapper)
+   private String getUpdateQoS(MessageUnitWrapper msgUnitWrapper)
    {
-      return "\n<qos>\n   <sender>\n      " + messageUnitWrapper.getPublisherName() + "\n   </sender>\n</qos>";
+      return "\n<qos>\n   <sender>\n      " + msgUnitWrapper.getPublisherName() + "\n   </sender>\n</qos>";
    }
 
 
@@ -210,11 +210,11 @@ public class ClientInfo
    {
       if (clearQueue && messageQueue != null) {
          while (true) {
-            MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
-            if (messageUnitWrapper == null)
+            MessageUnitWrapper msgUnitWrapper = messageQueue.pull();
+            if (msgUnitWrapper == null)
                break;
             Log.warning(ME, "Logout of client " + toString() + " wich still has messages in the queue");
-            messageUnitWrapper = null;
+            msgUnitWrapper = null;
          }
          messageQueue = null;
       }

@@ -10,7 +10,7 @@ namespace clientIdl {
     * This is the callback implementation
     */
    class BlasterCallback_impl : virtual public BlasterCallback_skel   {
-      MessageUnit messageUnit;  // private Data of this object-implementation
+      MessageUnit msgUnit;  // private Data of this object-implementation
    public:
       BlasterCallback_impl() {}
       ~BlasterCallback_impl() {}
@@ -18,7 +18,7 @@ namespace clientIdl {
       /*
        * implement the update method, which was promised in "xmlBlaster.idl"
        */
-      void update(const serverIdl::MessageUnitArr& messageUnitArr, const serverIdl::XmlTypeArr& qosArr)
+      void update(const serverIdl::MessageUnitArr& msgUnitArr, const serverIdl::XmlTypeArr& qosArr)
       {
          cout << "******* Callback invoked *******" << endl;
       }

@@ -399,7 +399,7 @@ interface BlasterCallback
 \protected_separator 
  
 \protected_separator 
- oneway void update(in serverIdl::MessageUnitArr messageUnitArr, 
+ oneway void update(in serverIdl::MessageUnitArr msgUnitArr, 
 \layout LyX-Code
 
 
@@ -627,7 +627,7 @@ void unSubscribe(in XmlType xmlKey, in XmlType qos)
 \protected_separator 
  
 \protected_separator 
-StringArr publish(in MessageUnitArr messageUnitArr, 
+StringArr publish(in MessageUnitArr msgUnitArr, 
 \layout LyX-Code
 
 

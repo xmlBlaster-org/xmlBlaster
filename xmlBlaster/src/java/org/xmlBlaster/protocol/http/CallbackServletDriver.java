@@ -3,7 +3,7 @@ Name:      CallbackServletDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: CallbackServletDriver.java,v 1.2 2000/02/23 06:14:52 jsrbirch Exp $
+Version:   $Id: CallbackServletDriver.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -36,7 +36,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster.client.I_Callback, org.xmlBlaster.util.LogListener
 {
@@ -137,9 +137,9 @@ public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster
                       "</key>";
             String qos = "<qos></qos>";
             String content = "Hello world";
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             try {
-               String publishOid = xmlBlaster.publish(messageUnit, qos);
+               String publishOid = xmlBlaster.publish(msgUnit, qos);
                Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);

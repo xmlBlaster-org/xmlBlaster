@@ -17,11 +17,11 @@ using namespace authenticateIdl;
 class BlasterCallback_impl : virtual public POA_clientIdl::BlasterCallback
 {
 public:
-  void update( const serverIdl::MessageUnitArr& messageUnitArr, const serverIdl::XmlTypeArr& qosArr );
+  void update( const serverIdl::MessageUnitArr& msgUnitArr, const serverIdl::XmlTypeArr& qosArr );
 };
 
 void
-BlasterCallback_impl::update( const serverIdl::MessageUnitArr& messageUnitArr, const serverIdl::XmlTypeArr& qosArr )
+BlasterCallback_impl::update( const serverIdl::MessageUnitArr& msgUnitArr, const serverIdl::XmlTypeArr& qosArr )
 {
   printf ("********* Callback invoked ************\n");
 }

@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.1 2000/02/24 22:09:46 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.2 2000/02/24 22:19:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -136,14 +136,14 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       numReceived = 0;
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "'>\n</key>";
       String content = "" + counter;
-      MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       qosWrapper.setReadonly();
       String qos = qosWrapper.toXml(); // == "<qos><Readonly /></qos>"
- 
-      publishOid = xmlBlaster.publish(messageUnit, qos);
+
+      publishOid = xmlBlaster.publish(msgUnit, qos);
       Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
- 
+
       assert("returned publishOid == null", publishOid != null);
       assertNotEquals("returned publishOid", 0, publishOid.length());
    }
@@ -173,7 +173,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
    /**
     * This is the callback method invoked from CorbaConnection
-    * informing the client in an asynchronous mode if the connection was established. 
+    * informing the client in an asynchronous mode if the connection was established.
     * <p />
     * This method is enforced through interface I_ConnectionProblems
     */
@@ -186,7 +186,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
    /**
     * This is the callback method invoked from CorbaConnection
-    * informing the client in an asynchronous mode if the connection was lost. 
+    * informing the client in an asynchronous mode if the connection was lost.
     * <p />
     * This method is enforced through interface I_ConnectionProblems
     */

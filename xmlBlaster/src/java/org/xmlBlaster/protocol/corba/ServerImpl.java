@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.2 2000/02/20 17:38:54 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -105,7 +105,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
       if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + requestBroker.printOn().toString());
@@ -113,7 +113,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       PublishQoS publishQoS = new PublishQoS(qos_literal);
-      String retVal = requestBroker.publish(clientInfo, messageUnit, publishQoS);
+      String retVal = requestBroker.publish(clientInfo, msgUnit, publishQoS);
 
       if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + requestBroker.printOn().toString());
 
@@ -124,7 +124,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
       if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + requestBroker.printOn().toString());
@@ -132,13 +132,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       String[] returnArr = new String[0];
 
-      if (messageUnitArr.length < 1) {
-         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero messageUnits sent");
+      if (msgUnitArr.length < 1) {
+         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
          return returnArr;
       }
-      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + messageUnitArr.length + " Messages");
+      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
 
-      String[] strArr = requestBroker.publish(clientInfo, messageUnitArr, qos_literal_Arr);
+      String[] strArr = requestBroker.publish(clientInfo, msgUnitArr, qos_literal_Arr);
 
       if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + requestBroker.printOn().toString());
       return strArr;
@@ -181,12 +181,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       GetQoS xmlQoS = new GetQoS(qos_literal);
-      MessageUnitContainer[] messageUnitContainerArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
+      MessageUnitContainer[] msgUnitContainerArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + requestBroker.printOn().toString());
 
-      return messageUnitContainerArr;
+      return msgUnitContainerArr;
    }
 
 

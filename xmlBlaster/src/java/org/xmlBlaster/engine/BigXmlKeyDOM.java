@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.10 2000/02/20 17:38:51 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.11 2000/02/24 22:19:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -106,8 +106,8 @@ public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEr
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Erase event occured ...");
-      MessageUnitHandler messageUnitHandler = e.getMessageUnitHandler();
-      org.w3c.dom.Node node = removeKeyNode(messageUnitHandler.getRootNode());
+      MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
+      org.w3c.dom.Node node = removeKeyNode(msgUnitHandler.getRootNode());
    }
 
 
