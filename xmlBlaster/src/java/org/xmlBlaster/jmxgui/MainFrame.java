@@ -78,7 +78,7 @@ public class MainFrame extends JFrame {
       this.menuBar.add(fileMenu);
       this.menuBar.add(helpMenu);
 
-      //Action an neues Item binden
+      // Associate Action to a new item
        aboutMenuItem.addActionListener(
           new java.awt.event.ActionListener() {
               public void actionPerformed(ActionEvent e) {

@@ -132,7 +132,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
     * @see I_Queue#initialize(StorageId, Object)
     */
-   public void initialize(StorageId uniqueQueueId, Object userData)
+   synchronized public void initialize(StorageId uniqueQueueId, Object userData)
       throws XmlBlasterException
    {
       if (this.isDown) {
@@ -142,9 +142,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.log = this.glob.getLog("jdbc");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.storageId = uniqueQueueId;
+         if (this.log.CALL) this.log.call(ME, "initialize '" + this.storageId + "'");
 
          this.manager = this.glob.getJdbcQueueManagerCommonTable(this.pluginInfo);
-         this.manager.setUp();
+//         this.manager.setUp(); this is not necessary since already done in Global
 
          String nodeId = this.glob.getStrippedId();
          this.manager.addNode(nodeId);
@@ -156,6 +157,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
 
          this.isDown = false;
+         this.manager.registerQueue(this);
          if (log.TRACE) log.trace(ME, "Successful initialized");
       }
 
@@ -696,7 +698,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) sum++;
             }
-
+            if (this.log.TRACE) 
+               this.log.trace(ME, "randomRemove: the number of removed entries is '" + sum + "'");
             this.numOfEntries -= sum;
 
             if ((int)sum != queueEntries.length) { // then we need to retrieve the values
@@ -1015,8 +1018,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    /**
     * Shutdown the implementation, sync with data store
     */
-   public void shutdown() {
+   synchronized public void shutdown() {
+      if (this.log.CALL) this.log.call(ME, "shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
+      if (this.isDown) return;
       this.isDown = true;
+      this.manager.unregisterQueue(this);
       //      clear();
    }
 

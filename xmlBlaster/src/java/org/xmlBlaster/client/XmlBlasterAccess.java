@@ -426,6 +426,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
             this.deliveryManager = null;
          }
          if (this.clientQueue != null) {
+            this.clientQueue.shutdown(); // added to make hsqldb shutdown 
             this.clientQueue = null;
          }
       }

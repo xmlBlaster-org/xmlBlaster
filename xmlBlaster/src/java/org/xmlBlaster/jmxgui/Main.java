@@ -21,10 +21,7 @@ public class Main {
     LogChannel log = null;
     if (glob == null) glob = new Global().instance();
     log = glob.getLog("jmxGUI");
-
     SplashWindow sw = new SplashWindow("tims_rainbowfish.gif",null, 5000);
-
-
     MainFrame f = new MainFrame(glob);
 //    cc.start();
     f.setVisible(true);

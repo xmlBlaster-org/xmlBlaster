@@ -102,6 +102,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
    #jdbc
+   CLASSPATH=${XMLBLASTER_HOME}/lib/mysql-connector-java-3.0.8-stable-bin.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.2dev-1.2.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/classes12.zip:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}

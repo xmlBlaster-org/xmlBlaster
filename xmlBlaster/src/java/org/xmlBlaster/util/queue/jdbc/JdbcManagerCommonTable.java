@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
@@ -105,6 +106,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String pingStatement;
    private String blobVarName;
    private String keyAttr;
+
+   /**
+    * Counts the queues using this manager.
+    */
+   private int queueCounter = 0;
 
    /**
     * @param JdbcConnectionPool the pool to be used for the connections to
@@ -192,6 +198,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                             (String)pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
       this.entriesTableName = this.entriesTableName.toUpperCase();
       this.nodesCache = new java.util.HashSet();
+      this.pool.registerManager(this);
    }
 
    /**
@@ -593,7 +600,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    /**
     * Adds a queue to the DB. If the node to which the queue belongs does not exist one is created.
-    * @return boolean false if the node already existed, true otherwise.
+    * @return boolean false if no queue has been added (i.e. if the queue already existed in the DB),
+    *         returns true if the queue has been created.
     */
    public final boolean addQueue(String queueName, String nodeId, long numOfBytes, long numOfEntries) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "addQueue");
@@ -1224,9 +1232,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     * Sets up a table for the queue specified by this queue name.
     * If one already exists (i.e. if it recovers from a crash) its associated
-    * table name is returned. If no such queue is found among the used table,
-    * a new table is taken from the free tables. If no free tables are available,
-    * a certain amount of such tables are created.
+    * table name is returned.
     */
    public final void setUp() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "setUp");
@@ -2013,7 +2019,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       String req = null;
       req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
             "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
-            "' AND nodeId='" + nodeId + "')  ORDER BY dataid ASC";
+            "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
 
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
 
@@ -2403,8 +2409,27 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    }
 
-   public void shutdown() {
-      if (this.pool != null) this.pool.shutdown();
+   synchronized public void shutdown() {
+//      if (this.pool != null) this.pool.shutdown();
+      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (this.pool != null) {
+         this.glob.detachJdbcManagerCommonTable(this.factory.getName());
+         this.pool.unregisterManager(this);
+      }
    }
 
+   synchronized public void registerQueue(I_Queue queue) {
+      if (this.log.CALL) this.log.call(ME, "registerQueue, number of queues registered (before registering this one): '" + this.queueCounter + "'");
+      if (queue == null) return;
+      this.queueCounter++;
+   }
+
+   synchronized public void unregisterQueue(I_Queue queue) {
+      if (this.log.CALL) this.log.call(ME, "unregisterQueue, number of queues registered (still including this one): '" + this.queueCounter + "'");
+      if (queue == null) return;
+      this.queueCounter--;
+      if (this.queueCounter == 0) {
+         shutdown();
+      }
+   }
 }

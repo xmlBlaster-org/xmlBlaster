@@ -72,6 +72,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private Properties pluginProp = null;
    private boolean dbAdmin = true;
    private int queryTimeout = 0; // wait indefinetely
+   private int managerCount = 0;
+   private boolean isShutdown = false;
 
    /**
     * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
@@ -106,24 +108,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       try {
          this.log.warn(ME, "timeout:retrying to establish connections");
          // initializing and establishing of connections to DB but first clearing the connections ...
-         int oldStatus;
-         I_StorageProblemListener lst = null;
-         synchronized(this) {
-            disconnect();
-           
-            this.connections = new Connection[this.capacity];
-            for (int i = 0; i < this.capacity; i++) {
-               if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
-               this.connections[i] = DriverManager.getConnection(url, user, password);
-               this.currentIndex = i;
-            }
-            oldStatus = this.status;
-            this.status = I_StorageProblemListener.AVAILABLE;
-            lst = this.storageProblemListener;
-         }
-         if (lst != null) lst.storageAvailable(oldStatus);
-         this.log.info(ME, "Successfully reconnected to database");
-
+         connect(true);
       }
       catch (Throwable ex) {
          // clean up the connections which might have been established
@@ -245,6 +230,30 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       return this.initialized;
    }
 
+   /**
+    * Connects to the DB (so many connections as configured)
+    * @param disconnectFirst if 'true' then all connections to the db are closed before reconnecting.
+    */
+   private void connect(boolean disconnectFirst) throws SQLException {
+      int oldStatus;
+      I_StorageProblemListener lst = null;
+      synchronized(this) {
+         if (disconnectFirst) disconnect();
+         this.connections = new Connection[this.capacity];
+         for (int i = 0; i < this.capacity; i++) {
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
+            this.connections[i] = DriverManager.getConnection(url, user, password);
+            this.currentIndex = i;
+         }
+         oldStatus = this.status;
+         this.status = I_StorageProblemListener.AVAILABLE;
+         lst = this.storageProblemListener;
+      }
+      this.isShutdown = false;
+      if (lst != null) lst.storageAvailable(oldStatus);
+      this.log.info(ME, "Successfully reconnected to database");
+   }
+
 
    /**
     * Is called after the instance is created. It reads the needed properties,
@@ -291,7 +300,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
       // the old generic properties (for the defaults) outside the plugin 
       this.url = prop.get("queue.persistent.url", "jdbc:postgresql://localhost/test");
-      ME = "JdbcConnectionPool-" + this.url;
       this.user = prop.get("queue.persistent.user", "postgres");
       this.password = prop.get("queue.persistent.password", "");
       this.capacity = prop.get("queue.persistent.connectionPoolSize", 5);
@@ -302,9 +310,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.tableNamePrefix = prop.get("queue.persistent.tableNamePrefix", "XB").toUpperCase(); // XB stands for XMLBLASTER
 
       // the property settings specific to this plugin type / version
-      url = pluginProp.getProperty("url", this.url);
-      user = pluginProp.getProperty("user", this.user);
-      password = pluginProp.getProperty("password", this.password);
+      this.url = pluginProp.getProperty("url", this.url);
+      ME = "JdbcConnectionPool-" + this.url;
+      this.user = pluginProp.getProperty("user", this.user);
+      this.password = pluginProp.getProperty("password", this.password);
 
       String help = pluginProp.getProperty("connectionPoolSize", "" + this.capacity);
       try {
@@ -346,9 +355,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if ("false".equalsIgnoreCase(tmp)) this.dbAdmin = false;
 
       if (this.log.DUMP) {
-         this.log.dump(ME, "initialize -url                 : " + url);
-         this.log.dump(ME, "initialize -user                : " + user);
-         this.log.dump(ME, "initialize -password            : " + password);
+         this.log.dump(ME, "initialize -url                 : " + this.url);
+         this.log.dump(ME, "initialize -user                : " + this.user);
+         this.log.dump(ME, "initialize -password            : " + this.password);
          this.log.dump(ME, "initialize -max number of conn  : " + this.capacity);
          this.log.dump(ME, "initialize -conn busy timeout   : " + this.connectionBusyTimeout);
          this.log.dump(ME, "initialize -driver list         : " + xmlBlasterJdbc);
@@ -361,19 +370,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       // or if the connection to the DB is slow.
       try {
          // initializing and establishing of connections to DB (but first disconnect if already connected)
-         disconnect();
+         connect(true);
 
-         this.connections = new Connection[this.capacity];
-         for (int i = 0; i < this.capacity; i++) {
-            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
-            this.currentIndex = i;
-            this.connections[i] = DriverManager.getConnection(url, user, password);
-         }
-         int oldStatus = this.status;
-         this.status = I_StorageProblemListener.AVAILABLE;
-         I_StorageProblemListener lst = this.storageProblemListener;
-         if (lst != null) lst.storageAvailable(oldStatus);
          parseMapping(prop);
+         if (this.log.DUMP) dumpMetaData();
          this.initialized = true;
       }
       catch (SQLException ex) {
@@ -423,6 +423,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private Hashtable parseMapping(org.jutils.init.Property prop)
          throws XmlBlasterException, SQLException {
       if (this.log.CALL) this.log.call(ME, "parseMapping");
+      if (this.isShutdown) connect(false);
       Connection conn = null;
       String productName = null;
       try {
@@ -431,12 +432,17 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
          // blanks are not allowed, thanks to zhang zhi wei
          productName = StringHelper.replaceAll(productName, " ", "");
+         if (this.log.TRACE) 
+            this.log.trace(ME, "parseMapping: the mapping will be done for the DB '" + productName + "'");
       }
       finally {
          if (conn != null) releaseConnection(conn);
       }
 //      String mappingText = prop.get("JdbcDriver." + productName + ".mapping", "");
       String mappingText = prop.get("JdbcDriver.mapping[" + productName + "]", "");
+      if (this.log.TRACE) 
+         this.log.trace(ME, "parseMapping: the string to be mapped is '" + mappingText + "'");
+      
       this.mapping = new Hashtable();
       StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
       XmlBlasterException ex = null;
@@ -450,10 +456,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 //                " is wrong: no equality sign between key and value");
          String key = singleMapping.substring(0, pos);
          String value = singleMapping.substring(pos + 1, singleMapping.length());
-         if (this.log.TRACE) this.log.trace(ME, "mapping " + key + " to " + value);
+         if (this.log.TRACE) this.log.trace(ME, "parseMapping: mapping " + key + " to " + value);
          this.mapping.put(key, value);
       }
-      if (ex != null) throw ex;
+      if (ex != null) {
+         if (this.log.TRACE) 
+            this.log.trace(ME, "parseMapping: Exception occured: " + ex.getMessage());
+         throw ex;
+      }
       return this.mapping;
    }
 
@@ -488,7 +498,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       catch (Throwable ex) {
          log.error(ME, "could not close connection " + connNumber + " correctly but resource is set to null. reason " + ex.toString());
       }
-//      this.initialized = false;
    }
 
    /**
@@ -500,11 +509,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (this.log.CALL) this.log.call(ME, "disconnect invoked");
       for (int i = 0; i < this.capacity; i++) disconnect(i);
       this.currentIndex = -1;
-//      this.initialized = false;
    }
 
    public void finalize() {
-      disconnect();
+      shutdown();
    }
 
 
@@ -558,6 +566,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          synchronized (this.waitingCallsMonitor) {
             this.waitingCalls--;
          }
+         if (this.isShutdown) {
+            try {
+   	       connect(false);
+            }
+            catch (SQLException ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, ex.getMessage());
+            }
+         }
          return get();
       }
    }
@@ -598,9 +614,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
 
    public void dumpMetaData() {
-
       Connection conn = null;
       try {
+         if (this.isShutdown) connect(false);
          conn = getConnection();
          DatabaseMetaData metaData = conn.getMetaData();
 
@@ -699,8 +715,24 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
    }
 
-   public void shutdown() {
+   public synchronized void shutdown() {
+      if (this.log.CALL) this.log.call(ME, "shutdown");
       disconnect();
+//      this.initialized = false;
+      this.isShutdown = true;
+   }
+
+   synchronized public void registerManager(JdbcManagerCommonTable manager) {
+      if (this.log.CALL) this.log.call(ME, "registerManager, number of managers registered (before registering this one): '" + this.managerCount + "'");
+      if (manager == null) return;
+      this.managerCount++;
+   }
+
+   synchronized public void unregisterManager(JdbcManagerCommonTable manager) {
+      if (this.log.CALL) this.log.call(ME, "unregisterManager, number of managers registered (still including this one): '" + this.managerCount + "'");
+      if (manager == null) return;
+      this.managerCount--;
+      if (this.managerCount == 0) shutdown();
    }
 
 }
