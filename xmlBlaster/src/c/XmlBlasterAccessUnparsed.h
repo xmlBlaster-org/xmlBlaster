@@ -16,6 +16,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
+#ifndef _XmlBlasterAccessUnparsed_H
+#define _XmlBlasterAccessUnparsed_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -88,4 +91,6 @@ extern const char *xmlBlasterAccessUnparsedUsage();
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* _XmlBlasterAccessUnparsed_H */
 
