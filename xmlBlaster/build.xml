@@ -445,7 +445,7 @@ TODO
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**/*.*,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,doc/requirements/*"/>
+           includes="org/**/*.*,javaclients/**/*.class,javaclients/**/*.gif,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,doc/requirements/*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
 
