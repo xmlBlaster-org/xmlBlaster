@@ -172,8 +172,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "get(key="+xmlKey+")");
-      String keyEnc = encode(xmlKey, "UTF-8");
-      String qosEnc = encode(qos, "UTF-8");
+      //String keyEnc = encode(xmlKey, "UTF-8");
+      //String qosEnc = encode(qos, "UTF-8");
       Vector list = (Vector)postRequest("get", xmlKey, qos, null, !ONEWAY);
       Msg[] msgs = new Msg[list.size()/3];
       for (int i=0; i<list.size()/3; i++) {
@@ -214,19 +214,21 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    
    /**
     * The format:
-    * qos + '\0' + key + '\0' + content: length = qos + key + content + 2
+    * oid + \0 + key + '\0' + qos + '\0' + content: length = oid + key + qos + content + 3
     * @param conn
     * @param actionType
     * @param key
     * @param qos
     * @param content
     */
-   private void writeRequest(I_Connection conn, String actionType, String key, String qos, byte[] content) throws IOException {
-      
-      ObjectOutputStreamMicro oosm = new ObjectOutputStreamMicro(conn.getOutputStream());
-      int length = oosm.writeMessage(key, qos, content); 
+   static void writeRequest(I_Connection conn, String actionType, String key, String qos, byte[] content) throws IOException {
       conn.setRequestProperty("ActionType", actionType);
-      conn.setRequestProperty("DataLength", "" + length);            
+      conn.setRequestProperty("BinaryProtocol", "true");
+      int length = ObjectOutputStreamMicro.getMessageLength(null, key, qos, content);
+      // this is needed since J2ME does not set Content-Length (don't know why)
+      conn.setRequestProperty("Data-Length", "" + length);
+      ObjectOutputStreamMicro.writeMessage(conn.getOutputStream(), null, key, qos, content);
+      //conn.getOutputStream().close();
    }
 
 
@@ -237,7 +239,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param oneway true for requests returning void
     * @return The returned value for the given request, "" on error or for oneway messages
     */
-   Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
+   /*
+   Object postRequestOld(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
       String request = "ActionType=" + actionType;
       try {
          boolean doPost = true;
@@ -260,9 +263,116 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          writeCookie(conn);
          log("DEBUG", "doPost=" + doPost + ", sending '" + url + "' with request '" + request + "' ...");
          if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
+            conn.setDoOutput(true);
             conn.setPostMethod();
-            //writeRequest(conn, actionType, key, qos, content);
+            conn.setDoInput(true);
+            conn.setUseCaches(false);
+            writeRequest(conn, actionType, key, qos, content);
          }
+
+         conn.connect();
+         readCookie(conn);
+
+         if (oneway) {
+            return "";
+         }
+
+         // Read the return value ...
+         BufferedInputStreamMicro dataInput = new BufferedInputStreamMicro(conn.getInputStream());
+
+         String line;
+         Object returnObject = null;
+         StringBuffer ret = new StringBuffer(1024);
+         while ((line = dataInput.readLine()) != null){
+            log("DEBUG", "Return value for '" + request + "' = '" + line + "'");
+            if (line == null || line.length() < 1)
+               continue;
+            if (true) { // doPost) {  // All POST is returned Base64 encoded, all GET as ordinary string
+               byte[] serial = decodeBase64(line.getBytes());
+               log("DEBUG", "Parsing now: <" + new String(serial) + ">");
+
+               ByteArrayInputStream bais = new ByteArrayInputStream(serial);
+               ObjectInputStreamMicro ois = new ObjectInputStreamMicro(bais);
+               String method = (String)ois.readObject(); // e.g. "subscribe"
+
+               if (PUBLISH_NAME.equals(method)) {
+                  Hashtable returnQos = (Hashtable)ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if (GET_NAME.equals(method)) {
+                  Vector returnQos = (Vector)ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if (SUBSCRIBE_NAME.equals(method)) {
+                  Hashtable returnQos = (Hashtable)ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if (UNSUBSCRIBE_NAME.equals(method)) {
+                  Hashtable[] returnQos = (Hashtable[])ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if (ERASE_NAME.equals(method)) {
+                  Hashtable[] returnQos = (Hashtable[])ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if ("xmlScript".equals(method)) {
+                  returnObject = (String)ois.readObject();
+               }
+               else if (DISCONNECT_NAME.equals(method)) {
+                  returnObject = ois.readObject();
+               }
+               else if (EXCEPTION_NAME.equals(method)) {
+                  String err = (String)ois.readObject();
+                  log("INFO", "Caught XmlBlasterException: " + err);
+                  throw new Exception(err);
+               }
+               else if (CREATE_SESSIONID_NAME.equals(method)) {
+                  returnObject = (String)ois.readObject();
+               }
+               else if (PONG_NAME.equals(method)) {
+                  returnObject = (String)ois.readObject();
+               }
+               else {
+                  log("ERROR", "Unknown method=" + method);
+                  returnObject = line;
+               }
+            }
+            else
+               returnObject = line;
+         }
+         return returnObject;
+      }
+      catch (java.lang.ClassNotFoundException e) {
+         e.printStackTrace();
+         log("ERROR", "request(" + request + ") failed: " + e.toString());
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+         log("ERROR", "request(" + request + ") failed: " + e.toString());
+      }
+      return "";
+   }
+   */
+   
+   Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
+      String request = "ActionType=" + actionType;
+      try {
+         boolean doPost = true;
+         String url = this.xmlBlasterServletUrl;
+      
+         I_Connection conn = createConnection(url);      
+         // conn.setUseCaches(false);
+         writeCookie(conn);
+         log("DEBUG", "doPost=" + doPost + ", sending '" + url + "' with request '" + request + "' ...");
+         if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
+            conn.setDoOutput(true);
+            conn.setPostMethod();
+            conn.setDoInput(true);
+            conn.setUseCaches(false);
+            writeRequest(conn, actionType, key, qos, content);
+         }
+
+         conn.connect();
          readCookie(conn);
 
          if (oneway) {
@@ -425,7 +535,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param enc
     * @return
     */
-   public abstract String encode(String s, String enc);
+   //public abstract String encode(String s, String enc);
    
    public abstract byte[] encodeBase64(byte[] data);
 

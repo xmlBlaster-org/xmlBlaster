@@ -91,12 +91,12 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
     * at many places and support JDK &lt; 1.4 we provide it here
     * and simply map it to the old encode(String)
     */
-   public String encode(String s, String enc) {
+   //public String encode(String s, String enc) {
       //return new String(encodeBase64(s.getBytes()));
       // No Global available:
       //return Global.encode(s, enc);
       // Deprecated since JDK 1.4:
-      return java.net.URLEncoder.encode(s);
+   // return java.net.URLEncoder.encode(s);
       /* JDK >= 1.4 (older won't compile)
       try {
          return java.net.URLEncoder.encode(s, enc);
@@ -105,7 +105,7 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
          throw new IllegalArgumentException(e.toString());
       }
       */
-   }
+   //}
    
    public byte[] encodeBase64(byte[] data) {
       return Base64.encodeBase64(data);

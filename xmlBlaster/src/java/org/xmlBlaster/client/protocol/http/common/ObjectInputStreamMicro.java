@@ -71,15 +71,22 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       else throw new IOException("object of type with code='" + code + "' is not supported");
    }
 
-   public Object[] readMessage(int length) throws IOException {
+   public static Object[] readMessage(InputStream in, int length) throws IOException {
       if (length < 3) return new Object[] { "", "", new byte[0] };
       Object[] ret = new Object[3];
       byte[] response = new byte[length];
       int offset = 0;
+      DataInputStream dis = new DataInputStream(in);
       while (offset < length-1) {
-         int size = in.available();
-         size = in.read(response, offset, size);
+         int size = dis.read(response, offset, response.length-offset); 
          offset += size;
+         if (offset < length-1) {
+            try {
+               Thread.sleep(200L);
+            }
+            catch (Exception ex) {
+            }
+         }
       }
       
       int pos = 0, i = pos;
@@ -98,6 +105,32 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       }
       ret[2] = tmp;
       return ret;
+   }
+
+   public static MsgHolder readMessage(byte[] buffer) throws IOException {
+      if (buffer.length < 4) return new MsgHolder(null, null, null, null);
+      
+      int pos = 0, i = pos;
+      while (buffer[i] != 0) i++;
+      String oid = (i == 0 ? null : new String(buffer, 0, i));
+      pos = ++i;
+
+      while (buffer[i] != 0) i++;
+      String key = new String(buffer, pos, i-pos);
+      if (key.length() < 1) key = null;
+      pos = ++i;
+
+      while (buffer[i] != 0) i++;
+      String qos = new String(buffer, pos, i-pos);
+      if (qos.length() < 1) qos = null;
+      pos = ++i;
+
+      byte[] content = new byte[buffer.length-pos];
+      while (i < buffer.length) {
+         content[i-pos] = buffer[i];
+         i++;
+      }
+      return new MsgHolder(oid, key, qos, content);
    }
 
 }

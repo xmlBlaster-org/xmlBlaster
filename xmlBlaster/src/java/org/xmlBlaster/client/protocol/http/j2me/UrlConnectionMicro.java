@@ -67,6 +67,10 @@ public class UrlConnectionMicro implements I_Connection {
       // TODO implement it
    }
    
+   public void setDoOutput(boolean doOutput) {
+      // TODO implement it
+   }
+
    public void setUseCaches(boolean useCaches) {
       // TODO implement it
    }

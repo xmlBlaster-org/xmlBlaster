@@ -80,10 +80,12 @@ public class XmlBlasterAccessJ2ME extends XmlBlasterAccessRawBase {
    /**
     * This was previously URLEncoder but j2me has no such support
     */
+   /*
    public String encode(String s, String enc) {
       //return Base64.encode(s.getBytes());
-      throw IllegalArgumentException("No URLEncoder is impleneted in XmlBlasterAccessJ2ME.encode()");
+      throw new IllegalArgumentException("No URLEncoder is implemeted in XmlBlasterAccessJ2ME.encode()");
    }
+   */
    
    public byte[] encodeBase64(byte[] data) {
       return Base64.encode(data).getBytes();

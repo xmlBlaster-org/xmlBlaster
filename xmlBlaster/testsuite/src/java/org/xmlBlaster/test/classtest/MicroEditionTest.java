@@ -360,13 +360,13 @@ public class MicroEditionTest extends TestCase {
          String qos = "<qos><persistent/></qos>";
          byte[] content = "This is the content".getBytes();
          
-         int length = oosm.writeMessage(key, qos, content);
+         int length = ObjectOutputStreamMicro.writeMessage(baos, key, qos, content);
          assertEquals("wrong length returned", key.length() + qos.length() + content.length + 2, length);
 
          ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
          ObjectInputStreamMicro oism = new ObjectInputStreamMicro(bais);
 
-         Object[] obj = oism.readMessage(length);
+         Object[] obj = ObjectInputStreamMicro.readMessage(bais, length);
          
          assertEquals("wrong content for the key", key, (String)obj[0]);
          assertEquals("wrong content for the qos", qos, (String)obj[1]);

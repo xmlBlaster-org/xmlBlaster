@@ -17,6 +17,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.common.MsgHolder;
 import org.xmlBlaster.client.protocol.http.common.ObjectInputStreamMicro;
 import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -29,6 +30,7 @@ import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
@@ -104,6 +106,82 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       this.timeout = new Timeout("xmlBlaster.appletPinger");
    }
 
+
+   protected void connect(String ME, LogChannel log, HttpSession session, String qos, HttpServletRequest req, HttpServletResponse res) 
+      throws XmlBlasterException, IOException, ServletException {
+      if (qos == null || qos.length() < 1)
+         throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, "Missing connect QoS. Pass xmlBlaster.connectQos='<qos> ... </qos>' with your URL in your POST in a hidden form field or in your cookie.");
+
+      Global glob = this.initialGlobal.getClone(null);
+      ConnectQos connectQos;
+      boolean warnAuth = false;
+      if (qos.toLowerCase().indexOf("securityservice") >= 0) {
+         connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos)); // Applet provides authentication
+      }
+      else {
+         connectQos = new ConnectQos(glob);  // User servlets default authentication setting
+         warnAuth = true;
+      }
+      ME  = "AppletServlet-" + req.getRemoteAddr() + "-" + connectQos.getSessionName().getLoginName() + "-" + session.getId();
+            
+      if (warnAuth)
+         log.warn(ME, "Login action, applet has not supplied connect QoS authentication information - we login with the servlets default authentication settings");
+      else
+         log.info(ME, "Login action with applet supplied connect QoS authentication information");
+
+      I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
+      PushHandler pushHandler = new PushHandler(req, res, session.getId(),
+                                               connectQos.getSessionName().getRelativeName(),
+                                               xmlBlasterAccess, this.timeout);
+      xmlBlasterAccess.connect(connectQos, pushHandler);
+      pushHandler.startPing();
+      session.setAttribute("PushHandler", pushHandler);
+
+      // Don't fall out of doGet() to keep the HTTP connection open
+      log.info(ME, "Waiting forever, permanent HTTP connection from " +
+                     req.getRemoteHost() + "/" + req.getRemoteAddr() +
+                     ", sessionName=" + connectQos.getSessionName().getRelativeName() + " sessionId=" + session.getId() +
+                     "', protocol='" + req.getProtocol() +
+                     "', agent='" + req.getHeader("User-Agent") +
+                     "', referer='" + req.getHeader("Referer") +
+                     "'.");
+
+      if (log.TRACE) log.trace(ME,
+                     "user='" + req.getRemoteUser() +
+                     "', serverPort='" + req.getServerPort() +
+                     "', query='" + req.getQueryString() +
+                     "', pathInfo='" + req.getPathInfo() +
+                     "', pathTranslated='" + req.getPathTranslated() +
+                     "', servletPath='" + req.getServletPath() +
+                     "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
+                     "', accept='" + req.getHeader("Accept") +
+                     "', referer='" + req.getHeader("Referer") +
+                     "', authorization='" + req.getHeader("Authorization") +
+                     "'.");
+
+      pushHandler.ping("loginSucceeded");
+
+      while (!pushHandler.isClosed()) {
+         try {
+            Thread.sleep(10000L);
+         }
+         catch (InterruptedException i) {
+            log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
+            pushHandler.cleanup();
+            break;
+         }
+      }
+      pushHandler = null;
+      log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
+   }
+
+
+
+
+
+
+
+
    /**
     * GET request from the browser, usually to do an initial login.
     * <p />
@@ -117,8 +195,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * successful login.
     * <p />
     */
-   public void doGetFake(HttpServletRequest req, HttpServletResponse res, String actionType) throws ServletException, IOException
-   {
+   public void doGetFake(HttpServletRequest req, HttpServletResponse res, String actionType, MsgHolder msgHolder) 
+      throws ServletException, IOException {
       res.setContentType("text/plain");
       String errorText="";
       String ME  = this.getClass().getName() + "-" + req.getRemoteAddr();
@@ -158,70 +236,9 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          if (actionType.equals(I_XmlBlasterAccessRaw.CONNECT_NAME)) {
             // Here we NEVER return to hold the persistent http connection for callbacks to the applet
             String qos = getParameter(req, "xmlBlaster.connectQos", (String)null);
-            if (qos == null || qos.length() < 1)
-               throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, "Missing connect QoS. Pass xmlBlaster.connectQos='<qos> ... </qos>' with your URL in your POST in a hidden form field or in your cookie.");
-
-            Global glob = this.initialGlobal.getClone(null);
-            ConnectQos connectQos;
-            boolean warnAuth = false;
-            if (qos.toLowerCase().indexOf("securityservice") >= 0) {
-               connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos)); // Applet provides authentication
-            }
-            else {
-               connectQos = new ConnectQos(glob);  // User servlets default authentication setting
-               warnAuth = true;
-            }
-            ME  = "AppletServlet-" + req.getRemoteAddr() + "-" + connectQos.getSessionName().getLoginName() + "-" + sessionId;
-            
-            if (warnAuth)
-               log.warn(ME, "Login action, applet has not supplied connect QoS authentication information - we login with the servlets default authentication settings");
-            else
-               log.info(ME, "Login action with applet supplied connect QoS authentication information");
-
-            I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
-            PushHandler pushHandler = new PushHandler(req, res, sessionId,
-                                                     connectQos.getSessionName().getRelativeName(),
-                                                     xmlBlasterAccess, this.timeout);
-            xmlBlasterAccess.connect(connectQos, pushHandler);
-            pushHandler.startPing();
-            session.setAttribute("PushHandler", pushHandler);
-
-            // Don't fall out of doGet() to keep the HTTP connection open
-            log.info(ME, "Waiting forever, permanent HTTP connection from " +
-                           req.getRemoteHost() + "/" + req.getRemoteAddr() +
-                           ", sessionName=" + connectQos.getSessionName().getRelativeName() + " sessionId=" + sessionId +
-                           "', protocol='" + req.getProtocol() +
-                           "', agent='" + req.getHeader("User-Agent") +
-                           "', referer='" + req.getHeader("Referer") +
-                           "'.");
-
-            if (log.TRACE) log.trace(ME,
-                           "user='" + req.getRemoteUser() +
-                           "', serverPort='" + req.getServerPort() +
-                           "', query='" + req.getQueryString() +
-                           "', pathInfo='" + req.getPathInfo() +
-                           "', pathTranslated='" + req.getPathTranslated() +
-                           "', servletPath='" + req.getServletPath() +
-                           "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
-                           "', accept='" + req.getHeader("Accept") +
-                           "', referer='" + req.getHeader("Referer") +
-                           "', authorization='" + req.getHeader("Authorization") +
-                           "'.");
-
-            pushHandler.ping("loginSucceeded");
-
-            while (!pushHandler.isClosed()) {
-               try {
-                  Thread.sleep(10000L);
-               }
-               catch (InterruptedException i) {
-                  log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
-                  pushHandler.cleanup();
-                  break;
-               }
-            }
-            pushHandler = null;
-            log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
+            // if the binary protocol is used ...
+            if (msgHolder != null) qos = msgHolder.qos;
+            connect(ME, log, session, qos, req, res);
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) {
             //------------------ first request from applet --------------------------
@@ -276,45 +293,159 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
      return Global.decode(in, encoding);
    }
 
+   private byte[] readBodyContent(HttpServletRequest req) {
+      try {
+         int length = req.getContentLength();
+         if (length < 0) {
+            String tmp = req.getHeader("Data-Length");
+            if (tmp != null) length = Integer.parseInt(tmp);
+         }
+         //System.out.println("readBodyContent: Length=" + length);
+         byte[] ret = new byte[length];
+         DataInputStream in = new DataInputStream(req.getInputStream());
+         in.readFully(ret);
+         return ret;
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return new byte[0];
+      }
+   }
+   
+   /**
+    * This method is used by the binary protocol. It passes all information in
+    * the http body.
+    * @param req
+    * @param res
+    * @throws IOException
+    * @return null if it was no binary protocol, otherwise an Object[3] = { (String)key, (String)qos, byte[] content }
+    * where every one of the three elements could be null.
+    */
+   private MsgHolder readBinaryProtocol(HttpServletRequest req, HttpServletResponse res) 
+      throws IOException {
+      try {         
+         
+         //System.out.println("entering readMessageFromContent");
+   
+         byte[] contentAsBytes = readBodyContent(req);
 
-   private Object[] getMessage(HttpServletRequest req) throws IOException {
-      String dataLength = getParameter(req, "DataLength", "0");
-      int length = Integer.parseInt(dataLength);
-      if (length < 3) return null;
+         String tmp = req.getHeader("BinaryProtocol");
+         //System.out.println("BinaryProtocol=" + tmp);
+         if (tmp == null || tmp.equalsIgnoreCase("false")) return null; // then it was not set ...
+
+         String actionType = req.getHeader("ActionType");
+
+         ServletInputStream in = req.getInputStream();
+         int length = req.getContentLength();
       
-      ObjectInputStreamMicro oism = new ObjectInputStreamMicro(req.getInputStream());
-      return oism.readMessage(length);
+         //System.out.println("Content-Length=" + length);
+         MsgHolder msg = ObjectInputStreamMicro.readMessage(contentAsBytes);
+
+         //System.out.println("msg: ActionType='" + actionType + "' length='" + length + "'");
+         //System.out.println("    - key    : '" + msg.key + "'");
+         //System.out.println("    - qos    : '" + msg.qos + "'");
+         //String tmp1 = "null";
+         //if (msg.content != null) tmp1 = new String(msg.content);
+         //System.out.println("    - content: '" + tmp1 + "'");
+         //System.out.println("============================");
+         //req.getInputStream().close();
+         return msg;
+      }
+      catch (IOException ex) {
+         ex.printStackTrace();
+         throw ex;
+      }
+      catch (Throwable ex) {
+         ex.printStackTrace();
+         throw new IOException(ex.getMessage());
+      }
+   }
+
+   protected MsgHolder extractMessage(String ME, LogChannel log, HttpServletRequest req, MsgHolder binaryMsg) {
+      if (binaryMsg != null) return binaryMsg;
+
+      String oid = getParameter(req, "key.oid", (String)null);
+      if (log.TRACE) log.trace(ME, "encoded oid=" + oid);
+      if (oid != null) oid = this.decode(oid, ENCODING);
+
+      String key = getParameter(req, "key", (String)null);
+      if (log.TRACE) log.trace(ME, "encoded key=" + key);
+      if (key != null) {
+         key = this.decode(key, ENCODING);
+         if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
+      }
+         
+      byte[] content;
+      String contentStr = getParameter(req, "content", (String)null);
+      if (contentStr != null) {
+         content = this.decode(contentStr, ENCODING).getBytes();
+         //content = Base64.decodeBase64(contentStr.getBytes());
+      }
+      else
+         content = new byte[0];
+      if (log.DUMP) log.dump(ME, "content=\n'" + new String(content) + "'");
+
+      String qos = getParameter(req, "qos", (String)null);
+      if (log.TRACE) log.trace(ME, "encoded qos=" + qos);
+      if (qos != null) {
+         qos = this.decode(qos, ENCODING);
+      }
+      else
+         qos = ""; 
+      if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
+
+      // See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+      String xmlRequest = getParameter(req, "xmlRequest", (String)null);
+      if (log.TRACE) log.trace(ME, "encoded xmlRequest=" + xmlRequest);
+      if (xmlRequest != null) {
+         xmlRequest = this.decode(xmlRequest, ENCODING);
+         if (log.DUMP) log.dump(ME, "xmlRequest=\n'" + xmlRequest + "'");
+      }
+
+      return new MsgHolder(oid, key, qos, content);
    }
 
    /**
+    * This method is supported just for cases where the servlet is contacted
+    * directy from a browser in which case it is easy for the user to pass
+    * the data directly via the url.
+    */
+   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+      doPost(req, res);
+   }
+   
+   /**
     * POST request from the applet. 
     * <p>
-    * Handles the following requests 'ActionType' from the applet
-    * </p>
-    * <ul>
-    *    <li>disconnect</li>
-    *    <li>get</li>
-    *    <li>subscribe</li>
-    *    <li>unSubscribe</li>
-    *    <li>publish</li>
-    *    <li>erase</li>
-    * </ul>
+    * Handles all requests coming from the applet. It reads the 
+    * passed parameters either from the url (in which case they are
+    * encoded) or directly from the input stream (the body of the request).
+    * In the latter case they are binary data which is not encoded and
+    * is refered to as binary protocol.
+    *
     * The asynchronous updates are pushed back using PushHandler.java
-    * <p />
-    * The key/qos values are expected to be URL encoded (TODO: port to Base64!!!) protected
-    * <p />
+    *
     * @param req Data from browser
     * @param res Response of the servlet
     */
    public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
-      String actionType = getParameter(req, "ActionType", "NONE");
+      // null if the message was not passed via the binary protocol
+      MsgHolder binaryMsg = readBinaryProtocol(req, res);
+      
+      String actionType = req.getHeader("ActionType");
+      
+      if (actionType == null) {
+         actionType = getParameter(req, "ActionType", "NONE");
+      }    
+      
       System.err.println("Received actionType=" + actionType);
+
       if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || 
           actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME) ||
           actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.PONG_NAME) ||
          actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) { // "connect", "disconnect"
-         doGetFake(req, res, actionType);
+         doGetFake(req, res, actionType, binaryMsg);
          return;
       }
 
@@ -343,47 +474,17 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
       try {
          // Extract the message data
-         String oid = getParameter(req, "key.oid", (String)null);
-         if (log.TRACE) log.trace(ME, "encoded oid=" + oid);
-         if (oid != null) oid = this.decode(oid, ENCODING);
 
-         String key = getParameter(req, "key", (String)null);
-         if (log.TRACE) log.trace(ME, "encoded key=" + key);
-         if (key != null) {
-            key = this.decode(key, ENCODING);
-            if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
-         }
+         MsgHolder msg = extractMessage(ME, log, req, binaryMsg);
+         String oid = msg.oid;
+         String key = msg.key;
+         String qos = msg.qos;
+         String xmlRequest = msg.key; // in case of xmlScript the request is sent as the key (all other are null)
+         byte[] content = msg.content;
          
-         byte[] content;
-         String contentStr = getParameter(req, "content", (String)null);
-         if (contentStr != null) {
-            content = this.decode(contentStr, ENCODING).getBytes();
-            //content = Base64.decodeBase64(contentStr.getBytes());
-         }
-         else
-            content = new byte[0];
-         if (log.DUMP) log.dump(ME, "content=\n'" + new String(content) + "'");
-
-         String qos = getParameter(req, "qos", (String)null);
-         if (log.TRACE) log.trace(ME, "encoded qos=" + qos);
-         if (qos != null) {
-            qos = this.decode(qos, ENCODING);
-         }
-         else
-            qos = ""; 
-         if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
-
-         // See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
-         String xmlRequest = getParameter(req, "xmlRequest", (String)null);
-         if (log.TRACE) log.trace(ME, "encoded xmlRequest=" + xmlRequest);
-         if (xmlRequest != null) {
-            xmlRequest = this.decode(xmlRequest, ENCODING);
-            if (log.DUMP) log.dump(ME, "xmlRequest=\n'" + xmlRequest + "'");
-         }
-
          if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
             if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
-            
+      
             if (oid != null) {
                SubscribeKey xmlKey = new SubscribeKey(glob, oid);
                SubscribeReturnQos ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);

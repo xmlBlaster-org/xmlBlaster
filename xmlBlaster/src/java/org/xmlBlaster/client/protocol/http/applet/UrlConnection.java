@@ -47,6 +47,7 @@ public class UrlConnection implements I_Connection {
    }
 
    public void setPostMethod() {
+      //this.conn.setDoOutput(true);
       try {
          this.conn.setRequestMethod("POST");
       }
@@ -57,6 +58,10 @@ public class UrlConnection implements I_Connection {
 
    public void setDoInput(boolean doInput) {
       this.conn.setDoInput(doInput);
+   }
+
+   public void setDoOutput(boolean doOutput) {
+      this.conn.setDoOutput(doOutput);
    }
 
    public void setUseCaches(boolean useCaches) {

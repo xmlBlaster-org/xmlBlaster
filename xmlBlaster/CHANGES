@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
+ 
+ o AppletServlet is now processing binary data too (client class sends it 
+   in the body of the request)
 
  o Added properties to limit the burst mode size of callback invocations:
    -dispatch/callback/burstMode/maxEntries

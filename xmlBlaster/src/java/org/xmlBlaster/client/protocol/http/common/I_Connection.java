@@ -21,6 +21,7 @@ public interface I_Connection {
    public void setRequestProperty(String key, String val);
    public void setPostMethod();
    public void setDoInput(boolean doInput);
+   public void setDoOutput(boolean doInput);
    public void setUseCaches(boolean useCaches);
    public void connect() throws IOException;
    

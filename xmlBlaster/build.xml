@@ -157,6 +157,11 @@ TODO
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
+   <!-- for the embedded java devices (j2me) : the WTK TOOLKIT -->
+   <condition property="J2ME_HOME" value="${env.J2ME_HOME}">
+      <isset property="env.J2ME_HOME"/>
+   </condition>
+
 
    <!-- =================================================================== -->
    <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
@@ -806,6 +811,70 @@ TODO
       <echo message="      http://localhost:8080/xmlBlaster/SystemInfoApplet.html"/>
       <echo message="      http://localhost:8080/xmlBlaster/XmlScript.html"/>
    </target>
+
+   <!-- =================================================================== -->
+   <!-- Compiles the j2me demo                                              -->
+   <!-- =================================================================== -->
+   <target name="j2me" depends="prepare" description="Compile j2me demo and packages it">
+
+      <copy todir="${build.dir}/j2me/src/org/xmlBlaster/client/protocol/http/common">
+         <fileset dir="${src.java.dir}/org/xmlBlaster/client/protocol/http/common">
+         </fileset>
+      </copy>
+      <copy todir="${build.dir}/j2me/src/org/xmlBlaster/client/protocol/http/j2me">
+         <fileset dir="${src.java.dir}/org/xmlBlaster/client/protocol/http/j2me">
+         </fileset>
+      </copy>
+      <copy file="${demo.dir}/j2me/SystemInfoMidlet.java" tofile="${build.dir}/j2me/src/SystemInfoMidlet.java"/>
+      <mkdir dir="${build.dir}/j2me/tmpclasses"/>
+      <mkdir dir="${build.dir}/j2me/classes"/>
+      <mkdir dir="${build.dir}/j2me/lib"/>
+      <javac srcdir="${build.dir}/j2me/src"
+            destdir="${build.dir}/j2me/tmpclasses"
+            bootclasspath="${J2ME_HOME}/lib/cldcapi11.jar:${J2ME_HOME}/lib/midpapi20.jar"
+            debug="${debug}"
+            optimize="${optimize}"
+            deprecation="${deprecation}"
+            target="1.1" />
+
+      <exec dir="." executable="${J2ME_HOME}/bin/preverify" vmlauncher="false">
+         <arg line="-classpath ${J2ME_HOME}/lib/cldcapi11.jar:${J2ME_HOME}/lib/midpapi20.jar:${build.dir}/j2me/tmpclasses  -d ${build.dir}/j2me/classes ${build.dir}/j2me/tmpclasses"/>
+      </exec>
+
+      <jar destfile="${build.dir}/j2me/lib/SystemInfo.jar" 
+           basedir="${build.dir}/j2me/classes" 
+	   manifest="${demo.dir}/j2me/manifest.j2me"
+	   includes="**/*.class"/>
+           <copy file="${build.dir}/j2me/lib/SystemInfo.jar" tofile="${demo.dir}/j2me/SystemInfo.jar"/>
+	   <!-- update the jad file according to the new jar size -->
+           <echo message=""/>
+           <echo message="==============================================================================================="/>
+           <echo message="(the path used for the J2ME_HOME is ${J2ME_HOME})"/>
+           <echo message="update the jad file according to the new jar size in the ${XMLBLASTER_HOME}/demo/j2me directory"/>
+           <echo message="==============================================================================================="/>
+           <echo message=""/>
+   </target>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    <!-- =================================================================== -->
    <!-- starts xmlBlaster and blocks                                        -->

@@ -1,7 +1,6 @@
 package org.xmlBlaster.client.protocol.http.common;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.util.Hashtable;
 
 /**
@@ -86,24 +85,32 @@ public class PersistentRequest extends Thread {
                   xmlBlaster@marcelruff.info 2003-11-09
          */
 
-         String request = "?ActionType="+I_XmlBlasterAccessRaw.CONNECT_NAME +
-                          "&xmlBlaster.connectQos=" + this.xmlBlasterAccess.encode(this.connectQos, "UTF-8");
+         //String request = "?ActionType="+I_XmlBlasterAccessRaw.CONNECT_NAME +
+         //                 "&xmlBlaster.connectQos=" + this.xmlBlasterAccess.encode(this.connectQos, "UTF-8");
          
-         String url = xmlBlasterServletUrl+request;
+         //String url = xmlBlasterServletUrl+request;
+         String url = xmlBlasterServletUrl;
          I_Connection conn = this.xmlBlasterAccess.createConnection(url);  // This works fine but is more a GET variant
          this.xmlBlasterAccess.writeCookie(conn);
          conn.setDoInput(true);
          conn.setPostMethod();
          conn.setUseCaches(false);
          
+         //XmlBlasterAccessRawBase.writeRequest(conn, I_XmlBlasterAccessRaw.CONNECT_NAME, null, this.connectQos, null);
+         XmlBlasterAccessRawBase.writeRequest(conn, "connect", null, this.connectQos, null);
+         
          // HTTP POST the connect() request ...
          //conn.setRequestProperty("Content-length", ""+request.length());
          //conn.setRequestProperty("User-Agent","XmlBlasterApplet 1.0");
-         DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
+
+
+         // DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
          log("DEBUG", "POST, sending '" + url + "' ...");
+
          //dataOutput.writeBytes("ActionType="+MethodName.CONNECT.toString()+"\n");
          //dataOutput.writeBytes("xmlBlaster.connectQos=" + XmlBlasterAccessRaw.encode(this.connectQos) + "\n");
-         dataOutput.close();
+
+         // dataOutput.close();
 
          log("DEBUG", "Creating now a persistent connection to '" + url + "'");
 

@@ -29,7 +29,9 @@ public class SystemInfoMidlet extends MIDlet implements CommandListener, I_Callb
    // constructor.
    public SystemInfoMidlet() {
       this.properties = new Hashtable();
-      this.properties.put("xmlBlaster/servletUrl", "http://localhost:8080/xmlBlaster/AppletServlet");
+      String servletUrl = this.getAppProperty("servletUrl");
+      if (servletUrl == null) servletUrl = "http://localhost:8080/xmlBlaster/AppletServlet";
+      this.properties.put("xmlBlaster/servletUrl", servletUrl);
       this.properties.put("xmlBlaster/logLevels", "ERROR,WARN,INFO");
    }
 
