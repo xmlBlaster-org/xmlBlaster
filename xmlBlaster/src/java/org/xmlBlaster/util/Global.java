@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.25 2002/05/31 09:59:49 ruff Exp $
+Version:   $Id: Global.java,v 1.26 2002/05/31 10:02:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -667,7 +667,7 @@ public class Global implements Cloneable
       sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
       sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
       sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
-      sb.append("    Supported is [core], [auth], [cb], [mime], [corba] [xmlrpc]\n");
+      sb.append("    Supported is [core], [auth], [cb], [mime], [corba], [xmlrpc]\n");
       sb.append("\n");
       sb.append("  Control logging of properties framework:\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
