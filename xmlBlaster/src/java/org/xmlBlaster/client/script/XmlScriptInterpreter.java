@@ -33,11 +33,14 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.DisconnectQosServer;
+//import org.xmlBlaster.engine.qos.ConnectQosServer;
+//port org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 
 /**
  * Parse email body. 
@@ -118,7 +121,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    private I_Callback callback;
    private OutputStream out;
    private String currentCommand;
-   
+   private ConnectQosSaxFactory connectQosFactory;
+   private DisconnectQosSaxFactory disconnectQosFactory;
    /**
     * This constructor is the most generic one (more degrees of freedom)
     * @param glob the global to use
@@ -145,6 +149,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       this.callback = callback;
       this.attachments = attachments;
       this.out = out;
+      this.connectQosFactory = new ConnectQosSaxFactory(this.glob);
+      this.disconnectQosFactory = new DisconnectQosSaxFactory(this.glob);
    }
 
    /**
@@ -339,8 +345,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
                ret = this.access.connect(connectQos, this.callback).toXml();
             }
             else {
-               // ConnectQosData data = new ConnectQosData(this.glob, new ConnectQosSaxFactory(this.glob), this.qos.toString(), this.glob.getNodeId());
-               ConnectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
+               ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
+               // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
                ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
                if (tmp != null) ret = tmp.toXml("  ");
                else ret = "";
@@ -355,8 +361,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          if ("disconnect".equals(qName)) {
             if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
             if (this.qos.length() < 1) this.qos.append("<qos />");
-            DisconnectQosServer disconnectQos = new DisconnectQosServer(this.glob, this.qos.toString());
-            boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQos.getData()));
+            DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
+            boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
             this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
             this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
             flushResponse();
