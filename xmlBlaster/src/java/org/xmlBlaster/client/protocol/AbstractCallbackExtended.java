@@ -3,13 +3,14 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.8 2002/03/18 00:29:28 ruff Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.9 2002/05/01 21:40:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -20,17 +21,19 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended
 {
    private String ME = "AbstractCallbackExtended";
+   protected Global glob = null;
+
    /**
     * The constructor does nothing.
     */
-   public AbstractCallbackExtended ()
+   public AbstractCallbackExtended()
    {
    }
 
@@ -51,26 +54,26 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * @see I_CallbackExtended
     */
    public String update(String cbSessionId, String updateKeyLiteral, byte[] content,
-                      String updateQoSLiteral) throws XmlBlasterException
+                      String updateQosLiteral) throws XmlBlasterException
    {
       I_ClientPlugin secPlgn = getSecurityPlugin();
       if (secPlgn != null) {
          updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
          content = secPlgn.importMessage(content);
-         updateQoSLiteral = secPlgn.importMessage(updateQoSLiteral);
+         updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
       }
       try {
-         UpdateKey updateKey = new UpdateKey();
-         updateKey.init(updateKeyLiteral); // does the parsing
-         UpdateQoS updateQoS = new UpdateQoS(updateQoSLiteral); // does the parsing
+         UpdateKey updateKey = new UpdateKey(glob, updateKeyLiteral);
+         //updateKey.init(updateKeyLiteral); // does the parsing
+         UpdateQos updateQos = new UpdateQos(glob, updateQosLiteral); // does the parsing
 
          // Now we know all about the received message, dump it or do some checks
          if (Log.DUMP) Log.dump("UpdateKey", "\n" + updateKey.toXml());
          if (Log.DUMP) Log.dump("content", "\n" + new String(content));
-         if (Log.DUMP) Log.dump("UpdateQoS", "\n" + updateQoS.toXml());
-         if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQoS.getSender());
+         if (Log.DUMP) Log.dump("UpdateQos", "\n" + updateQos.toXml());
+         if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQos.getSender());
 
-         return update(cbSessionId, updateKey, content, updateQoS);
+         return update(cbSessionId, updateKey, content, updateQos);
       }
       catch (XmlBlasterException e) {
          Log.error(ME + ".update", "Parsing error: " + e.toString());
@@ -83,10 +86,10 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * <p />
     * We match it to the blocking variant. Implement this in your code on demand.
     */
-   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral)
    {
       try {
-         update(cbSessionId, updateKeyLiteral, content, updateQoSLiteral);
+         update(cbSessionId, updateKeyLiteral, content, updateQosLiteral);
       }
       catch (Throwable e) {
          Log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
@@ -152,6 +155,6 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * @see org.xmlBlaster.client.I_Callback
     */
    public abstract String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                               UpdateQoS updateQoS) throws XmlBlasterException;
+                               UpdateQos updateQos) throws XmlBlasterException;
 }
 

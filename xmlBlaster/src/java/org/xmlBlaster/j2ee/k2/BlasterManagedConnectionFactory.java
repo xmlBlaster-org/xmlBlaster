@@ -66,8 +66,8 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     private BlasterLogger logger;
     
     public BlasterManagedConnectionFactory() throws ResourceException{
-	// Start logger, will be turned of by default
-	logger = new BlasterLogger();
+        // Start logger, will be turned of by default
+        logger = new BlasterLogger();
     }
     
     /**
@@ -90,14 +90,14 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Create a new connection to manage in pool
      */
     public ManagedConnection createManagedConnection(Subject subject, 
-						     ConnectionRequestInfo info) throws ResourceException {
-	BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
-	// OK we got autentication stuff
-	BlasterManagedConnection mc = new BlasterManagedConnection
-	    (this, bc.name, bc.pwd);
-	// Set default logwriter according to spec
-	mc.setLogWriter(logWriter);
-	return mc;
+                                                     ConnectionRequestInfo info) throws ResourceException {
+        BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
+        // OK we got autentication stuff
+        BlasterManagedConnection mc = new BlasterManagedConnection
+            (this, bc.name, bc.pwd);
+        // Set default logwriter according to spec
+        mc.setLogWriter(logWriter);
+        return mc;
 
     }
 
@@ -109,27 +109,27 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
                                     Subject subject,
                                     ConnectionRequestInfo info) 
         throws ResourceException {
-	
-	// Get cred
-	BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
+        
+        // Get cred
+        BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
 
-	// Traverse the pooled connections and look for a match, return
-	// first found
+        // Traverse the pooled connections and look for a match, return
+        // first found
         Iterator connections = connectionSet.iterator();
         while (connections.hasNext()) {
             Object obj = connections.next();
-	    
-	    // We only care for connections of our own type
+            
+            // We only care for connections of our own type
             if (obj instanceof BlasterManagedConnection) {
-		// This is one from the pool
+                // This is one from the pool
                 BlasterManagedConnection mc = (BlasterManagedConnection) obj;
-		
-		// Check if we even created this on
+                
+                // Check if we even created this on
                 ManagedConnectionFactory mcf =
                     mc.getManagedConnectionFactory();
-		
-		// Only admit a connection if it has the same username as our
-		// asked for creds
+                
+                // Only admit a connection if it has the same username as our
+                // asked for creds
                 if (mc.getUserName().equals(bc.name) &&
                     mcf.equals(this)) {
                     return mc;
@@ -144,14 +144,14 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setLogWriter(PrintWriter out)
         throws ResourceException {
-	this.logWriter = out;
-	logger.setLogWriter(out);
+        this.logWriter = out;
+        logger.setLogWriter(out);
     }
     /**
      * 
      */
     public PrintWriter getLogWriter() throws ResourceException {
-	    return logWriter;    
+            return logWriter;    
     }
 
     public boolean equals(Object obj) {
@@ -187,60 +187,60 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Have to verify the others to. Don't forget to configure the server.
      */
     public void setClientProtocol(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("client.protocol", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("client.protocol", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getClientProtocol() {
-	return XmlBlasterProperty.get("client.protocol", (String)null);
+        return XmlBlasterProperty.get("client.protocol", (String)null);
     }
 
     /**
        Set the rmi hostname. Only when driver RMI.
      */
     public void setRmiHostname(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("rmi.hostname", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("rmi.hostname", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getRmiHostname() {
-	return XmlBlasterProperty.get("rmi.hostname", (String)null);
+        return XmlBlasterProperty.get("rmi.hostname", (String)null);
     }
 
     /**
        Set the rmi registry port. Only when driver RMI.
      */
     public void setRmiRegistryPort(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("rmi.registryPort", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("rmi.registryPort", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getRmiRegistryPort() {
-	return XmlBlasterProperty.get("rmi.registryPort", (String)null);
+        return XmlBlasterProperty.get("rmi.registryPort", (String)null);
     }
 
 
@@ -248,100 +248,100 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
        Set the rmi registry port. Only when driver RMI.
      */
     public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("rmi.AuthServer.url", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("rmi.AuthServer.url", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getRmiAuthserverUrl() {
-	return XmlBlasterProperty.get("rmi.AuthServer.url", (String)null);
+        return XmlBlasterProperty.get("rmi.AuthServer.url", (String)null);
     }
 
     /**
        Set the ior string. Only when driver IOR
      */
     public void setIor(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("ior", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("ior", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getIor() {
-	return XmlBlasterProperty.get("ior", (String)null);
+        return XmlBlasterProperty.get("ior", (String)null);
     }
 
      /**
        Set the ior string through a file. Only when driver IOR
      */
     public void setIorFile(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("iorFile", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("ior.file", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
 
      /**
        Set the hostName or IP where xmlBlaster is running. Only when driver IOR
      */
     public void setIorHost(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("iorHost", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("hostname", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getIorHost() {
-	return XmlBlasterProperty.get("iorHost", (String)null);
+        return XmlBlasterProperty.get("hostname", (String)null);
     }
 
     /**
        Set port where the internal xmlBlaster-http server publishes its Ior. Only when driver IOR
      */
     public void setIorPort(String arg) throws IllegalStateException {
-	try {
-	    XmlBlasterProperty.set("iorPort", arg);
-	}catch(org.jutils.JUtilsException ex) {
-	    IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-	    x.setLinkedException(ex);
-	    throw x;
-	}
+        try {
+            XmlBlasterProperty.set("port", arg);
+        }catch(org.jutils.JUtilsException ex) {
+            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+            x.setLinkedException(ex);
+            throw x;
+        }
     }
     
     /**
      * Null if not
      */
     public String getIorPort() {
-	return XmlBlasterProperty.get("iorPort", (String)null);
+        return XmlBlasterProperty.get("port", (String)null);
     }
     
     /**
      * Null if not
      */
     public String getIorFile() {
-	return XmlBlasterProperty.get("iorFile", (String)null);
+        return XmlBlasterProperty.get("ior.file", (String)null);
     }
     
     /**
@@ -356,12 +356,12 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      
      */
     public void setLogging(String loggingOn) {
-	logger.setLogging(new Boolean(loggingOn).booleanValue());
+        logger.setLogging(new Boolean(loggingOn).booleanValue());
     }
 
     //--- Api betwen mcf and mc
     PseudoUserPool getUserPool() {
-	return userPool;
+        return userPool;
     }
 } // BlasterManagedConnectionFactory
 

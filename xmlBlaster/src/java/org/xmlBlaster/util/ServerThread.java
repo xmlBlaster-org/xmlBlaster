@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.4 2002/04/26 08:41:58 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.5 2002/05/01 21:40:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -31,14 +31,14 @@ public class ServerThread extends Thread
     * <p />
     * The returned xmlBlaster handle allows to control more than one
     * xmlBlaster server simultaneously (on different ports).
-    * @param port Default port is 7609
+    * @param port Default port is 3412
     * @return the xmlBlaster handle, pass this to method stopXmlBlaster
     *         to shutdown the server again.
     */
    public static ServerThread startXmlBlaster(int serverPort)
    {
       String[] args = new String[4];
-      args[0] = "-iorPort";
+      args[0] = "-port";
       args[1] = "" + serverPort;
       args[2] = "-doBlocking";
       args[3] = "false";

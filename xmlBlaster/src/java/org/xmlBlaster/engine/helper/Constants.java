@@ -183,5 +183,9 @@ public class Constants
           return true;
       return false;
    }
+
+   /** For xml key attribute, "1.0" */
+   public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
+
 }
 

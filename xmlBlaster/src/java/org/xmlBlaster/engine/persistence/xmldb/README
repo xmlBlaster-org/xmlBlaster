@@ -1,4 +1,4 @@
-$Id: README,v 1.8 2002/04/30 16:41:38 ruff Exp $
+$Id: README,v 1.9 2002/05/01 21:40:08 ruff Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
@@ -224,7 +224,7 @@ See another example here:
 
         </content>
 
-           <qos> <!-- UpdateQoS -->
+           <qos> <!-- UpdateQos -->
               <state id='OK'/>
               <sender>
                  PublishFile

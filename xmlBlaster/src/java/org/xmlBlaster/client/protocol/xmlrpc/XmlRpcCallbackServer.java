@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.UpdateKey;
 
 import org.apache.xmlrpc.WebServer;
@@ -177,10 +177,10 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
    public String update(String cbSessionId, String updateKey, byte[] content,
-                       String updateQoS) throws XmlBlasterException
+                       String updateQos) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update(): sessionId: " + cbSessionId);
-      return client.update(cbSessionId, updateKey, content, updateQoS);
+      return client.update(cbSessionId, updateKey, content, updateQos);
    }
 
    /**
@@ -191,11 +191,11 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
    public void updateOneway(String cbSessionId, String updateKey, byte[] content,
-                       String updateQoS)
+                       String updateQos)
    {
       if (Log.CALL) Log.call(ME, "Entering updateOneway(): sessionId: " + cbSessionId);
       try {
-         client.updateOneway(cbSessionId, updateKey, content, updateQoS);
+         client.updateOneway(cbSessionId, updateKey, content, updateQos);
       }
       catch (Throwable e) {
          Log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());

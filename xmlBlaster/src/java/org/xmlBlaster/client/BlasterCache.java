@@ -3,7 +3,7 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.10 2000/10/30 22:56:10 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.11 2002/05/01 21:40:00 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -50,11 +50,11 @@ public class BlasterCache
    }
 
 
-   public boolean update(String subId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public boolean update(String subId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      return update(subId, updateKey.toXml(), content, updateQoS.toXml());
+      return update(subId, updateKey.toXml(), content, updateQos.toXml());
    }
-   public boolean update(String subId, String updateKey, byte[] content, String updateQoS)
+   public boolean update(String subId, String updateKey, byte[] content, String updateQos)
    {
       if(Log.CALL) Log.call(ME,"Entering update of BlasterCache for subId="+subId);
       Object obj = subscriptions.get( subId );
@@ -64,7 +64,7 @@ public class BlasterCache
       }
       else {
          Hashtable messages = (Hashtable) obj;
-         messages.put(subId, new MessageUnit(updateKey, content, updateQoS));
+         messages.put(subId, new MessageUnit(updateKey, content, updateQos));
          return true;
       }
    }

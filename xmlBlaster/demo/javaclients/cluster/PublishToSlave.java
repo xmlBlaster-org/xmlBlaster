@@ -56,7 +56,7 @@ public class PublishToSlave implements I_Callback
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                        UpdateQoS updateQoS)
+                        UpdateQos updateQos)
    {
       Log.info("PublishToSlave", "Received asynchronous message '" + updateKey.getOid() +
                                  "' from xmlBlaster");

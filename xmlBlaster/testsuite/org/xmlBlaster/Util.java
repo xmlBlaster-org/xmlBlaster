@@ -3,11 +3,12 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.5 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: Util.java,v 1.6 2002/05/01 21:40:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -27,7 +28,7 @@ public class Util
    public static String[] getOtherServerPorts(int serverPort)
    {
       String[] args = new String[8];
-      args[0] = "-iorPort";        // For all protocol we may use set an alternate server port
+      args[0] = "-port";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
       args[2] = "-socket.port";
       args[3] = "" + (serverPort-1);
@@ -44,8 +45,8 @@ public class Util
    public static String[] getDefaultServerPorts()
    {
       String[] argsDefault = new String[8];
-      argsDefault[0] = "-iorPort";
-      argsDefault[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
+      argsDefault[0] = "-port";
+      argsDefault[1] = "" + Global.XMLBLASTER_PORT;
       argsDefault[2] = "-socket.port";
       argsDefault[3] = "" + org.xmlBlaster.protocol.socket.SocketDriver.DEFAULT_SERVER_PORT;
       argsDefault[4] = "-rmi.registryPort";

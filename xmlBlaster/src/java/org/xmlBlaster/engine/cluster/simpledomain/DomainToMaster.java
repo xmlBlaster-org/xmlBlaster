@@ -12,6 +12,7 @@ import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
@@ -112,7 +113,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * @return "1.0" (this is the default version number)
     */
    public String[] getMimeExtended() {
-      String[] mimeExtended = { org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended }; // "1.0"
+      String[] mimeExtended = { Constants.DEFAULT_CONTENT_MIME_EXTENDED }; // "1.0"
       return mimeExtended;
    }
 

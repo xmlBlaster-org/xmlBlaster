@@ -9,7 +9,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 
 
 /**
@@ -68,9 +68,9 @@ public class XmlDBClient implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQoS updateQos)
+   public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQos updateQos)
     {
       results = new String(content);
       done = true;

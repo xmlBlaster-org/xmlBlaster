@@ -1,13 +1,14 @@
 /*------------------------------------------------------------------------------
-Name:      UpdateQoS.java
+Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.23 2002/04/30 16:41:36 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.1 2002/05/01 21:40:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,7 +23,7 @@ import org.xml.sax.Attributes;
  * <p />
  * Example:
  * <pre>
- *   &lt;qos> &lt;!-- UpdateQoS -->
+ *   &lt;qos> &lt;!-- UpdateQos -->
  *     &lt;state id='OK'/>
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;subscriptionId>subscriptionId:__sys__TotalMem&lt;/subscriptionId>
@@ -38,9 +39,9 @@ import org.xml.sax.Attributes;
  *  &lt;/qos>
  * </pre>
  */
-public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
+public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 {
-   private String ME = "UpdateQoS";
+   private String ME = "UpdateQos";
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inState = false;
@@ -83,10 +84,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a update() call.
     */
-   public UpdateQoS(String xmlQoS_literal) throws XmlBlasterException
+   public UpdateQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Creating UpdateQoS(" + xmlQoS_literal + ")");
-      //if (Log.CALL) Log.call(ME, "Creating UpdateQoS()");
+      if (Log.CALL) Log.call(ME, "Creating UpdateQos(" + xmlQoS_literal + ")");
+      //if (Log.CALL) Log.call(ME, "Creating UpdateQos()");
       init(xmlQoS_literal);
    }
 
@@ -433,7 +434,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<qos> <!-- UpdateQoS -->");
+      sb.append(offset).append("<qos> <!-- UpdateQos -->");
       if (state != null) {
          sb.append(offset).append("   <state>").append(state).append("</state>");
       }
@@ -541,10 +542,12 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    *  For testing invoke: java org.xmlBlaster.client.UpdateQoS
+    *  For testing invoke: java org.xmlBlaster.client.UpdateQos
     */
    public static void main( String[] args ) throws XmlBlasterException
    {
+      Global glob = new Global(args);
+
       String xml = "<qos>\n" +
                    "   <state id='OK'/>\n" +
                    "   <sender>\n" +
@@ -562,10 +565,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <route><node id='heron'/></route>\n" +
                    "</qos>";
 
-      UpdateQoS up = new UpdateQoS(xml);
+      UpdateQos up = new UpdateQos(glob, xml);
       Log.info("Test", "#1\n" + up.toXml());
 
-      up = new UpdateQoS(up.toXml());
+      up = new UpdateQos(glob, up.toXml());
       Log.exit("Test", "#2\n" + up.toXml());
    }
 }

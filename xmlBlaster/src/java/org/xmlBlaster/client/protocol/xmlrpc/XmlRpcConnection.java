@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.22 2002/04/26 21:31:48 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.23 2002/05/01 21:40:03 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -23,7 +23,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;

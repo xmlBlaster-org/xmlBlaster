@@ -130,9 +130,9 @@ public class BlasterManagedConnection implements ManagedConnection {
 
               CORBA:
               -ior OR string is directly given
-              -iorFile IOR string is given through a file</li>
-              -iorHost hostName or IP where xmlBlaster is running</li>
-              -iorPort where the internal xmlBlaster-http server publishes its Ior
+              -ior.file IOR string is given through a file</li>
+              -hostname host name or IP where xmlBlaster is running</li>
+              -port where the internal xmlBlaster-http server publishes its Ior
 
               from/to system:
               -org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
@@ -143,7 +143,7 @@ public class BlasterManagedConnection implements ManagedConnection {
             // Test with env
             /*
             String rmiEnv[] = new String[] {"-client.protocol","RMI"};
-            String orbEnv[] = new String[] {"-client.protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-iorHost","151.177.109.74"};
+            String orbEnv[] = new String[] {"-client.protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-hostname","151.177.109.74"};
             */
             
         // Set up physical pipe

@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.24 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.25 2002/05/01 21:39:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -15,11 +15,10 @@ import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -227,14 +226,14 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       String msgContent = new String(content);
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
       String text = df.format(new java.util.Date());
-      text += "[" + updateQoS.getSender() +"]: ";
+      text += "[" + updateQos.getSender() +"]: ";
       text += msgContent;
       appendOutput(text +System.getProperty("line.separator"));
       Log.info(ME, "CallBack\n");

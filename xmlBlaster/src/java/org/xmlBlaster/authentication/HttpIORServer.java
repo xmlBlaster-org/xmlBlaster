@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.12 2001/11/19 15:21:44 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.13 2002/05/01 21:40:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -19,15 +19,16 @@ import java.io.*;
  * Delivering the Authentication Service IOR over HTTP.
  * <p />
  * This little HTTP server is always running in the xmlBlaster on the
- * default port 7609.<br />
+ * default port 3412.<br />
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  * <p />
- * You may specify on command line -iorPort <port> and -iorHost <host>
+ * You may specify on command line -port <port> and -hostname <host>
  * to choose another port or to choose a server IP address on
  * multi homed hosts.
- *
- * @version $Revision: 1.12 $
+ * <p />
+ * Change code to be a generic HTTP server, not only for CORBA bootstrapping
+ * @version $Revision: 1.13 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -149,7 +150,7 @@ class HandleRequest extends Thread
    /**
     * TODO: The HTTP/1.1 spec states that we should return the "Date:" header as well.
     * <p />
-    * Test with "telnet <host> 7609"<br />
+    * Test with "telnet <host> 3412"<br />
     *   GET /AuthenticationService.ior HTTP/1.0
     */
    public void run()

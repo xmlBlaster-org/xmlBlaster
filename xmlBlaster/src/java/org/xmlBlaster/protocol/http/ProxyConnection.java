@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.30 2002/04/30 16:41:39 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.31 2002/05/01 21:40:11 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -35,7 +35,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
@@ -89,13 +89,13 @@ public class ProxyConnection implements I_Callback
     * <p />
     * This sends the message to the hidden frame in the browser
     */
-   public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.trace(ME,"----------Update:"+updateKey.getUniqueKey());
       String[] s_arr = new String[3];
       s_arr[0] = updateKey.toString();
       s_arr[1] = new String(content);
-      s_arr[2] = updateQoS.toString();
+      s_arr[2] = updateQos.toString();
       if(interceptor != null) {
          s_arr = interceptor.update(s_arr[0], s_arr[1], s_arr[2]);
       }

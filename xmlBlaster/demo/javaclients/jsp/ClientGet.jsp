@@ -15,7 +15,7 @@
    <%@ page import = "org.xmlBlaster.client.I_Callback" %>
    <%@ page import = "org.xmlBlaster.util.ConnectQos" %>
    <%@ page import = "org.xmlBlaster.client.UpdateKey" %>
-   <%@ page import = "org.xmlBlaster.client.UpdateQoS" %>
+   <%@ page import = "org.xmlBlaster.client.UpdateQos" %>
    <%@ page import = "org.xmlBlaster.client.GetKeyWrapper" %>
    <%@ page import = "org.xmlBlaster.client.GetQosWrapper" %>
    <%@ page import = "org.xmlBlaster.util.XmlBlasterException" %>

@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.6 2002/04/26 21:33:28 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.7 2002/05/01 21:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -70,12 +70,12 @@ public class ClientSubDispatch implements I_Callback
          SubscribeKeyWrapper key = new SubscribeKeyWrapper("//DispatchTest", "XPATH");
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
-               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   Log.info(ME, "Receiving message with specialized update() #1 ...");
                   numReceived1++;
                   Log.plain("UpdateKey", updateKey.toXml());
                   Log.plain("content", (new String(content)).toString());
-                  Log.plain("UpdateQoS", updateQoS.toXml());
+                  Log.plain("UpdateQos", updateQos.toXml());
                   return "";
                }
             });
@@ -84,12 +84,12 @@ public class ClientSubDispatch implements I_Callback
          Log.info(ME, "Subscribing #2 for anonymous callback class using XPath syntax ...");
          key = new SubscribeKeyWrapper("A message id");
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
-               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   Log.info(ME, "Receiving message with specialized update() #2 ...");
                   numReceived2++;
                   Log.plain("UpdateKey", updateKey.toXml());
                   Log.plain("content", (new String(content)).toString());
-                  Log.plain("UpdateQoS", updateQoS.toXml());
+                  Log.plain("UpdateQos", updateQos.toXml());
                   return "";
                }
             });
@@ -159,11 +159,11 @@ public class ClientSubDispatch implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.error(ME, "Received unexpected asynchronous callback-update from xmlBlaster from publisher " + updateQoS.getSender() + ":");
+      Log.error(ME, "Received unexpected asynchronous callback-update from xmlBlaster from publisher " + updateQos.getSender() + ":");
       return "";
    }
 

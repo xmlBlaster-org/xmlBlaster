@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.2 2002/03/20 16:39:42 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.3 2002/05/01 21:39:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlNotPortable;
@@ -217,12 +217,12 @@ public class Transceiver implements I_Callback
 
 
    public String update(java.lang.String loginName, UpdateKey updateKey,
-                   byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
+                   byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
       Log.trace(ME, "update called, content: " + new String(content));
       Log.trace(ME, "update called, loginName: " + loginName);
       Log.trace(ME, "update called, updateKey: " + updateKey);
-      Log.trace(ME, "update called, updateQoS: " + updateQoS);
+      Log.trace(ME, "update called, updateQos: " + updateQos);
       XmlToDom keyDom = new XmlToDom(updateKey.toString());
       NodeList nodes = keyDom.getXmlDoc().getDocumentElement().getElementsByTagName("svg");
       int length = nodes.getLength();

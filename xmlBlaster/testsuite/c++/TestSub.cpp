@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.7 2002/04/30 16:42:00 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.8 2002/05/01 21:40:17 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -226,18 +226,18 @@ private:
    string update(const string &sessionId,
                UpdateKey &updateKey,
                void *content, long contentSize,
-               UpdateQoS &updateQoS) {
+               UpdateQos &updateQos) {
       log_.info(me(), string("Receiving update of message oid=") +
                 updateKey.getUniqueKey() + "...");
       numReceived_ ++;
 
-      if (senderName_ != updateQoS.getSender()) {
+      if (senderName_ != updateQos.getSender()) {
          log_.error(me(), "Wrong Sender");
          assert(0);
       }
-      if (subscribeOid_ != updateQoS.getSubscriptionId()) {
+      if (subscribeOid_ != updateQos.getSubscriptionId()) {
          log_.error(me(), string("engine.qos.update.subscriptionId: ")
-                    + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQoS.getSubscriptionId());
+                    + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQos.getSubscriptionId());
          //assert(0);
       }
       if (publishOid_ != updateKey.getUniqueKey()) {
@@ -288,7 +288,7 @@ private:
       CorbaConnection::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestSub -iorHost myHost.myCompany.com -iorPort 7609 -trace true");
+      log_.plain(me(), "   TestSub -hostname myHost.myCompany.com -port 3412 -trace true");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };

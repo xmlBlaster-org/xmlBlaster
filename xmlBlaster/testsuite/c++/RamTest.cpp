@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.4 2002/01/31 21:45:00 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.5 2002/05/01 21:40:17 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -246,7 +246,7 @@ public:
       CorbaConnection::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   RamTest -iorHost myHostName");
+      log_.plain(me(), "   RamTest -hostname myHostName");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };

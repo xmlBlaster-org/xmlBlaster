@@ -3,11 +3,12 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.20 2002/03/20 13:05:19 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.21 2002/05/01 21:40:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,12 +23,12 @@ import org.xml.sax.helpers.*;
  * <p />
  * A typical <b>update</b> key could look like this:<br />
  * <pre>
- *     &lt;key oid='4711' contentMime='text/xml'>
- *        &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
- *           &lt;DRIVER id='FileProof' pollingFreq='10'>
- *           &lt;/DRIVER>
- *        &lt;/AGENT>
- *     &lt;/key>
+ * &lt;key oid='4711' contentMime='text/xml' contentMimeExtended='1.2' domain='Administration'>
+ *    &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
+ *       &lt;DRIVER id='FileProof' pollingFreq='10'>
+ *       &lt;/DRIVER>
+ *    &lt;/AGENT>
+ * &lt;/key>
  * </pre>
  * <br />
  * Note that the AGENT and DRIVER tags are application know how, which you have to supply.<br />
@@ -45,6 +46,7 @@ import org.xml.sax.helpers.*;
 public class UpdateKey extends SaxHandlerBase
 {
    private String ME = "UpdateKey";
+   private final Global glob;
 
    protected boolean inKey = false;     // parsing inside <key> ? </key>
 
@@ -57,14 +59,19 @@ public class UpdateKey extends SaxHandlerBase
    /** value from attribute <key oid="" contentMimeExtended="..."> */
    protected String contentMimeExtended = "";
 
+   /** value from attribute <key oid="" domain="..."> */
+   protected String domain = "";
+
 
    /**
-    * Constructs an un initialized UpdateKey object.
-    * You need to call the init() method to parse the XML string.
+    * Constructs an initialized UpdateKey object.
+    * @param xmlKey The ASCII XML key to parse
     */
-   public UpdateKey()
+   public UpdateKey(Global glob, String xmlKey) throws XmlBlasterException
    {
+      this.glob = glob;
       if (Log.CALL) Log.trace(ME, "Creating new UpdateKey");
+      init(xmlKey); // does the parsing
    }
 
 
@@ -128,6 +135,15 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
+    * The cluster domain. 
+    */
+   public String getDomain()
+   {
+      return domain;
+   }
+
+
+   /**
     * Start element callback, does handling of tag &lt;key> and its attributes.
     * <p />
     * You may include this into your derived startElement() method like this:<br />
@@ -154,6 +170,9 @@ public class UpdateKey extends SaxHandlerBase
                      contentMime = "text/plain";
                }
                if( attrs.getQName(i).equalsIgnoreCase("contentMimeExtended") ) {
+                  contentMimeExtended = attrs.getValue(i).trim();
+               }
+               if( attrs.getQName(i).equalsIgnoreCase("domain") ) {
                   contentMimeExtended = attrs.getValue(i).trim();
                }
             }
@@ -248,6 +267,7 @@ public class UpdateKey extends SaxHandlerBase
       sb.append(offset).append("<key oid='").append(getUniqueKey()).append("'");
       sb.append(" contentMime='").append(getContentMime()).append("'");
       sb.append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
+      sb.append(" domain='").append(getDomain()).append("'");
       sb.append(">\n");
 
       sb.append(offset + "</key>\n");

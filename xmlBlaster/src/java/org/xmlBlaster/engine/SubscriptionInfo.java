@@ -14,7 +14,6 @@ import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -302,7 +301,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * Accessing the unique subscription id from method subscribe(), which was the reason for this SubscriptionInfo
-    * @return The subscription id which is used in updateQoS - $lt;subscritpionId>
+    * @return The subscription id which is used in updateQos - $lt;subscritpionId>
     */
    public final String getSubSourceUniqueKey() throws XmlBlasterException
    {

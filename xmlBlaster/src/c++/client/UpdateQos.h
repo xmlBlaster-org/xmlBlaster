@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-Name:      UpdateQoS.h
+Name:      UpdateQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
@@ -26,12 +26,12 @@ namespace org { namespace xmlBlaster {
     * If you are a c++ client you may use this class to parse the QoS 
     * argument.
     */
-   class UpdateQoS : public util::XmlQoSBase {
+   class UpdateQos : public util::XmlQoSBase {
       
    private:
       
       string me() {
-            return "UpdateQoS";
+            return "UpdateQos";
       }
       
       
@@ -57,11 +57,11 @@ namespace org { namespace xmlBlaster {
        * Constructs the specialized quality of service object for a 
        * update() call.
        */
-      UpdateQoS(const string &xmlQoS_literal, int args=0, char *argc[]=0) 
+      UpdateQos(const string &xmlQoS_literal, int args=0, char *argc[]=0) 
          : util::XmlQoSBase(args, argc) {
-         if (log_.CALL) log_.call(me(), string("Creating UpdateQoS(") + 
+         if (log_.CALL) log_.call(me(), string("Creating UpdateQos(") + 
                                     xmlQoS_literal + ")");
-         //if (Log.CALL) Log.call(ME, "Creating UpdateQoS()");
+         //if (Log.CALL) Log.call(ME, "Creating UpdateQos()");
          inState_          = false;
          state_            = "";
          inSender_         = false;
@@ -207,7 +207,7 @@ namespace org { namespace xmlBlaster {
       string printOn(const string &extraOffset) {
          string sb, offset = "\n   ";
          offset += extraOffset;
-         sb = offset + "<qos>"; //  <!-- UpdateQoS -->";
+         sb = offset + "<qos>"; //  <!-- UpdateQos -->";
          if (state_ != "") {
             sb += offset + "   <state id='" + state_ + "'/>";
          }

@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.4 2002/04/23 15:07:30 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.5 2002/05/01 21:40:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
@@ -226,7 +226,7 @@ public class MsgQueueEntry
    private String getUpdateQos(int index, int max, int redeliver) throws XmlBlasterException
    {
       String subscriptionId = (subscriptionInfo == null) ? null : subscriptionInfo.getUniqueKey();
-      return UpdateQoS.toXml(subscriptionId, msgUnitWrapper,
+      return UpdateQos.toXml(subscriptionId, msgUnitWrapper,
                           index, getMsgQueue().size()+max, Constants.STATE_OK, redeliver, glob.getId());
    }
 

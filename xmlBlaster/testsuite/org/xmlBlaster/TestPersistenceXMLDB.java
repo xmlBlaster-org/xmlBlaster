@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.3 2002/03/18 00:31:22 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.4 2002/05/01 21:40:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,9 +13,10 @@ import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -123,8 +124,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
       ServerThread.stopXmlBlaster(serverThread);
       // reset to default server port (necessary if other tests follow in the same JVM).
       String[] args = new String[2];
-      args[0] = "-iorPort";
-      args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
+      args[0] = "-port";
+      args[1] = "" + Global.XMLBLASTER_PORT;
       try {
          XmlBlasterProperty.addArgs2Props(args);
       } catch(org.jutils.JUtilsException e) {
@@ -269,9 +270,9 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       //Log.info(ME, "Receiving update of a message ...");
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
@@ -280,9 +281,9 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
 
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQoS", updateQoS.toXml());
+      Log.plain("UpdateQos", updateQos.toXml());
 
-      assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";

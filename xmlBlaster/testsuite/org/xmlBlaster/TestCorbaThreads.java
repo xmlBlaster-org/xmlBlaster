@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.11 2002/03/18 00:31:22 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.12 2002/05/01 21:40:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -151,12 +151,12 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    /**
     * These update() methods are enforced by I_CallbackExtended. 
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
       return "";
    }
-   public String update(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   public String update(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
       return "";
@@ -168,7 +168,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
       return retArr;
    }
-   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
    }

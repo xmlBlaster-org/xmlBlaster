@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.5 2002/04/24 06:50:16 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.6 2002/05/01 21:40:05 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -180,7 +181,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
                log.error(ME, getPluginPropertyName(type, version) + ": Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
-               mimeExtended[ii] = org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended;
+               mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
          }
 
          for (int ii = 0; ii < mime.length; ii++) {

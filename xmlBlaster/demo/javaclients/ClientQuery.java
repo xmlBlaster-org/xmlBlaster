@@ -3,13 +3,14 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.17 2001/09/30 13:49:50 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.18 2002/05/01 21:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -37,11 +38,8 @@ public class ClientQuery
    public ClientQuery(String args[])
    {
       // Initialize command line argument handling (this is optional)
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         usage(e.toString());
-      }
+      Global glob = new Global();
+      if (glob.init(args) != 0) usage("Aborted");
 
       try {
          String loginName = Args.getArg(args, "-name", ME); // check if parameter -name <userName> is given at startup of client
@@ -65,8 +63,7 @@ public class ClientQuery
             msgArr = con.get(xmlKey, "<qos></qos>");
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
-               UpdateKey updateKey = new UpdateKey();
-               updateKey.init(msgArr[ii].xmlKey);
+               UpdateKey updateKey = new UpdateKey(glob, msgArr[ii].xmlKey);
                Log.info("UpdateKey", "\n" + updateKey.toXml());
                Log.info("content", "\n" + new String(msgArr[ii].content) + "\n");
             }

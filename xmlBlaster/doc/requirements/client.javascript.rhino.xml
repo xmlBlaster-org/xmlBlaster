@@ -107,7 +107,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var pos = buf.indexOf("translate(");
       var x   = dx;
       var y   = dy;
-	
+        
       if (pos > -1) {
          buf = buf.substring(pos+10, buf.length());
          var A = new Array();
@@ -141,7 +141,7 @@ importPackage(Packages.org.xmlBlaster.util);
 
       args = new Array(2);
       // you can set here the command line to pass to XmlBlasterConnection
-      args[0] = new String("-iorHost");
+      args[0] = new String("-hostname");
       args[1] = new String("localhost");
       xmlBlaster = new XmlBlasterConnection(args);
 
@@ -194,7 +194,7 @@ importPackage(Packages.org.xmlBlaster.util);
    <author>laghi@swissinfo.org</author>
    <effort>1</effort>
    <date>2001 04 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>Should even be tested with mozilla</comment>

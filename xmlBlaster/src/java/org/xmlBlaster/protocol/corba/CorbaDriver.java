@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.26 2002/04/26 21:31:53 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.27 2002/05/01 21:40:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -29,6 +29,24 @@ import org.omg.CosNaming.NameComponent;
 
 /**
  * CorbaDriver class to invoke the xmlBlaster server using CORBA.
+ * Note the IANA assigned official CORBA ports:
+ * <pre>
+ *  corba-iiop      683/tcp    CORBA IIOP 
+ *  corba-iiop      683/udp    CORBA IIOP 
+ *  corba-iiop-ssl  684/tcp    CORBA IIOP SSL
+ *  corba-iiop-ssl  684/udp    CORBA IIOP SSL
+ *  
+ *  corbaloc        2809/tcp   CORBA LOC
+ *  corbaloc        2809/udp   CORBA LOC
+ * </pre>
+ * We use the following CORBA specific ports:
+ * <pre>
+ *   7608 as the default port to look for a naming service
+ *   3412 is the xmlBlaster assigned port, used for bootstrapping (optional)
+ * </pre>
+ * JacORB CORBA socket:<br />
+ *  org.jacorb.util.Environment.getProperty("OAIAddr");<br />
+ *  org.jacorb.util.Environment.getProperty("OAPort");
  */
 public class CorbaDriver implements I_Driver
 {
@@ -39,8 +57,6 @@ public class CorbaDriver implements I_Driver
    private NamingContextExt nc = null;
    private NameComponent [] name = null;
    private String iorFile = null;
-   /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
-   public static final int DEFAULT_HTTP_PORT = 7609;
    /** The singleton handle for this xmlBlaster server */
    private AuthServerImpl authServer = null;
    /** The singleton handle for this xmlBlaster server */
@@ -103,11 +119,10 @@ public class CorbaDriver implements I_Driver
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
          // authRef = rootPOA.servant_to_reference(authServant);
 
-
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
 
          // 1) Write IOR to given file
-         String iorFile = XmlBlasterProperty.get("iorFile", (String)null);
+         String iorFile = glob.getProperty().get("ior.file", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
@@ -115,16 +130,15 @@ public class CorbaDriver implements I_Driver
             Log.info(ME, "Published AuthServer IOR to file " + iorFile);
          }
 
-         // 2) Publish IOR on given port (switch off this feature with '-iorPort 0'
-         int iorPort = XmlBlasterProperty.get("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
-         if (iorPort > 0) {
-            String ip_addr = getLocalIP();
-            httpIORServer = new HttpIORServer(ip_addr, iorPort, orb.object_to_string(authRef));
-            Log.info(ME, "Published AuthServer IOR on " + ip_addr + ":" + iorPort);
+         // 2) Publish IOR on given port (switch off this feature with '-port 0'
+         if (glob.getBootstrapAddress().getPort() > 0) {
+            // TODO: Start this HTTP server in engine.Global and not in the corba driver!!!
+            httpIORServer = new HttpIORServer(glob.getBootstrapAddress().getHostname(), glob.getBootstrapAddress().getPort(), orb.object_to_string(authRef));
+            Log.info(ME, "Published AuthServer IOR on " + glob.getBootstrapAddress().getAddress());
          }
 
          // 3) Publish IOR to a naming service
-         boolean useNameService = XmlBlasterProperty.get("ns", true);  // default is to publish myself to the naming service
+         boolean useNameService = glob.getProperty().get("ns", true);  // default is to publish myself to the naming service
          if (useNameService) {
 
             /*
@@ -168,11 +182,11 @@ public class CorbaDriver implements I_Driver
             catch (XmlBlasterException e) {
                Log.warn(ME + ".NoNameService", e.reason);
                nc = null;
-               if (iorPort > 0) {
+               if (glob.getBootstrapAddress().getPort() > 0) {
                   Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
-                  Log.info(ME, "You don't need the naming service, i'll switch to iorFile = " + iorFile);
+                  Log.info(ME, "You don't need the naming service, i'll switch to ior.file = " + iorFile);
                }
                else {
                   usage();
@@ -180,7 +194,7 @@ public class CorbaDriver implements I_Driver
                }
             } catch (org.omg.CORBA.COMM_FAILURE e) {
                nc = null;
-               if (iorPort > 0) {
+               if (glob.getBootstrapAddress().getPort() > 0) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
                                "\nYou don't need the naming service, i'll switch to builtin http IOR download");
@@ -188,7 +202,7 @@ public class CorbaDriver implements I_Driver
                else if (iorFile != null) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
+                               "\nYou don't need the naming service, i'll switch to ior.file = " + iorFile);
                }
                else {
                   usage();
@@ -197,7 +211,7 @@ public class CorbaDriver implements I_Driver
                                "\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
                }
             }
-         }
+         } // if useNameService
       }
       catch (org.omg.CORBA.COMM_FAILURE e) {
          throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
@@ -249,8 +263,21 @@ public class CorbaDriver implements I_Driver
 
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
+         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", glob.getProperty().get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
+
+         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", glob.getProperty().get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
+         
+         String hostname = glob.getProperty().get("ior.hostname", (String)null);
+         if (hostname != null) {
+            JdkCompatible.setSystemProperty("OAIAddr", hostname);
+            if (Log.TRACE) Log.trace(ME, "Using ior.hostname=" + System.getProperty("OAIAddr"));
+         }
+         
+         int port = glob.getProperty().get("ior.port", 0);
+         if (port > 0) {
+            JdkCompatible.setSystemProperty("OAPort", ""+port);
+            if (Log.TRACE) Log.trace(ME, "Using ior.port=" + System.getProperty("OAPort"));
+         }
       }
       if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
       if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
@@ -260,7 +287,7 @@ public class CorbaDriver implements I_Driver
       //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
       // and xmlBlaster will find it automatically if on same host
       if (System.getProperty("ORBInitRef.NameService") == null) {
-         JdkCompatible.setSystemProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
          Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
       }
    }
@@ -438,30 +465,6 @@ public class CorbaDriver implements I_Driver
       return corbaUnitArr;
    }
 
-
-   /**
-    * The IP address where the HTTP server publishes the IOR.
-    * <p />
-    * You can specify the local IP address with e.g. -iorHost 192.168.10.1
-    * on command line, useful for multi-homed hosts.
-    *
-    * @return The local IP address, defaults to '127.0.0.1' if not known.
-    */
-   public String getLocalIP()
-   {
-      String ip_addr = XmlBlasterProperty.get("iorHost", (String)null);
-      if (ip_addr == null) {
-         try {
-            ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
-         } catch (java.net.UnknownHostException e) {
-            Log.warn(ME, "Can't determine local IP address, try e.g. '-iorHost 192.168.10.1' on command line: " + e.toString());
-         }
-         if (ip_addr == null) ip_addr = "127.0.0.1";
-      }
-      return ip_addr;
-   }
-
-
    /**
     * Command line usage.
     */
@@ -469,16 +472,17 @@ public class CorbaDriver implements I_Driver
    {
       String text = "\n";
       text += "CorbaDriver options:\n";
-      text += "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).\n";
-      text += "   -iorHost            IP address where the builtin http server publishes its AuthServer IOR (useful for multihomed hosts).\n";
-      text += "   -iorPort            Port number where the builtin http server publishes its AuthServer IOR.\n";
-      text += "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
+      text += "   -ior.file           Specify a file where to dump the IOR of the AuthServer (for client access).\n";
+      text += "   -hostname           IP address where the builtin http server publishes its AuthServer IOR (useful for multihomed hosts).\n";
+      text += "   -port               Port number where the builtin http server publishes its AuthServer IOR.\n";
+      text += "                       Default is port "+Global.XMLBLASTER_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
       text += "                       Default is to publish the IOR to a naming service.\n";
+      text += "   -ior.hostname       Allows to set the corba server IP address for multi-homed hosts.\n";
+      text += "   -ior.port           Allows to set the corba server port number.\n";
       text += " For JacORB only:\n";
-      text += "   java -DOAIAddr=<ip> Allows to set the corba server IP address\n";
-      text += "                       for multi-homed hosts\n";
-      text += "   java -DOAPort=<nr>  Allows to set the corba server port number\n";
+      text += "   java -DOAIAddr=<ip> Use '-ior.hostname'\n";
+      text += "   java -DOAPort=<nr>  Use '-ior.port'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "\n";
       return text;

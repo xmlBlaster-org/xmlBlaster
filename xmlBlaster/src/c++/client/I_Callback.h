@@ -10,7 +10,7 @@ Comment:   Helper to easy get the callback messages
 
 #include <string>
 #include <client/UpdateKey.h>
-#include <client/UpdateQoS.h>
+#include <client/UpdateQos.h>
 #define CLIENT_HEADER generated/xmlBlaster    // xmlBlaster.h
 #include <util/CompatibleCorba.h>
 using namespace std;
@@ -23,7 +23,7 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.9 $
+    * @version $Revision: 1.10 $
     * @author $Author: ruff $
     */
    class I_Callback {
@@ -52,7 +52,7 @@ namespace org { namespace xmlBlaster {
       virtual string update(const string &sessionId,
                           UpdateKey &updateKey, 
                           void *content, long contentSize, 
-                          UpdateQoS &updateQoS) = 0;
+                          UpdateQos &updateQos) = 0;
    };
 }} // namespace
 

@@ -4,13 +4,13 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.8 2002/04/30 16:42:45 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.9 2002/05/01 21:39:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
@@ -61,9 +61,9 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
       String[] ret = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];
-         XmlKeyBase xmlKey = null;
+         UpdateKey xmlKey = null;
          try {
-            xmlKey = new XmlKeyBase(null, msgUnit.xmlKey);
+            xmlKey = new UpdateKey(null, msgUnit.xmlKey);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }

@@ -10,7 +10,6 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Timeout;
@@ -542,7 +541,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
 
-               // Check with MsgQueueEntry.getUpdateQoS() !!!
+               // Check with MsgQueueEntry.getUpdateQos() !!!
                StringBuffer buf = new StringBuffer();
                buf.append("\n<qos>\n");
                buf.append("   <state id='").append(Constants.STATE_OK).append("'/>\n");    // OK | EXPIRED | ERASED
@@ -871,7 +870,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * <ul>
     * <li>PubSub style:<br />
     * If MessageUnit is created from subscribe or the MessageUnit is new, we need to add the
-    * DOM here once; XmlKeyBase takes care of that</li>
+    * DOM here once; XmlKey takes care of that</li>
     * <li>PTP style:<br />
     * Send message directly to all destinations, ignore if same message is known from Pub/Sub style</li>
     * </ul>
@@ -882,7 +881,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * so this covers the SQL'ish INSERT and UPDATE.
     * <p />
     * If MessageUnit is created from subscribe or MessageUnit is new, the key meta
-    * data are added to the big DOM tree once (XmlKeyBase takes care of that).
+    * data are added to the big DOM tree once (XmlKey takes care of that).
     * <p />
     * See <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl">xmlBlaster.idl</a>,
     * the CORBA access interface on how clients can access xmlBlaster.

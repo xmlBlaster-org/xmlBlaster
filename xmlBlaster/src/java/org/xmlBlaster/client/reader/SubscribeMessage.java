@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.13 2002/04/30 16:41:37 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.14 2002/05/01 21:40:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -13,7 +13,6 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -164,7 +163,7 @@ public class SubscribeMessage implements I_Callback
    }
 
 
-   public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.plain(ME, "");
       Log.plain(ME, "============= START " + updateKey.getUniqueKey() + " =======================");
@@ -175,7 +174,7 @@ public class SubscribeMessage implements I_Callback
       Log.plain(ME, "<content>");
       Log.plain(ME, new String(content));
       Log.plain(ME, "</content>");
-      Log.plain(ME, updateQoS.toString());
+      Log.plain(ME, updateQos.toString());
       Log.plain(ME, "</xmlBlaster>");
       Log.plain(ME, "============= END " + updateKey.getUniqueKey() + " =========================");
       Log.plain(ME, "");

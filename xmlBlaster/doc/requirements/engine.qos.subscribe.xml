@@ -29,7 +29,7 @@
 
       // subscribe with an anonymous update() method only for this subscription
       con.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
-            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                Log.info(ME, "Receiving message with specialized update() ...");
             }
          });
@@ -39,7 +39,7 @@
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2001 08 30</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -44,7 +44,7 @@ a) Start the xmlBlaster server
 
 b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
 
-   TestGet -iorHost <HostWhereXmlBlasterRuns>
+   TestGet -hostname <HostWhereXmlBlasterRuns>
 
 
 Using POA, passing IOR by file:
@@ -52,12 +52,12 @@ Using POA, passing IOR by file:
 
 a) Start the xmlBlaster server
 
-   java org.xmlBlaster.Main -iorFile /tmp/ior.dat
+   java org.xmlBlaster.Main -ior.file /tmp/ior.dat
 
 
 b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
 
-   TestGet -iorFile /tmp/ior.dat
+   TestGet -ior.file /tmp/ior.dat
 
 
 Using POA (clientPOA.cpp) with a naming service:

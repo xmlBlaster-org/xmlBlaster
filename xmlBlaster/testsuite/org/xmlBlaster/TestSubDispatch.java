@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.5 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.6 2002/05/01 21:40:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -125,12 +125,12 @@ public class TestSubDispatch extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
-               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   Log.info(ME, "Receiving message with specialized update() ...");
                   numReceived += 1;
 
-                  assertEquals("Wrong sender", senderName, updateQoS.getSender());
-                  assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
+                  assertEquals("Wrong sender", senderName, updateQos.getSender());
+                  assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
                   assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
                   assertEquals("Message content is corrupted", new String(senderContent), new String(content));
                   assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
@@ -198,9 +198,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
       return "";

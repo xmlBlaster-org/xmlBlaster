@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.78 2002/04/26 21:31:46 ruff Exp $
+Version:   $Id: Main.java,v 1.79 2002/05/01 21:39:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -35,18 +35,8 @@ import java.lang.reflect.Method;
 /**
  * Main class to invoke the xmlBlaster server.
  * <p />
- * Command line parameters supported are for example (CORBA driver):
- * <p />
- * <ul>
- *    <li><code>-iorFile 'file name'   </code>default is no dumping of IOR<br />
- *        Specify a file where to dump the IOR of the AuthServer (for client access)
- *    </li>
- *    <li><code>-iorPort 'port number'   </code>default is port 7609<br />
- *        Specify a port number where the builtin http server publishes its AuthServer IOR<br />
- *        the port 0 switches this feature off
- *    </li>
- * </ul>
- * Please invoke with "-?" to get a more complete list of the supported parameters.
+ * There are many command line parameters supported
+ * please invoke with "-?" to get a complete list of the supported parameters.
  * <br />
  * Every parameter may be set in the xmlBlaster.property file as a system property or at the command line,
  * the command line is strongest, xmlBlaster.properties weakest. The leading "-" from the command line key
@@ -54,9 +44,9 @@ import java.lang.reflect.Method;
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
- * <code>   java org.xmlBlaster.Main -iorPort 8088</code>
+ * <code>   java org.xmlBlaster.Main -port 3412</code>
  * <p />
- * <code>   java org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
+ * <code>   java org.xmlBlaster.Main -ior.file /tmp/XmlBlaster_Ref</code>
  * <p />
  * <code>   java org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
  * <p />
@@ -496,8 +486,8 @@ public class Main
       Log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
-      Log.plain(ME, "   java org.xmlBlaster.Main -iorPort 8088");
-      Log.plain(ME, "   java org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
+      Log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
+      Log.plain(ME, "   java org.xmlBlaster.Main -ior.file /tmp/XmlBlaster_Ref");
       Log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
       Log.plain(ME, "   java org.xmlBlaster.Main -xmlrpc.hostname 102.24.64.60 -xmlrpc.port 8081");
       Log.plain(ME, "   java org.xmlBlaster.Main -?");
@@ -506,7 +496,7 @@ public class Main
 
 
    /**
-    *  Invoke: jaco org.xmlBlaster.Main
+    *  Invoke: java org.xmlBlaster.Main
     */
    public static void main( String[] args )
    {

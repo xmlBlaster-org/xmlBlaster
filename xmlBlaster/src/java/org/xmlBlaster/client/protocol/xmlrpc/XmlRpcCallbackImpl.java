@@ -3,21 +3,20 @@ Name:      XmlRpcCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackImpl.java,v 1.7 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: XmlRpcCallbackImpl.java,v 1.8 2002/05/01 21:40:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.UpdateKey;
 
 import org.apache.xmlrpc.WebServer;
@@ -51,9 +50,9 @@ public class XmlRpcCallbackImpl
     *                  This id is the one specified from the client which has setup the callback.
     */
    public String update(String cbSessionId, String updateKey, byte[] content,
-                      String updateQoS) throws XmlBlasterException
+                      String updateQos) throws XmlBlasterException
    {
-      return server.update(cbSessionId, updateKey, content, updateQoS);
+      return server.update(cbSessionId, updateKey, content, updateQos);
    }
 
    /**
@@ -63,9 +62,9 @@ public class XmlRpcCallbackImpl
     * <p />
     * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
-   public void updateOneway(String cbSessionId, String updateKey, byte[] content, String updateQoS)
+   public void updateOneway(String cbSessionId, String updateKey, byte[] content, String updateQos)
    {
-      server.updateOneway(cbSessionId, updateKey, content, updateQoS);
+      server.updateOneway(cbSessionId, updateKey, content, updateQos);
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.23 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.24 2002/05/01 21:40:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -187,9 +187,9 @@ public class TestPtD extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -198,7 +198,7 @@ public class TestPtD extends TestCase implements I_Callback
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";

@@ -126,7 +126,7 @@ importPackage(Packages.org.xmlBlaster.util);
       args[5] = new String("2003");
       */
       args = new Array(2);
-      args[0] = new String("-iorHost");
+      args[0] = new String("-hostname");
       args[1] = new String("localhost");    // try "server.xmlBlaster.org"
       xmlBlaster = new XmlBlasterConnection(args);
 

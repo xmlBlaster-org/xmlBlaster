@@ -3,16 +3,16 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.9 2002/04/19 11:00:18 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.10 2002/05/01 21:40:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.I_Plugin;
-import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
@@ -125,7 +125,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @return "1.0" (this is the default version number)
     */
    public String[] getMimeExtended() {
-      String[] mimeExtended = { XmlKeyBase.DEFAULT_contentMimeExtended }; // "1.0"
+      String[] mimeExtended = { Constants.DEFAULT_CONTENT_MIME_EXTENDED }; // "1.0"
       return mimeExtended;
    }
 

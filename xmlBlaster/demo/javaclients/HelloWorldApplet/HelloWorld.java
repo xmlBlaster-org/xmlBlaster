@@ -3,14 +3,14 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.14 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.15 2002/05/01 21:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -204,9 +204,9 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.info(ME, "Success: Update of message");
       String msgContent = new String(content);

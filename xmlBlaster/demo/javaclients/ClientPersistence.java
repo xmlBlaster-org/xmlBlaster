@@ -3,7 +3,7 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.4 2002/04/26 21:33:28 ruff Exp $
+Version:   $Id: ClientPersistence.java,v 1.5 2002/05/01 21:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -98,9 +98,9 @@ public class ClientPersistence implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       //Log.info(ME, "Receiving update of a message ...");
       Log.info(ME, "Receiving update of message '" + publishOid +"'");
@@ -109,7 +109,7 @@ public class ClientPersistence implements I_Callback
 
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQoS", updateQoS.toXml());
+      Log.plain("UpdateQos", updateQos.toXml());
       return "";
    }
 

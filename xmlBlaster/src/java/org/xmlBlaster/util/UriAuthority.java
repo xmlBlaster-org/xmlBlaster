@@ -3,7 +3,7 @@ Name:      UriAuthority.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parse authentication URI
-Version:   $Id: UriAuthority.java,v 1.1 2001/12/30 13:19:47 ruff Exp $
+Version:   $Id: UriAuthority.java,v 1.2 2002/05/01 21:40:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -25,11 +25,11 @@ import java.net.URLDecoder;
  * on port 7608
  * <p/>
  * A complete URI could be:
- * <pre>xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:7609/myPath#myFragment?key.oid=MyMessage</pre>
+ * <pre>xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:3412/myPath#myFragment?key.oid=MyMessage</pre>
  * Where<br />
  * <ul>
  * <li>schema    = xmlBlaster.publish</li>
- * <li>authority = joe:mypassword@server.xmlBlaster.org:7609</li>
+ * <li>authority = joe:mypassword@server.xmlBlaster.org:3412</li>
  * <li>path      = myPath</li>
  * <li>fragment  = myFragment</li>
  * <li>query     = key.oid=MyMessage</li>
@@ -204,10 +204,10 @@ public class UriAuthority
    }
    static boolean test(String user, String password)
    {
-      UriAuthority uri= new UriAuthority(user, password, "localhost", 7609);
-      String result = user + "@localhost:7609";
+      UriAuthority uri= new UriAuthority(user, password, "localhost", 3412);
+      String result = user + "@localhost:3412";
       if (password != null)
-         result = user + ":" + password + "@localhost:7609";
+         result = user + ":" + password + "@localhost:3412";
       if (result.trim().equals(uri.toString())) {
          System.out.println("OK: "+result);
          return true;

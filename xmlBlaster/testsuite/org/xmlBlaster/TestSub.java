@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.30 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: TestSub.java,v 1.31 2002/05/01 21:40:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
@@ -190,26 +190,26 @@ public class TestSub extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
       numReceived += 1;
 
       assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
-      assertEquals("Wrong sender", senderName, updateQoS.getSender());
-      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
+      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
 
       // Test requirement "engine.qos.update.rcvTimestamp":
-      assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQoS.getRcvTimestamp(),
-             sentTimestamp.getMillis() < updateQoS.getRcvTimestamp().getMillis() &&
-             (sentTimestamp.getMillis()+1000) > updateQoS.getRcvTimestamp().getMillis());
+      assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQos.getRcvTimestamp(),
+             sentTimestamp.getMillis() < updateQos.getRcvTimestamp().getMillis() &&
+             (sentTimestamp.getMillis()+1000) > updateQos.getRcvTimestamp().getMillis());
 
       messageArrived = true;
       return "";

@@ -27,8 +27,7 @@ import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -110,7 +109,7 @@ import java.util.Collections;
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer, I_Timeout
 {
    private String ME = "XmlBlasterConnection";
-   protected Global glob = null;
+   // protected Global glob = null; see AbstractCallbackExtended
 
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
    protected String serverNodeId = "xmlBlaster";
@@ -215,7 +214,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param arg  parameters given on command line, or coded e.g.:
     * <pre>
     *    String[] args = new String[2];
-    *    args[0] = "-iorPort";
+    *    args[0] = "-port";
     *    args[1] = "" + serverPort;
     *    xmlBlasterConnection = new XmlBlasterConnection(args); // Find orb
     * </pre>
@@ -287,6 +286,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public String getServerNodeId() 
    {
       return this.serverNodeId;
+   }
+
+   public final Global getGlobal() {
+      return this.glob;
    }
 
    /**
@@ -1101,31 +1104,31 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public final String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
+   public final String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
       //The boss should not be interested in cache updates
       if (Log.CALL) Log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
       boolean forCache = false;
       if( cache != null ) {
-         forCache = cache.update(updateQoS.getSubscriptionId(), updateKey, content, updateQoS);
+         forCache = cache.update(updateQos.getSubscriptionId(), updateKey, content, updateQos);
       }
       if (!forCache) {
 
          Object obj = null;
          synchronized (callbackMap) {
-            obj = callbackMap.get(updateQoS.getSubscriptionId());
+            obj = callbackMap.get(updateQos.getSubscriptionId());
          }
 
          if (obj != null) {
             // If a special callback was specified for this subscription:
             I_Callback cb = (I_Callback)obj;
-            return cb.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
+            return cb.update(cbSessionId, updateKey, content, updateQos); // deliver the update to our client
          }
          else if (updateClient != null) {
             // If a general callback was specified on login:
-            return updateClient.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
+            return updateClient.update(cbSessionId, updateKey, content, updateQos); // deliver the update to our client
          }
 
       }
@@ -1137,7 +1140,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * The oneway variant without a return value or exception
     */
    /*
-   public final void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   public final void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral)
    {
       // currently mapped in AbstractCallbackExtended to String update()
    }
@@ -1173,7 +1176,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *   SubscribeQosWrapper qos = new SubscribeQosWrapper();
     *   try {
     *      con.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
-    *            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+    *            public void update(String name, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
     *               System.out.println("Receiving message for '//stock' subscription ...");
     *            }
     *         });
@@ -1256,7 +1259,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             driver.unSubscribe(xmlKey, qos);
          }
          synchronized (callbackMap) {
-            XmlKeyBase key = new XmlKeyBase(glob, xmlKey);
+            UpdateKey key = new UpdateKey(glob, xmlKey); // has a SAX parser for xml key
             callbackMap.remove(key.getUniqueKey());
          }
       } catch(XmlBlasterException e) {

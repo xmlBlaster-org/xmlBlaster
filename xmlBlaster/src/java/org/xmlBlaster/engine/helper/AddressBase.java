@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.4 2002/04/24 06:50:39 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.5 2002/05/01 21:40:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -29,8 +29,8 @@ public abstract class AddressBase
 
    /** The unique address, e.g. the CORBA IOR string */
    protected String address = "";
-   public static final String DEFAULT_host = "";
-   protected String host = DEFAULT_host;
+   public static final String DEFAULT_hostname = "";
+   protected String hostname = DEFAULT_hostname;
    public static final int DEFAULT_port = 0;
    protected int port = DEFAULT_port;
 
@@ -119,14 +119,14 @@ public abstract class AddressBase
    /**
     * @param host An IP or DNS
     */
-   public final void setHost(String host)
+   public final void setHostname(String host)
    {
-      this.host = host;
+      this.hostname = host;
    }
 
-   public final String getHost()
+   public final String getHostname()
    {
-      return this.host;
+      return this.hostname;
    }
 
    public final void setPort(int port)
@@ -345,8 +345,8 @@ public abstract class AddressBase
                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
                   setType(attrs.getValue(i).trim());
                }
-               else if( attrs.getQName(i).equalsIgnoreCase("host") ) {
-                  setHost(attrs.getValue(i).trim());
+               else if( attrs.getQName(i).equalsIgnoreCase("hostname") ) {
+                  setHostname(attrs.getValue(i).trim());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("port") ) {
                   String ll = attrs.getValue(i).trim();
@@ -505,8 +505,8 @@ public abstract class AddressBase
       offset += extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
-      if (!DEFAULT_host.equals(getHost()))
-          sb.append(" host='").append(getHost()).append("'");
+      if (!DEFAULT_hostname.equals(getHostname()))
+          sb.append(" hostname='").append(getHostname()).append("'");
       if (DEFAULT_port != getPort())
           sb.append(" port='").append(getPort()).append("'");
       if (!DEFAULT_sessionId.equals(getSessionId()))

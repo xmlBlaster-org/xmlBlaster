@@ -184,7 +184,7 @@ successful login:
       </p>
       <pre>
    &lt;init-param>
-      &lt;param-name>iorHost&lt;/param-name>
+      &lt;param-name>hostname&lt;/param-name>
       &lt;param-value>192.168.1.5&lt;/param-value>
       &lt;description>IP where xmlBlaster is running (for CORBA protocol)&lt;/description>
    &lt;/init-param>
@@ -212,7 +212,7 @@ successful login:
    <hacker>ruff@swand.lake.de</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>

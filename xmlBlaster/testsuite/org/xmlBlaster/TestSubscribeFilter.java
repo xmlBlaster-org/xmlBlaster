@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.6 2002/03/28 15:21:03 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.7 2002/05/01 21:40:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -77,7 +77,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = new String[10];
-      args[0] = "-iorPort";        // For all protocol we may use set an alternate server port
+      args[0] = "-port";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
       args[2] = "-socket.port";
       args[3] = "" + (serverPort-1);
@@ -182,9 +182,9 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;

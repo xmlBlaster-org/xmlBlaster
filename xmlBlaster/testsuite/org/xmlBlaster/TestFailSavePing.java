@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.15 2002/03/18 00:31:22 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.16 2002/05/01 21:40:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 
@@ -243,15 +243,15 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " ...");
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
       String oid = "Message-1";

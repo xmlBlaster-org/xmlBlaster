@@ -3,7 +3,7 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.6 2002/04/16 20:21:29 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.7 2002/05/01 21:40:17 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <string>
@@ -228,7 +228,7 @@ public:
       CorbaConnection::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestGet -iorHost serverHost.myCompany.com");
+      log_.plain(me(), "   TestGet -hostname serverHost.myCompany.com");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };

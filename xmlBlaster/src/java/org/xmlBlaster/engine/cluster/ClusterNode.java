@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -126,8 +126,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          Vector vec = new Vector();
          vec.addElement("-client.protocol");
          vec.addElement(addr.getType());
-         vec.addElement("-iorPort");     // For all protocol we may use set an alternate server port
-         vec.addElement(""+addr.getPort()); // glob.getProperty().get("iorPort["+getId()+"]", "7609");
+         vec.addElement("-port");           // For all protocol we may use set an alternate server port
+         vec.addElement(""+addr.getPort()); // glob.getProperty().get("port["+getId()+"]", "3412");
          vec.addElement("-socket.port");
          vec.addElement(""+addr.getPort()); // glob.getProperty().get("socket.port["+getId()+"]", "7607");
          vec.addElement("-rmi.registryPort");
@@ -335,9 +335,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       log.warn(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "'");
       return "";
    }

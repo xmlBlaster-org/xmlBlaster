@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.7 2002/04/30 16:42:00 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.8 2002/05/01 21:40:17 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -100,7 +100,7 @@ public:
    string update(const string &sessionId,
                UpdateKey &updateKey,
                void *content, long contentSize,
-               UpdateQoS &updateQoS) {
+               UpdateQos &updateQos) {
       if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
@@ -414,7 +414,7 @@ private:
       CorbaConnection::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestLogin -iorFile /tmp/ior.dat -trace true");
+      log_.plain(me(), "   TestLogin -ior.file /tmp/ior.dat -trace true");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };

@@ -13,7 +13,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
-#include <client/UpdateQoS.h>
+#include <client/UpdateQos.h>
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
@@ -112,11 +112,11 @@ namespace org { namespace xmlBlaster {
          for (string::size_type i=0; i < msgUnitArr.length(); i++) {
             const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
             UpdateKey *updateKey = 0;
-            UpdateQoS *updateQoS = 0;
+            UpdateQos *updateQos = 0;
             try {
                updateKey = new UpdateKey();
                updateKey->init(string(msgUnit.xmlKey));
-               updateQoS = new UpdateQoS(string(msgUnit.qos));
+               updateQos = new UpdateQos(string(msgUnit.qos));
                // Now we know all about the received msg, dump it or do 
                // some checks
                if (log_.DUMP) log_.dump("UpdateKey", string("\n") + updateKey->printOn());
@@ -126,14 +126,14 @@ namespace org { namespace xmlBlaster {
                      msg += (char)msgUnit.content[j];
                   log_.dump("content", msg);
                }
-               if (log_.DUMP) log_.dump("UpdateQoS", "\n" + updateQoS->printOn());
-               if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQoS->getSender());
+               if (log_.DUMP) log_.dump("UpdateQos", "\n" + updateQos->printOn());
+               if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());
 
                //Checking whether the Update is for the Cache or for the boss
                //The boss should not be interested in cache updates
                bool forCache = false;
                //          if( cache_ != null ) {
-               //             forCache = cache_.update(updateQoS.getSubscriptionId(), 
+               //             forCache = cache_.update(updateQos.getSubscriptionId(), 
                //                                      updateKey.toXml(), msgUnit.content);
                //          }
                string oneRes = "<qos><state id='OK'/></qos>";
@@ -141,7 +141,7 @@ namespace org { namespace xmlBlaster {
                   if (boss_) {
                      oneRes = boss_->update(sessionId, *updateKey,
                                    (void*)&msgUnit.content[0], 
-                                   msgUnit.content.length(), *updateQoS); 
+                                   msgUnit.content.length(), *updateQos); 
                      // Call my boss
                   }
                   else log_.warn(me(), "can not update: no callback defined");
@@ -149,7 +149,7 @@ namespace org { namespace xmlBlaster {
                CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
                (*res)[i] = str;
                delete updateKey;
-               delete updateQoS;
+               delete updateQos;
             } 
             catch (serverIdl::XmlBlasterException &e) {
                log_.error(me(), string(e.reason) + " message is on error state: " + updateKey->printOn());
@@ -184,28 +184,28 @@ namespace org { namespace xmlBlaster {
             try {
                const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
                UpdateKey *updateKey = 0;
-               UpdateQoS *updateQoS = 0;
+               UpdateQos *updateQos = 0;
                try {
                   updateKey = new UpdateKey();
                   updateKey->init(string(msgUnit.xmlKey));
-                  updateQoS = new UpdateQoS(string(msgUnit.qos));
+                  updateQos = new UpdateQos(string(msgUnit.qos));
                } 
                catch (serverIdl::XmlBlasterException &e) {
                   log_.error(me(), string(e.reason) );
                }
 
-               if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQoS->getSender());
+               if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());
 
                if (boss_) {
                   boss_->update(sessionId, *updateKey,
                                  (void*)&msgUnit.content[0], 
-                                 msgUnit.content.length(), *updateQoS); 
+                                 msgUnit.content.length(), *updateQos); 
                }
                else
                   log_.warn(me(), "can not update: no callback defined");
 
                delete updateKey;
-               delete updateQoS;
+               delete updateQos;
             }
             catch (const exception& e) {
                log_.error(me(), string("Exception caught in updateOneway(), it is not transferred to server: ") + e.what());

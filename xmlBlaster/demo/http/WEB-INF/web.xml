@@ -47,7 +47,7 @@
 
     <!-- Example to look for xmlBlaster on another host -->
     <!-- init-param>
-      <param-name>iorHost</param-name>
+      <param-name>hostname</param-name>
       <param-value>192.168.1.5</param-value>
       <description>IP where xmlBlaster is running (for CORBA protocol only)</description>
     </init-param -->

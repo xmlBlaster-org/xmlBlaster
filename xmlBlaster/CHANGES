@@ -18,6 +18,23 @@ BUGS:
 
 
 DONE:
+  - The generated key oid now contains the node id
+
+  - The default boot strap port is now 3412,
+    the IANA assigned xmlblaster port.
+    XmlBlaster listens with its tiny internal
+    http server on 3412 to deliver the CORBA IOR
+    and in future other informations.
+    Port 7609 is not used as a default any more.
+
+  - Incompatible change of file name:
+     UpdateQoS.java -> UpdateQos.java
+
+  - Incompatible change of command line options:
+    -iorHost  ->  -hostname
+    -iorPort  ->  -port
+    -iorFile  ->  -ior.file
+
   - Incompatible change of QoS returns:
     Old: "<qos><state>OK</state></qos>"
     New: "<qos><state id="OK"/></qos>"
@@ -275,7 +292,7 @@ Changes for 0.79d [Dec, 30 2001]
   - Added Update QoS element <queue> with queue informations
     (Thanks to Cyrille)
 
-  - UpdateQoS and UpdateKey: Renamed printOn() to toXml()
+  - UpdateQos and UpdateKey: Renamed printOn() to toXml()
 
   - Added default corbaloc to xmlBlaster server and naming service
     This allows connecting to a local naming service without configuration
@@ -805,8 +822,8 @@ Changes for 0.75 [Mar.28, 2000]
           Every xmlBlaster.property variable may as well be specified on
           command line. The leading "-" or "+" from the command line    key is
           stripped before it    is merged into the properties hash table.
-          For example, the "-iorFile" command line argument corresponds to the
-          "iorFile" variable    in the xmlBlaster.properties file.
+          For example, the "-ior.file" command line argument corresponds to the
+          "ior.file" variable    in the xmlBlaster.properties file.
           See Property.java
 
 

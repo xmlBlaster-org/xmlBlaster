@@ -22,7 +22,7 @@ first.
 3. Start a client connecting to avalon:
 =======================================
 
-   java javaclients.cluster.PublishToSlave -iorPort 7601
+   java javaclients.cluster.PublishToSlave -port 7601
 
  The port is the same as specified for avalon in avalon.properties
 

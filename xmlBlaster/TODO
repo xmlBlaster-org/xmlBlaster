@@ -26,8 +26,8 @@ URI based loginName handling:
 
 This URI does a login and delivers some qos:
 
-   xmlBlaster.login://joe:mypassword@server.xmlBlaster.org:7609?qos.master=IOR:0000345&qos.topic.type=EXACT&qos.topic=WindVeloc
-   xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:7609?key.oid=MyMessage&content=Hello&nbsp;world&sessionId=09278cn88sa
+   xmlBlaster.login://joe:mypassword@server.xmlBlaster.org:3412?qos.master=IOR:0000345&qos.topic.type=EXACT&qos.topic=WindVeloc
+   xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:3412?key.oid=MyMessage&content=Hello&nbsp;world&sessionId=09278cn88sa
 
    http://joe:mypassword@172.24.64.70:8080?method=xmlBlaster.publish&key.oid=MyMessage&content=Hello&nbsp;world
 

@@ -681,9 +681,9 @@ function fireMessageUpdateEvent( message )
  * connection.
  * @param updateKey:String
  * @param content:String
- * @param updateQoS:String
+ * @param updateQos:String
  */
-function update( updateKey, content, updateQoS)
+function update( updateKey, content, updateQos)
 {
    var type = typeof updateKey;
    if (type != "string") {
@@ -694,10 +694,10 @@ function update( updateKey, content, updateQoS)
 
    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
    var content_d   = unescape( content.replace(/\+/g, " ") );
-   var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
+   var updateQos_d = unescape( updateQos.replace(/\+/g, " ") );
 
    var key = new UpdateKey(updateKey_d);
-   var qos = new UpdateQos(updateQoS_d);
+   var qos = new UpdateQos(updateQos_d);
 
    if (Log.TRACE) Log.trace("Update coming in key.oid="+key.oid);
    if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {

@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.5 2002/04/16 20:50:16 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.6 2002/05/01 21:40:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
@@ -247,9 +247,9 @@ public class TestSubLostClient extends TestCase implements I_Callback
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       Log.info(ME, "Client " + cbSessionId + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
       numReceived++;

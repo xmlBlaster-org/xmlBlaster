@@ -4,7 +4,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -39,7 +39,7 @@ public class HelloWorld2 implements I_Callback
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                        UpdateQoS updateQoS)
+                        UpdateQos updateQos)
    {
       Log.info("HelloWorld2", "Received asynchronous message '" +
                updateKey.getOid() + "' from xmlBlaster");

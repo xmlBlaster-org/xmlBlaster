@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.8 2002/04/30 16:42:45 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.9 2002/05/01 21:39:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -12,8 +12,6 @@ import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 import org.jutils.io.FileUtil;
-
-import org.xmlBlaster.util.XmlKeyBase;
 
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -39,9 +37,9 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+ *    java org.xmlBlaster.Main -ior.file /tmp/NS_Ref
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -iorFile /tmp/NS_Ref
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -ior `cat /tmp/NS_Ref`
  *
@@ -68,7 +66,7 @@ public class ClientRawSecurity
          ME = Args.getArg(args, "-name", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(args, "-iorFile", (String)null); // a file with the IOR string
+         String fileName = Args.getArg(args, "-ior.file", (String)null); // a file with the IOR string
          String authServerIOR = Args.getArg(args, "-ior", (String)null); // the IOR string
 
          if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
@@ -86,9 +84,9 @@ public class ClientRawSecurity
             if (nc == null) {
                Log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "Start the server:\n"
-                           + "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref\n"
+                           + "   jaco org.xmlBlaster.Main -ior.file /tmp/NS_Ref\n"
                            + "Start this client:\n"
-                           + "   jaco javaclients.corba.ClientRawSecurity -iorFile /tmp/NS_Ref\n");
+                           + "   jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref\n");
                usage();
                Log.panic(ME, "Read xmlBlaster/INSTALL for help");
             }
@@ -249,10 +247,10 @@ public class ClientRawSecurity
    {
       Log.plain("\nAvailable options:");
       Log.plain("   -name               The login name [ClientRawSecurity].");
-      Log.plain("   -iorFile            File with the IOR string from xmlBlaster.");
+      Log.plain("   -ior.file           File with the IOR string from xmlBlaster.");
       Log.plain("   -ior                The raw IOR string from xmlBlaster.");
       Log.usage();
-      Log.exit(ME, "Example: jaco javaclients.corba.ClientRawSecurity -iorFile /tmp/NS_Ref\n");
+      Log.exit(ME, "Example: jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref\n");
    }
 
    public static void main(String args[])
@@ -295,14 +293,8 @@ public class ClientRawSecurity
          String[] ret = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MessageUnit msgUnit = msgUnitArr[ii];
-            XmlKeyBase xmlKey = null;
-            try {
-               xmlKey = new XmlKeyBase(glob, msgUnit.xmlKey);
-            } catch (org.xmlBlaster.util.XmlBlasterException e) {
-               Log.error(ME, e.reason);
-            }
             Log.plain(ME, "\n================== BlasterCallback update START =============");
-            Log.plain(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
+            Log.plain(ME, "Callback invoked for " + msgUnit.xmlKey + " content length = " + msgUnit.content.length);
             Log.plain(ME, new String(msgUnit.content));
             Log.plain(ME, "================== BlasterCallback update END ===============\n");
             ret[ii] = "<qos><state id='OK'/></qos>";

@@ -96,8 +96,8 @@ namespace org { namespace xmlBlaster {
       if (log_.TRACE) log_.trace(me(), "No -ior ...");
 
       string authServerIORFile =
-         log_.getProperties().getStringProperty("iorFile","");
-      // -iorFile IOR string is given through a file
+         log_.getProperties().getStringProperty("ior.file","");
+      // -ior.file IOR string is given through a file
       if (authServerIORFile != "") {
          ifstream in(authServerIORFile.c_str());
          if ((!in) /* && (log_.PANIC) */ )
@@ -112,17 +112,17 @@ namespace org { namespace xmlBlaster {
          log_.info(me(), msg);
          return authenticateIdl::AuthServer::_duplicate(authServer_);
       }
-      if (log_.TRACE) log_.trace(me(), "No -iorFile ...");
+      if (log_.TRACE) log_.trace(me(), "No -ior.file ...");
 
       // 3) Using builtin http IOR download ...
       {
          char myHostName[126];
          strcpy(myHostName, "localhost");
          gethostname(myHostName, 125);
-         string iorHost = log_.getProperties().getStringProperty("iorHost",myHostName);
-         // Port may be a name from /etc/services: "xmlBlaster 7609/tcp"
-         string iorPortStr = log_.getProperties().getStringProperty("iorPort","xmlBlaster"); // default port=7609
-         if (log_.TRACE) log_.trace(me(), "Trying -iorHost=" + iorHost + " and -iorPort=" + iorPortStr + " ...");
+         string iorHost = log_.getProperties().getStringProperty("hostname",myHostName);
+         // Port may be a name from /etc/services: "xmlBlaster 3412/tcp"
+         string iorPortStr = log_.getProperties().getStringProperty("port","3412"); // default port=3412 (xmlblaster)
+         if (log_.TRACE) log_.trace(me(), "Trying -hostname=" + iorHost + " and -port=" + iorPortStr + " ...");
          struct sockaddr_in xmlBlasterAddr;
          memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
          xmlBlasterAddr.sin_family=AF_INET;
@@ -135,7 +135,7 @@ namespace org { namespace xmlBlaster {
             if (portP != NULL)
                xmlBlasterAddr.sin_port = portP->s_port;
             else
-               xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("iorPort",7609));
+               xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("port",3412));
             int s = socket(AF_INET, SOCK_STREAM, 0);
             if (s != -1) {
                int ret=0;
@@ -160,7 +160,7 @@ namespace org { namespace xmlBlaster {
                   if (log_.TRACE) log_.trace(me(), "Received IOR data: '" + authServerIOR + "'");
                }
                else {
-                  log_.warn(me(), "Connecting to -iorHost=" + iorHost + " failed"); // errno
+                  log_.warn(me(), "Connecting to -hostname=" + iorHost + " failed"); // errno
                }
                shutdown(s, 2);
             }
@@ -168,12 +168,12 @@ namespace org { namespace xmlBlaster {
          if (!authServerIOR.empty()) {
             CORBA::Object_var obj = orb_->string_to_object(authServerIOR.c_str());
             authServer_ = authenticateIdl::AuthServer::_narrow(obj);
-            string msg  = "Accessing xmlBlaster using -iorHost "+iorHost;
+            string msg  = "Accessing xmlBlaster using -hostname "+iorHost;
             log_.info(me(), msg);
             return authenticateIdl::AuthServer::_duplicate(authServer_);
          }
       }
-      if (log_.TRACE) log_.trace(me(), "No -iorHost and -iorPort ...");
+      if (log_.TRACE) log_.trace(me(), "No -hostname and -port ...");
 
 
       // 4) asking Name Service CORBA compliant
@@ -182,8 +182,8 @@ namespace org { namespace xmlBlaster {
 
       string text = "Can't access xmlBlaster Authentication Service";
       text += ", is the server running and ready?\n - try to specify ";
-      text += "'-iorFile <fileName>' if server is running on same host\n";
-      text += " - try to specify '-iorHost <hostName>  -iorPort 7609' to ";
+      text += "'-ior.file <fileName>' if server is running on same host\n";
+      text += " - try to specify '-hostname <hostName>  -port 3412' to ";
       text += "locate xmlBlaster\n  - or contact your ";
       text += "system administrator to start a naming service";
 
@@ -469,9 +469,9 @@ namespace org { namespace xmlBlaster {
       log.plain(me, "");
       log.plain(me, "Client connection options:");
       log.plain(me, "  -ior <IOR:00...>    The IOR string of the xmlBlaster-authentication server.");
-      log.plain(me, "  -iorHost <host>     The host where to find xmlBlaster [localhost]");
-      log.plain(me, "  -iorPort <port>     The port where xmlBlaster publishes its IOR [7609]");
-      log.plain(me, "  -iorFile <fileName> A file with the xmlBlaster-authentication server IOR.");
+      log.plain(me, "  -hostname <host>    The host where to find xmlBlaster [localhost]");
+      log.plain(me, "  -port <port>        The port where xmlBlaster publishes its IOR [3412]");
+      log.plain(me, "  -ior.file <file>    A file with the xmlBlaster-authentication server IOR.");
       log.plain(me, "  -ns <true/false>    Try to access xmlBlaster through a naming service [true]");
       log.plain(me, "");
    }

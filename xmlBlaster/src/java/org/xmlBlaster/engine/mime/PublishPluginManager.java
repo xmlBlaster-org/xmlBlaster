@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.3 2002/04/19 11:00:18 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.4 2002/05/01 21:40:08 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -180,7 +181,7 @@ public class PublishPluginManager extends PluginManagerBase {
                Log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
-               mimeExtended[ii] = org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended;
+               mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
          }
 
          for (int ii = 0; ii < mime.length; ii++) {

@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.2 2002/03/28 16:01:56 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.3 2002/05/01 21:40:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -70,7 +70,7 @@ public class TestGetFilter extends TestCase
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = new String[10];
-      args[0] = "-iorPort";        // For all protocol we may use set an alternate server port
+      args[0] = "-port";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
       args[2] = "-socket.port";
       args[3] = "" + (serverPort-1);

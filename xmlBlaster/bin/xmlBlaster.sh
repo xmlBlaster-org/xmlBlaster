@@ -43,7 +43,7 @@ fi
 
 
 ${ECHO} "${BLACK_LTGREEN}Starting xmlBlaster server ...$ESC"
-java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.Main -iorFile /tmp/xmlBlaster.ior "$@"
+java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.Main -ior.file /tmp/xmlBlaster.ior "$@"
 
 # Debugging with www.karmira.com
 #java -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 org.xmlBlaster.Main -dump true

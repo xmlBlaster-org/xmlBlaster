@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.29 2002/04/26 21:33:28 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.30 2002/05/01 21:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -193,16 +193,16 @@ public class ClientSub implements I_Callback
     * @param content     The arrived message content
     * @param qos         Quality of Service of the MessageUnit
     *
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       elapsed = System.currentTimeMillis() - startTime;
       numReceived++;
-      Log.info(ME, "Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQoS.getSender() + " (latency=" + elapsed + " milli seconds):");
+      Log.info(ME, "Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQos.getSender() + " (latency=" + elapsed + " milli seconds):");
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQoS", updateQoS.toXml());
+      Log.plain("UpdateQos", updateQos.toXml());
       return "";
    }
 

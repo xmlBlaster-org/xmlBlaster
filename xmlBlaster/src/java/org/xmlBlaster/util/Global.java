@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.5 2002/04/29 09:43:00 ruff Exp $
+Version:   $Id: Global.java,v 1.6 2002/05/01 21:40:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,6 +12,7 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.engine.helper.Address;
 
 import java.util.Properties;
 
@@ -20,6 +21,8 @@ import java.applet.Applet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.net.MalformedURLException;
+import java.io.IOException;
 
 
 /**
@@ -28,11 +31,24 @@ import java.util.Collections;
 public class Global
 {
    private final static String ME = "Global";
+   private String ip_addr = null;
+
+   /**
+    * The IANA registered xmlBlaster port,
+    * see <a href="http://www.iana.org/assignments/port-numbers">IANA Port Numbers</a>
+    * and <a href="http://andrew.triumf.ca/cgi-bin/port">Network Service Query</a>.
+    * <pre>
+    *  xmlblaster      3412/tcp   xmlBlaster
+    *  xmlblaster      3412/udp   xmlBlaster
+    *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
+    * </pre>
+    */
+   public static final int XMLBLASTER_PORT = 3412;
 
    private String[] args;
    protected XmlBlasterProperty property = new XmlBlasterProperty();
    protected Log log = new Log();
-
+   private Address bootstrapAddress = null;
    private Map nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
 
 
@@ -115,6 +131,106 @@ public class Global
    public final void removeNativeCallbackDriver(String key)
    {
       nativeCallbackDriverMap.remove(key);
+   }
+
+   /**
+    * Returns the address of the xmlBlaster internal http server. 
+    * <p />
+    * Is configurable with
+    * <pre>
+    *   -hostname myhost.mycompany.com   (or the raw IP)
+    *   -port 3412
+    * </pre>
+    * Defaults to the local machine and the IANA xmlBlaster port.<br />
+    * You can set "-port 0" to avoid starting the internal HTTP server
+    */
+   public final Address getBootstrapAddress() {
+      if (bootstrapAddress == null) {
+         bootstrapAddress = new Address();
+         boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
+         if (supportOldStyle) {
+            String iorHost = getProperty().get("iorHost", getLocalIP());
+            int iorPort = getProperty().get("iorPort", XMLBLASTER_PORT);
+            bootstrapAddress.setHostname(getProperty().get("hostname", iorHost));
+            bootstrapAddress.setPort(getProperty().get("port", iorPort));
+         }
+         else {
+            bootstrapAddress.setHostname(getProperty().get("hostname", getLocalIP()));
+            bootstrapAddress.setPort(getProperty().get("port", XMLBLASTER_PORT));
+         }
+         bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
+      }
+      return bootstrapAddress;
+   }
+
+   /**
+    * Access the xmlBlaster internal HTTP server and download the requested path. 
+    * <p />
+    * Currently we only use it for CORBA IOR download. To avoid the name service,
+    * one can access the AuthServer IOR directly
+    * using a http connection.
+    * @param false Suppress error logging when server not found
+    * @param urlPath The part after the host:port, from an URL "http://myhost.com:3412/AuthenticationService.ior"
+    *                urlPath is "AuthenticationService.ior"
+    */
+   public String accessFromInternalHttpServer(String urlPath, boolean verbose) throws XmlBlasterException
+   {
+      Address addr = getBootstrapAddress();
+      if (Log.CALL) Log.call(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
+      try {
+         if (urlPath != null && urlPath.startsWith("/") == false)
+            urlPath = "/" + urlPath;
+
+         java.net.URL nsURL = new java.net.URL("http", addr.getHostname(), addr.getPort(), urlPath);
+         java.io.InputStream nsis = nsURL.openStream();
+         byte[] bytes = new byte[4096];
+         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+         int numbytes;
+         for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
+            if (Log.TRACE) Log.trace(ME, "XmlBlaster on host " + addr.getHostname() + " and port " + addr.getPort() + " returns empty data, trying again after sleeping 10 milli ...");
+            org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
+         }
+         while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
+            bos.write(bytes, 0, numbytes);
+         }
+         nsis.close();
+         String data = bos.toString();
+         if (Log.TRACE) Log.trace(ME, "Retrieved http data='" + data + "'");
+         return data;
+      }
+      catch(MalformedURLException e) {
+         String text = "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".";
+         Log.error(ME, text + e.toString());
+         throw new XmlBlasterException(ME+"NoHttpServer", text);
+      }
+      catch(IOException e) {
+         if (verbose) Log.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
+         throw new XmlBlasterException(ME+"NoHttpServer", "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".");
+      }
+   }
+
+   /**
+    * The IP address where we are running. 
+    * <p />
+    * You can specify the local IP address with e.g. -hostname 192.168.10.1
+    * on command line, useful for multi-homed hosts.
+    *
+    * @return The local IP address, defaults to '127.0.0.1' if not known.
+    */
+   public final String getLocalIP()
+   {
+      if (ip_addr == null) {
+         ip_addr = getBootstrapAddress().getHostname();
+         if (ip_addr == null || ip_addr.length() < 1) {
+            try {
+               ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
+            } catch (java.net.UnknownHostException e) {
+               Log.warn(ME, "Can't determine local IP address, try e.g. '-hostname 192.168.10.1' on command line: " + e.toString());
+            }
+            if (ip_addr == null) ip_addr = "127.0.0.1";
+         }
+      }
+      return ip_addr;
    }
 
    /**

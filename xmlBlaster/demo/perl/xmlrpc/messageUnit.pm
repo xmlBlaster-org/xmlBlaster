@@ -100,7 +100,7 @@ sub keyOid {
 	# $self->{'key_xml'} should be like :
 	#
 	# '<key oid=\'__sys__UserList\' contentMime=\'text/plain\'>
-	# '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-7609-1013436081500-12" contentMime="text/plain"></key>',
+	# '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-3412-1013436081500-12" contentMime="text/plain"></key>',
 	#
 
 	my $keyoid = $self->{'key_xml'} ;
@@ -181,7 +181,7 @@ sub dump {
 #REF=ARRAY
 #$VAR1 = [
 #          [
-#            '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-7609-1013436081500-12" contentMime="text/plain"></key>',
+#            '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-3412-1013436081500-12" contentMime="text/plain"></key>',
 #            bless( do{\(my $o = 'SEVMTE8gIQ==')}, 'Frontier::RPC2::Base64' ),
 #            '
 #<qos>
