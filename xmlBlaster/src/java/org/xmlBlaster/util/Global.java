@@ -31,7 +31,6 @@ import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
-import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
 import org.xmlBlaster.util.queue.QueuePluginManager;
@@ -139,7 +138,6 @@ public class Global implements Cloneable
    protected ProtocolPluginManager protocolPluginManager;
    protected CbServerPluginManager cbServerPluginManager;
 
-   protected RecorderPluginManager recorderPluginManager;
    private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
    protected XmlProcessor xmlProcessor;
@@ -336,7 +334,6 @@ public class Global implements Cloneable
       this.objectMap = utilGlob.objectMap;
       this.bootstrapAddress = utilGlob.bootstrapAddress;
       this.clientSecurityLoader = utilGlob.clientSecurityLoader;
-      this.recorderPluginManager = utilGlob.recorderPluginManager;
       this.logChannels = utilGlob.logChannels;
       this.logDefault = utilGlob.logDefault;
       this.logDevicePluginManager = utilGlob.logDevicePluginManager;
@@ -1226,18 +1223,6 @@ public class Global implements Cloneable
             clientSecurityLoader = new PluginLoader(this);
       }
       return clientSecurityLoader;
-   }
-
-   /**
-    * Needed by java client helper classes to load
-    * the tail back queuing mechanism (invocation recorder).
-    */
-   public RecorderPluginManager getRecorderPluginManager() {
-      synchronized (RecorderPluginManager.class) {
-         if (recorderPluginManager == null)
-            recorderPluginManager = new RecorderPluginManager(this);
-      }
-      return recorderPluginManager;
    }
 
    public final QueuePluginManager getQueuePluginManager() {
