@@ -1,0 +1,33 @@
+<svg width='400' height='400' onload="on_load(evt)">
+   <script><![CDATA[
+      var ii=20;
+      var addit=true;
+   	function on_load(evt)
+      {
+	   	// Save a pointer to the svgDocument object so that we can use it later
+   		svgdoc = evt.getCurrentNode().getOwnerDocument();
+         alert("Success with svgdoc=" + svgdoc);
+      }
+
+      function change_attribut(evt)
+      {
+         svgdoc=evt.getTarget().getOwnerDocument();
+         objet=svgdoc.getElementById('rectangle');
+         objet.setAttribute('width',ii);
+         objet.setAttribute('height','80');
+         objet.getStyle().setProperty('fill','red')
+         if (addit)
+            ii+=20;
+         else
+            ii-=20;
+         if (ii == 200)
+            addit=false;
+         if (ii == 20)
+            addit=true;
+      }
+   ]]></script>
+   <g id='affiche'>
+      <text id='texte' x='250' y='150' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>Click: Ein xmlBlaster update kommt an ...</text>
+      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='100' width='20' height='50' style='fill:blue'/>
+   </g>
+</svg>
