@@ -142,7 +142,7 @@
 
          <!-- A full blown example: -->
          <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
-            <callback type='XML-RPC' sessionId='4e56890ghdFzj0' pingInterval='60000'>
+            <callback type='XML-RPC' sessionId='4e56890ghdFzj0' pingInterval='60000' useForSubjectQueue='true'>
                http:/www.mars.universe:8080/RPC2
                <ptp>true</ptp>
                <compress type='gzip' minSize='1000'/>
@@ -158,6 +158,8 @@
           The callback server is pinged every 60000 millis (1 minute)
           and the callback update() method is invoked with the noted sessionId 
           so that the client can trust the update.
+          The callback address of this session is used for subject queue messages as
+          well (which is the default).
          -->
       </qos>
 
@@ -191,7 +193,7 @@
    <see type="API">org.xmlBlaster.client.LoginQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
