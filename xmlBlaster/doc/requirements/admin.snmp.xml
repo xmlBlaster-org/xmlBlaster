@@ -26,36 +26,40 @@
    </example>
 
    <configuration where="server">
-      <p>
-      Here is the xmlBlaster MIB:
-      </p>
       <table border="1">
          <tr>
-            <td>MIB entry</td>
-            <td>Read or Write</td>
+            <td>Property</td>
+            <td>Default / Example</td>
             <td>Description</td>
             <td>Implemented</td>
          </tr>
 
          <tr>
-            <td>momTable</td>
-            <td>R</td>
-            <td>Table of all MoMs</td>
-            <td>no</td>
+            <td>admin.snmp</td>
+            <td>true</td>
+            <td>Switch SNMP plugin on or off</td>
+            <td>yes</td>
          </tr>
 
          <tr>
-            <td>momLoggingLevel</td>
-            <td>R/W</td>
-            <td>Configure the logging level</td>
-            <td>no</td>
+            <td>admin.snmp.port</td>
+            <td>705</td>
+            <td>The port where the SNMP agent listens for our SNMP subagent with AGENTX protocol</td>
+            <td>yes</td>
          </tr>
 
          <tr>
-            <td>momClientIsMoM</td>
-            <td>R</td>
-            <td>Is the client another xmlBlaster cluster node?</td>
-            <td>no</td>
+            <td>admin.snmp.hostname</td>
+            <td>localhost</td>
+            <td>The host where out SNMP subagent looks for the SNMP agent</td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>admin.snmp.debug</td>
+            <td>false</td>
+            <td>Setting to true switches JAX debugging on</td>
+            <td>yes</td>
          </tr>
 
       </table>
@@ -67,27 +71,26 @@
       Write the subagent.
       </li>
       <li>
-      Specify the MIB.
-      </li>
-      <li>
       Add test cases.
       </li>
    </ol>
    </todo>
    
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/engine/admin/extern/snmp/README</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/engine/admin/extern/snmp/XMLBLASTER-MIB</see>
    <see type="INTERNET">http://www.snmplink.org/</see>
    <see type="INTERNET">http://www.et.put.poznan.pl/snmp/main/mainmenu.html</see>
    <see type="INTERNET">http://snmp.cs.utwente.nl</see>
-   <see type="INTERNET">http://wttools.sourceforge.net/remotecons/package.html</see>
    
-   <see type="API">org.xmlBlaster.Main</see>
+   <see type="API">org.xmlBlaster.engine.admin.extern.SnmpGateway</see>
    
    <author>udo.thalmann@avitech.de</author>
    <author>Gregor.Novak@avitech.de</author>
+   <author>ruff@swand.lake.de</author>
    
    <date>2002 06 11</date>
    
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
