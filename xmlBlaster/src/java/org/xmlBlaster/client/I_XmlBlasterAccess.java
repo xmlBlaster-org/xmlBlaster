@@ -65,6 +65,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * your command line arguments):
     * </p>
     * <pre>
+    *  import org.xmlBlaster.util.Global;
+    *  ...
     *  I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
     *  xmlBlasterAccess.connect(null, null);
     * </pre>
