@@ -86,6 +86,7 @@ Else add it manually.
    <property name="demo.dir" value="./demo"/>
    <property name="bin.dir" value="./bin"/>
    <property name="lib.dir" value="./lib"/>
+   <property name="lib.dir.absolute" location="./lib"/>
    <property name="req.dir" value="./doc/requirements"/>
    <property name="packages" value="org.xmlBlaster.*"/>
  
@@ -118,14 +119,6 @@ Else add it manually.
    <property name="compiler" value="gcc"/> <!-- "gcc" "VC6" "bcc" -->
    <property name="debug" value="true" />
    <property name="chmod.fail" value="true" />
-
-   <!-- condition property="windows">
-      <os family="windows"/>
-   </condition>
-   <condition property="linux">
-      <os family="unix" arch="x86"/>
-   </condition -->
-      <!-- ${os.name} = Linux -->
 
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value="2.3.7"/>
@@ -257,11 +250,16 @@ Else add it manually.
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
             <property name="BUILD_UNIX" value="true" />
+            <property name="unix" value="true" />
          </case>
          <default>
             <property name="BUILD_WINDOWS" value="true" />
+            <property name="windows" value="true" />
          </default>
       </switch>
+      <condition property="linux">
+         <equals arg1="${os.name}" arg2="Linux"/>
+      </condition>
    </target>
  
    <!-- =================================================================== -->
@@ -666,6 +664,7 @@ Else add it manually.
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
    <target name="cpp-lib" depends="prepare">
+
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
       <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
@@ -782,7 +781,6 @@ Else add it manually.
       <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
       <mkdir dir="${build.dir}/obj"/>
       <mkdir dir="${testsuite.dir}/c++/bin"/>
-      <!-- echo message="TRYING: ${CORBACPP_HOME}/lib/libmico${CORBACPP_VER}.so"/ -->
       <cc debug="true" link="executable"
           outfile="${testsuite.dir}/c++/bin/${exeName}"
           objdir="${build.dir}/obj"
@@ -796,41 +794,21 @@ Else add it manually.
          <sysincludepath location="${CORBACPP_HOME}/include" />
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
-         <!-- libset refid="libs"/ -->
-         <!-- libset libs="shared">
-            <libpath location="${CORBACPP_HOME}/lib"/>
-            <fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}.so"/>
-            <fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}"/>
-            <fileset dir="${CORBACPP_HOME}/lib" includes="mico${CORBACPP_VER}"/>
-         </libset -->
-         <!-- fileset dir="${STL_HOME}/lib" includes="libstlport_gcc.so" /-->
-         <!-- fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}.so,libmicocoss${CORBACPP_VER}.so" />
-         <fileset dir="${XMLCPP_HOME}/lib" includes="libxerces-c${XMLCPP_VER}.so" />
-         <fileset dir="${lib.dir}" includes="libxmlBlasterClient.so" / -->
 
          <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
          <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" />
          <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
          <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
-         <syslibset libs="dl"/>
-         <!-- syslibset libs="dl" if="unix"/ -->
-         <!-- syslibset caseSensitive="true"><include name="dl"/></syslibset --> <!-- if="linux" -->
-         <!-- syslibset includes="pthread,dl,stdc++" /-->
+         <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
 
-         <!-- fileset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-            <libstlport_gcc>
-            <libpath location="${STL_HOME}/lib"/>
-            <libpath location="${CORBACPP_HOME}/lib"/>
-            <libpath location="${XMLCPP_HOME}/lib"/>
-            <libpath location="${lib.dir}"/>
-         </fileset -->
+         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+
          <defineset>
             <define name="MICO" value="1" />
          </defineset>
-         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${lib.dir}" />
       </cc>
    </target>
  
