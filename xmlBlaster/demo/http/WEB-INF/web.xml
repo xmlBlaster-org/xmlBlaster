@@ -23,6 +23,10 @@
     <mime-type>image/svg+xml</mime-type>
   </mime-mapping>
 
+  <mime-mapping>
+    <extension>svgz</extension>
+    <mime-type>image/svg+xml</mime-type>
+  </mime-mapping>
 
   <!-- Core servlets to support persistent http -->
   <servlet>
@@ -42,7 +46,7 @@
     <init-param>
       <param-name>time</param-name>
       <param-value>false</param-value>
-      <description>dump some performance timestamps</description>
+      <description>dump some performance time stamps</description>
     </init-param>
     <init-param>
       <param-name>call</param-name>
