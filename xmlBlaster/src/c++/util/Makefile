@@ -7,12 +7,9 @@ all: CompatibleCorba.o Log.o
 
 test: all
 
-PropertyDef.h:
-	java org.xmlBlaster.util.cpp.SetCCProperties > PropertyDef.h
-
 CompatibleCorba.o: CompatibleCorba.cpp PropertyDef.h
 
 Log.o: Log.cpp PropertyDef.h
 
 clean: 
-	$(RM) *.o PropertyDef.h
+	$(RM) *.o

@@ -66,12 +66,7 @@ xmlBlaster to jutil). Some slight differences are:
 
 - No direct way of reading the IOR string via HTTP (see below)
 
-There is a java class called SetCCProperties which is used to generate a
-header file called util/PropertyDef.h which contains platform specific
-definitions (I did this because I am laisy, and this is the easiest way to
-retrieve such information). This class is called under the building process.
-
-There is another small java helper application which you might use.
+There is a small java helper application which you might use.
 It is called HttpIorForCpp. It reads the IOR string of the xmlBlaster server
 and writes it to the standard output. This is done to avoid
 to use some (big) www library for the only purpose to implement this little
