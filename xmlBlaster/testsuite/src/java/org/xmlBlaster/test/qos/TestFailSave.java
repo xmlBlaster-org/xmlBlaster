@@ -25,7 +25,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
@@ -48,8 +47,8 @@ import junit.framework.*;
 public class TestFailSave extends TestCase implements I_ConnectionStateListener
 {
    private static String ME = "TestFailSave";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -65,18 +64,14 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
 
    private final long reconnectDelay = 2000L;
 
-   /**
-    * Constructs the TestFailSave object.
-    * <p />
-    * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
-    */
-   public TestFailSave(Global glob, String testName, String loginName)
-   {
+   public TestFailSave(String testName) {
+      this(null, testName);
+   }
+
+   public TestFailSave(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog(null);
-      this.senderName = loginName;
+      this.senderName = testName;
    }
 
    /**
@@ -84,8 +79,10 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
     * <p />
     * Connect to xmlBlaster and login
     */
-   protected void setUp()
-   {
+   protected void setUp() {
+      this.glob = (this.glob == null) ? new Global() : this.glob;
+      this.log = this.glob.getLog("test");
+
       glob.init(Util.getOtherServerPorts(serverPort));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
@@ -125,14 +122,12 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   protected void tearDown()
-   {
+   protected void tearDown() {
       log.info(ME, "Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
 
@@ -144,24 +139,29 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
             assertEquals("Wrong number of message erased", (numPublish - numStop), arr.length);
          else
             assertEquals("Wrong number of message erased", numPublish, arr.length);
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, "XmlBlasterException: " + e.getMessage());
+      }
+      finally {
+         con.disconnect(null);
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
-      con.disconnect(null);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
 
-      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
-      this.serverThread = null;
+         // reset to default server port (necessary if other tests follow in the same JVM).
+         Util.resetPorts(glob);
 
-      // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+         this.glob = null;
+         this.con = null;
+         Global.instance().shutdown();
+      }
    }
-
 
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void doSubscribe()
-   {
+   public void doSubscribe() {
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
@@ -178,13 +178,11 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
       }
    }
 
-
    /**
     * TEST: Construct a message and publish it.
     * <p />
     */
-   public void doPublish(int counter) throws XmlBlasterException
-   {
+   public void doPublish(int counter) throws XmlBlasterException {
       String oid = "Message" + "-" + counter;
       log.info(ME, "Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
@@ -261,17 +259,6 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
    }
 
    /**
-    * Method is used by TestRunner to load these tests
-    */
-   public static Test suite()
-   {
-       TestSuite suite= new TestSuite();
-       String loginName = "Tim";
-       suite.addTest(new TestFailSave(new Global(), "testFailSave", loginName));
-       return suite;
-   }
-
-   /**
     * Invoke: java org.xmlBlaster.test.qos.TestFailSave
     * <p />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
@@ -284,7 +271,7 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
          System.out.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestFailSave testSub = new TestFailSave(glob, "TestFailSave", "Tim");
+      TestFailSave testSub = new TestFailSave(glob, "TestFailSave");
       testSub.setUp();
       testSub.testFailSave();
       testSub.tearDown();
