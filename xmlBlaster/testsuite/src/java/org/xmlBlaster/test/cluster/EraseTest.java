@@ -57,7 +57,7 @@ public class EraseTest extends TestCase {
 
    public EraseTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new Global(null, true, false);
    }
 
    /**

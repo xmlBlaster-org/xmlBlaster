@@ -50,7 +50,7 @@ public class DirtyReadTest extends TestCase {
 
    public DirtyReadTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new Global(null, true, false);
    }
 
    /**

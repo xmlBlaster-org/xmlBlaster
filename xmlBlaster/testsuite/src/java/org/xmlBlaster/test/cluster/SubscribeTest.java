@@ -57,7 +57,7 @@ public class SubscribeTest extends TestCase {
 
    public SubscribeTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new Global(null, true, false);
    }
 
    /**

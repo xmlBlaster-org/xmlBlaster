@@ -57,7 +57,7 @@ public class SubscribeXPathTest extends TestCase {
 
    public SubscribeXPathTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new Global(null, true, false);
    }
 
    /**

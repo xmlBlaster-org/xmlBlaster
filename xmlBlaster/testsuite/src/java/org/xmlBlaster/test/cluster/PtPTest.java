@@ -56,7 +56,7 @@ public class PtPTest extends TestCase {
 
    public PtPTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new Global(null, true, false);
    }
 
    /**
@@ -162,7 +162,7 @@ public class PtPTest extends TestCase {
     * <pre>
     */
    public static void main(String args[]) {
-      Global glob = new Global();
+      Global glob = new Global(null, true, false);
       if (glob.init(args) != 0) {
          System.exit(0);
       }
