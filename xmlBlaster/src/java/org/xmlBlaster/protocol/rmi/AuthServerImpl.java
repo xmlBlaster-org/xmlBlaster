@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.1 2000/06/13 15:14:45 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -14,26 +14,27 @@ import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 
 /**
  * Interface to login to xmlBlaster.
  * @author ruff@swand.lake.de
  */
-public class AuthServerImpl implements I_AuthServer
+public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_AuthServer
 {
    private String ME = "AuthServerImpl";
    private Authenticate authenticate;
 
 
    /**
-    * One instance implements an authentication server. 
+    * One instance implements an authentication server.
     * <p />
     * This server delegates all requests to xmlBlaster.authenticate package
     * @parma authenticate The authentication service
     * @param blasterNative The interface to access xmlBlaster
     */
-   public AuthServerImpl(Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
+   public AuthServerImpl(Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor ...");
       this.authenticate = authenticate;

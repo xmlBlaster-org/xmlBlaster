@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.1 2000/06/13 15:14:45 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -14,8 +14,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
-import java.util.*;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 
 /**
@@ -23,7 +23,7 @@ import java.rmi.RemoteException;
  * <p />
  * @see org.xmlBlaster.engine.RequestBroker
  */
-public class XmlBlasterImpl implements org.xmlBlaster.protocol.rmi.I_XmlBlaster
+public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_XmlBlaster
 {
    private final String ME = "XmlBlasterImpl";
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
@@ -31,7 +31,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.rmi.I_XmlBlaster
 
    /**
     */
-   public XmlBlasterImpl(org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws XmlBlasterException
+   public XmlBlasterImpl(org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException, XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor ...");
       this.blasterNative = blasterNative;

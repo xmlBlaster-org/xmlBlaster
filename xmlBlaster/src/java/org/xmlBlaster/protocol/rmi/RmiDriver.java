@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.1 2000/06/13 15:14:45 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -58,7 +58,7 @@ import java.rmi.Naming;
  * Invoke options: <br />
  * <pre>
  *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
- *        -Djava.security.policy=${XMLBLASTER_HOME} \
+ *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
  *        -Djava.rmi.server.hostname=hostname.domainname
  *        ...
  * </pre>
@@ -105,8 +105,14 @@ public class RmiDriver implements I_Driver
          if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
       }
 
-      authRmiServer = new AuthServerImpl(authenticate, xmlBlasterImpl);
-      xmlBlasterRmiServer = new XmlBlasterImpl(xmlBlasterImpl);
+      try {
+         authRmiServer = new AuthServerImpl(authenticate, xmlBlasterImpl);
+         xmlBlasterRmiServer = new XmlBlasterImpl(xmlBlasterImpl);
+      }
+      catch (RemoteException e) {
+         Log.error(ME, e.toString());
+         throw new XmlBlasterException("RmiDriverFailed", e.toString());
+      }
 
       bindToRegistry();
 
@@ -133,15 +139,15 @@ public class RmiDriver implements I_Driver
    /**
     * Publish the RMI xmlBlaster server to rmi registry.
     * <p />
-    * The bind name is typically "rmi://localhost/xmlBlaster"
+    * The bind name is typically "rmi://localhost:1099/xmlBlaster"
     * @exception XmlBlasterException
     *                    RMI registry error handling
     */
    private void bindToRegistry() throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "bindToRegistry() ...");
+      int registryPort = Property.getProperty("RMI.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 7619
       try {
-         int registryPort = Property.getProperty("RMI.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 7619
          if (registryPort > 0) {
             // Start a 'rmiregistry' if desired
             java.rmi.registry.LocateRegistry.createRegistry(registryPort);
@@ -156,18 +162,24 @@ public class RmiDriver implements I_Driver
             Log.warning(ME, "Can't determin your hostname");
             hostname = "localhost";
          }
-         authBindName = "rmi://" + hostname + "/I_AuthServer";
-         xmlBlasterBindName = "rmi://" + hostname + "/I_XmlBlaster";
+         String prefix = "rmi://";
+         authBindName = prefix + hostname + ":" + registryPort + "/I_AuthServer";
+         xmlBlasterBindName = prefix + hostname + ":" + registryPort + "/I_XmlBlaster";
 
          // Publish RMI based xmlBlaster server ...
          try {
             Naming.rebind(authBindName, authRmiServer);
             Log.info(ME, "Bound authentication RMI server to registry with name '" + authBindName + "'");
+         } catch (Exception e) {
+            Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
+            throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.toString());
+         }
+         try {
             Naming.rebind(xmlBlasterBindName, xmlBlasterRmiServer);
             Log.info(ME, "Bound xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
          } catch (Exception e) {
-            Log.error(ME+".RmiRegistryFailed", e.toString());
-            throw new XmlBlasterException(ME+".RmiRegistryFailed", e.toString());
+            Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
+            throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
          }
       } catch (Exception e) {
          e.printStackTrace();
