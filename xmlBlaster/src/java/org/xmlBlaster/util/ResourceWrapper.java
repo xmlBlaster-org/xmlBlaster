@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.7 2000/06/01 16:02:51 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.8 2000/06/01 16:46:29 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Entering 'busy' state. 
+    * Entering 'busy' state.
     */
    void toBusy()
    {
@@ -113,7 +113,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Entering 'idle' state. 
+    * Entering 'idle' state.
     */
    void toIdle()
    {
@@ -123,7 +123,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Set timeout and initialize timer. 
+    * Set timeout and initialize timer.
     */
    private void setBusyToIdle(long val)
    {
@@ -137,7 +137,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Start the timeout. 
+    * Start the timeout.
     */
    private void startBusyToIdleTimeout()
    {
@@ -148,7 +148,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Stop the timeout. 
+    * Stop the timeout.
     */
    private void stopBusyToIdleTimeout()
    {
@@ -160,7 +160,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Set timeout and initialize timer. 
+    * Set timeout and initialize timer.
     */
    private void setIdleToErase(long val)
    {
@@ -174,7 +174,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Start the idle to erase timeout. 
+    * Start the idle to erase timeout.
     */
    private void startIdleToEraseTimeout()
    {
@@ -185,7 +185,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Stop the idle to erase timeout. 
+    * Stop the idle to erase timeout.
     */
    private void stopIdleToEraseTimeout()
    {
@@ -230,7 +230,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * How long am i running in busy mode. 
+    * How long am i running in busy mode.
     * @return Milliseconds since creation or -1 if not known
     */
    public long busyElapsed()
@@ -268,7 +268,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Restart count down in busy mode. 
+    * Restart count down in busy mode.
     */
    public void touchBusy()
    {
@@ -293,7 +293,7 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Acces the resource object.
+    * Access the resource object.
     * @return Your resource object
     */
    public Object getResource()
@@ -355,17 +355,6 @@ public class ResourceWrapper implements I_Timeout
 
 
    /**
-    * Set new life span busyToIdleTimeout.
-    * @param busyToIdleTimeout New busyToIdleTimeout in milliseconds
-    */
-   public void setBusyTimeout(long busyToIdleTimeout)
-   {
-      this.busyToIdleTimeout = busyToIdleTimeout;
-      touchBusy();
-   }
-
-
-   /**
     * Access the construction date of this ResourceWrapper.
     * @return Time in milliseconds since midnight, January 1, 1970 UTC
     */
@@ -399,12 +388,12 @@ public class ResourceWrapper implements I_Timeout
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
       sb.append(offset).append("<").append(ME).append(" instanceId='").append(instanceId);
-      sb.append(" name='").append(resource.toString());
+      //sb.append(" name='").append(resource.toString());
       sb.append("'>");
 
       sb.append(offset).append("   <busyToIdle timeout='").append(busyToIdleTimeout).append("' handle='").append(busyToIdleTimeoutHandle).append("' />");
       sb.append(offset).append("   <idleToErase timeout='").append(idleToEraseTimeout).append("' handle='").append(idleToEraseTimeoutHandle).append("' />");
-      
+
       sb.append(offset).append("</").append(ME).append("'>");
       return sb.toString();
    }

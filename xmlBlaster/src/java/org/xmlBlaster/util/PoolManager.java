@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.7 2000/06/01 16:02:51 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.8 2000/06/01 16:46:28 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -19,7 +19,7 @@ import java.util.Enumeration;
 /**
  * A little framework to handle a pool of limited resources.
  * <p />
- * You can use this pool as a base class for handling of your limited resources
+ * You can use this pool as a base class handling of your limited resources
  * like a 'JDBC connection pool' or a 'thread pool'.
  * <p />
  * The important attributes of a resource are gathered in the <code>ResourceWrapper</code> class.
@@ -71,9 +71,10 @@ import java.util.Enumeration;
  * <p>
  * For example if you want to pool user login sessions and want to do
  * an auto logout after 60 minutes, you would use the busyToIdleTimeout and set it to 60*60*1000.<br />
- * If a user is active you can refresh the session with releaseRefresh().<br />
+ * If a user is active you can refresh the session with busyRefresh().<br />
  * Often you want to use your own generated sessionId as the primary key
- * for this resource, you can pass it as the instanceId argument to reserve(sessionId).
+ * for this resource, you can pass it as the instanceId argument to reserve(sessionId).<br />
+ * (See example [2] in this main() method)
  * </p>
  * <p>
  * If you want to pool JDBC connections, reserve() a connection before you do your query
@@ -81,7 +82,8 @@ import java.util.Enumeration;
  * want to close connections after peak usage, you could set a idleToEraseTimeout,
  * to erase your JDBC connection after some time not used (reducing the current pool size).<br />
  * Not that in this example the connections are anonymous (all are logged in to the database
- * with the same user name), it is not important which you receive.
+ * with the same user name), it is not important which you receive.<br />
+ * (See example [1] in this main() method)
  * </p>
  *
  *
@@ -113,7 +115,7 @@ public class PoolManager
 
 
    /**
-    * Create a new pool instance with the desired behaviour.
+    * Create a new pool instance with the desired behavior.
     * <p />
     * Implementation:<br />
     * There are two list in this class
@@ -124,16 +126,20 @@ public class PoolManager
     * If you ask for a new resource, this will move into the busy list<br />
     * Is a resource released or a specified timeout occurred, it is moved into the idle list.
     * <p />
-    * @param poolName       A nice name for this resource
+    * @param poolName       A nice name for this pool manager instance.
     * @param maxInstances   Max. number of resources in this pool.
     * @param busyToIdleTimeout Max. busy time of this resource in milli seconds<br />
     *                       On timeout it changes state from 'busy' to 'idle'.<br />
     *                       You can overwrite this value for each resource instance<br />
-    *                       0 switches it off
+    *                       0 switches it off<br />
+    *                       You get called back through I_PoolManager.busyToIdle() on timeout
+    *                       allowing you to code some specific handling.
     * @param idleToEraseTimeout Max. idle time span of this resource in milli seconds<br />
     *                     On timeout it changes state from 'idle' to 'undef' (it is deleted).<br />
     *                     You can overwrite this value for each resource instance<br />
-    *                     0 switches it off
+    *                     0 switches it off<br />
+    *                     You get called back through I_PoolManager.toErased() on timeout
+    *                     allowing you to code some specific handling.
     */
    public PoolManager(String poolName, I_PoolManager callback, int maxInstances, long busyToIdleTimeout, long idleToEraseTimeout)
    {
@@ -145,8 +151,11 @@ public class PoolManager
       this.setIdleToEraseTimeout(idleToEraseTimeout);
       this.busy = new java.util.Hashtable(maxInstances);
       this.idle = new java.util.Vector(maxInstances);
-      if (busyToIdleTimeout > 0)
-         Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances and a default recycling-timeout of " + TimeHelper.millisToNice(this.busyToIdleTimeout));
+      if (busyToIdleTimeout > 0 || idleToEraseTimeout > 0) {
+         Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances" +
+                      " and a default busy recycling-timeout of " + TimeHelper.millisToNice(this.busyToIdleTimeout) +
+                      " and a default idle recycling-timeout of " + TimeHelper.millisToNice(this.idleToEraseTimeout));
+      }
       else
          Log.info(ME, "Created PoolManager with a maximum of " + maxInstances + " instances without auto-recycling.");
    }
@@ -244,9 +253,9 @@ public class PoolManager
     * @param instanceId If given, the delivered ID is used:
     *             If in busy list found, this is returned, else a new is created.<br />
     *             null - The PoolManager generates a simple one (hashCode())<br />
-    *             ""   - The PollManager generates a random, unique in universe session ID
+    *             ""   - The PoolManager generates a random, unique in universe session ID
     *
-    * @return rw The resource handle (always != null, otherwise an exception is thrown)
+    * @return rw The resource handle (always != null)
     *
     * @exception XmlBlasterException Error with random generator
     */
@@ -288,7 +297,7 @@ public class PoolManager
 
 
    /**
-    * Free a resource explicitly.
+    * Release a resource explicitly from 'busy' into the 'idle' pool. 
     * @param instanceId The unique resource ID
     * @exception XmlBlasterException
     */
@@ -345,7 +354,7 @@ public class PoolManager
 
 
    /**
-    * Synchronized idle - busy swapper.
+    * Idle - busy swapper. 
     */
    private void swap(ResourceWrapper rw, boolean toBusy)
    {
@@ -420,7 +429,7 @@ public class PoolManager
     * @param instanceId The unique resource ID
     * @exception XmlBlasterException ResourceNotFound
     */
-   public void releaseRefresh(String instanceId) throws XmlBlasterException
+   public void busyRefresh(String instanceId) throws XmlBlasterException
    {
       ResourceWrapper rw = findLow(instanceId);
       rw.touchBusy();
@@ -429,21 +438,7 @@ public class PoolManager
 
 
    /**
-    * Find a 'busy' resource and change its timeout life cycle.
-    * @param instanceId The unique resource ID
-    * @param timeout New timeout in milliseconds (for the recycle thread).
-    *                0: No automatic recycling
-    * @exception XmlBlasterException ResourceNotFound
-    */
-   public void setTimeout(String instanceId, long timeout) throws XmlBlasterException
-   {
-     ResourceWrapper rw = findLow(instanceId);
-     rw.setBusyTimeout(timeout);
-     if (Log.TRACE) Log.trace(ME, "setTimeout(" + timeout + " millisec) for '" + instanceId + "'");
-   }
-
-
-   /**
+    * Number of resources in the 'busy' list. 
     * @return Number of 'busy' resources
     */
    public int getNumBusy()
@@ -453,6 +448,7 @@ public class PoolManager
 
 
    /**
+    * Number of resources in the 'idle' list. 
     * @return Number of 'idle' resources
     */
    public int getNumIdle()
@@ -571,7 +567,7 @@ public class PoolManager
 
 
    /**
-    * Recycle idle resource after timeout.
+    * Erase an idle resource after timeout. 
     * <p />
     * This method is a callback from ResourceWrapper
     * @parameter userData The ResourceWrapper object
@@ -585,7 +581,7 @@ public class PoolManager
 
 
    /**
-    * Explicitly remove a resource. 
+    * Explicitly remove a resource.
     * @param instanceId The unique resource ID
     */
    public void erase(String instanceId)
@@ -596,7 +592,7 @@ public class PoolManager
 
 
    /**
-    * Remove a resource. 
+    * Remove a resource.
     * @param rw The resource wrapper object
     */
    private void erase(ResourceWrapper rw)
@@ -668,7 +664,7 @@ public class PoolManager
          }
 
          // These methods are used by your application to get a recource ...
-         TestResource reserve() { return reserve(null); }
+         TestResource reserve() { return reserve(""); }
          TestResource reserve(String instanceId) {
             Log.info(ME, "Entering reserve(" + instanceId + ") ...");
             try {
@@ -695,9 +691,9 @@ public class PoolManager
 
       // And now test it ...
 
-      // [1] Test with generated instance ID
+      // [1] Test with generated instance ID and busy timeout
       if (true) {
-         Log.info(ME, "\nStarting TEST 1 ...");
+         Log.info(ME, "=========================\nStarting TEST 1 ...");
          TestPool testPool = new TestPool(2000, 0);
          TestResource r0 = testPool.reserve();
          TestResource r1 = testPool.reserve();
@@ -727,9 +723,9 @@ public class PoolManager
       }
 
 
-      // [2] Test with supplied instance ID
+      // [2] Test with supplied instance ID and busy timeout
       if (true) {
-         Log.info(ME, "\nStarting TEST 2 ...");
+         Log.info(ME, "=========================\nStarting TEST 2 ...");
          TestPool testPool = new TestPool(2000, 0);
          TestResource r0 = testPool.reserve("ID-0");
          TestResource r1 = testPool.reserve("ID-1");
@@ -757,13 +753,23 @@ public class PoolManager
          if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 2)
             Log.panic(ME, "TEST 2.4 FAILED: Wrong number of busy/idle resources");
 
+         testPool.poolManager.cleanup();
+         Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 0)
+            Log.panic(ME, "TEST 2.5 FAILED: Wrong number of busy/idle resources");
+
+         testPool.reserve("ID-6");
+         Log.plain(ME, testPool.poolManager.toXml());
+         if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 0)
+            Log.panic(ME, "TEST 2.6 FAILED: Wrong number of busy/idle resources");
+
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
          Log.plain(ME, testPool.poolManager.toXml());
       }
 
-      // [3] Test with supplied instance ID
+      // [3] Test with supplied instance ID, busy timeout and erase timeout
       if (true) {
-         Log.info(ME, "\nStarting TEST 3 ...");
+         Log.info(ME, "=========================\nStarting TEST 3 ...");
          TestPool testPool = new TestPool(2000, 3000); // erase resource after 3 sec in idle state
          TestResource r0 = testPool.reserve("ID-0");
          TestResource r1 = testPool.reserve("ID-1");
