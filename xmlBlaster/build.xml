@@ -161,6 +161,7 @@ TODO
 
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
+   <property name="cpp.obj.dir" value="${build.dir}/objCPP" />
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
    <property name="XMLCPP_VER" value=""/>  <!-- 1_7_0 -->
@@ -174,6 +175,7 @@ TODO
    <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
    <property name="src.c.dir" value="./src/c"/>
    <property name="c.debug" value="true" />
+   <property name="c.obj.dir" value="${build.dir}/objC" />
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -249,7 +251,7 @@ TODO
       <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
    </compiler>
 
-   <!-- Compile Intel C -->
+   <!-- Compile Intel C++ -->
    <compiler id="icc" name="icc" if="use-icc">
       <compilerarg value="-Wall" />
       <compilerarg value="-wd810" />
@@ -257,9 +259,8 @@ TODO
       <compilerarg value="-wd188" />
       <compilerarg value="-wd193" />
       <compilerarg value="-wd279" />
+      <compilerarg value="-wd383" />          <!-- C++ suppress char * to string temporary warn -->
       <compilerarg value="-D_REENTRANT" />
-      <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 and 5.5 -->
@@ -1728,7 +1729,7 @@ TODO
          06/24/2003  11:46 AM         7,195,648 xmlBlasterClient.pdb
          06/24/2003  11:46 AM             2,957 xmlBlasterClient.rsp
        -->
-      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${cpp.obj.dir}"/>
 
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
 
@@ -1738,9 +1739,10 @@ TODO
 
       <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
       <cc debug="${cpp.debug}" link="${CPP_LINK}"
-          outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
+          outfile="${lib.dir}/xmlBlasterClient" objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
          <compiler refid="g++"/>
+         <compiler refid="icc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
@@ -1921,13 +1923,14 @@ TODO
 
    <target name="compileCppExe" description="For internal use only (C++ clients build)">
       <echo message="Compiling of C++ test client '${compileCppSourcePath}/bin/${exeName}' ..."/>
-      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${cpp.obj.dir}"/>
       <mkdir dir="${compileCppSourcePath}/bin"/>
       <cc debug="${cpp.debug}" link="executable"
           outfile="${compileCppSourcePath}/bin/${exeName}"
-          objdir="${build.dir}/obj"
+          objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
          <compiler refid="g++"/>
+         <compiler refid="icc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
          <compiler refid="CC"/>
@@ -2003,6 +2006,50 @@ TODO
 
          </linker>
 
+         <linker name="icc"  if="use-icc">
+
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
+            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+
+            <!-- TAO -->
+            <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/tao/PortableServer" libs="TAO_PortableServer" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" libs="TAO_CosNaming" if="TAO" />
+
+            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+
+            <!-- MICO -->
+            <libset dir="${CORBACPP_HOME}/bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
+            <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
+
+            <!-- ORBIX -->
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- OMNIORB-->
+            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
+
+            <!-- ORBACUS-->
+            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+
+            <!-- xmlBlasterClient.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+
+            <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />
+
+            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+
+         </linker>
+
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
@@ -2028,6 +2075,8 @@ TODO
             <!-- xmlBlasterClient.dll -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
          </linker>
+
+         <linker name="icc"  if="use-icc" />
 
          <linker name="bcc"  if="use-bcc" />
 
@@ -2068,7 +2117,7 @@ TODO
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
    <target name="c-lib" depends="prepare-cpp" description="C client integration - create libxmlBlasterClientC.sl (dll)">
-      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${c.obj.dir}"/>
 
       <!-- Copy msgUtil.c so that "@version@" is replaced to current values by ant -->
       <!-- Below we exclude msgUtil.c from compilation and compile msgUtil_CopyByAnt.c with the current version etc. instead -->
@@ -2078,7 +2127,7 @@ TODO
       <cc debug="${c.debug}"
           link="${C_LINK}"
           outfile="${lib.dir}/xmlBlasterClientC"
-          objdir="${build.dir}/obj"
+          objdir="${c.obj.dir}"
           multithreaded="true">
          <compiler refid="gcc"/>
          <compiler refid="icc"/>
@@ -2150,11 +2199,11 @@ TODO
 
    <target name="compileCExe" description="For internal use only (C clients build)">
       <echo message="Compiling of C test client '${compileCSourcePath}/bin/${exeName}' to '${compileCSourcePath}/bin/${exeName}'"/>
-      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${c.obj.dir}"/>
       <mkdir dir="${compileCSourcePath}/bin"/>
       <cc debug="${c.debug}" link="executable"
           outfile="${compileCSourcePath}/bin/${exeName}"
-          objdir="${build.dir}/obj"
+          objdir="${c.obj.dir}"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
          <compiler refid="icc"/>
@@ -2226,7 +2275,7 @@ TODO
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
     <target name="c-clean" depends="prepare" description="Remove C object files">
-       <delete dir="${build.dir}/obj"/>
+       <delete dir="${c.obj.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
           <fileset dir="${src.c.dir}/util" includes="msgUtil_CopyByAnt.c,*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
@@ -2249,7 +2298,7 @@ TODO
     </target>
 
     <target name="cpp-clean" depends="prepare" description="Remove C++ object files">
-       <delete dir="${build.dir}/obj"/>
+       <delete dir="${cpp.obj.dir}"/>
        <delete dir=".c_dependency_cache"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${testsuite.dir}/src/c++" includes="*.o"/>
