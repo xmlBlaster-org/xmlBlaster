@@ -413,6 +413,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
                              socketDataHolder->methodName, socketDataHolder->secretSessionId,
                              data, dataLen, cb->debug, &rawMsgLen);
    free(data);
+   free(msgUnit.content);
 
    numSent = writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
 

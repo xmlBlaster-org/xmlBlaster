@@ -161,7 +161,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
 #              ifdef _LINUX
                strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
 #              endif
-               printf("[XmlBlasterConnectionUnparsed] ERROR Connecting to xmlBlaster (connect failed) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed, %s\n", serverHostName, servTcpPort, errnoStr);
+               printf("[XmlBlasterConnectionUnparsed] ERROR Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed, %s\n", serverHostName, servTcpPort, errnoStr);
             }
             return false;
          }

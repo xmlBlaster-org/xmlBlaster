@@ -108,7 +108,7 @@ void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
             printf("[XmlBlasterAccessUnparsed] join problem return value is %d\n", retVal);
          }
          else {
-            if (xa->debug) printf("[XmlBlasterAccessUnparsed] join succeded\n");
+            if (xa->debug) printf("[XmlBlasterAccessUnparsed] pthread_join(id=%ld) succeded\n", xa->callbackThreadId);
          }
          xa->callbackThreadId = 0;
       }
@@ -420,7 +420,7 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>"); /* Return QoS: Everything is OK */
    }
    if (testException) {
-      strncpy0(xmlBlasterException->errorCode, "user.notWanted", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(xmlBlasterException->errorCode, "user.clientCode", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(xmlBlasterException->message, "I don't want these messages", XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
    }
