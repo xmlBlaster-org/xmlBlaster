@@ -49,10 +49,12 @@ public class BigMessage extends TestCase implements I_Callback
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7615;
    private String oid = "BigMessage";
-   private int contentSize = 2 * 1000 * 1000; // 2 MB
+   private int contentSize = 3 * 1000 * 1000; // 3 MB
 
    private boolean messageArrived = false;
    private String assertInUpdate = null;
+
+   private StopWatch stopWatchRoundTrip = null;
 
    /**
     * Constructs the BigMessage object. 
@@ -75,6 +77,8 @@ public class BigMessage extends TestCase implements I_Callback
     * Then we connect as a client
     */
    protected void setUp() {
+      contentSize = glob.getProperty().get("contentSize", contentSize);
+
       glob.init(Util.getOtherServerPorts(serverPort));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing a big message");
@@ -132,7 +136,8 @@ public class BigMessage extends TestCase implements I_Callback
          PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
          MessageUnit msgUnit = new MessageUnit("<key oid='" + oid + "'/>", content, "<qos/>");
          stopWatch = new StopWatch();
-         
+         stopWatchRoundTrip = new StopWatch();
+
          con.publish(msgUnit);
 
          long avg = 0;
@@ -156,7 +161,7 @@ public class BigMessage extends TestCase implements I_Callback
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
 
-      waitOnUpdate(12000L);
+      waitOnUpdate(20000L);
       assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("Message not arrived", true, messageArrived);
 
@@ -179,8 +184,17 @@ public class BigMessage extends TestCase implements I_Callback
          return ""; // We ignore the erase event on tearDown
       }
 
+      long elapsed = stopWatchRoundTrip.elapsed();
+      long avg = 0;
+      if (elapsed > 0L)
+            avg = ((long)(contentSize)) / elapsed; // byte/milli == kbyte/sec
+
+
       log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + 
                    " size=" + content.length + " ...");
+
+      log.info(ME, "Success: Publish+Update of " + oid + " with size=" + contentSize/1000000 + " MB done, roundtrip avg=" +
+               avg + " KB/sec " + stopWatchRoundTrip.nice());
 
       assertInUpdate = "Wrong sender, expected:" + name + " but was:" + updateQos.getSender().getLoginName();
       assertEquals("Wrong sender", name, updateQos.getSender().getLoginName());
