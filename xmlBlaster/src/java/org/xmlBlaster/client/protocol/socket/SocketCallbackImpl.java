@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.26 2002/09/15 11:19:38 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.27 2002/09/15 17:05:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -99,43 +99,39 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    {
       log.info(ME, "Started callback receiver");
       boolean multiThreaded = glob.getProperty().get("socket.cb.multiThreaded", true);
-      
+
       while(running) {
 
          Parser receiver = new Parser();
          try {
             receiver.parse(iStream); // This method blocks until a message arrives
+
             if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<\n" + receiver.dump());
 
-            if (multiThreaded) {
-               // Parse the message and invoke callback to client code in a seperate thread
+            if (receiver.isInvoke() && multiThreaded) {
+               // Parse the message and invoke callback to client code in a separate thread
                // to avoid dead lock when client does a e.g. publish() during this update()
                WorkerThread t = new WorkerThread(glob, this, receiver);
                t.setPriority(glob.getProperty().get("socket.cbInvokerThreadPrio", Thread.NORM_PRIORITY));
                t.start();
             }
-            else {
-               receive(receiver);       // Parse the message and invoke callback to client code
+            else {                  
+               receive(receiver);    // Parse the message and invoke actions in same thread
             }
          }
          catch(XmlBlasterException e) {
             log.error(ME, e.toString());
          }
          catch(Throwable e) {
-            if (!(e instanceof IOException)) e.printStackTrace();
+            log.error(ME, "Closing connection to server: " + e.toString());
             if (running == true) {
-               if (e instanceof IOException)
-                  log.trace(ME, "Closing connection to server: " + e.toString());
-               else
-                  log.error(ME, "Closing connection to server: " + e.toString());
                sockCon.shutdown();
                //throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
                // Exceptions ends nowhere but terminates the thread
             }
-            // else a normal disconnect()
          }
       }
-      log.info(ME, "Terminating socket callback thread");
+      if (log.TRACE) log.trace(ME, "Terminating socket callback thread");
    }
 
    /**
@@ -159,19 +155,24 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    public boolean shutdownCb() {
       running = false;
       try { iStream.close(); } catch(IOException e) { log.warn(ME, e.toString()); }
-      if (responseListenerMap.size() > 0) {
-         java .util.Iterator iterator = responseListenerMap.keySet().iterator();
-         StringBuffer buf = new StringBuffer(256);
-         while (iterator.hasNext()) {
-            if (buf.length() > 0) buf.append(", ");
-            String key = (String)iterator.next();
-            buf.append(key);
+      try {
+         if (responseListenerMap.size() > 0) {
+            java .util.Iterator iterator = responseListenerMap.keySet().iterator();
+            StringBuffer buf = new StringBuffer(256);
+            while (iterator.hasNext()) {
+               if (buf.length() > 0) buf.append(", ");
+               String key = (String)iterator.next();
+               buf.append(key);
+            }
+            log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
+            responseListenerMap.clear();
+            return false;
          }
-         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
-         responseListenerMap.clear();
-         return false;
+         return true;
       }
-      return true;
+      finally {
+         freePendingThreads();
+      }
    }
 } // class SocketCallbackImpl
 
