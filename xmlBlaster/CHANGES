@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12956 build.xml: JFlex and JavaCup are invoked only if files not up to date.
+
  o #12954 BUGFIX: Topic erase notification events could dead lock
    when at the same time a subscriber callback delivery took place
 
