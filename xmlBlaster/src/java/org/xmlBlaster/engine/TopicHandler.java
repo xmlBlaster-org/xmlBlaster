@@ -57,6 +57,7 @@ import java.util.*;
  * the boolean state access methods for a description
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecylce.html">The engine.message.lifecylce requirement</a>
+ * @see org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead
  * @author xmlBlaster@marcelruff.info
  */
 public final class TopicHandler implements I_Timeout
@@ -86,7 +87,7 @@ public final class TopicHandler implements I_Timeout
     * key   = a unique key identifying the subscription
     * value = SubscriptionInfo object
     */
-   final private Map subscriberMap = Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
+   final private Map subscriberMap = new TreeMap(); // Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
 
    /** Do error recovery if message can't be delivered and we give it up */
    private I_MsgErrorHandler msgErrorHandler;
@@ -206,7 +207,7 @@ public final class TopicHandler implements I_Timeout
    private void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
       if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
 
-      this.topicProperty =publishQos.getTopicProperty();
+      this.topicProperty = publishQos.getTopicProperty();
 
       startupMsgstore();
 
@@ -226,15 +227,19 @@ public final class TopicHandler implements I_Timeout
    /**
     * Should be invoked delayed as soon as TopicHandler instance is created an registered everywhere
     * as we ask the msgstore for the real messages if some history entries existed. 
+    * <p>
+    * NOTE: this.historyQueue can be null if maxMsgs=0 is configured
     */
    private void startupHistoryQueue() throws XmlBlasterException {
       // This history queue entries hold weak references to the msgUnitCache entries
       QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
-      String type = prop.getType();
-      String version = prop.getVersion();
-      StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
-      this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
-      this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      if (prop.getMaxMsg() > 0L) {
+         String type = prop.getType();
+         String version = prop.getVersion();
+         StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
+         this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
+         this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      }
    }
 
    /**
@@ -282,11 +287,11 @@ public final class TopicHandler implements I_Timeout
     *
     * @param publisherSessionInfo  The publisher
     * @param msgUnit     The new message
-    * @param publishQos  The decorator for msgUnit.getQosData()
+    * @param publishQosServer  The decorator for msgUnit.getQosData()
     *
     * @return not null for PtP messages
     */
-   public PublishReturnQos publish(SessionInfo publisherSessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException
+   public PublishReturnQos publish(SessionInfo publisherSessionInfo, MsgUnit msgUnit, PublishQosServer publishQosServer) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Setting content");
 
@@ -297,13 +302,11 @@ public final class TopicHandler implements I_Timeout
          this.msgKeyData = msgKeyData;
       }
 
-      if (isUnconfigured()) {
+      if (isUnconfigured()/* || msgQosData.isAdministrative() */) {
          administrativeInitialize(msgQosData);
+         //if (msgQosData.isAdministrative())
+         //   return new PublishRetQos(glob, Constants.STATE_OK, "Administrative configuration request handled");
       }
-
-      //log.info(ME, "this.topicProperty.isReadonly()=" + this.topicProperty.isReadonly() + " isAlive()=" + isAlive() + " hasHistoryEntries()=" + hasHistoryEntries());
-      //log.info(ME, "NEW MSG" + publishQos.toXml());
-      //log.info(ME, "TOPICPROP" + this.topicProperty.toXml());
 
       if (this.topicProperty.isReadonly() && isAlive() && hasHistoryEntries()) {
          log.warn(ME+".Readonly", "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
@@ -315,7 +318,7 @@ public final class TopicHandler implements I_Timeout
       }
 
       boolean changed = true;
-      if (this.historyQueue.getNumOfEntries() > 0) {
+      if (hasHistoryEntries()) {
           MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
           if (entry != null) {
              MsgUnitWrapper old = entry.getMsgUnitWrapper();
@@ -326,7 +329,8 @@ public final class TopicHandler implements I_Timeout
       }
 
       // Remove oldest history entry (if queue is full) and decrease reference counter in topicCache
-      if (this.historyQueue.getNumOfEntries() >= this.historyQueue.getMaxNumOfEntries() && this.historyQueue.getNumOfEntries() > 0) {
+      long numHist = getNumOfHistoryEntries();
+      if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
          ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
          if (entryList.size() != 1) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
@@ -345,34 +349,40 @@ public final class TopicHandler implements I_Timeout
       }
 
 
-      MsgUnitWrapper cacheEntry = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId());
-      this.msgUnitCache.put(cacheEntry);
-
-      if (cacheEntry.isAlive()) { // no volatile messages
-         try { // increments reference counter += 1
-            this.historyQueue.put(new MsgQueueHistoryEntry(glob, cacheEntry, this.historyQueue.getStorageId()), false);
-         }
-         catch (XmlBlasterException e) {
-            log.error(ME, "History queue put() problem: " + e.getMessage());
-         }
-      }
-
-
+      int initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
+      MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0);
       PublishReturnQos publishReturnQos = null;
-      
-      if (publishQos.isPtp()) {
-         publishReturnQos = forwardToDestinations(publisherSessionInfo, cacheEntry, publishQos);
+ 
+      this.msgUnitCache.put(msgUnitWrapper);
+
+      try {
+         if (this.historyQueue != null && msgUnitWrapper.isAlive()) { // no volatile messages
+            try { // increments reference counter += 1
+               this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
+            }
+            catch (XmlBlasterException e) {
+               log.error(ME, "History queue put() problem: " + e.getMessage());
+            }
+         }
+
+
+         if (publishQosServer.isPtp()) {
+            publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+         }
+
+
+         //----- 2. now we can send updates to all interested clients:
+         if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
+         if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
+            String state = publishQosServer.getState();   // Constants.STATE_OK
+            invokeCallback(publisherSessionInfo, msgUnitWrapper, state);
+         }
       }
-
-
-      //----- 2. now we can send updates to all interested clients:
-      if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
-      if (changed || msgQosData.isForceUpdate()) // if the content changed of the publisher forces updates ...
-         invokeCallback(publisherSessionInfo, cacheEntry, Constants.STATE_OK);
-
-      // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
-      // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
-      cacheEntry.incrementReferenceCounter(0);
+      finally {
+         // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+         // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+         msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
+      }
 
       return publishReturnQos;
    }
@@ -400,14 +410,16 @@ public final class TopicHandler implements I_Timeout
                throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNSESSION, ME, tmp);
             }
             MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
-                             receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination());
+                             receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
+                             "PtP", Constants.STATE_OK);
             receiverSessionInfo.queueMessage(msgEntry);
          }
          else {
             if (destination.forceQueuing()) {
                SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
-                               destinationClient.getSubjectQueue().getStorageId(), destination.getDestination());
+                             destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
+                             "PtP", Constants.STATE_OK);
                destinationClient.queueMessage(msgEntry);
             }
             else {
@@ -419,7 +431,8 @@ public final class TopicHandler implements I_Timeout
                             tmp+" Client is not logged in and <destination forceQueuing='true'> is not set");
                }
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
-                              destinationClient.getSubjectQueue().getStorageId(), destination.getDestination());
+                              destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
+                              "PtP", Constants.STATE_OK);
                destinationClient.queueMessage(msgEntry);
             }
          }
@@ -440,18 +453,88 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
+    * Event triggered by MsgUnitWrapper itself when it expires
+    */
+   public void entryExpired(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+      if (this.historyQueue == null) {
+         return;
+      }
+      int numHistory = msgUnitWrapper.getHistoryReferenceCounter();
+      if (numHistory > 0) {
+         // We need to remove it from the history queue or at least decrement the referenceCounter
+         // in which case we have a stale reference in the history queue (which should be OK, it is
+         // removed as soon as it is taken out of it)
+         msgUnitWrapper.incrementReferenceCounter((-1)*numHistory, this.historyQueue.getStorageId());
+      }
+      /*
+      // Task: We need to check if msgUnitWrapper is referenced from history queue
+      // and if it is we need to remove it from the history queue or at least decrement the referenceCounter
+      // Another problem: There is no lookup with msgUnitWrapper.getUniqueId() into history queue
+      // possible since the history entry has its own uniqueId as primary key
+      // Therefore: Slow sequence lookup:
+      ArrayList list = this.historyQueue.peek(-1, -1);
+      int n = list.size();
+      MsgQueueHistoryEntry entry = null;
+      for(int i=0; i<n; i++) {
+         MsgQueueHistoryEntry tmp = (MsgQueueHistoryEntry)list.get(i);
+         if (tmp.getMsgUnitWrapperUniqueId() == msgUnitWrapper.getUniqueId()) {
+            entry = tmp;
+            break;
+         }
+      }
+      if (entry != null) {
+         boolean useRandom = false;
+         if (useRandom) {
+            this.historyQueue.removeRandom(entry); // Note: This reduces the msgstore referencecounter
+         }
+         else {
+            // found entry, decrement but leave in history queue as we don't have a removeRandom
+            msgUnitWrapper.incrementReferenceCounter(-1, null);
+         }
+      }
+      */
+   }
+
+   /**
     * Event triggered by MsgUnitWrapper itself when it reaches destroy state
     */
-   public void destroyed(MsgUnitWrapper msgUnitWrapper) {
+   public void entryDestroyed(MsgUnitWrapper msgUnitWrapper) {
+      /*
+      if (this.historyQueue != null) {
+         try {
+            !! where to get msgUnitWrapperHistoryEntry from? avoid removeRandom() as it complicates persistent queue implementation
+            this.historyQueue.removeRandom(msgUnitWrapperHistoryEntry); // Note: This reduces the msgstore referencecounter
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Internal problem in entryDestroyed removeRandom of history queue (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
+                          e.getMessage() + ": " + toXml());
+         }
+      }
+      */
+
+      try {
+         getMsgUnitCache().remove(msgUnitWrapper);
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
+                       e.getMessage() + ": " + toXml());
+      }
+      
       // if it was a volatile message we need to check unreferenced state
       if (!hasCacheEntries() && !hasSubscribers()) {
          try {
-            toUnreferenced();
+            if (isSoftErased()) {
+               toDead();
+            }
+            else {
+               toUnreferenced();
+            }
          }
          catch (XmlBlasterException e) {
             log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
          }
       }
+      msgUnitWrapper = null;
    }
 
    /**
@@ -481,8 +564,8 @@ public final class TopicHandler implements I_Timeout
          return;
 
       Object oldOne;
-      synchronized(subscriberMap) {
-         oldOne = subscriberMap.put(sub.getSubscriptionId(), sub);
+      synchronized(this.subscriberMap) {
+         oldOne = this.subscriberMap.put(sub.getSubscriptionId(), sub);
       }
 
       sub.addTopicHandler(this);
@@ -534,16 +617,18 @@ public final class TopicHandler implements I_Timeout
     * @return the removed SubscriptionInfo object or null if not found
     */
    SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey) {
-      if (log.TRACE) log.trace(ME, "Before size of subscriberMap = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "Before size of subscriberMap = " + this.subscriberMap.size());
 
       SubscriptionInfo subs = null;
-      synchronized(subscriberMap) {
-         subs = (SubscriptionInfo)subscriberMap.remove(subscriptionInfoUniqueKey);
+      synchronized(this.subscriberMap) {
+         subs = (SubscriptionInfo)this.subscriberMap.remove(subscriptionInfoUniqueKey);
       }
-      if (subs == null)
+      if (subs == null) {
+         Thread.currentThread().dumpStack();
          log.warn(ME, "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+      }
 
-      if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
 
       if (!hasCacheEntries() && !hasSubscribers()) {
          if (isUnconfigured())
@@ -608,7 +693,7 @@ public final class TopicHandler implements I_Timeout
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
-      if (log.TRACE) log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + this.subscriberMap.size());
 
       // Take a copy of the map entries (a current snapshot)
       // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
@@ -668,8 +753,6 @@ public final class TopicHandler implements I_Timeout
                }
             }
 
-            UpdateQosServer.setData(msgQosData, state, sub.getSubSourceSubscriptionId());
-
             if (filterQos != null) {
                //SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
                //SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
@@ -690,7 +773,7 @@ public final class TopicHandler implements I_Timeout
                      // receiver =    sub.getSessionInfo().getLoginName()
                      MsgQueueEntry entry =
                           new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                      sub.getSessionInfo().getSessionName());
+                                      sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(), state);
                      publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
                      retCount++;
                      continue NEXT_MSG;
@@ -703,7 +786,8 @@ public final class TopicHandler implements I_Timeout
             
             UpdateReturnQosServer retQos = (UpdateReturnQosServer)sub.getMsgQueue().put(
                  new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                         sub.getSessionInfo().getSessionName()), false);
+                     sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(), state),
+                 false);
 
             sub.getSessionInfo().getDeliveryManager().notifyAboutNewEntry();
 
@@ -721,19 +805,19 @@ public final class TopicHandler implements I_Timeout
    }
 
    public final int numSubscribers() {
-      return subscriberMap.size();
+      return this.subscriberMap.size();
    }
 
    public final boolean hasSubscribers() {
-      return subscriberMap.size() != 0;
+      return this.subscriberMap.size() != 0;
    }
 
    /**
     * Get a snapshot of all subscriptions
     */
    public final SubscriptionInfo[] getSubscriptionInfoArr() {
-      synchronized(subscriberMap) {
-         return (SubscriptionInfo[])subscriberMap.values().toArray(new SubscriptionInfo[subscriberMap.size()]);
+      synchronized(this.subscriberMap) {
+         return (SubscriptionInfo[])this.subscriberMap.values().toArray(new SubscriptionInfo[this.subscriberMap.size()]);
       }
    }
 
@@ -742,8 +826,8 @@ public final class TopicHandler implements I_Timeout
     * @return false If no subscriber exists or all subscribers are through XPath query
     */
    public final boolean hasExactSubscribers() {
-      synchronized(subscriberMap) {
-         Iterator iterator = subscriberMap.values().iterator();
+      synchronized(this.subscriberMap) {
+         Iterator iterator = this.subscriberMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (!sub.isCreatedByQuerySubscription())
@@ -761,8 +845,8 @@ public final class TopicHandler implements I_Timeout
     */
    public final Vector findSubscriber(SessionInfo sessionInfo) {
       Vector vec = null;
-      synchronized(subscriberMap) {
-         Iterator iterator = subscriberMap.values().iterator();
+      synchronized(this.subscriberMap) {
+         Iterator iterator = this.subscriberMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (sub.getSessionInfo().isSameSession(sessionInfo)) {
@@ -775,21 +859,42 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
-    * Do we contain at least one message?
+    * subscribers are not informed here
     */
-   public boolean hasHistoryEntries() {
-      return getNumOfHistoryEntries() > 0;
+   private void clearSubscribers() {
+      SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
+      for(int i=0; i<subscriptionInfoArr.length; i++) {
+         try {
+            glob.getRequestBroker().fireUnSubscribeEvent(subscriptionInfoArr[i]);
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Problems in clearSubscriber: " + e.getMessage());
+         }
+      }
+      synchronized(this.subscriberMap) {
+         this.subscriberMap.clear();  // see notifySubscribersAboutErase() above
+      }
    }
 
    /**
-    * Get the number of history message references. 
+    * Do we contain at least one message?
+    */
+   public boolean hasHistoryEntries() {
+      return getNumOfHistoryEntries() > 0L;
+   }
+
+   /**
+    * Get the number of history message references we contain. 
     */
    public long getNumOfHistoryEntries() {
-      if (isUnconfigured()) {
+      //if (isUnconfigured()) {
+      //   return 0L;
+      //}
+      if (this.historyQueue == null) {
          return 0L;
       }
       long num = this.historyQueue.getNumOfEntries();
-      if (num > 0 && !isAlive()) { // assert
+      if (num > 0L && !isAlive()) { // assert
          log.error(ME, "Internal problem: we have messages but are not alive: " + toXml());
          Thread.currentThread().dumpStack();
       }
@@ -822,36 +927,36 @@ public final class TopicHandler implements I_Timeout
     * Returns a snapshot of all entries in the history
     * @param num Number of entries wanted, not more than size of history queue are returned.<br />
     *            If -1 all entries in history queue are returned
-    * @return Checked entries (destroyed and expired ones are removed), never null
+    * @return Checked MsgUnitWrapper entries (destroyed and expired ones are removed), never null
     */
    public MsgUnitWrapper[] getMsgUnitWrapperArr(int num) throws XmlBlasterException {
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
-      ArrayList list = this.historyQueue.peek(num, -1);
-      ArrayList aliveList = new ArrayList();
-      ArrayList destroyList = null;
-      int n = list.size();
+      ArrayList historyList = this.historyQueue.peek(num, -1);
+      ArrayList aliveMsgUnitWrapperList = new ArrayList();
+      ArrayList historyDestroyList = null;
+      int n = historyList.size();
       for(int i=0; i<n; i++) {
-         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)list.get(i);
+         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)historyList.get(i);
          if (entry != null) {
             MsgUnitWrapper wr = entry.getMsgUnitWrapper();
             if (wr != null) {
                if (wr.isAlive()) {
-                  aliveList.add(wr);
+                  aliveMsgUnitWrapperList.add(wr);
                }
                else {
-                  if (destroyList == null) destroyList = new ArrayList();
-                  destroyList.add(wr);
+                  if (historyDestroyList == null) historyDestroyList = new ArrayList();
+                  historyDestroyList.add(entry);
                }
             }
          }
       }
 
-      if (destroyList != null && destroyList.size() > 0) {
-         this.historyQueue.removeRandom((I_Entry[])destroyList.toArray(new I_Entry[destroyList.size()]));
+      if (historyDestroyList != null && historyDestroyList.size() > 0) {
+         this.historyQueue.removeRandom((I_Entry[])historyDestroyList.toArray(new I_Entry[historyDestroyList.size()]));
       }
 
-      return (MsgUnitWrapper[])aliveList.toArray(new MsgUnitWrapper[aliveList.size()]);
+      return (MsgUnitWrapper[])aliveMsgUnitWrapperList.toArray(new MsgUnitWrapper[aliveMsgUnitWrapperList.size()]);
    }
 
    /**
@@ -867,23 +972,6 @@ public final class TopicHandler implements I_Timeout
          msgUnitArr[i] = msgUnitWrapper[i].getMsgUnit();
       }
       return msgUnitArr;
-   }
-
-   /**
-    * @return Are there entries referenced from a callback queue?
-    */
-   public boolean hasCallbackReferences() {
-      if (this.msgUnitCache.getNumOfEntries() < 1) {
-         return false;
-      }
-      return this.msgUnitCache.getTotalReferenceCount() > numHistoryEntries();
-   }
-
-   /**
-    * @return Number of messages we contain
-    */
-   public long numHistoryEntries() {
-      return historyQueue.getNumOfEntries();
    }
 
    /**
@@ -974,11 +1062,11 @@ public final class TopicHandler implements I_Timeout
             return;
          }
          if (hasHistoryEntries()) {
-            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.historyQueue.getNumOfEntries() + " history entries");
+            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
          if (hasCacheEntries()) {
-            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " cache entries");
+            log.warn(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgstore cache entries");
             this.msgUnitCache.clear();  // Who removes the MsgUnitWrapper entries from their Timer?!!!! TODO
          }
 
@@ -1003,9 +1091,16 @@ public final class TopicHandler implements I_Timeout
             return;
          }
          if (hasHistoryEntries()) {
-            log.info(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + this.historyQueue.getNumOfEntries() + " history entries");
+            log.info(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
+
+         if (hasSubscribers()) {
+            log.info(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
+            notifySubscribersAboutErase();
+            clearSubscribers();
+         }
+
          this.state = SOFT_ERASED;
          removeFromBigDom();
       }
@@ -1025,7 +1120,7 @@ public final class TopicHandler implements I_Timeout
                          getNumOfHistoryEntries() + " history messages.");
          }
          if (hasHistoryEntries()) {
-            log.warn(ME, getStateStr() + "->" + "DEAD: Clearing " + this.historyQueue.getNumOfEntries() + " history entries");
+            log.warn(ME, getStateStr() + "->" + "DEAD: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
          if (hasCacheEntries()) {
@@ -1041,9 +1136,9 @@ public final class TopicHandler implements I_Timeout
          removeFromBigSubscriptionSet();
          removeFromBigDom();
 
-         boolean isVolatile = false;
-         if (!isVolatile)
+         if (!isSoftErased()) {
             notifySubscribersAboutErase();
+         }
 
          removeFromBigMessageMap();
 
@@ -1064,7 +1159,7 @@ public final class TopicHandler implements I_Timeout
             log.error(ME, "Problems erasing message: " + e.getMessage());
          }
 
-         subscriberMap.clear();
+         clearSubscribers(); // see notifySubscribersAboutErase() above
 
          /*
          // We are DEAD already do we need this? (fireMessageEraseEvent() does nothing)
@@ -1126,16 +1221,25 @@ public final class TopicHandler implements I_Timeout
     * Send erase event
     */
    private void notifySubscribersAboutErase() {
-      if (log.DUMP) log.dump(ME, "Sending client notification about message erase() event " + toXml());
-      try {
-         MsgUnitWrapper[] arr = getMsgUnitWrapperArr(1);
-         if (arr != null && arr.length > 0 && arr[0].isAlive()) {
-            invokeCallback(null, arr[0], Constants.STATE_ERASED);  // Constants.STATE_EXPIRED?
+      if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
+
+      if (hasSubscribers()) {
+         try {
+            SessionInfo publisherSessionInfo = glob.getRequestBroker().getInternalSessionInfo();
+            org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+                                                      getUniqueKey(), "text/plain", "1.0");
+            org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+            pq.setState(Constants.STATE_ERASED);
+            pq.setVolatile(true);
+            MsgUnit msgUnit = new MsgUnit(glob, pk, getId(), pq); // content contains the global name?
+            PublishQosServer ps = new PublishQosServer(glob, pq.getData());
+            log.error(ME, "DEBUG ONLY" + msgUnit.toXml() + " PublishQosServer=" + ps.toXml());
+            publish(publisherSessionInfo, msgUnit, ps);
          }
-      }
-      catch (XmlBlasterException e) {
-         // The access plugin or client may throw an exception. The behavior is not coded yet
-         log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.getMessage());
+         catch (XmlBlasterException e) {
+            // The access plugin or client may throw an exception. The behavior is not coded yet
+            log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.getMessage());
+         }
       }
    }
 
@@ -1171,8 +1275,7 @@ public final class TopicHandler implements I_Timeout
     * @param sessionInfo
     * @param topicHandler
     */
-   final void fireMessageEraseEvent(SessionInfo sessionInfo, EraseQosServer eraseQos) throws XmlBlasterException
-   {
+   final void fireMessageEraseEvent(SessionInfo sessionInfo, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent");
       eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob)) : eraseQos;
 
@@ -1182,12 +1285,15 @@ public final class TopicHandler implements I_Timeout
                toDead();
             }
             else {
-               toSoftErased();
-               if (!hasCallbackReferences()) {
+               toSoftErased(); // kills all history entries
+               long numMsgStore = this.msgUnitCache.getNumOfEntries();
+               if (numMsgStore < 1) { // has no callback references?
                   toDead();
                }
-               else
-                  log.warn(ME, getStateStr() + " erase() not possible, we are still referenced by callback queue: " + toXml());
+               else {
+                  log.info(ME, "Erase not possible, we are still referenced by " + numMsgStore +
+                  " callback queue entries, transition to topic state " + getStateStr());
+               }
             }
          }
 
@@ -1208,6 +1314,7 @@ public final class TopicHandler implements I_Timeout
     * This timeout occurs after a configured delay in UNREFERENCED state
     */
    public final void timeout(Object userData) {
+      log.info(ME, "Timeout after destroy delay occurred - destroying topic now ...");
       this.timerKey = null;
       if (isDead())
          return;
@@ -1316,22 +1423,20 @@ public final class TopicHandler implements I_Timeout
          log.error(ME, e.getMessage());
       }
 
-      if (subscriberMap.size() == 0)
-         sb.append(offset + " <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
-      else {
-         synchronized(subscriberMap) {
-            Iterator iterator = subscriberMap.values().iterator();
-            while (iterator.hasNext()) {
-               SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-               try {
-                  sb.append(offset).append(" <SubscriptionInfo id='").append(subs.getSubscriptionId()).append("/>");
-               }
-               catch (XmlBlasterException e) {
-                  log.error(ME, e.getMessage());
-               }
-               //sb.append(subs.toXml(extraOffset + "   "));
+      if (hasSubscribers()) {
+         SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
+         for(int i=0; i<subscriptionInfoArr.length; i++) {
+            try {
+               sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("/>");
             }
+            catch (XmlBlasterException e) {
+               log.error(ME, e.getMessage());
+            }
+            //sb.append(subscriptionInfoArr[i].toXml(extraOffset + "   "));
          }
+      }
+      else {
+         sb.append(offset + " <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
       }
 
       sb.append(offset).append(" <handlerIsNewCreated>").append(handlerIsNewCreated).append("</handlerIsNewCreated>");
