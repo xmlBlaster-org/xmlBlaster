@@ -60,7 +60,8 @@
          a PtP message addresses it.
          This is the default callback for login name based (durable) subscriptions without a specified callback in its QoS.
          It is destroyed when the queue expires.
-         The specified callback server of the SessionQueue is used if not otherwise specified in the login QoS.
+         The specified callback server of the SessionQueue is used if not otherwise specified in the login QoS,
+         see callback attribute useForSubjectQueue='true'.
          Every message from this queue is delivered to all current sessions of the user. On multiple logins,
          the same message is delivered multiple times.
          </li>
@@ -100,7 +101,7 @@
       <qos>
          ...
          <!-- default SessionQueue callback: Use CORBA to send messages back -->
-         <callback type='IOR' sessionId='sd3lXjs9Fdlggh'>
+         <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
             IOR:00011200070009990000....
          </callback>
       </qos>
@@ -181,7 +182,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
