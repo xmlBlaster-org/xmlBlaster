@@ -25,6 +25,16 @@ Some small TODO's for the next release
 (3) Allowing compound messages.
 (4) Online demos'
 
+Choosing the port for the server/callback server (e.g. XmlRpl):
+  Java has a feature whereby you can specify Port 0 when opening a
+  ServerSocket which results in opening the Socket on "any available
+  port".  This can be very convenient when the port does not need to be
+  predefined.  We doe not have a mechanism for
+  finding out what port was selected.
+  An easy modification code to fix this is to add a
+  method "getServerPort" that retrieves the port value from serverSocket
+  and returns it.  [michael wilke]
+
 --------------------------- TODO for the future ------------------------
 
 PERSISTENCE
