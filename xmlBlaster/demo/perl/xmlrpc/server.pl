@@ -1,5 +1,9 @@
 #!/usr/bin/perl -w
 
+# Perl callback server example, xmlBlaster.org
+# @author David Kelly davidk@navahonetworks.com
+# @author Russell Chan russ@navahonetworks.com
+
 use Frontier::Daemon;
 use Frontier::Client;
 use xmlBlaster::Exception ;

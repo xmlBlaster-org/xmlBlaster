@@ -1,4 +1,8 @@
 use Frontier::Client;
+
+# Perl client example, xmlBlaster.org
+# @author David Kelly davidk@navahonetworks.com
+# @author Russell Chan russ@navahonetworks.com
     
 #$server_url = 'http://MyHost:8080/';
 $server_url =  @ARGV[0];
