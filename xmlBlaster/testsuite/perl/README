@@ -17,7 +17,7 @@ This is an example to access xmlBlaster from a Perl client
 
 3) Start the xmlBlaster server
 
-    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
+    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat -calls true
 
 
 4) And connect with the Perl client
@@ -40,15 +40,15 @@ A sample multithreaded callback:
 ================================
 
             Re: Howto realize a Callback to Perl (fwd)
- Resent-Date: 
+ Resent-Date:
             Thu, 2 Dec 1999 16:00:44 +0100
- Resent-From: 
+ Resent-From:
             cope@lunatech.com
-       Date: 
+       Date:
             Thu, 2 Dec 1999 17:00:40 +0200 (EET)
-       From: 
+       From:
             Pekka Ahmavuo <pekka@netland.fi>
-         To: 
+         To:
             cope@lunatech.com
 
 
@@ -62,20 +62,20 @@ server.pl. The client reads the server's ior from a file, so it should
 be started in the same directory with the server.
 
 
-Rick, 
+Rick,
 
 handling simultaneous CGI and CORBA request is a bit different
 problem. A least in my case the tricky part was to synchronize the
 CORBA and CGI-requests. I you think it might help you I can write an
 exmple of that too.
 
-> 
+>
 > That sounds like something I've wanted for a long time.  Can you
 > share any code with us, or describe the gist of your changes?
 > It would be much appreciated.
-> 
+>
 > -Rick Nicoletti
-> 
+>
 > At 11:10 AM 12/02/1999 +0200, Pekka Ahmavuo wrote:
 > >I have used COPE witb threaded Perl 5.005_03 without problems. My
 > >server has to handle simultaneous CGI- and CORBA-requests and using
@@ -92,7 +92,7 @@ interface hello
 interface callback
 {
   void CallMe(in hello caller);
-};                                    
+};
 
 --------------------------------------------
 -------- client.pl ------------------------
@@ -139,7 +139,7 @@ while (1)
 }
 
 # newer comes here
-$t->join();              
+$t->join();
 
 ------------------------------------------
 ------------- server.pl ------------------
@@ -163,7 +163,7 @@ my $ior  = $orb->object_to_string($callback);
 open (IOR, ">ior.dat");
 print IOR $ior;
 close (IOR);
-$boa->impl_is_ready();              
+$boa->impl_is_ready();
 
 ----------------------------------------------
 ---------- hello_impl.pm --------------------
@@ -193,7 +193,7 @@ sub Hello ($$) {
 
     print "Got $msg!!!\n";
 }
-                           
+
 ------------------------------------
 ------- callback_impl.pm -----------
 
@@ -227,7 +227,7 @@ sub CallMe ($$) {
 }
 
 
-1;              
+1;
 #========================================================
 
 
@@ -238,13 +238,13 @@ sub CallMe ($$) {
 
 
 ========================================================
-Subject: 
+Subject:
        RE: Howto realize a Callback to Perl
-Date: 
+Date:
        Wed, 1 Dec 1999 11:54:08 -0000
-From: 
+From:
        "Giles Atkinson (UK)" <Giles.Atkinson@eu.citrix.com>
-To: 
+To:
        "'Marcel Ruff'" <ruff@swand.lake.de>, cope@lunatech.com
 
 
@@ -261,7 +261,7 @@ it will take me some time.
 
 Another way would be to use Perl threads
 and give each client invocation its own thread.
-Has anyone ever tried COPE with a threaded Perl? 
+Has anyone ever tried COPE with a threaded Perl?
 
 Either way, this is not a task I would recomment
 to a Perl beginner!
