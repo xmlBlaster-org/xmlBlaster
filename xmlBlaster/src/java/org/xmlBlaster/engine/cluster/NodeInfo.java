@@ -197,7 +197,6 @@ public final class NodeInfo
          inAddress = true;
          String type = (attrs != null) ? attrs.getValue("type") : null;
          tmpAddress = new Address(glob, type, getId());
-         Global.instance().getLog("").error(ME, "DEBUG ONLY: Using type=" + type);
          tmpAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }
