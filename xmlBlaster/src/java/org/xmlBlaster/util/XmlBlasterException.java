@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.10 2002/12/18 11:50:11 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.11 2002/12/20 13:14:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,6 +14,7 @@ import java.text.MessageFormat;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.helper.Constants;
 import org.jutils.JUtilsException;
 
 
@@ -367,6 +368,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    }
 
    /**
+    * @see toXml(String)
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
     * Create a XML representation of the Exception.
     * <pre>
     *   &lt;exception errorCode='resource.outOfMemory'>
@@ -375,21 +383,24 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     *   &lt;/exception>
     * </pre>
     */
-   public String toXml() {
-      StringBuffer buf = new StringBuffer(getMessage().length() + 256);
-      buf.append("<exception errorCode='").append(getErrorCodeStr()).append("'>\n");
-      buf.append("   <class>").append(getClass().getName()).append("</class>\n");
-      buf.append("   <node>").append(getNode()).append("</node>\n");
-      buf.append("   <location>").append(getLocation()).append("</location>\n");
-      buf.append("   <lang>").append(getLang()).append("</lang>\n");
-      buf.append("   <message><![CDATA[").append(getRawMessage()).append("]]></message>\n");
-      buf.append("   <versionInfo>").append(getVersionInfo()).append("</versionInfo>\n");
-      buf.append("   <timestamp>").append(getTimestamp().toString()).append("</timestamp>\n");
-      buf.append("   <stackTrace><![CDATA[").append(getStackTraceStr()).append("]]></stackTrace>\n");
-      buf.append("   <embeddedMessage><![CDATA[").append(getEmbeddedMessage()).append("]]></embeddedMessage>\n");
-      //buf.append("   <transactionInfo><![CDATA[").append(getTransactionInfo()).append("]]></transactionInfo>\n");
-      buf.append("</exception>");
-      return buf.toString();
+   public String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(getMessage().length() + 256);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      sb.append(offset).append("<exception errorCode='").append(getErrorCodeStr()).append("'>\n");
+      sb.append(offset).append(" <class>").append(getClass().getName()).append("</class>\n");
+      sb.append(offset).append(" <node>").append(getNode()).append("</node>\n");
+      sb.append(offset).append(" <location>").append(getLocation()).append("</location>\n");
+      sb.append(offset).append(" <lang>").append(getLang()).append("</lang>\n");
+      sb.append(offset).append(" <message><![CDATA[").append(getRawMessage()).append("]]></message>\n");
+      sb.append(offset).append(" <versionInfo>").append(getVersionInfo()).append("</versionInfo>\n");
+      sb.append(offset).append(" <timestamp>").append(getTimestamp().toString()).append("</timestamp>\n");
+      sb.append(offset).append(" <stackTrace><![CDATA[").append(getStackTraceStr()).append("]]></stackTrace>\n");
+      sb.append(offset).append(" <embeddedMessage><![CDATA[").append(getEmbeddedMessage()).append("]]></embeddedMessage>\n");
+      //sb.append(offset).append(" <transactionInfo><![CDATA[").append(getTransactionInfo()).append("]]></transactionInfo>\n");
+      sb.append(offset).append("</exception>");
+      return sb.toString();
    }
 
    /**
