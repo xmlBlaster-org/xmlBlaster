@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.8 2000/10/24 09:44:46 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.9 2000/10/24 11:42:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -61,7 +61,8 @@ public class XmlRpcDriver implements I_Driver
    private WebServer webserver;
 
 
-   /** Get a human readable name of this driver.
+   /** 
+    * Get a human readable name of this driver.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -90,7 +91,7 @@ public class XmlRpcDriver implements I_Driver
       try {
          webserver = new WebServer(xmlPort);
          // publish the public methods to the XmlRpc web server:
-         webserver.addHandler("authenticate", authenticate); // !!!!! create an own interface and expose only login/logout!!!
+         webserver.addHandler("authenticate", new AuthenticateImpl(authenticate));
          webserver.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
          Log.info(ME, "Started successfully XML-RPC driver, the web server is listening on port " + xmlPort);
       } catch (IOException e) {
