@@ -98,7 +98,7 @@ public:
       : ME(name), 
         applName_(ME), 
         global_(Global::getInstance().initialize(args, argv)), 
-        log_(global_.getLog("test")), 
+        log_(global_.getLog("test")),
         connection_(global_)
    {
       needsHelp_ = false;
@@ -109,6 +109,7 @@ public:
          }
       }
 
+      if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, initializing XML environment");
       XMLPlatformUtils::Initialize();
       embeddedServer_    = NULL;
       useEmbeddedServer_ = global_.getProperty().getBoolProperty("embeddedServer", false);
@@ -120,6 +121,7 @@ public:
          Thread::sleep(2000);
      }
      if (useEmbeddedServer_) {
+        if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, useEmbeddedServer_=true");
         string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
         string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");
         embeddedServer_ = new EmbeddedServer(global_, jvmArgs, cmdLine, &connection_);
