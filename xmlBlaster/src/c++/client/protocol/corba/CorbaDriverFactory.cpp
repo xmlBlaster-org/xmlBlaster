@@ -131,7 +131,10 @@ CorbaDriver& CorbaDriverFactory::getDriverInstance(Global* global)
          driver = new CorbaDriver(*global, mutex_, instanceName, orb);
          // initially the counter is set to 1
          drivers_.insert(DriversMap::value_type(global, pair<CorbaDriver*, int>(driver, 1)));
-         if (!isRunning_) start(); // if threadSafe isRunning_ will never be set to true
+
+			// In a thread to support single thread orb->performwork to dispatch corba main loop
+			const bool detached = false;
+         if (!isRunning_) start(detached); // if threadSafe isRunning_ will never be set to true
       }
       else {
          driver = ((*iter).second).first;
