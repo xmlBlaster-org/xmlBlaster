@@ -419,9 +419,10 @@ public class MessageUnitHandler
       }
 
       if (sub.getSessionInfo().getSubjectInfo().isCluster()) {
+         if (log.DUMP) log.dump(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" +
+                                    sub.getMessageUnitWrapper().toXml());
          if (msgUnitWrapper.getPublishQos().dirtyRead(sub.getSessionInfo().getSubjectInfo().getNodeId())) {
             if (log.TRACE) log.trace(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getUniqueKey() + "', '" + sub.getXmlKey().getKeyOid() + "' we don't need to send it back");
-            log.error(ME, "DEBUG: Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getUniqueKey() + "', '" + sub.getXmlKey().getKeyOid() + "' we don't need to send it back");
             return true;
          }
       }
