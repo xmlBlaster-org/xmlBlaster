@@ -3,7 +3,7 @@ Name:      I_ClientListener.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   sessionRemoved and sessionAdded events
-Version:   $Id: I_ClientListener.java,v 1.3 2002/03/13 16:41:07 ruff Exp $
+Version:   $Id: I_ClientListener.java,v 1.4 2004/02/03 19:12:49 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -13,8 +13,8 @@ package org.xmlBlaster.authentication;
  * <p>
  * The events are fired by the Authenticate object.
  *
- * @version $Revision: 1.3 $
- * @author $Author: ruff $
+ * @version $Revision: 1.4 $
+ * @author $Author: laghi $
  */
 public interface I_ClientListener extends java.util.EventListener {
     /**
@@ -27,10 +27,15 @@ public interface I_ClientListener extends java.util.EventListener {
      */
     public void subjectAdded(ClientEvent e) throws org.xmlBlaster.util.XmlBlasterException;
 
-    /**
-     * Invoked when client does a logout
-     */
-    public void sessionRemoved(ClientEvent e) throws org.xmlBlaster.util.XmlBlasterException;
+   /**
+    * Invoked before a client does a logout
+    */
+   public void sessionWillBeRemoved(ClientEvent e) throws org.xmlBlaster.util.XmlBlasterException;
+
+   /**
+    * Invoked when client does a logout
+    */
+   public void sessionRemoved(ClientEvent e) throws org.xmlBlaster.util.XmlBlasterException;
 
     /**
      * Invoked when client does its last logout

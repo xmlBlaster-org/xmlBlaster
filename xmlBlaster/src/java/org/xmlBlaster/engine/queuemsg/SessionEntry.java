@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 
@@ -32,6 +33,7 @@ public class SessionEntry implements I_MapEntry {
    public SessionEntry(String qos, long uniqueId, long size) {
       if (size < 1L) this.size = qos.length();
       else this.size = size;
+      if (uniqueId < 1L) this.uniqueId = new Timestamp().getTimestamp();  
       this.qos = qos;
       this.uniqueId = uniqueId;
       this.uniqueIdStr = "" + this.uniqueId;
@@ -42,8 +44,8 @@ public class SessionEntry implements I_MapEntry {
     * @param qos
     * @param uniqueId
     */
-   public SessionEntry(String qos, long uniqueId) {
-      this(qos, uniqueId, 0L);
+   public SessionEntry(String qos) {
+      this(qos, -1L, 0L);
    }
 
    /**

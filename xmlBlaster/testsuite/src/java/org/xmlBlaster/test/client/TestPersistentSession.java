@@ -261,7 +261,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          System.out.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession");
+      TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
       testSub.setUp();
       testSub.testPersitentSession();
       testSub.tearDown();

@@ -93,8 +93,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
-   {
+   public final String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       try {
          if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
 

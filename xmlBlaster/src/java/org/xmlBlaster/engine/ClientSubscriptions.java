@@ -305,6 +305,9 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    }
 
 
+   public void sessionWillBeRemoved(ClientEvent e) throws XmlBlasterException {
+   }
+
    /**
     * Invoked when client does a logout (interface I_ClientListener)
     */

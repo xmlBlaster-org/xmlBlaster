@@ -881,7 +881,7 @@ public final class TopicHandler implements I_Timeout
       }
       if (subs == null && !isDead() && !isSoftErased()) {
          //Thread.currentThread().dumpStack();
-         log.warn(ME, "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+         log.warn(ME, ", can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
       }
 
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());

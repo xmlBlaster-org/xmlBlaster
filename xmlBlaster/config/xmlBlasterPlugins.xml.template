@@ -7,30 +7,36 @@
 -->
 <xmlBlaster>
 
+   <!--========== SubscriptionPersistencePlugin =============-->
+   <plugin id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' />
+      <action do='STOP' onShutdownRunlevel='2' sequence='6'/>
+   </plugin>
+
    <!--============= PROTOCOL PLUGINS ================-->
    <!-- ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver -->
    <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='1' 
+      <action do='LOAD' onStartupRunlevel='3' sequence='2' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
    </plugin>
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='2'
+      <action do='LOAD' onStartupRunlevel='3' sequence='3'
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    </plugin>
 
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
    <plugin id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
+      <action do='LOAD' onStartupRunlevel='3' sequence='4'/> 
       <action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    </plugin>
 
    <!-- ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver -->
    <plugin id='RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='4' />
+      <action do='LOAD' onStartupRunlevel='3' sequence='5' />
       <action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
    </plugin>
 

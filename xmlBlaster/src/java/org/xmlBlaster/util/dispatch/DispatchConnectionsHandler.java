@@ -144,6 +144,7 @@ abstract public class DispatchConnectionsHandler
                   }
                   catch (XmlBlasterException e) {
                      if (e.isCommunication()) { // Initial POLLING ?
+                        this.dispatchManager.toPolling(this.state);
                         if (log.TRACE) log.trace(ME, "Load " + cbAddr[ii].toString() + ": " + e.getMessage());
                      }
                      else {

@@ -109,6 +109,9 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
    public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      if (this.handler == null)
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                  "SOCKET sendUpdate failed");
       return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
    }
 
@@ -117,6 +120,9 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * @exception XmlBlasterException Is never from the client (oneway).
     */
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      if (this.handler == null)
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                  "SOCKET sendUpdateOneway failed");
       this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.ONEWAY);
    }
 
@@ -135,6 +141,9 @@ public class CallbackSocketDriver implements I_CallbackDriver
          this.isFirstPing_hack = false;
          return "";
       }
+      if (this.handler == null)
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                  "SOCKET callback ping failed");
       try {
          return this.handler.ping(qos);
       } catch (Throwable e) {

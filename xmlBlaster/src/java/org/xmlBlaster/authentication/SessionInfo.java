@@ -94,6 +94,9 @@ public class SessionInfo implements I_Timeout
    /** Incarnation time of this object instance in millis */
    private long uptime;
 
+   /** uniqueId used to store this in queue */
+   private long persitenceId = -1L; 
+
    /**
     * Create this instance when a client did a login.
     * <p />
@@ -475,5 +478,25 @@ public class SessionInfo implements I_Timeout
       glob.getAuthenticate().disconnect(securityCtx.getSecretSessionId(), "<qos/>");
       return getId() + " killed";
    }
+
+   /**
+    * Gets the uniqueId for the persitence of this session.
+    * @return the uniqueId used to identify this session as an  entry
+    * in the queue where it is stored  (for persistent subscriptions).
+    * If the session is not persitent it returns -1L.
+    * 
+    */
+   public final long getPersistenceId() {
+      return this.persitenceId;
+   }
+   
+   /**
+    * Sets the uniqueId used to retrieve this session from the persitence
+    * @param persistenceId
+    */
+   public final void setPersistenceId(long persistenceId) {
+      this.persitenceId = persistenceId;
+   }
+
    
 }

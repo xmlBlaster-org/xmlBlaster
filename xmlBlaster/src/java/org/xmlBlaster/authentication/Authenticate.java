@@ -323,6 +323,7 @@ final public class Authenticate implements I_RunlevelListener
             if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
 
             // Create the new sessionInfo instance
+            if (this.log.TRACE) this.log.trace(ME, "connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
             sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
             synchronized(this.sessionInfoMap) {
                this.sessionInfoMap.put(secretSessionId, sessionInfo);
@@ -598,6 +599,7 @@ final public class Authenticate implements I_RunlevelListener
     */
    private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException
    {
+      firePreRemovedClientEvent(sessionInfo);
       String secretSessionId = sessionInfo.getSecretSessionId();
       Object obj;
       synchronized(this.sessionInfoMap) {
@@ -665,6 +667,20 @@ final public class Authenticate implements I_RunlevelListener
       }
    }
 
+
+   private void firePreRemovedClientEvent(SessionInfo sessionInfo) throws XmlBlasterException {
+      synchronized (clientListenerSet) {
+         if (clientListenerSet.size() == 0) return;
+
+         ClientEvent event = new ClientEvent(sessionInfo);
+         Iterator iterator = clientListenerSet.iterator();
+         while (iterator.hasNext()) {
+            I_ClientListener cli = (I_ClientListener)iterator.next();
+            cli.sessionWillBeRemoved(event);
+         }
+         event = null;
+      }
+   }
 
    /**
     * Used to fire an event if a client does a login / logout

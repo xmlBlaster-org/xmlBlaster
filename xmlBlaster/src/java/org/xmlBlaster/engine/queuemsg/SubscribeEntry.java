@@ -49,7 +49,7 @@ public class SubscribeEntry implements I_MapEntry {
     * @param uniqueId
     */
    public SubscribeEntry(String key, String qos, String sessionId) {
-      this(key, qos, sessionId, -1L, 0L);
+      this(key, qos, sessionId, 0L, 0L);
    }
 
    /**

@@ -12,14 +12,18 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.SessionEntry;
 import org.xmlBlaster.engine.queuemsg.SubscribeEntry;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -38,6 +42,8 @@ import org.xmlBlaster.util.queue.StorageId;
 public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
    private final static String ME = "SessionPersistencePlugin";
+   private final static String PERSISTENCE_ID = "__persitenceId";
+   
    private PluginInfo info;
    private Global global;
    private LogChannel log;
@@ -63,8 +69,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionEntry entry = (SessionEntry)entries[i];
             ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
             ConnectQosServer qos = new ConnectQosServer(this.global, data, isInternal);
-            this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' qos='" + qos.toXml() + "'");
-            this.global.getAuthenticate().connect(qos);
+            if (this.log.TRACE) this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
+            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
+            if (this.log.DUMP) this.log.dump(ME, "recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the storage should be of type 'SessionEntry' but is of type'" + entries[i].getClass().getName() + "'");
@@ -88,6 +95,27 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          }
       }
    }
+
+   
+   private void removeAssociatedSubscriptions(SessionInfo sessionInfo) 
+      throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "removeAssociatedSubscriptions for session '" + sessionInfo.getId() + "'");   
+      XmlBlasterException e = null;
+      SubscriptionInfo[] subs = this.global.getRequestBroker().getClientSubscriptions().getSubscriptions(sessionInfo);
+      for (int i=0; i < subs.length; i++) {
+         try {
+            if (this.log.CALL) this.log.call(ME, "removeAssociatedSubscriptions for session '" + sessionInfo.getId() + "' subscription '" + subs[i].getId() + "'");   
+            this.subscriptionRemove(new SubscriptionEvent(subs[i]));
+         }
+         catch (XmlBlasterException ex) {
+            if (e == null) e = ex;
+            this.log.error(ME, "removeAssociatedSubscriptions: exception occured for session '" + sessionInfo.getId() + "' and subscriptions '" + subs[i].getId() + "' : ex: " + ex.getMessage());
+         }
+      }
+      // just throw the first exception encountered (if any)
+      if (e != null) throw e;
+   }
+
    
    /**
     * Initializes the plugin
@@ -106,7 +134,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.queryQosFactory = new QueryQosSaxFactory(this.global);
          this.queryKeyFactory = new QueryKeySaxFactory(this.global);
          // init the storages
-      
          QueuePropertyBase sessionProp = new SessionStoreProperty(this.global, this.global.getStrippedId());   
          if (sessionProp.getMaxEntries() > 0L) {
             String type = sessionProp.getType();
@@ -125,14 +152,13 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             this.subscribeStore = this.global.getStoragePluginManager().getPlugin(type, version, this.subscribeStorageId, subscribeProp);
          }
          else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persitence for subscribe is switched of with maxEntries=0");
-         recoverSessions();
-         recoverSubscriptions();
-         // register after having retreived the data
-         // is this a security risk from a plugin ? 
+         this.isOK = true;
+
+         // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
          this.global.getRequestBroker().addSubscriptionListener(this);
-
-         this.isOK = true;
+         recoverSessions();
+         recoverSubscriptions();
       }
    }
 
@@ -164,19 +190,31 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.isOK = false;
          this.global.getRequestBroker().getAuthenticate().removeClientListener(this);
          this.global.getRequestBroker().removeSubscriptionListener(this);
-         this.sessionStore.shutdown();
+         this.sessionStore.shutdown(); 
          this.subscribeStore.shutdown();
       }
    }
 
    private void addSession(SessionInfo sessionInfo) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "addSession '" + sessionInfo.getId() + "'");
       ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
       if (!connectQosData.getPersistentProp().getValue()) return;
-
-      long uniqueId = sessionInfo.getInstanceId();
-      if (this.log.TRACE) this.log.trace(ME, "addSession (persitent) for uniqueId: '" + uniqueId + "'");
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId);
-      this.sessionStore.put(entry);
+      
+      // is it a remote connect or from a recovery ?
+      ClientProperty clientProperty = connectQosData.getClientProperty(PERSISTENCE_ID);
+      if (clientProperty == null) {
+         long uniqueId = new Timestamp().getTimestamp();
+         connectQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
+         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
+         if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
+         sessionInfo.setPersistenceId(entry.getUniqueId());
+         this.sessionStore.put(entry);
+      }
+      else  {
+         long uniqueId = clientProperty.getLongValue();
+         if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for OLD uniqueId: '" + uniqueId + "'");
+         sessionInfo.setPersistenceId(uniqueId);
+      }
    }
 
    /**
@@ -184,18 +222,19 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
    public void sessionAdded(ClientEvent e) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "sessionAdded '" + e.getSessionInfo().getId() + "'");
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".sessionAdded: invoked when plugin already shut down");
-
       SessionInfo sessionInfo = e.getSessionInfo();
       addSession(sessionInfo);      
+   }
+
+   public void sessionRemoved(ClientEvent e) throws XmlBlasterException {
    }
 
    /**
     * 
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionRemoved(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionRemoved(ClientEvent e) throws XmlBlasterException {
+   public void sessionWillBeRemoved(ClientEvent e) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "sessionRemoved '" + e.getSessionInfo().getId() + "'");
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".sessionRemoved: invoked when plugin already shut down");
       
@@ -203,15 +242,19 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
       if (!connectQosData.getPersistentProp().getValue()) return;
 
+      removeAssociatedSubscriptions(sessionInfo); 
+
       // TODO add a method I_Queue.removeRandom(long uniqueId)
-      long uniqueId = sessionInfo.getInstanceId();
-      if (this.log.TRACE) this.log.trace(ME, "sessionRemoved (persitent) for uniqueId: '" + uniqueId + "'");
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId);
+      long uniqueId = sessionInfo.getPersistenceId();
+      if (this.log.TRACE) this.log.trace(ME, "sessionRemoved (persistent) for uniqueId: '" + uniqueId + "'");
+      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L);
       this.sessionStore.remove(entry);
    }
 
    /**
-    * 
+    * This event is invoked even by child subscriptions. However only 
+    * parent subscriptions should be stored, so all child subscriptions are
+    * ignored. 
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionAdd(org.xmlBlaster.engine.SubscriptionEvent)
     */
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
@@ -219,6 +262,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".subscriptionAdded: invoked when plugin already shut down");
 
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
+      KeyData data = subscriptionInfo.getKeyData();
+      if (!(data instanceof QueryKeyData)) return; // this filters away child subscriptions
+      
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
       if (!subscribeQosData.getPersistentProp().getValue()) return;
@@ -229,9 +275,22 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.addSession(sessionInfo);         
       }
 
-      QueryKeyData subscribeKeyData = subscriptionInfo.getOriginalKeyData();
-      SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getSecretSessionId());
-      this.subscribeStore.put(entry);
+      // is it a remote connect or from a recovery ?
+      ClientProperty clientProperty = subscribeQosData.getClientProperty(PERSISTENCE_ID);
+      if (clientProperty == null) {
+         long uniqueId = new Timestamp().getTimestamp();
+         subscribeQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
+         QueryKeyData subscribeKeyData = (QueryKeyData)data;
+         SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getSecretSessionId(), uniqueId, 0L);
+         if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: putting to persitence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
+         subscriptionInfo.setPersistenceId(uniqueId);
+         this.subscribeStore.put(entry);
+      }
+      else  {
+         long uniqueId = clientProperty.getLongValue();
+         if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
+         subscriptionInfo.setPersistenceId(uniqueId);
+      }
    }
 
    /**
@@ -243,13 +302,16 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (this.log.CALL) this.log.call(ME, "subscriptionRemove '" + e.getSubscriptionInfo().getId() + "'");
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".subscriptionRemove: invoked when plugin already shut down");
 
-      // TODO add a method I_Queue.removeRandom(long uniqueId)
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
+      KeyData keyData = subscriptionInfo.getKeyData();
+      if (!(keyData instanceof QueryKeyData)) return;
+
+      // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData qosData = subscriptionInfo.getQueryQosData();
       if (!qosData.getPersistentProp().getValue()) return;
 
-      QueryKeyData keyData = (QueryKeyData)subscriptionInfo.getKeyData();
       SubscribeEntry entry = new SubscribeEntry(keyData.toXml(), qosData.toXml(), subscriptionInfo.getSessionInfo().getSecretSessionId(), subscriptionInfo.getPersistenceId(), 0L);
+      if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persitence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getSecretSessionId());
       this.subscribeStore.remove(entry);
    }
 
