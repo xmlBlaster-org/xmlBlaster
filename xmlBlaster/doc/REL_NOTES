@@ -3,16 +3,21 @@
 
 Changes for 0.75 [???, 2000]
 ==============================
+   - Added to internal messages with key oid="__sys__Login"
+     and key oid="__sys__Logout"
+     You may subscribe on those messages if you want to be informed
+     about other client which login or logout
+
    - Added a xmlBlaster reference handbook to xmlBlaster.org
      This page is generated from the requirement XML files in the
-	  xmlBlaster/doc/requirements directory of the distribution.
-	  It is available on our homepage in the 'Doc' section.
+     xmlBlaster/doc/requirements directory of the distribution.
+     It is available on our homepage in the 'Doc' section.
 
    - Bugfix if the Callback of a PtP receiver is disappeared,
-	  this usually happens when the receiver crashes without a logout.
-	  Now the XmlBlasterException with e.id="CallbackFailed" it thrown
-	  to the sender,  and the message is queued for the receiver
-	  if the qos flag <ForceQueuing> was set.
+     this usually happens when the receiver crashes without a logout.
+     Now the XmlBlasterException with e.id="CallbackFailed" it thrown
+     to the sender,  and the message is queued for the receiver
+     if the qos flag <ForceQueuing> was set.
 
    - Allow clients to ping xmlBlaster, to test reliable the connection.
      The xmlBlaster.idl was extended with a ping() method.
