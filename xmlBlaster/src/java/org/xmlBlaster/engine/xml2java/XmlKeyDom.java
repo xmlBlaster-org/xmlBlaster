@@ -144,13 +144,24 @@ public class XmlKeyDom implements I_MergeDomNode
          throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
       }
       int n = 0;
+      boolean wantsAll = false;
       while (nodeIter.hasMoreElements()) {
          n++;
          Object obj = nodeIter.nextElement();
+         if (obj instanceof org.w3c.dom.Document) { // A query like "/" or "/xmlBlaster"
+            if (log.TRACE) log.trace(ME, "Query on document root " + obj.toString());
+            wantsAll = true;
+            break;
+         }
          Element node = (Element)obj;
+         if ("xmlBlaster".equals(node.getNodeName())) {
+            if (log.TRACE) log.trace(ME, "Query on root node " + obj.toString());
+            wantsAll = true;
+            break;
+         }
          try {
             String uniqueKey = getKeyOid(node);
-            if (log.TRACE) log.info(ME, "Client " + clientName + " is accessing message oid='" + uniqueKey + "' after successful query");
+            if (log.TRACE) log.trace(ME, "Client " + clientName + " is accessing message oid='" + uniqueKey + "' after successful query");
             list.add(uniqueKey);
          } catch (XmlBlasterException e) {
             throw e;
@@ -160,7 +171,13 @@ public class XmlKeyDom implements I_MergeDomNode
             XmlBlasterException.convert(glob, ME, "XPath DOM lookup problems", e);
          }
       }
+
       if (log.TRACE) log.info(ME, n + " MsgUnits matched to subscription \"" + xpathQuery + "\"");
+
+      if (wantsAll) {
+         list.clear();
+         return parseKeyOid(sessionInfo, "/xmlBlaster/key", qos);
+      }
 
       return list;
    }
@@ -178,15 +195,16 @@ public class XmlKeyDom implements I_MergeDomNode
       }
 
       String nodeName = node.getNodeName();
+      if (log.TRACE) log.trace(ME, "Checking node name=" + nodeName);
 
-      if (nodeName.equals("xmlBlaster") && node.getParentNode() == null) {       // ERROR: the root node, must be specially handled
+      if ("xmlBlaster".equals(nodeName) && (node.getParentNode() == null || "#document".equals(node.getParentNode().getNodeName()))) {       // ERROR: the root node, must be specially handled
          log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "<xmlBlaster> node not allowed");
       }
 
       // check if we have found the <documentRoot><xmlBlaster><key oid=''> element
       boolean foundKey = false;
-      if (nodeName.equals("key")) {
+      if (nodeName.equalsIgnoreCase("key")) {
          org.w3c.dom.Node parent = node.getParentNode();
          if (parent == null) throw new XmlBlasterException(ME+".InvalidDom", "DOM tree is invalid");
          //if (parent.getNodeName().equals("xmlBlaster"))
@@ -204,7 +222,7 @@ public class XmlKeyDom implements I_MergeDomNode
          int attributeCount = attributes.getLength();
          for (int i = 0; i < attributeCount; i++) {
             org.w3c.dom.Attr attribute = (org.w3c.dom.Attr)attributes.item(i);
-            if (attribute.getNodeName().equals("oid")) {
+            if (attribute.getNodeName().equalsIgnoreCase("oid")) {
                String val = attribute.getNodeValue();
                // log.trace(ME, "Found key oid=\"" + val + "\"");
                return val;
