@@ -13,14 +13,19 @@ package org.xmlBlaster.engine.cluster;
  * @since 0.79e
  * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
  */
-public class NodeId {
-   public String getId(){
-         return id;
-      }
+public final class NodeId
+{
+   public String getId() {
+      return id;
+   }
 
-   public void setId(String id){
-         this.id = id;
-      }
+   public void setId(String id) {
+      this.id = id;
+   }
+
+   public String toString() {
+      return getId();
+   }
 
    private String id;
 }

@@ -8,6 +8,8 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+
 import java.util.Map;
 
 /**
@@ -20,6 +22,21 @@ public class NodeInfo {
 
    public void setId(NodeId id){
       this.id = id;
+   }
+
+   public XmlBlasterConnection getXmlBlasterConnection() {
+      return xmlBlasterConnection;
+   }
+
+   public void setXmlBlasterConnection(XmlBlasterConnection xmlBlasterConnection) {
+      this.xmlBlasterConnection = xmlBlasterConnection;
+   }
+
+   public void resetXmlBlasterConnection() {
+      if (this.xmlBlasterConnection != null) {
+         this.xmlBlasterConnection.disconnect(null);
+         this.xmlBlasterConnection = null;
+      }
    }
 
    public Address getAddress(){
@@ -93,6 +110,7 @@ public class NodeInfo {
    private boolean nameService;
    private NodeId[] backupIds;
    private NodeStateInfo state;
+   private XmlBlasterConnection xmlBlasterConnection;
 
    /**
     *@link aggregation

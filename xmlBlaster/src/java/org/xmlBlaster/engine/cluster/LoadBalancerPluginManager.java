@@ -3,7 +3,7 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.1 2002/04/16 12:11:23 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.2 2002/04/16 20:42:03 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -45,7 +45,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
     * @return The load balancer for this type and version or null if none is specified
     */
    public I_LoadBalancer getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
+      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
       I_LoadBalancer filterPlugin = null;
       String[] pluginNameAndParam = null;
 
@@ -98,7 +98,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
 
 
    /**
-    * Loads a persistence plugin. 
+    * Loads the plugin. 
     * <p/>
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.engine.cluster.simpledomain.RoundRobin<br />

@@ -45,7 +45,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * <p />
     * This xmlBlaster.properties entry example
     * <pre>
-    *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200
+    *   MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster,DEFAULT_DOMAIN=dummy
     * </pre>
     * passes 
     * <pre>

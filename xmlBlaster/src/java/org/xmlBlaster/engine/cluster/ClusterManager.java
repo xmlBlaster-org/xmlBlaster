@@ -25,35 +25,31 @@ import java.util.HashMap;
  * @author ruff@swand.lake.de
  * @since 0.79e
  */
-public class ClusterManager
+public final class ClusterManager
 {
    private final String ME = "DomainToMaster";
 
    private final Global glob;
    private final Log log;
 
-   private MapMsgToMasterPluginManager mapMsgToMasterPluginManager = null;
+   private final MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
+   private final LoadBalancerPluginManager loadBalancerPluginManager;
 
-   /**  The key is a 'node Id', the value an XmlBlasterConnection entry */
-   private Map connectionMap;
+   /**  Map containing NodeInfo objects, the key is a 'node Id' */
+   private Map nodeInfoMap;
 
    public ClusterManager(Global glob) {
       this.glob = glob;
       this.log = this.glob.getLog();
-      this.connectionMap = new HashMap();
+      this.nodeInfoMap = new HashMap();
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob);
+      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
    }
 
    /**
     * The plugin loader instance to map messages to their master node. 
     */
-   private MapMsgToMasterPluginManager getMapMsgToMasterPluginManager(){
-      if (this.mapMsgToMasterPluginManager == null) {
-         synchronized(this) {
-            if (this.mapMsgToMasterPluginManager == null)
-               this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(this.glob);
-         }
-      }
+   public MapMsgToMasterPluginManager getMapMsgToMasterPluginManager() {
       return this.mapMsgToMasterPluginManager;
    }
 
@@ -62,21 +58,38 @@ public class ClusterManager
       return Constants.RET_FORWARD_ERROR; // "<qos><state>FORWARD_ERROR</state></qos>"
    }
 
-   public void addConnection(NodeId nodeId, XmlBlasterConnection connection) {
-      this.connectionMap.put(nodeId.getId(), connection);
+   /**
+    * Access the informations belonging to a node id
+    * @return The NodeInfo instance or null if unknown
+    */
+   public final NodeInfo getNodeInfo(NodeId nodeId) {
+      return (NodeInfo)this.nodeInfoMap.get(nodeId.getId());
    }
 
-   public void removeConnection(NodeId nodeId) {
-      this.connectionMap.remove(nodeId.getId());
+   public final void addConnection(NodeId nodeId, XmlBlasterConnection connection) throws XmlBlasterException {
+      NodeInfo info = getNodeInfo(nodeId);
+      if (info == null)
+         throw new XmlBlasterException(ME, "Unknown node id = " + nodeId.toString() + ", can't add xmlBlasterConnection");
+      info.setXmlBlasterConnection(connection);
    }
 
-   public XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public final void removeConnection(NodeId nodeId) {
+      NodeInfo info = getNodeInfo(nodeId);
+      if (info == null) {
+         Log.error(ME, "Unknown node id = " + nodeId.toString() + ", can't remove xmlBlasterConnection");
+         return;
+      }
+      info.resetXmlBlasterConnection();
+   }
+
+   public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId("","1.0",
                                         msgUnitWrapper.getContentMime(), msgUnitWrapper.getContentMimeExtended());
       NodeId nodeId = domainMapper.getMasterId(msgUnitWrapper);
-      /*
-      NodeInfo nodeInfo = nodeInfoMap.get(nodeId.getId());
-      I_LoadBalancer balancer = 
+      NodeInfo nodeInfo = getNodeInfo(nodeId);
+
+      I_LoadBalancer balancer = loadBalancerPluginManager.getPlugin("RoundRobin", "1.0"); // TODO!!!! Allow other plugins
+      /* !!!
       XmlBlasterConnection con = balancer.getConnection(nodeInfo);
       XmlBlasterConnection con = (XmlBlasterConnection)connectionMap.get(nodeId.getId());
       if (con != null)
@@ -85,7 +98,12 @@ public class ClusterManager
       return null;
    }
 
-   public XmlBlasterConnection getConnection(NodeId nodeId) {
+   public final XmlBlasterConnection getConnection(NodeId nodeId) {
+      Log.error(ME, "getConnection() is not implemented");
+      return null;
+      /*
+      NodeInfo nodeInfo = getNodeInfo(nodeId);
       return (XmlBlasterConnection)connectionMap.get(nodeId.getId());
+      */
    }
 }
