@@ -95,6 +95,7 @@ public class HelloWorldSubscribe implements I_Callback
          boolean notifyOnErase = glob.getProperty().get("notifyOnErase", true);
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
+         boolean updateOneway = glob.getProperty().get("updateOneway", false);
          boolean wantContent = glob.getProperty().get("wantContent", true);
          this.dumpContent = glob.getProperty().get("dumpContent", false);
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
@@ -146,6 +147,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -notifyOnErase     " + notifyOnErase);
          log.info(ME, "   -local             " + local);
          log.info(ME, "   -initialUpdate     " + initialUpdate);
+         log.info(ME, "   -updateOneway      " + updateOneway);
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
          log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
@@ -185,6 +187,7 @@ public class HelloWorldSubscribe implements I_Callback
          }
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(initialUpdate);
+         sq.setWantUpdateOneway(updateOneway);
          sq.setMultiSubscribe(multiSubscribe);
          sq.setPersistent(persistentSubscribe);
          sq.setWantNotify(notifyOnErase);
