@@ -22,7 +22,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
@@ -104,6 +104,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       }
       catch (Throwable e) {
          log.warn(ME + ".update", "Error in client user code of update(): " + e.toString());
+         e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME+".update", "Error in client code", e);
       }
    }
