@@ -130,7 +130,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
    Hashtable loggedIn = null;
 
-   private Timeout burstModeTimer;
+   //private Timeout burstModeTimer;
 
    private AccessPluginManager accessPluginManager = null;
 
@@ -159,7 +159,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       glob.getRunlevelManager().addRunlevelListener(this);
 
-      this.burstModeTimer = new Timeout("BurstmodeTimer");
+      //this.burstModeTimer = new Timeout("BurstmodeTimer");
 
       myselfLoginName = internalLoginNamePraefix + "[" + glob.getId() + "]";
       this.unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
