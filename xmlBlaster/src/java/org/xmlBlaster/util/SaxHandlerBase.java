@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.2 1999/12/16 11:29:10 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.3 1999/12/16 11:59:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -93,6 +93,15 @@ public class SaxHandlerBase extends HandlerBase
     * @return returns the literal xml string
     */
    public String toString()
+   {
+      return xmlLiteral;
+   }
+
+
+   /**
+    * @return returns the literal xml string
+    */
+   public String toXml()
    {
       return xmlLiteral;
    }
