@@ -203,6 +203,22 @@
    in the same directory switches on fine logging and you can manually see what happens.
    </p>
 
+   <h2>Logging hint</h2>
+   <p>DbWatcher is using the JDK 1.4 logging framework. When running natively
+   as xmlBlaster plugin this logging output is redirected to xmlBlaster utils logging.
+   To switch on detailed logging, add those lines to <tt>xmlBlaster.properties</tt>:</p>
+   <pre>
+trace[org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter] true
+trace[org.xmlBlaster.contrib.db.DbPool] true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector] true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler] true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector] true
+trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin] true
+trace[org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher] true
+trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher] true
+   </pre>
+
+
    <h2>Limitations</h2>
    <p>Every change detector has pro and cons and limitations, the following table
    gives an overview for the currently supplied detector plugins.</p>
@@ -410,6 +426,62 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
   &lt;col name='CAR'>BMW&lt;/col>
  &lt;/row>
 &lt;/sql>
+   </pre>
+
+   </example>
+
+   <example lang="any" type="HTML">
+   <h2>MD5 based polling example</h2>
+
+   <p>The same table used in the previous example can be polled with MD5 comparison as well:
+   </p>
+  <pre>
+&lt;plugin id='DbWatcherPlugin.testPoll_MD5' 
+           className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
+   &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
+   &lt;attribute id='db.user'>system&lt;/attribute>
+   &lt;attribute id='db.password'>secret&lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM TEST_POLL WHERE CAR = '${groupColValue}'
+   &lt;/attribute>
+   &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/2&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
+   &lt;attribute id='alertScheduler.pollInterval'>2000&lt;/attribute>
+   &lt;attribute id='changeDetector.class'>
+      org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector
+   &lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.detectStatement'>
+      SELECT color, car from TEST_POLL order by CAR
+   &lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
+              onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+&lt;/plugin>
+  </pre>
+
+
+   <p>The only difference to the timestamp based example is that we can detect
+   DELETE statements:
+   </p>
+   <pre>
+set autocommit on;
+DELETE FROM TEST_POLL WHERE CAR='BMW';
+   </pre>
+
+   <p>and your subscriber should receive this message</p>
+   <pre>
+&lt;key oid='db.test_poll.event.BMW'/>
+
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>DELETE&lt;/command>
+  &lt;ident>BMW&lt;/ident>
+ &lt;/desc>
+&lt;/sql>
+ &lt;/content>
    </pre>
 
    </example>
@@ -730,7 +802,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          <td>no</td>
          <td>null</td>
          <td>
-         If given this statement is used to gather the information which is places into the message.<br />
+         If given this statement is used to gather the information which is placed into the message.<br />
          The statement needs to be ordered by the configured <tt>changeDetector.groupColName</tt>
          to be able to send a message on each columns change. If <tt>changeDetector.groupColName</tt>
          is null, any statement is possible.
