@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.27 2004/03/11 16:56:47 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.28 2004/09/28 15:08:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -158,20 +158,33 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
          parser.parse(xmlData);
       }
-      catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
-         if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
-         if (e.hasError()) {
-            throw e.getXmlBlasterException();
-         }
-         return;
-      }
       catch (Throwable e) {
+         // In startElement(), endElement() you can use directly 
+         // throw new org.xml.sax.SAXException("Can't parse it", e);
+
+         if (e instanceof org.xmlBlaster.util.StopParseException) {
+            // This inctanceOf / and cast does not seem to work: do we have different classloaders?
+            StopParseException stop = (StopParseException)e;
+            if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
+            if (stop.hasError()) {
+               throw stop.getXmlBlasterException();
+            }
+            else {
+               log.error(ME, "StopParseException without embedded XmlBlasterException: " + e.toString());
+            }
+            return;
+         }
 
          if (e instanceof SAXException) { // Try to find an encapsulated XmlBlasterException ...
             SAXException saxE = (SAXException)e;
             if (log.TRACE) log.trace(ME, "SAXException: Parsing execution stopped half the way");
             Exception exc = saxE.getException();
-            if (exc instanceof StopParseException) {
+            if (exc instanceof XmlBlasterException) {
+               XmlBlasterException stop = (XmlBlasterException)exc;
+               String txt = (exc.getMessage() != null && exc.getMessage().length() > 0) ? exc.getMessage() : "Error while SAX parsing";
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, txt, e);
+            }
+            else if (exc instanceof StopParseException) {
                StopParseException stop = (StopParseException)exc;
                if (stop.hasError()) {
                   throw stop.getXmlBlasterException();
@@ -196,7 +209,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
             e.printStackTrace();
          }
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".parse()",
-            "Error while SAX parsing " + location + ":\n" + xmlData, e);
+            "Error while SAX parsing " + location, e);
       }
       finally {
          locator = null;
@@ -252,7 +265,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       //log.warn(ME, "Entering endDocument() ...");
    }
 
-   public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName) {
+   public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName) throws org.xml.sax.SAXException {
       log.warn(ME, "Please provide your endElement() implementation");
    }
 
@@ -314,7 +327,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     *  name=adapter
     * </p>
     */
-   public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
+   public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws org.xml.sax.SAXException {
       log.warn(ME, "Please provide your startElement() implementation");
    }
 
