@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
-//import org.xmlBlaster.engine.admin.extern.snmp.*;
+import org.xmlBlaster.engine.admin.extern.snmp.*;
 
 import java.io.*;
 import java.util.Vector;
@@ -126,7 +126,6 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    }
 
    private void initMib() {
-      /*
       NodeScalarImpl nodeScalarImpl;
       NodeEntryImpl nodeEntryImpl;
       NodeTable nodeTable;
@@ -134,7 +133,6 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       NodeTableObserver nodeTableObserver;
       ConnectionTableSubject connectionTableSubject;
       ConnectionTableObserver connectionTableObserver;
-      */
 
       /*
       nodeScalarImpl = new NodeScalarImpl();
