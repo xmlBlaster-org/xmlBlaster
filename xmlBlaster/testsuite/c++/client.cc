@@ -67,12 +67,11 @@ int main(int argc, char* argv[])
 
 
       //-------------- publish() a message -------------
-      string xmlKey("<?xml version='1.0' encoding='ISO-8859-1' ?>\n"
-                    "<key oid=''>\n"
-                    "<AGENT id='192.168.124.10' subId='1' type='generic'>"
-                    "<DRIVER id='FileProof' pollingFreq='10'>"
-                    "</DRIVER>"
-                    "</AGENT>"
+      string xmlKey("<key oid='' contentMime='text/plain'>\n"
+                    "   <AGENT id='192.168.124.10' subId='1' type='generic'>"
+                    "      <DRIVER id='FileProof' pollingFreq='10'>"
+                    "      </DRIVER>"
+                    "   </AGENT>"
                     "</key>");
 
       MessageUnit message;
