@@ -25,9 +25,11 @@ static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *resp
 static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
+static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
+static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos);
 static bool isConnected(XmlBlasterConnectionUnparsed *xb);
@@ -40,7 +42,7 @@ static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, 
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
-XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv) {
+XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const char* const* argv) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)calloc(1, sizeof(XmlBlasterConnectionUnparsed));
    if (xb == 0) return xb;
    xb->argc = argc;
@@ -58,6 +60,8 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** a
    xb->connect = xmlBlasterConnect;
    xb->disconnect = xmlBlasterDisconnect;
    xb->publish = xmlBlasterPublish;
+   xb->publishArr = xmlBlasterPublishArr;
+   xb->publishOneway = xmlBlasterPublishOneway;
    xb->subscribe = xmlBlasterSubscribe;
    xb->unSubscribe = xmlBlasterUnSubscribe;
    xb->erase = xmlBlasterErase;
@@ -247,14 +251,14 @@ static bool isConnected(XmlBlasterConnectionUnparsed *xb)
 const char *xmlBlasterConnectionUnparsedUsage()
 {
    return 
-      "\n  -dispatch/connection/plugin/socket/hostname [localhost]"
-      "\n                       Where to find xmlBlaster"
-      "\n  -dispatch/connection/plugin/socket/port [7607]"
-      "\n                       The port where xmlBlaster listens"
-      "\n  -dispatch/connection/plugin/socket/localHostname [NULL]"
-      "\n                       Force the local IP, useful on multi homed computers"
-      "\n  -dispatch/connection/plugin/socket/localPort [0]"
-      "\n                       Force the local port, useful to tunnel firewalls";
+      "\n   -dispatch/connection/plugin/socket/hostname [localhost]"
+      "\n                       Where to find xmlBlaster."
+      "\n   -dispatch/connection/plugin/socket/port [7607]"
+      "\n                       The port where xmlBlaster listens."
+      "\n   -dispatch/connection/plugin/socket/localHostname [NULL]"
+      "\n                       Force the local IP, useful on multi homed computers."
+      "\n   -dispatch/connection/plugin/socket/localPort [0]"
+      "\n                       Force the local port, useful to tunnel firewalls.";
 }
 
 /**
@@ -592,6 +596,37 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
 }
 
 /**
+ * Publish a message array in a bulk to the server. 
+ * TODO: Is not yet implemented
+ * @return The raw XML string array returned from xmlBlaster, only NULL if an exception is thrown
+ *         You need to free() it
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
+{
+   if (msgUnitArr) {;} /* Suppress compiler warning */
+   strncpy0(exception->errorCode, "internal.notImplemented", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+   SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] publishArr() is not implemented, please contact the xmlBlaster mailing list if you need this performance boost", __FILE__, __LINE__);
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_ERROR, __FILE__, exception->message);
+   return 0;
+}
+
+/**
+ * Publish oneway a message array in a bulk to the server without receiving an ACK. 
+ * TODO: Is not yet implemented
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
+{
+   if (msgUnitArr) {;} /* Suppress compiler warning */
+   strncpy0(exception->errorCode, "internal.notImplemented", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+   SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] publishOneway() is not implemented, please contact the xmlBlaster mailing list if you need this performance boost", __FILE__, __LINE__);
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_ERROR, __FILE__, exception->message);
+}
+
+/**
  * Subscribe a message. 
  * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free() it
@@ -649,18 +684,18 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
 
 /**
  * UnSubscribe a message from the server. 
- * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
- *         You need to free() it
+ * @return The raw QoS XML strings returned from xmlBlaster, only NULL if an exception is thrown
+ *         You need to free it with freeQosArr() after usage
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
+static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
    SocketDataHolder responseSocketDataHolder;
-   char *response;
+   QosArr *response;
 
    if (checkArgs(xb, "unSubscribe", exception) == false ) return 0;
 
@@ -668,7 +703,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char 
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterUnSubscribe()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
-      return (char *)0;
+      return (QosArr *)0;
    }
 
    if (qos == (const char *)0) {
@@ -690,33 +725,39 @@ static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char 
    if (sendData(xb, XMLBLASTER_UNSUBSCRIBE, MSG_TYPE_INVOKE, data, totalLen,
                 &responseSocketDataHolder, exception) == false) {
       free(data);
-      return (char *)0;
+      return (QosArr *)0;
    }
    free(data);
 
-   response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
+   response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
-      "Got response for unSubscribe(): %s", response);
+   if (xb->logLevel>=LOG_TRACE) {
+      int ii;
+      for (ii=0; ii<response->len; ii++) {
+         xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+            "Got response for unSubscribe(): %s", response->qosArr[ii]);
+      }
+   }
 
    return response;
 }
 
 /**
  * Erase a message from the server. 
- * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
- *         You need to free() it
+ * @return A struct holding the raw QoS XML strings returned from xmlBlaster,
+ *         only NULL if an exception is thrown.
+ *         You need to freeQosArr() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
+static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
    char *data;
    size_t currpos = 0;
    SocketDataHolder responseSocketDataHolder;
-   char *response;
+   QosArr *response;
 
    if (checkArgs(xb, "erase", exception) == false ) return 0;
 
@@ -724,7 +765,7 @@ static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * cons
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterErase()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
-      return (char *)0;
+      return (QosArr *)0;
    }
 
    if (qos == (const char *)0) {
@@ -746,15 +787,20 @@ static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * cons
    if (sendData(xb, XMLBLASTER_ERASE, MSG_TYPE_INVOKE, data, totalLen,
                 &responseSocketDataHolder, exception) == false) {
       free(data);
-      return (char *)0;
+      return (QosArr *)0;
    }
    free(data);
 
-   response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
+   response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
-      "Got response for erase(): %s", response);
+   if (xb->logLevel>=LOG_TRACE) {
+      int ii;
+      for (ii=0; ii<response->len; ii++) {
+         xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+            "Got response for erase(): %s", response->qosArr[ii]);
+      }
+   }
 
    return response;
 }
