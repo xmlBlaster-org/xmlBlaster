@@ -472,13 +472,20 @@ public final class ErrorCode implements java.io.Serializable
    }
 
    ///////////////
-   // This code is a helper for serialization so that after
-   // deserial the check
-   //   PriortiyEnum.MAX == priorityInstance
-   // is still usable (the singleton is assured when deserializing)
+   /**
+    * This code is a helper for serialization so that after
+    * deserial the check
+    *   <pre>ErrorCode.INTERNAL_UNKNOWN == internalUnknownInstance</pre>
+    * is still usable (the singleton is assured when deserializing)
+    * <br />
+    * See inner class SerializedForm
+    */
    public Object writeReplace() throws java.io.ObjectStreamException {
       return new SerializedForm(this.getErrorCode());
    }
+   /**
+    * A helper class for singleton serialization. 
+    */
    private static class SerializedForm implements java.io.Serializable {
       String errorCode;
       SerializedForm(String errorCode) { this.errorCode = errorCode; }
