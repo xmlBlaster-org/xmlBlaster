@@ -384,7 +384,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
                NamingContextExt namingContextExt = getNamingService();
                NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
-               if (log.TRACE) log.trace(ME, "Query NameServer -ORBInitRef NameService=" + System.getProperty("ORBInitRef") +
+               if (log.TRACE) log.trace(ME, "Query NameServer -ORBInitRef NameService=" + glob.getProperty().get("ORBInitRef","") +
+                             ((System.getProperty("ORBInitRef.NameService") != null) ? System.getProperty("ORBInitRef.NameService") : "") +
                              " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
                org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
