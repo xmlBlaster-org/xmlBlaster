@@ -153,6 +153,10 @@
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
+         <xsd:attribute name="label" use="default" value="">
+            <xsd:simpleType>
+            </xsd:simpleType>
+         </xsd:attribute>
       </xsd:complexType>
    </xsd:element>
    <xsd:element name="author"/>
