@@ -7,6 +7,7 @@ package org.xmlBlaster.test.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -18,6 +19,7 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -55,6 +57,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private static final boolean PERSISTENT = true;
    
    private Global glob;
+   private Global serverGlobal;
    private LogChannel log;
 
    private int serverPort = 7604;
@@ -98,7 +101,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       this.log = this.glob.getLog("test");
       glob.init(Util.getOtherServerPorts(serverPort));
 
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
+      String[] args = new String[] {"-persistence/session/maxEntriesCache", "1",
+                                    "-persistence/session/maxEntries","2",
+                                    "-persistence/subscribe/maxEntriesCache", "2",
+                                    "-persistence/subscribe/maxEntries","3",
+                                   };
+      this.serverGlobal = this.glob.getClone(args);
+      
+      serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          con = glob.getXmlBlasterAccess(); // Find orb
@@ -164,6 +174,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
          // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
+         Util.resetPorts(this.serverGlobal);
          Util.resetPorts(glob);
          this.glob = null;
          this.con = null;
@@ -242,7 +253,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
             if (i == numStart) {
                if (doStop) {
                   log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
-                  serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+                  // serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+                  serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
                   log.info(ME, "xmlBlaster started, waiting on tail back messsages");
                }
                else {
@@ -335,6 +347,63 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       persistentSession(false);
    }
 
+   // -----------------------------------------------------------------
+   private Global createConnection(Global parentGlobal, String sessionName, boolean isPersistent, boolean expectEx) {
+      try {
+         Global ret = parentGlobal.getClone(null);
+         I_XmlBlasterAccess con = ret.getXmlBlasterAccess(); // Find orb
+         String passwd = "secret";
+         ConnectQos connectQos = new ConnectQos(glob); // == "<qos>...</qos>";
+         connectQos.setSessionName(new SessionName(ret, sessionName));
+         // set the persistent connection 
+         connectQos.setPersistent(isPersistent);
+         // Setup fail save handling for connection ...
+         Address addressProp = new Address(glob);
+         addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
+         addressProp.setRetries(-1);       // -1 == forever
+         addressProp.setPingInterval(-1L); // switched off
+         connectQos.setAddress(addressProp);
+      
+         // setup failsafe handling for callback ...
+         if (this.failsafeCallback) {
+            CallbackAddress cbAddress = new CallbackAddress(this.glob);
+            cbAddress.setRetries(-1);
+            cbAddress.setPingInterval(-1);
+            cbAddress.setDelay(1000L);
+            connectQos.addCallbackAddress(cbAddress);
+         }
+         con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
+         if (expectEx) assertTrue("an exception was expected here because of overflow: Configuration of session queue probably not working", false);
+         return ret;
+      }
+      catch (XmlBlasterException ex) {
+         if (expectEx) this.log.info(ME, "createConnection: exception was OK since overflow was expected");
+         else assertTrue("an exception should not occur here", false);
+      }
+      return null; //to make compiler happy
+   }      
+
+   
+   /**
+    * Tests the requirement:
+    * - If the storage for the sessions is overflown, it should throw an exception
+    *
+    */
+   public void testOverflow() {
+      Global[] globals = new Global[5];
+      globals[0] = createConnection(this.glob, "bjoern/1", true , false);
+      globals[1] = createConnection(this.glob, "fritz/2", false, false);
+      globals[2] = createConnection(this.glob, "dimitri/3", true , true); // <-- exception (since main connection also persistent)
+      globals[4] = createConnection(this.glob, "pandora/4", false , false); // OK since transient
+      globals[3] = createConnection(this.glob, "jonny/5", true, true);
+
+      for (int i=0; i < 3; i++) {
+         globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
+      }
+   }
+
+
+
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPersistentSession
     * <p />
@@ -350,7 +419,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
 
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
-/*
+      
+      /*
       testSub.setUp();
       testSub.testXPathInitialStop();
       testSub.tearDown();
@@ -358,9 +428,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       testSub.setUp();
       testSub.testXPathNoInitialStop();
       testSub.tearDown();
-*/
+
       testSub.setUp();
       testSub.testXPathInitialRunlevelChange();
+      testSub.tearDown();
+      */
+
+      testSub.setUp();
+      testSub.testOverflow();
       testSub.tearDown();
    }
 }
