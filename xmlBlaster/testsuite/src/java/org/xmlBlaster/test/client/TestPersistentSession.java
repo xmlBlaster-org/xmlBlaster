@@ -110,8 +110,6 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          cbAddress.setDelay(1000L);
          connectQos.addCallbackAddress(cbAddress);
 
-
-
          this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
@@ -168,6 +166,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          SubscribeKey key = new SubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
          SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
          qos.setPersistent(this.persistent);
+         qos.setWantNotify(false); // to avoig getting erased messages
+
          SubscribeReturnQos subscriptionId = con.subscribe(key, qos);
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
@@ -292,9 +292,11 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          System.exit(1);
       }
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
+      /*
       testSub.setUp();
       testSub.testPersistentSessionWithStop();
       testSub.tearDown();
+      */
       testSub.setUp();
       testSub.testPersistentSessionWithRunlevelChange();
       testSub.tearDown();

@@ -301,9 +301,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       KeyData data = subscriptionInfo.getKeyData();
       if (!(data instanceof QueryKeyData)) return; // this filters away child subscriptions
-      
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
+      if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: key='" + data.toXml() + "'");
+      if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: qos='" + subscribeQosData.toXml() + "'");
       if (!subscribeQosData.getPersistentProp().getValue()) return;
 
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo(); 

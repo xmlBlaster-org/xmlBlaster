@@ -384,6 +384,9 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       if (log.TRACE) log.trace(ME, "Subscription add event for client " + sessionInfo.getId());
       KeyData keyData = subscriptionInfo.getKeyData();
+
+      if (keyData.isQuery()) return; // only XPATH subscriptions are of interest here 
+
       String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
       // Insert into first map:
