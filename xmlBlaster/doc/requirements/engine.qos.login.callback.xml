@@ -75,7 +75,7 @@
       </callbacks>
    </qos>
    ]]>
-   
+
    <p>
    Delegated subscribes: it is possible to subscribe for somebody else to certain messages. This can
    be handled by logging in again with the callback addresses of that delegated client (kind of gift)
@@ -107,36 +107,25 @@
 
 
       // Java clients usually use some helper classes which generate the above
-      // xml string for them:
+      // xml string for them.
 
-      ////////////////////////////////////////////////////
+      //--------------------------------------------------
       // Simplest login using the builtin callback server:
-      // (see e.g. testsuite/org.xmlBlaster/TestSub.java)
+      // (see e.g. testsuite/org/xmlBlaster/TestSub.java)
+      //import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+      XmlBlasterConnection connection;
       try {
-         corbaConnection = new CorbaConnection(); // Find orb
-
-         // this class needs to implement I_Callback - the update() method
-         // the qos is set to null, the CorbaConnection helper will use the default:
-         xmlBlaster = corbaConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
+         connection = new XmlBlasterConnection(); // Find orb
+         String passwd = "secret";
+         String qos = null;                       // default qos is used
+         connection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           System.error.println(e.toString());
       }
 
-
-      ////////////////////////////////////////////////////
-      // If you provide your own Callback implementation:
-      // (see e.g. demo/javaclients/ClientSub.java)
-      CallbackAddress addr = new CallbackAddress("IOR",
-                                 corbaConnection.getOrb().object_to_string(myCallback));
-      LoginQosWrapper qos = new LoginQosWrapper(addr);
-                       // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
-
-      xmlBlaster = corbaConnection.login("joe", "secret", qos);
-
-
-      ////////////////////////////////////////////////////
-      // If you like raw Corba, see
+      //--------------------------------------
+      // For examples using raw Corba, see
       // demo/javaclients/corba/ClientRaw.java
       // testsuite/c++/clientPOA.cc
       ]]>
@@ -144,7 +133,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
