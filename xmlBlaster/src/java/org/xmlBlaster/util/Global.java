@@ -297,6 +297,7 @@ public class Global implements Cloneable
     * Blocks until a key on the keyboard is hit. 
     * Consumes multiple hits (for Windows DOS box)
     * @param str If not null it will be printed on console with System.out
+    * @return The int pressed (for example 49 for '1')
     */
    public static int waitOnKeyboardHit(String str) {
       if (str != null) {
