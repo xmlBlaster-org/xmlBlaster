@@ -15,7 +15,7 @@ public class AllTests {
       junit.textui.TestRunner.run (suite());
    }
    public static Test suite ( ) {
-      TestSuite suite= new TestSuite("All xmlBlaster cluster tests");
+      TestSuite suite= new TestSuite("All xmlBlaster mime plugin tests");
       suite.addTest(TestGetRegexFilter.suite());
       suite.addTest(TestGetFilter.suite());
       suite.addTest(TestSubscribeFilter.suite());
