@@ -840,6 +840,11 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       pthread_t tid;
       int threadRet = 0;
       UpdateContainer *container = (UpdateContainer*)malloc(sizeof(UpdateContainer));
+      pthread_attr_t attr;
+
+      pthread_attr_init(&attr);
+      /* Cleanup all resources after ending the thread, instead of calling pthread_join() */
+      pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
       
       container->xa = xa;
       container->msgUnitArrP = msgUnitArrP;
@@ -856,7 +861,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       /* this thread will deliver the update message to the client code,
          Note: we need a thread pool cache for better performance */
       xa->threadCounter++;
-      threadRet = pthread_create(&tid, (const pthread_attr_t *)0,
+      threadRet = pthread_create(&tid, &attr,
                         (void * (*)(void *))runUpdate, (void *)container);
       if (threadRet != 0) {
          bool ret = false;
@@ -875,7 +880,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
 
-      pthread_detach(tid); /* Cleanup all resources after ending the thread, instead of pthread_join() */
+      pthread_attr_destroy (&attr);
    }
 
    if (xa->lowLevelAutoAck) {
