@@ -20,7 +20,7 @@ import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
  * Holding all necessary infos to establish a remote
  * connection and invoke update()/updateOneway()/ping(). 
  * @see DeliveryConnectionsHandler
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandler
 {
@@ -32,7 +32,7 @@ public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandl
     */
    public CbDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
       super(glob, deliveryManager, addrArr);
-      this.ME = "CbDeliveryConnectionsHandler-" + deliveryManager.getQueue().getQueueId();
+      this.ME = "CbDeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
    }
 
    /**

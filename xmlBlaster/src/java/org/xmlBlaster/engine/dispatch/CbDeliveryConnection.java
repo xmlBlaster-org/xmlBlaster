@@ -11,11 +11,13 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.AddressBase;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.qos.UpdateQosServer;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DeliveryConnection;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
@@ -26,7 +28,7 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
  * Holding all necessary infos to establish callback
  * connections and invoke their update().
  * @see DeliveryConnection
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 public final class CbDeliveryConnection extends DeliveryConnection
@@ -41,7 +43,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
     */
    public CbDeliveryConnection(Global glob, CbDeliveryConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = "CbDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getQueueId();
+      this.ME = "CbDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
    }
 
    /**
@@ -88,41 +90,42 @@ public final class CbDeliveryConnection extends DeliveryConnection
    public Object doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
    {
       // Convert to UpdateEntry
-      MsgQueueUpdateEntry[] msgArr = new MsgQueueUpdateEntry[msgArr_.length];
+      MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr_.length];
 
       // The update QoS is completed ...
-      for (int i=0; i<msgArr.length; i++) {
-         msgArr[i] = (MsgQueueUpdateEntry)msgArr_[i];
+      for (int i=0; i<msgUnitRawArr.length; i++) {
+         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
 
          // TODO: REQ engine.qos.update.queue states that the queue size is passed and not the curr msgArr.length
-         MessageUnit mu = msgArr[i].getMessageUnit();
-         mu = new MessageUnit(mu, null, null, UpdateQosServer.toXml(msgArr[i].getMsgQosData(), i, msgArr.length));
-         msgArr[i].setMessageUnit(mu);
-         if (log.DUMP) log.dump(ME, "CallbackQos=" + msgArr[i].getMessageUnit().getQos());
+         MsgUnit mu = entry.getMsgUnit();
+         MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
+         msgQosData.setQueueIndex(i);
+         msgQosData.setQueueSize(msgUnitRawArr.length);
+         mu = new MsgUnit(mu, null, null, msgQosData);
+         msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
       }
 
       // We export/encrypt the message (call the interceptor)
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDeliveryManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
-         for (int i=0; i<msgArr.length; i++) {
-            MessageUnit msgUnitCrypt = securityInterceptor.exportMessage(msgArr[i].getMessageUnit());
-            msgArr[i].setMessageUnit(msgUnitCrypt);
+         for (int i=0; i<msgUnitRawArr.length; i++) {
+            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgUnitRawArr[i]);
          }
-         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr.length + " messages.");
+         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgUnitRawArr.length + " messages.");
       }
       else {
-         log.warn(ME+".accessDenied", "No session security context, sending " + msgArr.length + " messages without encryption");
+         log.warn(ME+".accessDenied", "No session security context, sending " + msgUnitRawArr.length + " messages without encryption");
       }
 
       String[] rawReturnVal = null;
       if (address.oneway()) {
-         cbDriver.sendUpdateOneway(msgArr);
-         if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " oneway messages.");
+         cbDriver.sendUpdateOneway(msgUnitRawArr);
+         if (log.TRACE) log.trace(ME, "Success, sent " + msgUnitRawArr.length + " oneway messages.");
       }
       else {
-         if (log.TRACE) log.trace(ME, "Before update " + msgArr.length + " acknowledged messages ...");
-         rawReturnVal = cbDriver.sendUpdate(msgArr);
-         if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
+         if (log.TRACE) log.trace(ME, "Before update " + msgUnitRawArr.length + " acknowledged messages ...");
+         rawReturnVal = cbDriver.sendUpdate(msgUnitRawArr);
+         if (log.TRACE) log.trace(ME, "Success, sent " + msgUnitRawArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
       }
 
       connectionsHandler.getDeliveryStatistic().incrNumUpdate(rawReturnVal.length);
