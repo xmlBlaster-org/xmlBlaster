@@ -554,9 +554,29 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                   }
                }
 
+               try { // Cleanup if persistent queue was temporary unavailable
+                  long numHist = getNumOfHistoryEntries();
+                  if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
+                     long count = numHist-this.historyQueue.getMaxNumOfEntries();
+                     // TODO: Implement count>1 in takeLowest():
+                     ArrayList entryList = this.historyQueue.takeLowest((int)count, -1L, null, false);
+                     if (entryList.size() != count) {
+                        log.error(ME, "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                     }
+                  }
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "History queue take() problem: " + e.getMessage());
+               }
+
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "History queue put() problem: " + e.getMessage());
+               }
 
+               try {
                   long numHist = getNumOfHistoryEntries();
                   if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
                      ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
@@ -567,10 +587,9 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                      MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
                      if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
                   }
-
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "History queue put() problem: " + e.getMessage());
+                  log.error(ME, "History queue take() problem: " + e.getMessage());
                }
             }
          } // synchronized
@@ -872,8 +891,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             getMsgUnitCache().remove(msgUnitWrapper);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
-                       e.getMessage() + ": " + toXml());
+            log.warn(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
+                       e.getMessage()); // + ": " + toXml());
          }
       }
       
