@@ -590,6 +590,9 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append(" os.name='").append(System.getProperty("os.name")).append("'");
       sb.append(" os.version='").append(System.getProperty("os.version")).append("'");
       sb.append("\n   ");
+      sb.append(" freeMemory='").append(Runtime.getRuntime().freeMemory()).append("'");
+      sb.append(" totalMemory='").append(Runtime.getRuntime().totalMemory()).append("'");
+      sb.append("\n   ");
       sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
       //sb.append(" ='").append(get()).append("'");
       sb.append(">");
