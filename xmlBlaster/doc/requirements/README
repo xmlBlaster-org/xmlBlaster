@@ -32,13 +32,16 @@ Don't forget to do a 'make javadoc' in testcase/org/xmlBlaster to
 generate html files from java files with syntax highlighting
 (make javadoc in the root directory does this as well)
 
+Note that both '-Dorg.xml.sax.parser=' or '-Dcom.jclark.xsl.sax.parser='
+may be used to specify the xml parser.
+
 
 Generate HTML output with Sun XML parser:
 =========================================
 Table with all requirements:
-   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
+   java -Dorg.xml.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
   or:
-   java -Dcom.jclark.xsl.sax.parser=com.sun.xml.parser.Parser com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
+   java -Dorg.xml.sax.parser=com.sun.xml.parser.Parser com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
 
 Detail info of one requirement:
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver engine.qos.publish.destination.PtX.xml detail.xsl engine.qos.publish.destination.PtX.html
