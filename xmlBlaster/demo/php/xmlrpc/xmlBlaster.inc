@@ -10,6 +10,8 @@
  *	- replace durty (but so fast ;o) regular expression by a real xml parsing !
  *
  *	08/07/02 21:36 cyrille@ktaland.com
+*	Fixed dirty reg exp for new sessionId layout. PB
+ *	28/02/03 10:58 bencom@bencom.co.nz
  */
 
 // php xml-rpc implemetation by Edd Dumbill (C) 1999-2001 <edd@usefulinc.com>
@@ -259,8 +261,7 @@ class connectQos {
 		dbgprint( "connectQos::sessionId()");
 
 		if( ! isset($this->sessionId) )
-			//if( preg_match( "/<sessionId>sessionId:(.*)<\/sessionId>/", $this->xml, $matches ) ){
-			if( preg_match( "/<sessionId>(.*)<\/sessionId>/", $this->xml, $matches ) ){
+			if( preg_match( "/sessionId=\'(.*)\'\/>/", $this->xml, $matches ) ){
 				$this->sessionId = $matches[1];
 			}
 		return $this->sessionId ;

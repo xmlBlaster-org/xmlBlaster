@@ -31,4 +31,7 @@ CHANGES :
 
 2002-07-08 cyrille@ktaland.com
 	- first hack of da php demo, in a dark & very hot night.
-
+2003-02-28 bencom@bencom.co.nz
+	- Fixed dirty reg exp for new sessionId layout. 
+	- Fixed file permissions. PB
+	
