@@ -1,4 +1,21 @@
 <?xml version="1.0"?>
+
+<!-- ===========================================================================
+
+ xmlBlaster C++ client build file for Windows/Xerces/TAO combination
+
+Authors: Martin Johnson
+
+Configure: Take a copy of xmlBlaster/build.properties to your home directory
+         and adjust it to your environment.
+
+OS:      Currently Windows only (for UNIX see xmlBlaster/build.xml)
+
+Invoke:  ..\..\build.bat -verbose -f tao.xml all
+
+Success: ACE-5.3+TAO-1.3.zip + xerces-c2_2_0-win32.zip + WindowsXp + VC++7.1.2292 + xmlBlaster 0.841 (2003-02-06)
+-->
+
 <project default="all" basedir=".">
 
   <taskdef resource="cpptasks.tasks"/> <!-- cc defineset compiler linker -->
@@ -9,6 +26,12 @@
   <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
   <typedef name="compiler" classname="net.sf.antcontrib.cpptasks.CompilerDef" />
   <typedef name="linker" classname="net.sf.antcontrib.cpptasks.LinkerDef" / -->
+
+  <!-- Allow any user specific values to override the defaults -->
+  <property file="${user.home}/build.properties" />
+
+  <!-- Set default values for the build -->
+  <property file="build.properties" />
 
   <property name="build.dir"     value="./tao_build"/>
 
@@ -62,7 +85,7 @@
   </compiler>       
 
   <target name="all" depends="cpp-lib">
-    <echo message="Hopefully you now have a xmlBlasterClient lib for TAO ${os.name}"/>        
+    <echo message="Hopefully you now have a ${lib.dir}/xmlBlasterClient lib for TAO ${os.name}"/>        
   </target>
 
   <target name="prepare-idl" depends="prepare">      
@@ -110,6 +133,7 @@
       <sysincludepath location="${xerces.home}/src"/>            <!-- xerces win32 -->
       <sysincludepath location="${xerces.home}/include" />       <!-- xerces 1.6.0 -->
       <sysincludepath location="${xerces.home}/src/xercesc" />   <!-- Since xerces 1.7.0 that I have -->                  
+      <sysincludepath location="${xerces.home}/include/xercesc" />   <!-- Since xerces 2.0 that I (someone other I) have: e.g. util/XMLString.hpp -->                  
       <sysincludepath location="${THREAD_INC}" />
 
       <includepath location="${ms.path}/include" />   
@@ -122,19 +146,23 @@
       <includepath location="${src.cpp.dir}/generated" />
       
       <linker name="msvc" if="is-debug" >        
-      <fileset dir="${ace.home}/ace" includes="aced.lib" if="is-debug" />      
+      <fileset dir="${ace.home}/ace" includes="ACEd.lib" if="is-debug" />      
       <fileset dir="${corba.home}/tao" includes="TAOd.lib" if="is-debug"/>       
       <fileset dir="${corba.home}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="is-debug"/>
       <fileset dir="${corba.home}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="is-debug"/>
-      <fileset dir="${xerces.home}/Build/Win32/Vc6/Debug" includes="xerces-c_1D.lib" if="is-debug"/>
+      <!-- fileset dir="${xerces.home}/Build/Win32/Vc6/Debug" includes="xerces-c_1D.lib" if="is-debug"/ -->
+      <!-- Marcel -->
+      <fileset dir="${xerces.home}/lib" includes="xerces-c_2D.lib" if="is-debug"/>
       </linker>
       
       <linker name="msvc" >        
-      <fileset dir="${ace.home}/ace" includes="ace.lib" unless="is-debug" />
+      <fileset dir="${ace.home}/ace" includes="ACEd.lib" unless="is-debug" />
       <fileset dir="${corba.home}/tao" includes="TAO.lib" unless="is-debug" />       
       <fileset dir="${corba.home}/tao/PortableServer" includes="TAO_PortableServer.lib" unless="is-debug" />
       <fileset dir="${corba.home}/orbsvcs/orbsvcs" includes="TAO_CosNaming.lib" unless="is-debug" />
-      <fileset dir="${xerces.home}/Build/Win32/Vc6/Release" includes="xerces-c_1.lib" unless="is-debug" />
+      <!-- fileset dir="${xerces.home}/Build/Win32/Vc6/Release" includes="xerces-c_1.lib" unless="is-debug" /-->
+      <!-- Marcel -->
+      <fileset dir="${xerces.home}/lib" includes="xerces-c_2.lib" unless="is-debug" />
       </linker>
 
       <defineset>
@@ -184,4 +212,17 @@
 </project>
 
 
+<!-- A typical compile line:
+
+       [cc] cl /Gm /Zi /W3 /c /nologo /GX /Zi /Od /GZ /D_DEBUG /MDd /DTAO=1 /DWIN32=1 /D_MBCS=1 /D_USRDLL=1 /DDLL_BUILD=
+1 /D_WINDOWS=1 /DDLL_EXPORT /IC:\Marcel\xmlBlaster\src\c++\${ms.path}\include /IC:\Marcel\xmlBlaster\src\c++\${ms.path}\
+mfc\include /IC:\Marcel\xmlBlaster\src\c++\${ms.path}\atl\include /IC:\Marcel\ACE_wrappers /IC:\Marcel\ACE_wrappers\TAO
+/IC:\Marcel\xmlBlaster\src\c++ /IC:\Marcel\xmlBlaster\src\c++\util /IC:\Marcel\xmlBlaster\src\c++\generated /IC:\Marcel\
+ACE_wrappers\TAO\orbsvcs /IC:\Marcel\xerces-c2_2_0-win32\src /IC:\Marcel\xerces-c2_2_0-win32\include /IC:\Marcel\xerces-
+c2_2_0-win32\src\xercesc /IC:\Marcel\xerces-c2_2_0-win32\include\xercesc /IC:\Marcel\xmlBlaster\src\c++ C:\Marcel\xmlBla
+ster\src\c++\client\qos\EraseQos.cpp C:\Marcel\xmlBlaster\src\c++\util\Global.cpp C:\Marcel\xmlBlaster\src\c++\util\key\
+MsgKeyFactory.cpp C:\Marcel\xmlBlaster\src\c++\util\XmlBlasterException.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\Status
+QosData.cpp C:\Marcel\xmlBlaster\src\c++\client\key\GetReturnKey.cpp
+
+-->
 <!-- End of file -->
