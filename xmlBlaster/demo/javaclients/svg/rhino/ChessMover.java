@@ -3,9 +3,9 @@ Name:      ChessMover.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The demo class which moves around the chess peaces
-Version:   $Id: ChessMover.java,v 1.1 2002/03/28 10:53:34 laghi Exp $
+Version:   $Id: ChessMover.java,v 1.2 2002/03/29 20:52:02 laghi Exp $
 ------------------------------------------------------------------------------*/
-package javaclients.svg.batik;
+package javaclients.svg.rhino;
 
 import org.xmlBlaster.util.XmlBlasterException;
 

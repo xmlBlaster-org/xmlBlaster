@@ -5,7 +5,7 @@
 <svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="500" viewBox="0 0 500 500" onload="doInit(evt)" onmouseup="movePoint(evt)">
 
   <defs>
-      <script xlink:href="xparser.js" type="text/ecmascript"/>
+      <script xlink:href="xparse.js" type="text/ecmascript"/>
       <script type="text/ecmascript"> 
 
 <![CDATA[    
