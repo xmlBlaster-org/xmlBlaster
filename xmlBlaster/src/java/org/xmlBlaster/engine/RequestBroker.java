@@ -1226,7 +1226,8 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             // First all callback calls must be successful - the CbWorker checks it as well
             if (msgUnitHandler.isPublishedWithData() &&
                 msgUnitHandler.getMessageUnitWrapper().getPublishQos().isVolatile() &&
-                msgUnitHandler.getMessageUnitWrapper().getEnqueueCounter() == 0)
+                msgUnitHandler.getMessageUnitWrapper().getEnqueueCounter() == 0 &&
+                msgUnitHandler.getMessageUnitWrapper().doesErase() == false) 
                eraseVolatile(sessionInfo, msgUnitHandler);
 } // synchronized
          }

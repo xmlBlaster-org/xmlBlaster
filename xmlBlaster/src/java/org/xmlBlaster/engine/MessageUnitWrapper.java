@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.45 2002/09/19 14:23:51 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.46 2002/10/25 08:30:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -73,6 +73,7 @@ public final class MessageUnitWrapper implements I_Timeout
     * callbacks succeeded
     */
    private int enqueueCounter = 0;
+   private boolean isErased = false;
 
    /**
     * Use this constructor if a new message object is fed by method publish().
@@ -172,6 +173,19 @@ public final class MessageUnitWrapper implements I_Timeout
    {
       return this.enqueueCounter;
    }
+
+   /**
+    * Marks the message that it is erased or going to be erased. 
+    * @return true if message was in erased or shutdown state already
+    */
+   public boolean doesErase() {
+      synchronized (this) {
+         if (isErased) return true;
+         isErased = true;
+      }
+      return false;
+   }
+
 
    /**
     * We are notified when this session expires. 

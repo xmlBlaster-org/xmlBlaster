@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.28 2002/10/24 22:44:48 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.29 2002/10/25 08:30:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -205,7 +205,8 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       for (int ii=0; ii<msgs.length; ii++) {
          //if (log.TRACE) log.trace(ME, "oid=" + msgs[ii].getMessageUnitWrapper().getUniqueKey() + " EnqueueCounter=" + msgs[ii].getMessageUnitWrapper().getEnqueueCounter() + " isVolatile=" + msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile());
          if (msgs[ii].getMessageUnitWrapper().getEnqueueCounter() == 0 &&
-               msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile()) {
+               msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile() &&
+               msgs[ii].getMessageUnitWrapper().doesErase() == false) {
             if (isSessionQueue) {
                SessionMsgQueue q = (SessionMsgQueue)this;
                try {
