@@ -207,11 +207,11 @@ public class TestSubXPathMany extends TestCase
       assertEquals("numReceived3 after subscribe", 0, numReceived3); // there should be no Callback
 
       doPublish();
-      waitOnUpdate(5000L, messageArrived1);
+      waitOnUpdate(2000L, messageArrived1);
       assertEquals("numReceived1 after publishing", 1, numReceived1); // message arrived?
-      waitOnUpdate(5000L, messageArrived2);
+      waitOnUpdate(2000L, messageArrived2);
       assertEquals("numReceived2 after publishing", 1, numReceived2); // message arrived?
-      waitOnUpdate(5000L, messageArrived3);
+      waitOnUpdate(2000L, messageArrived3);
       assertEquals("numReceived3 after publishing", 1, numReceived3); // message arrived?
 
       numReceived1 = numReceived2 = numReceived3 = 0;
@@ -222,11 +222,11 @@ public class TestSubXPathMany extends TestCase
       if (con3 != null) { con3.disconnect(null); con3 = null; }
 
       doPublish();
-      waitOnUpdate(5000L, messageArrived1);
+      waitOnUpdate(2000L, messageArrived1);
       assertEquals("numReceived1 after publishing", 1, numReceived1); // message arrived?
-      waitOnUpdate(5000L, messageArrived2);
+      waitOnUpdate(2000L, messageArrived2);
       assertEquals("numReceived2 after publishing", 1, numReceived2); // message arrived?
-      waitOnUpdate(5000L, messageArrived3);
+      waitOnUpdate(2000L, messageArrived3);
       assertEquals("numReceived3 after publishing", 0, numReceived3); // message arrived?
       
       numReceived1 = numReceived2 = numReceived3 = 0;
