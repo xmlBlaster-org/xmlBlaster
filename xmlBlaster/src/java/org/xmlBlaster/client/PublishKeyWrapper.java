@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.11 2002/03/20 13:13:05 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.12 2002/04/23 08:07:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -42,6 +42,8 @@ public class PublishKeyWrapper extends KeyWrapper
    private String contentMime = "text/plain";
    /** value from attribute <key oid="" contentMimeExtended="..."> */
    private String contentMimeExtended = null;
+   /** value from attribute <key oid="" domain="..."> */
+   private String domain = null;
    private String clientTags = "";
 
 
@@ -72,6 +74,25 @@ public class PublishKeyWrapper extends KeyWrapper
          this.contentMime = contentMime;
       if (contentMimeExtended != null)
          this.contentMimeExtended = contentMimeExtended;
+   }
+
+
+   /**
+    * Constructor with given oid and contentMime.
+    * @param oid is optional and will be generated if ""
+    * @param contentMime the MIME type of the content e.g. "text/xml" or "image/gif"
+    * @param contentMimeExtended Use it for whatever, e.g. the version number or parser infos for your content<br />
+    *        set to null if not needed
+    */
+   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended, String domain)
+   {
+      super(oid);
+      if (contentMime != null)
+         this.contentMime = contentMime;
+      if (contentMimeExtended != null)
+         this.contentMimeExtended = contentMimeExtended;
+      if (domain != null)
+         this.domain = domain;
    }
 
 
@@ -107,8 +128,10 @@ public class PublishKeyWrapper extends KeyWrapper
       StringBuffer sb = new StringBuffer();
       sb.append("<key oid='").append(oid).append("'");
       sb.append(" contentMime='").append(contentMime).append("'");
-      if (contentMimeExtended != null)
+      if (contentMimeExtended != null && contentMimeExtended.length() > 0)
          sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
+      if (domain != null && domain.length() > 0)
+         sb.append(" domain='").append(domain).append("'");
       sb.append(">\n");
       sb.append(clientTags);
       sb.append("\n</key>");
