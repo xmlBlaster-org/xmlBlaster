@@ -58,7 +58,7 @@ public class Session implements I_Session {
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
-      subject = determineSubject(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
+      subject = determineSubject(securityQos.getUserId(), ((org.xmlBlaster.authentication.plugins.demo.SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 
       return null; // no extra information
