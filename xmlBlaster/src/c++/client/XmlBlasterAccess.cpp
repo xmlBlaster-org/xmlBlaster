@@ -68,6 +68,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    updateClient_ = clientAddr;
    if (!cbServer_) createDefaultCbServer();
 
+   if (log_.trace()) log_.trace(ME, string("::connect. CbServer done"));
    // currently the simple version will do it ...
    if (!deliveryManager_) deliveryManager_ = &(global_.getDeliveryManager());
 
@@ -111,7 +112,9 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
    log_.call(ME, "::initCbServer");
    if (log_.trace()) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
    I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(instanceName_, type, version));
+   if (log_.trace()) log_.trace(ME, "After callback plugin creation");
    server->initialize(loginName, *this);
+   if (log_.trace()) log_.trace(ME, "After callback plugin initialize");
    return server;
 }
 
