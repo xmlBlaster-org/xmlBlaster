@@ -13,6 +13,12 @@ Changes for 0.76 [?, 2000]
 
    - Peter added the sweet rainbow fish to our control panel
 
+	- Enhancements with browser callback framework
+
+	- XmlKey.getContentMimeExtended() now returns "" (empty string)
+	  as default fallback. Before the default was null.
+	  This is smarter when used in XSL style sheets.
+
 Changes for 0.75 [Mar.28, 2000]
 ===============================
 
