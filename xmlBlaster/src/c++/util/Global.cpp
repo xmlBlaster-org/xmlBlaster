@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $
+Version:   $Id: Global.cpp,v 1.59 2004/02/19 17:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.59 2004/02/19 17:16:21 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.59 2004/02/19 17:16:21 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -64,8 +64,8 @@ Global::Global() : ME("Global"), pingerMutex_()
    cbServerPluginManager_ = 0;
    pingTimer_             = 0;
    dispatchManager_       = 0;
-   property_              = 0;
    copy();
+   property_              = new Property();
    isInitialized_ = false;
 
    if(global_ == NULL)
@@ -137,10 +137,10 @@ Global& Global::initialize(int args, const char * const argv[])
 
 bool Global::wantsHelp()
 {
-   return property_->getBoolProperty("help", false, false) ||
-          property_->getBoolProperty("-help", false, false) ||
-          property_->getBoolProperty("h", false, false) ||
-          property_->getBoolProperty("?", false, false); 
+   return getProperty().getBoolProperty("help", false, false) ||
+          getProperty().getBoolProperty("-help", false, false) ||
+          getProperty().getBoolProperty("h", false, false) ||
+          getProperty().getBoolProperty("?", false, false); 
 }
 
 string &Global::getVersion()
@@ -179,7 +179,7 @@ Property& Global::getProperty() const
    if (property_ == NULL)
      throw XmlBlasterException(USER_CONFIGURATION,
                                "UNKNOWN NODE",
-                               ME + string("::getProperty"));
+                               ME + string("::getProperty"), "Please call initialize to init Property");
    return *property_;
 }
 
@@ -240,7 +240,7 @@ I_Log& Global::getLog(const string &logName)
          static bool first = true;
          if (first) {
             logManager_.setLogFactory("log4cplus", new Log4cplusFactory());
-            logManager_.initialize(property_->getPropertyMap());
+            logManager_.initialize(getProperty().getPropertyMap());
             first = false;
          }
          return logManager_.getLogFactory().getLog(logName);
