@@ -290,6 +290,8 @@ TODO
       <compilerarg value="-wd383" />          <!-- C++ suppress char * to string temporary warn -->
       <!--compilerarg value="-Wcheck" />         < icc 8 diagnostic switch -->
       <compilerarg value="-D_REENTRANT" />
+      <compilerarg value="-D__interface=bar" /> <!-- Added temporary to workaround /usr/include/netinet/in.h delivered by SUSE 9.2 -->
+      <compilerarg value="-D__s=bar1" />        <!-- Added temporary to workaround /usr/include/netinet/in.h delivered by SUSE 9.2 -->
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 and 5.5 -->
@@ -1307,15 +1309,15 @@ TODO
              in="${docbookReq.dir}/client.c.socket.xml"
              out="${docbookReq.dir}/test0.html"
              extension=".xml" 
-	     style="${docbookReq.dir}/../docbook/docbookXmlBlaster.xsl"
-             force="true">		
+             style="${docbookReq.dir}/../docbook/docbookXmlBlaster.xsl"
+             force="true">              
        </style>
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/test0.html"
              out="${docbookReq.dir}/test1.html"
              extension=".xml" 
-	     style="${docbookReq.dir}/embedSource.xsl"
-             force="true">		
+             style="${docbookReq.dir}/embedSource.xsl"
+             force="true">              
        </style>
     </target>
     -->
@@ -1323,12 +1325,12 @@ TODO
 
       <style processor="trax" 
              basedir="doc/requirements"
-	     destdir="${docbookReq.dir}"
-	     includes="*.xml"
-	     excludes="all.xml"
+             destdir="${docbookReq.dir}"
+             includes="*.xml"
+             excludes="all.xml"
              extension=".xml" 
-	     style="${docbookReq.dir}/req2Docbook.xsl"
-             force="true">		
+             style="${docbookReq.dir}/req2Docbook.xsl"
+             force="true">              
        </style>
 
       <!-- Create the errorCode listing requirement first: -->
@@ -1355,10 +1357,10 @@ TODO
              in="${docbookReq.dir}/all.xml"
              out="${docbookReq.dir}/requirement.html"
              extension=".html" style="${docbookReq.dir}/createOverview.xsl"
-             force="true">		
-	 <xmlcatalog>
-	    <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
-	 </xmlcatalog>    
+             force="true">              
+         <xmlcatalog>
+            <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
+         </xmlcatalog>    
        </style>
        -->
 
@@ -1366,14 +1368,14 @@ TODO
              in="${docbookReq.dir}/all.xml"
              out="${docbookReq.dir}/requirement.xml"
              extension=".xml" style="${docbookReq.dir}/createOverview.xsl"
-             force="true">		
+             force="true">              
        </style>
 <!--
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/requirement.html"
              out="${docbookReq.dir}/menu.xml"
              extension=".html" style="${docbookReq.dir}/createMenu.xsl"
-             force="true">		
+             force="true">              
        </style>
 
 
@@ -1381,7 +1383,7 @@ TODO
              in="${docbookReq.dir}/requirement.html"
              out="${docbookReq.dir}/menu.xml"
              extension=".html" style="${docbookReq.dir}/createMenu.xsl"
-             force="true">		
+             force="true">              
        </style>
 -->
       <!-- generate each req -->
@@ -1392,8 +1394,8 @@ TODO
              includes="*.xml"
              excludes= "all.xml"
              force="true">
-	 <xmlcatalog>
-	    <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
+         <xmlcatalog>
+            <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
          </xmlcatalog>    
        </style>
       -->
