@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.3 2001/12/03 12:41:28 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.4 2001/12/03 12:56:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -43,6 +43,26 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
  * 
  *    EmailDriver.smtpHost=192.1.1.1
  *    EmailDriver.from=xmlblast@localhost
+ * </pre>
+ * The QoS on login looks typically like this:
+ * <pre>
+ *     &lt;qos>
+ *        &lt;securityService type="simple" version="1.0">
+ *          &lt;![CDATA[
+ *            &lt;user>michele&lt;/user>
+ *            &lt;passwd>secret&lt;/passwd>
+ *          ]]>
+ *        &lt;/securityService>
+ *        &lt;callback type='EMAIL'>
+ *           et@mars.universe
+ *        &lt;/callback>
+ *        &lt;callback type='EMAIL'>
+ *           root@localhost
+ *        &lt;/callback>
+ *        &lt;callback type='EMAIL'>
+ *           spam@xy.z
+ *        &lt;/callback>
+ *     &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.protocol.email.CallbackEmailDriver
  */
