@@ -915,7 +915,7 @@ Solaris:
        <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
        <td>2003-06-26</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build.sh -Duse-icc=true c</i></td>
        </tr>
 
       </table>
@@ -1057,7 +1057,7 @@ build.sh reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.30 $</revision>
+   <revision>$Revision: 1.31 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
