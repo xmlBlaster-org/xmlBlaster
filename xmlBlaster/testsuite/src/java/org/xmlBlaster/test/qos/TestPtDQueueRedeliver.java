@@ -221,10 +221,10 @@ public class TestPtDQueueRedeliver extends TestCase
 
          log.info(ME, "============ STEP 6: Check if messages arrived");
          assertEquals("", numPub, this.updateInterceptorRcv.waitOnUpdate(2000L, oid, Constants.STATE_OK));
-         updateInterceptorRcv.compareToReceived(sentArr, secretCbSessionId);
-         updateInterceptorRcv.compareToReceived(sentQos);
+         this.updateInterceptorRcv.compareToReceived(sentArr, secretCbSessionId);
+         this.updateInterceptorRcv.compareToReceived(sentQos);
 
-         updateInterceptorRcv.clear();
+         this.updateInterceptorRcv.clear();
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.toString());
