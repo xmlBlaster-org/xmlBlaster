@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.13 2002/05/06 07:34:14 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.14 2002/05/09 11:47:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -223,7 +223,13 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    /** Fatal error. */
    public void fatalError(SAXParseException ex) throws SAXException
    {
-      Log.error(ME, getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      if (ex.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
+         // using Picolo SAX2 parser we end up here
+         if (Log.TRACE) Log.trace(ME+".fatalError", "Parsing execution stopped half the way");
+         return;
+      }
+
+      Log.error(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
       throw ex;
    }
 
