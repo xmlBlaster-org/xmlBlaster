@@ -8,13 +8,24 @@ Comment:   The Factory for the client driver for the corba protocol
 #ifndef _CLIENT_PROTOCOL_CORBA_CORBADRIVERFACTORY
 #define _CLIENT_PROTOCOL_CORBA_CORBADRIVERFACTORY
 
+
+
 #include <util/xmlBlasterDef.h>
+#include <util/objman.h>
+class Object_Lifetime_Manager;
+class CorbaDriver;
 #include <client/protocol/corba/CorbaDriver.h>
 
+// for managed objects
+
+
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
-using namespace std;
+
+//using namespace org::xmlBlaster::client::protocol::corba;
+
 
 namespace org {
  namespace xmlBlaster {
@@ -47,6 +58,10 @@ class Dll_Export CorbaDriverFactory : public Thread
 {
 friend CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
 
+// required for the managed objects
+friend class Object_Lifetime_Manager;
+template <class TYPE> friend class ManagedObject;
+
 private:
    const string   ME;
    Global&        global_;
@@ -59,6 +74,8 @@ private:
    bool           orbIsThreadSafe_; // flag telling if the orb is a singletheraded or multithreaded orb
    CORBA::ORB_ptr orb_;             // the orb used (either created here or passed in constructor
    bool           isOwnOrb_;        // 'true' if the orb has been created by this factory.
+
+   static CorbaDriverFactory* factory_;
 
    /**
     * Only used by getInstance()
