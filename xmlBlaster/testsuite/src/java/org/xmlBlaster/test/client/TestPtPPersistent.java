@@ -46,7 +46,7 @@ import junit.framework.*;
  */
 public class TestPtPPersistent extends TestCase  {
    private static String ME = "TestPtPPersistent";
-   private static final long PUB_DELAY=200L;
+   private static final long PUB_DELAY=250L;
    private Global glob;
    private LogChannel log;
 
@@ -125,6 +125,11 @@ public class TestPtPPersistent extends TestCase  {
       }
       finally {
          con.disconnect(null);
+         try {
+            Thread.sleep(1000L);
+         }
+         catch (Exception ex) {
+         }
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
          // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
@@ -206,17 +211,21 @@ public class TestPtPPersistent extends TestCase  {
       for (int i=0; i < exLimit; i++) {
          try {
             doPublish(i, oid, doGc, PUB_DELAY);
-            Thread.sleep(250L);
          }
          catch (Exception ex) {
             assertTrue("an exception on publish '" + i + "' should not occur " + ex.getMessage(), false);
          }
       }
+         
+      int ret = this.destination.getUpdateInterceptor().waitOnUpdate(300L*exLimit, (int)exLimit);
+      assertEquals("wrong number of entries arrived", (int)exLimit, ret);
+      ret = this.destination.getUpdateInterceptor().waitOnUpdate(500L, (int)exLimit+1);
+      assertEquals("wrong number of entries arrived", (int)exLimit, ret);
       
       Msg[] msg = this.destination.getUpdateInterceptor().getMsgs();
       assertEquals("wrong number of messages", exLimit, msg.length);
       for (int i=0; i < exLimit; i++) {
-         assertEquals("wrong message sequence", i, msg[i].getContentInt());
+         assertEquals("wrong message sequence at ", i, msg[i].getContentInt());
       }
       this.destination.getUpdateInterceptor().clear();      
 
@@ -266,18 +275,16 @@ public class TestPtPPersistent extends TestCase  {
       for (long i=2*exLimit; i < 3*exLimit; i++) {
          try {
             doPublish((int)i, oid, doGc, PUB_DELAY);
-            Thread.sleep(500L);
          }
          catch (Exception ex) {
             assertTrue("an exception on publish '" + i + "' should not occur " + ex.getMessage(), false);
          }
       }
 
-      try {
-         Thread.sleep(2000L);
-      }
-      catch (Exception ex) {
-      }
+      ret = this.destination.getUpdateInterceptor().waitOnUpdate(3000L*exLimit, (int)(2*exLimit));
+      assertEquals("wrong number of messages arrived", (int)2*exLimit, ret);
+      ret = this.destination.getUpdateInterceptor().waitOnUpdate(1000L, (int)(2*exLimit));
+      assertEquals("wrong number of messages arrived", (int)(2*exLimit), ret);
       
       msg = this.destination.getUpdateInterceptor().getMsgs();
       if (oid != null) { // if oid is different sequence is not garanteed
