@@ -1767,7 +1767,7 @@ public class Global implements Cloneable
    }
 
    public void shutdown() {
-      log.info(ME, "Destroying global handle");
+      if (log.TRACE) log.trace(ME, "Destroying util.Global handle");
       if (deliveryWorkerPool != null) {
          deliveryWorkerPool.shutdown();
          // registered itself to Runlevel changes deliveryWorkerPool.shutdown();?
