@@ -51,8 +51,3 @@ You need to have a running web server and set the DocumentRoot to e.g.
 5) And connect with the C++ client
 
 	./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`
-
-
-NOTE: change /tmp/ior.dat with the name of the file containing the IOR for the
-naming service (which you must have started before xmlBlaster).
-
