@@ -66,7 +66,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    transient private Timestamp timestamp;
    private final long timestampNanos;
    private final String stackTrace;
-   private final boolean isServerSide;
+   private boolean isServerSide;
 
    transient private final Throwable cause; // Since JDK 1.4 this is available in Throwable, we keep it here to support older JDK versions
    private String embeddedMessage;
@@ -170,6 +170,10 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          }
       }
       return this.errorCodeEnum;
+   }
+
+   public final boolean isErrorCode(ErrorCode code) {
+      return this.errorCodeEnum == code;
    }
 
    public final String getErrorCodeStr() {
@@ -339,6 +343,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     */
    public final boolean isServerSide() {
       return this.isServerSide;
+   }
+
+   /**
+    * @param serverSide true to mark the exception has occurred on server side, false if happened on client side
+    */
+   public final void isServerSide(boolean serverSide) {
+      this.isServerSide = serverSide;
    }
 
    public boolean isInternal() {
