@@ -5,13 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build.sh c
-           or e.g.:
-            cd xmlBlaster\demo\c\socket
-            cl /MT /W4 -D_WINDOWS  -DDLL_IGNORE -I..\..\..\src\c -I..\..\..\src\c\pthreads /FeHelloWorld3.exe HelloWorld3.c
-            ..\..\..\src\c\util\*.c ..\..\..\src\c\socket\*.c ws2_32.lib ..\..\..\src\c\socket\pthreadVC.lib
-           (copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+           (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
 Invoke:    HelloWorld3 -help
-See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,18 +18,21 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
  * Here we receive the callback messages from xmlBlaster
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
+                     XmlBlasterException *exception)
 {
    size_t i;
    bool testException = false;
    /* XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData; */
+   if (userData != 0) ;  /* Supress compiler warning */
 
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
              xml);
       free(xml);
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      msgUnitArr->msgUnitArr[i].responseQos = 
+                  strcpyAlloc("<qos><state id='OK'/></qos>");
       /* Return QoS: Everything is OK */
    }
    if (testException) {
@@ -63,8 +62,8 @@ int main(int argc, char** argv)
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccessUnparsed *xa = 0;
 
-   printf("[client] XmlBlaster %s C SOCKET client, try option '-help' if you need usage informations\n",
-          getXmlBlasterVersion());
+   printf("[client] XmlBlaster %s C SOCKET client, try option '-help' if you need"
+          " usage informations\n", getXmlBlasterVersion());
 
    for (iarg=0; iarg < argc; iarg++) {
       if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {

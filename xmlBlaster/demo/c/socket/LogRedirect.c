@@ -6,9 +6,9 @@ Comment:   Tests redirect of logging
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
   Linux with libxmlBlasterC.so:
-           gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
+          gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
                 -L../../../lib -lxmlBlasterClientC -Wl,-rpath=../../../lib -lpthread
-See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
+See:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +20,8 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket
 static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
-static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException);
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
+                     XmlBlasterException *xmlBlasterException);
 
 /**
  * Invoke: LogRedirect -logLevel TRACE
@@ -111,7 +112,8 @@ int main(int argc, char** argv)
  * @param location A string describing the code place
  * @param fmt The formatting string
  * @param ... Other variables to log, corresponds to 'fmt'
- * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default implementation
+ * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
+ *      implementation
  */
 static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
@@ -157,14 +159,19 @@ static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
 /**
  * Here we receive the callback messages from xmlBlaster
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
+                     XmlBlasterException *xmlBlasterException)
 {
    size_t i;
+   if (xmlBlasterException != 0) ;  /* Supress compiler warnings */
+   if (userData != 0) ;
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
-      printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
+      printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
+             xml);
       free(xml);
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      msgUnitArr->msgUnitArr[i].responseQos =
+             strcpyAlloc("<qos><state id='OK'/></qos>");
       /* Return QoS: Everything is OK */
    }
    return true;
