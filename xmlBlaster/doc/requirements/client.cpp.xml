@@ -370,9 +370,10 @@ what libxmlBlasterClient.so
 ident libxmlBlasterClient.so
 
 # The result is something like:
-@(#) $Id: client.cpp.xml,v 1.14 2003/03/03 08:55:43 ruff Exp $
+Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp
 
 # You can now lookup Global.cpp 1.29 with
+cd xmlBlaster/src/c++/util
 cvs log Global.cpp
 </pre>
    </configuration>
@@ -388,6 +389,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
 </requirement>
 
