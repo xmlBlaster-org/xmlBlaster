@@ -27,8 +27,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 DeliveryManager::DeliveryManager(Global& global)
    : ME("DeliveryManager"),
      global_(global),
-     log_(global.getLog("dispatch")),
-     serverMap_()
+     log_(global.getLog("dispatch"))
+//     serverMap_()
 {
    if (log_.CALL) log_.call(ME, "::constructor");
 //   connectionsHandler_ = NULL;
@@ -38,32 +38,29 @@ DeliveryManager::DeliveryManager(Global& global)
 DeliveryManager::~DeliveryManager()
 {
    if (log_.CALL) log_.call(ME, "::destructor");
-//   delete connectionsHandler_;
-//   connectionsHandler_ = NULL;
 
-   // should be synchronized ...
    ServerMap::iterator iter = serverMap_.begin();
    while (iter != serverMap_.end()) {
       if (log_.TRACE)
          log_.trace(ME, string("destructor: deleting type: '") + (*iter).first + string("'"));
       I_XmlBlasterConnection* el = (*iter).second;
       serverMap_.erase(iter);
-      delete el;
+//      delete el; ---> not owned by this container !!!
       iter = serverMap_.begin();
    }
 }
 
-I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, const string& type, const string& version)
+I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& /*instanceName*/, const string& type, const string& version)
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
-      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") + " for instance '" + instanceName + "'");
+      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") /* + " for instance '" + instanceName + "'"*/);
    
-   string completeName = string(instanceName) + "/" + type + "/" + version; 
+   string completeName = /*string(instanceName) + "/" + */ type + "/" + version; 
    if (type == "IOR") {
       ServerMap::iterator iter = serverMap_.find(completeName);
       if (iter == serverMap_.end()) {
-         corba::CorbaDriver* driver = new corba::CorbaDriver(global_, instanceName + "[client]");
+         corba::CorbaDriver* driver =	&corba::CorbaDriver::getInstance(global_);
          // probably notify the dispatcher framework here since they
          // share the same object.
          ServerMap::value_type el(completeName, driver);

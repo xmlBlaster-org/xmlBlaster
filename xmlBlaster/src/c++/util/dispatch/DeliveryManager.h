@@ -22,7 +22,7 @@ Comment:   Manager to retrieve the correct delivery protocol
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <string>
-#include <map>
+// #include <map>
 
 using namespace org::xmlBlaster::util;
 
@@ -49,9 +49,9 @@ public:
 
    ~DeliveryManager();
 
-   I_XmlBlasterConnection& getPlugin(const string& instanceName, const string& type, const string& version);
+   I_XmlBlasterConnection& getPlugin(const string& /*instanceName*/, const string& type, const string& version);
 
-   ConnectionsHandler* getConnectionsHandler(const string& instanceName);
+   ConnectionsHandler* getConnectionsHandler(const string& /*instanceName*/);
 };
 
 #define _DELIVERYMANAGER_CLASS

@@ -22,13 +22,13 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <string>
-#include <map>
+// #include <map>
 
 using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
-typedef map<string, I_CallbackServer*> ServerMap;
+// typedef map<string, I_CallbackServer*> ServerMap;
 
 class Dll_Export CbServerPluginManager
 {
@@ -37,14 +37,14 @@ private:
    const string ME;
    Global&      global_;
    Log&         log_;
-   ServerMap    serverMap_;
+//   ServerMap    serverMap_;
 
 public:
    CbServerPluginManager(Global& global);
 
    ~CbServerPluginManager();
 
-   I_CallbackServer& getPlugin(const string& instanceName, const string& type, const string& version);
+   I_CallbackServer& getPlugin(const string& /*instanceName*/, const string& type, const string& version);
 };
 
 #define _CBSERVERPLUGINMANAGER_CLASS

@@ -59,18 +59,56 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
    }
 
 
-CorbaDriver::CorbaDriver(Global& global, const string& instanceName, bool connectionOwner)
-   : ME(string("CorbaDriver-") + instanceName), 
-     global_(global), 
-     log_(global.getLog("client")),
-     statusQosFactory_(global), 
-     msgQosFactory_(global), 
-     instanceName_(instanceName)
+CorbaDriver::CorbaDriver()
+   : ME("CorbaDriver"), 
+     global_(Global::getInstance()), 
+     log_(global_.getLog("client")),
+     statusQosFactory_(global_), 
+     msgQosFactory_(global_)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
    _COMM_TRY
-      connection_ = new CorbaConnection(global_, instanceName_, connectionOwner);
+      connection_ = new CorbaConnection(global_, false);
+   _COMM_CATCH("::Constructor", true, false)
+}
+
+
+CorbaDriver::CorbaDriver(const CorbaDriver& corbaDriver)
+   : ME("CorbaDriver"), 
+     global_(corbaDriver.global_), 
+     log_(corbaDriver.log_),
+     statusQosFactory_(corbaDriver.global_), 
+     msgQosFactory_(corbaDriver.global_)
+{
+   // no instantiation of these since this should never be invoked (just to make it private)
+   connection_      = NULL;
+   defaultCallback_ = NULL;
+}
+
+CorbaDriver& CorbaDriver::operator =(const CorbaDriver& corbaDriver)
+{
+   return *this;
+}
+
+CorbaDriver& CorbaDriver::getInstance(Global& global)
+{
+   static CorbaDriver corbaDriver(global);
+   return corbaDriver;
+}
+
+
+CorbaDriver::CorbaDriver(Global& global, bool connectionOwner)
+   : ME("CorbaDriver"), 
+     global_(global), 
+     log_(global.getLog("client")),
+     statusQosFactory_(global), 
+     msgQosFactory_(global)
+{
+   connection_      = NULL;
+   defaultCallback_ = NULL;
+   _COMM_TRY
+      connection_ = new CorbaConnection(global_, connectionOwner);
    _COMM_CATCH("::Constructor", true, false)
 }
 

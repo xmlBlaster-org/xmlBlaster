@@ -36,8 +36,10 @@ namespace org {
 
    using namespace org::xmlBlaster::util::qos;
 
-   class CorbaDriver : public I_CallbackServer, public I_XmlBlasterConnection
+   class CorbaDriver : public virtual I_CallbackServer, public virtual I_XmlBlasterConnection
    {
+   friend CorbaDriver& getInstance(Global& global);
+
    private:
       CorbaConnection* connection_;
       DefaultCallback* defaultCallback_;
@@ -46,7 +48,6 @@ namespace org {
       Log&             log_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
-      string           instanceName_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -54,10 +55,19 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
-   public:
-      CorbaDriver(Global& global, const string& instanceName, bool connectionOwner = false);
+      CorbaDriver(Global& global, bool connectionOwner = false);
+
+      CorbaDriver();
+
+      CorbaDriver(const CorbaDriver& corbaDriver);
+
+      CorbaDriver& operator =(const CorbaDriver& corbaDriver);
 
       virtual ~CorbaDriver();
+
+   public:
+
+      static CorbaDriver& getInstance(Global& global);
 
       // methods inherited from I_CallbackServer
       void initialize(const string& name, I_Callback &client);

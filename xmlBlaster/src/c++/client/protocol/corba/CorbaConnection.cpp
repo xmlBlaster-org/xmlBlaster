@@ -35,14 +35,13 @@ namespace org {
     namespace corba {
 
 
-CorbaConnection::CorbaConnection(Global& global, const string& instanceName, bool orbOwner)
+CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
   : loginQos_(), 
     connectReturnQos_(global), 
     global_(global), 
     log_(global.getLog("corba")),
     msgKeyFactory_(global),
-    msgQosFactory_(global),
-    instanceName_(instanceName)
+    msgQosFactory_(global)
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");

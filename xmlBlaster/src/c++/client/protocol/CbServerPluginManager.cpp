@@ -25,8 +25,8 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 CbServerPluginManager::CbServerPluginManager(Global& global)
    : ME("CbServerPluginManager"),
      global_(global),
-     log_(global.getLog("client")),
-     serverMap_()
+     log_(global.getLog("client"))
+//     serverMap_()
 {
    if (log_.CALL) log_.call(ME, "::constructor");
 }
@@ -35,6 +35,7 @@ CbServerPluginManager::CbServerPluginManager(Global& global)
 CbServerPluginManager::~CbServerPluginManager()
 {
    // should be synchronized ...
+/*
    ServerMap::iterator iter = serverMap_.begin();
    while (iter != serverMap_.end()) {
       I_CallbackServer* el = (*iter).second;
@@ -42,15 +43,17 @@ CbServerPluginManager::~CbServerPluginManager()
       delete el;
       iter = serverMap_.begin();
    }
+*/
 }
 
-I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, const string& type, const string& version)
+I_CallbackServer& CbServerPluginManager::getPlugin(const string& /*instanceName*/, const string& type, const string& version)
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
-      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") + " for instance '" + instanceName + "'");
-   string completeName = string(instanceName) + "/" + type + "/" + version;
+      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") /* + " for instance '" + instanceName + "'"*/);
+   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
    if (type == "IOR") {
+/*
       ServerMap::iterator iter = serverMap_.find(completeName);
       if (iter == serverMap_.end()) {
          corba::CorbaDriver* driver = new corba::CorbaDriver(global_, instanceName + "[callback]");
@@ -61,6 +64,8 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
          iter = serverMap_.find(completeName);
       }
       return *((*iter).second);
+*/
+      return corba::CorbaDriver::getInstance(global_);
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +

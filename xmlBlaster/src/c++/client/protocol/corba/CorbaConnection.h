@@ -45,7 +45,7 @@ namespace org {
    private:
       
       string me() const {
-         return string("CorbaConnection-") + instanceName_;
+         return string("CorbaConnection");
       }
       static CORBA::ORB_ptr           orb_;
       static PortableServer::POA_ptr  poa_;
@@ -69,7 +69,6 @@ namespace org {
       util::Log&                      log_;
       MsgKeyFactory                   msgKeyFactory_;
       MsgQosFactory                   msgQosFactory_;
-      const string                    instanceName_;
 
    public:
       /**
@@ -102,7 +101,7 @@ namespace org {
        *    <li>-ns true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(Global& global, const string& instanceName="", bool orbOwner=false);
+      CorbaConnection(Global& global, bool orbOwner=false);
 
       ~CorbaConnection();
 
