@@ -117,7 +117,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       //if (glob.wantsHelp()) {
       //   usage();
       //}
-      if (glob.getNodeId() != null) {
+      if (super.glob.getNodeId() != null) {
          // it is a engine.Global!
          throw new IllegalArgumentException("XmlBlasterAccess can't be created with a engine.Global, please clone a org.xmlBlaster.util.Global to create me");
       }
@@ -275,9 +275,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Create a new instance of the desired protocol driver like CORBA or RMI driver using the plugin loader. 
-    * @param type  E.g. "IOR" or "RMI", if null we use the same protocol as our client access (corba is default).
-    * @param version The version of the driver, e.g. "1.0"
+    * @see I_XmlBlasterAccess#initCbServer(String, String, String)
     */
    public I_CallbackServer initCbServer(String loginName, String type, String version) throws XmlBlasterException {
       if (log.TRACE) log.trace(ME, "Using 'client.cbProtocol=" + type + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
@@ -436,7 +434,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Create a descriptive ME, for logging only
-    * @return e.g. "/node/heron/client/joe/3"
+    * @return e.g. "/node/heron/client/joe/3" or "UNKNOWN_SESSION" if connect() was not successful
     */
    public String getId() {
       SessionName sessionName = getSessionName();
