@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queue.jdbc.sqlserver' type='NEW' prio='MIDDLE' status='CLOSED'>
+   <topic>
+        XmlBlaster has an advanced queuing facility. Among others one tested persistence layer is offered by
+        communicating with Microsoft SQL Server database.
+    </topic>
+    <description>
+       <p>The generic plugin for jdbc based queues has been tested against Microsoft SQL Server by
+        Zhang Zhi Wei (zzwzyz@163.com).</p>
+        <p>SQL Server is available from <a href='http://www.microsoft.com/sql/' target='others'>http://www.microsoft.com/sql/</a>
+        where you can find all
+        necessary information and instructions on how to make Microsoft SQL Server run.
+        </p>
+        <p>Once you have a running database you can configure xmlBlaster to make it run against it.
+        Before you need to download the jdbc driver. You must
+        put these files in the CLASSPATH (for example you can put them into $XMLBLASTER_HOME/lib and add them to the
+        CLASSPATH.
+        </p>
+        <h3>Setup SQL Server</h3>
+        <ol>
+        <li>Setup xmlBlaster.properties as described in the example section below</li>
+        <li>Create database in SQL Server, as for this demo ,it is zzw</li>
+        <li>Create view in SQL Server
+           because of the difference of ORACLE and SQL Server in their storing the meta information of 
+          database , and the fact the xmlBlaster kernel code use this meta info, we must create a view 
+           in SQL Server to accommodate the kernel code in xmlBlaster.
+         </li>
+         <li>Create view "pg_table"in SQL Server
+             <pre>
+ SELECT name AS tablename
+ FROM dbo.sysobjects
+ WHERE (xtype = 'U')
+             </pre>
+         </li>
+        </ol>
+
+    </description>
+
+    <example lang="Java" type="HTML">
+    <p>This is a configuration example from xmlBlaster.properties:
+    </p>
+    <pre>
+JdbcStorage[MicrosoftSQLServer]=\
+  org.inforMessaging.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+  url=jdbc:microsoft:sqlserver://192.168.80.3:1433;SelectMethod=cursor;DatabaseName=zzw,\
+  user=sa,\
+  password=,\
+  connectionPoolSize=5,\
+  connectionBusyTimeout=90000,\
+  maxWaitingThreads=300,\
+  tableNamePrefix=XB_,\
+  nodesTableName=NODES,\
+  queuesTableName=QUEUES,\
+  entriesTableName=ENTRIES,\
+  dbAdmin=true
+
+StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+
+QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+
+JdbcDriver.mapping[MicrosoftSQLServer]=\
+  string=CHAR(128),longint=numeric (19),boolean=char(1),
+  blob=image,tables=pg_tables,tablename=tablename,connectionErrorCodes=1089:17002
+    </pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure a cache queue running with postgres
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the cache implementing class to be used</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxEntries</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxBytes</td>
+            <td>10485760</td>
+            <td>(10MB) specifies the maximum total size allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/url</td>
+            <td>jdbc:microsoft:sqlserver://192.168.80.3:1433</td>
+            <td>the url which specifies where to find the DB.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+            <tr>
+            <td>queue/persistent/user</td>
+            <td>xmlblaster</td>
+            <td>The db user under which to run</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/password</td>
+            <td>secret</td>
+            <td>The password used together with the user 'xmlblaster'</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+        </table>
+        Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+   <author>zzwzyz@163.com</author>
+   <date>2003 06 09</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
+   </testcase>
+</requirement>
+
