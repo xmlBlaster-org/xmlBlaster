@@ -31,6 +31,9 @@ import java.util.ArrayList;
  * <p>
  * As an example for sorting see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  * </p>
+ * <p>
+ * All methods are reentrant and thread safe
+ * </p>
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
