@@ -113,7 +113,6 @@ public class Global implements Cloneable
    protected String ip_addr = null;
    protected String id = "";
 
-   protected String[] args;
    protected Property property = null;
    protected String errorText = null;
 
@@ -188,34 +187,17 @@ public class Global implements Cloneable
    protected boolean isDoingShutdown = false;
 
    /**
-    * Constructs an initial Global object.
+    * Constructs an initial Global object,
+    * same as Global(null, true, true)
     */
-   public Global()
-   {
-      counter++;
-      if (this.firstInstance != null) {
-         System.out.println("######Global " + counter + " empty constructor invoked again, try Global.instance()");
-         // Thread.currentThread().dumpStack();
-      }
-      synchronized (Global.class) {
-         if (this.firstInstance == null)
-            this.firstInstance = this;
-      }
-      this.args = new String[0];
-      initProps(this.args);
-      initId();
-      logDevicePluginManager = new LogDevicePluginManager(this);
-      logDefault = new LogChannel(null, getProperty());
-      log = logDefault;
-      //log = new org.xmlBlaster.util.Log(); // old style
-      initLog(logDefault);
-      nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
-      objectMap = Collections.synchronizedMap(new HashMap());
+   public Global() {
+      this(null, true, true);
    }
 
    /**
     * Constructs an initial Global object which is initialized
-    * by your properties array (usually the command line args).
+    * by your properties,
+    * same as Global(args, true, true)
     */
    public Global(Properties props) {
       this(Property.propsToArgs(props));
@@ -223,11 +205,13 @@ public class Global implements Cloneable
    /**
     * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args).
+    * Same as Global(args, true, true)
     */
    public Global(String[] args)
    {
       this(args, true, true);
    }
+
    /**
     * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args).
@@ -274,17 +258,9 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
-      init(args);
-   }
-
-   /**
-    * @deprecated Please use glob.getClone(String[]) instead
-    */
-   public Global(org.xmlBlaster.util.Global utilGlob) {
-      counter++;
-      log = utilGlob.getLog(null);
-      shallowCopy(utilGlob);
-      //Thread.currentThread().dumpStack();
+      if (args != null) {
+         init(args);
+      }
    }
 
    /**
@@ -336,7 +312,6 @@ public class Global implements Cloneable
    {
       this.ip_addr = utilGlob.ip_addr;
       this.id = utilGlob.id;
-      this.args = utilGlob.args;
       this.property = utilGlob.property;
       this.errorText = utilGlob.errorText;
       this.cbHostname =  utilGlob.cbHostname;
@@ -647,6 +622,7 @@ public class Global implements Cloneable
    }
 
    /**
+    * Calls init(String[] args)
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(Properties props) {
@@ -658,15 +634,15 @@ public class Global implements Cloneable
     */
    public int init(String[] args)
    {
-      this.args = (args==null) ? new String[0] : args;
+      args = (args==null) ? new String[0] : args;
 
-      if (this.args != null && this.args.length > 0) {
+      if (args.length > 0) {
          this.bootstrapAddress = null;   // clear cached address
          // shutdownHttpServer(); Should be done as well if address changes?
       }
 
       try {
-         property.addArgs2Props(this.args);
+         property.addArgs2Props(args);
 
          initId();
 
@@ -830,6 +806,9 @@ public class Global implements Cloneable
    /**
     * Get a cloned instance. 
     * <p>
+    * Calls clone() and sets the given args thereafter.
+    * </p>
+    * <p>
     * This is the preferred way to create a new and independent
     * Global instance for example for another client connection.
     * </p>
@@ -864,23 +843,6 @@ public class Global implements Cloneable
     */
    public final Property getProperty() {
       return property;
-   }
-
-   /**
-    * The command line arguments only.
-    * @return the arguments, is never null
-    */
-   public final String[] getArgs()
-   {
-      if (args != null) {
-         for(int i=0; i<args.length; i++) {
-            if (args[i] == null) {
-               if (log.TRACE) log.trace(ME, "args[" + i + "] is null");
-               args[i] = "";
-            }
-         }
-      }
-      return this.args;
    }
 
    /**
