@@ -117,13 +117,13 @@ public class Session
     * @param String whereon the user tries to perform the action
     *
     * EXAMPLE:
-    *    isAuthorized("PUBLISH", "thisIsAMessageKey");
+    *    isAuthorized("publish", "thisIsAMessageKey");
     *
     * The above line checks if this subject is permitted to >>publish<<
     * a message under the key >>thisIsAMessageKey<<
     *
     * Known action keys:
-    *    PUBLISH, SUBSCRIBE, GET, ERASE,
+    *    publish, subscribe, get, erase, ... see XmlBlasterImpl.PUBLISH etc.
     */
    public boolean isAuthorized(String actionKey, String key)
    {

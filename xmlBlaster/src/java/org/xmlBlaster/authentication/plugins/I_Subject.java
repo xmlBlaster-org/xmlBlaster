@@ -6,7 +6,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/02/12 21:52:39 $)
  */
 
 public interface I_Subject {
@@ -18,13 +18,13 @@ public interface I_Subject {
     * @param String whereon the user tries to perform the action
     *
     * EXAMPLE:
-    *    isAuthorized("PUBLISH", "thisIsAMessageKey");
+    *    isAuthorized("publish", "thisIsAMessageKey");
     *
     * The above line checks if this subject is permitted to >>publish<<
     * a message under the key >>thisIsAMessageKey<<
     *
     * Known action keys:
-    *    PUBLISH, SUBSCRIBE, GET, ERASE,
+    *    publish, subscribe, get, erase, ... see XmlBlasterImpl.PUBLISH etc.
     */
    public boolean isAuthorized(String actionKey, String key);
 
