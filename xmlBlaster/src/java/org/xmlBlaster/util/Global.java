@@ -130,12 +130,38 @@ public class Global implements Cloneable
       this(Property.propsToArgs(props));
       counter++;
    }
-
    /**
     * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args).
     */
    public Global(String[] args)
+   {
+      this(args,true);
+   }
+   /**
+    * Constructs an initial Global object which is initialized
+    * by your args array (usually the command line args).
+    *
+    * <p>By setting loadPropFile to false it is possible to create a Global
+    * which does not automtically search out the xmlBlaster.properties file, 
+    * which is god when you want to start xmlBlaster in an embedded environment.
+    * <p>Its possible to later load the property file if one wants, here is one way to do it:</p>
+    * <pre>
+         Property p = glob.getProperty();
+         Properties prop = new Properties();
+         FileInfo i = p.findPath("xmlBlaster.properties");
+         InputStream is = i.getInputStream();
+         prop.load(is);
+         String[] ar = Property.propsToArgs(prop);
+         p.addArgs2Props( ar != null ? ar : new String[0] );
+       </pre>
+     <p>It is also possible to load an entire other property file or find it 
+        with some other algoritm byte using the same pattern as obove, just
+        don't use findPath, but some other code.</p>
+    * @param args args array (usually the command line args).
+    * @param loadPropFile if automatic loading of xmlBlaster.properties should be done.
+    */
+   public Global(String[] args, boolean loadPropFile)
    {
       counter++;
       if (this.firstInstance != null) {
@@ -146,7 +172,7 @@ public class Global implements Cloneable
          if (this.firstInstance == null)
             this.firstInstance = this;
       }
-      initProps(args);
+      initProps(args,loadPropFile);
       initId();
       logDefault = new LogChannel(null, getProperty());
       log = new org.xmlBlaster.util.Log(); // old style
@@ -422,17 +448,29 @@ public class Global implements Cloneable
    public final org.xmlBlaster.util.Log getLog() {
       return log;
    }
-
    /**
     * private, called from constructor
     * @return -1 on error
     */
    private int initProps(String[] args) {
+      return initProps(args,true);
+   }
+
+   /**
+    * private, called from constructor
+    * @param args arguments to initilize the property with.
+    * @param loadPropFile if loading of xmlBlaster.properties file should be done, if false no loadning of the file is done.
+    * @return -1 on error
+    */
+   private int initProps(String[] args, boolean loadPropFile) {
       if (property == null) {
          synchronized (Property.class) {
             if (property == null) {
                try {
-                  property = new Property("xmlBlaster.properties", true, args, true);
+                  if (loadPropFile)
+                     property = new Property("xmlBlaster.properties", true, args, true);
+                  else
+                     property = new Property(null, true, args, true);
                }
                catch (JUtilsException e) {
                   errorText = ME + ": Error in xmlBlaster.properties: " + e.toString();
