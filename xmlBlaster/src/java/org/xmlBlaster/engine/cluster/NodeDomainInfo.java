@@ -60,6 +60,9 @@ public final class NodeDomainInfo implements Comparable
    private String version;
    private String query = "";
 
+   public static final boolean DEFAULT_dirtyRead = false;
+   private boolean dirtyRead = DEFAULT_dirtyRead;
+
    /** for SAX parsing */
    private int inMaster = 0;
 
@@ -250,6 +253,22 @@ public final class NodeDomainInfo implements Comparable
    }
 
    /**
+    * @return true if cluster slaves cache forwarded publish messages
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html">The cluster.dirtyRead requirement</a>
+    */
+   public boolean getDirtyRead() {
+      return this.dirtyRead;
+   }
+
+   /**
+    * @param dirtyRead true if cluster slaves cache forwarded publish messages
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html">The cluster.dirtyRead requirement</a>
+    */
+   public void setDirtyRead(boolean dirtyRead) {
+      this.dirtyRead = dirtyRead;
+   }
+
+   /**
     * Called for SAX master start tag
     * @return true if ok, false on error
     */
@@ -271,6 +290,8 @@ public final class NodeDomainInfo implements Comparable
             if (tmp != null) { try { setAcceptDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master acceptDefault='" + tmp + "'"); }; }
             tmp = attrs.getValue("acceptOtherDefault");
             if (tmp != null) { try { setAcceptOtherDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master acceptOtherDefault='" + tmp + "'"); }; }
+            tmp = attrs.getValue("dirtyRead");
+            if (tmp != null) { try { setDirtyRead(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master dirtyRead='" + tmp + "'"); }; }
          }
          character.setLength(0);
          if (getType() == null) {
@@ -384,6 +405,8 @@ public final class NodeDomainInfo implements Comparable
           sb.append(" acceptDefault='").append(getAcceptDefault()).append("'");
       if (DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
           sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
+      if (DEFAULT_dirtyRead != getDirtyRead())
+          sb.append(" dirtyRead='").append(getDirtyRead()).append("'");
       sb.append(">");
 
       XmlKey[] keyArr = getXmlKeyFilters();

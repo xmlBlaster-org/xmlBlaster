@@ -153,9 +153,12 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * and the message is shorter 8000 bytes and the message content contains a token 'rugby'
     * the cluster node 'heron' is chosen as the master of the message.
     * @param msgWrapper The message
-    * @return The node which is master of the message, you should always return a valid ClusterNode
+    * @return The nodeDomainInfo (same as you passed as parameter) it this is a possible master
+    *         or null if not suitable.<br />
+    * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
+    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
     */
-   public ClusterNode getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+   public NodeDomainInfo getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
 
       // TODO: We have not found the MessageUnitHandler, as the publish may be forwarded !!!
       //XmlKey xmlKey = msgWrapper.getMessageUnitHandler().getXmlKey(); // This key from the current messsage is DOM parsed
@@ -169,14 +172,14 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                // if no domain is specified and the local node accepts default messages -> local node is master
                if (log.TRACE) log.trace(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "' is handled by local node");
                log.warn(ME, "<filter> additional check is not implemented");
-               return nodeDomainInfo.getClusterNode(); // Found the master
+               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
             }
          }
          else {
             if (nodeDomainInfo.getAcceptOtherDefault()==true) {
                log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' which accepts other default domains");
                log.warn(ME, "<filter> additional check is not implemented");
-               return nodeDomainInfo.getClusterNode(); // Found the master
+               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
             }
          }
       }
@@ -203,12 +206,12 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                   if (filter != null && filter.match(subjectInfo, subjectInfo,
                                                 msgWrapper, filterQos[jj].getQuery())) {
                      if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
-                     return nodeDomainInfo.getClusterNode(); // Found the master
+                     return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
                   }
                }
             }
             else
-               return nodeDomainInfo.getClusterNode(); // Found the master
+               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
          }
       }
 
@@ -227,7 +230,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
             if (filter != null && filter.match(subjectInfo, subjectInfo,
                                           msgWrapper, filterQos[jj].getQuery())) {
                if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
-               return nodeDomainInfo.getClusterNode(); // Found the master
+               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
             }
          }
       }

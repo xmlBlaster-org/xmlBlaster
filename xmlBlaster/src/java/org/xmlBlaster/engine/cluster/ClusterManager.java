@@ -241,20 +241,35 @@ public final class ClusterManager
     *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
-    *         Otherwise the normal publish return value of the remote cluster node.  
+    *         Otherwise the normal publish return value of the remote cluster node and the responsible
+    *         NodeDomainInfo instance.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public PublishRetQos forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+   public PublishRetQosWrapper forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardPublish(" + msgWrapper.getUniqueKey() + ")");
-      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
+      if (nodeDomainInfo == null)
+         return null;
+      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
       if (con == null)
          return null;
 
       PublishQos publishQos = msgWrapper.getPublishQos();
+      if (nodeDomainInfo.getDirtyRead() == true) {
+         // mark QoS of published message that we dirty read the message:
+         RouteInfo[] ris = publishQos.getRouteNodes();
+         if (ris == null || ris.length < 1) {
+            log.error(ME, "The route info for '" + msgWrapper.getUniqueKey() + "' is missing");
+            Thread.currentThread().dumpStack();
+         }
+         else {
+            ris[ris.length-1].setDirtyRead(true);
+         }
+      }
       MessageUnit msgUnit = msgWrapper.getMessageUnit();
       msgUnit.setQos(publishQos.toXml());
 
-      return con.publish(msgUnit);
+      return new PublishRetQosWrapper(nodeDomainInfo, con.publish(msgUnit));
    }
 
    /**
@@ -271,7 +286,10 @@ public final class ClusterManager
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], subscribeQos.toXml()),
                                       /*!!! subscribeQos.toXml()*/ new PublishQos(glob, ""));
-      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
+      if (nodeDomainInfo == null)
+         return null;
+      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardSubscribe - Nothing to forward");
          return null;
@@ -294,7 +312,10 @@ public final class ClusterManager
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], getQos.toXml()),
                                       /*!!! getQos.toXml()*/ new PublishQos(glob, ""));
-      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
+      if (nodeDomainInfo == null)
+         return null;
+      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardGet - Nothing to forward");
          return null;
@@ -317,7 +338,10 @@ public final class ClusterManager
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], eraseQos.toXml()),
                                       /*!!! eraseQos.toXml()*/ new PublishQos(glob, ""));
-      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
+      if (nodeDomainInfo == null)
+         return null;
+      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardErase - Nothing to forward");
          return null;
@@ -400,9 +424,9 @@ public final class ClusterManager
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
-    * @return null if local node
+    * @return null if local node, otherwise access other node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
     */
-   public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
       if (!postInitialized) {
          // !!! we need proper run level initialization
          if (log.TRACE) log.trace(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), but clustering is not ready, handling in local node");
@@ -466,8 +490,8 @@ public final class ClusterManager
             }
 
             // Now invoke the plugin to find out who is the master ...
-            ClusterNode master = domainMapper.getMasterId(nodeDomainInfo, msgWrapper);
-            if (master != null) {
+            nodeDomainInfo = domainMapper.getMasterId(nodeDomainInfo, msgWrapper);
+            if (nodeDomainInfo != null) {
                masterSet.add(nodeDomainInfo);
                break; // found one
             }
@@ -487,25 +511,27 @@ public final class ClusterManager
          if (log.TRACE) log.trace(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
       }
 
-      ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
+      NodeDomainInfo nodeDomainInfo = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
 
-      if (clusterNode == null) {
+      /*
+      if (nodeDomainInfo == null) {
          log.error(ME, "Message '" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'" +
                    "has no master, message is lost (implementation to handle this case is missing)!");
          return null;
       }
-
-      if (clusterNode.isLocalNode()) {
-         if (log.TRACE) log.trace(ME, "Using local node '" + clusterNode.getId() + "' as master for message oid='"
+      */
+      if (nodeDomainInfo == null || nodeDomainInfo.getClusterNode().isLocalNode()) {
+         if (log.TRACE) log.trace(ME, "Using local node '" + getMyClusterNode().getId() + "' as master for message oid='"
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         if (log.DUMP) log.dump(ME, "Received message at master node: " + msgWrapper.getPublishQos().toXml());
          return null;
       }
       else {
-         if (log.TRACE) log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
+         if (log.TRACE) log.info(ME, "Using master node '" + nodeDomainInfo.getClusterNode().getId() + "' for message oid='"
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
       }
 
-      return clusterNode.getXmlBlasterConnection();
+      return nodeDomainInfo;
    }
 
    public final XmlBlasterConnection getConnection(NodeId nodeId) {

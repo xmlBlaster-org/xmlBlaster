@@ -64,7 +64,9 @@ public interface I_LoadBalancer {
     *  </pre>
     *  The set contains only nodes marked as allowed (these are nodes we are connected
     *  to or polling for), not available nodes are filtered away already.
-    * @return The chosen clusterNode to handle the message
+    * @return The chosen nodeDomainInfo to handle the message or null to handle it locally
+    * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
+    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
     */
-   public ClusterNode getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException;
+   public NodeDomainInfo getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException;
 }

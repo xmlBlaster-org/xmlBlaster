@@ -101,16 +101,16 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     * <p />
     * @param nodeDomainInfoSet A set containing NodeDomainInfo objects, the possible xmlBlaster nodes.
     *                       Is never null, but may have a size of 0.
-    * @return The chosen clusterNode to handle the message or null
+    * @return The chosen nodeDomainInfo to handle the message or null to handle it locally
     * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set)
     */
-   public synchronized ClusterNode getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException {
+   public synchronized NodeDomainInfo getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException {
 
-      // TODO: Change return to ClusterNode[] if multiple fail over nodes exist !!!
+      // TODO: Change return to NodeDomainInfo[] if multiple fail over nodes exist !!!
       
       if (nodeDomainInfoSet.size() == 0) {
          log.warn(ME, "Empty nodeDomainInfoSet, using local node");
-         return clusterManager.getMyClusterNode(); // handle locally
+         return null; // clusterManager.getMyClusterNode(); // handle locally
       }
 
       if (counter >= nodeDomainInfoSet.size()) // counter is our RoundRobin approach
@@ -159,11 +159,10 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
             else {
                if (log.TRACE) log.trace(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
             }
-            return clusterManager.getMyClusterNode();
+            return null; // handle locally: clusterManager.getMyClusterNode();
          }
-         ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
-         if (log.TRACE) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
-         return clusterNode;
+         if (log.TRACE) log.trace(ME, "Selected master node id='" + nodeDomainInfo.getClusterNode().getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+         return nodeDomainInfo;
       }
 
       /*
@@ -184,6 +183,6 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       */
 
       log.warn(ME, "Can't find master, using local node");
-      return clusterManager.getMyClusterNode(); // handle locally
+      return null; // handle locally: clusterManager.getMyClusterNode();
    }
 }

@@ -17,6 +17,7 @@ public final class RouteInfo {
    private NodeId nodeId;
    private int stratum;
    private Timestamp timestamp;
+   private boolean dirtyRead = NodeDomainInfo.DEFAULT_dirtyRead;
 
    /**
     * @param nodeId The unique name of the xmlBlaster instance
@@ -83,6 +84,18 @@ public final class RouteInfo {
    }
 
    /**
+    * @param dirtyRead true if cluster slaves cache forwarded publish messages
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html">The cluster.dirtyRead requirement</a>
+    */
+   public final void setDirtyRead(boolean dirtyRead) {
+      this.dirtyRead = dirtyRead;
+   }
+
+   public final boolean getDirtyRead() {
+      return this.dirtyRead;
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string. 
     */
    public final String toXml() {
@@ -103,7 +116,10 @@ public final class RouteInfo {
 
       sb.append(offset).append("   <node id='").append(getNodeId());
       sb.append("' stratum='").append(getStratum());
-      sb.append("' timestamp='").append(getTimestamp().getTimestamp()).append("' />");
+      sb.append("' timestamp='").append(getTimestamp().getTimestamp()).append("'");
+      //if (dirtyRead != NodeDomainInfo.DEFAULT_dirtyRead)
+         sb.append(" dirtyRead='").append(dirtyRead).append("'");
+      sb.append("/>");
 
       return sb.toString();
    }
