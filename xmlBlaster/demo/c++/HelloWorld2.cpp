@@ -47,6 +47,13 @@ public:
    {
       log_.info(ME, "lost connection");
    }
+
+   void goingToPoll()
+   {
+      log_.info(ME, "going to poll modus");
+   }
+
+
    void execute()
    {
       try {
@@ -88,6 +95,16 @@ public:
 	 for (size_t i=0; i < eraseRetQos.size(); i++ ) {
             log_.info(ME, string("successfully erased the message. return qos: ") + eraseRetQos[i].toXml());
 	 }
+
+/*
+	 org::xmlBlaster::util::thread::Thread::sleep(2000);
+	 for (int i=0; i < 20; i++) {
+	    cout << "ping " << con.ping() << endl;
+   	    org::xmlBlaster::util::thread::Thread::sleep(2000);
+	 }
+*/
+	 log_.info(ME, "going to sleep for one minute");
+	 org::xmlBlaster::util::thread::Thread::sleep(60000);
 
 	 DisconnectQos disconnectQos(global_);
          con.disconnect(disconnectQos);

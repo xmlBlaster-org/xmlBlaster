@@ -23,40 +23,47 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 MsgQueueEntry::MsgQueueEntry(const MessageUnit& msgUnit, const string& type, int priority, bool durable)
 {
-   connectQos_     = NULL;
-   msgUnit_        = new MessageUnit(msgUnit);
-   embeddedObject_ = msgUnit_;
+   connectQos_       = NULL;
+   connectReturnQos_ = NULL;
+   publishReturnQos_ = NULL;
+   msgUnit_          = new MessageUnit(msgUnit);
+//   embeddedObject_   = msgUnit_;
 
-   uniqueId_       = TimestampFactory::getInstance().getTimestamp();
-   embeddedType_   = type;
-   priority_       = priority; // should be normal priority
-   durable_        = durable; // currently no durables supported
-   logId_          = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   embeddedType_     = type;
+   priority_         = priority; // should be normal priority
+   durable_          = durable; // currently no durables supported
+   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
 MsgQueueEntry::MsgQueueEntry(const ConnectQos& connectQos, const string& type, int priority, bool durable)
 {
-   connectQos_     = new ConnectQos(connectQos);
-   msgUnit_        = NULL;
-   embeddedObject_ = connectQos_;
-
-   uniqueId_       = TimestampFactory::getInstance().getTimestamp();
-   embeddedType_   = type;
-   priority_       = priority; // should be maximum priority
-   durable_        = durable; // currently no durables supported
-   logId_          = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+   connectQos_       = new ConnectQos(connectQos);
+   msgUnit_          = NULL;
+   connectReturnQos_ = NULL;
+   publishReturnQos_ = NULL;
+//   embeddedObject_   = connectQos_;
+   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   embeddedType_     = type;
+   priority_         = priority; // should be maximum priority
+   durable_          = durable; // currently no durables supported
+   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
 MsgQueueEntry::~MsgQueueEntry()
 {
    delete connectQos_;
    delete msgUnit_;
+   delete publishReturnQos_;
+   delete connectReturnQos_;
 }
 
 MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
 {
-   connectQos_ = NULL;
-   msgUnit_    = NULL;
+   connectQos_       = NULL;
+   msgUnit_          = NULL;
+   connectReturnQos_ = NULL;
+   publishReturnQos_ = NULL;
    copy(entry);
 }
 
@@ -81,16 +88,6 @@ long MsgQueueEntry::getUniqueId() const
    return uniqueId_;
 }
 
-void* MsgQueueEntry::getEmbeddedObject()
-{
-   return embeddedObject_;
-}
-
-string MsgQueueEntry::getEmbeddedType() const
-{
-   return embeddedType_;
-}
-
 string MsgQueueEntry::getLogId()
 {
    return logId_;
@@ -98,11 +95,18 @@ string MsgQueueEntry::getLogId()
 
 size_t MsgQueueEntry::getSizeInBytes() const
 {
-   if (msgUnit_ != NULL) return sizeof(*msgUnit_);
-   if (connectQos_ != NULL) return sizeof(*connectQos_);
-   // otherwise throw an exception here ...
-   return 0;
-   //      return sizeof(*embeddedObject_);
+   size_t sum = 0;
+   if (msgUnit_          != NULL) sum += sizeof(*msgUnit_);
+   if (connectQos_       != NULL) sum += sizeof(*connectQos_);
+   if (connectReturnQos_ != NULL) sum += sizeof(*connectReturnQos_);
+   if (publishReturnQos_ != NULL) sum += sizeof(*publishReturnQos_);
+   return sum;
 }
+
+string MsgQueueEntry::getEmbeddedType() const
+{
+   return embeddedType_;
+}
+
 
 }}}} // namespace

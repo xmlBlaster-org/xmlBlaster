@@ -11,8 +11,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Timestamp.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQos.h>
+#include <client/qos/PublishQos.h>
+#include <client/qos/PublishReturnQos.h>
+#include <client/protocol/I_XmlBlasterConnection.h>
+
 #include <stddef.h>
 
+using namespace org::xmlBlaster::client::qos;
+using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
 using org::xmlBlaster::util::qos::ConnectQos;
 using org::xmlBlaster::util::MessageUnit;
 
@@ -26,21 +32,24 @@ using org::xmlBlaster::util::MessageUnit;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class MsgQueueEntry
+class Dll_Export MsgQueueEntry
 {
-private:
-   const string ME;
+protected:
+   string       ME;
    int          priority_;
    bool         durable_;
    Timestamp    uniqueId_;
-   void*        embeddedObject_;
+//   void*        embeddedObject_;
    string       embeddedType_;
    string       logId_;
-   long         sizeInBytes_;
-
+//   long         sizeInBytes_;
    // specific for c++ clients:
    MessageUnit* msgUnit_;
    ConnectQos*  connectQos_;
+
+   // specific return values
+   ConnectReturnQos* connectReturnQos_;
+   PublishReturnQos* publishReturnQos_;
 
 public:
 
@@ -54,17 +63,36 @@ public:
      */
     MsgQueueEntry(const ConnectQos& connectQos, const string& type="connect", int priority=9, bool durable=false);
 
-    ~MsgQueueEntry();
+    virtual ~MsgQueueEntry();
 
     inline void copy(const MsgQueueEntry& entry)
     {
-       if (connectQos_ != NULL) delete connectQos_;
-       if (entry.connectQos_ != NULL)
-          connectQos_ = new ConnectQos(*entry.connectQos_);
+       if (connectQos_ != NULL) {
+          delete connectQos_;
+          connectQos_ = NULL;
+       }
+       if (entry.connectQos_ != NULL) connectQos_ = new ConnectQos(*entry.connectQos_);
 
-       if (msgUnit_ != NULL) delete msgUnit_;
-       if (entry.msgUnit_ != NULL)
-          msgUnit_ = new MessageUnit(*entry.msgUnit_);
+       if (msgUnit_ != NULL) {
+          delete msgUnit_;
+	  msgUnit_ = NULL; 
+       }
+       if (entry.msgUnit_ != NULL) msgUnit_ = new MessageUnit(*entry.msgUnit_);
+
+       if (connectReturnQos_ != NULL) {
+          delete connectReturnQos_;
+	  connectReturnQos_ = NULL; 
+       }
+       if (entry.connectReturnQos_ != NULL) 
+          connectReturnQos_ = new ConnectReturnQos(*entry.connectReturnQos_);
+
+
+       if (publishReturnQos_ != NULL) {
+          delete publishReturnQos_;
+	  publishReturnQos_ = NULL; 
+       }
+       if (entry.publishReturnQos_ != NULL) 
+          publishReturnQos_ = new PublishReturnQos(*entry.publishReturnQos_);
 
        uniqueId_     = entry.uniqueId_;
        embeddedType_ = entry.embeddedType_;
@@ -119,7 +147,7 @@ public:
     * gets the content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
     */
-   void* getEmbeddedObject();
+   virtual void* getEmbeddedObject() = 0;
 
    /**
     * gets the type of the object embedded in this entry.
@@ -140,6 +168,11 @@ public:
     * returns the size in bytes of this entry.
     */
    size_t getSizeInBytes() const;
+
+   // this should actually be in another interface but since it is an only method we put it here.
+   virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection) = 0;
+
+
 };
 
 }}}} // namespace

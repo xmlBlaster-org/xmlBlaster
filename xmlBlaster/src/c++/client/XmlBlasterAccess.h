@@ -10,7 +10,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/ConnectQos.h>
 #include <util/MessageUnit.h>
-#include <util/queue/MsgQueueEntry.h>
+// #include <util/queue/MsgQueueEntry.h>
 #include <util/dispatch/DeliveryManager.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/CbServerPluginManager.h>
@@ -37,7 +37,7 @@ namespace org { namespace xmlBlaster { namespace client {
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol;
-using org::xmlBlaster::util::queue::MsgQueueEntry;
+// using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 class XmlBlasterAccess : public I_Callback
 {
@@ -160,12 +160,12 @@ public:
    /**
     * Put the given message entry into the queue
     */
-   MsgQueueEntry queueMessage(const MsgQueueEntry& entry);
+   // MsgQueueEntry queueMessage(const MsgQueueEntry& entry);
 
    /**
     * Put the given message entry into the queue
     */
-   vector<MsgQueueEntry*> queueMessage(const vector<MsgQueueEntry*>& entries);
+   // vector<MsgQueueEntry*> queueMessage(const vector<MsgQueueEntry*>& entries);
 
    // SubscribeReturnQos
 //   string subscribe(const string& xmlKey, const string& qos);
@@ -210,6 +210,8 @@ public:
     * and reconnected events.
     */
     void initFailsafe(I_ConnectionProblems* connectionProblems=NULL);
+
+    string ping();
 
 };
 

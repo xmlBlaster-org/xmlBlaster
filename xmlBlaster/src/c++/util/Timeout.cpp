@@ -76,7 +76,6 @@ namespace org { namespace xmlBlaster { namespace util {
 
    Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) {
       log_.call(ME, " addTimeoutListener");
-      std::cout << ME << " addTimeoutListener" << std::endl;
       Timestamp key = 0;
       if (delay < 1) std::cerr << ME <<": addTimeoutListener with delay = " << delay << std::endl;
       int nanoCounter = 0;
@@ -99,7 +98,6 @@ namespace org { namespace xmlBlaster { namespace util {
 
    Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) {
       log_.call(ME, " refreshTimeoutListener");
-      std::cout << ME << " refreshTimeoutListener" << std::endl;
       if (key < 0)
          // throw an exception here ...
       Timestamp newKey = 0;
@@ -118,7 +116,6 @@ namespace org { namespace xmlBlaster { namespace util {
    }
 
    Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void *userData, Timestamp key) {
-      std::cout << ME << " addOrRefreshTimeoutListener" << std::endl;
       log_.call(ME, " addOrRefreshTimeoutListener");
       boost::mutex::scoped_lock lock(*invocationMutex_);
       if (key < 0) return addTimeoutListener(listener, delay, NULL);
@@ -133,14 +130,12 @@ namespace org { namespace xmlBlaster { namespace util {
 
    bool Timeout::isExpired(Timestamp key) {
       log_.call(ME, " isExpired");
-      std::cout << ME << "isExpired" << std::endl;
       boost::mutex::scoped_lock lock(*invocationMutex_);
       return (timeoutMap_.find(key) == timeoutMap_.end());
    }
 
    long Timeout::spanToTimeout(Timestamp key) {
       log_.call(ME, " spanToTimeout");
-      std::cout << ME << " spanToTimeout" << std::endl;
       boost::mutex::scoped_lock lock(*invocationMutex_);
       TimeoutMap::iterator iter = timeoutMap_.find(key);
       if (iter == timeoutMap_.end()) return -1;
@@ -150,21 +145,18 @@ namespace org { namespace xmlBlaster { namespace util {
 
    long Timeout::getTimeout(Timestamp key) {
       log_.call(ME, " getTimeout");
-      std::cout << ME << " getTimeout" << std::endl;
       if (key < 0) return -1;
       return (long)(key / Constants::MILLION);
    }
 
    void Timeout::removeAll() {
       log_.call(ME, " removeAll");
-      std::cout << ME << " removeAll" << std::endl;
       boost::mutex::scoped_lock lock(*invocationMutex_);
       timeoutMap_.clear();
    }
 
    void Timeout::shutdown() {
       log_.call(ME, " shutdown");
-      std::cout << ME << " shutdown" << std::endl;
       isRunning_ = false;
       removeAll();
       waitForTimeoutCondition_->notify_one();

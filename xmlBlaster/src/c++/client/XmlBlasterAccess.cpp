@@ -17,7 +17,7 @@ using org::xmlBlaster::util::qos::ConnectReturnQos;
 using namespace org::xmlBlaster::client::protocol;
 using org::xmlBlaster::util::Log;
 using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::queue::MsgQueueEntry;
+// using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 XmlBlasterAccess::XmlBlasterAccess(Global& global)
    : ME("XmlBlasterAccess"),
@@ -145,6 +145,7 @@ string XmlBlasterAccess::getServerNodeId() const
    return serverNodeId_;
 }
 
+/*
 MsgQueueEntry
 XmlBlasterAccess::queueMessage(const MsgQueueEntry& entry)
 {
@@ -156,6 +157,7 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 {
    return entries;
 }
+*/
 
 SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
@@ -223,6 +225,11 @@ void XmlBlasterAccess::initFailsafe(I_ConnectionProblems* connectionProblems)
 {
    if (connection_) connection_->initFailsafe(connectionProblems);
    else connectionProblems_ = connectionProblems;   
+}
+
+string XmlBlasterAccess::ping()
+{
+   return connection_->ping("<qos/>");
 }
 
 

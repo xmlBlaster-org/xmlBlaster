@@ -22,10 +22,12 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <client/I_ConnectionProblems.h>
 #include <util/XmlBlasterException.h>
 #include <util/thread/Thread.h>
+#include <util/I_Timeout.h>
 
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
@@ -36,7 +38,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
 enum States {START, CONNECTED, POLLING, DEAD, END};
 
-class Dll_Export ConnectionsHandler
+class Dll_Export ConnectionsHandler : public I_Timeout
 {
 private:
    const string            ME;
@@ -50,6 +52,8 @@ private:
    Log&                    log_;
    Mutex                   connectionMutex_;
    int                     retries_;
+   int                     currentRetry_;
+   Timestamp               timestamp_;
 
 public:
    ConnectionsHandler(Global& global, DeliveryManager& deliveryManager);
@@ -103,7 +107,7 @@ public:
 
    vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
 
-   virtual vector<UnSubscribeReturnQos> 
+   vector<UnSubscribeReturnQos> 
       unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
 
    PublishReturnQos publish(const MessageUnit& msgUnit);
@@ -115,6 +119,8 @@ public:
    vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
 
    void initFailsafe(I_ConnectionProblems* connectionProblems);
+
+   void timeout(void *userData);
 
 };
 

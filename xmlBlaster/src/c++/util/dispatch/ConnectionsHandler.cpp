@@ -8,6 +8,7 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/dispatch/ConnectionsHandler.h>
 #include <util/dispatch/DeliveryManager.h>
 #include <util/Global.h>
+#include <util/Timeout.h>
 #include <boost/lexical_cast.hpp>
 
 using boost::lexical_cast;
@@ -31,10 +32,17 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
    connectReturnQos_   = NULL;
    connection_         = NULL;
    retries_            = -1;
+   currentRetry_       = 0;
+   timestamp_          = 0;
 }
 
 ConnectionsHandler::~ConnectionsHandler()
 {
+   if (timestamp_ != 0) {
+      Lock lock(connectionMutex_);
+      global_.getPingTimer().removeTimeoutListener(timestamp_);
+      timestamp_ = 0;
+   }
    delete connectQos_;
    delete connectReturnQos_;
    status_ = END;
@@ -51,6 +59,11 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    connectQos_ = new ConnectQos(qos);
    retries_ = connectQos_->getAddress().getRetries();
+   long pingInterval = connectQos_->getAddress().getPingInterval();
+   if (log_.TRACE) {
+      log_.trace(ME, string("connect: number of retries during communication failure: ") + lexical_cast<string>(retries_));
+      log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<string>(pingInterval));
+   }
 
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
@@ -61,7 +74,11 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
    status_ = CONNECTED;
-   if (connectionProblems_) connectionProblems_->reConnected();
+   // start the ping 
+
+   
+   timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+
    return *connectReturnQos_;
 }
 
@@ -319,6 +336,82 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 {
    Lock lock(connectionMutex_);
    connectionProblems_ = connectionProblems;
+}
+
+void ConnectionsHandler::timeout(void *userData)
+{
+  Lock lock(connectionMutex_);
+  timestamp_ = 0;
+  if ( log_.CALL ) log_.call(ME, "ping timeout occured");
+  if (status_ == CONNECTED) { // then I am pinging
+     if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
+     try {
+        if (connection_) {
+	   connection_->ping("<qos/>");
+	   long pingInterval = 10000;
+	   if (connectQos_) pingInterval = connectQos_->getAddress().getPingInterval();
+	   timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+        }
+     }
+     catch (XmlBlasterException& ex) {
+        status_ = POLLING;
+	currentRetry_ = 0;
+	try {
+	   DisconnectQos discQos(global_);
+	   connection_->disconnect(discQos);
+	}
+	catch (...) {
+	   log_.warn(ME, "exception when trying to disconnect");
+	}
+	if (connectionProblems_) {
+	   connectionProblems_->goingToPoll();
+	}
+	long retryDelay = 1000;
+        if (connectQos_) retryDelay = connectQos_->getAddress().getDelay();
+	timestamp_ = global_.getPingTimer().addTimeoutListener(this, retryDelay, NULL);
+     }
+     return;
+  }
+
+  if (status_ == POLLING) {
+     if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'POLLING'");
+     try {
+        if ((connection_) && (connectQos_)) {
+           if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
+	   ConnectReturnQos retQos = connection_->connect(*connectQos_);
+           if ( log_.TRACE ) log_.trace(ME, "ping timeout: re-connection was successful");
+	   if (connectReturnQos_) delete connectReturnQos_;
+           connectReturnQos_ = new ConnectReturnQos(retQos);
+           if ( connectionProblems_ ) connectionProblems_->reConnected();
+	
+	   status_ = CONNECTED;
+           long pingInterval = 10000;
+           if (connectQos_) pingInterval = connectQos_->getAddress().getPingInterval();
+           if ( log_.TRACE ) log_.trace(ME, "ping timeout: re-spanning the timer");
+           timestamp_ = global_.getPingTimer().addTimeoutListener(this, pingInterval, NULL);
+        }
+     }
+     catch (XmlBlasterException ex) {
+        currentRetry_++;
+	if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
+  	   long retryDelay = 1000;
+           if (connectQos_) retryDelay = connectQos_->getAddress().getDelay();
+           if ( log_.TRACE ) log_.trace(ME, "ping timeout: retry nr. " + lexical_cast<string>(currentRetry_) + " of " + lexical_cast<string>(retries_) + " retry delay: " + lexical_cast<string>(retryDelay));
+	   timestamp_ = global_.getPingTimer().addTimeoutListener(this, retryDelay, NULL);
+	}
+	else {
+	   status_ = DEAD;
+	   if ( connectionProblems_ ) {
+	      connectionProblems_->lostConnection();
+	      // stopping
+	   }
+	}
+     }
+     return;
+  }
+
+  // if it comes here it will stop
+
 }
 
 
