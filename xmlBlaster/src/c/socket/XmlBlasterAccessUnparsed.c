@@ -778,7 +778,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
       return false;
    }
 
-   if (xa->isShutdown || checkIsConnected && !xa->isConnected(xa)) {
+   if (xa->isShutdown || (checkIsConnected && !xa->isConnected(xa))) {
       char *stack = getStackTrace(10);
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
