@@ -21,13 +21,11 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.File;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.rmi.RMISecurityManager;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.util.classloader.ClassLoaderFactory;
-import org.xmlBlaster.util.classloader.XmlBlasterClassLoader;
+import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.jutils.init.Property;
 import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
@@ -36,7 +34,9 @@ import org.jutils.log.LogChannel;
  * XmlBlaster for embedded use in a JMX server.
  *
  * <p>You may use this MBean to start one or more XmlBlaster instances in a
- JMX container. It has, however, only been tested with the JBoss 3.0 server. To start it in JBoss copy the xmlBlaster-sar.ear archive into deploy. If you need to change the settings either edit the enbedded xmlBlaster.properties file or change the name of the property file in META-INF/jboss-service.xml and make it available int the XmlBlaster search path or embed it in the sar.</p>
+ JMX container. It has, however, only been tested with the JBoss 3.0 server. To start it in JBoss copy the xmlBlaster.sar archive into deploy. If you need to change the settings either edit the enbedded xmlBlaster.properties file or change the name of the property file in META-INF/jboss-service.xml and make it availabl1e in the XmlBlaster search path or embed it in the sar.</p>
+<p>To get better control ower the XmlBlaster setup process, the xmlBlaster.jar
+that's embedded in the sar has had its xmlBlaster.properties and xmlBlasterPlugin.xml files removed. It's recomended to do this also in any xmlBlaster.jar that is placed in the global classpath of JBoss, otherwise it might screw up client.</p>
 
 <h3>Requirements</h3>
 <p>.You need to copy the file concurrent.jar from xmlBlaster/lib to the system lib directory of JBoss, overwriting the older version distributed with JBoss.</p><p>When using the RMIDriver JBoss must be run with a security policy file specified, eg, sh run.sh -Djava.security.policy=../server/default/conf/server.policy.</p>
@@ -44,7 +44,7 @@ import org.jutils.log.LogChannel;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.6 $ $Date: 2003/05/21 20:21:13 $
+ * @version $Revision: 1.7 $ $Date: 2003/09/10 08:04:05 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -53,12 +53,17 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    private String propFile;
    private LogChannel log;
    private static final String ME = "XmlBlasterService";
-   private XmlBlasterClassLoader cl;
 
    public XmlBlasterService() {
       // Create a global wothout loading the xmlBlaster.properties file but check it's instance
-      glob= new Global(new String[]{},false,true);
-   }
+      glob= new Global(new String[]{},false,false);
+      try {
+         glob.getProperty().set("trace", "true");//DEBUG 
+      } catch (Exception e) {
+   
+      } // end of try-catch
+
+   }    
    /**
     * Set the name of a propertyfile to read settings from.
     *
@@ -100,40 +105,30 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       loadPropertyFile();
       setupSecurityManager();
 
-      //To get ok behavior we really need to do it this way:
-      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false, true  );
+      // Since we relly on external configuration, we need to do this
+      // for global to really get correct logging information.
+      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false , false );
 
-      //glob.getProperty().set("trace", "true");
       runglob.getProperty().set("xmlBlaster.isEmbedded", "true");
-      log = runglob.getLog(null);
-      log.info(ME,"Starting XmlBlasterService");
-      runglob.getProperty().set("classloader.xmlBlaster","false");
-      // Must be set to false to stop the embedded to create an engine Global
-      // in such a way that the xmlBlaster.properties file are loaded
-      // once more!
-      runglob.getProperty().set("useXmlBlasterClassloader","false");
+      runglob.getProperty().set("useSignalCatcher","false");
+      runglob.getProperty().set("classLoaderFactory","org.xmlBlaster.util.classloader.ContextClassLoaderFactory");
+      
       log = runglob.getLog("XmlBlasterService");
+      log.info(ME,"Starting XmlBlasterService");
 
-
-      //setUpClassLoader(); we skip this for now, does not help with concurrent.
-
-      ClassLoader currCl = Thread.currentThread().getContextClassLoader();
-      if (cl != null)
-         Thread.currentThread().setContextClassLoader(cl);
       blaster = EmbeddedXmlBlaster.startXmlBlaster(runglob);
-      Thread.currentThread().setContextClassLoader(currCl);
    }
 
    public void stop() throws Exception {
       log.info(ME,"Stopping XmlBlaster service");
       if (blaster != null ) {
-         ClassLoader currCl = Thread.currentThread().getContextClassLoader();
-         if (cl != null)
-            Thread.currentThread().setContextClassLoader(cl);
          EmbeddedXmlBlaster.stopXmlBlaster(blaster);
-         Thread.currentThread().setContextClassLoader(currCl);
       } // end of if ()
 
+   }
+
+   public String dumpProperties() {
+      return glob.getProperty().toXml();
    }
 
    private void setupSecurityManager() throws Exception {
@@ -156,30 +151,11 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
 
    /**
     * Jacorb is not capable of finding its jacorb.properties in the
-    * context classpath. Since ORB is loaded with args from Glob load
-    * jacorb.properties our self, and set them as args array in glob.
+    * context classpath (actually it uses the system classloader.
     * Remember that jacorb.properties is in xmlBlaster.jar.
     */
    private void loadJacorbProperties() throws Exception {
-      Properties props = new Properties();
-
-      // Read orb properties file into props
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      InputStream is = cl.getResourceAsStream("jacorb.properties");
-      if (is != null) {
-         props.load(is);
-         String jacorbVerbosity = props.getProperty("jacorb.verbosity");
-         if (jacorbVerbosity != null)
-            System.setProperty("jacorb.verbosity",jacorbVerbosity );
-
-         //init with args array fro jacorb, ORB is inited with this in
-         // corba driver
-         glob.init( Property.propsToArgs(props) );
-
-
-      } else {
-         log.warn(ME,"No jacorb.properties found in context classpath");
-      }
+      JacorbUtil.loadJacorbProperties("jacorb.properties",glob);
    }
 
    /**
@@ -228,40 +204,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
 
    }
 
-   /**
-    * Here we try to get direct access to the local jar, especially concurrent.jar. But it does not seem to work: only a few classes is actually loaded through the XmlBlasterClassLoader! Keeping it to work more on this later.
-    */
-   private void setUpClassLoader() throws Exception {
 
-      ClassLoaderFactory factory = glob.getClassLoaderFactory();
-      cl = factory.getXmlBlasterClassLoader();
-
-      // Wont work UCL ALLWAYS return empty array
-      //      URL[] blasterJars = ((URLClassLoader)getClass().getClassLoader()).getURLs();
-      URL[] blasterJars = cl.getURLs();
-      File blasterFile = null;
-      if (blasterJars != null && blasterJars.length > 0) {
-         for (int i = 0;i<blasterJars.length;i++) {
-            URL jar = blasterJars[i];
-            System.err.println("Checking url " + jar);
-            File bj = new File(jar.getFile());
-            if ("xmlBlaster.jar".equals( bj.getName())) {
-               log.trace(ME,"Found blaster URL");
-               blasterFile = bj;
-
-            }
-         }
-
-      }
-
-      if (blasterFile != null) {
-         File tmp = new File( blasterFile.getParent(), "concurrent.jar");
-         log.trace(ME,"Appending " + tmp);
-         cl.appendURL(tmp.toURL());
-
-      }
-
-   }
 
 }
 
