@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.2 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.3 1999/12/02 16:50:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -121,7 +121,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Accesing the query manager for XPath. 
+    * Accesing the query manager for XPath.
     * <p />
     * queryMgr is instantiated if null
     * @return the query manager
@@ -152,7 +152,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
          if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
 
-         if (Log.DUMP) Log.dump(ME, printOn().toString());  // dump the whole tree
+         // if (Log.DUMP) Log.dump(ME, printOn().toString());  // dump the whole tree
 
          queryMgr = null; // needs to be reloaded, since the Document changed
 

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.32 1999/12/02 16:48:06 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.33 1999/12/02 16:50:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,7 +27,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -291,7 +291,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    {
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) {
          fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS), false);
-         Log.warning(ME, "SUPPORT FOR QUERY unSubscribe is not yet tested"); // !!!
+         Log.warning(ME, "SUPPORT FOR QUERY unSubscribe is not yet tested"); // !!! Use the returned oid from subscribe ?!
       }
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
