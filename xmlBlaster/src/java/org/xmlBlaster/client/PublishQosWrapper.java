@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.24 2002/09/13 23:17:54 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.25 2002/09/19 14:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -177,7 +177,7 @@ public class PublishQosWrapper extends QosWrapper
     * The message expires after given milliseconds (message is erased).<p />
     * Clients will get a notify about expiration.<br />
     * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.<br />
-    * Passing 0 milliseconds asks the server for unlimited livespan, which
+    * Passing -1 milliseconds asks the server for unlimited livespan, which
     * the server may or may not grant.
     * @param remainingLife in milliseconds
     */

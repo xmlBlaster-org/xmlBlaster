@@ -3,7 +3,7 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.7 2002/09/13 23:17:55 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.8 2002/09/19 14:12:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -253,7 +253,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
      * by xmlBlaster.
      * Calculated by xmlBlaster just before sending the update, so there
      * will be an offset (the time sending the message to us).
-     * @return The time to live for this message or -1 if not known
+     * @return The time to live for this message or -1 (unlimited) if not known
      */
    public final long getRemainingLife()
    {
