@@ -50,7 +50,7 @@ cd <XMLBLASTER_HOME>/demo/c/xmlrpc
 
    SERVER_CFLAGS=`xmlrpc-c-config abyss-server --cflags`
    SERVER_LIBS=`xmlrpc-c-config abyss-server --libs`
-	gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
+   gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
 
 
 Run it:
@@ -69,12 +69,14 @@ Run it:
 
   Please edit abyss.conf before starting, e.g.
   set 'Port 8081' and adjust ServerRoot to point
-  to your xmlrpc-c installation!
+  to your xmlrpc-c installation document root, e.g.:
+
+  ServerRoot /home/xmlblast/xmlBlaster/demo/c/xmlrpc/xmlrpc-c-0.9.9/conf/abyss_root
 
 
 3. Start this client:
 
-  	client -xmlrpc.serverUrl http://myHost:8080/ -xmlrpc.cbUrl http://myHost:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.xml
+        client -xmlrpc.serverUrl http://myHost:8080/ -xmlrpc.cbUrl http://myHost:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.xml
 
   the -msgFile allows to send any file (binary data as well).
 
