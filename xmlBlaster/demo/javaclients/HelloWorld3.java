@@ -36,6 +36,7 @@ public class HelloWorld3 implements I_Callback
 
 
          PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld3", "text/xml");
+         pk.wrap("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          con.publish(msgUnit);
