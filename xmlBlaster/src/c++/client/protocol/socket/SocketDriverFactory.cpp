@@ -24,13 +24,12 @@ using namespace org::xmlBlaster::util::thread;
 SocketDriverFactory::SocketDriverFactory(Global& global)
    : Thread(), 
      ME("SocketDriverFactory"), 
-     global_(global), 
-     log_(global_.getLog("org.xmlBlaster.client.protocol.socket")),
      drivers_(),
      mutex_(),
      getterMutex_()
 {
-   if (log_.call()) log_.call("SocketDriver", string("Constructor"));
+   I_Log& log = global.getLog("org.xmlBlaster.client.protocol.socket");
+   if (log.call()) log.call("SocketDriver", string("Constructor"));
    doRun_     = true;
    isRunning_ = false;
 
@@ -41,8 +40,6 @@ SocketDriverFactory::SocketDriverFactory(Global& global)
 SocketDriverFactory::SocketDriverFactory(const SocketDriverFactory& factory)
 : Thread(), 
   ME(factory.ME), 
-  global_(factory.global_),
-  log_(factory.log_),
   drivers_(),
   doRun_(true),
   isRunning_(false),
@@ -59,7 +56,7 @@ SocketDriverFactory& SocketDriverFactory::operator =(const SocketDriverFactory&)
 
 SocketDriverFactory::~SocketDriverFactory()
 {
-   if (log_.call()) log_.call(ME, "Destructor start");
+   //if (log_.call()) log_.call(ME, "Destructor start");
    Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.begin();
    while (iter != drivers_.end()) {
@@ -67,7 +64,7 @@ SocketDriverFactory::~SocketDriverFactory()
       iter++;
    }
    drivers_.erase(drivers_.begin(), drivers_.end());
-   if (log_.trace()) log_.trace(ME, "erased all drivers");
+   //if (log_.trace()) log_.trace(ME, "erased all drivers");
 }
 
 SocketDriverFactory* SocketDriverFactory::factory_ = NULL;
@@ -82,19 +79,22 @@ SocketDriverFactory& SocketDriverFactory::getFactory(Global& global)
    return *factory_;
 }
 
-SocketDriver& SocketDriverFactory::getDriverInstance(const string& instanceName)
+SocketDriver& SocketDriverFactory::getDriverInstance(Global* global)
 {
-   if (log_.call()) log_.call("SocketDriver", string("getInstance for ") + instanceName);
+   string instanceName = lexical_cast<string>(global);
+   I_Log& log = global->getLog("org.xmlBlaster.client.protocol.socket");
+
+   if (log.call()) log.call("SocketDriver", string("getInstance for ") + instanceName);
    SocketDriver*  driver = NULL;
    int count = 1;
    {
       Lock lock(getterMutex_);
-      DriversMap::iterator iter = drivers_.find(instanceName);
+      DriversMap::iterator iter = drivers_.find(global);
       if (iter == drivers_.end()) {
-         if (log_.trace()) log_.trace("SocketDriver", string("created a new instance for ") + instanceName);
-         driver = new SocketDriver(global_, mutex_, instanceName);
+         if (log.trace()) log.trace("SocketDriver", string("created a new instance for ") + instanceName);
+         driver = new SocketDriver(*global, mutex_, instanceName);
          // initially the counter is set to 1
-         drivers_.insert(DriversMap::value_type(instanceName, pair<SocketDriver*, int>(driver, 1)));
+         drivers_.insert(DriversMap::value_type(global, pair<SocketDriver*, int>(driver, 1)));
          if (!isRunning_) start(); // if threadSafe isRunning_ will never be set to true
       }
       else {
@@ -102,35 +102,38 @@ SocketDriver& SocketDriverFactory::getDriverInstance(const string& instanceName)
          count = ((*iter).second).second++; // this is the counter ...
       }
    }
-   if (log_.trace()) 
-      log_.trace("SocketDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<std::string>(count));
+   if (log.trace()) 
+      log.trace("SocketDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<std::string>(count));
    return *driver;
 }
 
 
-int SocketDriverFactory::killDriverInstance(const string& instanceName)
+int SocketDriverFactory::killDriverInstance(Global* global)
 {
-   log_.call(ME, "killDriverInstance");
+   string instanceName = lexical_cast<string>(global);
+   I_Log& log = global->getLog("org.xmlBlaster.client.protocol.socket");
+
+   log.call(ME, "killDriverInstance");
    Lock lock(getterMutex_);
-   DriversMap::iterator iter = drivers_.find(instanceName);
+   DriversMap::iterator iter = drivers_.find(global);
    if (iter == drivers_.end()) return -1;
    int ret = --(*iter).second.second;
-   if (log_.trace()) log_.trace(ME, string("instances before deleting ") + lexical_cast<std::string>(ret));
+   if (log.trace()) log.trace(ME, string("instances before deleting ") + lexical_cast<std::string>(ret));
    if (ret <= 0) {
-      if (log_.trace()) log_.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
+      if (log.trace()) log.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
       // do remove it since the counter is zero
       SocketDriver* driver = (*iter).second.first;
       drivers_.erase(iter);
       delete driver;
    }
-   if (log_.trace()) 
-      log_.trace("SocketDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<std::string>(ret));
+   if (log.trace()) 
+      log.trace("SocketDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<std::string>(ret));
    return ret;
 }
 
 void SocketDriverFactory::run()
 {
-   if (log_.trace()) log_.trace(ME, "the socket loop starts now");
+   // if (log_.trace()) log_.trace(ME, "the socket loop starts now");
 }
 
 

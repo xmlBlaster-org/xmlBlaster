@@ -18,7 +18,7 @@ namespace org {
     namespace socket {
 
 typedef std::pair<SocketDriver*, int> DriverEntry;
-typedef std::map<std::string, DriverEntry> DriversMap;
+typedef std::map<org::xmlBlaster::util::Global*, DriverEntry> DriversMap;
 
 /**
  * Factory used to create instances of SocketDriver objects. It currently is a singleton class and has for
@@ -35,8 +35,6 @@ friend class ManagedObject;
 
 private:
    const std::string   ME;
-   org::xmlBlaster::util::Global&        global_;
-   org::xmlBlaster::util::I_Log&           log_;
    DriversMap     drivers_;         // the std::map containing all drivers created by this factory
    bool           doRun_;           // the command: if set to 'false' the thread will stop.
    bool           isRunning_;       // the status: if the thread is running it is 'true'
@@ -63,14 +61,14 @@ public:
    /**
     * gets an instance of a socket driver with the specified name.
     */
-   SocketDriver& getDriverInstance(const std::string& instanceName);
+   SocketDriver& getDriverInstance(org::xmlBlaster::util::Global* global);
 
    /**
     * Kills the driver instance with the given name. Note that if you invoked getDriverInstance several 
-    * times with the same instanceName, you just decrement the internal reference counter. When the reference
+    * times with the same global object, you just decrement the internal reference counter. When the reference
     * counter reaches zero, the driver is really destroyed.
     */
-   int killDriverInstance(const std::string& instanceName);
+   int killDriverInstance(org::xmlBlaster::util::Global* global);
 
 };
 

@@ -60,12 +60,12 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
 //   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
    if (type == Constants::IOR) {
 #     ifdef COMPILE_CORBA_PLUGIN
-      return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+      return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(&global_);
 #     endif
    }
    else if (type == Constants::SOCKET) {
 #     ifdef COMPILE_SOCKET_PLUGIN
-      return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+      return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(&global_);
 #     endif
    }
    string embeddedMsg = string("plugin: '") + type +
@@ -90,13 +90,13 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
 #     ifdef COMPILE_CORBA_PLUGIN
-      org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+      org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(&global_);
       return;
 #     endif
    }
    else if (type == "SOCKET") {
 #     ifdef COMPILE_SOCKET_PLUGIN
-      org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+      org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).killDriverInstance(&global_);
       return;
 #     endif
    }

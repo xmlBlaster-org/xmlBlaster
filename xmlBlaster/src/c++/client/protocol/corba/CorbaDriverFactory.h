@@ -24,7 +24,7 @@ namespace org {
     namespace corba {
 
 typedef std::pair<CorbaDriver*, int>  DriverEntry;
-typedef std::map<std::string, DriverEntry> DriversMap;
+typedef std::map<org::xmlBlaster::util::Global*, DriverEntry> DriversMap;
 
 /**
  * Factory used to create instances of CorbaDriver objects. It currently is a singleton class and has for
@@ -54,8 +54,8 @@ friend class ManagedObject;
 
 private:
    const std::string   ME;
-   org::xmlBlaster::util::Global&        global_;
-   org::xmlBlaster::util::I_Log&           log_;
+   //org::xmlBlaster::util::Global&        global_;
+   //org::xmlBlaster::util::I_Log&           log_;
    DriversMap     drivers_;         // the std::map containing all drivers created by this factory
    bool           doRun_;           // the command: if set to 'false' the thread will stop.
    bool           isRunning_;       // the status: if the thread is running it is 'true'
@@ -74,7 +74,6 @@ private:
     * @param doRun   Only for internal main loop for single threaded orbs. false stops the loop
     *                
     * @param isRunning    Feedback is doRun has stopped
-    * @param instanceName
     * @param orb
     */
 
@@ -115,14 +114,14 @@ public:
    /**
     * gets an instance of a corba driver with the specified name.
     */
-   CorbaDriver& getDriverInstance(const std::string& instanceName);
+   CorbaDriver& getDriverInstance(org::xmlBlaster::util::Global* global);
 
    /**
-    * Kills the driver instance with the given name. Note that if you invoked getDriverInstance several 
+    * Kills the driver instance owned by the specified Global. Note that if you invoked getDriverInstance several 
     * times with the same instanceName, you just decrement the internal reference counter. When the reference
     * counter reaches zero, the driver is really destroyed.
     */
-   int killDriverInstance(const std::string& instanceName);
+   int killDriverInstance(org::xmlBlaster::util::Global* global);
 
 };
 
