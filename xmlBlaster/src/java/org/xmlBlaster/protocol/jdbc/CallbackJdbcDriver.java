@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -109,7 +110,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error, can't find JdbcDriver instance '" + id + "'");
          }
          for (int ii=0; ii<msgArr.length; ii++) {
-            MsgQosData msgQosData = (MsgQosData)msgArr[ii].getMsgUnit().getQosData();
+            MsgQosData msgQosData = (MsgQosData)((MsgUnit)msgArr[ii].getMsgUnit()).getQosData();
             driver.update(msgQosData.getSender().getAbsoluteName(), msgArr[ii].getContent());
          }
          String[] ret = new String[msgArr.length];
@@ -150,7 +151,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
       }
       for (int ii=0; ii<msgArr.length; ii++) {
          try {
-            MsgQosData msgQosData = (MsgQosData)msgArr[ii].getMsgUnit().getQosData();
+            MsgQosData msgQosData = (MsgQosData)((MsgUnit)msgArr[ii].getMsgUnit()).getQosData();
             driver.update(msgQosData.getSender().getAbsoluteName(), msgArr[ii].getContent());
          } catch (Throwable e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
