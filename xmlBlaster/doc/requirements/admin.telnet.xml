@@ -42,7 +42,7 @@
     Type <code>help</code> for a usage list.
     </p>
     Example to query the home directory of the user which started xmlBlaster
-    and the current free memory in the server, the last examples queries how many
+    and the current free memory in the server, the last example queries how many
     users are currently known in the server:
     <pre>
   CMD>get sysprop/?user.home
@@ -112,7 +112,7 @@
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
