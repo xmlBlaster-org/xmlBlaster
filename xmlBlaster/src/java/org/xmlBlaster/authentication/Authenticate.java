@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.44 2001/12/20 22:04:41 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.45 2002/01/07 13:39:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -107,77 +107,86 @@ final public class Authenticate implements I_Authenticate
                        String xmlQoS_literal, String sessionId)
                           throws XmlBlasterException
    {
-      I_Subject subject = null;
-      I_Session sessionSecurityCtx = null;
-      I_Manager securityMgr = null;
-      String returnQoS = null;
-      ConnectQos xmlQoS = new ConnectQos(xmlQoS_literal);
-      ClientInfo clientInfo = null;
-      AuthenticationInfo  authInfo = null;
+      try {
+         I_Subject subject = null;
+         I_Session sessionSecurityCtx = null;
+         I_Manager securityMgr = null;
+         String returnQoS = null;
+         ConnectQos xmlQoS = new ConnectQos(xmlQoS_literal);
+         ClientInfo clientInfo = null;
+         AuthenticationInfo  authInfo = null;
 
-      if (Log.DUMP) Log.dump(ME, "-------START-login(" + loginName + ", " + sessionId + ")---------\n" + toXml().toString());
-      if (Log.DUMP) Log.dump(ME, xmlQoS_literal);
+         if (Log.DUMP) Log.dump(ME, "-------START-login(" + loginName + ", " + sessionId + ")---------\n" + toXml().toString());
+         if (Log.DUMP) Log.dump(ME, xmlQoS_literal);
 
-      // --- try to get a suitable SecurityManager ----------------------------
-      securityMgr = plgnLdr.getManager(xmlQoS.getSecurityPluginType(),
-                       xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
+         // --- try to get a suitable SecurityManager ----------------------------
+         securityMgr = plgnLdr.getManager(xmlQoS.getSecurityPluginType(),
+                          xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
 
-      clientInfo = getClientInfoByName(loginName);
+         clientInfo = getClientInfoByName(loginName);
 
-      if (clientInfo != null && clientInfo.isLoggedIn()) {
-         Log.warn(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
-         try {
-            resetClientInfo(clientInfo.getUniqueKey(), false);
-         } catch(XmlBlasterException e) {
-            // fireClientEvent(clientInfo, false); // informs all I_ClientListener
-            // clientInfo.notifyAboutLogout(true);
-            // clientInfo = null;
+         if (clientInfo != null && clientInfo.isLoggedIn()) {
+            Log.warn(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
+            try {
+               resetClientInfo(clientInfo.getUniqueKey(), false);
+            } catch(XmlBlasterException e) {
+               // fireClientEvent(clientInfo, false); // informs all I_ClientListener
+               // clientInfo.notifyAboutLogout(true);
+               // clientInfo = null;
+            }
+            // allowing re-login: if the client crashed without proper logout, she should
+            // be allowed to login again, so - first logout the last session (but keep messages in client queue)
+            // We need to clean up clientInfo, usually the callback reference is another one, etc.
          }
-         // allowing re-login: if the client crashed without proper logout, she should
-         // be allowed to login again, so - first logout the last session (but keep messages in client queue)
-         // We need to clean up clientInfo, usually the callback reference is another one, etc.
-      }
 
-      if (sessionId == null || sessionId.length() < 2) {
-         sessionId = createSessionId(loginName);
-      }
-
-      sessionSecurityCtx = securityMgr.reserveSession(sessionId);
-
-      String securityQoS = xmlQoS.getSecurityData();
-      if (securityQoS == null)
-         securityQoS = "<securityPlugin type=\"" + DEFAULT_SECURITYPLUGIN_TYPE +
-                           "\" version=\"" + DEFAULT_SECURITYPLUGIN_VERSION + "\">\n" +
-                           "   <user>" + loginName + "</user>\n" +
-                           "   <passwd>" + passwd + "</passwd>\n" +
-                           "</securityPlugin>";
-      
-      String clientSecurityInfo = sessionSecurityCtx.init(securityQoS); // throws XmlBlasterExceptions
-      if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
-         Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
-      subject = sessionSecurityCtx.getSubject();
-
-      authInfo = new AuthenticationInfo(sessionId, loginName, passwd, xmlQoS);
-
-      if (clientInfo != null) {
-         clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
-      }
-      else {                               // login of yet unknown client
-         clientInfo = new ClientInfo(authInfo, sessionSecurityCtx);
-         synchronized(loginNameClientInfoMap) {
-            loginNameClientInfoMap.put(loginName, clientInfo);
+         if (sessionId == null || sessionId.length() < 2) {
+            sessionId = createSessionId(loginName);
          }
+
+         sessionSecurityCtx = securityMgr.reserveSession(sessionId);
+
+         String securityQoS = xmlQoS.getSecurityData();
+         if (securityQoS == null)
+            securityQoS = "<securityPlugin type=\"" + DEFAULT_SECURITYPLUGIN_TYPE +
+                              "\" version=\"" + DEFAULT_SECURITYPLUGIN_VERSION + "\">\n" +
+                              "   <user>" + loginName + "</user>\n" +
+                              "   <passwd>" + passwd + "</passwd>\n" +
+                              "</securityPlugin>";
+         
+         String clientSecurityInfo = sessionSecurityCtx.init(securityQoS); // throws XmlBlasterExceptions
+         if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
+            Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
+         subject = sessionSecurityCtx.getSubject();
+
+         authInfo = new AuthenticationInfo(sessionId, loginName, passwd, xmlQoS);
+
+         if (clientInfo != null) {
+            clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
+         }
+         else {                               // login of yet unknown client
+            clientInfo = new ClientInfo(authInfo, sessionSecurityCtx);
+            synchronized(loginNameClientInfoMap) {
+               loginNameClientInfoMap.put(loginName, clientInfo);
+            }
+         }
+
+         synchronized(aomClientInfoMap) {
+            aomClientInfoMap.put(sessionId, clientInfo);
+         }
+
+         fireClientEvent(clientInfo, true);
+
+         Log.info(ME, "Successful login for client " + loginName);
+         if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + toXml().toString());
+         return sessionId;
       }
-
-      synchronized(aomClientInfoMap) {
-         aomClientInfoMap.put(sessionId, clientInfo);
+      catch (XmlBlasterException e) {
+         throw e;
       }
-
-      fireClientEvent(clientInfo, true);
-
-      Log.info(ME, "Successful login for client " + loginName);
-      if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + toXml().toString());
-      return sessionId;
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("Authenticate.login.InternalError", e.toString());
+      }
    }
 
 
@@ -210,117 +219,135 @@ final public class Authenticate implements I_Authenticate
     */
    public final ConnectReturnQos connect(ConnectQos connectQos, String sessionId) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "-------START-connect()---------");
-      if (Log.DUMP) Log.dump(ME, toXml().toString());
-
-      I_Subject subject = null;
-      I_Session sessionSecurityCtx = null;
-      I_Manager securityMgr = null;
-      ClientInfo clientInfo = null;
-      AuthenticationInfo  authInfo = null;
-      if (sessionId == null)
-         sessionId = connectQos.getSessionId();
-      if (sessionId == null || sessionId.length() < 2) {
-         sessionId = createSessionId("null" /*subject.getName()*/);
-         if (Log.TRACE) Log.trace(ME+".connect()", "Empty sessionId - generated sessionId=" + sessionId);
-         connectQos.setSessionId(sessionId);
-      }
-      // we don't overwrite the given qos-sessionId with the given sessionId-parameter
-
-      // --- try to get a suitable SecurityManager ----------------------------
-      securityMgr = plgnLdr.getManager(connectQos.getSecurityPluginType(),
-                                       connectQos.getSecurityPluginVersion()); // throws XmlBlasterExceptions
-
-      sessionSecurityCtx = securityMgr.reserveSession(sessionId);
-      String clientSecurityInfo = sessionSecurityCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions
-      if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
-         Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
-      subject = sessionSecurityCtx.getSubject();
-
-      clientInfo = getClientInfoByName(subject.getName());
-      if(clientInfo!=null) {
-         I_Session oldSessionSecCtx = clientInfo.getSecuritySession();
-         oldSessionSecCtx.getManager().releaseSession(oldSessionSecCtx.getSessionId(), null);
-      }
-
-      if (clientInfo != null && clientInfo.isLoggedIn()) {
-         Log.warn(ME+".AlreadyLoggedIn", "Client " + subject.getName() + " is already logged in. Your login session will be re-initialized.");
-         try {
-            resetClientInfo(clientInfo.getUniqueKey(), false);
-         } catch(XmlBlasterException e) {
-            // fireClientEvent(clientInfo, false); // informs all I_ClientListener
-            // clientInfo.notifyAboutLogout(true);
-            // clientInfo = null;
-         }
-         // allowing re-login: if the client crashed without proper logout, she should
-         // be allowed to login again, so - first logout the last session (but keep messages in client queue)
-         // We need to clean up clientInfo, usually the callback reference is another one, etc.
-      }
-
-      if (sessionId == null || sessionId.length() < 2) {
-         sessionId = createSessionId(subject.getName());
-      }
-
-      authInfo = new AuthenticationInfo(sessionId, subject.getName(), "", connectQos);
-
       try {
-         // Tell plugin the new sessionId on relogins...
-         sessionSecurityCtx.changeSessionId(sessionId);
-      }
-      catch (XmlBlasterException xe) {
-         Log.error(ME+".rejected", "Can't change session id="+sessionSecurityCtx.getSessionId()+" to session id="+sessionId+"! Reason: "+xe.toString());
-      }
+         if (Log.CALL) Log.call(ME, "-------START-connect()---------");
+         if (Log.DUMP) Log.dump(ME, toXml().toString());
 
-      if (clientInfo != null) {
-         clientInfo.setSecuritySession(sessionSecurityCtx);
-         clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
-      }
-      else {                               // login of yet unknown client
-         clientInfo = new ClientInfo(authInfo, sessionSecurityCtx);
-         synchronized(loginNameClientInfoMap) {
-            loginNameClientInfoMap.put(subject.getName(), clientInfo);
+         I_Subject subject = null;
+         I_Session sessionSecurityCtx = null;
+         I_Manager securityMgr = null;
+         ClientInfo clientInfo = null;
+         AuthenticationInfo  authInfo = null;
+         if (sessionId == null)
+            sessionId = connectQos.getSessionId();
+         if (sessionId == null || sessionId.length() < 2) {
+            sessionId = createSessionId("null" /*subject.getName()*/);
+            if (Log.TRACE) Log.trace(ME+".connect()", "Empty sessionId - generated sessionId=" + sessionId);
+            connectQos.setSessionId(sessionId);
          }
+         // we don't overwrite the given qos-sessionId with the given sessionId-parameter
+
+         // --- try to get a suitable SecurityManager ----------------------------
+         securityMgr = plgnLdr.getManager(connectQos.getSecurityPluginType(),
+                                          connectQos.getSecurityPluginVersion()); // throws XmlBlasterExceptions
+
+         sessionSecurityCtx = securityMgr.reserveSession(sessionId);
+         String clientSecurityInfo = sessionSecurityCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions
+         if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
+            Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
+         subject = sessionSecurityCtx.getSubject();
+
+         clientInfo = getClientInfoByName(subject.getName());
+         if(clientInfo!=null) {
+            I_Session oldSessionSecCtx = clientInfo.getSecuritySession();
+            oldSessionSecCtx.getManager().releaseSession(oldSessionSecCtx.getSessionId(), null);
+         }
+
+         if (clientInfo != null && clientInfo.isLoggedIn()) {
+            Log.warn(ME+".AlreadyLoggedIn", "Client " + subject.getName() + " is already logged in. Your login session will be re-initialized.");
+            try {
+               resetClientInfo(clientInfo.getUniqueKey(), false);
+            } catch(XmlBlasterException e) {
+               // fireClientEvent(clientInfo, false); // informs all I_ClientListener
+               // clientInfo.notifyAboutLogout(true);
+               // clientInfo = null;
+            }
+            // allowing re-login: if the client crashed without proper logout, she should
+            // be allowed to login again, so - first logout the last session (but keep messages in client queue)
+            // We need to clean up clientInfo, usually the callback reference is another one, etc.
+         }
+
+         if (sessionId == null || sessionId.length() < 2) {
+            sessionId = createSessionId(subject.getName());
+         }
+
+         authInfo = new AuthenticationInfo(sessionId, subject.getName(), "", connectQos);
+
+         try {
+            // Tell plugin the new sessionId on relogins...
+            sessionSecurityCtx.changeSessionId(sessionId);
+         }
+         catch (XmlBlasterException xe) {
+            Log.error(ME+".rejected", "Can't change session id="+sessionSecurityCtx.getSessionId()+" to session id="+sessionId+"! Reason: "+xe.toString());
+         }
+
+         if (clientInfo != null) {
+            clientInfo.setSecuritySession(sessionSecurityCtx);
+            clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
+         }
+         else {                               // login of yet unknown client
+            clientInfo = new ClientInfo(authInfo, sessionSecurityCtx);
+            synchronized(loginNameClientInfoMap) {
+               loginNameClientInfoMap.put(subject.getName(), clientInfo);
+            }
+         }
+
+         synchronized(aomClientInfoMap) {
+            aomClientInfoMap.put(sessionId, clientInfo);
+         }
+
+         fireClientEvent(clientInfo, true);
+
+         // --- compose an answer -----------------------------------------------
+         ConnectReturnQos returnQos = new ConnectReturnQos(connectQos);
+         returnQos.setSessionId(sessionId); // clientSecurityInfo is not coded yet !
+
+         if (Log.DUMP) Log.dump(ME, "Returned QoS:\n" + returnQos.toXml());
+         Log.info(ME, "Successful login for client " + subject.getName());
+         if (Log.CALL) Log.call(ME, "-------END-connect()---------");
+         if (Log.DUMP) Log.dump(ME, toXml().toString());
+
+         return returnQos;
       }
-
-      synchronized(aomClientInfoMap) {
-         aomClientInfoMap.put(sessionId, clientInfo);
+      catch (XmlBlasterException e) {
+         throw e;
       }
-
-      fireClientEvent(clientInfo, true);
-
-      // --- compose an answer -----------------------------------------------
-      ConnectReturnQos returnQos = new ConnectReturnQos(connectQos);
-      returnQos.setSessionId(sessionId); // clientSecurityInfo is not coded yet !
-
-      if (Log.DUMP) Log.dump(ME, "Returned QoS:\n" + returnQos.toXml());
-      Log.info(ME, "Successful login for client " + subject.getName());
-      if (Log.CALL) Log.call(ME, "-------END-connect()---------");
-      if (Log.DUMP) Log.dump(ME, toXml().toString());
-
-      return returnQos;
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("Authenticate.connect.InternalError", e.toString());
+      }
    }
 
 
    public final void disconnect(String sessionId, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "-------START-disconnect()---------" + toXml().toString());
-      if (Log.DUMP) Log.dump(ME, toXml().toString());
+      try {
+         if (Log.CALL) Log.call(ME, "-------START-disconnect()---------" + toXml().toString());
+         if (Log.DUMP) Log.dump(ME, toXml().toString());
 
-      I_Manager securityMgr = plgnLdr.getManager(sessionId);
-      I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
-      securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
+         I_Manager securityMgr = plgnLdr.getManager(sessionId);
+         I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
+         securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
 
-      ClientInfo clientInfo = resetClientInfo(sessionId, true);
-      String loginName = clientInfo.getLoginName();
+         ClientInfo clientInfo = resetClientInfo(sessionId, true);
+         String loginName = clientInfo.getLoginName();
 
-      synchronized(loginNameClientInfoMap) {
-         loginNameClientInfoMap.remove(loginName);
+         synchronized(loginNameClientInfoMap) {
+            loginNameClientInfoMap.remove(loginName);
+         }
+
+         Log.info(ME, "Client " + loginName + " (sessionId=" + sessionId + ") successfully disconnected!");
+         clientInfo = null;
+         if (Log.CALL) Log.call(ME, "-------END-disconnect()---------");
+         if (Log.DUMP) Log.dump(ME, toXml().toString());
       }
-
-      Log.info(ME, "Client " + loginName + " (sessionId=" + sessionId + ") successfully disconnected!");
-      clientInfo = null;
-      if (Log.CALL) Log.call(ME, "-------END-disconnect()---------");
-      if (Log.DUMP) Log.dump(ME, toXml().toString());
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("Authenticate.disconnect.InternalError", e.toString());
+      }
    }
 
    /**
@@ -368,20 +395,29 @@ final public class Authenticate implements I_Authenticate
     */
    public final void logout(String sessionId) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "-------START-logout()---------\n" + toXml().toString());
-      I_Manager securityMgr = plgnLdr.getManager(sessionId);
-      ClientInfo clientInfo = resetClientInfo(sessionId, true);
-      String loginName = clientInfo.getLoginName();
+      try {
+         if (Log.CALL) Log.call(ME, "-------START-logout()---------\n" + toXml().toString());
+         I_Manager securityMgr = plgnLdr.getManager(sessionId);
+         ClientInfo clientInfo = resetClientInfo(sessionId, true);
+         String loginName = clientInfo.getLoginName();
 
-      securityMgr.releaseSession(sessionId, null);
+         securityMgr.releaseSession(sessionId, null);
 
-      synchronized(loginNameClientInfoMap) {
-         loginNameClientInfoMap.remove(loginName);
+         synchronized(loginNameClientInfoMap) {
+            loginNameClientInfoMap.remove(loginName);
+         }
+
+         Log.info(ME, "Successful logout for client " + loginName);
+         clientInfo = null;
+         if (Log.CALL) Log.call(ME, "-------END-logout()---------\n" + toXml().toString());
       }
-
-      Log.info(ME, "Successful logout for client " + loginName);
-      clientInfo = null;
-      if (Log.CALL) Log.call(ME, "-------END-logout()---------\n" + toXml().toString());
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("Authenticate.logout.InternalError", e.toString());
+      }
    }
 
 

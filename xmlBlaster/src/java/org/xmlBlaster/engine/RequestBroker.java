@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.94 2001/12/26 15:54:09 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.95 2002/01/07 13:39:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.94 $
+ * @version $Revision: 1.95 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -276,31 +276,40 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      try {
+         if (Log.CALL) Log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-      if (xmlKey.isInternalStateQuery())
-         updateInternalStateInfo(clientInfo);
+         if (xmlKey.isInternalStateQuery())
+            updateInternalStateInfo(clientInfo);
 
-      String returnOid = "";
-      if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
-         returnOid = subs.getUniqueKey();
-         fireSubscriptionEvent(subs, true);
+         String returnOid = "";
+         if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
+            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+            returnOid = subs.getUniqueKey();
+            fireSubscriptionEvent(subs, true);
+         }
+
+         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+
+         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+            if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
+               xmlKeyExact = xmlKey;
+            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
+            subscribeToOid(subs);                // fires event for subscription
+
+            if (returnOid.equals("")) returnOid = xmlKeyExact.getUniqueKey();
+         }
+
+         return returnOid;
       }
-
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
-
-      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
-            xmlKeyExact = xmlKey;
-         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
-         subscribeToOid(subs);                // fires event for subscription
-
-         if (returnOid.equals("")) returnOid = xmlKeyExact.getUniqueKey();
+      catch (XmlBlasterException e) {
+         throw e;
       }
-
-      return returnOid;
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("RequestBroker.subscribe.InternalError", e.toString());
+      }
    }
 
 
@@ -325,67 +334,76 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
-      if (xmlKey.isInternalStateQuery())
-         updateInternalStateInfo(clientInfo);
+      try {
+         if (Log.CALL) Log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+         if (xmlKey.isInternalStateQuery())
+            updateInternalStateInfo(clientInfo);
 
-      if (xmlKey.getKeyOid().equals("__sys__jdbc")) { // Query RDBMS !!! hack, we need a general service interface
-         String query = xmlKey.toXml();
-         String content = query.substring(query.indexOf(">")+1, query.lastIndexOf("<"));
-         org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(
-                     content.getBytes(), org.xmlBlaster.protocol.jdbc.JdbcDriver.getNamedPool());
-         return adap.query();
-      }
-
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
-      Vector msgUnitVec = new Vector(xmlKeyVec.size());
-
-      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
-            xmlKeyExact = xmlKey;
-
-         MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
-
-         if( msgUnitHandler == null ) {
-            Log.warn(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
-            throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+         if (xmlKey.getKeyOid().equals("__sys__jdbc")) { // Query RDBMS !!! hack, we need a general service interface
+            String query = xmlKey.toXml();
+            String content = query.substring(query.indexOf(">")+1, query.lastIndexOf("<"));
+            org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(
+                        content.getBytes(), org.xmlBlaster.protocol.jdbc.JdbcDriver.getNamedPool());
+            return adap.query();
          }
 
-         if (msgUnitHandler.isPublishedWithData()) {
-            MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
-            MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
+         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
+         Vector msgUnitVec = new Vector(xmlKeyVec.size());
 
-            // Check with ClientInfo.getUpdateQoS() !!!
-            StringBuffer buf = new StringBuffer();
-            buf.append("\n<qos>\n");
+         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+            if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
+               xmlKeyExact = xmlKey;
 
-            buf.append("   <state>\n");  // !!! not yet supported
-            buf.append("      OK\n");    // OK | EXPIRED | ERASED
-            buf.append("   </state>\n");
+            MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
 
-            buf.append("   <sender>\n");
-            buf.append("      ").append(msgUnitWrapper.getPublisherName());
-            buf.append("\n   </sender>\n");
-
-            buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
-
-            if (msgUnitWrapper.getPublishQoS().getTimeToLive() >= 0L) {
-               buf.append("   <expiration timeToLive='").append(msgUnitWrapper.getPublishQoS().getTimeToLive()).append("'/>\n");
+            if( msgUnitHandler == null ) {
+               Log.warn(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+               throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
             }
 
-            buf.append("</qos>");
-            mm.qos = buf.toString(); // !!! GetReturnQos should be an object
-            msgUnitVec.addElement(mm);
+            if (msgUnitHandler.isPublishedWithData()) {
+               MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
+               MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
+
+               // Check with ClientInfo.getUpdateQoS() !!!
+               StringBuffer buf = new StringBuffer();
+               buf.append("\n<qos>\n");
+
+               buf.append("   <state>\n");  // !!! not yet supported
+               buf.append("      OK\n");    // OK | EXPIRED | ERASED
+               buf.append("   </state>\n");
+
+               buf.append("   <sender>\n");
+               buf.append("      ").append(msgUnitWrapper.getPublisherName());
+               buf.append("\n   </sender>\n");
+
+               buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
+
+               if (msgUnitWrapper.getPublishQoS().getTimeToLive() >= 0L) {
+                  buf.append("   <expiration timeToLive='").append(msgUnitWrapper.getPublishQoS().getTimeToLive()).append("'/>\n");
+               }
+
+               buf.append("</qos>");
+               mm.qos = buf.toString(); // !!! GetReturnQos should be an object
+               msgUnitVec.addElement(mm);
+            }
          }
+
+         MessageUnit[] msgUnitArr = new MessageUnit[msgUnitVec.size()];
+         for (int ii=0; ii<msgUnitArr.length; ii++)
+            msgUnitArr[ii] = (MessageUnit)msgUnitVec.elementAt(ii);
+
+         getMessages += msgUnitArr.length;
+         return msgUnitArr;
       }
-
-      MessageUnit[] msgUnitArr = new MessageUnit[msgUnitVec.size()];
-      for (int ii=0; ii<msgUnitArr.length; ii++)
-         msgUnitArr[ii] = (MessageUnit)msgUnitVec.elementAt(ii);
-
-      getMessages += msgUnitArr.length;
-      return msgUnitArr;
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("RequestBroker.get.InternalError", e.toString());
+      }
    }
 
 
@@ -587,35 +605,44 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      try {
+         if (Log.CALL) Log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-      String suppliedXmlKey = xmlKey.getUniqueKey().substring(0); // remember (clone) supplied oid, another oid may be generated later
+         String suppliedXmlKey = xmlKey.getUniqueKey().substring(0); // remember (clone) supplied oid, another oid may be generated later
 
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
+         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
 
-      if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
-         // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
-         SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
-         if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
-            xmlKeyVec = parseKeyOid(clientInfo, subs.getXmlKey(), unSubscribeQoS);
-            fireSubscriptionEvent(subs, false);    // Remove the object containing the XPath query
+         if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
+            // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
+            SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
+            if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
+               xmlKeyVec = parseKeyOid(clientInfo, subs.getXmlKey(), unSubscribeQoS);
+               fireSubscriptionEvent(subs, false);    // Remove the object containing the XPath query
+            }
+         }
+
+         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+            if (xmlKeyExact == null) {
+               Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+               throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+
+            }
+            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
+            fireSubscriptionEvent(subs, false);
+         }
+
+         if (xmlKeyVec.size() < 1) {
+            Log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
+            throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
          }
       }
-
-      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null) {
-            Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-            throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-
-         }
-         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
-         fireSubscriptionEvent(subs, false);
+      catch (XmlBlasterException e) {
+         throw e;
       }
-
-      if (xmlKeyVec.size() < 1) {
-         Log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
-         throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("RequestBroker.unSubscribe.InternalError", e.toString());
       }
    }
 
@@ -702,98 +729,107 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String publish(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
-      if (msgUnit == null || publishQoS==null || xmlKey==null) {
-         Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
-         throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
-      }
+      try {
+         if (msgUnit == null || publishQoS==null || xmlKey==null) {
+            Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
+            throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
+         }
 
-      if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
-      if (Log.DUMP) Log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQoS.toXml());
+         if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
+         if (Log.DUMP) Log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQoS.toXml());
 
-      String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
+         String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
-      if (! publishQoS.isFromPersistenceStore())
-         publishQoS.setSender(clientInfo.getLoginName());
+         if (! publishQoS.isFromPersistenceStore())
+            publishQoS.setSender(clientInfo.getLoginName());
 
-      if (publishQoS.isPubSubStyle()) {
-         if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
+         if (publishQoS.isPubSubStyle()) {
+            if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
 
-         //----- 1. set new value or create the new message:
-         MessageUnitHandler msgUnitHandler = null;
-         boolean contentChanged = true;
-         {
-            if (Log.TRACE) Log.trace(ME, "Handle the new arrived Pub/Sub message ...");
-            boolean messageExisted = false; // to shorten the synchronize block
+            //----- 1. set new value or create the new message:
+            MessageUnitHandler msgUnitHandler = null;
+            boolean contentChanged = true;
+            {
+               if (Log.TRACE) Log.trace(ME, "Handle the new arrived Pub/Sub message ...");
+               boolean messageExisted = false; // to shorten the synchronize block
 
-            synchronized(messageContainerMap) {
-               Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
-               if (obj == null) {
-                  msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS));
-                  messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
-               }
-               else {
-                  msgUnitHandler = (MessageUnitHandler)obj;
-                  messageExisted = true;
-               }
-            }
-
-            boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
-
-            if (messageExisted) {
-               contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQoS);
-            }
-
-            if (!messageExisted || isYetUnpublished) {
-               try {
-                  xmlKey.mergeRootNode(bigXmlKeyDOM);                   // merge the message DOM tree into the big xmlBlaster DOM tree
-               } catch (XmlBlasterException e) {
-                  synchronized(messageContainerMap) {
-                     messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
+               synchronized(messageContainerMap) {
+                  Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+                  if (obj == null) {
+                     msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS));
+                     messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                   }
-                  throw new XmlBlasterException(e.id, e.reason);
+                  else {
+                     msgUnitHandler = (MessageUnitHandler)obj;
+                     messageExisted = true;
+                  }
+               }
+
+               boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
+
+               if (messageExisted) {
+                  contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQoS);
+               }
+
+               if (!messageExisted || isYetUnpublished) {
+                  try {
+                     xmlKey.mergeRootNode(bigXmlKeyDOM);                   // merge the message DOM tree into the big xmlBlaster DOM tree
+                  } catch (XmlBlasterException e) {
+                     synchronized(messageContainerMap) {
+                        messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
+                     }
+                     throw new XmlBlasterException(e.id, e.reason);
+                  }
                }
             }
+
+            //----- 2. now we can send updates to all interested clients:
+            if (contentChanged || publishQoS.forceUpdate()) // if the content changed of the publisher forces updates ...
+               msgUnitHandler.invokeCallback();
+
+            // this gap is not 100% thread save
+
+            //----- 3. check all known query subscriptions if the new message fits as well
+            checkExistingSubscriptions(clientInfo, xmlKey, msgUnitHandler, publishQoS);
+
+            if (publishQoS.isVolatile()) {
+                 if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
+
+                 fireMessageEraseEvent(clientInfo, msgUnitHandler);
+                 msgUnitHandler.erase();
+                 msgUnitHandler = null;
+            }
+         }
+         else if (publishQoS.isPTP_Style()) {
+            if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
+            if (Log.DUMP) Log.dump(ME, publishQoS.toXml());
+
+            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS);
+            Vector destinationVec = publishQoS.getDestinations(); // !!! add XPath client query here !!!
+
+            //-----    Send message to every destination client
+            for (int ii = 0; ii<destinationVec.size(); ii++) {
+               Destination destination = (Destination)destinationVec.elementAt(ii);
+               if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
+               ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(destination.getDestination());
+               destinationClient.sendUpdate(msgUnitWrapper, destination);
+            }
+         }
+         else {
+            Log.warn(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+            throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
          }
 
-         //----- 2. now we can send updates to all interested clients:
-         if (contentChanged || publishQoS.forceUpdate()) // if the content changed of the publisher forces updates ...
-            msgUnitHandler.invokeCallback();
-
-         // this gap is not 100% thread save
-
-         //----- 3. check all known query subscriptions if the new message fits as well
-         checkExistingSubscriptions(clientInfo, xmlKey, msgUnitHandler, publishQoS);
-
-         if (publishQoS.isVolatile()) {
-              if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
-
-              fireMessageEraseEvent(clientInfo, msgUnitHandler);
-              msgUnitHandler.erase();
-              msgUnitHandler = null;
-         }
+         publishedMessages++;
+         return retVal;
       }
-      else if (publishQoS.isPTP_Style()) {
-         if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
-         if (Log.DUMP) Log.dump(ME, publishQoS.toXml());
-
-         MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS);
-         Vector destinationVec = publishQoS.getDestinations(); // !!! add XPath client query here !!!
-
-         //-----    Send message to every destination client
-         for (int ii = 0; ii<destinationVec.size(); ii++) {
-            Destination destination = (Destination)destinationVec.elementAt(ii);
-            if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
-            ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(destination.getDestination());
-            destinationClient.sendUpdate(msgUnitWrapper, destination);
-         }
+      catch (XmlBlasterException e) {
+         throw e;
       }
-      else {
-         Log.warn(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
-         throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("RequestBroker.publish.InternalError", e.toString());
       }
-
-      publishedMessages++;
-      return retVal;
    }
 
 
@@ -859,35 +895,43 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+      try {
+         if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
-      Set oidSet = new HashSet(xmlKeyVec.size());
+         Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
+         Set oidSet = new HashSet(xmlKeyVec.size());
 
-      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
 
-         if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
-            Log.warn(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
-            // !!! how to delete XPath subscriptions, still MISSING ???
-            continue;
+            if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
+               Log.warn(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
+               // !!! how to delete XPath subscriptions, still MISSING ???
+               continue;
+            }
+
+            MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+
+            oidSet.add(msgUnitHandler.getUniqueKey());
+            try {
+               fireMessageEraseEvent(clientInfo, msgUnitHandler);
+            } catch (XmlBlasterException e) {
+            }
+            msgUnitHandler.erase();
+            msgUnitHandler = null;
          }
 
-         MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
-
-         oidSet.add(msgUnitHandler.getUniqueKey());
-         try {
-            fireMessageEraseEvent(clientInfo, msgUnitHandler);
-         } catch (XmlBlasterException e) {
-         }
-         msgUnitHandler.erase();
-         msgUnitHandler = null;
+         String[] oidArr = new String[oidSet.size()];
+         oidSet.toArray(oidArr);
+         return oidArr;
       }
-
-      String[] oidArr = new String[oidSet.size()];
-      oidSet.toArray(oidArr);
-      return oidArr;
-
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("RequestBroker.erase.InternalError", e.toString());
+      }
    }
 
 
