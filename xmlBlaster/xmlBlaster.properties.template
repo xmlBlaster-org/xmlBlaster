@@ -37,12 +37,14 @@ Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 #Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
 #                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 
-# Switch on the demo native driver:
+# Switch on the demo native, CORBA, RMI and XML-RPC driver:
 #Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
 #                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
+#                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
 #                 NativeDemo:org.xmlBlaster.protocol.nativ.NativeDriver
 #Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
 #                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
+#                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
 #                         NativeDemo:org.xmlBlaster.protocol.nativ.CallbackNativeDriver
 
 
