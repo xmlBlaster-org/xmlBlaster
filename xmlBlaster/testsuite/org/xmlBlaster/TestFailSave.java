@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.3 2000/02/25 13:50:38 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.4 2000/02/25 14:39:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -29,13 +29,12 @@ import test.framework.*;
  */
 public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
 {
-   Server xmlBlaster; // !!! remove in this test
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
    private String subscribeOid;
    private String publishOid = "AMessage";
-   private CorbaConnection senderConnection;
+   private CorbaConnection corbaConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
 
@@ -65,18 +64,18 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         corbaConnection = new CorbaConnection(); // Find orb
 
          // Setup fail save handling ...
          long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
-         int retries = 3;           // -1 == forever
+         int retries = -1;           // -1 == forever
          int maxMessages = 1000;
-         senderConnection.initFailSave(this, retryInterval, retries, maxMessages);
+         corbaConnection.initFailSave(this, retryInterval, retries, maxMessages);
 
          // and do the login ...
          String passwd = "secret";
          String qos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -93,15 +92,19 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    protected void tearDown()
    {
       Log.info(ME, "Entering tearDown(), test is finished");
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
+      String xmlKey = "<key oid='" + publishOid + "' queryType='XPATH'>\n" + 
+                      "   //TestFailSave-AGENT" +
+                      "</key>";
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = senderConnection.erase(xmlKey, qos);
+         strArr = corbaConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      senderConnection.logout();
+      Util.delay(1000L);    // Wait some time
+
+      corbaConnection.logout();
    }
 
 
@@ -114,12 +117,14 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       if (Log.TRACE) Log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
+      String xmlKey = "<key oid='" + publishOid + "' queryType='XPATH'>\n" + 
+                      "   //TestFailSave-AGENT" +
+                      "</key>";
       String qos = "<qos></qos>";
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos);
+         subscribeOid = corbaConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -140,12 +145,15 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
-      String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "'>\n</key>";
+      String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "'>\n" + 
+                      "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "   </TestFailSave-AGENT>" +
+                      "</key>";
       String content = "" + counter;
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
 
-      publishOid = senderConnection.publish(msgUnit, qosWrapper.toXml());
+      publishOid = corbaConnection.publish(msgUnit, qosWrapper.toXml());
       Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
       assert("returned publishOid == null", publishOid != null);
@@ -173,7 +181,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             else
                assert("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
-         Util.delay(10000L);    // Wait some time
+         // Util.delay(1000L);    // Wait some time
       }
    }
 
@@ -188,6 +196,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       Log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
+      try {
+         corbaConnection.flushQueue();    // send all tailback messages
+         // corbaConnection.resetQueue(); // or discard them (it is our choice)
+      } catch (XmlBlasterException e) {
+         assert("Exception during reconnection recovery: " + e.reason, false);
+      }
    }
 
 

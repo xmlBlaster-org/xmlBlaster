@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.27 2000/02/25 13:50:15 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.28 2000/02/25 14:39:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -51,7 +51,7 @@ import java.util.Properties;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -210,6 +210,19 @@ public class CorbaConnection implements ServerOperations
    public org.omg.CORBA.ORB getOrb()
    {
       return orb;
+   }
+
+
+   /**
+    * Accessing the xmlBlaster handle.
+    * @return Server
+    * @exception if not logged in
+    */
+   public Server getXmlBlaster() throws XmlBlasterException
+   {
+      if (xmlBlaster == null)
+         throw new XmlBlasterException(ME + ".NotLoggedIn", "Sorry, no xmlBlaster handle available, please login first.");
+      return xmlBlaster;
    }
 
 
@@ -631,9 +644,17 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
+      try {
+         xmlBlaster.unSubscribe(xmlKey, qos);
+      } catch(XmlBlasterException e) {
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.unSubscribe(xmlKey, qos);
+         handleConnectionException(e);
+      }
    }
 
 
@@ -668,9 +689,18 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qosArr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
+      try {
+         return xmlBlaster.publishArr(msgUnitArr, qosArr);
+      } catch(XmlBlasterException e) {
+         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.publishArr(msgUnitArr, qosArr);
+         handleConnectionException(e);
+      }
       return dummySArr;
    }
 
@@ -679,9 +709,17 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "erase() ...");
+      try {
+         return xmlBlaster.erase(xmlKey, qos);
+      } catch(XmlBlasterException e) {
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.erase(xmlKey, qos);
+         handleConnectionException(e);
+      }
       return dummySArr;
    }
 
@@ -690,9 +728,17 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final MessageUnitContainer[] get(String xmlKey, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "get() ...");
+      try {
+         return xmlBlaster.get(xmlKey, qos);
+      } catch(XmlBlasterException e) {
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.get(xmlKey, qos);
+         handleConnectionException(e);
+      }
       return dummyMArr;
    }
 
@@ -701,9 +747,17 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final void setClientAttributes(String clientName, String xmlAttr_literal, String qos_literal) throws XmlBlasterException
+   public final void setClientAttributes(String clientName, String xmlAttr, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
+      try {
+         xmlBlaster.setClientAttributes(clientName, xmlAttr, qos);
+      } catch(XmlBlasterException e) {
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.setClientAttributes(clientName, xmlAttr, qos);
+         handleConnectionException(e);
+      }
    }
 
    public void flushQueue() throws XmlBlasterException
