@@ -60,7 +60,7 @@
    <pre>
 &lt;qos>
    &lt;state id='OK'/>
-   &lt;subscribe id='subId:34023'/>
+   &lt;subscribe id='__subId:34023'/>
 &lt;/qos>
    </pre>
    </td></tr></table>
@@ -79,7 +79,7 @@
    <pre>
 &lt;qos>
    &lt;state id='OK'/>
-   &lt;subscribe id='subId:XPATH:8673'/>
+   &lt;subscribe id='__subId:XPATH67'/>
 &lt;/qos>
    </pre>
    </td></tr></table>
@@ -108,7 +108,10 @@
 
    SubscribeQosWrapper sq = new SubscribeQosWrapper();
 
-   String subId = con.subscribe(sk.toXml(), sq.toXml());
+   SubscribeRetQos sr = con.subscribe(sk.toXml(), sq.toXml());
+
+   System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
+
       </pre>
    <p>
    See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
@@ -128,7 +131,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
