@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.5 2000/11/14 07:04:45 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.6 2001/02/15 21:11:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -103,6 +103,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
 
       if (rootPOA != null && this.callback != null) {
          try {
+            callback._release();
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
          } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
          callback = null;
