@@ -28,3 +28,9 @@ Howto run the html examples with persistent http connection:
 6. Start you browser
 
    http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=martin&passwd=secret
+
+
+
+jserv > /dev/null 2>&1 &
+java org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /dev/null 2>&1 &
+java demo.html.systemInfo.SystemInfoPublisher -info false > /dev/null 2>&1 &
