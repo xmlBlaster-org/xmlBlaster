@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.31 2000/06/05 08:43:23 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.32 2000/06/05 09:20:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -129,6 +129,13 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                           req.getRemoteHost() + "/" + req.getRemoteAddr() +
                           ", loginName=" + loginName + " sessionId=" + sessionId +
                           ", user='" + req.getRemoteUser() +
+                          "', protocol='" + req.getProtocol() +
+                          "', serverPort='" + req.getServerPort() +
+                          "', query='" + req.getQueryString() +
+                          "', pathInfo='" + req.getPathInfo() +
+                          "', pathTranslated='" + req.getPathTranslated() +
+                          "', servletPath='" + req.getServletPath() +
+                          "', documentRoot='" + req.getRealPath("/") +
                           "', accept='" + req.getHeader("Accept") +
                           "', agent='" + req.getHeader("User-Agent") +
                           "', referer='" + req.getHeader("Referer") +
