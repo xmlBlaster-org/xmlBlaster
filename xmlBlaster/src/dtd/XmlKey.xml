@@ -19,7 +19,7 @@
    </publish>
 
 
-   <!-- Publishing message 4711 to client 'Ben' -->
+   <!-- Publishing message 4711 -->
    <publish>
       <key oid='4711' contentMime='text/xml'>
          <AGENT id='192.168.124.20' subId='1' type='generic'>
