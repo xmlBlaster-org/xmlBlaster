@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.29 2002/09/10 19:00:27 ruff Exp $
+Version:   $Id: TestGet.java,v 1.30 2002/09/12 12:04:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -90,17 +90,7 @@ public class TestGet extends TestCase
     */
    protected void tearDown()
    {
-      // TODO: We should use the helpers GetKeyWrapper and GetQosWrapper:
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                      "</key>";
-      String qos = "<qos></qos>";
-      try {
-         EraseRetQos[] arr = connection.erase(xmlKey, qos);
-         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-         log.info(ME, "Success, erased a message");
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
-
-      connection.logout();
+      connection.disconnect(null);
       // Give the server some millis to finish the iiop handshake ...
       try { Thread.currentThread().sleep(200); } catch (InterruptedException e) {}
       log.info(ME, "Success, logged out");
@@ -152,8 +142,8 @@ public class TestGet extends TestCase
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
          
-         log.info(ME, "Success, got the message");
          assertEquals("Got wrong number of messages", 1, msgArr.length);
+         log.info(ME, "Success, got the message '" + msgArr[0].getXmlKey() + "'");
          if (log.DUMP) log.dump(ME, msgArr[0].toXml());
 
          GetQos getQos = new GetQos(msgArr[0].qos);
@@ -165,6 +155,19 @@ public class TestGet extends TestCase
          log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
          assertTrue("Couldn't get() an existing message", false);
       }
+
+      // TODO: We should use the helpers GetKeyWrapper and GetQosWrapper:
+      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                      "</key>";
+      String qos = "<qos></qos>";
+      try {
+         EraseRetQos[] arr = connection.erase(xmlKey, qos);
+         if (arr.length != 1) {
+            log.error(ME, "Erased " + arr.length + " messages:");
+            fail("Message " + publishOid + " was not erased");
+         }
+         log.info(ME, "Success, erased a message");
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
    }
 
 
