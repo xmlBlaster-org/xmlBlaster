@@ -141,9 +141,18 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 
    if (xa->callbackP != 0) {
       if (!xa->callbackP->isShutdown) {
+         
+         /* pthread_cancel() does not block. Who cleans up open resources? TODO: pthread_cleanup_push() */
+         /* On Linux all works fine without pthread_cancel() but on Windows the later pthread_join() sometimes hangs without a pthread_cancel()
+         retVal = pthread_cancel(xa->callbackThreadId);
+         if (retVal != 0) {
+            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
+         }
+         */
+
          retVal = pthread_join(xa->callbackThreadId, 0);
          if (retVal != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "join problem return value is %d", retVal);
+            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_join problem return value is %d", retVal);
          }
          else {
             if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
@@ -155,7 +164,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       }
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=%x cbP=%x", xa->connectionP, xa->callbackP);
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=0x%x cbP=0x%x", xa->connectionP, xa->callbackP);
 
    {  /* Wait for any pending update() dispatcher threads to die */
       int i;
