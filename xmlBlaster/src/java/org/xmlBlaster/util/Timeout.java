@@ -259,6 +259,21 @@ public class Timeout extends Thread
       }
    }
 
+   /**
+    * Checks if key is null -> addTimeoutListener else refreshTimeoutListener() in a thread save way. 
+    */
+   public final Timestamp addOrRefreshTimeoutListener(I_Timeout listener, long delay, Object userData, Timestamp key) 
+      throws XmlBlasterException
+   {
+      synchronized (map) {
+         if (key == null) {
+            return addTimeoutListener(listener, delay, null);
+         }
+         else {
+            return refreshTimeoutListener(key, delay);
+         }
+      }
+   }
 
    /**
     * Remove a listener before the timeout happened.<p />
