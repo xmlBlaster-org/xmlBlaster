@@ -10,115 +10,155 @@
 
 <![CDATA[    
 
+/**
+ * This example is a Chess game where the GUI is an SVG document which can be opened in a browser. Since this example 
+ * makes use of the LiveConnect techology which is implemented in Rhino (http://www.mozilla.org) it can only used in
+ * browsers which use this interpreter. It has been tested in batik (http://xml.apache.org).
+ */
+
+/**
+ * This is the way to import packages into the Rhino Javascript Interpreter
+ */
 importPackage(java.awt);
 importPackage(Packages.org.xmlBlaster.client);
 importPackage(Packages.org.xmlBlaster.client.protocol);
 importPackage(Packages.org.xmlBlaster.engine.helper);
 importPackage(Packages.org.xmlBlaster.util);
 
-var x0  = 0;
-var y0  = 0;
-var doc;
-var currentElement;
-var xmlBlaster;
+
+   var x0  = 0; // the x coordinate of the first point (used to calculate the movement)
+   var y0  = 0; // the y coordinate ...
+   var doc;     // this svg document 
+   var currentElement; // the element which has been selected.
+   var xmlBlaster; // the xmlBlasterConnection object used to communicate with xmlBlaster
 
 
-function getUser() {
-  return System.getProperty("user.name") + System.currentTimeMillis();
-}
+   
+   /**
+    * The function which returns a generated user name which should be unique within the same xmlBlaster server.
+    */
+   function getUser() {
+      return System.getProperty("user.name") + System.currentTimeMillis();
+   }
    
 
-// hack to force to update the screen in batik (2002-03-26)
-function fireClickEvent() {
-  var evt = doc.createEvent("MouseEvents");
-  evt.initEvent("click", true, true);
+   /**
+    * This function has been added to force batik to update. Without it the screen does not update, probably because
+    * batik only updates when an event has been fired (xmlBlaster updates come in asynchroneously and do not generate
+    * a dom event).
+    */
+   function fireClickEvent() {
+     var evt = doc.createEvent("MouseEvents");
+     evt.initEvent("click", true, true);
 
-  var el = doc.getElementById("0");
-  el.dispatchEvent(evt);
-  System.out.println("event fired");
-}
-
-
-function update(loginName, key, content, qos) {
-   var root = Xparse(new String(content));
-   var element = root.contents[0];
-   var id = element.contents[0].contents[0].value;
-
-   var transform = element.contents[1].contents[0].value;
-   var el = doc.getElementById(id);
-   el.setAttribute("transform", transform);
-   // hack to update the screen in batik ...
-   setTimeout('fireClickEvent()', 1);
-   return "";
-}
-  
-  
-function createTranslateAttribute(element, dx, dy) {
-   var buf = element.getAttribute("transform");
-   var pos = buf.indexOf("translate(");
-   var x   = dx;
-   var y   = dy;
-	
-   if (pos > -1) {
-      buf = buf.substring(pos+10, buf.length());
-      var A = new Array();
-      A  = buf.split(',');
-      x  += parseInt(A[0], 10);
-      var B = new Array();
-      B  = A[1].split(')');
-      y += parseInt(B[0], 10);
+     var el = doc.getElementById("0");
+     el.dispatchEvent(evt);
    }
-   return "translate(" + x + "," + y + ")";
-}
+
+
+   /**
+    * This is the method which is invoked by the XmlBlaster object when a message matches a subscription
+    */
+   function update(loginName, key, content, qos) {
+      var root = Xparse(new String(content));
+      var element = root.contents[0];
+      var id = element.contents[0].contents[0].value;
+
+      var transform = element.contents[1].contents[0].value;
+      var el = doc.getElementById(id);
+      el.setAttribute("transform", transform);
+
+      // hack to update the screen in batik ...
+      setTimeout('fireClickEvent()', 1);
+      return "";
+   }
+  
+
+   /**
+    * This helper function builds the string to use as the 'translate' attribute. It is this attribute which
+    * makes the element move. If such an attribute does not exist, it is added, otherwise it is replaced.
+    */
+   function createTranslateAttribute(element, dx, dy) {
+      var buf = element.getAttribute("transform");
+      var pos = buf.indexOf("translate(");
+      var x   = dx;
+      var y   = dy;
+	
+      if (pos > -1) {
+         buf = buf.substring(pos+10, buf.length());
+         var A = new Array();
+         A  = buf.split(',');
+         x  += parseInt(A[0], 10);
+         var B = new Array();
+         B  = A[1].split(')');
+         y += parseInt(B[0], 10);
+      }
+      return "translate(" + x + "," + y + ")";
+   }
   
   
-function toXml(id, transform) {
-   var content = "<chess><id>" + id + "</id><transform>" + transform + "</transform></chess>";
-   return content;
-}
+   /**
+    * A helper function build the xml string to send as to xmlBlaster as the content of the message.
+    */
+   function toXml(id, transform) {
+      var content = "<chess><id>" + id + "</id><transform>" + transform + "</transform></chess>";
+      return content;
+   }
         
-  
-function doInit(evt) { 
-   doc = evt.target.ownerDocument;
-   var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
-   args = new Array(2);
-   // you can set here the command line to pass to XmlBlasterConnection
-   args[0] = new String("-iorHost");
-   args[1] = new String("localhost");
-   xmlBlaster = new XmlBlasterConnection(args);
+   /**
+    * Called when opening this document, this function establishes a connection to xmlBlaster, makes a login and 
+    * a subscription to the messages it is insterested in. It currently connects on the localhost. You could easly 
+    * change this by making it read the System properties.
+    */
+   function doInit(evt) { 
+      doc = evt.target.ownerDocument;
+      var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
-   xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
-   xmlBlaster.subscribe(key, "<qos></qos>");
-}  
-        
+      args = new Array(2);
+      // you can set here the command line to pass to XmlBlasterConnection
+      args[0] = new String("-iorHost");
+      args[1] = new String("localhost");
+      xmlBlaster = new XmlBlasterConnection(args);
 
-function setStartPosition(evt) {
-   x0 = evt.getClientX();
-   y0 = evt.getClientY();
-   currentElement = evt.target;
-}
+      xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
+      xmlBlaster.subscribe(key, "<qos></qos>");
+   }
+    
+
+   /**
+    * sets the starting point for the movement of the elment.
+    */
+   function setStartPosition(evt) {
+      x0 = evt.getClientX();
+      y0 = evt.getClientY();
+      currentElement = evt.target;
+   }
   
   
-function movePoint (evt) {
-   var dx = evt.getClientX() - x0;
-   var dy = evt.getClientY() - y0;
+   /**
+    * Calculates the movement and then publishes this information to xmlBlaster. Note that it currently does only
+    * calculate movements based on the original size of the document. In other words, if you resize the browser, 
+    * you will get the wrong size of the movements.
+    */
+   function movePoint (evt) {
+      var dx = evt.getClientX() - x0;
+      var dy = evt.getClientY() - y0;
           
-   //   var id = currentElement.getAttribute("id");
-   // the next lines are a workaround for the bug in batik.
-   var id = currentElement.getAttribute("id") + "A"; // workaround for the Bug ?
-   currentElement = doc.getElementById(id);
-   // end of the bugfix
+      //   var id = currentElement.getAttribute("id");
+      // the next lines are a workaround for the bug in batik.
+      var id = currentElement.getAttribute("id") + "A"; // workaround for the Bug ?
+      currentElement = doc.getElementById(id);
+      // end of the bugfix
 
-   var transform = createTranslateAttribute(currentElement, dx, dy);
-   var content = new String(toXml(id, transform));
-   var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
-   var qos = "<qos></qos>";
+      var transform = createTranslateAttribute(currentElement, dx, dy);
+      var content = new String(toXml(id, transform));
+      var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
+      var qos = "<qos></qos>";
      
-   messageUnit = new MessageUnit(key, content, qos);
-   xmlBlaster.publish(messageUnit);
-  
-}
+      messageUnit = new MessageUnit(key, content, qos);
+      xmlBlaster.publish(messageUnit);
+   }
   
   
 ]]>
