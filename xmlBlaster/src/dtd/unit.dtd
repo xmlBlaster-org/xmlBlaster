@@ -1,0 +1,64 @@
+<!ELEMENT messageunit (mime, key, content, qos)>
+
+<!-- MIME-Typen zum Datenaustausch jeglicher Art
+     Im Internet finet sich das MIME-Verfahren im HTTP-Protokoll
+     wieder; es informiert den Browser oder sonstige Anwendungen
+     darüber, welche Art von Daten gesendet werden. Die Standard-
+     MIME-Typen sind in der Norm RFC 1590 definiert. Der xmlBlaster
+     unterstützt folgend definierte MIME-Typen. Mit Angabe des MIME-
+     Typs kann die xmlBlaster die Unit-Content verarbeiten. Das MIME-
+     Element ist ein leeres Element mit 2 Attributen.
+-->
+<!ELEMENT mine EMPTY>
+<!ATTLIST mime maintyp (  applicat ion
+                        | audio
+                        | image
+                        | text
+                        | video         ) "text">
+<!ATTLIST mime subtyp  (  pdf | postscript
+                        | mid | wav
+                        | bmp | gif | jpeg
+                        | css | html| plain | xml | java
+                        | mpeg| quicktime  ) "plain">
+
+<!-- Der Key dient als eindeutig für jede Unit, die der xmlBlaster
+     verwaltet. Der Key ist frei definierbar, sodaß die Anwendung des
+     Client diesen Key selbst bestimmen kann. Die Parameter-Elemente
+     sind beliebig, jedoch muß die Client-Applikation dafür sorge
+     tragen, wie der Inhalt aufgebaut ist. Jedes Parameter-Element
+     kann eine ID vom Client oder Server mitliefern oder erhalten.
+     Der Client benoetigt diese ID fuer die spaetere Zuordnung seiner
+     angefragten Objekte. Der Server braucht sie fuer die interne
+     Verwaltung.
+     Wenn eine Duplizierung einer ID im Parameter-ELement vorkommen
+     meldet der xmlBlaster der Client eine eindeutig beschreibende
+     Fehlermeldung zurück. Der Key dient als Suchkriterium in der
+     xmlBlaster-Datenbank.
+-->
+
+<!ELEMENT key (param+)>
+<!ATTLIST key oid ID #IMPLIED>
+<!ELEMENT param (#CDATA)>
+
+<!-- Der Content in einer Unit des xmlBlaster dient als eigentlichen
+     Inhalt eines "Surf-Ojektes". Der Inhalt wird über des MIME-Typ
+     der Unit bestimmt. Anhand des MIME-Types erkennt der xmlBlaster
+     die zuverarbeitende Information im Server. Z.B. können somit
+     XML-Datenobjekte verarbeitet werden. Auch Java-Objekte in Form
+     einer Datenserialisierung sind einsetzbar. Für jeden MIME-Typ
+     gibt es einen xmlBlaster-Plugin. Dieser Plugin steuert die
+     Verarbeitung der Objekte im Server.
+-->
+
+<!ELEMENT content (#PCDATA)>
+
+<!-- Der QOS (Quality of Service) hilft dem xmlBlaster bei der
+     Verarbeitung der jeweiligen Unit. Der QOS beschreibt z.B. den
+     Zusatand jeder Unit. Zu jeder Unit gehört ein QOS.
+-->
+<!ELEMENT qos (state?, insertTimestamp, updateTimeStamp, expiredTimestamp)>
+<!ELEMENT state EMPTY
+<!ATTLIST state typ (open | close | suspend | lock | expired ) "">
+<!ELEMENT insertTimestamp (#CDATA)>
+<!ELEMENT updateTimeStamp (#CDATA)>
+<!ELEMENT expiredTimestamp (#CDATA)>
