@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.1 1999/11/05 18:44:28 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.2 1999/11/08 13:00:56 ruff Exp $
 Comment:   PRE RELEASE
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 ================================================================================
@@ -81,12 +81,14 @@ module org { module xmlBlaster
     *   - configuration attributes with auto-notification
     *
     * RELATED DESIGN PATTERNS:
-    *   Java Naming & Directory Interface, www.javasoft.com/products/jndi
-    *   Observer Pattern, Gamma et.al
-    *   CORBA Property Service, www.omg.org
-    *   Corba Event Service (push/pull concepts), www.omg.org
-    *   CORBA Design Patterns, Mowbray Thomas J. et al. 'Dynamic Attributes'
-    *   Adressless message-event-middleware pattern
+    *   @see Java Message Service, http://java.sun.com/products/jms/
+    *   @see Java Naming & Directory Interface, www.javasoft.com/products/jndi
+    *   @see Observer Pattern, Gamma et.al
+    *   @see CORBA Property Service, http://www.omg.org
+    *   @see CORBA Notifiction Service ftp://ftp.omg.org/pub/docs/telecom/98-01-01.pdf
+    *   @see CORBA Event Service (push/pull concepts), http://www.omg.org
+    *   @see CORBA Design Patterns, Mowbray Thomas J. et al. 'Dynamic Attributes'
+    *   @see Adressless message-event-middleware pattern
     */
    interface Server
    {
