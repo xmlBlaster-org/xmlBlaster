@@ -83,7 +83,7 @@ typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, c
 struct CallbackServerUnparsedStruct {
    int listenSocket;
    int acceptSocket;
-   char *hostCB;
+   const char * hostCB;
    int portCB;
    bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
    bool debug;

@@ -72,55 +72,47 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
  */
 char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
 {
-   size_t qosLen, keyLen;
+   size_t qosLen=0, keyLen=0;
    char *data;
    char contentLenStr[126];
    size_t currpos = 0;
-   bool keyWas0 = false; /* to avoid that the caller free()'s it */
-   bool qosWas0 = false;
-   bool contentWas0 = false;
 
    if (msgUnit == 0) {
       if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnit=NULL in encodeMsgUnit()\n");
       return (char *)0;
    }
-   if (msgUnit->content == 0) {
+   if (msgUnit->content == 0)
       msgUnit->contentLen = 0;
-      msgUnit->content = "";
-      contentWas0 = true;
-   }
-   if (msgUnit->key == 0) {
-      msgUnit->key = "";
-      keyWas0 = true;
-   }
-   if (msgUnit->qos == 0) {
-      msgUnit->qos = "";
-      qosWas0 = true;
-   }
-
-   qosLen = strlen(msgUnit->qos);
-   keyLen = strlen(msgUnit->key);
    sprintf(contentLenStr, "%d", msgUnit->contentLen);
 
+   if (msgUnit->qos != 0)
+      qosLen = strlen(msgUnit->qos);
+   
+   if (msgUnit->key != 0)
+      keyLen = strlen(msgUnit->key);
+   
    *totalLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
 
    data = (char *)malloc(*totalLen);
 
-   memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
+   if (msgUnit->qos != 0)
+      memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
+   else
+      *(data+currpos) = 0;
    currpos += qosLen+1;
 
-   memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
+   if (msgUnit->key != 0)
+      memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
+   else
+      *(data+currpos) = 0;
    currpos += keyLen+1;
 
    memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
    currpos += strlen(contentLenStr)+1;
 
-   memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
+   if (msgUnit->content != 0)
+      memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
    /* currpos += msgUnit->contentLen; */
-
-   if (qosWas0) msgUnit->qos = 0;
-   if (qosWas0) msgUnit->qos = 0;
-   if (contentWas0) msgUnit->content = 0;
 
    return data;
 }

@@ -77,7 +77,7 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 static bool initConnection(XmlBlasterConnectionUnparsed *xb)
 {
    int iarg;
-   char *servTcpPort = "7607";
+   const char *servTcpPort = "7607";
 
    struct sockaddr_in xmlBlasterAddr;
    struct hostent hostbuf, *hostP = 0;

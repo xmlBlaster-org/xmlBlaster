@@ -156,7 +156,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
    xa->connectionP->postSendEvent_userP = xa;
 
    /* thread blocks on socket listener */
-   threadRet = pthread_create(&xa->callbackThreadId, 0, (cbFp)xa->callbackP->runCallbackServer, xa->callbackP);
+   threadRet = pthread_create(&xa->callbackThreadId, (const pthread_attr_t *)0, (void * (*)(void *))xa->callbackP->runCallbackServer, (void *)xa->callbackP);
    if (threadRet != 0) {
       printf("[XmlBlasterAccessUnparsed] ERROR: Creating thread failed with error number %d", threadRet);
       freeCallbackServerUnparsed(xa->callbackP);
@@ -487,7 +487,7 @@ int main(int argc, char** argv)
          char connectQos[2048];
          char callbackQos[1024];
             sprintf(callbackQos,
-                   "<queue relating='callback' maxEntries='100'>"
+                   "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
                    "  <callback type='SOCKET' sessionId='%s'>"
                    "    socket://%s:%d"
                    "  </callback>"
@@ -540,11 +540,12 @@ int main(int argc, char** argv)
       {  /* publish ... */
          MsgUnit msgUnit;
          printf("[client] Publishing message 'HelloWorld' ...\n");
-         msgUnit.key = "<key oid='HelloWorld'/>";
-         msgUnit.content = "Some message payload";
-         msgUnit.contentLen = strlen("Some message payload");
-         msgUnit.qos = "<qos><persistent/></qos>";
+         msgUnit.key = strcpyAlloc("<key oid='HelloWorld'/>");
+         msgUnit.content = strcpyAlloc("Some message payload");
+         msgUnit.contentLen = strlen(msgUnit.content);
+         msgUnit.qos =strcpyAlloc("<qos><persistent/></qos>");
          response = xa->publish(xa, &msgUnit, &xmlBlasterException);
+    freeMsgUnitData(&msgUnit);
          if (*xmlBlasterException.errorCode != 0) {
             printf("[client] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
@@ -637,7 +638,7 @@ int main(int argc, char** argv)
       }
    }
    printf("[client] Good bye.\n");
-   exit(0);
+   return 0; //exit(0);
 }
 #endif /* #ifdef XmlBlasterAccessUnparsedMain */
 
