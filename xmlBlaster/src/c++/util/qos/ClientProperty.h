@@ -18,14 +18,6 @@ Comment:   Handling one client property of QosData
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-class Dll_Export bad_clientProperty_cast : public std::bad_cast
-{
- public:
-   virtual const char * what() const throw() {
-      return "bad lexical cast for ClientProperty: source type value could not be interpreted as string";
-   }
-};
-
 /**
  * This class encapsulates one client property in a QoS. 
  * <p/>
@@ -188,19 +180,7 @@ template <typename T_VALUE> ClientProperty::ClientProperty(
 
    // Convert the given value type to a std::string value_
    
-   if (type_ == "") { // is string type
-      value_ = value;
-   }
-   else {
-      std::stringstream interpreter;
-      int origPrecision = interpreter.precision(); // 6 digits
-      if (type_ == org::xmlBlaster::util::Constants::TYPE_DOUBLE)
-         interpreter.precision(15); // Otherwise it will be rounded to 6 digits
-                                    // Note that 'long double' has a typical size of 18
-      if(!(interpreter << value) || !(interpreter >> value_) || !(interpreter >> std::ws).eof())
-         throw bad_clientProperty_cast();
-      interpreter.precision(origPrecision);
-   }
+   value_ = lexical_cast<std::string>(value);
 
    if (needsEncoding()) {
       std::vector<unsigned char> vec;
