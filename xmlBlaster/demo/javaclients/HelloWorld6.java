@@ -53,6 +53,16 @@ public class HelloWorld6
       try {
          con = glob.getXmlBlasterAccess();
 
+         /*
+         // Change protocol and server lookup:
+         String[] args = { "-protocol", "SOCKET",
+                           "-socket.hostname", "myHost.com",
+                           "-socket.port", "7666",
+                           "-socket.localHostname", "myHost.com",
+                           "-socket.localPort", "8888" };
+         glob.init(args);
+         */
+
          ConnectQos qos = new ConnectQos(glob);
 
          Address address = new Address(glob);
@@ -60,7 +70,6 @@ public class HelloWorld6
          address.setRetries(-1);       // -1 == forever
          address.setPingInterval(0L);  // switched off
 
-//         address.setMaxEntries(1000);      // queue up to 1000 messages
          qos.setAddress(address);
 
          CallbackAddress cbAddress = new CallbackAddress(glob);
