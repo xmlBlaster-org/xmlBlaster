@@ -36,6 +36,12 @@
    <changerequest prio='MEDIUM' status="OPEN">
    <!-- name>Michele,Marcel</name -->
    <p>
+   The login mode is changed to be session based.
+   This allows multiple logins for the same client.
+   The logins are distinguished be a unique, random session ID.
+   </p>
+
+   <p>
    Only one callback address is active.
    If the callback fails, the subsequent callback addresses will be
    tried until the message is delivered.
@@ -47,6 +53,11 @@
    <![CDATA[
    <!-- QoS of a login method, this raw string is delivered to xmlBlaster. -->
    <qos>
+      
+      <session timeout='3600000'>
+         <!-- The login session will be destroyed after 1 hour (3600000 ms) -->
+      </session>
+
       <callbacks retrials='2' delay='10000' ptp='false'>
             <!-- set ptp attr to false (default='true') if you don't want any ptp messages
             (prevent spaming...). retrials is the number of times the message has to be sent in case
@@ -133,7 +144,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
