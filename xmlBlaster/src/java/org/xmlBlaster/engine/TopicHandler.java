@@ -1220,12 +1220,17 @@ public final class TopicHandler implements I_Timeout
                }
             }
             else {
-               log.error(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, this could be a serious bug, please report it to xmlBlaster@xmlBlaster.org mailing list: " +
-                  entry.toXml() + "\n" + // toXml() not possible as it call recursive getMsgUnitWrapperArr());
-                  ((this.msgUnitCache != null) ? this.msgUnitCache.toXml("") + "\n" : "") +
-                  ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
-                  );
-               Thread.currentThread().dumpStack();
+               if (entry.isExpired()) {
+                  if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, it is expired: " + entry.toXml());
+               }
+               else {
+                  log.error(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, this could be a serious bug, please report it to xmlBlaster@xmlBlaster.org mailing list: " +
+                     entry.toXml() + "\n" + // toXml() not possible as it call recursive getMsgUnitWrapperArr());
+                     ((this.msgUnitCache != null) ? this.msgUnitCache.toXml("") + "\n" : "") +
+                     ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
+                     );
+                  Thread.currentThread().dumpStack();
+               }
                if (historyDestroyList == null) historyDestroyList = new ArrayList();
                historyDestroyList.add(entry);
             }
