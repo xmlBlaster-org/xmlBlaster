@@ -25,11 +25,12 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      global_(global), log_(global.getLog("client"))
 {
    log_.call(ME, "::constructor");
-   cbServer_        = NULL;
-   updateClient_    = NULL;
-   connection_      = NULL;
-   deliveryManager_ = NULL;
-   status_          = START;
+   cbServer_           = NULL;
+   updateClient_       = NULL;
+   connection_         = NULL;
+   deliveryManager_    = NULL;
+   status_             = START;
+   connectionProblems_ = NULL;
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
@@ -53,9 +54,18 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 
    // currently the simple version will do it ...
    deliveryManager_ = &(global_.getDeliveryManager());
+
+/*
    string type = connectQos_.getServerRef().getType();
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
+*/
+   connection_ = &(deliveryManager_->getConnectionsHandler());
+
+   if (connectionProblems_) {
+      connection_->initFailsafe(connectionProblems_);
+      connectionProblems_ = NULL;
+   }
    if (log_.TRACE) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    connectReturnQos_ = connection_->connect(connectQos_);
    status_ = CONNECTED;
@@ -149,9 +159,6 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 
 SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
-   if (status_ != CONNECTED) { // throw an exception back to the user ...
-
-   }
    return connection_->subscribe(key, qos);
 }
 
@@ -163,7 +170,7 @@ vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 vector<UnSubscribeReturnQos> 
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-    return connection_->unSubscribe(key, qos);
+   return connection_->unSubscribe(key, qos);
 }
 
 PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
@@ -212,6 +219,13 @@ void XmlBlasterAccess::usage()
    std::cout << text << std::endl;
 }
 
+void XmlBlasterAccess::initFailsafe(I_ConnectionProblems* connectionProblems)
+{
+   if (connection_) connection_->initFailsafe(connectionProblems);
+   else connectionProblems_ = connectionProblems;   
+}
+
+
 }}} // namespaces
 
 
@@ -258,7 +272,11 @@ int main(int args, char* argv[])
           log.error("main", ex.toXml());
        }
 
-       MessageUnit msgUnit(string("<key oid='HelloWorld'><test></test></key>"), string("Hi"), string("<qos/>"));
+       PublishKey pubKey(glob);
+       pubKey.setOid("HelloWorld");
+       pubKey.setClientTags("<test></test>");
+       PublishQos pubQos(glob);
+       MessageUnit msgUnit(pubKey, string("Hi"), pubQos);
 
        PublishReturnQos pubRetQos = xmlBlasterAccess.publish(msgUnit);
        log.info("main", string("successfully published, publish return qos: ") + pubRetQos.toXml());
@@ -273,5 +291,6 @@ int main(int args, char* argv[])
    }
    return 0;
 }
+
 
 #endif

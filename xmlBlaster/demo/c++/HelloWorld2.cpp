@@ -22,7 +22,7 @@ using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
 
-class HelloWorld2 :public I_Callback
+class HelloWorld2 : public I_Callback, public I_ConnectionProblems
 {
 private:
    string  ME;
@@ -38,10 +38,20 @@ public:
    {
    }
 
+   void reConnected()
+   {
+      log_.info(ME, "reconnected");
+   }
+
+   void lostConnection()
+   {
+      log_.info(ME, "lost connection");
+   }
    void execute()
    {
       try {
          XmlBlasterAccess con(global_);
+	 con.initFailsafe(this);
 
          ConnectQos qos(global_, "joe", "secret");
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());

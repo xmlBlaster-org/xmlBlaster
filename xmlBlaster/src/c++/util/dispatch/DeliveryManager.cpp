@@ -15,6 +15,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  */
 
 #include <util/dispatch/DeliveryManager.h>
+#include <util/dispatch/ConnectionsHandler.h>
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/Global.h>
 
@@ -30,12 +31,16 @@ DeliveryManager::DeliveryManager(Global& global)
      serverMap_()
 {
    if (log_.CALL) log_.call(ME, "::constructor");
+   connectionsHandler_ = NULL;
 }
 
 
 DeliveryManager::~DeliveryManager()
 {
    if (log_.CALL) log_.call(ME, "::destructor");
+   delete connectionsHandler_;
+   connectionsHandler_ = NULL;
+
    // should be synchronized ...
    ServerMap::iterator iter = serverMap_.begin();
    while (iter != serverMap_.end()) {
@@ -77,6 +82,16 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& type, const str
                     "",
                     embeddedMsg);
 }
+
+
+ConnectionsHandler& DeliveryManager::getConnectionsHandler()
+{
+   if (connectionsHandler_ == NULL) {
+      connectionsHandler_ = new ConnectionsHandler(global_, *this);
+   }
+   return *connectionsHandler_;
+}
+
 
 }}}} // namespaces
 

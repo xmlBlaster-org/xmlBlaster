@@ -14,7 +14,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/DeliveryManager.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/CbServerPluginManager.h>
-#include <client/protocol/I_XmlBlasterConnection.h>
+#include <util/dispatch/ConnectionsHandler.h>
+#include <client/I_ConnectionProblems.h>
 #include <client/I_Callback.h>
 #include <client/xmlBlasterClient.h>
 #include <util/Log.h>
@@ -52,11 +53,13 @@ private:
    /** The callback server */
    I_CallbackServer* cbServer_;
    /** The connection server for this address */
-   I_XmlBlasterConnection* connection_;
+   ConnectionsHandler* connection_;
 
    /** Used to callback the clients default update() method (as given on connect()) */
    I_Callback* updateClient_;
 
+   /** used to temporarly store the failsafe notification address (if any) */
+   I_ConnectionProblems* connectionProblems_;
    Global& global_;
    Log&    log_;
 
@@ -200,6 +203,14 @@ public:
     * Command line usage.
     */
    static void usage();
+
+   /**
+    * used to initialize the failsafe behaviour of the client.
+    * If connectionProblems is not NULL, then the passed object will be notified for connection lost
+    * and reconnected events.
+    */
+    void initFailsafe(I_ConnectionProblems* connectionProblems=NULL);
+
 };
 
 }}} // namespaces
