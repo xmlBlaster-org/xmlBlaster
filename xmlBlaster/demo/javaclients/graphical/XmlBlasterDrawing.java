@@ -92,7 +92,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.timeout.addTimeoutListener(this, this.publishDelay, this);
       }  
 
-		this.drawingName = this.getTitle();
+		// this.drawingName = this.getTitle();
       initConnection();
    }
 
