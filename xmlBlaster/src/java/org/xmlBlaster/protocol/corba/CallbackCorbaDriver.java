@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.23 2002/05/16 19:58:34 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.24 2002/05/30 09:32:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -36,17 +36,16 @@ public class CallbackCorbaDriver implements I_CallbackDriver
 
 
    /** Get a human readable name of this driver */
-   public String getName()
+   public final String getName()
    {
       return ME;
    }
-
 
    /**
     * Get callback reference here.
     * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
-   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
+   public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
       this.log = glob.getLog("corba");
@@ -62,6 +61,24 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
    }
 
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "IOR"
+    */
+   public final String getProtocolId()
+   {
+      return "IOR";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "IOR:00034500350..."
+    */
+   public final String getRawAddress()
+   {
+      return callbackAddress.getAddress();
+   }
 
    /**
     * This sends the update to the client.
@@ -91,7 +108,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   public final void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
       if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
