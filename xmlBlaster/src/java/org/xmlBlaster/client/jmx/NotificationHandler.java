@@ -56,9 +56,12 @@ public class NotificationHandler implements I_Callback  {
       //connect to embedded xmlBlaster
 /*      Address addr = new Address(glob);
       addr.setPort(port);*/
-      Properties embeddedProp = new Properties();
-      embeddedProp.setProperty("bootstrapPort","3424");
-      glob.init(embeddedProp);
+
+      Properties prop = new Properties();
+      prop.setProperty("bootstrapHostname","127.0.0.1");
+      prop.setProperty("bootstrapPort","3424");
+
+      glob.init(prop);
 
 
 //      glob.setBootstrapAddress(addr);
