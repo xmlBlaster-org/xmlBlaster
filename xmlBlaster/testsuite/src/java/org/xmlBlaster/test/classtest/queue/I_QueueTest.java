@@ -373,7 +373,6 @@ public class I_QueueTest extends TestCase {
     * Tests put(MsgQueueEntry[]) and put(MsgQueueEntry) and clear()
     */
    private void putMsg(I_Queue queue) {
-      queue = queue;
       ME = "I_QueueTest.putMsg(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {

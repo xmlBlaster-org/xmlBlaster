@@ -21,6 +21,7 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.client.key.PublishKey;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -106,7 +107,7 @@ public class MsgUnitWrapperTest extends TestCase {
          byte[] blob = factory.toBlob(msgUnitWrapper);
 
          MsgUnitWrapper newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                        uniqueId, type, persistent, sizeInBytes, blob, storageId);
+                                        uniqueId, type, persistent, sizeInBytes, new ByteArrayInputStream(blob), storageId);
  
          assertEquals("", msgUnitWrapper.getPriority(), newWrapper.getPriority());
          assertEquals("", msgUnitWrapper.getReferenceCounter(), newWrapper.getReferenceCounter()); // A reference counter is reset to 0 when loaded from persistence

@@ -11,7 +11,6 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -19,17 +18,15 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
 import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
 import org.xmlBlaster.client.key.PublishKey;       // for main only
 
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -87,13 +84,12 @@ public class ServerEntryFactory implements I_EntryFactory
     * @param type see ENTRY_TYPE_MSG etc.
     */
    public I_Entry createEntry(int priority, long timestamp, String type,
-                              boolean persistent, long sizeInBytes, byte[] blob, StorageId storageId)
+                              boolean persistent, long sizeInBytes, InputStream is, StorageId storageId)
       throws XmlBlasterException {
 
       if (ENTRY_TYPE_UPDATE_REF.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length < 6) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -136,8 +132,7 @@ public class ServerEntryFactory implements I_EntryFactory
       }
       else if (ENTRY_TYPE_HISTORY_REF.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -156,8 +151,7 @@ public class ServerEntryFactory implements I_EntryFactory
       }
       else if (ENTRY_TYPE_MSG_XML.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 5) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -181,8 +175,7 @@ public class ServerEntryFactory implements I_EntryFactory
       }
       else if (ENTRY_TYPE_MSG_SERIAL.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 3) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -203,8 +196,7 @@ public class ServerEntryFactory implements I_EntryFactory
 
       else if (ENTRY_TYPE_TOPIC_XML.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -225,8 +217,7 @@ public class ServerEntryFactory implements I_EntryFactory
       }
       else if (ENTRY_TYPE_TOPIC_SERIAL.equals(type)) {
          try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-            ObjectInputStream objStream = new ObjectInputStream(bais);
+            ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 1) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
@@ -252,6 +243,11 @@ public class ServerEntryFactory implements I_EntryFactory
 
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Persistent object '" + type + "' is not implemented");
    }
+
+
+
+
+
 
    /**
     * Returns the name of this plugin
@@ -332,7 +328,7 @@ public class ServerEntryFactory implements I_EntryFactory
                org.jutils.time.StopWatch stopWatchToObj = new org.jutils.time.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
                   newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                              timestamp, type, persistent, sizeInBytes, blob, storageId);
+                                              timestamp, type, persistent, sizeInBytes, new ByteArrayInputStream(blob), storageId);
                }
                elapsed = stopWatchToObj.elapsed();
                log.info(ME, "num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());

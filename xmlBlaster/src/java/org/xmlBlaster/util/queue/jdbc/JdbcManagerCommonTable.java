@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 
 /**
@@ -1317,12 +1318,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(7);
-            byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
+            InputStream is = rs.getBinaryStream(8);
+//            byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
 
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
                if (this.log.DUMP)
                   this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+//               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
                amount += sizeInBytes;
             }
          }
@@ -1344,11 +1347,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
-            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+//            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+            InputStream is = rs.getBinaryStream(6);
 
             if (this.log.DUMP)
                this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+//            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
          }
          count++;
       }
@@ -1608,12 +1613,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
             long sizeInBytes = rs.getLong(7);
             if (!isInsideRange(count, numOfEntries, amount, numOfBytes)) break;
-            byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
+            // byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
+            InputStream is = rs.getBinaryStream(8);
 
             // check if allowed or already outside the range ...
             if ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) ) {
                if (this.log.DUMP) this.log.dump(getLogId(queueName, nodeId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+//               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
+               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
                amount += sizeInBytes;
             }
             else doContinue = false;

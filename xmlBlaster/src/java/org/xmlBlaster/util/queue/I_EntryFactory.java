@@ -6,9 +6,10 @@ Comment:   Interface for parsing from I_QueueEntry to byte[] and back
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
+import java.io.InputStream;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.queue.I_Entry;
 
 /**
  * The Interface which can be used to convert an object which implements the
@@ -39,8 +40,13 @@ public interface I_EntryFactory
     * @param obj The serialized data (formatted as given by 'type')
     * @param storageId A unique identifier of the queue
     */
+   /*
    I_Entry createEntry(int priority, long timestamp, String type, boolean persistent,
                        long sizeInBytes, byte[] obj, StorageId storageId)
+      throws XmlBlasterException;
+*/
+   I_Entry createEntry(int priority, long timestamp, String type, boolean persistent,
+                       long sizeInBytes, InputStream is, StorageId storageId)
       throws XmlBlasterException;
 
    /**

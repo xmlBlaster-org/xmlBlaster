@@ -22,8 +22,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -34,6 +32,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.key.EraseKey;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -78,14 +77,13 @@ public class ClientEntryFactory implements I_EntryFactory
     * @param type see ENTRY_TYPE_MSG etc.
     */
    public I_Entry createEntry(int priority, long timestamp, String type,
-                  boolean persistent, long sizeInBytes, byte[] blob, StorageId storageId)
+                  boolean persistent, long sizeInBytes, InputStream is, StorageId storageId)
       throws XmlBlasterException {
 
       MethodName methodName = MethodName.toMethodName(type);
 
       try {
-         ByteArrayInputStream bais = new ByteArrayInputStream(blob);
-         ObjectInputStream objStream = new ObjectInputStream(bais);
+         ObjectInputStream objStream = new ObjectInputStream(is);
          Object[] obj = (Object[])objStream.readObject();
 
          if (methodName == MethodName.PUBLISH_ONEWAY || methodName == MethodName.PUBLISH) {
@@ -178,6 +176,19 @@ public class ClientEntryFactory implements I_EntryFactory
 
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented");
    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    /**
     * Returns the name of this plugin
