@@ -29,7 +29,7 @@ import java.io.BufferedReader;
  * 2. if Jacorb contains a locking bug.
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class TestThreadLeak extends TestCase implements I_Callback {
@@ -60,7 +60,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
    {
       String[] args = {
          "-protocol", 
-         "IOR", //"SOCKET",
+         "SOCKET", //"SOCKET",
          "-session.maxSessions",
          "20"
       };
@@ -283,6 +283,8 @@ org.xmlBlaster.test.mime.TestXPathSubscribeFilter
             con.disconnect(null);
             state = "DISCONNECTED";
             con=null;
+            glob.shutdown();
+            glob = null;
          } catch (Throwable e) {
             ie = e;
             log.error(ME,"Giving up " + e);
