@@ -174,7 +174,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.pingStatement == null) this.pingStatement = "SHOW ALL";
 
       this.blobVarName = (String)names.get("blobVarName");
-      if (this.pingStatement == null) this.pingStatement = "blob";
+      if (this.blobVarName == null) this.blobVarName = "blob";
 
       this.keyAttr = (String)names.get("keyAttr");
       if (this.keyAttr == null) this.keyAttr = ""; // could be "not null" for MySQL
