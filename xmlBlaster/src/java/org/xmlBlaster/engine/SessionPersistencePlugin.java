@@ -300,7 +300,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       KeyData data = subscriptionInfo.getKeyData();
-      if (!(data instanceof QueryKeyData)) return; // this filters away child subscriptions
+      // if (!(data instanceof QueryKeyData)) return; // this filters away child subscriptions
+      if (subscriptionInfo.isCreatedByQuerySubscription()) return;
+      
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
       if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: key='" + data.toXml() + "'");
@@ -334,7 +336,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          ClientProperty prop = subscribeQosData.getClientProperty(ORIGINAL_INITIAL_UPDATES);
          if (prop != null) {
             subscribeQosData.getClientProperties().remove(ORIGINAL_INITIAL_UPDATES);
-            subscribeQosData.setWantContent(true);
+            subscribeQosData.setWantInitialUpdate(true);
          }
       }
    }

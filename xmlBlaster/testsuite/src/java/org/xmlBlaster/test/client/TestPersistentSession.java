@@ -70,8 +70,9 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private final String contentMime = "text/plain";
 
    private final long reconnectDelay = 2000L;
-   private boolean persistent = true;
    private boolean failsafeCallback = true;
+   /** the session is persistent from the beginning */
+   private boolean persistent = true;
    private boolean exactSubscription = false;
    private boolean initialUpdates = true;
    private int numSubscribers = 4;
@@ -181,10 +182,11 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
          SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
          qos.setPersistent(isPersistent);
-         if (this.initialUpdates) qos.setWantInitialUpdate(true);
+         qos.setWantInitialUpdate(this.initialUpdates);
          qos.setWantNotify(false); // to avoig getting erased messages
 
          this.updateInterceptors[num] = new MsgInterceptor(this.glob, log, null); // Collect received msgs
+         this.updateInterceptors[num].setLogPrefix("interceptor-" + num);
          SubscribeReturnQos subscriptionId = con.subscribe(key, qos, this.updateInterceptors[num]);
 
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
@@ -214,19 +216,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       log.info(ME, "Success: Publishing of " + oid + " done");
    }
 
-
-   public void testPersistentSessionWithStop() {
-      testPersistentSession(true);
-   }
-
-   public void testPersistentSessionWithRunlevelChange() {
-      testPersistentSession(false);
-   }
-
    /**
     * TEST: <br />
     */
-   public void testPersistentSession(boolean doStop) {
+   public void persistentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       // 
@@ -274,8 +267,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
             if (i < numStop || i >= numStart ) {
                int n = 1;
                if (i == 0 && !this.initialUpdates) n = 0;
-               assertEquals("", 1, this.updateInterceptors[1].waitOnUpdate(4000L, 1));
-               assertEquals("", 1, this.updateInterceptors[3].waitOnUpdate(4000L, n));
+               assertEquals("Message nr. " + (i+1), 1, this.updateInterceptors[1].waitOnUpdate(4000L, 1));
+               assertEquals("Message nr. " + (i+1), n, this.updateInterceptors[3].waitOnUpdate(4000L, n));
             }
             for (int j=0; j < this.numSubscribers; j++) this.updateInterceptors[j].clear();
          }
@@ -322,6 +315,26 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       return "OK";
    }
 
+
+   public void testXPathInitialStop() {
+      this.exactSubscription = false;
+      this.initialUpdates = true;
+      persistentSession(true);
+   }
+
+   public void testXPathNoInitialStop() {
+      this.exactSubscription = false;
+      this.initialUpdates = false;
+      persistentSession(true);
+   }
+
+   public void testXPathInitialRunlevelChange() {
+      this.persistent = true;
+      this.exactSubscription = false;
+      this.initialUpdates = true;
+      persistentSession(false);
+   }
+
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPersistentSession
     * <p />
@@ -335,13 +348,19 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          System.out.println(ME + ": Init failed");
          System.exit(1);
       }
+
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
+
       testSub.setUp();
-      testSub.testPersistentSessionWithStop();
+      testSub.testXPathInitialStop();
       testSub.tearDown();
 
       testSub.setUp();
-      testSub.testPersistentSessionWithRunlevelChange();
+      testSub.testXPathNoInitialStop();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testXPathInitialRunlevelChange();
       testSub.tearDown();
    }
 }

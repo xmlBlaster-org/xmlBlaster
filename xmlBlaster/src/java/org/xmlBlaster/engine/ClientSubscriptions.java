@@ -376,6 +376,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     * Event invoked on new subscription (interface SubscriptionListener).
     */
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
+      
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (subscriptionInfo.getSubscribeCounter() > 1) {
          if (log.TRACE) log.trace(ME, "Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
