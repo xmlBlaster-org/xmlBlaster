@@ -1565,12 +1565,13 @@ public class Global implements Cloneable
       java.util.Properties
          ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
       //overwrite our onw properties ...
-      java.util.Enumeration enum = properties.keys();
-      while (enum.hasMoreElements()) {
-         String key =(String)enum.nextElement();
-         ownProperties.put(key, properties.getProperty(key));
+      if (properties != null) {
+         java.util.Enumeration enum = properties.keys();
+         while (enum.hasMoreElements()) {
+            String key =(String)enum.nextElement();
+            ownProperties.put(key, properties.getProperty(key));
+         }
       }
-
       JdbcConnectionPool pool = new JdbcConnectionPool();
       try {
          pool.initialize(this, pluginInfo.getParameters());

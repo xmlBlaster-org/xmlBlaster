@@ -4,7 +4,7 @@ linux.
 Download and install postgres accordingly to the instructions you get from 
 postgres (see http://www.postgresql.org/)
 
-Once it is installed you can congfigure it by invoking the following:
+Once it is installed you can configure it by invoking the following:
 
 initdb /tmp/postgres/data
 (cp /var/lib/pgsql/data/pg_hba.conf /tmp/postgres    (edit host access))
@@ -25,6 +25,14 @@ invoked the first time you start postgres.
 
 Configure in xmlBlaster.properties:
 -----------------------------------------------------------------
+Activate the persitence:
+set the following variables:
+
+persistence/defaultPlugin=CACHE,1.0
+queue/defaultPlugin=CACHE,1.0
+useTopicStore=true
+
+
 JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:org.postgresql.Driver
 #JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
 #JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:oracle.jdbc.driver.OracleDriver:org.gjt.mm.mysql.Driver:org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver:com.sybase.jdbc2.jdbc.SybDriver
@@ -32,31 +40,63 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:
 # settings for postgres ...
 JdbcDriver.drivers=org.postgresql.Driver
 JdbcDriver.postgresql.mapping=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables
-cb.queue.persistent.url=jdbc:postgresql://localhost/test
-cb.queue.persistent.user=postgres
-cb.queue.persistent.password=
- 
+
+QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                      url=jdbc:postgresql://localhost/test,\
+                      user=postgres,\
+                      password=,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      nodesTableName=NODES,\
+                      queuesTableName=QUEUES,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+
+and again the same for the StoragePlugin:
+
+StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                      url=jdbc:postgresql://localhost/test,\
+                      user=postgres,\
+                      password=,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      nodesTableName=NODES,\
+                      queuesTableName=QUEUES,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+
 # settings for oracle
-#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
+JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
  
-#JdbcDriver.Oracle.mapping=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=long raw,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME
+JdbcDriver.Oracle.mapping=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=long raw,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME
  
-#cb.queue.persistent.url=jdbc:oracle:thin:@localhost:1521:xmlb
-#cb.queue.persistent.user=xmlblaster
-#cb.queue.persistent.password=secret
- 
-cb.queue.persistent.connectionPoolSize=3
-cb.queue.persistent.connectionBusyTimeout=90000
-cb.queue.persistent.maxWaitingThreads=300
-cb.queue.defaultPlugin=RAM,1.0
-cb.queue.persistent.tablePrefix=xmlBlaster
-cb.queue.persistent.tableAllocationIncrement=2
+QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                    url=jdbc:oracle:thin:@localhost:1521:xmlb,\
+                    user=xmlblaster,\
+                    password=secret,\
+                    connectionPoolSize=1,\
+                    connectionBusyTimeout=90000,\
+                    maxWaitingThreads=300,\
+                    tableNamePrefix=XB_,\
+                    nodesTableName=NODES,\
+                    queuesTableName=QUEUES,\
+                    entriesTableName=ENTRIES,\
+                    dbAdmin=true
+
+
 -----------------------------------------------------------------
 
 Cleanup the tables in the database:
  
-  java org.xmlBlaster.util.queue.jdbc.JdbcManager
-  - Input a prefix (all tables found starting with the prefix specified will be deleted: xmlblaster
+Configure the xmlBlaster.properties file (the QueuePlugin[JDBC][1.0])
+
+  java org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable -wipeout.pluginType JDBC -wipeout.pluginVersion 1.0
+
+and the application will delete the tables associated to the configuration specified with "JDBC/1.0"
    
 
 Enjoy 

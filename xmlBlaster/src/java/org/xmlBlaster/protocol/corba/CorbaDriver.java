@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.49 2002/12/20 15:29:44 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.50 2003/02/26 18:15:45 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -26,7 +26,6 @@ import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
 import org.omg.CosNaming.NamingContextExt;
-import org.omg.CosNaming.NameComponent;
 
 
 /**
@@ -216,7 +215,7 @@ public class CorbaDriver implements I_Driver
                name[0].id = "xmlBlaster-Authenticate";
                name[0].kind = "MOM";
 
-               nc.bind(name, authRef);
+               nc.rebind(name, authRef);
                log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
             }
             catch (XmlBlasterException e) {

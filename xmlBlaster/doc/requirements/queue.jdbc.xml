@@ -140,11 +140,12 @@
    <see type="REQ">queue</see>
    <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.jdbc.oracle</see>
+   <see type="REQ">queue.jdbc.commontable</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 16</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

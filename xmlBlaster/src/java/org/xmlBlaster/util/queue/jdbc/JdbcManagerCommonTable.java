@@ -226,8 +226,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          // conn.isClosed();
          Statement st = conn.createStatement();
-         st.execute("");
-//         st.execute("SELECT count(*) from " + this.tablesTxt);
+//          st.execute(""); <-- this will not work on ORACLE (fails)
+         st.execute("SELECT count(*) from " + this.tablesTxt);
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
          return true;
       }
@@ -730,7 +730,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (SQLException ex) {
-            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped");
@@ -743,7 +743,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (SQLException ex) {
-            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.queuesTableName + "', it probably is already dropped");
@@ -756,7 +756,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (SQLException ex) {
-            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped");
@@ -1638,36 +1638,24 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * This main method can be used to delete all tables on the db which start
     * with a certain prefix. It is useful to cleanup the entire DB.
     * 
-    * IMPORTANT: caution must be used to avoid to delete the wrong data.
-    * <pre>
-    * java org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable
-    * and enter XMLBLASTER or TEST
+    *
+    * 
     * </pre>
     */
    public static void main(String[] args) {
       Global glob = Global.instance();
       glob.init(args);
 
+      String type = glob.getProperty().get("wipeout.pluginType", (String)null);
+      String version = glob.getProperty().get("wipeout.pluginVersion", (String)null);
+
+      if ((type == null) || (version == null)) {
+         System.out.println("usage: java org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable -wipeout.pluginType JDBC -wipeout.pluginVersion 1.0");
+         System.exit(1);
+      }
+
       try {
-         QueuePluginManager pluginManager = new QueuePluginManager(glob);
-         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
-         
-         JdbcManagerCommonTable manager = glob.getJdbcQueueManagerCommonTable(pluginInfo);
-         manager.setUp();
-         manager.addNode("Frodo");
-         manager.addQueue("queue1", "Frodo", 1000, 3000);
-         manager.addQueue("queue2", "Frodo", 2000, 2000);
-         manager.addQueue("queue3", "Frodo", 3000, 1000);
-
-         manager.addNode("Fritz");
-         manager.addQueue("queue1", "Fritz", 1000, 3000);
-         manager.addQueue("queue2", "Fritz", 2000, 2000);
-         manager.addQueue("queue3", "Fritz", 3000, 1000);
-
-         manager.removeQueue("queue1", "Fritz");
-         manager.removeQueue("queue2", "Fritz");
-         manager.removeQueue("queue3", "Fritz");
-         manager.removeNode("Fritz");
+         glob.wipeOutDB(type, version, null);
       }
       catch (Exception ex) {
          System.err.println("Main" + ex.toString());
