@@ -4,6 +4,13 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o C client library:
+   - #12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
+
+ o C++ client library:
+   - #12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
+   - #12985 Changed compilation workaround from "__sun" to "__SUNPRO_CC" as g++ on Sun does not need it
+
 
 Changes for 1.RC2 [2004-12-01] #12978
 =====================================

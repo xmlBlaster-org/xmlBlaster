@@ -29,7 +29,8 @@ ClientProperty::ClientProperty(const std::string& name,
      type_(type)
 {
    if (needsEncoding()) {
-#     if defined(__sun)
+//#     if defined(__sun)
+#     if defined(__SUNPRO_CC)
       std::vector<unsigned char> vec; // TODO: Better workaround for SunOS CC Sun C++ 5.5 2003/03/12
       int len = strlen(value);
       for (int i=0; i<len; i++) {

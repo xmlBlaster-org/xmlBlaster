@@ -25,13 +25,19 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <errno.h>          /* gethostbyname_re() */
 #endif
 
-
+#if !defined(XMLBLASTER_NO_RCSID)
+/*
+   Add the exact version of the C client library, this is for examination
+   with for example the UNIX 'strings' command only.
+   If it makes problem just set -DXMLBLASTER_NO_RCSID
+*/
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
    static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
 #elif defined(__SUNPRO_CC)
    static const char *rcsid_GlobalCpp  =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
+#endif
 #endif
 
 /**

@@ -29,16 +29,24 @@ Version:   $Id$
 #  include<util/Log4cplus.h>
 #endif
 
-#if defined(__GNUC__) || defined(__ICC)
-   // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
-   // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
-#elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
+#if !defined(XMLBLASTER_NO_RCSID)
+   /*
+   Add the exact version of the C++ client library, this is for examination
+   with for example the UNIX 'strings' command only.
+   If it makes problem just set -DXMLBLASTER_NO_RCSID
+   */
+#  if defined(__GNUC__) || defined(__ICC)
+      // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
+      // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
+      static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
+#  elif defined(__SUNPRO_CC)
+      static const char *rcsid_GlobalCpp  =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
+#  endif
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
-#if __GNUC__ == 2 || defined(__sun)
+//#if __GNUC__ == 2 || defined(__sun)
+#if __GNUC__ == 2 || defined(__SUNPRO_CC)
 //#if __GNUC__ == 2
   // Problems with g++ 2.95.3 and template<>
 #else

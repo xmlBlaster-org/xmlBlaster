@@ -2389,6 +2389,7 @@ TODO
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
+           <define name="XMLBLASTER_NO_RCSID" value="1" if="XMLBLASTER_NO_RCSID" /> <!-- no rcsid string if svnversion makes problem in Global.cpp -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
@@ -2829,6 +2830,7 @@ TODO
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
+           <define name="XMLBLASTER_NO_RCSID" value="1" if="XMLBLASTER_NO_RCSID" /> <!-- no rcsid string if svnversion makes problem in msgUtil.c -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc" unless="XMLBLASTER_C_COMPILE_AS_CPP">
