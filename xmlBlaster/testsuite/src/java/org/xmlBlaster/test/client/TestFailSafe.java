@@ -80,7 +80,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * Connect to xmlBlaster and login
     */
    protected void setUp() {
-      this.glob = (this.glob == null) ? new Global() : this.glob;
+      this.glob = (this.glob == null) ? Global.instance() : this.glob;
       this.log = this.glob.getLog("test");
 
       glob.init(Util.getOtherServerPorts(serverPort));
