@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.1 2002/04/05 19:14:26 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.2 2002/04/18 12:25:07 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -12,6 +12,11 @@ import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * Loads publish() filter plugin depending on message MIME type. 
@@ -26,29 +31,13 @@ public class PublishPluginManager extends PluginManagerBase {
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
    public static final String pluginPropertyName = "MimePublishPlugin";
 
-   private static PublishPluginManager me = null;
+   private final Global glob;
+   private final Log log;
 
-   /** To protect the singleton */
-   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
-
-   public PublishPluginManager() throws XmlBlasterException
+   public PublishPluginManager(Global glob)
    {
-      // No default plugin to initialize
-   }
-
-   /**
-    * Return an instance of this singleton. 
-    *
-    * @return PublishPluginManager
-    */
-   public static PublishPluginManager getInstance() throws XmlBlasterException {
-      if (me == null) { // avoid 'expensive' synchronized
-         synchronized (SYNCHRONIZER) {
-            if (me == null)
-               me = new PublishPluginManager();
-         }
-      }
-      return me;
+      this.glob = glob;
+      this.log = this.glob.getLog();
    }
 
    /**
@@ -123,5 +112,88 @@ public class PublishPluginManager extends PluginManagerBase {
    protected I_PublishFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
       return (I_PublishFilter)super.instantiatePlugin(pluginNameAndParam);
+   }
+
+
+// here are extensions for MIME based plugin selection:
+
+   private final Map publishFilterMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * Get publish filter object from cache, based on MIME type. 
+    */
+   public final I_PublishFilter getPublishFilter(String type, String version, String mime, String mimeExtended)
+   {
+      try {
+         StringBuffer key = new StringBuffer(80);
+         key.append(type).append(version).append(mime).append(mimeExtended);
+         Object obj = publishFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_PublishFilter)obj;
+
+         // Check if the plugin is for all mime types
+         key.setLength(0);
+         key.append(type).append(version).append("*");
+         obj = publishFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_PublishFilter)obj;
+
+         return addPublishFilterPlugin(type, version); // try to load it
+
+      } catch (Exception e) {
+         Log.error(ME, "Problems accessing publish filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         e.printStackTrace();
+         return (I_PublishFilter)null;
+      }
+   }
+
+   /**
+    * Invoked on new subscription or get() invocation, loads plugin. 
+    * @return null if not found
+    */
+   public final I_PublishFilter addPublishFilterPlugin(String type, String version)
+   {
+      StringBuffer key = new StringBuffer(80);
+      key.append(type).append(version);
+      Object obj = publishFilterMap.get(key.toString());
+      if (obj != null) {
+         Log.info(ME, "Publish filter '" + key.toString() + "' is loaded already");
+         return (I_PublishFilter)obj;
+      }
+
+      try {
+         I_PublishFilter filter = getPlugin(type, version);
+         if (filter == null) {
+            Log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            return null;
+         }
+
+         publishFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
+         key.setLength(0);
+
+         String[] mime = filter.getMimeTypes();
+         String[] mimeExtended = filter.getMimeExtended();
+         // check plugin code:
+         if (mimeExtended == null || mimeExtended.length != mime.length) {
+            if (mimeExtended.length != mime.length)
+               Log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
+            mimeExtended = new String[mime.length];
+            for (int ii=0; ii < mime.length; ii++)
+               mimeExtended[ii] = org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended;
+         }
+
+         for (int ii = 0; ii < mime.length; ii++) {
+            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
+            publishFilterMap.put(key.toString(), filter);
+            Log.info(ME, "Loaded publish filter '" + key.toString() + "'");
+            key.setLength(0);
+         }
+
+         return filter;
+      } catch (Throwable e) {
+         Log.error(ME, "Problems accessing publish plugin manager, can't instantiate " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         e.printStackTrace();
+      }
+      return null;
    }
 }

@@ -101,7 +101,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          AccessFilterQos[] filterQos = this.subscribeQos.getFilterQos();
          if (filterQos != null) {
             for (int ii=0; ii<filterQos.length; ii++) {
-               this.glob.getRequestBroker().addAccessFilterPlugin(filterQos[ii].getType(), filterQos[ii].getVersion());
+               this.glob.getRequestBroker().getAccessPluginManager().addAccessFilterPlugin(
+                       filterQos[ii].getType(), filterQos[ii].getVersion());
             }
          }
       }

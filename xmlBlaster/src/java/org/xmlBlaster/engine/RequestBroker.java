@@ -121,10 +121,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    private Timeout burstModeTimer;
 
    private AccessPluginManager accessPluginManager = null;
-   private final Map accessFilterMap = Collections.synchronizedMap(new HashMap());
 
    private PublishPluginManager publishPluginManager = null;
-   private final Map publishFilterMap = Collections.synchronizedMap(new HashMap());
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -138,6 +136,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       this.burstModeTimer = new Timeout("BurstmodeTimer");
 
       unsecureSessionInfo = authenticate.unsecureCreateSession("__RequestBroker_internal__");
+
+      accessPluginManager = new AccessPluginManager(getGlobal());
+
+      publishPluginManager = new PublishPluginManager(getGlobal());
 
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
@@ -170,162 +172,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       return this.authenticate.getGlobal();
    }
 
-   /**
-    * Get access filter object from cache. 
-    */
-   final I_AccessFilter getAccessFilter(String type, String version, String mime, String mimeExtended)
-   {
-      try {
-         StringBuffer key = new StringBuffer(80);
-         key.append(type).append(version).append(mime).append(mimeExtended);
-         Object obj = accessFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_AccessFilter)obj;
-
-         // Check if the plugin is for all mime types
-         key.setLength(0);
-         key.append(type).append(version).append("*");
-         obj = accessFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_AccessFilter)obj;
-
-         return addAccessFilterPlugin(type, version); // try to load it
-
-      } catch (Exception e) {
-         Log.error(ME, "Problems accessing subscribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
-         e.printStackTrace();
-         return (I_AccessFilter)null;
-      }
-   }
-
-   /**
-    * Invoked on new subscription or get() invocation, loads plugin. 
-    * @return null if not found
-    */
-   final I_AccessFilter addAccessFilterPlugin(String type, String version)
-   {
-      StringBuffer key = new StringBuffer(80);
-      key.append(type).append(version);
-      Object obj = accessFilterMap.get(key.toString());
-      if (obj != null) {
-         Log.info(ME, "Access filter '" + key.toString() + "' is loaded already");
-         return (I_AccessFilter)obj;
-      }
-
-      try {
-         accessPluginManager = AccessPluginManager.getInstance();
-         I_AccessFilter filter = accessPluginManager.getPlugin(type, version);
-         if (filter == null) {
-            Log.error(ME, "Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return null;
-         }
-
-         accessFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
-         key.setLength(0);
-
-         String[] mime = filter.getMimeTypes();
-         String[] mimeExtended = filter.getMimeExtended();
-         // check plugin code:
-         if (mimeExtended == null || mimeExtended.length != mime.length) {
-            if (mimeExtended.length != mime.length)
-               Log.error(ME, "Subscribe plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
-            mimeExtended = new String[mime.length];
-            for (int ii=0; ii < mime.length; ii++)
-               mimeExtended[ii] = XmlKeyBase.DEFAULT_contentMimeExtended;
-         }
-
-         for (int ii = 0; ii < mime.length; ii++) {
-            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
-            accessFilterMap.put(key.toString(), filter);
-            Log.info(ME, "Loaded subscribe filter '" + key.toString() + "'");
-            key.setLength(0);
-         }
-
-         return filter;
-      } catch (Throwable e) {
-         Log.error(ME, "Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
-         e.printStackTrace();
-      }
-      return null;
-   }
-
-   /**
-    * Get publish filter object from cache. 
-    */
-   final I_PublishFilter getPublishFilter(String type, String version, String mime, String mimeExtended)
-   {
-      try {
-         StringBuffer key = new StringBuffer(80);
-         key.append(type).append(version).append(mime).append(mimeExtended);
-         Object obj = publishFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_PublishFilter)obj;
-
-         // Check if the plugin is for all mime types
-         key.setLength(0);
-         key.append(type).append(version).append("*");
-         obj = publishFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_PublishFilter)obj;
-
-         return addPublishFilterPlugin(type, version); // try to load it
-
-      } catch (Exception e) {
-         Log.error(ME, "Problems accessing publish filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
-         e.printStackTrace();
-         return (I_PublishFilter)null;
-      }
-   }
-
-   /**
-    * Invoked on new subscription or get() invocation, loads plugin. 
-    * @return null if not found
-    */
-   final I_PublishFilter addPublishFilterPlugin(String type, String version)
-   {
-      StringBuffer key = new StringBuffer(80);
-      key.append(type).append(version);
-      Object obj = publishFilterMap.get(key.toString());
-      if (obj != null) {
-         Log.info(ME, "Publish filter '" + key.toString() + "' is loaded already");
-         return (I_PublishFilter)obj;
-      }
-
-      try {
-         publishPluginManager = PublishPluginManager.getInstance();
-         I_PublishFilter filter = publishPluginManager.getPlugin(type, version);
-         if (filter == null) {
-            Log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return null;
-         }
-
-         publishFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
-         key.setLength(0);
-
-         String[] mime = filter.getMimeTypes();
-         String[] mimeExtended = filter.getMimeExtended();
-         // check plugin code:
-         if (mimeExtended == null || mimeExtended.length != mime.length) {
-            if (mimeExtended.length != mime.length)
-               Log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
-            mimeExtended = new String[mime.length];
-            for (int ii=0; ii < mime.length; ii++)
-               mimeExtended[ii] = XmlKeyBase.DEFAULT_contentMimeExtended;
-         }
-
-         for (int ii = 0; ii < mime.length; ii++) {
-            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
-            publishFilterMap.put(key.toString(), filter);
-            Log.info(ME, "Loaded publish filter '" + key.toString() + "'");
-            key.setLength(0);
-         }
-
-         return filter;
-      } catch (Throwable e) {
-         Log.error(ME, "Problems accessing publish plugin manager, can't instantiate " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
-         e.printStackTrace();
-      }
-      return null;
+   final AccessPluginManager getAccessPluginManager() {
+      return this.accessPluginManager;
    }
 
    /**
@@ -661,7 +509,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                if (filterQos != null) {
                   for (int jj=0; jj<filterQos.length; jj++) {
                      XmlKey key = msgUnitHandler.getXmlKey(); // This key is DOM parsed
-                     I_AccessFilter filter = getAccessFilter(filterQos[jj].getType(),
+                     I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
+                                                  filterQos[jj].getType(),
                                                   filterQos[jj].getVersion(), 
                                                   xmlKey.getContentMime(),
                                                   xmlKey.getContentMimeExtended());
@@ -1048,7 +897,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                synchronized(messageContainerMap) {
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                   if (obj == null) {
-                     msgUnitHandler = new MessageUnitHandler(this, xmlKey, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos));
+                     MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                     /* !!!
+                     XmlBlasterConnection con = getGlobal().getClusterManager().getMaster(sessionInfo, msgUnitWrapper);
+                        return getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                     }
+                     */
+                     msgUnitHandler = new MessageUnitHandler(this, xmlKey, msgUnitWrapper);
                      messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                   }
                   else {

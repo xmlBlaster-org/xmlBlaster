@@ -3,15 +3,20 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.3 2002/04/16 20:42:30 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.4 2002/04/18 12:25:07 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
-import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * Loads subscribe()/get() filter plugin depending on message MIME type. 
@@ -26,29 +31,13 @@ public class AccessPluginManager extends PluginManagerBase {
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
    public static final String pluginPropertyName = "MimeAccessPlugin";
 
-   private static AccessPluginManager me = null;
+   private final Global glob;
+   private final Log log;
 
-   /** To protect the singleton */
-   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
-
-   public AccessPluginManager() throws XmlBlasterException
+   public AccessPluginManager(Global glob)
    {
-      // No default plugin to initialize
-   }
-
-   /**
-    * Return an instance of this singleton. 
-    *
-    * @return AccessPluginManager
-    */
-   public static AccessPluginManager getInstance() throws XmlBlasterException {
-      if (me == null) { // avoid 'expensive' synchronized
-         synchronized (SYNCHRONIZER) {
-            if (me == null)
-               me = new AccessPluginManager();
-         }
-      }
-      return me;
+      this.glob = glob;
+      this.log = this.glob.getLog();
    }
 
    /**
@@ -123,5 +112,88 @@ public class AccessPluginManager extends PluginManagerBase {
    protected I_AccessFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
       return (I_AccessFilter)super.instantiatePlugin(pluginNameAndParam);
+   }
+
+
+// here are extensions for MIME based plugin selection:
+
+   private final Map accessFilterMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * Get access filter object from cache, based on MIME type. 
+    */
+   public final I_AccessFilter getAccessFilter(String type, String version, String mime, String mimeExtended)
+   {
+      try {
+         StringBuffer key = new StringBuffer(80);
+         key.append(type).append(version).append(mime).append(mimeExtended);
+         Object obj = accessFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_AccessFilter)obj;
+
+         // Check if the plugin is for all mime types
+         key.setLength(0);
+         key.append(type).append(version).append("*");
+         obj = accessFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_AccessFilter)obj;
+
+         return addAccessFilterPlugin(type, version); // try to load it
+
+      } catch (Exception e) {
+         Log.error(ME, "Problems accessing subscribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         e.printStackTrace();
+         return (I_AccessFilter)null;
+      }
+   }
+
+   /**
+    * Invoked on new subscription or get() invocation, loads plugin. 
+    * @return null if not found
+    */
+   public final I_AccessFilter addAccessFilterPlugin(String type, String version)
+   {
+      StringBuffer key = new StringBuffer(80);
+      key.append(type).append(version);
+      Object obj = accessFilterMap.get(key.toString());
+      if (obj != null) {
+         Log.info(ME, "Access filter '" + key.toString() + "' is loaded already");
+         return (I_AccessFilter)obj;
+      }
+
+      try {
+         I_AccessFilter filter = getPlugin(type, version);
+         if (filter == null) {
+            Log.error(ME, "Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            return null;
+         }
+
+         accessFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
+         key.setLength(0);
+
+         String[] mime = filter.getMimeTypes();
+         String[] mimeExtended = filter.getMimeExtended();
+         // check plugin code:
+         if (mimeExtended == null || mimeExtended.length != mime.length) {
+            if (mimeExtended.length != mime.length)
+               Log.error(ME, "Subscribe plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
+            mimeExtended = new String[mime.length];
+            for (int ii=0; ii < mime.length; ii++)
+               mimeExtended[ii] = org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended;
+         }
+
+         for (int ii = 0; ii < mime.length; ii++) {
+            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
+            accessFilterMap.put(key.toString(), filter);
+            Log.info(ME, "Loaded subscribe filter '" + key.toString() + "'");
+            key.setLength(0);
+         }
+
+         return filter;
+      } catch (Throwable e) {
+         Log.error(ME, "Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         e.printStackTrace();
+      }
+      return null;
    }
 }
