@@ -16,19 +16,12 @@ distclean: clean
 	$(RM_RECURSIVE) $(JAVADOC_DIR)
 	$(RM) $(JAR_DIR)/xmlBlaster.jar
 
-#			org.xmlBlaster.engine.xmldb \
-#			org.xmlBlaster.engine.xmldb.cache \
-
 PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
 			org.xmlBlaster.engine.xml2java \
 			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.engine.persistence.filestore \
 			org.xmlBlaster.engine.persistence.mudb \
-			org.xmlBlaster.engine.xmldb \
-			org.xmlBlaster.engine.xmldb.file \
-			org.xmlBlaster.engine.xmldb.dom \
-			org.xmlBlaster.engine.xmldb.cache \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.feeder \
