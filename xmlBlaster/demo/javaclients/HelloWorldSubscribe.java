@@ -8,6 +8,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -23,6 +24,8 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import java.util.Map;
+import java.util.Iterator;
 
 
 /**
@@ -256,6 +259,17 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");
+
+      // If clientProperty is base64 encoded we print the real value as well:
+      Map map = updateQos.getClientProperties();
+      Iterator it = map.values().iterator();
+      while (it.hasNext()) {
+         ClientProperty clientProperty = (ClientProperty)it.next();
+         if (clientProperty.isBase64()) {
+            System.out.println("\nClientProperty decoded: " + clientProperty.getName() + "='" + clientProperty.getStringValue() + "'");
+         }
+      }
+
       System.out.println("============= END #" + updateCounter + " '" + updateKey.getOid() + "' =========================");
       System.out.println("");
 
