@@ -163,7 +163,7 @@ char *encodeSocketMessage(
    memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); /* inclusive '\0' */
    currpos += strlen(secretSessionId)+1;
    
-   sprintf(tmp, "%lu", (long)lenUnzipped);
+   sprintf(tmp, "%lu", (unsigned long)lenUnzipped);
    memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); /* inclusive '\0' */
    currpos += strlen(tmp)+1;
 
@@ -176,7 +176,7 @@ char *encodeSocketMessage(
    
    if (debug) {
       rawMsgStr = toReadableDump(rawMsg, *rawMsgLen);
-      printf("[xmlBlasterSocket] Sending now %lu bytes -> '%s'\n", (long)*rawMsgLen, rawMsgStr);
+      printf("[xmlBlasterSocket] Sending now %lu bytes -> '%s'\n", (unsigned long)*rawMsgLen, rawMsgStr);
       free(rawMsgStr);
    }
 
@@ -237,7 +237,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       return true;
    }
    socketDataHolder->msgLen = (size_t)msgLenL;
-   if (debug) printf("[xmlBlasterSocket] Receiving message of size %lu ...\n", (long)socketDataHolder->msgLen);
+   if (debug) printf("[xmlBlasterSocket] Receiving message of size %lu ...\n", (unsigned long)socketDataHolder->msgLen);
 
    if (socketDataHolder->msgLen <= MSG_LEN_FIELD_LEN || socketDataHolder->msgLen > MAX_MSG_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);

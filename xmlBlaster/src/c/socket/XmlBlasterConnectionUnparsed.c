@@ -378,7 +378,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       if (xb->logLevel>=LOG_ERROR) xb->log(xb->logLevel, LOG_ERROR, __FILE__,
          "Sent only %d bytes from %u", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Sent only %ld bytes from %lu", __FILE__, __LINE__, (long)numSent, (long)rawMsgLen);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Sent only %ld bytes from %lu", __FILE__, __LINE__, (long)numSent, (unsigned long)rawMsgLen);
       free(rawMsg);
       return false;
    }
