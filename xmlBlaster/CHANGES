@@ -16,6 +16,10 @@ TODO:
 * Test message lifecycle (some implementation is missing)
 
 DONE:
+  - The update() method changed incompatible!
+    The first argument now returns the callback sessionId.
+    This is the id you passed on registering your callback server
+    and allows you to authenticate the callback invoker.
 
   - Changes to Java client library. We now support separate
     instantiation of callback protocol drivers and client drivers.
