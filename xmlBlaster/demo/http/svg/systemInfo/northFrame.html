@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+COMMENT:
+   This frame listens on message updates and draws with the
+   received data a cpuinfo and meminfo frame
+-->
+<html>
+   <head>
+      <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <meta http-equiv='Pragma' content='no-cache'>
+      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+      <script language="Javascript1.2">
+         /**
+          * The callback from xmlBlaster.
+          * The Javascript objects are defined in callback.js
+          * @param messageQueue array with MessageWrapperDom objects (key, content, qos)
+          *        key     = UpdateKey object
+          *        content = The content (a string with the message data)
+          *        qos     = UpdateQos object
+          */
+         function update( messageQueue ) {
+            top.xmlBlasterWindow.Log.trace("northFrame is receiving " + messageQueue.length + " updates");
+            for( var i = 0; i < messageQueue.length; i++ ) {
+               top.xmlBlasterWindow.setReady( self, false );
+               var keyOid = messageQueue[i].key.oid;
+               var frameName = keyOid + "Frame";  // Frame name is for example "cpuinfoFrame"
+               var content = messageQueue[i].content;
+               updateFrame(frameName, content);
+            }
+         }
+
+         /**
+          * When i am loaded:
+          * Tell the callbackFrame that i am interested in message updates
+          */
+         function initialize() {
+            top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
+            top.xmlBlasterWindow.addUpdateListener( self );
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"), " ");
+            top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
+            top.xmlBlasterWindow.setReady( self, true );
+            top.xmlBlasterWindow.Log.trace("OK, i am ready");
+         }
+
+         /**
+          * Draw the cpuinfo/meminfo frame with the received new data
+          */
+         function updateFrame(frameName, contentStr)
+         {
+            var value = parseInt(contentStr);
+
+            if (value < 1) value = 1;
+            if (value > 100) value = 100;
+
+            top.xmlBlasterWindow.Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
+
+            var svgdoc = document.embeds["svgFrame"].getSVGDocument();
+            var objet=svgdoc.getElementById('rectangle');
+            objet.setAttribute('width', value);
+            if (value > 80)
+               objet.getStyle().setProperty('fill','red')
+            else if (value > 60)
+               objet.getStyle().setProperty('fill','yellow')
+            else
+               objet.getStyle().setProperty('fill','green')
+
+            top.xmlBlasterWindow.setReady( self, true );
+         }
+      </script>
+   </head>
+
+   <body onLoad="initialize();" bgcolor="#FFFFFF">
+   <center>
+      <h2>
+         System load on <a href="http://www.xmlBlaster.org">xmlBlaster.org</a> server
+      </h2>
+      <i><strong>Demo with immediate data updates from the server, without closing the http connection.</strong></i>
+      <p />
+      XmlBlaster Apache/Jserv web server (Linux) on Intel Pentium with 120 MHz
+      <br />
+      <font size='-2'>Below you should see two frames displaying dynamic CPU and MEM data:</font>
+      <br />
+      <script language="Javascript1.2">
+         /*  top.xmlBlasterWindow is not yet valid if systemInfo.html is the persistentWindow creater
+         var info = top.xmlBlasterWindow.getBrowserInfo();
+         document.writeln('<font size="-2">' + info + '</font>');
+         */
+      </script>
+   </center>
+   </body>
+</html>
+

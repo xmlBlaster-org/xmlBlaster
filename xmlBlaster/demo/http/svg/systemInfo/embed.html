@@ -1,0 +1,15 @@
+<html>
+<body>
+   <embed src="systemInfo.svg" type="image/svg-xml" name="fritz" />
+   <script language="Javascript1.2">
+      function oi() {
+         var svgdoc = document.embeds["fritz"].getSVGDocument();
+         alert(svgdoc);
+      }
+   </script>
+   <form>
+      <input type="button" value="Window" onClick="window.sayHello('FRITZ')" />
+      <input type="button" value="Frames" onClick="javascript:oi();">
+   </form>
+</body>
+</html>
