@@ -3,6 +3,7 @@
 <!ELEMENT requirement (
 	topic,
 	description,
+	example,
 	author,
 	date,
 	revision,
@@ -13,6 +14,7 @@
 
 <!ELEMENT topic  (%text;)>
 <!ELEMENT description  (%text;)> 
+<!ELEMENT example  (%text;)> 
 <!ELEMENT author  (%text;)> 
 <!ELEMENT date  (%text;)> 
 <!ELEMENT revision  (%text;)> 
