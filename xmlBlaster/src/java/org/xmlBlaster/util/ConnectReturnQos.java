@@ -47,7 +47,8 @@ public class ConnectReturnQos {
    }
    public ConnectReturnQos(Global glob, String xmlQos_literal) throws XmlBlasterException {
       this.glob = glob;
-      connectQos = new ConnectQos(glob, xmlQos_literal);
+      boolean isServerSide = false;
+      connectQos = new ConnectQos(glob, xmlQos_literal, isServerSide);
    }
    public final String toXml() {
       return connectQos.toXml();
