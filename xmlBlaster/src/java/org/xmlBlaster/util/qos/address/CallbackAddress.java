@@ -125,6 +125,14 @@ public class CallbackAddress extends AddressBase
       this.useForSubjectQueue = useForSubjectQueue;
    }
 
+   /**
+    * The identifier sent to the callback client, the client can decide if he trusts this invocation
+    * @see AddressBase#setSecretSessionId(String)
+    */
+   public void setSecretCbSessionId(String cbSessionId) {
+      setSecretSessionId(cbSessionId);
+   }
+
    /** @return The literal address as given by getAddress() */
    public String toString() {
       return getAddress();
