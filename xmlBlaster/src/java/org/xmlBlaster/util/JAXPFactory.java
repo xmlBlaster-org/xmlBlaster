@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,18 +29,21 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/09/19 09:14:55 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/24 16:01:30 $
  */
 
 public class JAXPFactory {
+
+   private final static String ME = "JAXPFactory";
+
    /**
     * Use the default SAXParserFactory.
     */
-   public static SAXParserFactory newSAXParserFactory() 
+   public static SAXParserFactory newSAXParserFactory()
       throws FactoryConfigurationError{
       return SAXParserFactory.newInstance();
    }
-   
+
    /**
     * Use the SAXParserFactory class specifyed.
     */
@@ -87,36 +90,43 @@ public class JAXPFactory {
       } catch (InstanceException e) {
          throw new TransformerFactoryConfigurationError(e.getException(),e.getMessage());
       } // end of try-catch
-      
-      
+
+
    }
 
    /**
     * Load the given classname from the thread context classloader.
     */
-   private static Object newInstance(String className) 
+   private static Object newInstance(String className)
       throws InstanceException{
-      try {  
+      try {
          ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+         if (classLoader == null) {
+            Log.warn(ME, "newInstance: 'Thread.currentThread().getContextClassLoader()' returns null!");
+            return Class.forName(className).newInstance();
+         }
          Class fac =classLoader.loadClass(className);
+         if (fac == null) {
+            Log.warn(ME, "newInstance: 'classLoader.loadClass(" + className + ")' returns null!");
+         }
          return fac.newInstance();
-         
+
       } catch (ClassNotFoundException e) {
          throw new InstanceException("Could not find class: "+className,e);
       } catch(Exception e) {
-         throw new InstanceException("Could not load factory: "+className,e);
+         throw new InstanceException("Exception: " + e.toString() + "Could not load factory: "+className,e);
       }
    }
-   
-   
+
+
    static class InstanceException extends Exception {
       private Exception exception;
-      
+
       InstanceException(String msg, Exception x) {
          super(msg);
          this.exception = x;
       }
-      
+
       Exception getException() {
          return exception;
       }
