@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.4 1999/11/22 18:07:41 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.5 1999/11/22 22:14:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -85,9 +85,10 @@ public class ClientOid
 
          Log.trace(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
 
+
+         //----------- Subscribe to a message with known oid -------
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                         "<key oid=\"KEY_FOR_SMILEY\"></key>";
-
+                         "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          try {
             xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
@@ -95,6 +96,9 @@ public class ClientOid
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
+
+         //----------- Subscribe to a message with known oid -------
+         // subscribing twice: this second subscribe is ignored
          try {
             xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
@@ -102,26 +106,28 @@ public class ClientOid
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
-         // Construct a message
+
+         //----------- Construct a message and publish it ---------
+         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                  "<key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'></key>";
          String str = "Yeahh, i'm the new content - Smiley changed";
-         MessageUnit[] marr = new MessageUnit[1];
-         marr[0] = new MessageUnit(xmlKey, str.getBytes());
-         String[] qarr = new String[1];
-         qarr[0] = "";
-
+         MessageUnit msg = new MessageUnit(xmlKey, str.getBytes());
+         qos = ""; // quality of service
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            xmlServer.publishArr(marr, qarr);
-
+            xmlServer.publish(msg, qos);
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
-
          Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
+
          delay(); // Wait some time ...
 
 
+         //----------- Unsubscribe from the message --------
          Log.trace(ME, "Trying unsubscribe ...");
+         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                  "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          stop.restart();
          try {
             xmlServer.unSubscribe(xmlKey, qos);
@@ -132,8 +138,11 @@ public class ClientOid
 
 
          Log.trace(ME, "Trying publishArr ...");
+         MessageUnit[] marr = new MessageUnit[1];
+         marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
+         String[] qarr = new String[1];
+         qarr[0] = "";
          try {
-            marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
             String[] returnArr = xmlServer.publishArr(marr, qarr);
             for (int ii=0; ii<returnArr.length; ii++) {
                Log.info(ME, "   Returned oid=" + returnArr[ii]);
@@ -143,6 +152,8 @@ public class ClientOid
          }
          Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
 
+
+         //----------- Logout --------------------------------------
          Log.trace(ME, "Trying logout ...");
          try {
             authServer.logout(xmlServer);
@@ -151,15 +162,14 @@ public class ClientOid
          }
 
 
+         //----------- Trying to send some data after logout -------
          Log.trace(ME, "Sending some new Smiley data after logout ...");
          try {
             xmlServer.publishArr(marr, qarr);
 
          } catch(XmlBlasterException e) {
-            Log.error(ME, "XmlBlasterException: " + e.reason);
+            Log.info(ME, "XmlBlasterException: " + e.reason);
          }
-
-         Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
       }
       catch (Exception e) {
           e.printStackTrace();
