@@ -49,7 +49,8 @@ public class ServerEntryFactory implements I_EntryFactory
    private LogChannel log = null;
 
    public static final String ENTRY_TYPE_MSG_SERIAL = "MSG_SER"; // msgUnit was serialized with java.io.Serializable
-   public static final String ENTRY_TYPE_MSG_XML = "MSG_XML"; // msgUnit is dump as XML ASCII string
+   public static final String ENTRY_TYPE_MSG_XML = "MSG_XML"; // msgUnit is dumped as XML ASCII string
+   public static final String ENTRY_TYPE_MSG_RAW = "MSG_RAW"; // msgUnit is dumped as specified in the protocol.socket requirement (see C persistent queue)
    public static final String ENTRY_TYPE_UPDATE_REF = "UPDATE_REF";
    public static final String ENTRY_TYPE_HISTORY_REF = "HISTORY_REF";
    public static final String ENTRY_TYPE_TOPIC_SERIAL = "TOPIC_SER";
