@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.3 2000/06/13 17:34:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -62,13 +62,15 @@ import java.rmi.Naming;
  *        -Djava.rmi.server.hostname=hostname.domainname
  *        ...
  * </pre>
+ * @see http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html
+ * @see http://archives.java.sun.com/archives/rmi-users.html
  */
 public class RmiDriver implements I_Driver
 {
    private static final String ME = "RmiDriver";
    private String iorFile = null;
-   /** XmlBlaster RMI registry listen port is 7619, to access for bootstrapping */
-   public static final int DEFAULT_REGISTRY_PORT = 7619;
+   /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
+   public static final int DEFAULT_REGISTRY_PORT = 1099;
    /** The singleton handle for this xmlBlaster server */
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -146,7 +148,7 @@ public class RmiDriver implements I_Driver
    private void bindToRegistry() throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "bindToRegistry() ...");
-      int registryPort = Property.getProperty("RMI.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 7619
+      int registryPort = Property.getProperty("rmi.RegistryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
       try {
          if (registryPort > 0) {
             // Start a 'rmiregistry' if desired
@@ -195,7 +197,7 @@ public class RmiDriver implements I_Driver
    {
       String text = "\n";
       text += "RmiDriver options:\n";
-      text += "   -RMI.RegistryPort   Specify a port number where rmiregistry listens.\n";
+      text += "   -rmi.RegistryPort   Specify a port number where rmiregistry listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
       text += "\n";
       return text;

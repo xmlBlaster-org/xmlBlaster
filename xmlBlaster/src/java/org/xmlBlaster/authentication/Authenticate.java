@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.29 2000/06/13 13:03:57 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.30 2000/06/13 17:34:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -101,6 +101,10 @@ public class Authenticate
 
       // !=== CHECK PASSWORD HERE IN FUTURE VERSION ====!
 
+      if (sessionId == null || sessionId.length() < 2) {
+         sessionId = createSessionId(loginName);
+      }
+
       AuthenticationInfo authInfo = new AuthenticationInfo(sessionId, loginName, passwd, xmlQoS);
 
       if (clientInfo != null) {
@@ -111,10 +115,6 @@ public class Authenticate
          synchronized(loginNameClientInfoMap) {
             loginNameClientInfoMap.put(loginName, clientInfo);
          }
-      }
-
-      if (sessionId == null || sessionId.length() < 2) {
-         sessionId = createSessionId(loginName);
       }
 
       synchronized(aomClientInfoMap) {

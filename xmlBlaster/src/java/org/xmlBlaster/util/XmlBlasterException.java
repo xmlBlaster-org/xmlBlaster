@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.1 2000/06/13 13:02:06 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.2 2000/06/13 17:34:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -11,9 +11,10 @@ package org.xmlBlaster.util;
 /**
  * The basic exception handling class for xmlBlaster.
  * <p />
+ * This exception will be thrown in remote RMI calls as well.
  * @author "Marcel Ruff" <ruff@swand.lake.de>
  */
-public class XmlBlasterException extends Exception
+public class XmlBlasterException extends Exception implements java.io.Serializable
 {
    public String id;
    public String reason;
@@ -26,7 +27,7 @@ public class XmlBlasterException extends Exception
 
    public String toString()
    {
-      return toXml();
+      return "id=" + id + " reason=" + reason;
    }
 
    /**

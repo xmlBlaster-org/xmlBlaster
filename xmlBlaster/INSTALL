@@ -57,7 +57,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
     After a new login you are ready to start xmlBlaster (see below).
 
 
-   b) If you didn't follow step a), here is how to setup
+   b) If you did not follow step a), here is how to setup
       your environment manually (examples for csh or tcsh):
 
      setenv JDK_HOME /usr/local/jdk
@@ -135,9 +135,9 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
 
 
-+--------------------+
-| START XMLBLASTER   |
-+--------------------+
++-------------------------------------+
+| START XMLBLASTER AS A CORBA SERVER  |
++-------------------------------------+
 
 You have three options to start the xmlBlaster-Server.
 
@@ -145,7 +145,7 @@ See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more
 instructions.
 
 One important note:
-   You can't start xmlBlaster on JDK 1.2.x with the java command directly,
+   You cannot start xmlBlaster on JDK 1.2.x with the java command directly,
    since this would use the JDK internal ORB (which is outdated).
    - Start xmlBlaster like this:
       java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
@@ -207,6 +207,26 @@ One important note:
 
    you should receive the IOR string, if everything is setup properly and the
    naming service is running.
+
+
++-----------------------------------+
+| START XMLBLASTER AS A RMI SERVER  |
++-----------------------------------+
+
+1. Start the server, you need to specify at least a security policy file:
+
+     java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.MainGUI
+
+   another variant could be:
+
+     java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/
+          -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy
+          -Djava.rmi.server.hostname=localhost
+          org.xmlBlaster.Main
+
+   Consult the SUN RMI documentation about 'codebase' and 'policy' settings.
+   Especially 'codebase' should be used with a web server,
+   to test if your code runs in a distributed environment.
 
 
 +--------------------+

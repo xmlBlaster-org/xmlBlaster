@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.33 2000/06/13 13:03:59 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.34 2000/06/13 17:34:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -122,7 +122,7 @@ public class ClientInfo
             Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
          }
          catch (Throwable e) {
-            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name in xmlBlaster.properties and/or the CLASSPATH to the driver file: " + e.toString());
          }
       }
    }

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.41 2000/06/13 13:03:57 ruff Exp $
+Version:   $Id: Main.java,v 1.42 2000/06/13 17:34:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -81,6 +81,7 @@ public class Main
    private void init(String args[])
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
+         loadDrivers();
          usage();
          return;
       }

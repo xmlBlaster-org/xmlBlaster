@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.3 2000/06/13 17:34:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -64,7 +64,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
          String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
-         if (tmpSessionId == null || !tmpSessionId.equals(sessionId)) {
+         if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
             Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
             throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
          }
