@@ -581,6 +581,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
     * @param client    Your implementation of I_Callback, or null if you don't want any.
     * @exception       XmlBlasterException if login fails
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    public synchronized void login(String loginName, String passwd, ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
@@ -638,6 +639,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                  The callback tag will be added automatically if client!=null
     * @param client    Your client code which implements I_Callback to receive messages via update()
     * @exception       XmlBlasterException if login fails
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
@@ -652,6 +654,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                We will add the callback address of the here created callback server instance
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client, CallbackAddress cbAddr) throws XmlBlasterException
    {
@@ -665,6 +668,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param cbSessionId  You can pass a session ID which is passed to the update method for callback authentication.
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client, String cbSessionId) throws XmlBlasterException
    {
@@ -679,6 +683,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *              We will add the callback address of the here created callback server instance
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client, CbQueueProperty prop) throws XmlBlasterException
    {
@@ -688,6 +693,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Internal connect method, collecting all other connect() variants
     * @see #connect(ConnectQos qos, I_Callback client)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    private ConnectReturnQos connect(ConnectQos qos, I_Callback client, CbQueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
    {
@@ -1103,6 +1109,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param shutdownCb shutdown callback server as well (if any was established)
     * @return <code>true</code> successfully logged out<br />
     *         <code>false</code> failure on logout
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    public synchronized boolean disconnect(DisconnectQos qos, boolean flush, boolean shutdown, boolean shutdownCb)
    {
@@ -1397,8 +1404,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
-    * @see org.xmlBlaster.engine.RequestBroker#subscribe
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     */
    public final SubscribeRetQos subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
    {
@@ -1425,8 +1431,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this oid if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
-    * @see org.xmlBlaster.engine.RequestBroker#subscribe
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     */
    public final SubscribeRetQos subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
@@ -1458,7 +1463,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
@@ -1497,7 +1502,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * See private method handleConnectionException(ConnectionException)
     *
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
     *            id="TryingReconnect" if we are in fail save mode and polling for a connection and have no message recorder installed
     */
@@ -1600,6 +1605,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
@@ -1716,6 +1722,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final EraseRetQos[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
@@ -1774,6 +1781,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.get requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException

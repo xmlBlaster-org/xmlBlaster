@@ -134,6 +134,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
+    * <p />
+    * @return The same as getInstanceId() but as string
     * @see #getInstanceId
     */
    public final String getPublicSessionId() {
