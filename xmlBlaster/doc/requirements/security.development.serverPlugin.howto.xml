@@ -381,6 +381,8 @@
 </example>
 <see type="REQ">security.introduction</see>
 <see type="REQ">security.htpasswd</see>
+<see type="REQ">security.ldap</see>
+<see type="REQ" label="SOCKET based SSL protection">protocol.socket</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Manager</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Session</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Subject</see>

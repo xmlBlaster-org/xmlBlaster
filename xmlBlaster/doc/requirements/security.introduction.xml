@@ -123,6 +123,8 @@
 </description>
 <see type='REQ'>security.development.serverPlugin.howto</see>
 <see type="REQ">security.htpasswd</see>
+<see type="REQ">security.ldap</see>
+<see type="REQ" label="SOCKET based SSL protection">protocol.socket</see>
 <!-- see type='REQ'>security.development.clientPlugin.howto</see>
 <see type='REQ'>security.administration.howto</see -->
 </requirement>
