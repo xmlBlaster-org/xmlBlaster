@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.2 2000/10/18 21:21:47 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.3 2000/10/21 20:53:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -406,7 +406,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          this.loginQos = qos;
 
       if (client != null) {
-         this.callback = createCallbackServer(new DefaultCallback(loginName, client));
+         createCallbackServer(new DefaultCallback(loginName, client));
 
          // Add the stringified IOR to QoS ...
          CallbackAddress addr = new CallbackAddress("IOR");
@@ -510,7 +510,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @exception XmlBlasterException if the BlasterCallback server can't be created
     *            id="CallbackCreationError"
     */
-   public BlasterCallback createCallbackServer(org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations callbackImpl) throws XmlBlasterException
+   public void createCallbackServer(org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
       BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
 
@@ -523,11 +523,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
       }
 
       try {
-         callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
+         this.callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          rootPOA.the_POAManager().activate();
          // necessary for orbacus
          if (orb.work_pending()) orb.perform_work();
-         return callback;
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException("CallbackCreationError", e.toString());
@@ -723,17 +722,17 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
     */
-   public static void usage()
+   public static String usage()
    {
-      String ME="CorbaConnection";
-      Log.plain(ME, "");
-      Log.plain(ME, "Client connection options:");
-      Log.plain(ME, "   -ior                The IOR string.");
-      Log.plain(ME, "   -iorHost            The host where to find xmlBlaster [localhost]");
-      Log.plain(ME, "   -iorPort            The port where xmlBlaster publishes its IOR [7609]");
-      Log.plain(ME, "   -iorFile <fileName> A file with the xmlBlaster IOR.");
-      Log.plain(ME, "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]");
-      Log.plain(ME, "");
+      String text = "\n";
+      text += "CorbaConnection options:\n";
+      text += "   -ior                The IOR string.";
+      text += "   -iorHost            The host where to find xmlBlaster [localhost]";
+      text += "   -iorPort            The port where xmlBlaster publishes its IOR [7609]";
+      text += "   -iorFile <fileName> A file with the xmlBlaster IOR.";
+      text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]";
+      text += "\n";
+      return text;
    }
 } // class CorbaConnection
 
