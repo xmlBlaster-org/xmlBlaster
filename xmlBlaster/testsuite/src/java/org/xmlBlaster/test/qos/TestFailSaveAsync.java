@@ -9,6 +9,8 @@ import org.jutils.init.Property;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -169,7 +171,17 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       try {
          try {
             EraseReturnQos[] arr = con.erase(xmlKey, null);
-            assertEquals("Wrong number of message erased", maxMsg-failMsg, arr.length);  // expect 80 to delete as the first 20 are lost when server 'crashed'
+
+
+            PropString defaultPlugin = new PropString("CACHE,1.0");
+            String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
+            log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+            
+            if (defaultPlugin.getValue().startsWith("RAM"))
+               assertEquals("Wrong number of message erased", (maxMsg-failMsg), arr.length);
+               // expect 80 to delete as the first 20 are lost when server 'crashed'
+            else
+               assertEquals("Wrong number of message erased", maxMsg, arr.length);
          } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.getMessage(), false); }
 
          con.disconnect(null);
