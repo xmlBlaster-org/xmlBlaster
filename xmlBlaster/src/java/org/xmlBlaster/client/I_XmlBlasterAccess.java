@@ -81,6 +81,10 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
       
    /**
     * Create a new instance of the desired protocol driver like CORBA or RMI driver using the plugin loader. 
+    * <p>
+    * Note that the returned instance is of your control only, we don't cache it in any way, this
+    * method is only a helper hiding the plugin loading.
+    * </p>
     * @param type  E.g. "IOR" or "RMI", if null we use the same protocol as our client access (corba is default).
     * @param version The version of the driver, e.g. "1.0"
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
