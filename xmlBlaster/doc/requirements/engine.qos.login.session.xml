@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.login.session' type='NEW' prio='MEDIUM' status="INWORK">
+   <topic>Clients of XmlBlaster can use configurable session parameters on login</topic>
+   <description>
+      <p>
+      The login mode is session based.
+      This allows multiple logins for the same client.
+      The logins are distinguished by a unique, random session ID.
+      </p>
+      <p>
+      Clients login to xmlBlaster with the connect() method. They deliver a ConnectQos
+      - a XML based quality of service string describing their configuration.
+      </p>
+      <p>
+      A client session has a default duration of 24 hours (this is configurable).
+      Every request or successful callback refreshes the duration of the session.
+      After 24 hours of inactivity the session expires.
+      </p>
+      <p>
+      Every client may have a maximum of 10 sessions, other values are configurable.
+      On demand a connect() can kill all other sessions of this client.
+      If the maximum is reached, an XmlBlasterException is thrown on login.
+      </p>
+      <p>
+      XmlBlaster allows to check clients with a ping to the callback server.
+      The ping frequency is adjustable at login time by the client itself.
+      A client session disappears when it does a logout or on failure (no response to the ping)
+      or on session-timeout or when killOldSessions=true is set.
+      </p>
+      <p>
+      Interested parties can subscribe on Login/Logout events, to find out if
+      a client arrives or disappears (message oid="__sys__Logout" or oid="__sys__Login").
+      </p>
+   </description>
+
+   <example lang="Java">
+      <![CDATA[
+      Setting default configuration parameters for the xmlBlaster server
+      (on command line or in xmlBlaster.properties):
+
+         -session.timeout      86400000  // One day in millis
+         -session.maxPerClient 10        // Max 10 simultaneous logins for same client
+
+
+
+      <!-- QoS of the connect() method, this raw string is delivered to xmlBlaster -->
+      <qos>
+         <securityService type="simple" version="1.0"> <!-- protected by CDATA -->
+            <user>michele</user>
+            <passwd>secret</passwd>
+         </securityService>
+
+         <session timeout='3600000' maxSessions='20'/>
+
+         <callback type='IOR'> <!-- Use CORBA to callback messages for this session -->
+            IOR:00011200070009990000....
+            <compress type='gzip' minSize='1000' />
+                      <!-- compress messages bigger 1000 bytes before sending them to me -->
+
+            <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
+                       them in one callback (burst mode)
+                       This update mode is a 'transaction' for all collected messages -->
+         </callback>
+
+         <callback type='XML-RPC' sessionId='sldg03loQ22'>
+            http:/www.mars.universe:8080/RPC2
+         </callback>
+              <!-- The session id is passed to the client callback server, he can check
+              if he trusts this sender, it defaults to the login name of the sender -->
+
+         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+            <!-- Qualifies the session based queue, with a maximum of 1000 messages
+                 or 4000 KBytes of capacity, whichever is reached first.
+                 If exceeded a dead letter is published -->
+         </queue>
+
+         <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000' onOverflow='discardOldest'/>
+            <!-- The login name based queue expires after given milliseconds.
+                 If exceeded the oldest message(s) is discarded -->
+      </qos>
+      ]]>
+   </example>
+   <see type="REQ">protocol</see>
+   <see type="REQ">engine.callback</see>
+   <see type="REQ">engine.qos.login.callback</see>
+   <see type="API">org.xmlBlaster.util.ConnectQos</see>
+   <author>ruff@swand.lake.de</author>
+   <author>krafft@doubleslash.de</author>
+   <date>2002 03 10</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
