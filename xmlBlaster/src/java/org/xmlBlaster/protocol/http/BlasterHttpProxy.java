@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.2 2000/03/12 22:46:44 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.3 2000/03/13 17:34:31 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -36,18 +36,18 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
-   private final String ME 							= "BlasterHttpProxy";
-   private static BlasterHttpProxy theInstance 	= new  BlasterHttpProxy();
+   private final String ME                                                      = "BlasterHttpProxy";
+   private static BlasterHttpProxy theInstance  = new  BlasterHttpProxy();
 
    /** Mapping the sessionId to a ServletConnection instance */
-   private Hashtable proxyConnections 				= new Hashtable();
+   private Hashtable proxyConnections           = new Hashtable();
 
    /** Stores global Attributes for other Servlets */
-   private Hashtable attributes              	= new Hashtable();
+   private Hashtable attributes                 = new Hashtable();
 
 
    /**
@@ -57,10 +57,11 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
+      Log.info(ME, "Initialize ...");
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
-      Log.addLogLevel("DUMP");
-      Log.addLogLevel("TRACE");
+      //Log.addLogLevel("DUMP");
+      //Log.addLogLevel("TRACE");
       Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
       Log.addLogListener(this);
@@ -172,6 +173,7 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
+      Log.info(ME, "Entering doGet() ...");
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
@@ -207,7 +209,8 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
 
 
             // confirm successful login:
-            pushHandler.push("/*if (top.loginSuccess != null) */top.loginSuccess(true);\n");
+            //pushHandler.push("/*if (top.loginSuccess != null) */top.loginSuccess(true);\n");
+            pushHandler.push("<HTML></HTML>");
 
             // Don't fall out of doGet() to keep the HTTP connection open
             Log.info(ME, "Waiting forever, permanent HTTP connection ...");
@@ -221,7 +224,7 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
          errorText = e.toString();
          e.printStackTrace();
       } finally {
-         
+
          Log.info(ME, "Entering finally of permanent connection");
 
          pushHandler.cleanup();
