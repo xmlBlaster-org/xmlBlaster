@@ -92,7 +92,7 @@ void SessionQosData::setLiteral(const string& literal)
 
 string SessionQosData::toXml() const
 {
-   if (isDirty_) SessionQosFactory::writeObject(*this);
+   if (isDirty_) return SessionQosFactory::writeObject(*this);
    return literal_;
 }
 
@@ -131,7 +131,6 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
    if (util::XmlQoSBase::startElementBase(name, attrs)) return;
 
    if (SaxHandlerBase::caseCompare(name, "session")) {
-      sessionQos_ = SessionQosData();
       // get all attributes which are needed ...
       int len = attrs.getLength();
       for (int i = 0; i < len; i++) {
@@ -169,6 +168,15 @@ void SessionQosFactory::endElement(const XMLCh* const name) {
    }
 }
 
+void SessionQosFactory::reset()
+{
+   sessionQos_ = SessionQosData();
+}
+
+SessionQosData SessionQosFactory::getData() const
+{
+   return sessionQos_;
+}
 
 SessionQosData SessionQosFactory::readObject(const string& qos)
 {

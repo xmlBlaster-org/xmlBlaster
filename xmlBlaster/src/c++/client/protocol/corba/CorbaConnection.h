@@ -202,6 +202,13 @@ namespace org {
        */
        ConnectReturnQos connect(const ConnectQos& connectQos);
 
+       /**
+        * Disconnects from the xmlBlaster server (the callback server is not
+        * disconnected).
+        */
+       bool disconnect(const string& qos="");
+
+       void shutdown();
 
       /**
        * Building a Callback server.

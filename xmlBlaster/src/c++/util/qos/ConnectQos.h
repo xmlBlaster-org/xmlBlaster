@@ -52,10 +52,10 @@ using namespace org::xmlBlaster::util;
 class Dll_Export ConnectQosData
 {
 private:
-   string      sessionId_;
    SecurityQos securityQos_;
    SessionQos  sessionQos_;
    ServerRef   serverRef_;
+   bool        ptp_;
    bool        isDirty_;
    string      literal_;
 
@@ -65,8 +65,9 @@ private:
 
 public:
    ConnectQosData();
-   void setSessionId(const string& sessionId);
-
+   bool getPtp() const;
+   string getPtpAsString() const;
+   void setPtp(bool ptp);
    void setSessionQos(const SessionQos& sessionQos);
    SessionQos getSessionQos() const;
    string getSessionId() const;
@@ -79,34 +80,38 @@ public:
    string toXml() const;
 };
 
+/* ----------------------- ConnectQosFactory ---------------------------------*/
+
 class Dll_Export ConnectQosFactory: public util::XmlQoSBase
 {
 private:
    const string ME;
 
-   string       sessionId_;
+//   string       sessionId_;
    SessionQosFactory sessionQosFactory_;
    string       userId_;
    SecurityQos* securityQos_;
    ServerRef*   serverRef_;
-   string       callbackType_;
+   string       serverRefType_;
+   bool         isPtp_;
 
    // helper flags for SAX parsing
    bool inSecurityService_;
-   bool inCallback_;
+   bool inServerRef_;
    bool inSession_;
    int args_;
    const char * const* argc_;
-   util::StringTrim<char> trim_;
+//   util::StringTrim<char> ;
 
    void prep(int args, const char * const argc[])
    {
       args_              = args;
       argc_              = argc;
       inSecurityService_ = false;
-      inCallback_        = false;
+      inServerRef_       = false;
       inSession_         = false;
-      callbackType_      = "";
+      serverRefType_     = "";
+      isPtp_             = false;
       securityQos_       = NULL;
       serverRef_         = NULL;
    }

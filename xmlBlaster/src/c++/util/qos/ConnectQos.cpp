@@ -7,17 +7,19 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 
 #include <util/qos/ConnectQos.h>
 // #include <util/XmlBlasterException>
+#include <boost/lexical_cast.hpp>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
+using boost::lexical_cast;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 
 ConnectQosData::ConnectQosData() : securityQos_(), serverRef_("")
 {
-   sessionId_ = "";
+//   sessionId_ = "";
    isDirty_ = true;
 }
 
@@ -27,6 +29,21 @@ void ConnectQosData::setLiteral(const string& literal)
    isDirty_ = false;
 }
 
+bool ConnectQosData::getPtp() const
+{
+   return ptp_;
+}
+
+string ConnectQosData::getPtpAsString() const
+{
+   if (ptp_ == true) return string("true");
+   return string("false");
+}
+
+void ConnectQosData::setPtp(bool ptp)
+{
+   ptp_ = ptp;
+}
 
 void ConnectQosData::setSessionQos(const SessionQos& sessionQos)
 {
@@ -39,12 +56,6 @@ SessionQos ConnectQosData::getSessionQos() const
    return sessionQos_;
 }
 
-void ConnectQosData::setSessionId(const string& sessionId)
-{
-   sessionId_ = sessionId;
-   isDirty_ = true;
-}
-
 string ConnectQosData::getSessionId() const
 {
    return sessionQos_.getSessionId();
@@ -52,7 +63,8 @@ string ConnectQosData::getSessionId() const
 
 string ConnectQosData::getUserId() const
 {
-   return securityQos_.getUserId();
+//   return securityQos_.getUserId();
+   return sessionQos_.getName();
 }
 
 string ConnectQosData::getCallbackType() const
@@ -84,7 +96,7 @@ ServerRef ConnectQosData::getServerRef() const
 
 string ConnectQosData::toXml() const
 {
-   if (isDirty_) ConnectQosFactory::writeObject(*this);
+   if (isDirty_) return ConnectQosFactory::writeObject(*this);
    return literal_;
 }
 
@@ -107,9 +119,14 @@ ConnectQosFactory::~ConnectQosFactory()
 
 void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int length)
 {
+   if (inSession_) {
+      sessionQosFactory_.characters(ch, length);
+      return;
+   }
+
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
-      char *trimmedCh = trim_.trim(chHelper);
+      char *trimmedCh = charTrimmer_.trim(chHelper);
       delete chHelper;
       if (trimmedCh != NULL) {
          character_ += string(trimmedCh);
@@ -133,16 +150,27 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
       character_ = SaxHandlerBase::getStartElementAsString(name, attrs);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "callback")) {
+
+   if (SaxHandlerBase::caseCompare(name, "session")) {
+      inSession_ = true;
+      sessionQosFactory_.reset();
+   }
+   if (inSession_) {
+      sessionQosFactory_.startElement(name, attrs);
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "ptp")) {
       character_.erase();
-      inCallback_ = true;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "serverRef")) {
+      character_.erase();
+      inServerRef_ = true;
       int len = attrs.getLength();
       for (int i = 0; i < len; i++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-            callbackType_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
-         }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
-            sessionId_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
+            serverRefType_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
          }
       }
    }
@@ -174,11 +202,31 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       }
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "callback")) {
+
+   if (SaxHandlerBase::caseCompare(name, "session")) {
+      sessionQosFactory_.endElement(name);
+      inSession_ = false;
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "ptp")) {
+      char *help = charTrimmer_.trim(character_.c_str());
+      if (string("true")  == string(help)) isPtp_ = true;
+      else isPtp_ = false;
+      delete help;
+      return;
+   }
+
+   if (inSession_) {
+      sessionQosFactory_.endElement(name);
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "serverRef")) {
       try {
-         inCallback_ = false;
+         inServerRef_ = false;
          string address = character_;
-         serverRef_ = new ServerRef(callbackType_, address);
+         serverRef_ = new ServerRef(serverRefType_, address);
       }
       catch (...) {
          delete securityQos_;
@@ -196,7 +244,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
 ConnectQosData ConnectQosFactory::readObject(const string& qos)
 {
    // this should be synchronized here ....
-   sessionId_ = "";
+//   sessionId_ = "";
    userId_ = "";
    delete securityQos_ ;
    delete serverRef_;
@@ -204,9 +252,11 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    serverRef_ = NULL;
    init(qos);
    ConnectQosData data;
-   data.setSessionId(sessionId_);
+//   data.setSessionId(sessionId_);
    if (securityQos_ != NULL) data.setSecurityQos(*securityQos_);
    if (serverRef_ != NULL) data.setServerRef(*serverRef_);
+   data.setSessionQos(sessionQosFactory_.getData());
+   data.setPtp(isPtp_);
    data.setLiteral(qos);
    return data;
 }
@@ -215,6 +265,16 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
 string ConnectQosFactory::writeObject(const ConnectQosData& qos)
 {
    std::cout << "ConnectQosFactory::writeObject not implemented yet" << std::endl;
+   string ret = string("<qos>\n") +
+                qos.getSecurityQos().toXml() +
+                qos.getSessionQos().toXml() +
+                string("   <ptp>") + qos.getPtpAsString() + string("</ptp>\n") +
+                string("\n") + 
+                string("   <!-- client queue here ... (still missing) -->\n") +
+                string("   <!-- callback queue here ... (still missing) -->\n") +
+                string("\n") + 
+                string("</qos>\n");
+
    return string("");
 }
 
@@ -244,8 +304,11 @@ int main(int args, char* argv[])
        string("     <passwd>secret</passwd>\n") +
        string("     ]]>\n") +
        string("   </securityService>\n") +
-       string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>\n") +
+       string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'>\n") +
+       string("      <sessionId>4e56890ghdFzj0</sessionId>\n") +
+       string("   </session>\n") +
        string("   <ptp>true</ptp>\n") +
+       string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +
        string("   <!-- The client side queue: -->\n") +
        string("   <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>\n") +
        string("      <address type='IOR' sessionId='4e56890ghdFzj0'>\n") +
@@ -265,9 +328,11 @@ int main(int args, char* argv[])
        ConnectQosData data = factory.readObject(qos);
        cout << "sessionId    : " << data.getSessionId() << endl;
        cout << "userId       : " << data.getUserId() << endl;
-       cout << "callback type: " << data.getCallbackType() << endl;
+       cout << " type: " << data.getCallbackType() << endl;
+       cout << "is ptp       : " << data.getPtpAsString() << endl;
        cout << "server ref   : " << data.getServerRef().toXml() << endl;
        cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
+       cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
 
     }
 

@@ -57,7 +57,9 @@ CorbaConnection::~CorbaConnection()
 {
   if (log_.CALL) log_.call(me(), "CorbaConnection destructor ...");
   numOfSessions_--;
-  if (isLoggedIn()) logout();
+//  if (isLoggedIn()) logout();
+  disconnect();
+
   if (nameServerControl_) delete nameServerControl_;
   if (orbOwner_) orb_->destroy();
   CORBA::release(authServer_);
@@ -193,7 +195,7 @@ CorbaConnection::getAuthenticationService()
            else {
               log_.warn(me(), "Connecting to -hostname=" + iorHost + " failed"); // errno
            }
-           shutdown(s, 2);
+           ::shutdown(s, 2);
         }
      }
      if (!authServerIOR.empty()) {
@@ -379,61 +381,42 @@ CorbaConnection::logout()
   return false;
 }
 
+void
+CorbaConnection::shutdown()
+{
+   if (!CORBA::is_nil(xmlBlaster_)) {
+      CORBA::release(xmlBlaster_);
+      xmlBlaster_ = NULL;
+   }
+   if (!CORBA::is_nil(authServer_)) {
+      CORBA::release(authServer_);
+      authServer_ = NULL;
+   }
+}
 
-/*
 bool
-disconnect(const string& qos)
+CorbaConnection::disconnect(const string& qos)
 {
    if (log_.CALL) log_.call(me(), "disconnect() ...");
 
-   if (xmlBlaster_ == NULL) {
+   if (CORBA::is_nil(xmlBlaster_)) {
       shutdown();
-      // Thread leak !!!
-      // orb.shutdown(true);
-      // orb = null;
       return false;
    }
 
-
-
-
-
-
-      try {
-         if (authServer != null) {
-            if(sessionId==null) {
-               authServer.logout(xmlBlaster);
-            }
-            else {
-               authServer.disconnect(sessionId, (qos==null)?"":qos.toXml()); // secPlgn.exportMessage(""));
-            }
-         }
-         shutdown();
-         // Thread leak !!!
-         // orb.shutdown(true);
-         // orb = null;
-         xmlBlaster = null;
-         return true;
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
-      } catch(org.omg.CORBA.OBJ_ADAPTER e) {
-         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "No disconnect possible, no CORBA connection", e);
-         log.warn(ME, xmlBlasterException.getMessage());
-      } catch(Throwable e) {
-         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
-         log.warn(ME, xmlBlasterException.getMessage());
-         e.printStackTrace();
+   try {
+      if (!CORBA::is_nil(authServer_)) {
+         if (sessionId_=="") authServer_->logout(xmlBlaster_);
+         else authServer_->disconnect(sessionId_.c_str(), qos.c_str());
       }
-
       shutdown();
-      // Thread leak !!!
-      // orb.shutdown(true);
-      // orb = null;
-      xmlBlaster = null;
-      return false;
+      return true;
    }
-*/
-
+   catch (...) {
+   }
+   shutdown();
+   return false;
+}
 
 
 

@@ -99,6 +99,10 @@ public:
     */
    void endElement(const XMLCh* const name);
 
+   void reset();
+
+   SessionQosData getData() const;
+
    SessionQosData readObject(const string& qos);
 
    static string writeObject(const SessionQosData& qos);

@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.1 2002/12/02 22:24:13 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.2 2002/12/03 14:08:31 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -152,8 +152,8 @@ public:
     * cleaning up .... erase() the previous message OID and logout
     */
    void tearDown() {
-      conn1_->logout();
-      conn2_->logout();
+      conn1_->disconnect();
+      conn2_->disconnect();
    }
 
 private:
