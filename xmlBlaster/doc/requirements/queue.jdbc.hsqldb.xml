@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='queue.jdbc.sqlserver' type='NEW' prio='MIDDLE' status='CLOSED'>
+<requirement id='queue.jdbc.hsqldb' type='NEW' prio='MIDDLE' status='CLOSED'>
    <topic>
         XmlBlaster has an advanced queuing facility. As the default persistence layer HSQLDB is used
         as an embedded java database.
@@ -16,7 +16,8 @@
         </p>
         <h3>Setup hsqldb</h3>
         <ol>
-        <li>Setup xmlBlaster.properties as described in the example section below</li>
+        <li>Setup <a href="http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template" target="others">
+            xmlBlaster.properties</a> as described in the example section below</li>
         </ol>
 
     </description>
@@ -108,6 +109,7 @@ boolean=CHAR
         Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
    </configuration>
 
+   <see type="INTERNET">http://hsqldb.sourceforge.net/</see>
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
    <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
@@ -119,7 +121,7 @@ boolean=CHAR
 
    <author>laghi@swissinfo.org</author>
    <date>2003 06 27</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
