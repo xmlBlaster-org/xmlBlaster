@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------------------
+/*-----t-------------------------------------------------------------------------
 Name:      TestPollerPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
@@ -44,15 +44,13 @@ import junit.framework.TestCase;
  */
 public class TestFilePollerPlugin extends TestCase implements I_Callback {
    private static String ME = "TestFilePollerPlugin";
-   
    private Global global;
    private LogChannel log;
    private Global connGlobal;
    private String oid = "filepollerTest";
-   private String dirName = "/tmp/testsuitePoller";
-   private String dirNameSent = "/tmp/testsuitePoller/Sent";
-   private String dirNameDiscarded = "/tmp/testsuitePoller/Discarded";
-   
+   private String dirName;
+   private String dirNameSent;
+   private String dirNameDiscarded;
    private MsgInterceptor updateInterceptor;
 
    private class PluginProperties extends Properties implements I_PluginConfig {
@@ -80,6 +78,26 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       this(null);
    }
 
+   private void getBaseDir() {
+      try {
+         File dummy = File.createTempFile("dummy", null);
+         String path = dummy.getCanonicalPath();
+         dummy.delete();
+         int pos = path.lastIndexOf(File.separator);
+         if (pos < 0)
+            fail("the temporary path is not absolute '" + path + "'");
+         this.dirName = path.substring(0, pos) + "/testsuitePoller";
+         this.log.info(ME, "WILL USE THE DIRECTORY '" + this.dirName + "' AS THE BASE DIRECTORY");
+         this.dirNameSent = this.dirName + "/Sent";
+         this.dirNameDiscarded = this.dirName + "/Discarded";
+      }
+      catch(Exception ex) {
+         ex.printStackTrace();
+         fail("exception occured when trying to find out temporary path");
+      }
+   }
+   
+   
    public TestFilePollerPlugin(Global global) {
       super("TestFilePollerPlugin");
       this.global = global;
@@ -88,6 +106,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          this.global.init((String[])null);
       }
       this.log = this.global.getLog("test");
+      getBaseDir();
    }
 
    /**
@@ -404,7 +423,18 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       doPublish(prop, deliverDat, deliverGif, absSubPath);
    }
 
-      /*
+   public void testPublishWithMoveRelativeLockMode() {
+      boolean deliverDat = true;
+      boolean deliverGif = true;
+      boolean absSubPath = false;
+      PluginProperties prop = new PluginProperties();
+      prop.put("sent", "Sent");
+      prop.put("discarded", "Discarded");
+      prop.put("lockExtention", ".lck");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+
+   /*
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
       prop.put("publishKey", "");
@@ -510,8 +540,6 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       delete(this.dirName + File.separator + "ok.gif.lck");
       delete(this.dirName + File.separator + "tooBig.dat");
       delete(this.dirName + File.separator + "tooBig.dat.lck");
-
-      
       
       delete(this.dirName);
    }
@@ -550,6 +578,10 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
 
       test.setUp();
       test.testPublishWithMoveRelative();
+      test.tearDown();
+
+      test.setUp();
+      test.testPublishWithMoveRelativeLockMode();
       test.tearDown();
    }
 }
