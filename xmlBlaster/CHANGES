@@ -1,5 +1,16 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xx, May 2003]
+================================
+
+ o Added basic support to connect to xmlBlaster from
+   simple C with SOCKET protocol, see
+   xmlBlaster/demo/c/socket/README
+
+ o Changed socket protocol parser to be more tolerant
+   on partial messages (needed for C SOCKET client).
+   This change is backward compatible.
+
 Changes for 0.847 [12, May 2003]
 ================================
 
