@@ -159,10 +159,14 @@ public class HtPasswd {
 
       htpasswdFile =new File(htpasswdFilename) ;
 
-      if( ! htpasswdFile.exists() )
+      if( ! htpasswdFile.exists() ) {
+         log.error( ME, "Secret file doesn't exist : "+htpasswdFilename + ", please check your 'Security.Server.Plugin.htpasswd.secretfile' setting.");
          throw new XmlBlasterException( ME, "secret file doesn't exist : "+htpasswdFilename );
-      if( ! htpasswdFile.canRead() )
+      }
+      if( ! htpasswdFile.canRead() ) {
+         log.error( ME, "Secret file '"+htpasswdFilename + "' has no read permission");
          throw new XmlBlasterException( ME, "no read access on file : "+htpasswdFilename );
+      }
 
       FileInputStream fis = null ;
 
