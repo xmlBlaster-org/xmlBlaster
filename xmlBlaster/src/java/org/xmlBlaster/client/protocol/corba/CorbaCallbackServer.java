@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.13 2002/03/17 13:37:22 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.14 2002/03/17 17:10:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -193,6 +193,33 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     * <p />
     * The call is converted to the native MessageUnit, and the other update()
     * method of this class is invoked.
+    * <p />
+    * This oneway method does not return something, it is high performing but
+    * you loose the application level hand shake.
+    *
+    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @see xmlBlaster.idl
+    */
+   public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      try {
+         update(cbSessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         e.printStackTrace();
+      }
+         
+   }
+
+   /**
+    * This is the callback method invoked from the CORBA server
+    * informing the client in an asynchronous mode about new messages.
+    * <p />
+    * It implements the interface BlasterCallbackOperations.
+    * <p />
+    * The call is converted to the native MessageUnit, and the other update()
+    * method of this class is invoked.
     *
     * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
     * @see xmlBlaster.idl
@@ -237,5 +264,15 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
    }
 
+   /**
+    * Ping to check if the callback server is alive.
+    * @param qos ""
+    * @return ""
+    */
+   public String ping(String qos)
+   {
+      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      return "";
+   }
 } // class CorbaCallbackServer
 

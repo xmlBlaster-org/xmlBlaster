@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.13 2000/11/05 19:18:52 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.14 2002/03/17 17:10:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -149,6 +149,22 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
+   public void publishOneway(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      try {
+         if (Log.CALL) Log.call(ME, "Entering publishOneway() ...");
+         publishArr(msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "publishOneway() failed, exception is not sent to client: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
+
+   /**
+    * @see xmlBlaster.idl
+    */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
@@ -245,12 +261,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
    /**
     * Ping to check if xmlBlaster is alive.
-    * @return true
+    * @param qos ""
+    * @return ""
     */
-   public boolean ping()
+   public String ping(String qos)
    {
-      return true;
-      // if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      return "";
    }
 }
 

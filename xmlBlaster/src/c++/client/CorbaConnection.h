@@ -260,6 +260,12 @@ namespace org { namespace xmlBlaster {
      
       
       /**
+       * Enforced by ServerOperations interface.
+       * @see xmlBlaster.idl
+       */
+      void publishOneway(const serverIdl::MessageUnitArr& msgUnitArr);
+
+      /**
        * Enforced by ServerOperations interface (fail save mode)
        * @see xmlBlaster.idl
        */
@@ -273,6 +279,18 @@ namespace org { namespace xmlBlaster {
       serverIdl::MessageUnitArr* get(const string &xmlKey, const string &qos);
       
       
+      /**
+       * Publish fault-tolerant the given message.
+       * <p />
+       * This is a wrapper around the raw CORBA publish() method
+       * If the server disappears you get an exception.
+       * This call will not block.
+       * <p />
+       * Enforced by ServerOperations interface (fail save mode)
+       * @see xmlBlaster.idl
+       */
+      string ping(const string &qos);
+
       /**
        * Command line usage.
        * <p />

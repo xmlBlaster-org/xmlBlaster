@@ -716,7 +716,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public void ping() throws ConnectionException
    {
       try {
-         getXmlBlaster().ping();
+         String ret = getXmlBlaster().ping("");
          return;
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());

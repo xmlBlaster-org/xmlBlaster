@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.18 2001/09/05 13:11:18 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.19 2002/03/17 17:10:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -172,6 +172,17 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       } catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
+   }
+
+   /**
+    * Ping to check if xmlBlaster is alive.
+    * @param qos ""
+    * @return ""
+    */
+   public String ping(String qos)
+   {
+      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      return "";
    }
 
    private ConnectReturnQos connect(ConnectQos loginQos) throws XmlBlasterException

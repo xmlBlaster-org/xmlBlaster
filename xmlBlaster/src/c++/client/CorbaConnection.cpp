@@ -379,6 +379,26 @@ namespace org { namespace xmlBlaster {
    }
 
 
+   void CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr){
+      if (log_.CALL) log_.call(me(), "publishOneway() ...");
+
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         xmlBlaster_->publishArr(msgUnitArr);
+      }
+      catch (const exception& e) {
+         log_.error(me(), string("Exception caught in publishOneway, it is not transferred to client: ") + e.what());
+      }
+      catch(...) {
+         log_.error(me(), "Exception caught in publishOneway, it is not transferred to client");
+      }
+   }
+
+
    serverIdl::StringArr*
       CorbaConnection::erase(const string &xmlKey, const string &qos) {
       if (log_.CALL) log_.call(me(), "erase() ...");
@@ -422,6 +442,24 @@ namespace org { namespace xmlBlaster {
       }
 
       return (serverIdl::MessageUnitArr*)0;
+   }
+
+
+   string CorbaConnection::ping(const string &qos) {
+      if (log_.CALL) log_.call(me(), "ping() ...");
+
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         const char *ret = xmlBlaster_->ping("");
+         return string(ret);
+      }
+      catch(serverIdl::XmlBlasterException &e) {
+         throw e;
+      }
    }
 
 
