@@ -15,7 +15,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <sys/types.h>
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
-#include <util/queue/I_Queue.h>
 
 #ifndef _WINDOWS
 #  include <unistd.h>

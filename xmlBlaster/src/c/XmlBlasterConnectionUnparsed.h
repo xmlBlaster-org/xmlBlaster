@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #include <util/msgUtil.h>
-#include <util/queue/I_Queue.h>
+#include <util/queue/QueueInterface.h>
 #include <util/Properties.h>
 
 struct XmlBlasterConnectionUnparsedStruct;

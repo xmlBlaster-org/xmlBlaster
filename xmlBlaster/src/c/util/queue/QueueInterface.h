@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-Name:      I_Queue.h
+Name:      QueueInterface.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
@@ -9,8 +9,8 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 -----------------------------------------------------------------------------*/
-#ifndef I_QUEUE_I_Queue_h
-#define I_QUEUE_I_Queue_h
+#ifndef I_QUEUE_QueueInterface_h
+#define I_QUEUE_QueueInterface_h
 
 #include "util/helper.h" /* BlobHolder. basicDefs.h: for int64_t (C99), Dll_Export, bool etc. */
 
@@ -79,6 +79,7 @@ typedef int64_t ( * I_QueueMaxNumOfBytes)(I_Queue *queueP);
 /**
  * Interface for a queue implementation. 
  * See SQLiteQueue.c for a DB based persistent queue implementation.
+ * The 'I_' stands for 'interface'.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html">The client.c.queue requirement</a>
  */
 struct I_QueueStruct {
@@ -268,5 +269,5 @@ extern Dll_Export char *queueEntryToXml(QueueEntry *queueEntry, int maxContentDu
 #endif
 #endif
 
-#endif /* I_QUEUE_I_Queue_h */
+#endif /* I_QUEUE_QueueInterface_h */
 

@@ -37,7 +37,7 @@ Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 # include <unistd.h>   /* unlink() */
 # include <errno.h>    /* unlink() */
 #endif
-#include "util/queue/I_Queue.h"
+#include "util/queue/QueueInterface.h"
 #include "sqlite.h"
 
 static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);

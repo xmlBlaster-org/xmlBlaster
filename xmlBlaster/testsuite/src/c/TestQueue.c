@@ -10,7 +10,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/queue/I_Queue.h>
+#include <util/queue/QueueInterface.h>
 #include "test.h"
 
 #ifdef XMLBLASTER_PERSISTENT_QUEUE
