@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.9 2000/05/09 16:43:23 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.10 2000/05/18 17:22:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -126,6 +126,7 @@ public class SystemInfo extends HttpServlet
 
       htmlOutput(output, response);
       Log.trace(ME, "Leaving SystemInfo.doRequest() ..."+stop.nice());
+      System.gc();
    }
 
 
