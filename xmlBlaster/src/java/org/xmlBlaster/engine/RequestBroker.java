@@ -41,6 +41,7 @@ import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.I_AdminNode;
 
 import java.util.*;
 import java.io.*;
@@ -58,7 +59,7 @@ import java.io.*;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, MessageEraseListener
+public final class RequestBroker implements I_ClientListener, MessageEraseListener, I_AdminNode
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -136,6 +137,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
    private boolean useCluster = false;
 
+   // Enforced by I_AdminNode
+   /** Incarnation time of this object instance in millis */
+   private long uptime;
+   private long numUpdates = 0L;
+   private int maxSessions;
+
+
    /**
     * One instance of this represents one xmlBlaster server.
     * @param authenticate The authentication service
@@ -146,7 +154,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       this.glob = this.authenticate.getGlobal();
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
-
+      this.uptime = System.currentTimeMillis();
       this.burstModeTimer = new Timeout("BurstmodeTimer");
 
       myselfLoginName = internalLoginNamePraefix + "[" + glob.getId() + "]";
@@ -1632,4 +1640,70 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       return sb.toString();
    }
+
+   //====== These methods satisfy the I_AdminNode administration interface =======
+   /** How long is the server running (in seconds) */
+   public long getUptime() {
+      return (System.currentTimeMillis() - this.uptime)/1000L;
+   }
+   /** Memory in bytes */
+   public long getFreeMem() {
+      return Runtime.getRuntime().freeMemory();
+   }
+/*   public void setFreeMem(long freeMem) throws XmlBlasterException {
+      throw new XmlBlasterException(ME, "Setting of property 'freeMem' is not supported");
+   } */
+   public long getTotalMem() {
+      return Runtime.getRuntime().totalMemory();
+   }
+   public long getUsedMem() {
+      return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+   }
+   public String getHostname() {
+      return glob.getBootstrapAddress().getAddress();
+   }
+   /** The bootstrap port */
+   public int getPort() {
+      return glob.getBootstrapAddress().getPort();
+   }
+   /** The number of different users, the sessions may be higher */
+   public int getNumClients() {
+      return authenticate.getNumSubjects();
+   }
+   public int getMaxClients() {
+      return authenticate.getMaxSubjects();
+   }
+   /** These are the login names returned, every client may be logged in multiple times
+       which you can't see here */
+   public String getClientList() {
+      return authenticate.getSubjectList();
+   }
+   public int getNumSysprop() {
+      return glob.getProperty().getProperties().size();
+   }
+   public String getSyspropList() {
+      java.util.Properties props = glob.getProperty().getProperties();
+      StringBuffer sb = new StringBuffer(props.size()*30);
+      for (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
+         if (sb.length() > 0)
+            sb.append(",");
+         sb.append((String) e.nextElement());
+      }
+      return sb.toString();
+   }
+   public int getNumMsgs() {
+      return messageContainerMap.size();
+   }
+   public String getMsgList() {
+      StringBuffer sb = new StringBuffer(messageContainerMap.size()*40);
+      Iterator iterator = messageContainerMap.values().iterator();
+      while (iterator.hasNext()) {
+         if (sb.length() > 0)
+            sb.append(",");
+         MessageUnitHandler msgUnitHandler = (MessageUnitHandler)iterator.next();
+         sb.append(msgUnitHandler.getUniqueKey());
+      }
+      return sb.toString();
+   }
+
 }
