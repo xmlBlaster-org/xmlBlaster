@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
+ o #13310 Bugfix cluster
+   ClusterNode.getConnectionState() did not reliable tell the truth
+   Thanks to Michael Lum
+
  o #13308 C++ client library
    Added client side persistence code for subscribe()
    Moved priority handling to QosData.cpp
