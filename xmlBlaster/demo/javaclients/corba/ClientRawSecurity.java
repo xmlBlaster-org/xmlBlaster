@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.2 2001/09/04 12:42:00 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.3 2001/09/04 15:50:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -262,44 +262,45 @@ public class ClientRawSecurity
       new ClientRawSecurity(args);
       Log.exit(ClientRawSecurity.ME, "Good bye");
    }
-} // ClientRawSecurity
-
-
-/**
- * Example for a callback implementation, used by the demo ClientRawSecurity.
- */
-class RawCallback implements BlasterCallbackOperations
-{
-   final String ME;
-
-   /**
-    * Construct it.
-    */
-   public RawCallback(java.lang.String name) {
-      this.ME = "RawCallback-" + name;
-      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
-   }
 
 
    /**
-    * This is the callback method invoked from the server
-    * informing the client in an asynchronous mode about new messages
+    * Example for a callback implementation, used by the demo ClientRawSecurity.
     */
-   public void update(MessageUnit[] msgUnitArr)
+   private class RawCallback implements BlasterCallbackOperations
    {
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         MessageUnit msgUnit = msgUnitArr[ii];
-         XmlKeyBase xmlKey = null;
-         try {
-            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
-         } catch (org.xmlBlaster.util.XmlBlasterException e) {
-            Log.error(ME, e.reason);
-         }
-         Log.plain(ME, "\n================== BlasterCallback update START =============");
-         Log.plain(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
-         Log.plain(ME, new String(msgUnit.content));
-         Log.plain(ME, "================== BlasterCallback update END ===============\n");
+      final String ME;
+
+      /**
+       * Construct it.
+       */
+      public RawCallback(java.lang.String name) {
+         this.ME = "RawCallback-" + name;
+         if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
       }
-   }
-} // RawCallback
+
+
+      /**
+       * This is the callback method invoked from the server
+       * informing the client in an asynchronous mode about new messages
+       */
+      public void update(MessageUnit[] msgUnitArr)
+      {
+         for (int ii=0; ii<msgUnitArr.length; ii++) {
+            MessageUnit msgUnit = msgUnitArr[ii];
+            XmlKeyBase xmlKey = null;
+            try {
+               xmlKey = new XmlKeyBase(msgUnit.xmlKey);
+            } catch (org.xmlBlaster.util.XmlBlasterException e) {
+               Log.error(ME, e.reason);
+            }
+            Log.plain(ME, "\n================== BlasterCallback update START =============");
+            Log.plain(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
+            Log.plain(ME, new String(msgUnit.content));
+            Log.plain(ME, "================== BlasterCallback update END ===============\n");
+         }
+      }
+   } // RawCallback
+
+} // ClientRawSecurity
 

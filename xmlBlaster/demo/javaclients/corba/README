@@ -8,7 +8,7 @@ Another source to see how CORBA access is implemented, see files in
 
    Start xmlBlaster server:
 
-      jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+      java org.xmlBlaster.Main -iorFile /tmp/NS_Ref
 
 
    Start the client:
