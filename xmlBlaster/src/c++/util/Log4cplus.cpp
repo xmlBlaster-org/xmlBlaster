@@ -105,6 +105,8 @@ namespace util {
 //================== Log4cplusLog implementation ======================
 
    Log4cplusLog::Log4cplusLog(std::string logName) : logName_(logName), logger_(Logger::getInstance(logName)) {
+      //Should we set this if basic configured??:
+      //logger.setLogLevel(INFO_LOG_LEVEL);
    }
 
    void Log4cplusLog::info(const std::string &instance, const std::string &text){
