@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='util.ClassLoaderFactory' type='NEW' prio='LOW' status='INWORK'>
+
+   <topic>XmlBlaster provides a ClassLoaderFactory to create instances of XmlBlasterClassLoader.</topic>
+
+   <description>
+      <p>The ClassLoaderFactory creates instances of XmlBlasterClassLoader on demand.
+      </p>
+
+      <p>The created ClassLoaders are derivations of URLClassLoader.
+      </p>
+
+      <p>
+      The system classpath and the environmental classpath will be scanned for the location of the
+      Main-jar file to determine the basepath. The packagename of the plugin to load will gives the
+      librarypath. The concatenation of the basepath and the librarypath give the basedirectory
+      where to look for the optional third party libraries.
+      </p>
+
+      <p>Only .jar-files will be added to the classpath.
+      </p>
+   </description>
+
+   <example lang='any' type='HTML'>
+      Assuming a classpath like:
+      <pre>
+        /home/developer/java/xmlBlaster/lib/jacorb.jar
+        /home/developer/java/xmlBlaster/lib/idl.jar
+        /home/developer/java/xmlBlaster/demo
+        /home/developer/java/xmlBlaster/classes
+        /home/developer/java/xmlBlaster/src/java
+        /home/developer/java/xmlBlaster/lib/testsuite.jar
+        /home/developer/java/xmlBlaster/lib/demo.jar
+        /home/developer/java/xmlBlaster/lib/xmlBlaster.jar
+        /home/developer/java/xmlBlaster/lib/batik/js.jar
+      </pre>
+      And assuming a callers class name <code>org.xmlBlaster.util.ClassLoaderFactory</code>
+      and provided that there is a path like
+      <code>/home/developer/java/xmlBlaster/lib/org/xmlBlaster/util/ClassLoaderFactory</code>
+      which contains one file <code>openorb-1.2.0.jar</code>
+      the new classpath may look like:
+      <pre>
+         /home/developer/java/xmlBlaster/lib/org/xmlBlaster/util/ClassLoaderFactory/openorb-1.2.0.jar
+      </pre>
+   </example>
+
+   <todo>
+   <p>Write some TestCase!</p>
+   <p>need another way to determine the path of the xmlBlaster.jar.</p>
+   </todo>
+
+   <see type="REQ">util.XmlBlasterClassLoader</see>
+   <see type="API">org.xmlBlaster.util.ClassLoaderFactory</see>
+   <see type="API">org.xmlBlaster.util.XmlBlasterClassLoader</see>
+
+   <author>goetzger@gmx.net</author>
+   <date>2002 07 12</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name></name>
+      <comment>
+      </comment>
+      <test tool="SUITE"></test>
+   </testcase>
+
+</requirement>
