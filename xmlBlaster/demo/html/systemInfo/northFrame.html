@@ -41,12 +41,14 @@ COMMENT:
          /**
           * Draw the cpuinfo/meminfo frame with the received new data
           */
-         function updateFrame(frameName, content)
+         function updateFrame(frameName, contentStr)
          {
-            top.xmlBlasterWindow.Log.trace("Drawing to frame " + frameName + ": " + content);
+            var value = Number(contentStr);
 
-            if (content < 1) content = 1;
-            if (content > 100) content = 100;
+            if (value < 1) value = 1;
+            if (value > 100) value = 100;
+
+            top.xmlBlasterWindow.Log.trace("Drawing to frame '" + frameName + "': '" + value + "'");
 
             var label = frameName;
             if (frameName=="cpuinfoFrame") label = "CPU";
@@ -54,11 +56,11 @@ COMMENT:
 
             var doc = parent.frames[frameName].document;
             doc.open();
+
             var str =
                "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>\n" +
                "<html>\n" +
                "   <head>\n" +
-               "      <title>XmlBlaster Persistent HTTP Demo</title>\n" +
                "      <meta http-equiv='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\n" +
                "   </head>\n" +
                "<body>\n" +
@@ -69,10 +71,10 @@ COMMENT:
                "            <font size='+1'>" + label + "</font>\n" +
                "         </td>\n" +
                "         <td width='60'>\n" +
-               "            <font size='-1'>" + content + "%</font>\n" +
+               "            <font size='-1'>" + value + "%</font>\n" +
                "         </td>\n" +
                "         <td width='300' valign='center'>\n" +
-               "            <img name='" + frameName + "' width='" + content + "%' height='10' src='colors/" + frameName + ".gif' alt='83'>\n" +
+               "            <img name='" + frameName + "Color' width='" + value + "%' height='10' src='/systemInfo/colors/" + frameName + ".gif' alt='Bar should display " + value + "%' />\n" +
                "         </td>\n" +
                "      </tr>\n" +
                "   </table>\n" +
