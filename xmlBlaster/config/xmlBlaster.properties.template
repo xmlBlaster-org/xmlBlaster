@@ -97,6 +97,7 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 #------------------------------------------------------------------------------
 # Add here your MIME based plugins which allow to filter update messages
 # you subscribed with your own supplied rules.
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.subscribe.html
 # MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
 #------------------------------------------------------------------------------
 
