@@ -8,12 +8,12 @@ package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
  * Interface to allow different command processing implementations. 
  * <p />
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
 public interface I_CommandHandler {
@@ -32,17 +32,17 @@ public interface I_CommandHandler {
     * <p />
     * @param sessionId Is null if not logged in
     * @param cmd The command to process
-    * @return An array of MessageUnit object:
+    * @return An array of MsgUnitRaw object:
     *       <ul>
     *         <li>Internal message are delivered as is, please don't manipulate them</li>
     *         <li>System properties and internal state queries are marked with msgUnit.getQos() == "text/plain"
-    *             and the key contains the plain key and the content the plain value. The MessageUnit
+    *             and the key contains the plain key and the content the plain value. The MsgUnitRaw
     *             is just misused to carry the key/value data.
     *         </li>
     *       </ul>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
     */
-   public MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
+   public MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
 
    /**
     * Your plugin should process the set command. 

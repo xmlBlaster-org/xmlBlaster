@@ -11,7 +11,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -28,7 +28,7 @@ import java.beans.PropertyDescriptor;
 
 /**
  * Implementation of administrative access to xmlBlaster internal java objects. 
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @since 0.79f
  */
 final public class CoreHandler implements I_CommandHandler, I_Plugin {
@@ -85,13 +85,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    }
 
    /**
-    * Your plugin should process the command. 
-    * <p />
-    * @param cmd "/node/heron/?clientList"
-    * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
 
@@ -103,8 +99,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/?freeMem"
          String ret = ""+getInvoke(client.substring(1), glob.getRequestBroker(), I_AdminNode.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MessageUnit[] msgs = new MessageUnit[1];
-         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
          return msgs;
       }
 
@@ -124,8 +120,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/joe/?uptime"
          String ret = ""+getInvoke(pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MessageUnit[] msgs = new MessageUnit[1];
-         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
          return msgs;
       }
 
@@ -140,13 +136,13 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MessageUnit[] msgs = new MessageUnit[1];
-         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
          return msgs;
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
-      return new MessageUnit[0];
+      return new MsgUnitRaw[0];
    }
 
    /**

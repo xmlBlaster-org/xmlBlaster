@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
@@ -26,7 +26,7 @@ import jax.*; // import SNMP subagent specific classes
 /**
  * The gateway from outside SNMP connections to inside CommandManager. 
  * <p />
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.snmp.html">admin.snmp requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">admin.commands requirement</a>
@@ -173,13 +173,13 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 
          if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query);
 
-         MessageUnit[] msgs = manager.get(sessionId, query);
+         MsgUnitRaw[] msgs = manager.get(sessionId, query);
          if (msgs.length == 0)
             return "NOT FOUND";
          else {
             String retValue = "";
             for (int ii=0; ii<msgs.length; ii++) {
-               MessageUnit msg = msgs[ii];
+               MsgUnitRaw msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain")) {
                   retValue = msg.getContentStr() + ", "; // How to handle multi return with SNMP ???
                   // msg.getXmlKey() and msg.getContentStr() contain the data

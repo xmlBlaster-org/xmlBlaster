@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -36,7 +36,7 @@ import java.io.IOException;
 /**
  * The gateway from outside telnet connections to inside CommandManager. 
  * <p />
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html">admin.telnet requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">admin.commands requirement</a>
@@ -315,11 +315,11 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
-            MessageUnit[] msgs = commandManager.get(sessionId, query);
+            MsgUnitRaw[] msgs = commandManager.get(sessionId, query);
             if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
-               MessageUnit msg = msgs[ii];
+               MsgUnitRaw msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain"))
                   sb.append(msg.getKey()).append("=").append(msg.getContentStr()).append(CRLF);
                else

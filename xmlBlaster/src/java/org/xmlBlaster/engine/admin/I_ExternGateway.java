@@ -8,12 +8,12 @@ package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 /**
  * Interface to allow different external gateway implementations. 
  * <p />
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
 public interface I_ExternGateway {

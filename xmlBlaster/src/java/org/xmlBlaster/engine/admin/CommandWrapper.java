@@ -9,7 +9,6 @@ package org.xmlBlaster.engine.admin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.StringTokenizer;
@@ -26,7 +25,7 @@ import java.util.StringTokenizer;
  * <p />
  * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
  * for a detailed description.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.CommandWrapperTest
  * @since 0.79f
  */

@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RunlevelManager;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -26,7 +26,7 @@ import java.util.Iterator;
  * <p />
  * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
  * for a detailed description.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
 public final class CommandManager implements I_RunlevelListener
@@ -147,7 +147,7 @@ public final class CommandManager implements I_RunlevelListener
     * @param cmd The query string
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MessageUnit[] get(String sessionId, String cmd) throws XmlBlasterException {
+   public synchronized final MsgUnitRaw[] get(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new IllegalArgumentException("Please pass a command which is not null");
@@ -162,8 +162,8 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         MessageUnit[] ret = handler.get(sessionId, w);
-         if (ret == null) ret = new MessageUnit[0];
+         MsgUnitRaw[] ret = handler.get(sessionId, w);
+         if (ret == null) ret = new MsgUnitRaw[0];
          return ret;
          //return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
       }

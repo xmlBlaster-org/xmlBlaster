@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p />
  * SNMP or telnet tools can access only the here declared properties.<br />
  * This interface is implemented by RequestBroker.java, delivering the meat.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
 public interface I_AdminNode {

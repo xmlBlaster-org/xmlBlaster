@@ -7,10 +7,13 @@ Comment:   Implementation for administrative message access
 package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -24,7 +27,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 
 /**
  * Implementation of administrative access to xmlBlaster messages. 
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @since 0.79g
  */
 final public class MsgHandler implements I_CommandHandler, I_Plugin {
@@ -80,14 +83,9 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    }
 
    /**
-    * Your plugin should process the command. 
-    * <p />
-    * @param sessionId Is null if not logged in
-    * @param cmd "/node/heron/msg/HelloMsgOid/?content"
-    * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
 
@@ -115,17 +113,17 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String xmlKey = "<key oid='" + oid + "'/>";
       String qos = "<qos/>";
 
-      MessageUnit[] msgUnitArr = xmlBlaster.get(sessionId, xmlKey, qos);
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, qos);
          
-      log.info(ME, cmd.getCommand() + " returned " + msgUnitArr.length + " messages");
+      log.info(ME, cmd.getCommand() + " returned " + msgUnitArrRaw.length + " messages");
 
          if (log.DUMP) {
-            for (int ii=0; ii<msgUnitArr.length; ii++) {
-               log.dump(ME, msgUnitArr[ii].toXml());
+            for (int ii=0; ii<msgUnitArrRaw.length; ii++) {
+               log.dump(ME, msgUnitArrRaw[ii].toXml());
             }
          }
 
-      return msgUnitArr;
+      return msgUnitArrRaw;
    }
 
    /**
@@ -162,9 +160,10 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String xmlKey = "<key oid='" + oid + "'/>";
       String qos = "<qos/>";
 
-      MessageUnit[] msgUnitArr = xmlBlaster.get(sessionId, xmlKey, qos); // The returned array is a clone, we may manipulate it
+      // The returned array is a clone, we may manipulate it
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, qos);
 
-      if (msgUnitArr.length < 1) {
+      if (msgUnitArrRaw.length < 1) {
          log.info(ME, cmd.getCommand() + " Message oid=" + oid + " not found");
          return null;
       }
@@ -174,16 +173,20 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String value = cmd.getValue(); // -> "Hello world"
 
       if (!key.equalsIgnoreCase("content"))
-         throw new XmlBlasterException(ME, "Only the 'content' can currently be changed on messages," + 
+         throw new XmlBlasterException(glob, ErrorCode.USER_ADMIN_INVALID, ME,
+                      "Only the 'content' can currently be changed on messages," + 
                       " try something like '?content=Hello world'");
 
+      /*
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          // Shallow clone: Setting new content. We keep the original key, but kill the original QoS
-         msgUnitArr[ii] = new MessageUnit(msgUnitArr[ii], null, value.getBytes(), "<qos/>");
+         PublishQos publishQos = new PublishQos(glob);
+         msgUnitArrRaw[ii] = new MsgUnitRaw(msgUnitArr[ii].getKey(), value.getBytes(), publishQos.toXml());
       }
-      String[] retArr = xmlBlaster.publishArr(sessionId, msgUnitArr);
+      */
+      String[] retArr = xmlBlaster.publishArr(sessionId, msgUnitArrRaw);
 
-      log.info(ME, cmd.getCommand() + " published " + msgUnitArr.length + " messages");
+      log.info(ME, cmd.getCommand() + " published " + msgUnitArrRaw.length + " messages");
       StringBuffer sb = new StringBuffer(retArr.length * 60);
       for (int ii=0; ii<retArr.length; ii++) {
          sb.append(retArr[ii]);

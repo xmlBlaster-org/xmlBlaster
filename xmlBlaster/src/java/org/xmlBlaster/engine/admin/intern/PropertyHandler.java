@@ -11,7 +11,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.admin.CommandWrapper;
 
 /**
  * Implementation of administrative access to properties. 
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @since 0.79f
  */
 final public class PropertyHandler implements I_CommandHandler, I_Plugin {
@@ -75,13 +75,9 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    }
 
    /**
-    * Your plugin should process the command. 
-    * <p />
-    * @param cmd "?user.home"
-    * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnitRaw[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
       if (cmd.getTail() == null)
@@ -102,10 +98,10 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
 
       log.info(ME, "Found for cmd " + cmdString + "=" + ret);
       if (ret == null)
-         return new MessageUnit[0];
+         return new MsgUnitRaw[0];
       else {
-         MessageUnit[] msgs = new MessageUnit[1];
-         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
          return msgs;
       }
    }

@@ -10,8 +10,11 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -30,7 +33,7 @@ import java.util.StringTokenizer;
  * <pre>
  *   &lt;key oid="__cmd:/node/heron/sysprop/?trace[core]"/>
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.html">admin requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">admin.commands requirement</a>
@@ -65,7 +68,7 @@ public final class MomClientGateway implements I_ExternGateway
     * @param sessionInfo The client
     * @param command The key oid, for example "__cmd:/node/heron/?numClients"
     */
-   public MessageUnit[] getCommand(SessionInfo sessionInfo, String command) throws XmlBlasterException {
+   public MsgUnitRaw[] getCommand(SessionInfo sessionInfo, String command) throws XmlBlasterException {
       String cmdType = "get";
       if (command == null) {
          throw new XmlBlasterException(ME, "Ignoring your empty command.");
@@ -89,21 +92,24 @@ public final class MomClientGateway implements I_ExternGateway
          throw new XmlBlasterException(ME, "Ignoring your command '" + command + "', can't understand it.");
 
       if (topCommand.equalsIgnoreCase("time")) {
-         MessageUnit[] msgs = new MessageUnit[1];
-         msgs[0] = new MessageUnit("<key oid='" + command + "'", ""+new java.util.Date(), "<qos/>");
+         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+         msgs[0] = new MsgUnitRaw(glob, "<key oid='" + command + "'", ""+new java.util.Date(), "<qos/>");
          return msgs;
       }
       */
 
-      MessageUnit[] msgs = commandManager.get(sessionInfo.getSessionId(), query);
+      MsgUnitRaw[] msgs = commandManager.get(sessionInfo.getSessionId(), query);
+      /*
       for (int ii=0; ii<msgs.length; ii++) {
-         MessageUnit msg = msgs[ii];
+         MsgUnitRaw msg = msgs[ii];
          if (msg.getQos().startsWith("text/plain")) { // A virtual msgUnit from a key/value property
-            String newKey = "<key oid='__cmd:" + msg.getKey() + "' contentMime='text/plain'/>";
+            PublishKey publishKey = new PublishKey(glob, "__cmd:" + msg.getKey(), "text/plain");
+            PublishQos publishQos = new PublishQos(glob);
             // A shallow copy, null -> use the given msg.getContent()
-            msgs[ii] = new MessageUnit(msg, newKey, null, "<qos/>");
+            msgs[ii] = new MsgUnit(msg, publishKey.getData(), null, publishQos.getData());
          }
       }
+      */
       return msgs;
    }
 
@@ -112,10 +118,10 @@ public final class MomClientGateway implements I_ExternGateway
     * @param sessionInfo The client
     * @param xmlKey The key oid, for example "__cmd:/node/heron/?numClients=5"
     */
-   public String setCommand(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit,
+   public String setCommand(SessionInfo sessionInfo, KeyData xmlKey, MsgUnit msgUnit,
                     PublishQosServer publishQos, boolean isClusterUpdate) throws XmlBlasterException {
       String cmdType = "set";
-      String command = xmlKey.getUniqueKey();
+      String command = xmlKey.getOid();
       if (command == null) {
          throw new XmlBlasterException(ME, "Ignoring your empty command.");
       }
@@ -142,7 +148,7 @@ public final class MomClientGateway implements I_ExternGateway
       buf.append("<qos><state id='").append(Constants.STATE_OK).append("'");
       if (info.indexOf("'") == -1)
          buf.append(" info='").append(info).append("'");
-      buf.append("/><key oid='").append(xmlKey.getUniqueKey()).append("'/></qos>");
+      buf.append("/><key oid='").append(xmlKey.getOid()).append("'/></qos>");
       return buf.toString();
    }
 

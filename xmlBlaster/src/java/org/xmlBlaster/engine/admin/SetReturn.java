@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.admin;
 /**
  * Holds some data of interest, is returned by set() invocations from CommandManager. 
  * <p />
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
 public final class SetReturn
