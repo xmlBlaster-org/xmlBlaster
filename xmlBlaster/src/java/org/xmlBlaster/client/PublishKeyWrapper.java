@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.10 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.11 2002/03/20 13:13:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -43,6 +43,19 @@ public class PublishKeyWrapper extends KeyWrapper
    /** value from attribute <key oid="" contentMimeExtended="..."> */
    private String contentMimeExtended = null;
    private String clientTags = "";
+
+
+   /**
+    * Constructor with given oid and contentMime.
+    * @param oid is optional and will be generated if ""
+    * @param contentMime the MIME type of the content e.g. "text/xml" or "image/gif"
+    */
+   public PublishKeyWrapper(String oid, String contentMime)
+   {
+      super(oid);
+      if (contentMime != null)
+         this.contentMime = contentMime;
+   }
 
 
    /**
