@@ -495,7 +495,22 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * cons
 static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime)
 {
 # ifdef _WINDOWS
-   return false; /* TODO !!! How to get the current time on Win? */
+   time_t t1;
+   struct tm *now;
+   
+   (void) time(&t1);
+   now = localtime(&t1);
+
+   abstime->tv_sec = t1;
+   abstime->tv_nsec = 0; /* TODO !!! How to get the more precise current time on Win? */
+
+   abstime->tv_sec += xa->responseTimeout / 1000;
+   abstime->tv_nsec += (xa->responseTimeout % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
 # else /* LINUX, __sun */
    struct timeval tv;
 
