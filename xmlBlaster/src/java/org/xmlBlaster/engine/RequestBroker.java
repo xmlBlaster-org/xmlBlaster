@@ -1851,7 +1851,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       for (int ii=0; ii<topicHandlerArr.length; ii++) {
          sb.append(topicHandlerArr[ii].toXml(extraOffset+Constants.INDENT));
       }
-      sb.append(bigXmlKeyDOM.printOn(extraOffset+Constants.INDENT).toString());
+      sb.append(bigXmlKeyDOM.toXml(extraOffset+Constants.INDENT, true));
       sb.append(clientSubscriptions.toXml(extraOffset+Constants.INDENT));
       if (useCluster) {
          sb.append(glob.getClusterManager().toXml(extraOffset+Constants.INDENT));
