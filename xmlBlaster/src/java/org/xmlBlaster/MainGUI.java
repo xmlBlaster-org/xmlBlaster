@@ -3,13 +3,18 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.8 1999/12/22 20:39:04 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.9 1999/12/22 22:49:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
+import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.serverIdl.*;
+import org.xmlBlaster.clientIdl.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import jacorb.poa.gui.beans.FillLevelBar;
@@ -49,6 +54,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private Label getLabel = new Label();
    private long getMessages = 0L;
    private long lastGetMessages = 0L;
+
+   private TextField  inputTextField = new TextField();
+   private TextArea queryOutput = null;
+   private ClientQuery clientQuery = null;
 
 
    /**
@@ -153,14 +162,15 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       setLayout(new GridBagLayout());
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.fill = GridBagConstraints.BOTH;
-      final int GRID_WIDTH = 4;
-      final int GRID_HEIGHT = 4;
       gbc.insets = new Insets(5,5,5,5);
 
-      beepButton = new Button("Stop xmlBlaster");
+      // Exit Button
+      beepButton = new Button("Exit");
       class BeepListener implements ActionListener {
          public void actionPerformed(ActionEvent e) {
             toolkit.beep();
+            if (clientQuery != null)
+               clientQuery.logout();
             Log.addLogListener(null);
             Log.exit(ME, "Good bye!");
          }
@@ -170,6 +180,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.weightx = gbc.weighty = 0.0;
       add(beepButton, gbc);
 
+      // Statistic display with fill level bars
       int offset = 0;
       gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
       gbc.weightx = gbc.weighty = 0.0;
@@ -177,18 +188,50 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       createBarPanel(sentMessagesBar,      sentLabel,      "Update",    gbc, offset++);
       createBarPanel(getMessagesBar,       getLabel,       "Get",       gbc, offset++);
 
-      gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=3; gbc.gridheight=1;
+
+      {  // XPath query GUI
+         Panel panel = new Panel();
+         panel.setName("QueryPanel");
+         panel.setLayout(new BorderLayout());
+         panel.setBackground(java.awt.SystemColor.control);
+
+         {  // Field to enter XPath text
+            Panel inputPanel = new Panel();
+            inputPanel.setLayout(new BorderLayout());
+
+            Label inputLabel = new Label("XPath query: ");
+            inputPanel.add("West", inputLabel);
+
+            inputTextField.setText("//key");
+            inputPanel.add("Center", inputTextField);
+            inputTextField.addKeyListener(new XPathKeyListener());
+            
+            panel.add("North", inputPanel);
+         }
+
+         {  // TextArea to show query results
+            queryOutput = new TextArea();
+            queryOutput.setEditable(false);
+            
+            panel.add("South", queryOutput);
+         }
+
+         gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=3; gbc.gridheight=1;
+         add(panel, gbc);
+      }
 
 
+      // Checkboxes for log levels
       gbc.gridx=0; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
       add(new Label("Choose Logging Level: "), gbc);
       gbc.gridx=1; gbc.gridwidth=3; gbc.gridheight=1;
       add(createLogLevelBoxes(), gbc);
 
 
-      gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=GRID_WIDTH; // gbc.gridheight=4;
+      // TextArea for log outputs
+      gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=6; gbc.gridheight=6;
       gbc.weightx = gbc.weighty = 1.0;
-      logOutput = new TextArea("", 30, 140);
+      logOutput = new TextArea("", 30, 100); // set rows here (width 100 is ignored)
       logOutput.setEditable(false);
       add(logOutput, gbc);
 
@@ -215,7 +258,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Create a Panel with a FillLevelBar and some labels. 
+    * Create a Panel with a FillLevelBar and some labels.
     * @param messageBar The instance of FillLevelBar to use
     * @param totalCountLabel The instance of total count Label to use
     * @param token Describing text e.g. "Published"
@@ -345,41 +388,162 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
       new org.xmlBlaster.Main(args);
    }
-}
 
 
-/**
- * Polls the state of xmlBlaster
- */
-class PollingThread extends Thread
-{
-   private final int POLLING_FREQUENCY = 1000;  // sleep 1 sec
-   private final MainGUI mainGUI;
 
 
    /**
-    **/
-   public PollingThread(MainGUI mainGUI)
+    * Polls the state of xmlBlaster
+    */
+   private class PollingThread extends Thread
    {
-      this.mainGUI = mainGUI;
-      setPriority(Thread.MIN_PRIORITY);
-   }
+      private final int POLLING_FREQUENCY = 1000;  // sleep 1 sec
+      private final MainGUI mainGUI;
 
 
-   /**
-    * Start the timeout thread.
-    **/
-   public void run()
-   {
-      try {
-         System.out.println("Starting poller");
-         while (true) {
-            sleep(POLLING_FREQUENCY);
-            mainGUI.pollEvent(POLLING_FREQUENCY);  // Todo: calculate the exact sleeping period
+      /**
+       **/
+      public PollingThread(MainGUI mainGUI)
+      {
+         this.mainGUI = mainGUI;
+         setPriority(Thread.MIN_PRIORITY);
+      }
+
+
+      /**
+       * Start the timeout thread.
+       **/
+      public void run()
+      {
+         try {
+            System.out.println("Starting poller");
+            while (true) {
+               sleep(POLLING_FREQUENCY);
+               mainGUI.pollEvent(POLLING_FREQUENCY);  // Todo: calculate the exact sleeping period
+            }
+         }
+         catch (Exception e) {
+            System.err.println("PollingThread problem: "+ e.toString());
          }
       }
-      catch (Exception e) {
-         System.err.println("PollingThread problem: "+ e.toString());
+   }
+
+
+
+   /**
+    * Handles return key when a XPath query is entered into the TextField. 
+    */
+   private class XPathKeyListener implements KeyListener
+   {
+      /**
+         * Access XPath query string (event from KeyListener). 
+         */
+      public final void keyPressed(KeyEvent ev)
+      {
+         switch (ev.getKeyCode())
+         {
+            case KeyEvent.VK_ENTER:
+               try {
+                  if (clientQuery == null)
+                     clientQuery = new ClientQuery("ClientQuery-local", "secret");
+                  queryOutput.setText("");
+                  MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
+                  for (int ii=0; ii<msgArr.length; ii++) {
+                     UpdateKey updateKey = new UpdateKey();
+                     updateKey.init(msgArr[ii].xmlKey);
+                     queryOutput.append("\n");
+                     queryOutput.append("UpdateKey\n" + updateKey.printOn().toString());
+                     queryOutput.append("content\n" + new String(msgArr[ii].content) + "\n");
+                     queryOutput.append("======================================================\n");
+                  }
+                  if (msgArr.length == 0) {
+                     if (publishedMessages == 0L) {
+                        queryOutput.setText("\n");
+                        queryOutput.append ("   Sorry, no data in xmlBlaster.\n");
+                        queryOutput.append ("   Use a demo client to publish some.\n");
+                        queryOutput.append ("\n");
+                     }
+                     else
+                        queryOutput.setText("****** Sorry, no match ******");
+                  }
+               } catch(XmlBlasterException e) {
+                  Log.error(ME, "XmlBlasterException: " + e.reason);
+               }
+               break;
+            /*
+            case KeyEvent.VK_DOWN: displayHistory(tableView.getHistory().getNext());
+               break;
+            case KeyEvent.VK_UP: displayHistory(tableView.getHistory().getPrev());
+               break;
+            */
+         }
+      }
+      public final void keyReleased(KeyEvent ev)
+      {
+      }
+      public final void keyTyped(KeyEvent ev)
+      {
+      }
+   }
+
+
+
+
+   /**
+    * A client accessing xmlBlaster to do some XPath query. 
+    */
+   private class ClientQuery
+   {
+      private Server xmlBlaster = null;
+      private CorbaConnection corbaConnection = null;
+      private static final String ME = "ClientQuery";
+      private String queryType = "XPATH";
+      private StopWatch stop = new StopWatch();
+
+
+      /**
+       * Login to xmlBlaster
+       */
+      public ClientQuery(String loginName, String passwd)
+      {
+         try {
+            corbaConnection = new CorbaConnection();
+            String qos = "<qos>\n</qos>";
+            xmlBlaster = corbaConnection.login(loginName, passwd, (BlasterCallback)null, qos);
+         }
+         catch (XmlBlasterException e) {
+             Log.error(ME, "Error occurred: " + e.toString());
+             e.printStackTrace();
+         }
+      }
+
+
+      /**
+       * query xmlBlaster
+       */
+      MessageUnit[] get(String queryString)
+      {
+         try {
+            String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
+                                queryString + "\n" +
+                            "</key>";
+            String qos = "<qos>\n</qos>";
+            stop.restart();
+            MessageUnit[] msgArr = xmlBlaster.get(xmlKey, qos);
+            Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
+            return msgArr;
+         } catch(XmlBlasterException e) {
+            Log.error(ME, "XmlBlasterException: " + e.reason);
+            return new MessageUnit[0];
+         }
+      }
+
+
+      /** Logout. */
+      void logout()
+      {
+         corbaConnection.logout(xmlBlaster);
       }
    }
 }
+
