@@ -18,7 +18,6 @@ import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -95,7 +94,6 @@ public final class TopicHandler implements I_Timeout
    final private Map subscriberMap = new TreeMap(); // Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
 
    /** Do error recovery if message can't be delivered and we give it up */
-   private I_MsgErrorHandler msgErrorHandler;
 
    /**
     * MsgUnit references are stored in a persistent history queue. 
@@ -158,7 +156,7 @@ public final class TopicHandler implements I_Timeout
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
+      // this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
 
       toUnconfigured();
       TopicHandler t = this.requestBroker.addTopicHandler(this);
@@ -189,7 +187,6 @@ public final class TopicHandler implements I_Timeout
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
       
       //Happens automatically on first publish
       //administrativeInitialize((MsgKeyData)msgUnit.getKeyData(), (MsgQosData)msgUnit.getQosData());

@@ -258,7 +258,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
-      this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
+      getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
       shutdown();
    }
    
@@ -284,7 +284,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
+                  getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
                }
             }
             catch (XmlBlasterException xmlBlasterException2) {
@@ -292,7 +292,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             }
             if (entryList != null && entryList.size() > 0) {
                MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-               this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
+               getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
             }
             return;
          }
@@ -348,7 +348,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                   entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                   if (entryList != null && entryList.size() > 0) {
                      MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                     this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, ex));
+                     getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
                   }
                }
                catch (XmlBlasterException ex2) {
@@ -356,7 +356,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                }
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, this, ex));
+                  getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
                }
             }
 
