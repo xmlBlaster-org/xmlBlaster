@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.27 2002/08/03 10:17:13 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.28 2002/08/10 19:32:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -156,7 +156,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          try {
             inetAddr = java.net.InetAddress.getByName(hostname);
          } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException("InitSocketFailed", "The host [" + hostname + "] is invalid, try '-socket.hostname=<ip>': " + e.toString());
+            throw new XmlBlasterException("InitSocketFailed", "The host [" + hostname + "] is invalid, try '-socket.hostname <ip>': " + e.toString());
          }
 
 
@@ -174,7 +174,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          try {
             localInetAddr = java.net.InetAddress.getByName(localHostname);
          } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException("InitSocketFailed", "The host [" + localHostname + "] is invalid, try '-socket.localHostname=<ip>': " + e.toString());
+            throw new XmlBlasterException("InitSocketFailed", "The host [" + localHostname + "] is invalid, try '-socket.localHostname <ip>': " + e.toString());
          }
 
          if (localPort > -1) {
@@ -203,7 +203,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname=<ip> -socket.port=<port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
+         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
          //log.error(ME+".constructor", e.toString());
          throw new XmlBlasterException(ME, str);
       }
