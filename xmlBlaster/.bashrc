@@ -4,15 +4,18 @@
 # You may use this script to source into your sh, ksh, bash
 #
 # Example:
+#   export XMLBLASTER_HOME=/home/paul/xmlBlaster
+#   export JacORB_HOME=/usr/local/JacORB
+#   export MICO_HOME=/usr/local/mico
 #   . /home/paul/xmlBlaster/.bashrc
 #
 # If you want to access xmlBlaster using cvs:
 #   export CVSROOT=:pserver:xmlblaster@193.197.24.129:/www/cvsroot
 #-----------------------------------------------------------
 
-#export JacORB_HOME=
-#export XMLBLASTER_HOME=
-#export MICO_HOME=
+export JacORB_HOME=
+export XMLBLASTER_HOME=
+export MICO_HOME=
 
 BLACK_LTGREEN="\033[40;46m"
 BLACK_RED="\033[30;41m"
@@ -21,51 +24,44 @@ ESC="\033[0m"
 
 #-------- Checking xmlBlaster --------
 if ! [ ${XMLBLASTER_HOME} ] ; then
-	BASHRC_FILE=$0
-	XMLBLASTER_HOME=`dirname "${BASHRC_FILE}"`
-
-	if [ "${XMLBLASTER_HOME}" = "." ]; then
-	   echo -e "$BLACK_RED   Please invoke this .bashrc with absolute name   $ESC"
-	   echo -e "$BLACK_RED   Example: . /home/paul/xmlBlaster/.bashrc        $ESC"
-		return 1
-	fi
-
-	export XMLBLASTER_HOME
-
-	if [ -d ${XMLBLASTER_HOME} ]; then
-	   
-		# OK, know we know where xmlBlaster is installed ...
-
-	   echo -e "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
-      echo -e "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
-
-	   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
-	   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
-	   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
-	   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
-	   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
-	   export CLASSPATH
-
-		PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
-		export PATH
-
-		alias cdx='cd $XMLBLASTER_HOME'
-		alias cdxr='cd $XMLBLASTER_HOME'
-		alias cdxs='cd $XMLBLASTER_HOME/src'
-		alias cdxi='cd $XMLBLASTER_HOME/src/idl'
-		alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
-		alias cdxt='cd $XMLBLASTER_HOME/testsuite'
-		alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
-	else
-	   echo -e "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
-		return 1
-	fi
-else
-	   echo -e "$BLACK_LTGREEN   Welcome to xmlBlaster.org (using your XMLBLASTER_HOME=$XMLBLASTER_HOME setting)   $ESC"
+   echo -e "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+   echo -e "$BLACK_RED      Example: 'export XMLBLASTER_HOME=/home/paul/xmlBlaster'   $ESC"
+	return
 fi
 
 if ! [ -d ${XMLBLASTER_HOME} ] ; then
    echo -e "$BLACK_RED   The directory XMLBLASTER_HOME=$XMLBLASTER_HOME doesn't exist   $ESC"
+fi
+
+export XMLBLASTER_HOME
+
+if [ -d ${XMLBLASTER_HOME} ]; then
+   
+	# OK, know we know where xmlBlaster is installed ...
+
+   echo -e "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
+   echo -e "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
+
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
+   export CLASSPATH
+
+	PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
+	export PATH
+
+	alias cdx='cd $XMLBLASTER_HOME'
+	alias cdxr='cd $XMLBLASTER_HOME'
+	alias cdxs='cd $XMLBLASTER_HOME/src'
+	alias cdxi='cd $XMLBLASTER_HOME/src/idl'
+	alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
+	alias cdxt='cd $XMLBLASTER_HOME/testsuite'
+	alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
+else
+   echo -e "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
+	return 1
 fi
 
 
