@@ -138,10 +138,12 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
       </tr>
       <tr>
          <td>{exception}</td>
-         <td>id{string}, reason{string}</td>
+         <td>errorCode{string}, byteDump of exception, message{string}</td>
          <td>-</td>
          <td><img src="no.gif" border="0" alt="no" /></td>
-         <td>Exception return messages are named similar to the invoked method but are marked with an 'E' flag</td>
+         <td>Exception return messages are named similar to the invoked method but are marked with an 'E' flag.<br />
+         See XmlBlasterException.java:toByteArr() for the syntax of the binary message content.
+         </td>
       </tr>
       <tr>
          <td>update</td>
@@ -197,9 +199,9 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
       <tr>
          <td>unSubscribe</td>
          <td>QoS{string}, key{string}</td>
-         <td>QoS string</td>
+         <td>[QoS{string}]*</td>
          <td><img src="ok.gif" border="0" alt="yes" /></td>
-         <td>cancel a subscription</td>
+         <td>cancel subscriptions</td>
       </tr>
       <tr>
          <td>erase</td>
@@ -233,7 +235,7 @@ Example of a ping() (with an empty qos):
 
    "        25**I**11*ping***"
 
-Example of an XmlBlasterException as a response on a publish()
+Example of an XmlBlasterException as a response on a publish() (a content is not shown):
 
    "        84**E**17711*publish*oxf6hZs**QueueOverflow*The destination queue is full*0*"
 
@@ -400,7 +402,7 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.24 $</revision>
+   <revision>$Revision: 1.25 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
