@@ -623,8 +623,10 @@ public class Global implements Cloneable
    {
       this.args = (args==null) ? new String[0] : args;
 
-      if (this.args != null && this.args.length > 0)
+      if (this.args != null && this.args.length > 0) {
          this.bootstrapAddress = null;   // clear cached address
+         // shutdownHttpServer(); Should be done as well if address changes?
+      }
 
       try {
          property.addArgs2Props(this.args);
@@ -995,13 +997,17 @@ public class Global implements Cloneable
     */
    public final Address getBootstrapAddress() {
       if (bootstrapAddress == null) {
-         if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
-         bootstrapAddress = new Address(this);
-         bootstrapAddress.setHostname(getBootstrapHostname());
-         bootstrapAddress.setPort(getBootstrapPort());
-         bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
-         if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + bootstrapAddress.getHostname() +
-                        " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
+         synchronized (this) {
+            if (bootstrapAddress == null) {
+               if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
+               bootstrapAddress = new Address(this);
+               bootstrapAddress.setHostname(getBootstrapHostname());
+               bootstrapAddress.setPort(getBootstrapPort());
+               bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
+               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + bootstrapAddress.getHostname() +
+                              " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
+            }
+         }
       }
       return bootstrapAddress;
    }
@@ -1560,6 +1566,7 @@ public class Global implements Cloneable
       sb.append("   -time true          Display some performance data.\n");
       sb.append("   -logFile <fileName> Log to given file.\n");
       sb.append("   -logDevice file,console  Log to console and above file.\n");
+      sb.append("   Example:  -logFile /tmp/test.log -logDevice file,console -call true -trace[corba] true.\n");
       sb.append("\n");
       sb.append("Control properties framework:\n");
       sb.append("   -propertyFile <file> Specify an xmlBlaster property file to load.\n");
