@@ -339,44 +339,35 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * Internally used for I_MapEntry and I_QueueEntry
     * @return true on success
     */
-   private boolean put(I_Entry entry) throws XmlBlasterException
-   {
-/*
-      if (getNumOfEntries_() > getMaxNumOfEntries()) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, "put: the maximum number of entries reached." +
-                   " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
-      }
-*/        
-      try {
-         synchronized (this.modificationMonitor) {
-            String exTxt = null;
-            if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
-            if (getNumOfBytes_() > getMaxNumOfBytes()) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: the maximum number of bytes reached." +
-                      " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
-            }
-            try {
-               if (this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), entry)) {
-                  this.numOfEntries++;
-                  this.numOfBytes += entry.getSizeInBytes();
-                  if (entry.isPersistent()) {
-                     this.numOfPersistentEntries++;
-                     this.numOfPersistentBytes += entry.getSizeInBytes();
-                  }
-                  return true;
+   private boolean put(I_Entry entry) throws XmlBlasterException {
+      boolean ret = false;
+      synchronized (this.modificationMonitor) {
+         String exTxt = null;
+         if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
+         if (getNumOfBytes_() > getMaxNumOfBytes()) {
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: the maximum number of bytes reached." +
+                   " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
+         }
+         try {
+            if (this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), entry)) {
+               this.numOfEntries++;
+               this.numOfBytes += entry.getSizeInBytes();
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries++;
+                  this.numOfPersistentBytes += entry.getSizeInBytes();
                }
-            }
-            catch (XmlBlasterException ex) {
-               resetCounters();
-               throw ex;
+               ret = true;
             }
          }
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      finally {
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-      }
-      return false;
+      if (ret && this.queueSizeListener != null) invokeQueueSizeListener();
+
+      return ret;
    }
 
    /**
@@ -1113,6 +1104,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.isDown) return;
       this.isDown = true;
       this.manager.unregisterQueue(this);
+      this.removeQueueSizeListener(null);      
    }
 
    public boolean isShutdown() {
@@ -1313,8 +1305,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener) {
-      if (listener == null)
-         throw new IllegalArgumentException(ME + ": removeQueueSizeListener(null) is not allowed");      
       synchronized(this.queueSizeListenerSync) {
          this.queueSizeListener = null;
       }

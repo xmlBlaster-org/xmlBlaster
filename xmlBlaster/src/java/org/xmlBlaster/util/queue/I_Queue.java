@@ -467,8 +467,9 @@ public interface I_Queue extends I_StorageProblemNotifier
     * Removes the specified listener from the queue.
     * 
     * @param listener the listener to be removed. Currently only one
-    *        listener is allowed.
-    * @exception IllegalArgumentException if you pass null
+    *        listener is allowed. If you pass null, all 
+    *        queueSizeListeners are removed.
+    *  
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener);
    

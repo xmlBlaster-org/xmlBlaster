@@ -184,6 +184,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             //handleFailure !!!
          }
          isShutdown = true;
+         this.removeQueueSizeListener(null);
       }
 
       if (log.CALL) {
@@ -877,8 +878,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener) {
-      if (listener == null)
-         throw new IllegalArgumentException(ME + ": removeQueueSizeListener(null) is not allowed");      
       synchronized(this.queueSizeListenerSync) {
          this.queueSizeListener = null;
       }

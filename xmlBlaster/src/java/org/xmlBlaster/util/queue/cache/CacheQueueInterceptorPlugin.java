@@ -913,8 +913,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
               }
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();                  
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();                  
       return ret;
    }
 
@@ -1200,7 +1200,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
          ex.printStackTrace();
       }
-      this.queueSizeListener = null;
+      removeQueueSizeListener(null);
    }
 
    public boolean isShutdown() {
@@ -1296,8 +1296,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener) {
-      if (listener == null)
-         throw new IllegalArgumentException(ME + ": removeQueueSizeListener(null) is not allowed");      
       synchronized(this.queueSizeListenerSync) {
          this.queueSizeListener = null;
       }
