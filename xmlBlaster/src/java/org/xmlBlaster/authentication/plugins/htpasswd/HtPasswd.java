@@ -59,7 +59,7 @@ public class HtPasswd {
 
    public HtPasswd(Global glob) throws XmlBlasterException {
       log = glob.getLog("auth");
-      htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", (String) null );
+      htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", "NONE" );
       boolean help = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
       if ( help ) {
           useFullUsername = 1;
