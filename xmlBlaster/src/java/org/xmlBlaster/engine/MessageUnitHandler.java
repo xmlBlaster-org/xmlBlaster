@@ -14,6 +14,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -178,42 +179,28 @@ public class MessageUnitHandler
 
    /**
     * Clean up everything, since i will be deleted now
+    * @param The state of the update message QoS e.g. Constants.STATE_OK,
+    *        if null no erase event is sent
     */
-   public void erase() throws XmlBlasterException
+   public void erase(SessionInfo sessionInfo, String state) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Entering erase()");
 
-      log.warn(ME, "No subscribed client notification about message erase() yet implemented");
-
-      /*
-      SubscriptionInfo[] arr = null; // to avoid deadlock in subscriberMap, copy subs into this array
-      synchronized(subscriberMap) {
-         arr = new SubscriptionInfo[subscriberMap.size()];
-         Iterator iterator = subscriberMap.values().iterator();
-         int jj=0;
-         while (iterator.hasNext()) {
-            SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-            arr[jj++] = subs;
+      if (state != null) {
+         if (log.TRACE) log.trace(ME, "Sending client notification about message erase() event");
+         try {
+            invokeCallback(sessionInfo, state);
+         }
+         catch (XmlBlasterException e) {
+            // The access plugin or client may throw an exception
+            // The behavior is not coded yet
+            log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.toString());
          }
       }
-
-
-      for (int ii=0; ii<arr.length; ii++) {
-         if (arr[ii].isQuery()) {
-            log.info(ME, "Query subscription is not deleted when messages is erased");
-         }
-         else {
-            // !!!! Keep subscriptions ruff 2002-04-26
-            //   TODO: check behavior
-            //requestBroker.fireUnSubscribeEvent(arr[ii]);
-            synchronized(subscriberMap) {
-               subscriberMap.remove(arr[ii].getUniqueKey());
-            }
-         }
-      }
-      */
 
       try {
+         // TODO: Erases message from persistent store,
+         // this is too early if some messages are still in update queue !!!
          getMessageUnitWrapper().erase();
       }
       catch (XmlBlasterException e) {
@@ -297,7 +284,7 @@ public class MessageUnitHandler
 
       if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getLoginName() + "' has successfully subscribed to '" + uniqueKey + "'");
 
-      if (invokeCallback(null, sub) == false) {
+      if (invokeCallback(null, sub, Constants.STATE_OK) == false) {
          Set removeSet = new HashSet();
          removeSet.add(sub);
          handleCallbackFailed(removeSet);
@@ -387,8 +374,9 @@ public class MessageUnitHandler
     * Send updates to all subscribed clients.
     * <p />
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
+    * @param state The state of the message on update, e.g. Constants.STATE_OK
     */
-   public final void invokeCallback(SessionInfo publisherSessionInfo) throws XmlBlasterException
+   public final void invokeCallback(SessionInfo publisherSessionInfo, String state) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
@@ -398,7 +386,7 @@ public class MessageUnitHandler
 
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (invokeCallback(publisherSessionInfo, sub) == false) {
+            if (invokeCallback(publisherSessionInfo, sub, state) == false) {
                if (removeSet == null) removeSet = new HashSet();
                removeSet.add(sub); // We can't delete directly since we are in the iterator
             }
@@ -411,9 +399,10 @@ public class MessageUnitHandler
     * Send update to subscribed client (Pub/Sub mode only).
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
     * @param sub The subscription handle of the client
+    * @param state The status of the message e.g. Constants.STATE_OK or Constants.STATE_ERASED="ERASED"
     * @return false if the callback failed
     */
-   private final boolean invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub) throws XmlBlasterException
+   private final boolean invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub, String state) throws XmlBlasterException
    {
       if (!isPublishedWithData()) {
          if (log.TRACE) log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
@@ -444,8 +433,8 @@ public class MessageUnitHandler
       }
 
       try {
-         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getXmlKey().getKeyOid() + "' into '" + sub.getSessionInfo().getId() + "' callback queue");
-         sub.getMsgQueue().putMsg(new MsgQueueEntry(glob, sub, msgUnitWrapper));
+         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getXmlKey().getKeyOid() + "' state '" + state + "' into '" + sub.getSessionInfo().getId() + "' callback queue");
+         sub.getMsgQueue().putMsg(new MsgQueueEntry(glob, sub, msgUnitWrapper, state));
       }
       catch(XmlBlasterException e) {
          if (e.id.equals("CallbackFailed")) {
