@@ -94,7 +94,7 @@ For an example look at the code of PublishLenChecker.java (link below).
             Than pass the class name of your plugin as the property value.<br />
             The name/version must be the same which you returned for I_Plugin.getType() and I_Plugin.getVersion().
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -106,7 +106,7 @@ For an example look at the code of PublishLenChecker.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

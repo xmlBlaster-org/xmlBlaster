@@ -68,13 +68,13 @@
             <td>session.timeout</td>
             <td>86400000</td>
             <td>Default session span of life is one day, given in millis. 0 sets default life span to infinite.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>session.maxSessions</td>
             <td>10</td>
             <td>Maximum of ten parallel logins for the same client</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -97,19 +97,19 @@
             <td>session.timeout</td>
             <td>86400000</td>
             <td>Session span of life is one day, given in millis. 0 sets life span to infinite.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>session.maxSessions</td>
             <td>10</td>
             <td>Maximum of ten parallel logins for the same client</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>session.clearSessions</td>
             <td>false</td>
             <td>Clear on login all other sessions of this user (for recovery reasons)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -123,7 +123,7 @@
    <author>ruff@swand.lake.de</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>

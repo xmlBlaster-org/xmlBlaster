@@ -604,7 +604,7 @@ cluster.node[heron]=\
             <td>cluster</td>
             <td>false</td>
             <td>Switch on/off cluster support</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -615,21 +615,21 @@ cluster.node[heron]=\
                 protocol drivers.
                 If you specify the name yourself, you should use a unique name like <i>heron.mycompany.com</i>
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>cluster.loadBalancer.type</td>
             <td>RoundRobin</td>
             <td>Specifies which load balance plugin to use (see xmlBlaster.properties)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          
          <tr>
             <td>cluster.loadBalancer.version</td>
             <td>1.0</td>
             <td>The plugin version to use</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          
          <tr>
@@ -648,7 +648,7 @@ cluster.node[heron]=\
             replace the node name in the brackets with your specific xmlBlaster node.<br />
             NOTE: This setting can be overwritten by <i>__sys__cluster.node.info[heron]</i> messages.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -665,7 +665,7 @@ cluster.node[heron]=\
             <td>Configures for which message types <i>heron</i> is the master node.<br />
             NOTE: This setting can be overwritten by <i>__sys__cluster.node.master[heron]</i> messages.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -688,7 +688,7 @@ cluster.node[heron]=\
             The combination of <i>cluster.node.info[...]</i> and <i>cluster.node.master[...]</i>
             to allow a more compact configuration.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -708,7 +708,7 @@ cluster.node[heron]=\
             This way you could tell xmlBlaster to ping its partner nodes every 2 seconds (pingInterval=2000)
             but to ping frodo more often (pingInterval=1000).
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -720,7 +720,7 @@ cluster.node[heron]=\
             You can't change the loginName of a cluster node. Every cluster node
             logs in to remote nodes with its cluser node id as the loginName.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -736,7 +736,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.36 $</revision>
+   <revision>$Revision: 1.37 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>

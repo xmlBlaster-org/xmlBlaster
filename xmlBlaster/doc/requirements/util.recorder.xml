@@ -58,21 +58,21 @@ RecorderPlugin[FileRecorder][1.0]=
             <td>How many messages to tail back on client side if they can't be delivered to xmlBlaster.
                 -1 sets it to unlimited.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>recorder.type</td>
             <td>FileRecorder</td>
             <td>The plugin type to use for tail back messages in fail save mode</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>recorder.version</td>
             <td>1.0</td>
             <td>The plugin version to use</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
       <p>
@@ -83,7 +83,7 @@ RecorderPlugin[FileRecorder][1.0]=
             <td>recorder.path</td>
             <td>${user.home}/tmp</td>
             <td>Where to put the persistence file. Please give the path only, without the file name.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -92,7 +92,7 @@ RecorderPlugin[FileRecorder][1.0]=
             <td>If a file based plugin is configured you can configure to destroy
                 old messages on client restart.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          
          <tr>
@@ -102,7 +102,7 @@ RecorderPlugin[FileRecorder][1.0]=
                 processing from ~5000msg/sec to ~90msg/sec.
                 Defaults to false, which is save for application crashes.
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -111,7 +111,7 @@ RecorderPlugin[FileRecorder][1.0]=
             <td>What happens if the queue is full (onOverflow):<br />
               <i>exception</i> or <i>discard</i> or <i>discardOldest</i>
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
       </table>
@@ -127,7 +127,7 @@ RecorderPlugin[FileRecorder][1.0]=
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>

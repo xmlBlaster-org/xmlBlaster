@@ -129,7 +129,7 @@ r 3
             <td>runlevel</td>
             <td>9</td>
             <td>Choose run level on xmlBlaster server startup, e.g. <pre>java org.xmlBlaster.Main -runlevel 6</pre></td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -140,7 +140,7 @@ r 3
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

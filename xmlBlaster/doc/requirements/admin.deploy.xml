@@ -143,28 +143,28 @@ sleep 5
             <td>DIST_PATH</td>
             <td>local directory</td>
             <td>Choose a PATH where to put the distribution files xmlBlasterDist.jar and xmlBlasterDist-0.79e.zip</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_EMAIL</td>
             <td>true</td>
             <td>Switch on/off email protocol driver support. If set to true,
              it copies the email supporting jar files as well.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_CORBA</td>
             <td>true</td>
             <td>Switch on/off corba support. If set to true,
              it copies the IIOP supporting jar files as well.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_XMLRPC</td>
             <td>true</td>
             <td>Switch on/off XML-RPC support. If set to true,
              it copies the XML-RPC supporting jar files as well.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_J2EE</td>
@@ -172,7 +172,7 @@ sleep 5
             <td>Switch on/off J2EE/JMS bean support. If set to true,
              it copies the EJB/J2EE supporting jar files as well.<br />
              Note: This feature only supports JBOSS with version smaller 2.0</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_PROP</td>
@@ -180,7 +180,7 @@ sleep 5
             <td>We use the default xmlBlaster.properties. It is possible to use an own
              customized property file like: <code>-DADD_PROP=/home/heidi/my.properties</code>
              </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_POLICY</td>
@@ -191,7 +191,7 @@ sleep 5
              It is possible to use an own
              customized policy file like: <code>-DADD_PROP=/home/heidi/my.policy</code>
              </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>ADD_DIRECTORY</td>
@@ -202,7 +202,7 @@ sleep 5
              Example: <code>-DADD_PROP=/home/heidi/myproject/classes</code><br />
              This assumes that your Java classes (top of the package) are in the given directory.
              </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -211,7 +211,7 @@ sleep 5
    
    <date>2002 06 04</date>
    
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
