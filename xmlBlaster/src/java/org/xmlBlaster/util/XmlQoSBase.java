@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.14 2001/01/30 13:02:38 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.15 2001/02/12 00:05:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -75,7 +75,7 @@ public class XmlQoSBase extends SaxHandlerBase
     * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
     *         false this tag is not handled by this Base class
     */
-   protected final boolean startElementBase(String name, AttributeList attrs)
+   protected final boolean startElementBase(String uri, String localName, String name, Attributes attrs)
    {
       if (name.equalsIgnoreCase("qos")) {
          inQos = true;
@@ -95,9 +95,9 @@ public class XmlQoSBase extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
     */
-   public void startElement(String name, AttributeList attrs)
+   public void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      startElementBase(name, attrs);
+      startElementBase(uri, localName, name, attrs);
    }
 
 
@@ -112,7 +112,7 @@ public class XmlQoSBase extends SaxHandlerBase
     * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
     *         false this tag is not handled by this Base class
     */
-   protected final boolean endElementBase(String name) {
+   protected final boolean endElementBase(String uri, String localName, String name) {
       if( name.equalsIgnoreCase("qos") ) {
          inQos = false;
          character.setLength(0);
@@ -126,8 +126,8 @@ public class XmlQoSBase extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
     */
-   public void endElement(String name)
+   public void endElement(String uri, String localName, String name)
    {
-      endElementBase(name);
+      endElementBase(uri, localName, name);
    }
 }

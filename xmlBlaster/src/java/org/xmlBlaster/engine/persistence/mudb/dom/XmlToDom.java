@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parse a xml-instance to DOM.
-Version:   $Id: XmlToDom.java,v 1.3 2000/12/26 14:56:41 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.4 2001/02/12 00:08:39 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.mudb.dom;
@@ -11,17 +11,20 @@ package org.xmlBlaster.engine.persistence.mudb.dom;
 import java.io.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
-import org.xml.sax.helpers.ParserFactory;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import org.xml.sax.ContentHandler;
 import org.w3c.dom.Document;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 
 
 class XmlToDom
 {
    private final String ME = "XmlToDom";
    private XmlKeyDom _xmlKeyDom;
-   
+
 
    XmlToDom(XmlKeyDom xmlKeyDom)
    {
@@ -31,8 +34,8 @@ class XmlToDom
    XmlKeyDom getXmlKeyDom() {
       return _xmlKeyDom;
    }
-   
-   class SaxCreate implements DocumentHandler
+
+   class SaxCreate implements ContentHandler
    {
       private final String ME = "SaxCreate";
       final int iws;
@@ -58,7 +61,7 @@ class XmlToDom
 
       public void endDocument(){}
 
-      public void endElement(String s)
+      public void endElement(String uri, String localName, String s)
       {
          // System.out.println("END : "+s);
          _rootNode = (Node)_rootNode.getParentNode();
@@ -89,7 +92,7 @@ class XmlToDom
       {
       }
 
-      public void startElement(String s, AttributeList attributelist)
+      public void startElement(String uri, String localName, String s, Attributes attributelist)
       {
          Log.call(ME, "startElement("+s + ")");
          Element element=null;
@@ -97,7 +100,7 @@ class XmlToDom
          element = _document.createElement(s);
          int i = attributelist.getLength();
          for(int j = 0; j < i; j++)
-            element.setAttribute(attributelist.getName(j), attributelist.getValue(j));
+            element.setAttribute(attributelist.getQName(j), attributelist.getValue(j));
 
          if(_littleRootNode == null)
             _littleRootNode = _rootNode.appendChild(element);
@@ -106,6 +109,21 @@ class XmlToDom
 
          _rootNode = (Node)element;
 
+      }
+
+      public void skippedEntity(java.lang.String name)
+      {
+         Log.warn(ME, "Entering skippedEntity() ..."); 
+      }
+
+      public void startPrefixMapping(java.lang.String prefix, java.lang.String uri)
+      {
+         Log.warn(ME, "Entering startPrefixMapping() ..."); 
+      }
+      
+      public void endPrefixMapping(java.lang.String prefix)
+      {
+         Log.warn(ME, "Entering endPrefixMapping() ..."); 
       }
 
       SaxCreate(XmlToDom xmlToDom, Document document, int i)
@@ -168,8 +186,15 @@ class XmlToDom
       SaxCreate sax = new SaxCreate(this, bigDocument, 1);
       try
       {
-         Parser parser = ParserFactory.makeParser("com.sun.xml.parser.Parser"); // !!!!!!!!!! TODO
-         parser.setDocumentHandler(sax);
+         SAXParserFactory spf = SAXParserFactory.newInstance();
+         spf.setValidating(XmlBlasterProperty.get("javax.xml.parsers.validation", false));
+
+         SAXParser sp = spf.newSAXParser();
+         XMLReader parser = sp.getXMLReader();
+
+         parser.setContentHandler(sax);
+         //parser.setErrorHandler(sax);
+
          StringReader reader = new StringReader(xmlInstance);
          parser.parse(new InputSource(reader));
          return sax.getNode();

@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.10 2001/01/30 14:05:03 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.11 2001/02/12 00:06:19 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
 import java.util.Vector;
 import java.io.Serializable;
 
@@ -47,6 +47,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       if (Log.DUMP) Log.dump(ME, "Creating ClientQoS(" + xmlQoS_literal + ")");
       addressArr = null;
       init(xmlQoS_literal);
+      if (Log.DUMP) Log.dump(ME, "Parsed ClientQoS to\n" + toXml());
    }
 
 
@@ -81,9 +82,9 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   public void startElement(String name, AttributeList attrs)
+   public void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      if (super.startElementBase(name, attrs) == true)
+      if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
       if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
@@ -92,7 +93,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          String tmp = character.toString().trim(); // The address
          if (tmp.length() > 0) {
             tmpAddr.setAddress(tmp);
-            Log.info(ME, "Setting address '" + tmp + "'");
+            //Log.info(ME, "Setting address '" + tmp + "'");
             character.setLength(0);
          }
       }
@@ -104,7 +105,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-                if( attrs.getName(i).equalsIgnoreCase("type") ) {
+                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
                   type = attrs.getValue(i).trim();
                   break;
                 }
@@ -133,7 +134,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             int len = attrs.getLength();
             int ii=0;
             for (ii = 0; ii < len; ii++) {
-               if (attrs.getName(ii).equalsIgnoreCase("collectTime")) {
+               if (attrs.getQName(ii).equalsIgnoreCase("collectTime")) {
                   String tmp = attrs.getValue(ii).trim();
                   try {
                      tmpAddr.setCollectTime(new Long(tmp).longValue());
@@ -164,10 +165,10 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             int len = attrs.getLength();
             int ii=0;
             for (ii = 0; ii < len; ii++) {
-               if (attrs.getName(ii).equalsIgnoreCase("type")) {
+               if (attrs.getQName(ii).equalsIgnoreCase("type")) {
                   tmpAddr.setCompressType(attrs.getValue(ii).trim());
                }
-               else if (attrs.getName(ii).equalsIgnoreCase("minSize")) {
+               else if (attrs.getQName(ii).equalsIgnoreCase("minSize")) {
                   String tmp = attrs.getValue(ii).trim();
                   try {
                      tmpAddr.setMinSize(new Long(tmp).longValue());
@@ -203,9 +204,9 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
     * <p />
     * @param name Tag name
     */
-   public void endElement(String name)
+   public void endElement(String uri, String localName, String name)
    {
-      if (super.endElementBase(name) == true)
+      if (super.endElementBase(uri, localName, name) == true)
          return;
 
       if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);

@@ -3,7 +3,7 @@ Name:      REvParsing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Comparison between RegExp and XML-Parsing.
-Version:   $Id: REvParsing.java,v 1.2 2000/09/15 17:16:23 ruff Exp $
+Version:   $Id: REvParsing.java,v 1.3 2001/02/12 00:10:42 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.query;
@@ -22,13 +22,14 @@ import org.xml.sax.*;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import org.xml.sax.helpers.DefaultHandler;
 
 import gnu.regexp.*;
 
 
 /**
  */
-public class REvParsing extends HandlerBase
+public class REvParsing extends DefaultHandler
 {
    static private final String ME ="REvParsing";
    String xmlInstance = "";
@@ -108,11 +109,11 @@ public class REvParsing extends HandlerBase
 
    }
 
-   public void startElement(String tag, AttributeList attr) throws SAXException
+   public void startElement(String namespaceURI, String localName, String tag, Attributes attr)
    {
       if(tag.equals("key")){
          if(attr.getLength() >0){
-            if(attr.getName(0).equals("oid")){
+            if(attr.getQName(0).equals("oid")){
                oids.add(attr.getValue(0));
             }
          }

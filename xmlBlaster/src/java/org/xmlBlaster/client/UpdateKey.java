@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.16 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.17 2001/02/12 00:07:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -114,22 +114,22 @@ public class UpdateKey extends SaxHandlerBase
     * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
     *         false this tag is not handled by this Base class
     */
-   protected final boolean startElementBase(String name, AttributeList attrs)
+   protected final boolean startElementBase(String name, Attributes attrs)
    {
       if (name.equalsIgnoreCase("key")) {
          inKey = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               if( attrs.getName(i).equalsIgnoreCase("oid") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("oid") ) {
                   keyOid = attrs.getValue(i).trim();
                }
-               if( attrs.getName(i).equalsIgnoreCase("contentMime") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("contentMime") ) {
                   contentMime = attrs.getValue(i).trim();
                   if (contentMime == null || contentMime.length() < 1)
                      contentMime = "text/plain";
                }
-               if( attrs.getName(i).equalsIgnoreCase("contentMimeExtended") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("contentMimeExtended") ) {
                   contentMimeExtended = attrs.getValue(i).trim();
                }
             }
@@ -149,7 +149,7 @@ public class UpdateKey extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;key> but knows nothing about the tags inside of key
     */
-   public void startElement(String name, AttributeList attrs) throws StopParseException
+   public void startElement(String uri, String localName, String name, Attributes attrs) throws StopParseException
    {
       if (startElementBase(name, attrs) == true) {
          // Now i know what i need to know, stop parsing here (i'm not interested in the tags inside)
@@ -191,7 +191,7 @@ public class UpdateKey extends SaxHandlerBase
     * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
     *         false this tag is not handled by this Base class
     */
-   public void endElement(String name)
+   public void endElement(String uri, String localName, String name)
    {
       endElementBase(name);
    }

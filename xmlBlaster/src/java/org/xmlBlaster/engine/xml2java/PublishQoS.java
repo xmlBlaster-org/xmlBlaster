@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.17 2001/01/30 14:24:45 freidlin Exp $
+Version:   $Id: PublishQoS.java,v 1.18 2001/02/12 00:05:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -246,9 +246,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   public final void startElement(String name, AttributeList attrs)
+   public final void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      if (super.startElementBase(name, attrs) == true)
+      if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
       if (name.equalsIgnoreCase("destination")) {
@@ -260,7 +260,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               if( attrs.getName(i).equalsIgnoreCase("queryType") ) {
+               if( attrs.getQName(i).equalsIgnoreCase("queryType") ) {
                   String queryType = attrs.getValue(i).trim();
                   if (queryType.equalsIgnoreCase("EXACT")) {
                      destination.setQueryType(queryType);
@@ -288,7 +288,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found sender tag");
          }
@@ -302,7 +302,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <expires> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <expires> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found expires tag");
          }
@@ -316,7 +316,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <erase> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+               Log.warn(ME, "Ignoring sent <erase> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found erase tag");
          }
@@ -359,9 +359,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <p />
     * @param name Tag name
     */
-   public void endElement(String name)
+   public void endElement(String uri, String localName, String name)
    {
-      if (super.endElementBase(name) == true)
+      if (super.endElementBase(uri, localName, name) == true)
          return;
 
       if( name.equalsIgnoreCase("destination") ) {

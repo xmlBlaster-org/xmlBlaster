@@ -3,14 +3,14 @@ Name:      EraseQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: EraseQoS.java,v 1.5 2000/09/15 17:16:16 ruff Exp $
+Version:   $Id: EraseQoS.java,v 1.6 2001/02/12 00:05:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
 import java.util.Vector;
 
 
@@ -41,9 +41,9 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   public void startElement(String name, AttributeList attrs)
+   public void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      if (super.startElementBase(name, attrs) == true)
+      if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
       if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
@@ -57,9 +57,9 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
     * <p />
     * @param name Tag name
     */
-   public void endElement(String name)
+   public void endElement(String uri, String localName, String name)
    {
-      if (super.endElementBase(name) == true)
+      if (super.endElementBase(uri, localName, name) == true)
          return;
 
       if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);

@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.58 2001/02/08 07:46:52 ruff Exp $
+Version:   $Id: Log.java,v 1.59 2001/02/12 00:05:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -282,7 +282,7 @@ public class Log
     */
    private static boolean stopStackPos(String line)
    {
-      System.out.println("Checking: " + line);
+      //System.out.println("Log.java - Checking: " + line);
       if (line.indexOf("org.xmlBlaster.util.Log.error") >= 0)
          return true;
       return false;
@@ -311,7 +311,7 @@ public class Log
          }
          String stackEntry = bufferedReader.readLine().trim();
          if (stackEntry == null) return null;
-         System.out.println("Exception scanning:" + stackEntry);
+         // System.out.println("Log.java - Exception scanning:" + stackEntry);
          int space = stackEntry.indexOf(" ");
          int paren = stackEntry.indexOf("(");
          int colon = stackEntry.indexOf(":");
