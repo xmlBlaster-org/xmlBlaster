@@ -58,7 +58,7 @@ public class AuthenticateImpl
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       ConnectQos connectQos = new ConnectQos(qos_literal);
-      connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+      connectQos.setSecurityPluginData(null, null, loginName, passwd);
 
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());

@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.2 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.3 2001/09/05 13:11:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -129,6 +129,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param mechanism may be null to use the default security plugin
     *                  as specified in xmlBlaster.properties
     * @param version may be null to use the default
+    * @param loginName The unique userId
+    * @param password  Your credentials, depends on the plugin type
     */
    public ConnectQos(String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.17 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.18 2001/09/05 13:11:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -142,7 +142,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       try {
          // Extend qos to contain security credentials ...
          ConnectQos loginQos = new ConnectQos(qos_literal);
-         loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+         loginQos.setSecurityPluginData(null, null, loginName, passwd);
 
          // No login using the connect() method ...
          ConnectReturnQos returnQos = connect(loginQos);
