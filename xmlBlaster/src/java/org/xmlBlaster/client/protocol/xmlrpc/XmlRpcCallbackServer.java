@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.5 2000/10/26 10:00:05 ruff Exp $
+Version:   $Id: XmlRpcCallbackServer.java,v 1.6 2000/10/27 13:06:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -39,6 +39,11 @@ import helma.xmlrpc.WebServer;
  *     -xmlrpc.hostnameCB     Specify a hostname where xmlrpcregistry runs.
  *                         Default is the localhost.
  * </pre>
+ * If the callback server can't be established because of the port is not free,
+ * this driver loops and tries with a port number one higher until it finds a free port
+ * to listen for callbacks.<br />
+ * The correct port is automatically transferred in the login - QoS - so that xmlBlaster
+ * can find the callback server.
  * <p />
  * Invoke options: <br />
  * <pre>
@@ -49,7 +54,7 @@ import helma.xmlrpc.WebServer;
  */
 class XmlRpcCallbackServer extends AbstractCallbackExtended
 {
-   private final String ME;
+   private String ME = "XmlRpcCallbackServer";
    private final I_CallbackExtended boss;
    private final String loginName;
    /** The name for the XML-RPC registry */
@@ -111,10 +116,23 @@ class XmlRpcCallbackServer extends AbstractCallbackExtended
       try {
          if (callbackPort > 0) {
             // Start an 'xmlrpc webserver' if desired
-            webServer = new WebServer(callbackPort, inetAddr);
+            int numTries = 20; // start looking for a free port, begin with default port -xmlrpc.portCB=<port>
+            for (int ii=0; ii<numTries; ii++) {
+               try {
+                  webServer = new WebServer(callbackPort, inetAddr);
+                  break;
+               } catch(java.net.BindException e) {
+                  Log.warn(ME, "Port " + callbackPort + " for XML-RCP callback server is in use already, trying with port " +  (callbackPort+1));
+                  callbackPort++;
+               }
+               if (ii == (numTries-1)) {
+                  Log.error(ME, "Can't find free port " + callbackPort + " for XML-RCP callback server, please use -xmlrpc.portCB=<port> to specify a free one.");
+               }
+            }
             webServer.addHandler("$default", new XmlRpcCallbackImpl(this)); // register update() method
             callbackServerUrl = "http://" + hostname + ":" + callbackPort + "/";
-            Log.info(ME, "Created XmlRpc callback web server " + callbackServerUrl);
+            this.ME = "XmlRpcCallbackServer-" + callbackServerUrl;
+            Log.info(ME, "Created XmlRpc callback web server");
          }
          else
             Log.info(ME, "XmlRpc callback web server not created, because of -xmlrpc.portCB is 0");
