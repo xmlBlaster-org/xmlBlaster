@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.email' type='NEW' prio='LOW' status="INWORK">
+   <topic>XmlBlaster has a protocol plugin to support access via EMAIL</topic>
+   <description>
+     It is possible for a client to send/receive messages to xmlBlaster via email. This way the
+     user can publish messages or receive updates via a common email client. In such cases there is
+     no need of a client (besides the email client).
+     <p/>
+     There may be another usage of this protocol: in some cases it makes sense to write a client which
+     uses the email protocol (transparently to the user) because the combination 
+     harware, platform and implementation language does not offer a better communication alternative 
+     or for example to bypass firewalls etc.
+     <p/>
+     A further usage would be to send / receive messages from a cellular phone via sms.
+
+     <p>
+     Even if the email protocol in its nature has sessionless characteristics, we will create a session
+     since this protocol may be used transparently by clients written following the protocol 
+     abstraction paradigm. So before any publishing or subscription can be done, the user must 
+     connect to get a session id.
+     <p>
+     To simplify the usage, it is permitted to send any number of commands in a single email. It is 
+     even permitted to send messages (publish messages) where the content of the message is sent as
+     an attachment. This is useful where the contents are binary data (for example pictures).
+     <p>
+     Every request to the xmlBlaster server must be valid xml and start with the element tag 
+     'xmlBlaster'. If that is not the case, it will be threated in the exception handling. The 
+     exception handling considers the following cases:
+     <ul>
+       <li><b>The content of the message does not start with pure xml</b>. Then it will be considered
+           as an error has occured in sending an acknowledge to the client and a delivery problem
+           aroze. In such cases the message is striped and the xml content is extracted. The xml
+           content is logged and an exception is thrown (then a manual redelivery can be done).
+           If no xml content is found an exception is thrown and the message is rejected.
+       </li>
+       <li><b>The content is correct xml but does not start with the 'xmlBlaster' tag.</b>Then an
+           exception is thrown and the message is rejected (since it probably isn't intended for
+           xmlBlaster). 
+       </li>    
+     </ul>
+     <p>
+     The element tag 'xmlBlaster' accepts an attribute <pre>sendAck='true | false (true)'</pre>
+     </p>
+     Commands which normally need a sessionId as a parameter have an alternative without sessionId
+     for such cases where a 'connect' is done in the same email. This way you don't need to wait for
+     the acknowledge telling you your session id and the result is a faster protocol and less 
+     messages are needed.
+     </p>      
+     <p>
+     Before a publish or a subscribe can be done, connect must be invoked. This can be done on the
+     same email (in which case you don't need to specify your sessionId for the further commands).
+     </p>
+      <p>
+
+       <pre>
+
+<xmlBlaster>
+   <connect>
+      <securityPlugin type='simple' version='1.0'>
+         <xmlBlaster:user>fritz</xmlBlaster:user>
+         <passwd><![CDATA[secret    ]]></passwd>
+      </securityPlugin>
+   </connect>
+   <publish>
+      <key>xxxx</key>
+      <content xlink='sss.jpg'/><!-- this looks for the attachment sss.jpg -->
+      <qos></qos>
+   </publish>
+   <subscribe/>
+   <disconnect/>
+</xmlBlaster>
+
+       </pre>
+
+     </p>
+
+</description>
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Impl</td>
+         </tr>
+
+         <tr>
+            <td>email.hostname</td>
+            <td>localhost</td>
+            <td>Specify a hostname where the EMAIL server runs
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>email.user</td>
+            <td>xmlBlaster</td>
+            <td>The EMAIL user account
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ProtocolPlugin[EMAIL][1.0]</td>
+            <td><pre>org.xmlBlaster.protocol.email.EmailDriver</td>
+            <td>You need to activate EMAIL support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>CbProtocolPlugin[EMAIL][1.0]</td>
+            <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</td>
+            <td>You need to activate EMAIL support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+   <todo>
+   <ol>
+      <li>
+      EMAIL support is not implemented.<br />
+      The callback is already implemented.         
+      </li>
+   </ol>
+   </todo>
+   <see type="REQ">protocol</see>
+   <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
+   <author>laghi@swissinfo.org</author>
+   <date>2002 09 23</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
