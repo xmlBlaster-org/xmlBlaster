@@ -420,18 +420,15 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
     * Enforced by I_QueueSizeListener
     */
    public void changed(I_Queue queue, long numEntries, long numBytes) {
+      boolean hasSubjectEntries = getSubjectInfo().getSubjectQueue().getNumOfEntries() > 0;
       if (lastNumEntries != numEntries) {
          long max = getSessionQueue().getMaxNumOfEntries();
-         if (lastNumEntries < 0L || lastNumEntries >= max && numEntries < max) {
+         if (hasSubjectEntries && numEntries < max && lastNumEntries > numEntries) {
             if (log.TRACE) log.trace(ME, "SessionQueue has emptied from " + lastNumEntries +
                            " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
-            lastNumEntries = numEntries; // to avoid recursion
-            //queue.removeQueueSizeListener(this);
-            //subjectInfo.forwardToSessionQueue();
-            //queue.addQueueSizeListener(this);
             this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
-            lastNumEntries = numEntries;
          }
+         lastNumEntries = numEntries; // to avoid recursion
       }
    }
 
