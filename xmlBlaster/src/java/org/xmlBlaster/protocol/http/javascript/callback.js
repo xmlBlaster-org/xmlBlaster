@@ -204,13 +204,13 @@ var listenerList = new Array();
  */
 function FrameMessageQueue( frameHandle )
 {
-   this.queueTime               = 100; // How long should we collect until we update the frame
-   this.retries                 = 0;   // If frame is not ready after num retries, it will be deleted from the listener list
-   this.ready                   = false; // Is the frame ready to receive updates?
-   this.timeOutHandle           = null;  // The Timer handle from queueTime
-   this.frame                   = frameHandle; // The JS-Window object of the frame
-   this.messageQueue            = new Array(); // array of MessageWrapperDom objects (key,content,qos)
-   this.queue                   = queue_; // method to enter a new message (=MessageWrapperDom object) to the queue
+   this.queueTime     = 100; // How long should we collect until we update the frame
+   this.retries       = 0;   // If frame is not ready after num retries, it will be deleted from the listener list
+   this.ready         = false; // Is the frame ready to receive updates?
+   this.timeOutHandle = null;  // The Timer handle from queueTime
+   this.frame         = frameHandle; // The JS-Window object of the frame
+   this.messageQueue  = new Array(); // array of MessageWrapperDom objects (key,content,qos)
+   this.queue         = queue_; // method to enter a new message (=MessageWrapperDom object) to the queue
 }
 
 /*
