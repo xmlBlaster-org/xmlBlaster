@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.9 2002/03/27 15:33:25 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.10 2002/04/18 14:48:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -310,7 +310,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Allows to set session specific informations. 
     *
-    * @param timeout The login session will be destroyed after given milliseconds
+    * @param timeout The login session will be destroyed after given milliseconds.<br />
+    *                Session lasts forever if set to 0L
     * @param maxSessions The client wishes to establish this maximum of sessions in parallel
     */
    public final void setSessionData(long timeout, int maxSessions)
@@ -329,6 +330,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    /**
     * Timeout until session expires if no communication happens
+    * @param timeout The login session will be destroyed after given milliseconds.<br />
+    *                Session lasts forever if set to 0L
     */
    public final void setSessionTimeout(long timeout)
    {
