@@ -198,6 +198,12 @@ void ConnectQosData::addCbQueueProperty(const CbQueueProperty& prop)
    cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
 }
 
+void ConnectQosData::setCbQueueProperty(const CbQueueProperty& prop)
+{
+   cbQueueProperties_.erase(cbQueueProperties_.begin());
+   cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
+}
+
 CbQueueProperty ConnectQosData::getCbQueueProperty() const
 {
    if (cbQueueProperties_.empty())

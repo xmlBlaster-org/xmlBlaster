@@ -138,6 +138,7 @@ public:
    QueueProperty getClientQueueProperty() const;
 
    void addCbQueueProperty(const CbQueueProperty& prop);
+   void setCbQueueProperty(const CbQueueProperty& prop);
    CbQueueProperty getCbQueueProperty() const;
 
 };

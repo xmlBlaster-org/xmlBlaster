@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.3 2002/12/10 18:45:42 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.4 2002/12/11 15:53:34 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -121,6 +121,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
     */
    void CbQueueProperty::setCallbackAddress(const AddressBase& address)
    {
+//      addressArr_.insert(addressArr_.begin(), address);
+      if (!addressArr_.empty()) addressArr_.erase(addressArr_.begin());
       addressArr_.insert(addressArr_.begin(), address);
    }
 
