@@ -16,21 +16,8 @@ CLASSPATH=lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/test.jar:$CLASSPATH
 CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:$CLASSPATH
 CLASSPATH=lib/mail.jar:lib/activation.jar:lib/cpptasks.jar:$CLASSPATH
 
-CLASSPATH=lib/batik/batik-awt-util.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-bridge.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-css.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-dom.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-ext.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-extension.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-gui-util.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-gvt.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-parser.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-script.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-svg-dom.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-svggen.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-transcoder.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-util.jar:$CLASSPATH
-CLASSPATH=lib/batik/batik-xml.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik.jar:$CLASSPATH
+CLASSPATH=lib/batik/js.jar:$CLASSPATH
 
 CLASSPATH=lib/Xindice/xalan-2.0.1.jar:$CLASSPATH
 CLASSPATH=lib/Xindice/xindice.jar:$CLASSPATH
