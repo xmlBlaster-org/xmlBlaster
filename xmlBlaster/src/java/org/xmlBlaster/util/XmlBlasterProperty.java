@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.3 2000/07/02 17:18:55 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.4 2000/07/11 17:46:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -130,17 +130,19 @@ public class XmlBlasterProperty
    {
       if (property == null) {
          synchronized (XmlBlasterProperty.class) {
-            try {
-               property = new Property("xmlBlaster.properties", true, null, true);  // initialize without args!
-            }
-            catch (JUtilsException e) {
-               System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
+            if (property == null) {
                try {
-                  property = new Property(null, true, null, true);  // initialize without args and properties file!
+                  property = new Property("xmlBlaster.properties", true, null, true);  // initialize without args!
                }
-               catch (JUtilsException e2) {
-                  System.err.println(ME + ": " + e2.toString());
-                  Log.panic(ME, e2.toString());
+               catch (JUtilsException e) {
+                  System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
+                  try {
+                     property = new Property(null, true, null, true);  // initialize without args and properties file!
+                  }
+                  catch (JUtilsException e2) {
+                     System.err.println(ME + ": " + e2.toString());
+                     Log.panic(ME, e2.toString());
+                  }
                }
             }
          }
@@ -151,7 +153,7 @@ public class XmlBlasterProperty
 
 
    /**
-    * Returns true if the user wants a 'usage' help. 
+    * Returns true if the user wants a 'usage' help.
     * @return true if the option '--help' or '-help' or '-h' or '-?' was given.
     */
    public final static boolean init(String[] args) throws JUtilsException
