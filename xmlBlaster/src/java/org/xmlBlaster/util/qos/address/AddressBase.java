@@ -151,6 +151,9 @@ public abstract class AddressBase
       // dispatch/clientSide/protocol/ior/localPort
       envPrefix = "protocol/"+this.type.getValue().toLowerCase()+"/";
 
+      this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapHostname");
+      this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapPort");
+
       this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapHostname");
       this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapPort");
       //log.error(ME, "DEBUG ONLY: Checking " + this.instanceName + ": " + envPrefix+"port to result=" + this.bootstrapPort.getValue() );
@@ -382,17 +385,17 @@ public abstract class AddressBase
     */
    public final String getBootstrapHostname() {
       if (!hasBootstrapHostname()) {
-         this.bootstrapHostname.setValue(glob.getBootstrapHostname(), PropEntry.CREATED_BY_DEFAULT);
+         this.bootstrapHostname.setValue(glob.getLocalIP(), PropEntry.CREATED_BY_DEFAULT);
       }
       return this.bootstrapHostname.getValue();
    }
 
    /**
     * Returns a URL markup of the bootstrap server, currently it looks like
-    * <i>xmlBlaster://myServer.com:3412/IOR</i> but will probably change in a future release.
+    * <i>xmlBlaster://myServer.com:3412</i> but will probably change in a future release.
     */
    public final String getBootstrapUrl() {
-      return "xmlBlaster://" + getBootstrapHostname() + ":" + getBootstrapPort() + "/" + getType();
+      return "xmlBlaster://" + getBootstrapHostname() + ":" + getBootstrapPort(); // + "/" + getType();
    }
 
    /**

@@ -1109,36 +1109,13 @@ public class Global implements Cloneable
             if (this.bootstrapAddress == null) {
                if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
                this.bootstrapAddress = new Address(this);
-               this.bootstrapAddress.setBootstrapHostname(getBootstrapHostname());
-               this.bootstrapAddress.setBootstrapPort(getBootstrapPort());
                if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getBootstrapHostname() +
                               " port=" + this.bootstrapAddress.getBootstrapPort() + ": " + this.bootstrapAddress.getRawAddress());
-               this.bootstrapAddress.setRawAddress("xmlBlaster://" + getBootstrapHostname() + ":" + getBootstrapPort());
+               this.bootstrapAddress.setRawAddress(this.bootstrapAddress.getBootstrapUrl());
             }
          }
       }
       return this.bootstrapAddress;
-   }
-
-   /**
-    * Please prefer getBootstrapAddress().getBootstrapHostname() as this is cached and better performing
-    */
-   public final String getBootstrapHostname() {
-      return getProperty().get("bootstrapHostname", getLocalIP());
-   }
-
-   /**
-    * Please prefer getBootstrapAddress().getBootstrapPort() as this is cached and better performing
-    */
-   public final int getBootstrapPort() {
-      boolean supportOldStyle = true; // for a while we support the old style -dispatch/callback/protocol/ior/iorStringHost and -dispatch/callback/protocol/ior/iorStringPort
-      if (supportOldStyle) {
-         int iorPort = getProperty().get("iorPort", Constants.XMLBLASTER_PORT);
-         return getProperty().get("bootstrapPort", iorPort);
-      }
-      else {
-         return getProperty().get("bootstrapPort", Constants.XMLBLASTER_PORT);
-      }
    }
 
    /**
