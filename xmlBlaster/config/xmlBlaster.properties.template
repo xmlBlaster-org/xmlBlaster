@@ -183,6 +183,7 @@ JdbcStorage[MicrosoftSQLServer]=org.inforMessaging.util.queue.jdbc.JdbcQueueComm
                   dbAdmin=true
 
 StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
 StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
@@ -197,6 +198,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 # Declare existing queue implementation plugins
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
 QueuePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
 QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
@@ -243,7 +245,9 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:\
                    org.gjt.mm.mysql.Driver:\
                    org.postgresql.Driver:\
                    de.sag.jdbc.adabasd.ADriver:\
-                   com.sybase.jdbc2.jdbc.SybDriver
+                   com.sybase.jdbc2.jdbc.SybDriver:\
+                   com.microsoft.jdbc.sqlserver.SQLServerDriver
+
 
 # Now you can configure your database access.
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables,connectionErrorCodes=1089:17002
