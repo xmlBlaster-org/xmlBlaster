@@ -3,13 +3,14 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.3 2002/08/24 18:06:43 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.4 2002/08/25 15:16:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -63,7 +64,7 @@ public class SoapDriver implements I_Driver
    /** The URL which clients need to use to access this server */
    private String serverUrl = null;
 
-   private final String CONFIG_SYSTEM_PROPERTY = "jafw.saw.server.config";
+   private static final String CONFIG_SYSTEM_PROPERTY = "jafw.saw.server.config";
 
 
    private java.net.InetAddress inetAddr = null;
@@ -132,31 +133,7 @@ public class SoapDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      // try to find the xmlBlaster/config/conf.xml file
-      if (System.getProperty(CONFIG_SYSTEM_PROPERTY) == null) {
-         java.net.URL url = this.getClass().getResource("SoapDriver");
-         //java.net.URL url = this.getClass().getResource("org.xmlBlaster.protocol.soap.SoapDriver");
-         String confPath = null;
-         if (url != null) {
-            String libPath = url.getFile().toString();
-            libPath = libPath.substring(0, libPath.lastIndexOf("org/xmlBlaster/protocol/soap/SoapDriver"));
-            confPath = libPath + ".." + File.separator + "config" + File.separator + "config.xml";
-         }
-         else {
-            confPath = "config" + File.separator + "config.xml";
-         }
-         File f = new File(confPath);
-         if (f.exists() && f.canRead()) {
-            log.info(ME, "Using " + CONFIG_SYSTEM_PROPERTY + "=" + confPath);
-            System.setProperty(CONFIG_SYSTEM_PROPERTY, confPath);
-         }
-         else
-            log.warn(ME, "Can't locate " + confPath + ", specify with " + CONFIG_SYSTEM_PROPERTY + "=<file>");
-      }
-
-      if (System.getProperty("saw.home") == null)
-         System.setProperty("saw.home", glob.getProperty().get("saw.home", "/home/xmlblast/saw_0.995"));
-      log.info(ME, "Using SOAP saw implementation home directory saw.home=" + System.getProperty("saw.home") + "");
+      initializeSoapEnv(glob, this);
 
       xmlPort = glob.getProperty().get("soap.port", DEFAULT_HTTP_PORT);
 
@@ -164,9 +141,6 @@ public class SoapDriver implements I_Driver
          log.info(ME, "Option soap.port set to " + xmlPort + ", soap server not started");
          return;
       }
-
-      //if (glob.getProperty().get("soap.debug", false) == true)
-      //   Soap.setDebug(true);
 
       String hostname = glob.getProperty().get("soap.hostname", (String)null);
       if (hostname == null) {
@@ -186,7 +160,70 @@ public class SoapDriver implements I_Driver
       serverUrl = "http://" + hostname + ":" + xmlPort + "/";
 
       SAWHelper.initLogging();    
+      log.info(ME, "See " + System.getProperty("user.dir") + File.separator + "saw.log for SOAP specific logging or check log4j configuration");
       //logger = Category.getInstance(Main.class);
+   }
+
+   /**
+    * The soap plugin needs to be configured over the Java environment
+    * This needs to be done for the server and for the client side, so this
+    * method is 'public static' to be reused by client code.
+    * <p>
+    * Allows to set <i>saw.home</i> and <i>jafw.saw.server.config</i> over xmlBlaster.properties
+    * or command line
+    * </p>
+    * <p>
+    * Fall back is saw.home=XMLBLASTER_HOME/demo/soap
+    */
+   public static void initializeSoapEnv(Global glob, Object caller) throws XmlBlasterException {
+      LogChannel log = glob.getLog("soap");
+      final String ME = "SoapDriver";
+
+      // soapanywhere has an allmost unconfigurable environment setting
+      // A set saw.home switches off jafw.saw.server.config
+      // A set saw.home assumes configuration in the conf subdirectory.
+
+      // check saw.home
+      if (glob.getProperty().get("saw.home", (String)null) != null)
+         System.setProperty("saw.home", glob.getProperty().get("saw.home", (String)null));
+      else {
+         // Examine the CLASSPATH where we are loaded from and guess
+         // that the home path is in ../demo/soap
+         String rootPath = ClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
+         String homePath = ".";
+         if (rootPath != null) homePath = rootPath + "..";
+         String sawHome = homePath + File.separator + "demo" + File.separator + "soap";
+         File f = new File(sawHome);
+         if (f.exists())
+            System.setProperty("saw.home", glob.getProperty().get("saw.home", sawHome));
+      }
+      log.info(ME, "Using SOAP saw implementation home directory saw.home=" + System.getProperty("saw.home") + "");
+
+
+      // try to find the config.xml file
+      if (glob.getProperty().get(CONFIG_SYSTEM_PROPERTY, (String)null) != null)
+         System.setProperty(CONFIG_SYSTEM_PROPERTY, glob.getProperty().get(CONFIG_SYSTEM_PROPERTY, (String)null));
+      /*
+      if (System.getProperty("saw.home") == null && // only if saw.home is null soapanywhere looks at CONFIG_SYSTEM_PROPERTY
+          System.getProperty(CONFIG_SYSTEM_PROPERTY) == null) {
+
+         String rootPath = ClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
+         String confPath = null;
+         if (rootPath != null) {    // our xmlBlaster specific location
+            confPath = rootPath + ".." + File.separator + "config" + File.separator + "config.xml";
+         }
+         else {
+            confPath = "config" + File.separator + "config.xml";
+         }
+         File f = new File(confPath);
+         if (f.exists() && f.canRead()) {
+            log.info(ME, "Using " + CONFIG_SYSTEM_PROPERTY + "=" + confPath);
+            System.setProperty(CONFIG_SYSTEM_PROPERTY, confPath);
+         }
+         else
+            log.warn(ME, "Can't locate " + confPath + ", specify with " + CONFIG_SYSTEM_PROPERTY + "=<file>");
+      }
+      */
    }
 
    /**
@@ -207,6 +244,7 @@ public class SoapDriver implements I_Driver
       }
 
       try {
+         log.info(ME, "Activating SOAP driver ...");
          ServerManager manager = new ServerManager();    
          manager.loadConfig();
          if (manager.getServerCount() < 1) {
@@ -216,6 +254,7 @@ public class SoapDriver implements I_Driver
          }
            
          manager.startServers();
+         log.info(ME, "SOAP driver ready");
       }
       catch (IOException e) {
          String text = "Starting SOAP server failed: " + e.toString();
