@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.7 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.8 2000/07/02 17:21:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -189,7 +189,17 @@ public class XmlKeyDom implements I_MergeDomNode
          throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
       }
 
-      if (!nodeName.equals("key")) {
+      // check if we have found the <documentRoot><xmlBlaster><key oid=''> element
+      boolean foundKey = false;
+      if (nodeName.equals("key")) {
+         org.w3c.dom.Node parent = node.getParentNode();
+         if (parent == null) throw new XmlBlasterException(ME+".InvalidDom", "DOM tree is invalid");
+         //if (parent.getNodeName().equals("xmlBlaster"))
+         if (parent.getParentNode().getParentNode() == null)
+            foundKey = true;
+      }
+
+      if (!foundKey) {
          return getKeyOid(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
       }
 
