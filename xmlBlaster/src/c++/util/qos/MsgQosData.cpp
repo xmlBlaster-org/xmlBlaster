@@ -52,6 +52,7 @@ void MsgQosData::init()
    fromPersistenceStore_ = false;
    persistent_ = DEFAULT_persistent;
    forceUpdate_.setValue(global_.getProperty(), "forceUpdate");
+   forceDestroy_.setValue(global_.getProperty(), "forceDestroy");
    lifeTime_ = -1;
    remainingLifeStatic_ = -1;
    priority_ = NORM_PRIORITY;
@@ -59,7 +60,6 @@ void MsgQosData::init()
    maxLifeTime_ = global_.getProperty().getLongProperty("message.maxLifeTime", -1);
    receiveTimestampHumanReadable_ = global_.getProperty().getBoolProperty("cb.receiveTimestampHumanReadable", false);
    topicProperty_ = NULL; 
-   forceDestroy_.setValue(global_.getProperty(), "forceDestroy");
 }
 
 void MsgQosData::copy(const MsgQosData& data)
@@ -72,6 +72,7 @@ void MsgQosData::copy(const MsgQosData& data)
    fromPersistenceStore_ = data.fromPersistenceStore_;
    persistent_ = data.persistent_;
    forceUpdate_= data.forceUpdate_;
+   forceDestroy_ = data.forceDestroy_;
    lifeTime_ = data.lifeTime_;
    remainingLifeStatic_ = data.remainingLifeStatic_;
    priority_ = data.priority_;
@@ -81,17 +82,16 @@ void MsgQosData::copy(const MsgQosData& data)
    topicProperty_ = NULL;
    if (data.topicProperty_)
       topicProperty_ = new TopicProperty(*data.topicProperty_);
-   forceDestroy_ = data.forceDestroy_;
 }
 
 
 MsgQosData::MsgQosData(Global& global, const string& serialData)
    : QosData(global, serialData),
      subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
-     sender_(SessionQos(global)),
-     destinationList_(),
      forceUpdate_(Prop<bool>(DEFAULT_forceUpdate)),
-     forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
+     forceDestroy_(Prop<bool>(DEFAULT_forceDestroy)),
+     sender_(SessionQos(global)),
+     destinationList_()
 {
    init();
 }

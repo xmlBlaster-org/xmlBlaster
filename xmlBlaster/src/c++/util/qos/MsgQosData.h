@@ -99,6 +99,7 @@ private:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.forceUpdate.html">The engine.qos.publish.forceUpdate requirement</a>
     */
    Prop<bool> forceUpdate_; // = DEFAULT_forceUpdate;
+   Prop<bool> forceDestroy_;
 
    /**
     * A message expires after some time and will be discarded.
@@ -126,8 +127,6 @@ protected:
 
    // TODO: Pass with client QoS!!!
    bool receiveTimestampHumanReadable_; // = org::xmlBlaster::util::Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
-
-   Prop<bool> forceDestroy_;
 
    void copy(const MsgQosData& data);
 
