@@ -18,7 +18,7 @@ import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inRedeliver = false;
    private boolean inTopic = false;
    private boolean inQueue = false;
-   private boolean inMsgstore = false;
+   private boolean inMsgUnitStore = false;
    private boolean inIsPubSub = false;
    private boolean inDestination = false;
    private boolean inSender = false;
@@ -333,13 +333,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             if (inTopic) {
                String relatedVal = attrs.getValue("relating");
                if (relatedVal == null)
-                  relatedVal = "topic";
+                  relatedVal = "msgUnitStore";
 
                relatedVal = relatedVal.trim();
-               if ("topic".equalsIgnoreCase(relatedVal)) {   // msgstore related='topic' is deprecated here! (is parsed now as msgstore, see below)
-                  TopicCacheProperty tmpProp = new TopicCacheProperty(glob, glob.getId());
+               if ("msgUnitStore".equalsIgnoreCase(relatedVal)) {   // <queue related='msgUnitStore' is deprecated here! (is parsed now as msgUnitStore, see below)
+                  MsgUnitStoreProperty tmpProp = new MsgUnitStoreProperty(glob, glob.getId());
                   tmpProp.startElement(uri, localName, name, attrs);
-                  msgQosData.getTopicProperty().setTopicCacheProperty(tmpProp);
+                  msgQosData.getTopicProperty().setMsgUnitStoreProperty(tmpProp);
                }
                else { // assuming related="history"
                   HistoryQueueProperty tmpProp = new HistoryQueueProperty(glob, glob.getId());
@@ -354,21 +354,19 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("msgstore")) {
+      if (name.equalsIgnoreCase("msgUnitStore")) {
          if (!inQos)
             return;
-         inMsgstore = true;
+         inMsgUnitStore = true;
          if (attrs != null) {
             if (inTopic) {
-               String relatedVal = attrs.getValue("relating");
-               //relatedVal = relatedVal.trim();  //   relatedVal = "topic";
-               TopicCacheProperty tmpProp = new TopicCacheProperty(glob, glob.getId());
+               MsgUnitStoreProperty tmpProp = new MsgUnitStoreProperty(glob, glob.getId());
                tmpProp.startElement(uri, localName, name, attrs);
-               msgQosData.getTopicProperty().setTopicCacheProperty(tmpProp);
+               msgQosData.getTopicProperty().setMsgUnitStoreProperty(tmpProp);
                return;
             }
 
-            log.warn(ME, "Found msgstore tag but don't know how to handle it: " + xmlLiteral);
+            log.warn(ME, "Found msgUnitStore tag but don't know how to handle it: " + xmlLiteral);
          }
          return;
       }
@@ -589,8 +587,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("msgstore")) {
-         inMsgstore = false;
+      if(name.equalsIgnoreCase("msgUnitStore")) {
+         inMsgUnitStore = false;
          character.setLength(0);
          return;
       }
