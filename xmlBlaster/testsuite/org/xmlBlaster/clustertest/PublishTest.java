@@ -40,7 +40,8 @@ public class PublishTest extends TestCase {
 
    private XmlBlasterConnection heronCon, avalonCon, golanCon, frodoCon, bilboCon;
 
-   private int updateCounter = 0;
+   private int updateCounterHeron = 0;
+   private int updateCounterFrodo = 0;
    private String oid = "PublishToBilbo";
 
    public PublishTest(String name) {
@@ -71,7 +72,9 @@ public class PublishTest extends TestCase {
    private void initBilbo() {
       String[] args = { "-propertyFile", "bilbo.properties", "-call[bilbo]", "false" };
       bilboGlob = glob.getClone(args);
-      assertEquals("Invalid cluster node id, check biblo.properties", "bilbo", bilboGlob.getId());
+      assertEquals("Invalid cluster node id, check biblo.properties or" +
+                   " change to the directory where the property files are!",
+                   "bilbo", bilboGlob.getId());
    }
 
    private void startHeron() {
@@ -121,16 +124,16 @@ public class PublishTest extends TestCase {
 
    /** Connect in fail save mode to a server node (as given in glob.getId()) */
    private XmlBlasterConnection connect(final Global glob, I_Callback cb) throws XmlBlasterException {
-      String clientName = "ClientTo[" + glob.getId() + "]";
+      final String clientName = "ClientTo[" + glob.getId() + "]";
       if (glob.getId() == null || glob.getId().length() < 1) log.error(ME, "glob.getId() is not set");
       XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
       con.initFailSave(new I_ConnectionProblems() {
             public void reConnected() {
-               log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+               log.info(clientName, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
             }
             public void lostConnection() {
-               log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
+               log.warn(clientName, "I_ConnectionProblems: Lost connection to " + glob.getId());
             }
          });
 
@@ -208,14 +211,14 @@ public class PublishTest extends TestCase {
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
          String retQos = bilboCon.publish(msgUnit);
-         log.info(bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos);
 
 
          heronCon = connect(heronGlob, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(heronGlob.getId(), "Receive message '" + updateKey.getOid() + "'");
+                  log.info(ME+":"+heronGlob.getId(), "Receive message '" + updateKey.getOid() + "'");
                   return "";
                }
             });
@@ -225,7 +228,7 @@ public class PublishTest extends TestCase {
          MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
-         log.info(heronGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+         log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
 
          // Check if the message is available at the slave node bilbo ...
          gk = new GetKeyWrapper(oid);
@@ -233,7 +236,7 @@ public class PublishTest extends TestCase {
          msgs = bilboCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
-         log.info(bilboGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+         log.info(ME+":"+bilboGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
 
          // Trying to erase the message at the slave node ...
          EraseKeyWrapper ek = new EraseKeyWrapper(oid);
@@ -246,7 +249,7 @@ public class PublishTest extends TestCase {
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 0, msgs.length);
-         log.info(heronGlob.getId(), "SUCCESS: Got no message after erase");
+         log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got no message after erase");
 
          System.out.println("***PublishTest: Publish a message to a cluster slave - frodo is offline ...");
 
@@ -257,8 +260,8 @@ public class PublishTest extends TestCase {
          String subId = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                assertEquals("Reveiving unexpected asynchronous update message", oid, updateKey.getOid());
-               log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
-               updateCounter++;
+               log.info(ME+":"+heronGlob.getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               updateCounterHeron++;
                return "";
             }
          });  // subscribe with our specific update handler
@@ -270,24 +273,45 @@ public class PublishTest extends TestCase {
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 0, msgs.length);
-         log.info(heronGlob.getId(), "SUCCESS: Got no message after erase");
+         log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got no message after erase");
 
          // publish again ...
          pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          pq = new PublishQosWrapper();
          msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
          retQos = bilboCon.publish(msgUnit);
-         log.info(bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos);
 
 
-         assertEquals("heron is not reachable, publish should not have come through", 0, updateCounter);
+         assertEquals("heron is not reachable, publish should not have come through", 0, updateCounterHeron);
+         updateCounterHeron = 0;
 
          startFrodo();
 
+         // Connect to frodo ...
+         frodoCon = connect(frodoGlob, new I_Callback() {
+               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                  fail(frodoGlob.getId() + ": Receive unexpected message '" + updateKey.getOid() + "'");
+                  return "";
+               }
+            });
+
+         // Subscribe from frodo, is he able to organize it?
+         sk = new SubscribeKeyWrapper(oid);
+         sk.setDomain(domain);
+         sq = new SubscribeQosWrapper();
+         subId = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+            public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+               log.info(ME+":"+frodoGlob.getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               updateCounterFrodo++;
+               return "";
+            }
+         });  // subscribe with our specific update handler
+
          try { Thread.currentThread().sleep(5000); } catch( InterruptedException i) {} // Wait some time
-         assertEquals("heron is reachable again, publish should have come through", 1, updateCounter);
+         assertEquals("frodo is reachable again, subscribe should work", 1, updateCounterFrodo);
       }
       catch (XmlBlasterException e) {
          fail("PublishToBilbo-Exception: " + e.toString());
