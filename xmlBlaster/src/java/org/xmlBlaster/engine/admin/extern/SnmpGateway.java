@@ -63,7 +63,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       this.ME = "SnmpGateway" + this.glob.getLogPraefixDashed();
       this.manager = commandManager;
 
-      boolean useSnmp = glob.getProperty().get("admin.snmp", true);
+      boolean useSnmp = glob.getProperty().get("admin.snmp", false);
       useSnmp = glob.getProperty().get("admin.snmp[" + glob.getId() + "]", useSnmp);
       if (!useSnmp) return false;
 
