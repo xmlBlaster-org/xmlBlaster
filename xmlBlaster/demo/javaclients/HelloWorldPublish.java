@@ -102,6 +102,7 @@ public class HelloWorldPublish
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
+         boolean forceUpdate = glob.getProperty().get("forceUpdate", false);
          boolean forceDestroy = glob.getProperty().get("forceDestroy", false);
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
@@ -143,6 +144,7 @@ public class HelloWorldPublish
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
          log.info(ME, "   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
+         log.info(ME, "   -forceUpdate    " + forceUpdate);
          log.info(ME, "   -forceDestroy   " + forceDestroy);
          if (clientPropertyMap != null) {
             Iterator it = clientPropertyMap.keySet().iterator();
@@ -225,6 +227,7 @@ public class HelloWorldPublish
             pq.setPriority(priority);
             pq.setPersistent(persistent);
             pq.setLifeTime(lifeTime);
+            pq.setForceUpdate(forceUpdate);
             pq.setForceDestroy(forceDestroy);
             pq.setSubscribable(subscribable);
             if (clientPropertyMap != null) {
