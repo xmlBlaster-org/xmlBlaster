@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   client connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
-Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS client.c callbackServer.c ws2_32.lib
+Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -I. client.c msgUtil.c socket\*.c ws2_32.lib
 Invoke:    client -dispatch/callback/plugin/socket/hostname develop -dispatch/callback/plugin/socket/port 7607
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 Date:      05/2003
