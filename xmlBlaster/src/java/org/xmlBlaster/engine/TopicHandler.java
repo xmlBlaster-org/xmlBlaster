@@ -139,7 +139,7 @@ public final class TopicHandler implements I_Timeout
    private I_SubscriptionListener subscriptionListener;
 
    /**
-    * Use this constructor if a subscription is made on a yet unknown object.
+    * Use this constructor if a subscription is made on a yet unknown topic.
     * <p />
     * @param requestBroker
     * @param uniqueKey The unique XmlKey-oid from the subscribe() call
