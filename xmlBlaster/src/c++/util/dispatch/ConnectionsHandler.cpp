@@ -9,6 +9,11 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/Global.h>
 #include <util/Timeout.h>
 #include <util/lexical_cast.h>
+#include <util/queue/QueueFactory.h>
+#include <util/queue/PublishQueueEntry.h>
+#include <util/queue/ConnectQueueEntry.h>
+#include <util/queue/SubscribeQueueEntry.h>
+#include <util/queue/UnSubscribeQueueEntry.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
@@ -33,7 +38,6 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
      instanceName_(instanceName)
 {
    ClientQueueProperty prop(global_, "");
-   adminQueue_ = new MsgQueue(global, prop);
    connectQos_         = NULL;
    connectionProblems_ = NULL;
    connectReturnQos_   = NULL;
@@ -71,8 +75,6 @@ ConnectionsHandler::~ConnectionsHandler()
       delete queue_;
       queue_ = NULL;
    }
-   delete adminQueue_;
-   adminQueue_ = NULL;
    if (log_.trace()) log_.trace(ME, "destructor: going to delete the connectQos");
    delete connectQos_;
    delete connectReturnQos_;
@@ -206,8 +208,6 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "subscribe");
    try {
       SubscribeReturnQos ret = connection_->subscribe(key, qos);
-      SubscribeQueueEntry entry(global_, key, qos);
-      adminQueue_->put(entry);
       return ret;
    }   
    catch (XmlBlasterException& ex) {
@@ -246,8 +246,6 @@ vector<UnSubscribeReturnQos>
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "unSubscribe");
    try {
       vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
-      UnSubscribeQueueEntry entry(global_, key, qos);
-      adminQueue_->put(entry);
       return ret;
    }   
    catch (XmlBlasterException& ex) {
@@ -456,8 +454,6 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
             if (sessionId != lastSessionId) {
                log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
-               MsgQueue tmpQueue = *adminQueue_;
-               flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
             }
  
             if (doFlush) {
@@ -501,8 +497,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       log_.info(ME, "created a client queue");
-      queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
-
+      queue_ = QueueFactory::getFactory(global_).createQueue(connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
@@ -525,7 +520,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 
    if (!queue_) {
       log_.info(ME, "::queueConnect: created a client queue");
-      queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
+      queue_ = QueueFactory::getFactory(global_).createQueue(connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
       log_.trace(ME, string("queueConnect: entry '") + connectQos_->getSessionQos().getAbsoluteName() + "' has been queued");
@@ -560,7 +555,7 @@ long ConnectionsHandler::flushQueue()
 }  
 
    
-long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove)
+long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove)
 {
    if ( log_.call() ) log_.call(ME, "flushQueueUnlocked");
            if (!queueToFlush || queueToFlush->empty()) return 0;
@@ -569,12 +564,14 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
    long ret = 0;
    while (!queueToFlush->empty()) {
       log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep");
-      vector<EntryType> entries = queueToFlush->peekWithSamePriority();
+      const vector<EntryType> entries = queueToFlush->peekWithSamePriority();
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
             if (log_.trace()) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
-            (*iter)->send(*this);
+            const EntryType entry = (*iter);
+            const MsgQueueEntry &entry2 = *entry;
+            entry2.send(*this);
             if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
          catch (XmlBlasterException &ex) {
@@ -589,7 +586,7 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
    return ret;
 }
 
-Queue* ConnectionsHandler::getQueue()
+I_Queue* ConnectionsHandler::getQueue()
 {
    return queue_;
 }
@@ -660,7 +657,7 @@ ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
 }
 
 
-I_XmlBlasterConnection& ConnectionsHandler::getConnection()
+I_XmlBlasterConnection& ConnectionsHandler::getConnection() const
 {
    if (!connection_) {
       throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME + "::getConnection", "the connection is still NULL: it is not assigned yet. You probably called this method before a connection was made");

@@ -154,7 +154,7 @@ string MsgQueueEntry::toXml(const string& /*indent*/) const
    return "<notImplemented/>\n";
 }
 
-MsgQueueEntry& MsgQueueEntry::send(I_ConnectionsHandler&)
+const MsgQueueEntry& MsgQueueEntry::send(I_ConnectionsHandler&) const
 {
    log_.error(ME, "send not implemented");
    return *this;

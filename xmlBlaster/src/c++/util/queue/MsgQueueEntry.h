@@ -56,7 +56,7 @@ protected:
    // specific return values
    mutable org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
    mutable org::xmlBlaster::client::qos::PublishReturnQos* publishReturnQos_;
-   org::xmlBlaster::util::qos::StatusQosData* statusQosData_;
+   mutable org::xmlBlaster::util::qos::StatusQosData* statusQosData_;
 
 public:
 
@@ -159,6 +159,12 @@ public:
        return (uniqueId_ > entry.uniqueId_);
     }
 
+    /**
+     * Create a new entry of myself. 
+     * @return The cloned entry, is is allocated with new and it is your responsibility to delete it
+     */
+    virtual MsgQueueEntry *getClone() const = 0;
+
    /**
     * Allows to query the priority of this entry.
     * This is the highest order precedence in the sorted queue
@@ -205,7 +211,7 @@ public:
 
 
    // this should actually be in another interface but since it is an only method we put it here.
-   virtual MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&); // = 0;
+   virtual const MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&) const; // = 0;
 
    virtual std::string toXml(const std::string& indent="") const; // = 0;
 

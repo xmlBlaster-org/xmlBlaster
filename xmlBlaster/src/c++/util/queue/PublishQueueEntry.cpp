@@ -21,12 +21,17 @@ PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit,
    if (priority < 0) priority_ = msgUnit.getQos().getPriority();
 }
 
+MsgQueueEntry *PublishQueueEntry::getClone() const
+{
+   return new PublishQueueEntry(*this);
+}
+
 void* PublishQueueEntry::getEmbeddedObject()
 {
    return msgUnit_;
 }
 
-MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
+const MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
    if (publishReturnQos_) {

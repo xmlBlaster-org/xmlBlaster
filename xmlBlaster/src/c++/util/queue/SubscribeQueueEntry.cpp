@@ -20,13 +20,18 @@ SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& sub
    ME = "SubscribeQueueEntry";
 }
 
+MsgQueueEntry *SubscribeQueueEntry::getClone() const
+{
+   return new SubscribeQueueEntry(*this);
+}
+
 void* SubscribeQueueEntry::getEmbeddedObject()
 {
    return queryKeyData_; // actually not used now otherwise we would need to return also the qos
 }
 
 // this should actually be in another interface but since it is an only method we put it here.
-MsgQueueEntry& SubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
+const MsgQueueEntry& SubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
    if (statusQosData_) {

@@ -31,6 +31,8 @@ public:
     */
    PublishQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::MessageUnit& msgUnit, const std::string& type="publish", int priority=-1, bool persistent=false);
 
+   MsgQueueEntry *getClone() const;
+
    /**
     * gets the content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
@@ -38,7 +40,7 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler);
+   const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
 
    org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
 

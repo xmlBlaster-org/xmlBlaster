@@ -7,6 +7,13 @@ Comment:   Testing the Timeout Features
 #include "TestSuite.h"
 #include <vector>
 #include <iostream>
+/*#include "tut.h"*/
+#include <util/queue/QueueFactory.h>
+#include <util/queue/I_Queue.h>
+#include <util/queue/PublishQueueEntry.h>
+#include <util/queue/ConnectQueueEntry.h>
+#include <util/queue/SubscribeQueueEntry.h>
+#include <util/queue/UnSubscribeQueueEntry.h>
 
 /**
  * Tests the queue entry and queue functionality. The following is tested here:
@@ -32,7 +39,7 @@ private:
    string    ME;
    Global&   global_;
    I_Log&    log_;
-   MsgQueue* queue_; 
+   I_Queue* queue_; 
 
 public:
    TestQueue(Global& global, string name) : ME(name), global_(global), log_(global.getLog("test"))
@@ -124,7 +131,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
       ClientQueueProperty prop(global_, "");
-      queue_ = new MsgQueue(global_, prop);
+      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
       assertEquals(log_, me, true, queue_->empty(), " 1. the queue must be empty after creation");
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
@@ -144,7 +151,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test checks the order in which entries are returned from the queue");
       ClientQueueProperty prop(global_, "");
-      queue_ = new MsgQueue(global_, prop);
+      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
       ConnectQos connQos(global_);
       ConnectQueueEntry   entry(global_, connQos, "7", 1);
       queue_->put(entry);
@@ -199,7 +206,7 @@ public:
       log_.info(me, "this test checks that an excess of entries really throws an exception");
       ClientQueueProperty prop(global_, "");
       prop.setMaxEntries(10);
-      queue_ = new MsgQueue(global_, prop);
+      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
       ConnectQos connQos(global_);
       int i=0;
       try {
@@ -209,7 +216,7 @@ public:
          }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
-      catch (XmlBlasterException &/*ex*/) {
+      catch (const XmlBlasterException &/*ex*/) {
          log_.error(me, "1. putting entries inside the queue: FAILED could not put inside the queue the entry nr. " + lexical_cast<string>(i));      
          assert(0);
       }
@@ -219,7 +226,7 @@ public:
          log_.error(me, "2. putting entries inside the queue: FAILED should have thrown an exception");      
          assert(0);
       }
-      catch (XmlBlasterException ex) {
+      catch (const XmlBlasterException &ex) {
          assertEquals(log_, me, ex.getErrorCodeStr(), string("resource.overflow.queue.entries"), "3. checking that exceeding number of entries throws the correct exception.");
          queue_->clear();
       }
@@ -236,7 +243,7 @@ public:
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
       prop.setMaxBytes(10 * entry.getSizeInBytes());
-      queue_ = new MsgQueue(global_, prop);
+      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
 
       int i=0;
       try {
@@ -246,7 +253,7 @@ public:
          }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
-      catch (XmlBlasterException &/*ex*/) {
+      catch (const XmlBlasterException &/*ex*/) {
          log_.error(me, "1. putting entries inside the queue: FAILED could not put inside the queue the entry nr. " + lexical_cast<string>(i));      
          assert(0);
       }
@@ -256,7 +263,7 @@ public:
          log_.error(me, "2. putting entries inside the queue: FAILED should have thrown an exception");      
          assert(0);
       }
-      catch (XmlBlasterException ex) {
+      catch (const XmlBlasterException &ex) {
          assertEquals(log_, me, ex.getErrorCodeStr(), string("resource.overflow.queue.bytes"), "3. checking that exceeding number of entries throws the correct exception.");
       }
       log_.info(me, "test ended successfully");

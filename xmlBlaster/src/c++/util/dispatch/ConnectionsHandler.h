@@ -21,7 +21,7 @@ Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 #include <util/XmlBlasterException.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Timeout.h>
-#include <util/queue/MsgQueue.h>
+#include <util/queue/I_Queue.h>
 // #include <util/queue/PublishQueueEntry.h>
 // #include <util/queue/ConnectQueueEntry.h>
 
@@ -43,14 +43,8 @@ private:
    int retries_;
    int currentRetry_;
    org::xmlBlaster::util::Timestamp timestamp_;
-   org::xmlBlaster::util::queue::MsgQueue* queue_;
+   org::xmlBlaster::util::queue::I_Queue* queue_;
    bool pingIsStarted_;
-   /**
-    * Temporary hack until the server will give back the same sessionId. Here all subscriptions and 
-    * unSubscriptions are stored. When reconnecting a check is made to see if we got the same sessionId. If
-    * the id differe, then all subscribe and unSubscribe are repeated.
-    */
-   org::xmlBlaster::util::queue::MsgQueue* adminQueue_; // used to temporarly store the subscriptions 
    const std::string instanceName_;
    bool doStopPing_; // used to stop the pinger when destroying the object
 
@@ -125,7 +119,7 @@ public:
     */
    long flushQueue();
 
-   org::xmlBlaster::util::queue::Queue* getQueue();
+   org::xmlBlaster::util::queue::I_Queue* getQueue();
 
    bool isFailsafe() const;
 
@@ -133,7 +127,7 @@ public:
 
    org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
 
-   virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection();
+   virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() const;
 
    virtual org::xmlBlaster::util::qos::ConnectReturnQos* getConnectReturnQos();
 
@@ -141,7 +135,7 @@ public:
 
 protected:
    /** only used inside the class to avoid deadlock */
-   long flushQueueUnlocked(org::xmlBlaster::util::queue::MsgQueue *queueToFlush, bool doRemove=true);
+   long flushQueueUnlocked(org::xmlBlaster::util::queue::I_Queue *queueToFlush, bool doRemove=true);
    org::xmlBlaster::client::qos::PublishReturnQos queuePublish(const org::xmlBlaster::util::MessageUnit& msgUnit);
    org::xmlBlaster::util::qos::ConnectReturnQos& queueConnect();
    bool startPinger();

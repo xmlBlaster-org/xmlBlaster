@@ -18,12 +18,17 @@ ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQo
    ME = "ConnectQueueEntry";
 }
 
+MsgQueueEntry *ConnectQueueEntry::getClone() const
+{
+   return new ConnectQueueEntry(*this);
+}
+
 void* ConnectQueueEntry::getEmbeddedObject()
 {
    return msgUnit_;
 }
 
-MsgQueueEntry& ConnectQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
+const MsgQueueEntry& ConnectQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
    if (connectReturnQos_) {

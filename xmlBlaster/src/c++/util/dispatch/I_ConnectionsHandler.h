@@ -17,10 +17,10 @@ Comment:   Extended Interface to org::xmlBlaster::client::protocol::I_XmlBlaster
 #include <util/xmlBlasterDef.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 
-// circular dependency I_ConnectionsHandler -> org::xmlBlaster::util::queue::Queue -> org::xmlBlaster::util::queue::MsgQueueEntry
+// circular dependency I_ConnectionsHandler -> org::xmlBlaster::util::queue::I_Queue -> org::xmlBlaster::util::queue::MsgQueueEntry
 #ifndef _UTIL_QUEUE_QUEUE_H
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
-class Queue;
+class I_Queue;
 }}}}
 #endif
 
@@ -42,7 +42,7 @@ public:
    /**
     * gets a pointer to the queue used.
     */
-   virtual org::xmlBlaster::util::queue::Queue* getQueue() = 0;
+   virtual org::xmlBlaster::util::queue::I_Queue* getQueue() = 0;
 
    /**
     * Returns true if the connection is in failsafe mode. You can activate this mode by invoking initFailsafe
@@ -54,7 +54,7 @@ public:
 
    virtual org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const ConnectQos& connectQos) = 0;
 
-   virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() = 0;
+   virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() const = 0;
 
    virtual org::xmlBlaster::util::qos::ConnectReturnQos* getConnectReturnQos() = 0;
 

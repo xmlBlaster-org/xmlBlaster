@@ -1,10 +1,10 @@
 /*------------------------------------------------------------------------------
-Name:      Queue.cpp
+Name:      RamQueuePlugin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-#include <util/queue/Queue.h>
+#include <util/queue/RamQueuePlugin.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 
@@ -15,8 +15,8 @@ using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-Queue::Queue(Global& global, const ClientQueueProperty& property)
-   : ME("Queue"), 
+RamQueuePlugin::RamQueuePlugin(Global& global, const ClientQueueProperty& property)
+   : ME("RamQueuePlugin"), 
      global_(global), 
      log_(global.getLog("org.xmlBlaster.util.queue")), 
      property_(property), 
@@ -26,8 +26,8 @@ Queue::Queue(Global& global, const ClientQueueProperty& property)
    numOfBytes_ = 0;
 }
 
-Queue::Queue(const Queue& queue)
-   : ME("Queue"), 
+RamQueuePlugin::RamQueuePlugin(const RamQueuePlugin& queue)
+   : ME("RamQueuePlugin"), 
      global_(queue.global_), 
      log_(queue.log_), 
      property_(queue.property_), 
@@ -37,7 +37,7 @@ Queue::Queue(const Queue& queue)
    numOfBytes_ = queue.numOfBytes_;
 }
 
-Queue& Queue::operator =(const Queue& queue)
+RamQueuePlugin& RamQueuePlugin::operator =(const RamQueuePlugin& queue)
 {
    Lock lock(queue.accessMutex_);
    property_   = queue.property_;
@@ -47,7 +47,7 @@ Queue& Queue::operator =(const Queue& queue)
 
 }
 
-Queue::~Queue()
+RamQueuePlugin::~RamQueuePlugin()
 {
    if (log_.call()) log_.call(ME, "destructor");
    if (!storage_.empty()) {
@@ -56,14 +56,13 @@ Queue::~Queue()
    }
 } 
 
-void Queue::put(MsgQueueEntry *entry)
+void RamQueuePlugin::put(const MsgQueueEntry &entry)
 {
    if (log_.call()) log_.call(ME, "::put");
-   if (log_.dump()) log_.dump(ME, string("::put, the entry is: ")  + entry->toXml());
+   if (log_.dump()) log_.dump(ME, string("::put, the entry is: ")  + entry.toXml());
 
    Lock lock(accessMutex_);
-   if (!entry) throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::put", "the entry is NULL");
-   if (numOfBytes_+entry->getSizeInBytes() > ((size_t)property_.getMaxBytes()) ) {
+   if (numOfBytes_+entry.getSizeInBytes() > ((size_t)property_.getMaxBytes()) ) {
       throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_BYTES, ME + "::put", "client queue");
    }
 
@@ -71,9 +70,9 @@ void Queue::put(MsgQueueEntry *entry)
       throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME + "::put", "client queue");
    }
    try {
-      EntryType help(*entry);
+      const EntryType help(*entry.getClone());
       storage_.insert(help);
-      numOfBytes_ += entry->getSizeInBytes();
+      numOfBytes_ += entry.getSizeInBytes();
       // add the sizeInBytes_ here ...
    }
    catch (exception& ex) {
@@ -84,7 +83,7 @@ void Queue::put(MsgQueueEntry *entry)
    }
 }
 
-vector<EntryType> Queue::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
+const vector<EntryType> RamQueuePlugin::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
 {
    Lock lock(accessMutex_);
    vector<EntryType> ret;
@@ -107,7 +106,7 @@ vector<EntryType> Queue::peekWithSamePriority(long maxNumOfEntries, long maxNumO
 }
 
 
-long Queue::randomRemove(vector<EntryType>::const_iterator start, vector<EntryType>::const_iterator end) 
+long RamQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &start, const vector<EntryType>::const_iterator &end) 
 {
    Lock lock(accessMutex_);
    if (start == end || storage_.empty()) return 0;
@@ -126,7 +125,7 @@ long Queue::randomRemove(vector<EntryType>::const_iterator start, vector<EntryTy
    return count;
 }
 
-void Queue::clear()
+void RamQueuePlugin::clear()
 {
    Lock lock(accessMutex_);
    storage_.erase(storage_.begin(), storage_.end());
@@ -134,7 +133,7 @@ void Queue::clear()
 }
 
 
-bool Queue::empty() const
+bool RamQueuePlugin::empty() const
 {
    return storage_.empty();
 }

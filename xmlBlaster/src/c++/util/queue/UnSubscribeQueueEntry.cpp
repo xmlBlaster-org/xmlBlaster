@@ -20,13 +20,18 @@ UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKe
    ME = "UnSubscribeQueueEntry";
 }
 
+MsgQueueEntry *UnSubscribeQueueEntry::getClone() const
+{
+   return new UnSubscribeQueueEntry(*this);
+}
+
 void* UnSubscribeQueueEntry::getEmbeddedObject()
 {
    return queryKeyData_; // actually not used now otherwise we would need to return also the qos
 }
 
 // this should actually be in another interface but since it is an only method we put it here.
-MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
+const MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
    if (statusQosData_) {

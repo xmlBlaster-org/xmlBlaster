@@ -23,7 +23,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 typedef ReferenceHolder<MsgQueueEntry>      EntryType;
-typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
 class Dll_Export I_Queue
 {
@@ -37,7 +36,7 @@ public:
     * reference to it has been removed from the queue (which normally happens on a remove or when destroying
     * the queue.
     */
-   virtual void put(MsgQueueEntry *entry) = 0;
+   virtual void put(const MsgQueueEntry &entry) = 0;
 
    /**
     * Returns the entries with the highest priority in the queue. If 'maxNumOfEntries' is positive,
@@ -45,13 +44,13 @@ public:
     * which fit into the range specified are returned. If there are no such entries, an empty std::vector is
     * returned.
     */
-   virtual std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const = 0;
+   virtual const std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const = 0;
 
    /**
     * Deletes the entries specified in the std::vector in the argument list. If this std::vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   virtual long randomRemove(std::vector<EntryType>::const_iterator start, std::vector<EntryType>::const_iterator end) = 0;
+   virtual long randomRemove(const std::vector<EntryType>::const_iterator &start, const std::vector<EntryType>::const_iterator &end) = 0;
 
    /**
     * Clears (removes all entries) this queue

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      Queue.h
+Name:      RamQueuePlugin.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -26,10 +26,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-typedef ReferenceHolder<MsgQueueEntry>      EntryType;
 typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
-class Dll_Export Queue : public I_Queue
+class Dll_Export RamQueuePlugin : public I_Queue
 {
 protected:
    std::string        ME;
@@ -41,13 +40,13 @@ protected:
    org::xmlBlaster::util::thread::Mutex accessMutex_;
 
 public:
-   Queue(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
+   RamQueuePlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
 
-   Queue(const Queue& queue);
+   RamQueuePlugin(const RamQueuePlugin& queue);
 
-   Queue& operator =(const Queue& queue);
+   RamQueuePlugin& operator =(const RamQueuePlugin& queue);
    
-   virtual ~Queue();
+   virtual ~RamQueuePlugin();
     
    /**
     * puts a new entry into the queue. 
@@ -56,7 +55,7 @@ public:
     * reference to it has been removed from the queue (which normally happens on a remove or when destroying
     * the queue.
     */
-   void put(MsgQueueEntry *entry);
+   void put(const MsgQueueEntry &entry);
 
    /**
     * Returns the entries with the highest priority in the queue. If 'maxNumOfEntries' is positive,
@@ -64,13 +63,13 @@ public:
     * which fit into the range specified are returned. If there are no such entries, an empty std::vector is
     * returned.
     */
-   std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
+   const std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
 
    /**
     * Deletes the entries specified in the std::vector in the argument list. If this std::vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   long randomRemove(std::vector<EntryType>::const_iterator start, std::vector<EntryType>::const_iterator end);
+   long randomRemove(const std::vector<EntryType>::const_iterator &start, const std::vector<EntryType>::const_iterator &end);
 
    /**
     * Clears (removes all entries) this queue
