@@ -33,18 +33,31 @@ public final class UpdateDispatcher
       if (subscriptionId == null) {
          throw new IllegalArgumentException("Null argument not allowed in addCallback: subscriptionId=" + subscriptionId + " callback=" + callback);
       }
-      this.callbackMap.put(subscriptionId, callback);
+      this.callbackMap.put(subscriptionId, new CallbackInfo(callback));
    }
 
    /**
-    * Access a callbacl interface for the given subscriptionId
+    * Access a callback interface for the given subscriptionId
     * @return null if not found
     */
    public synchronized I_Callback getCallback(String subscriptionId) {
       if (subscriptionId == null) {
          throw new IllegalArgumentException("The subscriptionId is null");
       }
-      return (I_Callback)this.callbackMap.get(subscriptionId);
+      CallbackInfo info = (CallbackInfo)this.callbackMap.get(subscriptionId);
+      return (info == null) ? null: info.callback;
+   }
+   
+   /**
+    * Mark that a subscribe() invocation returned (is the server ACK). 
+    * @param subscriptionId The subcribe
+    */
+   public synchronized void ackSubscription(String subscriptionId) {
+      if (subscriptionId == null) {
+         throw new IllegalArgumentException("The subscriptionId is null");
+      }
+      CallbackInfo info = (CallbackInfo)this.callbackMap.get(subscriptionId);
+      if (info != null) info.ack = true;
    }
    
    /**
@@ -55,7 +68,12 @@ public final class UpdateDispatcher
       if (values == null || values.size() < 1) {
          return new I_Callback[0];
       }
-      return (I_Callback[])values.toArray(new I_Callback[values.size()]);
+      CallbackInfo[] infoArr = (CallbackInfo[])values.toArray(new CallbackInfo[values.size()]);
+      I_Callback[] cbArr = new I_Callback[infoArr.length];
+      for (int i=0; i<infoArr.length; i++) {
+         cbArr[i] = infoArr[i].callback;
+      }
+      return cbArr;
    }
 
    /**
@@ -74,7 +92,8 @@ public final class UpdateDispatcher
     * @return the removed entry of null if subscriptionId is unknown
     */
    public synchronized I_Callback removeCallback(String subscriptionId) {
-      return (I_Callback)this.callbackMap.remove(subscriptionId);
+      CallbackInfo info = (CallbackInfo)this.callbackMap.remove(subscriptionId);
+      return (info == null) ? null : info.callback;
    }
 
    /**
@@ -89,4 +108,47 @@ public final class UpdateDispatcher
    public synchronized void clear() {
       this.callbackMap.clear();
    }
+
+   /**
+    * Clear all subscribes which where marked as acknowledged
+    * @return number of removed entries
+    */
+   public synchronized int clearAckSubscriptions() {
+      String[] ids = getSubscriptionIds();
+      int count = 0;
+      for (int i=0; i<ids.length; i++) {
+         CallbackInfo info = (CallbackInfo)this.callbackMap.get(ids[i]);
+         if (info != null && info.ack) {
+            this.callbackMap.remove(ids[i]);
+            count++;
+         }
+      }
+      return count;
+   }
+
+   /**
+    * Clear all subscribes which where not marked as acknowledged
+    */
+   public synchronized void clearNAKSubscriptions() {
+      String[] ids = getSubscriptionIds();
+      for (int i=0; i<ids.length; i++) {
+         CallbackInfo info = (CallbackInfo)this.callbackMap.get(ids[i]);
+         if (info != null && info.ack == false) {
+            this.callbackMap.remove(ids[i]);
+         }
+      }
+   }
+
+   /**
+    * Inner helper class to hold ACK/NAK state of subscriptions. 
+    * We need this to be able to garbage collect map entries on
+    * reconnect to a different session.
+    */
+   class CallbackInfo {
+      I_Callback callback;
+      boolean ack = false; // Is the subscribe acknowledged from the server (the subscribe() method returned?)
+      CallbackInfo(I_Callback callback) {
+         this.callback = callback;
+      }
+   };
 }
