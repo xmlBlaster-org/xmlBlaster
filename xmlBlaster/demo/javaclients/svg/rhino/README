@@ -1,3 +1,5 @@
+http://www.xmlblaster.org/xmlBlaster/demo/javaclients/svg/rhino/README
+
 This is a demo which shows the possibilities of xmlBlaster when
 combining it with javascript (using the rhino lifeConnect feature)
 and with SVG. It has currently been tested with the batik browser
