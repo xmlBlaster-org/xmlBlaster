@@ -168,7 +168,7 @@ int main(int argc, char** argv)
          }
 
          if (pp) { /* Replace '%counter' token by current index */
-            char *k = malloc(strlen(key)+10);
+            char *k = (char *)malloc(strlen(key)+10);
             strncpy(k, key, pp-key);
             sprintf(k+(pp-key), "%d%s", iPublish, pp+strlen("%counter"));
             msgUnit.key = k;
@@ -201,7 +201,7 @@ int main(int argc, char** argv)
 
          if (contentSize > 0) {
             int i;
-            char *p = malloc(contentSize);
+            char *p = (char *)malloc(contentSize);
             for (i=0; i<contentSize; i++) {
                int ran = rand() % 100;
                p[i] = (char)(ran+28);
@@ -210,9 +210,9 @@ int main(int argc, char** argv)
             msgUnit.contentLen = contentSize;
          }
          else {
-            char *pp = strstr(content, "%counter");
+            const char *pp = strstr(content, "%counter");
             if (pp) { /* Replace '%counter' token by current index */
-               char *p = malloc(strlen(content)+10);
+               char *p = (char *)malloc(strlen(content)+10);
                strncpy(p, content, pp-content);
                sprintf(p+(pp-content), "%d%s", iPublish, pp+strlen("%counter"));
                msgUnit.content = p;
