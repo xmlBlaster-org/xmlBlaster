@@ -16,7 +16,8 @@ TODO for release 0.80
 (13) CLASSPATH is to long                                      [ok]
 (14) xmlBlaster HP support for all browsers                    [ok]
 (15) New callback framework                                    [--]
-(16) URI based loginName handling (see below)                  [--]
+(16) Embed BeanShell or Javascript scripting                   [--]
+
 
 
 URI based loginName handling:
