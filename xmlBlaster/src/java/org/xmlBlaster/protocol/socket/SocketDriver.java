@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.2 2002/02/14 14:59:38 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.3 2002/02/14 19:04:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -11,17 +11,23 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 
 /**
@@ -53,7 +59,7 @@ import java.io.OutputStream;
 public class SocketDriver extends Thread implements I_Driver
 {
    private static final String ME = "SocketDriver";
-   /** The singleton handle for this xmlBlaster server */
+   /** The singleton handle for this authentication server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
@@ -74,11 +80,32 @@ public class SocketDriver extends Thread implements I_Driver
 
 
    /**
+    * This static map is a hack!. We need this to map asynchronous update() to the correct socket
+    * The key is the unique client loginName, the value is the HandleRequest instances belonging to this client.
+    * <p />
+    * TODO: Change loginName to sessionId when the new callback framework is available
+    */
+   private static final Map socketMap = Collections.synchronizedMap(new HashMap());
+
+
+   /**
     * Note: getName() is enforced by interface I_Driver, but is already defined in Thread class
     */
    public SocketDriver()
    {
       super(ME);
+   }
+
+   I_Authenticate getAuthenticate() {
+      return this.authenticate;
+   }
+
+   I_XmlBlaster getXmlBlaster() {
+      return this.xmlBlasterImpl;
+   }
+
+   Map getSocketMap() {
+      return this.socketMap;
    }
 
 
@@ -142,7 +169,7 @@ public class SocketDriver extends Thread implements I_Driver
                Log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
                break;
             }
-            HandleRequest hh = new HandleRequest(accept);
+            HandleRequest hh = new HandleRequest(this, accept);
          }
       }
       catch (java.net.UnknownHostException e) {
@@ -223,41 +250,123 @@ public class SocketDriver extends Thread implements I_Driver
 class HandleRequest extends Thread
 {
    private String ME = "SocketDriverRequest";
+   private SocketDriver driver;
+   /** The singleton handle for this authentication server */
+   private I_Authenticate authenticate;
+   /** The singleton handle for this xmlBlaster server */
+   private I_XmlBlaster xmlBlasterImpl;
    private Socket sock;
-   private final String CRLF = "\r\n";
+   private boolean running = true;
+   private InputStream iStream;
+   private OutputStream oStream;
 
 
    /**
     */
-   public HandleRequest(Socket sock)
-   {
+   public HandleRequest(SocketDriver driver, Socket sock) throws IOException {
       this.sock = sock;
+      this.driver = driver;
+      this.authenticate = driver.getAuthenticate();
+      this.xmlBlasterImpl = driver.getXmlBlaster();
+      this.iStream = sock.getInputStream();
+      this.oStream = sock.getOutputStream();
       start();
+   }
+
+   public void shutdown() {
+      running = false;
+   }
+
+   public OutputStream getOutputStream() {
+      return this.oStream;
    }
 
    /**
     * Serve a client
     */
-   public void run()
-   {
+   public void run() {
       if (Log.CALL) Log.call(ME, "Handling client request ...");
-      InputStream iStream = null;
-      OutputStream oStream = null;
+      Parser receiver = new Parser();
       try {
-         iStream = sock.getInputStream();
-         oStream = sock.getOutputStream();
          Log.info(ME, "Client accepted ...");
 
-         /*
-         while (true)
+         while (running) {
 
-         oStream.write(response);
-         oStream.flush();
-         */
-      }
-      catch (IOException e) {
-         Log.error(ME, "Problems with sending message back to client: " + e.toString());
-         // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
+            try {
+               receiver.parse(iStream);  // blocks until a message arrive
+
+               Log.info(ME, "Received message '" + receiver.getMethodName() + "'");
+               if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+
+               if (Constants.PUBLISH.equals(receiver.getMethodName())) {
+                  //String response = xmlBlasterImpl.publish();
+               }
+               else if (Constants.GET.equals(receiver.getMethodName())) {
+                  //MessageUnit[] arr = xmlBlasterImpl.get();
+               }
+               else if (Constants.PING.equals(receiver.getMethodName())) {
+                  Log.info(ME, "Responding to ping");
+               }
+               else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
+                  //String response = xmlBlasterImpl.subscribe();
+               }
+               else if (Constants.UNSUBSCRIBE.equals(receiver.getMethodName())) {
+                  //String response = xmlBlasterImpl.unSubscribe();
+               }
+               else if (Constants.UPDATE.equals(receiver.getMethodName())) {
+                  //String response = xmlBlasterImpl.update();
+               }
+               else if (Constants.ERASE.equals(receiver.getMethodName())) {
+                  //String response = xmlBlasterImpl.erase();
+               }
+               else if (Constants.CONNECT.equals(receiver.getMethodName())) {
+                  ConnectQos conQos = new ConnectQos(receiver.getQos());
+                  driver.getSocketMap().put(conQos.getUserId(), this);
+                  ConnectReturnQos retQos = authenticate.connect(conQos);
+                  //socketMap.put(conQos.getSessionId(), this); // To late
+                  Parser parser = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
+                                      receiver.getMethodName(), receiver.getSessionId());
+                  parser.addQos(retQos.toXml());
+                  oStream.write(parser.createRawMsg());
+                  oStream.flush();
+                }
+               else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
+                  String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
+                  Parser parser = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
+                                      receiver.getMethodName(), receiver.getSessionId());
+                  parser.addQos(qos);
+                  oStream.write(parser.createRawMsg());
+                  oStream.flush();
+               }
+            }
+            catch (XmlBlasterException e) {
+               Log.error(ME, "Server can't handle message: " + e.toString());
+               Parser parser = new Parser(Parser.EXCEPTION_TYPE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
+               parser.setChecksum(false);
+               parser.setCompressed(false);
+               parser.addException(e);
+               try {
+                  oStream.write(parser.createRawMsg());
+                  oStream.flush();
+               }
+               catch (Throwable e2) {
+                  Log.error(ME, "Lost connection to client, can't deliver exception message: " + e2.toString());
+                  try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
+                  shutdown();
+               }
+            }
+            catch (IOException e) {
+               Log.error(ME, "Lost connection to client: " + e.toString());
+               try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
+               shutdown();
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+               Log.error(ME, "Lost connection to client: " + e.toString());
+               try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
+               shutdown();
+            }
+         } // while(running)
       }
       finally {
          try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
