@@ -764,6 +764,14 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    /**
+    * @param extraOffset indenting of tags for nice output
+    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
+    */
+   public String toXml(String extraOffset, int flag) {
+      return this.factory.writeObject(this, extraOffset, flag);
+   }
+
+   /**
     * Returns a shallow clone, you can change safely all basic or immutable types
     * like boolean, String, int.
     * Currently TopicProperty and RouteInfo is not cloned (so don't change it)

@@ -30,6 +30,16 @@ public interface I_ConnectQosFactory
     */
    String writeObject(ConnectQosData qosData, String extraOffset);
 
+   /**
+    * Serialize the given data object.  
+    * <br>
+    * @param qosData The data object to serialize
+    * @param extraOffset Formatting hints
+    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
+    * @return The serialized representation
+    */
+   String writeObject(ConnectQosData qosData, String extraOffset, int flag);
+
    /** A human readable name of this factory */
    String getName();
 }

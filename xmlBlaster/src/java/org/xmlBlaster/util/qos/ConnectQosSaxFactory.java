@@ -522,6 +522,10 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       return toXml(connectQosData, extraOffset);
    }
 
+   public String writeObject(ConnectQosData connectQosData, String extraOffset, int flag) {
+      return toXml(connectQosData, extraOffset, flag);
+   }
+
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
@@ -529,21 +533,31 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public static final String toXml(ConnectQosData data, String extraOffset) {
-      return toXml("qos", data, extraOffset);
+      return toXml("qos", data, extraOffset, Constants.TOXML_FLAG_DEFAULT);
    }
 
    /**
     * @param rootTag Usually "qos" to form "&lt;qos>", but could be "connectQos". 
     */
-   public static final String toXml(String rootTag, ConnectQosData data, String extraOffset) {
+   public static final String toXml(ConnectQosData data, String extraOffset, int flag) {
+      return toXml("qos", data, extraOffset, flag);
+   }
+
+   /**
+    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
+    */
+   public static final String toXml(String rootTag, ConnectQosData data, String extraOffset, int flag) {
       StringBuffer sb = new StringBuffer(2000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(">");
 
-      if (data.getSecurityQos() != null)  // <securityService ...
-         sb.append(data.getSecurityQos().toXml(extraOffset+Constants.INDENT)); // includes the qos of the ClientSecurityHelper
+      if (data.getSecurityQos() != null) { // <securityService ...
+         if ((flag & Constants.TOXML_FLAG_NOSECURITY) != Constants.TOXML_FLAG_NOSECURITY) {
+            sb.append(data.getSecurityQos().toXml(extraOffset+Constants.INDENT)); // includes the qos of the ClientSecurityHelper
+         }
+      }
 
       if (data.isPtpAllowedProp().isModified()) {
          if (data.isPtpAllowed())

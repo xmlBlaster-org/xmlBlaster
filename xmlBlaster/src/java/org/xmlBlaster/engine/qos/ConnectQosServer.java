@@ -309,6 +309,17 @@ public final class ConnectQosServer
    }
 
    /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
+    * @return internal state of the connect QoS as a XML ASCII string
+    */
+   public String toXml(String extraOffset, int flag) {
+      return this.connectQosData.toXml(extraOffset, flag);
+   }
+
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */
