@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.11 2003/07/03 20:54:49 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.12 2003/10/01 16:55:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -134,13 +134,10 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
             if (SaxHandlerBase::caseCompare(attrs.getName(i), "collectTime")) {
                address_->setCollectTime(SaxHandlerBase::getLongValue(attrs.getValue(i)));
             }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "collectTimeOneway")) {
-               address_->setCollectTimeOneway(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
          }
       }
       else {
-         log_.error(ME, "Missing 'collectTime' or 'collectTimeOneway' attribute in login-qos <burstMode>");
+         log_.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
       }
       return;
    }

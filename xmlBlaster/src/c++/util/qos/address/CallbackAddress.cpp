@@ -21,7 +21,6 @@ inline void CallbackAddress::initialize()
    setPort(global_.getProperty().getIntProperty("cb.port", getPort()));
    setType(global_.getProperty().getStringProperty("cb.protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
-   setCollectTimeOneway(global_.getProperty().getLongProperty("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
    setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval", defaultPingInterval_));
    setRetries(global_.getProperty().getIntProperty("cb.retries", defaultRetries_));
    setDelay(global_.getProperty().getLongProperty("cb.delay", defaultDelay_));
@@ -36,7 +35,6 @@ inline void CallbackAddress::initialize()
       setPort(global_.getProperty().getIntProperty("cb.port["+nodeId_+"]", getPort()));
       setType(global_.getProperty().getStringProperty("cb.protocol["+nodeId_+"]", getType()));
       setCollectTime(global_.getProperty().getLongProperty("cb.burstMode.collectTime["+nodeId_+"]", collectTime_));
-      setCollectTimeOneway(global_.getProperty().getLongProperty("cb.burstMode.collectTimeOneway["+nodeId_+"]", collectTimeOneway_));
       setPingInterval(global_.getProperty().getLongProperty("cb.pingInterval["+nodeId_+"]", pingInterval_));
       setRetries(global_.getProperty().getIntProperty("cb.retries["+nodeId_+"]", retries_));
       setDelay(global_.getProperty().getLongProperty("cb.delay["+nodeId_+"]", delay_));

@@ -72,8 +72,6 @@ o Profiling http://www.optimizeit.com/ or http://www.klg.com/ - JProbe or whatev
 o Evaluate other query engines for better performance, see
   http://www-db.research.bell-labs.com/user/simeon/xquery.html
 
-o Implement dispatch/callback/burstMode/collectTimeOneway
-
 o Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
   - Port to http://gongolo.usr.dsi.unimi.it/~vigna/fastUtil/?
   - Port to use Piccolo SAX parser ?

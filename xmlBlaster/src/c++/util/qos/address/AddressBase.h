@@ -3,7 +3,7 @@ Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address std::string including protocol
-Version:   $Id: AddressBase.h,v 1.13 2003/07/03 20:54:49 ruff Exp $
+Version:   $Id: AddressBase.h,v 1.14 2003/10/01 16:55:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -29,7 +29,6 @@ extern Dll_Export const int       DEFAULT_port;
 extern Dll_Export const std::string    DEFAULT_type;
 extern Dll_Export const std::string    DEFAULT_version;
 extern Dll_Export const long      DEFAULT_collectTime;
-extern Dll_Export const long      DEFAULT_collectTimeOneway;
 extern Dll_Export const bool      DEFAULT_oneway;
 extern Dll_Export const std::string    DEFAULT_compressType;
 extern Dll_Export const long      DEFAULT_minSize;
@@ -83,9 +82,6 @@ protected:
    /** BurstMode: The time to collect messages for publish/update */
    long collectTime_; //  = DEFAULT_collectTime;
    
-   /** BurstMode: The time to collect messages for oneway publish/update */
-   long collectTimeOneway_; // = DEFAULT_collectTimeOneway;
-
    /** Ping interval: pinging every given milliseconds */
    long pingInterval_; //  = getDefaultPingInterval();
    
@@ -147,7 +143,6 @@ protected:
       type_                = addr.type_;
       version_             = addr.version_;
       collectTime_         = addr.collectTime_;
-      collectTimeOneway_   = addr.collectTimeOneway_;
       pingInterval_        = addr.pingInterval_;
       retries_             = addr.retries_;
       delay_               = addr.delay_;
@@ -289,22 +284,10 @@ public:
    long getCollectTime() const;
 
    /**
-    * BurstMode: The time span to collect oneway messages before sending. 
-    * @return The time to collect in milliseconds
-    */
-   long getCollectTimeOneway() const;
-
-   /**
     * BurstMode: The time to collect messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
    void setCollectTime(long collectTime);
-
-   /**
-    * BurstMode: The time to collect oneway messages for sending in a bulk. 
-    * @param The time to collect in milliseconds
-    */
-   void setCollectTimeOneway(long collectTimeOneway);
 
    /**
     * How long to wait between pings to the callback server. 

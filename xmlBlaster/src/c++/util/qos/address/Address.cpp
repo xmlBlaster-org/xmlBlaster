@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.12 2003/07/03 20:54:49 ruff Exp $
+Version:   $Id: Address.cpp,v 1.13 2003/10/01 16:55:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -34,7 +34,6 @@ inline void Address::initialize()
 
    setType(global_.getProperty().getStringProperty("client.protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime", DEFAULT_collectTime));
-   setCollectTimeOneway(global_.getProperty().getLongProperty("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
    setPingInterval(global_.getProperty().getLongProperty("pingInterval", defaultPingInterval_));
    setRetries(global_.getProperty().getIntProperty("retries", defaultRetries_));
    setDelay(global_.getProperty().getLongProperty("delay", defaultDelay_));
@@ -49,7 +48,6 @@ inline void Address::initialize()
 
       setType(global_.getProperty().getStringProperty("client.protocol["+nodeId_+"]", getType()));
       setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime["+nodeId_+"]", getCollectTime()));
-      setCollectTimeOneway(global_.getProperty().getLongProperty("burstMode.collectTimeOneway["+nodeId_+"]", getCollectTimeOneway()));
       setPingInterval(global_.getProperty().getLongProperty("pingInterval["+nodeId_+"]", getPingInterval()));
       setRetries(global_.getProperty().getIntProperty("retries["+nodeId_+"]", getRetries()));
       setDelay(global_.getProperty().getLongProperty("delay["+nodeId_+"]", getDelay()));
@@ -135,7 +133,7 @@ string Address::usage()
    // is in ClientQueueProperty.java: text += "   -queue/connection/maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue/callback/onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue/callback/onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
-   text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<std::string>(DEFAULT_collectTime) + "].\n");
+   text += string("   -burstMode.collectTime Number of milliseconds we shall collect publish messages [" + lexical_cast<std::string>(DEFAULT_collectTime) + "].\n");
    text += string("                       This allows performance tuning, try set it to 200.\n");
  //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
    text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<std::string>(defaultPingInterval_) + "]\n");

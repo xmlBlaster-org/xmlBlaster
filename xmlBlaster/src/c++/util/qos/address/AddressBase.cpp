@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.14 2003/07/03 20:54:49 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.15 2003/10/01 16:55:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -28,7 +28,6 @@ const int    DEFAULT_port               = 3412;
 const string DEFAULT_type               = "IOR";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
-const long   DEFAULT_collectTimeOneway  = 0;
 const bool   DEFAULT_oneway             = false;
 const string DEFAULT_compressType       = "";
 const long   DEFAULT_minSize            = 0L;
@@ -57,7 +56,6 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
    port_                = DEFAULT_port;
    version_             = DEFAULT_version;
    collectTime_         = DEFAULT_collectTime;
-   collectTimeOneway_   = DEFAULT_collectTimeOneway;
    pingInterval_        = defaultPingInterval_;
    retries_             = defaultRetries_;
    delay_               = defaultDelay_;
@@ -262,15 +260,6 @@ long AddressBase::getCollectTime() const
 }
 
 /**
- * BurstMode: The time span to collect oneway messages before sending. 
- * @return The time to collect in milliseconds
- */
-long AddressBase::getCollectTimeOneway() const
-{
-   return collectTimeOneway_;
-}
-
-/**
  * BurstMode: The time to collect messages for sending in a bulk. 
  * @param The time to collect in milliseconds
  */
@@ -278,16 +267,6 @@ void AddressBase::setCollectTime(long collectTime)
 {
    if (collectTime < 0) collectTime_ = 0;
    else collectTime_ = collectTime;
-}
-
-/**
- * BurstMode: The time to collect oneway messages for sending in a bulk. 
- * @param The time to collect in milliseconds
- */
-void AddressBase::setCollectTimeOneway(long collectTimeOneway)
-{
-   if (collectTimeOneway < 0) collectTimeOneway_ = 0;
-   else collectTimeOneway_ = collectTimeOneway;
 }
 
 /**
@@ -514,12 +493,10 @@ string AddressBase::toXml(const string& extraOffset) const
    ret += string(">");
    if (getAddress() != "")
       ret += offset + string("   ") + getAddress();
-   if (getCollectTime() != DEFAULT_collectTime || getCollectTimeOneway() != DEFAULT_collectTimeOneway) {
+   if (getCollectTime() != DEFAULT_collectTime) {
       ret += offset + string("   ") + string("<burstMode");
       if (getCollectTime() != DEFAULT_collectTime)
          ret += string(" collectTime='") + lexical_cast<std::string>(getCollectTime()) + string("'");
-      if (getCollectTimeOneway() != DEFAULT_collectTimeOneway)
-         ret += string(" collectTimeOneway='") + lexical_cast<std::string>(getCollectTimeOneway()) + string("'");
       ret += string("/>");
    }
    if (getCompressType() != DEFAULT_compressType)
