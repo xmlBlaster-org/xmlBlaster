@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.7 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.8 2002/05/16 15:43:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -84,8 +84,7 @@ public class TestGetFilter extends TestCase
       args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
       glob.init(args);
 
-      serverThread = ServerThread.startXmlBlaster(args);
-      try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
+      serverThread = ServerThread.startXmlBlaster(glob);
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
@@ -172,11 +171,11 @@ public class TestGetFilter extends TestCase
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assertTrue("Expected one returned message", msgUnits!=null);
-         assertTrue("Expected exactly one returned message", msgUnits.length==0);
+         assertEquals("Expected no returned message", 0, msgUnits.length);
          Log.info(ME, "Success: Got no message.");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("get - XmlBlasterException: " + e.reason, false);
+         fail("get - XmlBlasterException: " + e.reason);
       }
 
 
@@ -185,7 +184,7 @@ public class TestGetFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         fail("publish - XmlBlasterException: " + e.reason);
       }
 
       try {
@@ -193,7 +192,7 @@ public class TestGetFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assertTrue("get() message should throw an XmlBlasterException, but it didn't happen", false);
+         fail("get() message should throw an XmlBlasterException, but it didn't happen");
       } catch(XmlBlasterException e) {
          Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }
