@@ -6,6 +6,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Comment:   Interface for transient or persistent queue implementations
            with priority and time stamp sorting
 Note:      The gcc and icc (>=8) both define __GNUC__
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 -----------------------------------------------------------------------------*/
 #ifndef I_QUEUE_I_Queue_h
 #define I_QUEUE_I_Queue_h
