@@ -168,20 +168,21 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
          // Get or create the secretSessionId (we respect a user supplied secretSessionId) ...
          if (secretSessionId == null || secretSessionId.length() < 2) {
-            secretSessionId = connectQos.getSessionQos().getSessionId();
+            secretSessionId = connectQos.getSessionQos().getSecretSessionId();
             if (secretSessionId != null && secretSessionId.length() >= 2)
                log.info(ME, "Using secretSessionId '" + secretSessionId + "' from ConnectQos");
          }
          if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
-            if (info != null) {
+            if (info != null) {  // authentication succeeded
                
                info.updateConnectQos(connectQos);
 
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
-               returnQos.getSessionQos().setSessionId(secretSessionId);
+               returnQos.getSessionQos().setSecretSessionId(secretSessionId);
                returnQos.getSessionQos().setSessionName(info.getSessionName());
-               log.info(ME, "Reconnecting with given secretSessionId, using QoS from first login");
+               returnQos.setReconnected(true);
+               log.info(ME, "Reconnected with given secretSessionId.");
                return returnQos;
             }
          }
@@ -201,12 +202,24 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                // throws XmlBlasterExceptions if authentication fails
                info.getSecuritySession().verify(connectQos.getSecurityQos());
 
+               String oldSecretSessionId = info.getSecretSessionId();
+
+               if (secretSessionId == null || secretSessionId.length() < 2) {
+                  // Keep the old secretSessionId
+                  connectQos.getSessionQos().setSecretSessionId(oldSecretSessionId);
+               }
+               else {
+                  // The CORBA driver insists in a new secretSessionId
+                  changeSecretSessionId(oldSecretSessionId, secretSessionId);
+                  connectQos.getSessionQos().setSecretSessionId(secretSessionId);
+               }
+
                info.updateConnectQos(connectQos);
-               
+
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
-               returnQos.getSessionQos().setSessionId(info.getSessionId());
                returnQos.getSessionQos().setSessionName(info.getSessionName());
-               log.info(ME, "Reconnecting with given publicSessionId to '" + info.getSessionName() + "', using QoS from first login");
+               returnQos.setReconnected(true);
+               log.info(ME, "Reconnected with given publicSessionId to '" + info.getSessionName() + "'.");
                return returnQos;
             }
             catch (XmlBlasterException e) {
@@ -224,7 +237,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       // [3] Generate a secret session ID
       if (secretSessionId == null || secretSessionId.length() < 2) {
          secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
-         connectQos.getSessionQos().setSessionId(secretSessionId); // assure consistency
+         connectQos.getSessionQos().setSecretSessionId(secretSessionId); // assure consistency
          if (log.TRACE) log.trace(ME+".connect()", "Empty secretSessionId - generated secretSessionId=" + secretSessionId);
       }
 
@@ -282,8 +295,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             SessionInfo[] sessions = subjectInfo.getSessions();
             for (int i=0; i<sessions.length; i++ ) {
                SessionInfo si = sessions[i];
-               log.warn(ME, "Destroying session '" + si.getSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
-               disconnect(si.getSessionId(), (String)null);
+               log.warn(ME, "Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
+               disconnect(si.getSecretSessionId(), (String)null);
             }
             return connect(connectQos, secretSessionId);
          }
@@ -301,7 +314,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
          // --- compose an answer -----------------------------------------------
          ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, connectQos.getData());
-         returnQos.getSessionQos().setSessionId(secretSessionId); // securityInfo is not coded yet !
+         returnQos.getSessionQos().setSecretSessionId(secretSessionId); // securityInfo is not coded yet !
          returnQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
 
          // Now some nice logging ...
@@ -379,14 +392,14 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
          DisconnectQosServer disconnectQos = new DisconnectQosServer(glob, qos_literal);
 
-         resetSessionInfo(secretSessionId, disconnectQos.deleteSubjectQueue());
+         resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue());
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
             SessionInfo[] sessions = subjectInfo.getSessions();
             for (int i=0; i<sessions.length; i++ ) {
                SessionInfo si = sessions[i];
-               log.warn(ME, "Destroying session '" + si.getSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
-               disconnect(si.getSessionId(), null);
+               log.warn(ME, "Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
+               disconnect(si.getSecretSessionId(), null);
             }
          }
 
@@ -466,6 +479,26 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    }
 
    /**
+    * Replace the old by the new session id
+    */
+   public final void changeSecretSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
+      synchronized(this.sessionInfoMap) {
+         SessionInfo sessionInfo = (SessionInfo)this.sessionInfoMap.get(oldSessionId);
+         if (sessionInfo == null) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".changeSecretSessionId()", "Couldn't lookup secretSessionId.");
+         }
+         if (this.sessionInfoMap.get(newSessionId) != null) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".changeSecretSessionId()", "The new secretSessionId is already in use.");
+         }
+         this.sessionInfoMap.put(newSessionId, sessionInfo);
+         this.sessionInfoMap.remove(oldSessionId);
+
+         sessionInfo.getSecuritySession().changeSecretSessionId(newSessionId);
+         sessionInfo.getConnectQos().getSessionQos().setSecretSessionId(newSessionId);
+      }
+   }
+
+   /**
     * Access a sessionInfo with the unique secretSessionId. 
     * <p />
     * @return the SessionInfo object or null if not known
@@ -518,8 +551,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * @param xmlServer xmlBlaster CORBA handle
     * @param clearQueue Shall the message queue of the client be destroyed as well?
     */
-   private void resetSessionInfo(String secretSessionId, boolean clearQueue) throws XmlBlasterException
+   private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue) throws XmlBlasterException
    {
+      String secretSessionId = sessionInfo.getSecretSessionId();
       Object obj;
       synchronized(this.sessionInfoMap) {
          obj = this.sessionInfoMap.remove(secretSessionId);
@@ -530,8 +564,6 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
       }
 
-      SessionInfo sessionInfo = (SessionInfo)obj;
-
       log.info(ME, "Disconnecting client " + sessionInfo.getSessionName() + ", instanceId=" + sessionInfo.getInstanceId() + ", secretSessionId=" + secretSessionId);
 
       I_Session oldSessionCtx = sessionInfo.getSecuritySession();
@@ -540,7 +572,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       fireClientEvent(sessionInfo, false); // informs all I_ClientListener
 
       SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
-      subjectInfo.notifyAboutLogout(secretSessionId, true);
+      subjectInfo.notifyAboutLogout(sessionInfo.getId(), true);
 
       if (!subjectInfo.isLoggedIn()) {
          if (clearQueue || subjectInfo.getSubjectQueue().getNumOfEntries() < 1) {
@@ -743,8 +775,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             for (int ii=0; ii<sessionInfoArr.length; ii++) {
                try {
                   boolean clearQueue = true;
-                  SessionInfo sessionInfo = sessionInfoArr[ii];
-                  resetSessionInfo(sessionInfo.getSessionId(), clearQueue);
+                  resetSessionInfo(sessionInfoArr[ii], clearQueue);
                }
                catch (Throwable e) {
                   log.error(ME, "Problem on session shutdown, we ignore it: " + e.getMessage());
