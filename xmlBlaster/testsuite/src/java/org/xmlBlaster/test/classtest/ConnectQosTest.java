@@ -127,10 +127,12 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", 4009L, prop.getMaxBytes());
             assertEquals("", 509L, prop.getMaxMsgCache());
             assertEquals("", 777L, prop.getMaxBytesCache());
+            /* Currently deactivated in code
             assertEquals("", 20009L, prop.getStoreSwapLevel());
             assertEquals("", 10000L, prop.getStoreSwapBytes());
             assertEquals("", 20000L, prop.getReloadSwapLevel());
             assertEquals("", 30000L, prop.getReloadSwapBytes());
+            */
             assertEquals("", "deadMessage", prop.getOnOverflow());
             assertEquals("", true, qos.subjectCbQueuePropertyIsInitialized());
          }
