@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.38 2000/02/27 19:59:54 roth Exp $
+Version:   $Id: Log.java,v 1.39 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -174,13 +174,21 @@ public class Log
 
 
    /**
-    * Set logging level from start parameter.
+    * Set logging level from start parameter and initialize properties. 
     * <br />
     * Example:<br />
     * <pre>jaco org.xmlBlaster.Main +trace +dump +calls +dump</pre>
+    *
+    * HACK:<br />
+    * This method also initializes the xmlBlaster.properties file, and adds
+    * the args array to the property object (see Property.java).<br />
+    * This is not the correct place, but we have the args here, and we don't need
+    * to remember this task somewhere else.
     */
    public static final void setLogLevel(String[] args)
    {
+      Property.loadProps(args);  // HACK: initialize Property object here
+
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
          return;

@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.4 2000/02/23 15:05:57 ruff Exp $
+Version:   $Id: Property.java,v 1.5 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -115,13 +115,28 @@ public class Property
 
 
    /**
-    * This loads xmlBlaster.properties file.
+    * Returns the xmlBlaster.properties properties from the cache.
+    * <p />
+    * If xmlBlaster.properties is not parsed yet, it will be initialized
+    * automatically. Note that you should prefer loadProps() to initialize
+    * as you can pass your command line parameters with that method.
     * @return the initialized Properties
     */
    public static final Properties getProps()
    {
       if (xmlBlasterProperties != null) return xmlBlasterProperties;
+      return loadProps((String[]) null);
+   }
 
+
+   /**
+    * This loads xmlBlaster.properties file.
+    * Use this method only the first time to initialize everything.
+    * @args This key/value parameter array is added to the poperties object (see addArgs2Props()).
+    * @return the initialized Properties
+    */
+   synchronized public static final Properties loadProps(String[] args)
+   {
       String fileName = findFile("xmlBlaster.properties");
       if (fileName == null) {
          Log.error(ME, "Couldn't find file xmlBlaster.properties");
@@ -163,6 +178,8 @@ public class Property
                continue;
             }
          }
+
+         addArgs2Props(xmlBlasterProperties, args);
       }
       catch (Exception e) {
          Log.error(ME, "Unable to initilize xmlBlaster.properties: " + e);
@@ -305,9 +322,52 @@ public class Property
 
 
    /**
+    * Add key/values, for example from startup command line args to
+    * the property variable.
+    * <p />
+    * Args parameters are stronger and overwrite the property file variables
+    * The arg key must have a leading - or + (as usual on command line).<br />
+    * The leading - or + are stripped (to match the property variable)
+    * args must be a tuple (key / value pairs) or
+    * if args has no value, the value will be set to "true" (is a flag)
+    * <p />
+    * Example:
+    * <pre>
+    *   jaco org.xmlBlaster.Main  -isCool  -iorPort 3400
+    * </pre>
+    * This would overwrite a xmlBlaster.properties variable "iorPort" (if there was one)
+    * and set the variable isCool to "true"
+    */
+   public static void addArgs2Props(Properties props, String[] args)
+   {
+      if (args == null) return;
+
+      for (int ii=0; ii<args.length; ii++) {
+         String arg = args[ii];
+         if (arg.startsWith("-") || arg.startsWith("+")) {
+            String key = arg.substring(1);
+            String value = "true";
+            if ((ii+1) < args.length) {
+               String arg2 = args[ii+1];
+               if (!arg2.startsWith("-") && !arg2.startsWith("+")) {
+                  value = arg2;
+                  ii++;
+               }
+            }
+            props.put(key, value);
+            // Log.info(ME, "Setting command line argument " + key + " with value " + value);
+         }
+         else {
+            Log.warning(ME, "Ignoring unknown argument <" + arg + ">");
+         }
+      }
+   }
+
+
+   /**
     * For testing only
     * <p />
-    * java org.xmlBlaster.util.Property
+    * java org.xmlBlaster.util.Property +calls -isNice -Persistence.Driver myDriver -isCool
     */
    public static void main(String args[])
    {
@@ -320,6 +380,8 @@ public class Property
       catch (Exception e) {
          Log.info(ME, "OK, aaa=ERROR");
       }
+
+      Property.loadProps(args);  // initialize
 
       Log.info(ME, "Persistence=" + Property.getProperty("Persistence", false));
       Log.info(ME, "Persistence.Dummy=" + Property.getProperty("Persistence.Dummy", false));

@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.5 2000/02/25 18:48:38 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.6 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -41,7 +41,8 @@ public class PublishFile
     * <p />
     * Tries to support you in guessing the missing command line parameters.
     * <p />
-    * Start with parameter -? to get a usage description.
+    * Start with parameter -? to get a usage description.<br />
+    * These command line parameters are not merged with xmlBlaster.property properties.
     * <p />
     * By default the classes in the java.io package always resolve relative pathnames
     * against the current user directory. This directory is named by the system property user.dir,

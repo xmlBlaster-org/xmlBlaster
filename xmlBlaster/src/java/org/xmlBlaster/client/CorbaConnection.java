@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.39 2000/03/08 17:27:13 kkrafft2 Exp $
+Version:   $Id: CorbaConnection.java,v 1.40 2000/03/13 16:17:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,8 +54,8 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.39 $
- * @author $Author: kkrafft2 $
+ * @version $Revision: 1.40 $
+ * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
 {
@@ -113,8 +113,7 @@ public class CorbaConnection implements ServerOperations
     */
    public CorbaConnection()
    {
-      args = new String[1];  // dummy
-      args[0] = ME;
+      args = new String[0];  // dummy
       orb = org.omg.CORBA.ORB.init(args, null);
    }
 
@@ -122,23 +121,19 @@ public class CorbaConnection implements ServerOperations
    /**
     * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
-    * Use these environment settings for VisiBroker
-    * <br />
-    * <ul>
-    *    <li>-DORBservices</li>
-    *    <li>-DSVCnameroot</li>
-    *    <li>-DORBagentAddr</li>
-    *    <li>-DORBagentPort</li>
-    * </ul>
-    * <br />
-    * <b>Example:</b>
-    * <br />
-    * <code>java -DORBagentAddr=192.168.1.1 -DORBagentPort=14000 -DORBservices=CosNaming -DSVCnameroot=xmlBlaster-Authenticate org.xmlBlaster.Main [arg]</code>
     * @param arg  parameters given on command line
+    * <ul>
+    *    <li>-ior  IOR string is directly given</li>
+    *    <li>-iorFile IOR string is given through a file</li>
+    *    <li>-iorHost hostName or IP where xmlBlaster is running</li>
+    *    <li>-iorPort where the internal xmlBlaster-http server publishes its IOR (defaults to 7609)</li>
+    *    <li>-ns true/false, if a naming service shall be used</li>
+    * </ul>
     */
    public CorbaConnection(String[] arg)
    {
       args = arg;
+      Property.addArgs2Props(Property.getProps(), args); // enforce that the args are added to the xmlBlaster.properties hash table
       orb = org.omg.CORBA.ORB.init(args, null);
    }
 
@@ -354,7 +349,7 @@ public class CorbaConnection implements ServerOperations
 
 
       // 1) check if argument -IOR at program startup is given
-      String authServerIOR = Args.getArg(args, "-ior", (String)null);  // IOR string is directly given
+      String authServerIOR = Property.getProperty("ior", (String)null);  // -ior IOR string is directly given
       if (authServerIOR != null) {
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
          Log.info(ME, "Accessing xmlBlaster using your given IOR string");
@@ -362,7 +357,7 @@ public class CorbaConnection implements ServerOperations
       }
       if (Log.TRACE) Log.trace(ME, "No -ior ...");
 
-      String authServerIORFile = Args.getArg(args, "-iorFile", (String)null);  // IOR string is given through a file
+      String authServerIORFile = Property.getProperty("iorFile", (String)null);  // -iorFile IOR string is given through a file
       if (authServerIORFile != null) {
          authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
@@ -373,8 +368,8 @@ public class CorbaConnection implements ServerOperations
 
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
-      String iorHost = Args.getArg(args, "-iorHost", "localhost");
-      int iorPort = Args.getArg(args, "-iorPort", 7609);
+      String iorHost = Property.getProperty("iorHost", "localhost");
+      int iorPort = Property.getProperty("iorPort", 7609);
       if (iorHost != null && iorPort > 0) {
          try {
             authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
@@ -395,7 +390,7 @@ public class CorbaConnection implements ServerOperations
                   " - or contact your system administrator to start a naming service";
 
       // 3) asking Name Service CORBA compliant
-      boolean useNameService = Args.getArg(args, "-ns", true);  // default is to ask the naming service
+      boolean useNameService = Property.getProperty("ns", true);  // -ns default is to ask the naming service
       if (useNameService) {
 
          try {
@@ -805,16 +800,16 @@ public class CorbaConnection implements ServerOperations
             units = cache.get( xmlKey, qos );
             //not found in cache
             if( units == null ) {
-               units = xmlBlaster.get(xmlKey, qos);								//get messages from xmlBlaster
-               String subId = xmlBlaster.subscribe(xmlKey, qos);				//subscribe to this messages
-               cache.newEntry(subId, xmlKey, units);								//fill messages to cache
+               units = xmlBlaster.get(xmlKey, qos);                                                             //get messages from xmlBlaster
+               String subId = xmlBlaster.subscribe(xmlKey, qos);                                //subscribe to this messages
+               cache.newEntry(subId, xmlKey, units);                                                            //fill messages to cache
                Log.info(ME,"New Entry in Cache created (subId="+subId+")");
             }
          }
          else
             units = xmlBlaster.get(xmlKey, qos);
 
-        	return units;
+                return units;
 
       } catch(XmlBlasterException e) {
          throw e;

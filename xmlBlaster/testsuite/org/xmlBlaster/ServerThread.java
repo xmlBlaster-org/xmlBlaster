@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.1 2000/03/09 18:36:36 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.2 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,9 +14,9 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
- * Helper to create/start/stop a xmlBlaster server instance in a thread. 
+ * Helper to create/start/stop a xmlBlaster server instance in a thread.
  */
-class ServerThread extends Thread
+public class ServerThread extends Thread
 {
    private static final String ME = "ServerThread";
    /** This is the default xmlBlaster server port, which is probably blocked by another xmlBlaster server */
@@ -27,7 +27,7 @@ class ServerThread extends Thread
 
 
    /**
-    * Creates an instance of xmlBlaster and starts the server. 
+    * Creates an instance of xmlBlaster and starts the server.
     * <p />
     * The returned xmlBlaster handle allows to control more than one
     * xmlBlaster server simultaneously (on different ports).
@@ -84,7 +84,7 @@ class ServerThread extends Thread
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.ServerThread 
+    * Invoke: jaco testsuite.org.xmlBlaster.ServerThread
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.

@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.9 2000/02/25 18:58:10 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.10 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -81,6 +81,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, e.toString());
           e.printStackTrace();
+          assert(e.toString(), false);
       }
 
    }

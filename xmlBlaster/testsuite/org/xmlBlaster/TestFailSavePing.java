@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.2 2000/03/09 18:36:37 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.3 2000/03/13 16:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -118,6 +118,12 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
 
       Util.delay(200L);    // Wait some time
       ServerThread.stopXmlBlaster(serverThread);
+
+      // reset to default server port (necessary if other tests follow in the same JVM).
+      String[] args = new String[2];
+      args[0] = "-iorPort";
+      args[1] = "" + org.xmlBlaster.Main.DEFAULT_HTTP_PORT;
+      Property.addArgs2Props(Property.getProps(), args);
    }
 
 

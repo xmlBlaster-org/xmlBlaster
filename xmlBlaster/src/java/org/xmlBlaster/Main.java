@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.27 2000/02/29 17:03:55 ruff Exp $
+Version:   $Id: Main.java,v 1.28 2000/03/13 16:17:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import org.omg.CosNaming.*;
 /**
  * Main class to invoke the xmlBlaster server.
  * <p />
- * Start parameters supported
+ * Command line parameters supported are for example:
  * <p />
  * <ul>
  *    <li><code>-iorFile 'file name'   </code>default is no dumping of IOR<br />
@@ -32,6 +32,11 @@ import org.omg.CosNaming.*;
  *        the port -1 switches this feature off
  *    </li>
  * </ul>
+ * Please invoke with "-?" to get a more complete list of the supported parameters.
+ * <br />
+ * Every parameter may be set in the xmlBlaster.property file or at the command line,
+ * but the command line is stronger. The leading "-" or "+" from the command line key
+ * parameters are stripped (see org.xmlBlaster.util.Property.java).
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
@@ -49,6 +54,8 @@ public class Main
    private NamingContext nc = null;
    private NameComponent [] name = null;
    private String iorFile = null;
+   /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
+   public static final int DEFAULT_HTTP_PORT = 7609;
    /** The singleton handle for this xmlBlaster server */
    private AuthServerImpl authServer = null;
 
@@ -82,7 +89,7 @@ public class Main
          usage();
          return;
       }
-      Log.setLogLevel(args);
+      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
@@ -103,7 +110,7 @@ public class Main
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
 
          // 1) Write IOR to given file
-         String iorFile = Args.getArg(args, "-iorFile", (String)null);
+         String iorFile = Property.getProperty("iorFile", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
@@ -112,14 +119,14 @@ public class Main
          }
 
          // 2) Publish IOR on given port (switch off this feature with '-iorPort -1'
-         int iorPort = Args.getArg(args, "-iorPort", 7609); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
+         int iorPort = Property.getProperty("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
             httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
             Log.info(ME, "Published AuthServer IOR on port " + iorPort);
          }
 
          // 3) Publish IOR to a naming service
-         boolean useNameService = Args.getArg(args, "-ns", true);  // default is to publish myself to the naming service
+         boolean useNameService = Property.getProperty("ns", true);  // default is to publish myself to the naming service
          if (useNameService) {
             try {
                nc = getNamingService();
@@ -171,7 +178,7 @@ public class Main
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
-      boolean doBlocking = Args.getArg(args, "-doBlocking", true);
+      boolean doBlocking = Property.getProperty("doBlocking", true);
 
       if (doBlocking) {
          checkForKeyboardInput();
@@ -341,7 +348,7 @@ public class Main
       Log.plain(ME, "   -?                  Print this message.");
       Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
       Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
-      Log.plain(ME, "                       Default is port 7609, the port -1 switches this feature off.");
+      Log.plain(ME, "                       Default is port "+DEFAULT_HTTP_PORT+", the port -1 switches this feature off.");
       Log.plain(ME, "   -ns false           Don't publish the IOR to a naming service.");
       Log.plain(ME, "                       Default is to publish the IOR to a naming service.");
       Log.usage();
