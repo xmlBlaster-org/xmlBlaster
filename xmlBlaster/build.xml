@@ -407,7 +407,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Prepares the build directory                                        -->
    <!-- =================================================================== -->
-   <target name="prepare" description="For internal use only">
+   <target name="prepare" depends="revisionnumber" description="For internal use only">
       <mkdir dir="${build.dir}"/>
       <osfamily property="os.family" />
 
@@ -543,7 +543,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster core source directory                       -->
    <!-- =================================================================== -->
-   <target name="xmlBlaster" depends="revisionnumber,java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
+   <target name="xmlBlaster" depends="java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
       <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.java.dir}">
