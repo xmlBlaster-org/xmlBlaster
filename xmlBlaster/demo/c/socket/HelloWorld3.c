@@ -87,6 +87,7 @@ int main(int argc, char** argv)
    const char *callbackSessionId = "topSecret";
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccessUnparsed *xa = 0;
+   int sleepInterval = 0;
 
    printf("[client] XmlBlaster %s C SOCKET client, try option '-help' if you need"
           " usage informations\n", getXmlBlasterVersion());
@@ -96,13 +97,17 @@ int main(int argc, char** argv)
          char usage[XMLBLASTER_MAX_USAGE_LEN];
          const char *pp =
          "\n  -logLevel            ERROR | WARN | INFO | TRACE [WARN]"
+         "\n  -sleepInterval       milliseconds to wait on callback messages [0]"
          "\n\nExample:"
          "\n  HelloWorld3 -logLevel TRACE"
          " -dispatch/connection/plugin/socket/hostname 192.168.2.9";
+         " -sleepInterval 100000";
          printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
                   getXmlBlasterVersion(), xmlBlasterAccessUnparsedUsage(usage), pp);
          exit(EXIT_FAILURE);
       }
+      else if (strcmp(argv[iarg], "-sleepInterval") == 0 && iarg < argc-1)
+         sleepInterval = atoi(argv[++iarg]);
    }
 
    xa = getXmlBlasterAccessUnparsed(argc, argv);
@@ -117,7 +122,7 @@ int main(int argc, char** argv)
       char connectQos[2048];
       char callbackQos[1024];
       sprintf(callbackQos,
-               "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
+               "<queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"
                "  <callback type='SOCKET' sessionId='%s'>"
                "    socket://%.120s:%d"
                "  </callback>"
@@ -168,6 +173,11 @@ int main(int argc, char** argv)
       }
       printf("[client] Subscribe success, returned status is '%s'\n", response);
       xmlBlasterFree(response);
+   }
+   
+   if (sleepInterval > 0) {
+      printf("[client] Sleeping now and wait on 'HelloWorld' updates (start a publisher somewhere) ...\n");
+      sleepMillis(sleepInterval);
    }
 
    {  /* publish ... */
