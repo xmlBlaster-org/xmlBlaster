@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='cluster.dirtyRead' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Point to point (PtP) routing of messages in a cluster environment</topic>
+   <description>
+      <p>
+      In this requirement we examine how a client can send messages to other
+      clients (or specific sessions of other clients) in PtP mode in an xmlBlaster cluster environment.
+      </p>
+      <p>
+      Probably it is best to read the cluster requirement first to get a basic understanding
+      what a xmlBaster cluster setup is (see link below).
+      </p>
+      <p>
+      PtP messages in a cluster environment is mainly a routing problem.
+      The problem to solve is to find a unique naming schema and with this how to find the destination cluster node.
+      </p>
+      <p>
+      The following figure shows the unified session naming conventions.
+      </p>
+      <br />
+      <img src="SessionNamingConvention.gif" border="0" title="Session naming convention" alt="Session naming convention" />
+      <br />
+      <p>
+      The <i>absolute name</i> is cluster wide unique. Sending a PtP message with such a destination name
+      allows us to route the message in a cluster environment.
+      </p>
+      <p>
+      The current implementation supports only destinations where the destination cluster node
+      is directly connected to the source cluster node - or if a cluster node has only one known further cluster
+      node the message is routed as well through such a chain of clusters.
+      In a future release we can add a plugin based node lookup to allow extended routing if demand
+      for such a feature arises.
+      </p>
+   </description>
+
+   <example lang="XML" type="HTML">
+   <pre>
+&lt;qos>
+  &lt;destination forceQueuing='true'>
+     /node/heron/client/joeConnectedToHeron/-9
+  &lt;/destination>
+&lt;/qos>
+   </pre>
+   </example>
+
+   <see type="REQ">cluster</see>
+   <see type="REQ">engine.qos.publish.destination.PtP</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 11 27</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Tests a cluster setup as described in this requirement</comment>
+      <test tool="SUITE">org.xmlBlaster.test.cluster.PtPTest</test>
+   </testcase>
+</requirement>
+
