@@ -111,6 +111,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     *
     * @param factory The factory which knows how to serialize and parse me
     * @param serialData The XML based ASCII string (syntax is described in requirement interface.connect)
+    * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) {
       this.glob = (glob == null) ? Global.instance() : glob;
@@ -157,7 +158,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
       if (this.cbQueuePropertyVec.size() > 0)
          return (CbQueueProperty)this.cbQueuePropertyVec.elementAt(0);
 
-      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId.toString()));
+      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, this.nodeId.toString()));
       return (CbQueueProperty)this.cbQueuePropertyVec.elementAt(0);
    }
 

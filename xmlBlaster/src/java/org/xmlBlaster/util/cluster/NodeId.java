@@ -18,6 +18,9 @@ public final class NodeId implements Comparable, java.io.Serializable
 {
    private static final String ME = "NodeId";
 
+   /**
+    * @see #setId(String)
+    */
    public NodeId(String id) {
       setId(id);
    }
@@ -30,8 +33,11 @@ public final class NodeId implements Comparable, java.io.Serializable
    }
 
    /**
+    * You need to pass a valid node name without any special characters,
+    * e.g. "http://xy.com:3412" is not allowed as it contains '/' and ':' chars. 
     * @param id The cluster node id, e.g. "heron".<br />
-    * If you pass "/node/heron/client/joe" everything ins stripped to get "heron"
+    * If you pass "/node/heron/client/joe" everything is stripped to get "heron"
+    * @see Global#getStrippedId()
     */
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
