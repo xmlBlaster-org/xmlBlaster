@@ -105,6 +105,11 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 	   There is a template xmlBlaster/jacorb.properties.template
 		to use as a base.
 
+   Note: With 'java -Duser.home=yourHome ...' you could set another
+         path to look for the property files.
+			See requirement xmlBlaster/doc/requirements/util.property.xml
+			for further search path.
+
 
 4. Notes on adjusting your environment setup.
    You may wish to change the default environment setup for example
