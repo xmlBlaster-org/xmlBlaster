@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.4 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.5 2002/05/09 11:54:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -34,8 +34,8 @@ import test.framework.*;
  * Invoke examples:<br />
  * <pre>
  *  java testsuite.org.xmlBlaster.TestPubBurstMode -numPublish 10000 -client.protocol RMI -warn false
- *  jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
- *  jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
+ *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
+ *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
  * </pre>
  */
 public class TestPubBurstMode extends TestCase
@@ -142,9 +142,9 @@ public class TestPubBurstMode extends TestCase
                        (long)(numPublish/elapsed) + " messages/sec");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned publishOidArr == null", publishOidArr != null);
+      assertTrue("returned publishOidArr == null", publishOidArr != null);
       assertEquals("returned publishOidArr", numPublish, publishOidArr.length);
    }
 
@@ -176,13 +176,13 @@ public class TestPubBurstMode extends TestCase
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPubBurstMode
+    * Invoke: java testsuite.org.xmlBlaster.TestPubBurstMode
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode</pre>
     */
    public static void main(String args[])
    {

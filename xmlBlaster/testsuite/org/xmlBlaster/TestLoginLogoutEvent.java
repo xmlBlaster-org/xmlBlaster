@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.15 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.16 2002/05/09 11:54:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -38,8 +38,8 @@ import test.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent
  * </pre>
  */
 public class TestLoginLogoutEvent extends TestCase implements I_Callback
@@ -111,7 +111,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          firstConnection.unSubscribe(xmlKey, qos);
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
-         assert("unSubscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
       }
 
       firstConnection.logout();
@@ -133,9 +133,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
+      assertTrue("returned null subscribeOid", subscribeOid != null);
    }
 
 
@@ -166,7 +166,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          MessageUnit[] msgArr = secondConnection.get(
                           "<key oid='__sys__UserList' queryType='EXACT'></key>",
                           "<qos></qos>");
-         assert(msgArr.length == 1);
+         assertTrue(msgArr.length == 1);
          String clients = new String(msgArr[0].content);
          Log.info(ME, "Current '__sys__UserList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients);
@@ -178,11 +178,11 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
             else if (client.equals(this.secondName))
                found++;
          }
-         assert("Check of '__sys__UserList' failed", found==2);
+         assertTrue("Check of '__sys__UserList' failed", found==2);
       }
       catch (XmlBlasterException e) {
          Log.error(ME, e.id + ": " + e.reason);
-         assert("Second login failed", false);
+         assertTrue("Second login failed", false);
       }
 
 
@@ -224,7 +224,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
@@ -247,13 +247,13 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestLoginLogoutEvent
+    * Invoke: java testsuite.org.xmlBlaster.TestLoginLogoutEvent
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent</pre>
     */
    public static void main(String args[])
    {

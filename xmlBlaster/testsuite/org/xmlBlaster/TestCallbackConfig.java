@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.6 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.7 2002/05/09 11:54:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -85,7 +85,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
    }
 
@@ -105,7 +105,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
    }
 
@@ -125,7 +125,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
       Log.info(ME, "Success in testCbSessionId()");
    }
@@ -163,7 +163,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving

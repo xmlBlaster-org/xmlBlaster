@@ -86,11 +86,11 @@ xmlBlaster-console: all
 
 testsuite:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
-	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
 testsuite-console:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
-	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
 test: xmlBlaster sleep4 testsuite
 

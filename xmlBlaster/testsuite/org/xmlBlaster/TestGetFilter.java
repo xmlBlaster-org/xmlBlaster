@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.5 2002/05/06 07:35:30 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.6 2002/05/09 11:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -139,7 +139,7 @@ public class TestGetFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       try {
@@ -147,14 +147,14 @@ public class TestGetFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assert("Expected one returned message", msgUnits!=null);
-         assert("Expected exactly one returned message", msgUnits.length==1);
-         assert("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
+         assertTrue("Expected one returned message", msgUnits!=null);
+         assertTrue("Expected exactly one returned message", msgUnits.length==1);
+         assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
                 msgUnits[0].getContent().length == content.length());
          Log.info(ME, "Success: Got one message.");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("get - XmlBlasterException: " + e.reason, false);
+         assertTrue("get - XmlBlasterException: " + e.reason, false);
       }
 
 
@@ -164,7 +164,7 @@ public class TestGetFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       try {
@@ -172,12 +172,12 @@ public class TestGetFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assert("Expected one returned message", msgUnits!=null);
-         assert("Expected exactly one returned message", msgUnits.length==0);
+         assertTrue("Expected one returned message", msgUnits!=null);
+         assertTrue("Expected exactly one returned message", msgUnits.length==0);
          Log.info(ME, "Success: Got no message.");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("get - XmlBlasterException: " + e.reason, false);
+         assertTrue("get - XmlBlasterException: " + e.reason, false);
       }
 
 
@@ -186,7 +186,7 @@ public class TestGetFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       try {
@@ -194,7 +194,7 @@ public class TestGetFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assert("get() message should throw an XmlBlasterException, but it didn't happen", false);
+         assertTrue("get() message should throw an XmlBlasterException, but it didn't happen", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }

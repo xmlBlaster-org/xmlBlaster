@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.9 2002/05/06 07:34:59 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.10 2002/05/09 11:54:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -23,7 +23,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -113,7 +113,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -154,7 +154,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          con.publish(new MessageUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 1); // message should come back as it is only 10 bytes
 
@@ -164,7 +164,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          con.publish(new MessageUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 0); // message should be filtered as it is longer 10 bytes
 
@@ -172,7 +172,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       Log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
-         assert("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
+         assertTrue("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }
@@ -209,7 +209,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving

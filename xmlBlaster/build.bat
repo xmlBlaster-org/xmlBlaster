@@ -5,7 +5,7 @@ echo -------------------
 
 if "%JAVA_HOME%" == "" goto error
 
-set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;lib\ant\ant.jar;lib\ant\cpptasks.jar;lib\ant\ant-contrib.jar;lib\parser.jar;lib\jaxp.jar;.\lib\idl.jar;.\lib\jacorb.jar;.\lib\omquery.jar;.\lib\xtdash.jar;.\servlet.jar;.\lib\test.jar;.\lib\xmlrpc.jar;.\lib\a2Blaster.jar;.\lib\jutils.jar;.\lib\mail.jar;.\lib\activation.jar;.\lib\cpptasks.jar;.\lib\batik\batik.jar;.\lib\batik\js.jar;.\lib\Xindice\xalan-2.0.1.jar;.\lib\Xindice\xmldb.jar;.\lib\Xindice\xindice.jar;lib\ant\xerces.jar;lib\concurrent.jar;lib\gnu-regexp.jar
+set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;lib\ant\ant.jar;lib\ant\cpptasks.jar;lib\ant\ant-contrib.jar;lib\parser.jar;lib\jaxp.jar;.\lib\idl.jar;.\lib\jacorb.jar;.\lib\omquery.jar;.\lib\xtdash.jar;.\servlet.jar;.\lib\junit.jar;.\lib\xmlrpc.jar;.\lib\a2Blaster.jar;.\lib\jutils.jar;.\lib\mail.jar;.\lib\activation.jar;.\lib\cpptasks.jar;.\lib\batik\batik.jar;.\lib\batik\js.jar;.\lib\Xindice\xalan-2.0.1.jar;.\lib\Xindice\xmldb.jar;.\lib\Xindice\xindice.jar;lib\ant\xerces.jar;lib\concurrent.jar;lib\gnu-regexp.jar
 
 echo Building with classpath %LOCALCLASSPATH%
 

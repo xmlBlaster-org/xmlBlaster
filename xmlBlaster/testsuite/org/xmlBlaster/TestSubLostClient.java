@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.7 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.8 2002/05/09 11:54:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -40,8 +40,8 @@ import test.framework.*;
  *
  *  java testsuite.org.xmlBlaster.TestSubLostClient -client.protocol IIOP
  *
- *  jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
- *  jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
+ *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
+ *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
  * </pre>
  */
 public class TestSubLostClient extends TestCase implements I_Callback
@@ -101,7 +101,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
-          assert("Login failed: " + e.toString(), false);
+          assertTrue("Login failed: " + e.toString(), false);
       }
    }
 
@@ -170,7 +170,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
          }
          catch (Exception e) {
              Log.error(ME, "Login failed: " + e.toString());
-             assert("Login failed: " + e.toString(), false);
+             assertTrue("Login failed: " + e.toString(), false);
          }
 
          try {
@@ -178,7 +178,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
             Log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
          } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
-            assert("subscribe - XmlBlasterException: " + e.reason, false);
+            assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
          }
 
          manyClients[ii] = sub;
@@ -193,7 +193,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       }
       catch (Throwable e) {
          e.printStackTrace();
-         assert("Problems with connection,shutdownCb()", false);
+         assertTrue("Problems with connection,shutdownCb()", false);
       }
       Log.info(ME, "Killed callback server of first client.");
    }
@@ -221,7 +221,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException in publish: " + e.reason);
-         assert("XmlBlasterException in publish: " + e.reason, true);
+         assertTrue("XmlBlasterException in publish: " + e.reason, true);
       }
    }
 

@@ -1,5 +1,5 @@
 Main-Class: org.xmlBlaster.Main
-Class-Path: jacorb.jar idl.jar xmlrpc.jar test.jar omquery.jar 
+Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar 
  xtdash.jar jaxp.jar parser.jar servlet.jar connector.jar 
  concurrent.jar 
  gnu-regexp.jar 

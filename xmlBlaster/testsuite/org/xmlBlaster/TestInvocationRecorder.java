@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.15 2002/05/01 21:40:20 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.16 2002/05/09 11:54:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -34,8 +34,8 @@ import test.framework.*;
  * <br />
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
  * </pre>
  */
 public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, I_CallbackRaw
@@ -119,7 +119,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems feeding the recorder: " + e.reason);
-         assert("problems feeding the recorder: " + e.reason, false);
+         assertTrue("problems feeding the recorder: " + e.reason, false);
       }
 
       try {
@@ -127,7 +127,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems with recorder.pullback: " + e.reason);
-         assert("problems recorder pullback: " + e.reason, false);
+         assertTrue("problems recorder pullback: " + e.reason, false);
       }
 
       assertEquals("numSubscribe: ", 1, numSubscribe);
@@ -247,7 +247,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestInvocationRecorder -calls true
+    * Invoke: java testsuite.org.xmlBlaster.TestInvocationRecorder -calls true
     */
    public static void main(String args[])
    {

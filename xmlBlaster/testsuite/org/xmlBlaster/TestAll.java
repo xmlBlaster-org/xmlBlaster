@@ -9,7 +9,7 @@ package testsuite.org.xmlBlaster;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.jutils.JUtilsException;
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -19,8 +19,8 @@ import test.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
  * </pre>
  */
 public class TestAll

@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.24 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.25 2002/05/09 11:54:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -33,9 +33,9 @@ import test.framework.*;
  * is not logged in and the <forceQueuing> is not set.
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  * </pre>
  */
 public class TestPtDQueue extends TestCase implements I_Callback
@@ -86,7 +86,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       catch (XmlBlasterException e) {
           Log.error(ME, e.toString());
           e.printStackTrace();
-          assert("login - XmlBlasterException: " + e.reason, false);
+          assertTrue("login - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -128,7 +128,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          try {
             publishOid = senderConnection.publish(msgUnit);
             Log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
-            assert("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
+            assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
             Log.info(ME, "Exception is correct, client is not logged in");
          }
@@ -158,7 +158,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
             Log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-            assert("publish - XmlBlasterException: " + e.reason, false);
+            assertTrue("publish - XmlBlasterException: " + e.reason, false);
          }
 
          waitOnUpdate(1000L);
@@ -172,7 +172,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          } catch (XmlBlasterException e) {
              Log.error(ME, e.toString());
              e.printStackTrace();
-             assert("login - XmlBlasterException: " + e.reason, false);
+             assertTrue("login - XmlBlasterException: " + e.reason, false);
              return;
          }
 
@@ -239,13 +239,13 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPtDQueue
+    * Invoke: java testsuite.org.xmlBlaster.TestPtDQueue
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</pre>
     */
    public static void main(String args[])
    {

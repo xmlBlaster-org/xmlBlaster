@@ -17,7 +17,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -30,8 +30,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubExact
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubExact
  * </pre>
  */
 public class TestSubExact extends TestCase implements I_Callback
@@ -83,7 +83,7 @@ public class TestSubExact extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
-          assert("Login failed: " + e.toString(), false);
+          assertTrue("Login failed: " + e.toString(), false);
       }
    }
 
@@ -127,10 +127,10 @@ public class TestSubExact extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assertTrue("returned null subscribeOid", subscribeOid != null);
+      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 
@@ -153,11 +153,11 @@ public class TestSubExact extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      assert("returned publishOid == null", publishOid != null);
-      assertNotEquals("returned publishOid", 0, publishOid.length());
+      assertTrue("returned publishOid == null", publishOid != null);
+      assertTrue("returned publishOid", 0 != publishOid.length());
       assertEquals("returned publishOid is wrong", oidExact, publishOid);
    }
 
@@ -242,13 +242,13 @@ public class TestSubExact extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestSubExact
+    * Invoke: java testsuite.org.xmlBlaster.TestSubExact
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact</pre>
     */
    public static void main(String args[])
    {

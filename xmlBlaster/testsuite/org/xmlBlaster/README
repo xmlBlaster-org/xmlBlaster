@@ -3,10 +3,11 @@ The xmlBlaster test suite
 
 
    The xmlBlaster test suite is based on the
-   JUNIT 1.0 testsuite from Kent Beck and Erich Gamma.
+   JUNIT 3.7 testsuite from Kent Beck and Erich Gamma.
 
-   see http://members.pingnet.ch/gamma/junit.htm
+   see http://www.junit.org
 
+   junit.jar is distributed in $XMLBLASTER_HOME/lib/junit.jar
 
 
 Start the test suite:
@@ -27,11 +28,11 @@ Start the test suite manually:
 
    Start the test suite with GUI support:
 
-      java -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
    For command line output invoke:
 
-      java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestAll
 
    Start one test without testsuite (and with debugging output on console):
 
@@ -40,35 +41,11 @@ Start the test suite manually:
 
    Test RMI:
 
-      java -Djava.compiler= -Dclient.protocol=RMI test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= -Dclient.protocol=RMI junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
    Test XML-RPC:
 
-      java -Djava.compiler= -Dclient.protocol=XML-RPC test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
-
-
-Note that Junit is extended by some methods in TestCase.java
-------------------------------------------------------------
-
-  3 methods assertNotEquals(...) are added
-  the modified test.jar is distributed in $XMLBLASTER_HOME/lib/test.jar
-
-
-
-This is how junit is build new:
--------------------------------
-
-   export JUNIT_HOME=/opt/junit
-   export CLASSPATH=${CLASSPATH}:${JUNIT_HOME}/test.jar:${JUNIT_HOME}
-
-   cd $JUNIT_HOME/test/framework/
-      jikes *.java
-
-   cd $JUNIT_HOME
-      jar uvf test.jar test/framework/*.class
-
-   Add the test.jar file to the xmlBlaster/lib directory
-
+      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
 
 Building html files with syntax highlighting from java source

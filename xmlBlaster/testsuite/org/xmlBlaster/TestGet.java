@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.22 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestGet.java,v 1.23 2002/05/09 11:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -28,8 +28,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestGet
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestGet
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestGet
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestGet
  * </pre>
  */
 public class TestGet extends TestCase
@@ -119,13 +119,13 @@ public class TestGet extends TestCase
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
          if (msgArr.length > 0)
-            assert("get of not existing message is not possible", false);
+            assertTrue("get of not existing message is not possible", false);
          else
             Log.info(ME, "Success, got zero messages when trying to get unknown message");
       } catch(XmlBlasterException e) {
          Log.error(ME, "get of not existing message should not throw an exception");
          System.exit(1);
-         assert("get of not existing message should not throw an exception", false);
+         assertTrue("get of not existing message should not throw an exception", false);
          //Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
       }
 
@@ -137,7 +137,7 @@ public class TestGet extends TestCase
          connection.publish(msgUnit);
          Log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       if (Log.TRACE) Log.trace(ME, "3. Get an existing message ...");
@@ -157,7 +157,7 @@ public class TestGet extends TestCase
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].content));
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
-         assert("Couldn't get() an existing message", false);
+         assertTrue("Couldn't get() an existing message", false);
       }
    }
 
@@ -175,9 +175,9 @@ public class TestGet extends TestCase
          try {
             MessageUnit[] msgArr = connection.get(xmlKey, qos);
             if (msgArr.length > 0)
-               assert("get() of not existing message is not possible", false);
+               assertTrue("get() of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
-            assert("get() of not existing message should not throw an Exception: " + e.toString(), false);
+            assertTrue("get() of not existing message should not throw an Exception: " + e.toString(), false);
             // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
          }
       }
@@ -200,13 +200,13 @@ public class TestGet extends TestCase
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestGet
+    * Invoke: java testsuite.org.xmlBlaster.TestGet
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestGet</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestGet</pre>
     */
    public static void main(String args[])
    {

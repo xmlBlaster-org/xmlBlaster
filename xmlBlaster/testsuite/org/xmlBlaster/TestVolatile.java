@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.5 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.6 2002/05/09 11:54:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -30,9 +30,9 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestVolatile
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestVolatile
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestVolatile
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestVolatile
  * </pre>
  */
 public class TestVolatile extends TestCase implements I_Callback
@@ -124,7 +124,7 @@ public class TestVolatile extends TestCase implements I_Callback
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -148,7 +148,7 @@ public class TestVolatile extends TestCase implements I_Callback
          Log.info(ME, "Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -230,13 +230,13 @@ public class TestVolatile extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestVolatile
+    * Invoke: java testsuite.org.xmlBlaster.TestVolatile
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestVolatile</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestVolatile</pre>
     */
    public static void main(String args[])
    {

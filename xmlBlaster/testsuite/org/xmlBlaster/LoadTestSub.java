@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.29 2002/05/06 17:21:09 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.30 2002/05/09 11:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -98,7 +98,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, e.toString());
           e.printStackTrace();
-          assert(e.toString(), false);
+          assertTrue(e.toString(), false);
       }
 
    }
@@ -152,10 +152,8 @@ public class LoadTestSub extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         // assert("subscribe - XmlBlasterException: " + e.reason, false);
+         // assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      // assert("returned null subscribeOid", subscribeOid != null);
-      // assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
    }
 
 
@@ -203,10 +201,10 @@ public class LoadTestSub extends TestCase implements I_Callback
          //assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      // assert("returned publishOid == null", publishOid != null);
+      // assertTrue("returned publishOid == null", publishOid != null);
       // assertNotEquals("returned publishOid", 0, publishOid.length());
    }
 
@@ -247,7 +245,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { Log.error(ME, e.toString()); }
          if (val <= lastContentNumber) {
             Log.error(ME, "lastContent=" + lastContentNumber + " currentContent=" + currentContent);
-            //assert("Sequence of received message is broken", false);
+            //assertTrue("Sequence of received message is broken", false);
          }
       }
       lastContentNumber = val;

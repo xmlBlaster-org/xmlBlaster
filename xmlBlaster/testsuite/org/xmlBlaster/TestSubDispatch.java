@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.6 2002/05/01 21:40:24 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.7 2002/05/09 11:54:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -33,8 +33,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
  * </pre>
  */
 public class TestSubDispatch extends TestCase implements I_Callback
@@ -82,7 +82,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
-          assert("Login failed: " + e.toString(), false);
+          assertTrue("Login failed: " + e.toString(), false);
       }
    }
 
@@ -143,10 +143,10 @@ public class TestSubDispatch extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assertTrue("returned null subscribeOid", subscribeOid != null);
+      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 
@@ -175,7 +175,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -253,13 +253,13 @@ public class TestSubDispatch extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestSubDispatch
+    * Invoke: java testsuite.org.xmlBlaster.TestSubDispatch
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch</pre>
     */
    public static void main(String args[])
    {

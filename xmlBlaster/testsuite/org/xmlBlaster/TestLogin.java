@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.21 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.22 2002/05/09 11:54:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -161,10 +161,10 @@ public class TestLogin extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assertTrue("returned null subscribeOid", subscribeOid != null);
+      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 
@@ -188,11 +188,11 @@ public class TestLogin extends TestCase implements I_Callback
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-testPublish", "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      assert("returned publishOid == null", publishOid != null);
-      assertNotEquals("returned publishOid", 0, publishOid.length());
+      assertTrue("returned publishOid == null", publishOid != null);
+      assertTrue("returned publishOid", 0 != publishOid.length());
    }
 
 
@@ -237,19 +237,19 @@ public class TestLogin extends TestCase implements I_Callback
          publishOid = secondConnection.publish(mu);
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
-         assert("second - publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("second - publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 2); // 2 messages (we have subscribed 2 times, and the old session remained on relogin)
 
-      assert("returned publishOid == null", publishOid != null);
-      assertNotEquals("returned publishOid", 0, publishOid.length());
+      assertTrue("returned publishOid == null", publishOid != null);
+      assertTrue("returned publishOid", 0 != publishOid.length());
 
       Log.info(ME, "TEST 6: Test logout with following publish -> Should not be possible");
       // test logout with following subscribe()
       callbackConnection.logout();
       try {
          publishOid = callbackConnection.publish(msgUnit);
-         assert("Didn't expect successful publish after logout", false);
+         assertTrue("Didn't expect successful publish after logout", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success got exception for publishing after logout: " + e.toString());
       }
@@ -290,7 +290,7 @@ public class TestLogin extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving

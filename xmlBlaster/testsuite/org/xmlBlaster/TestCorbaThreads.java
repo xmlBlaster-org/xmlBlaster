@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.13 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.14 2002/05/09 11:54:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -40,9 +40,9 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
  * </pre>
  */
 public class TestCorbaThreads extends TestCase implements I_CallbackExtended
@@ -144,7 +144,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       int threadsAfter = ThreadLister.countThreads();
       Log.info(ME, "Currently used threads after 5 login/logout=" + threadsAfter);
       int allow = threadsBefore + 1; // This 1 thread is temporary
-      assert("We have a thread leak, threadsBefore=" + threadsBefore + " threadsAfter=" + threadsAfter, threadsAfter <= allow);
+      assertTrue("We have a thread leak, threadsBefore=" + threadsBefore + " threadsAfter=" + threadsAfter, threadsAfter <= allow);
    }
 
 
@@ -190,10 +190,10 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestCorbaThreads
+    * Invoke: java testsuite.org.xmlBlaster.TestCorbaThreads
     * <p />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads</pre>
     */
    public static void main(String args[])
    {

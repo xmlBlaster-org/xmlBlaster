@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.19 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestPub.java,v 1.20 2002/05/09 11:54:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -31,8 +31,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPub
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPub
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPub
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPub
  * </pre>
  */
 public class TestPub extends TestCase implements I_Callback
@@ -126,10 +126,10 @@ public class TestPub extends TestCase implements I_Callback
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assertTrue("returned null subscribeOid", subscribeOid != null);
+      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 
@@ -159,15 +159,15 @@ public class TestPub extends TestCase implements I_Callback
             Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
-            assert("publish - XmlBlasterException: " + e.reason, false);
+            assertTrue("publish - XmlBlasterException: " + e.reason, false);
          }
-         assert("returned publishOid == null", publishOid != null);
-         assertNotEquals("returned publishOid", 0, publishOid.length());
+         assertTrue("returned publishOid == null", publishOid != null);
+         assertTrue("returned publishOid", 0 != publishOid.length());
       }
       else {
          try {
             publishOid = senderConnection.publish(msgUnit);
-            assert("Publishing readonly protected message again should not be possible", false);
+            assertTrue("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
             Log.info(ME, "Success: Publishing again throws an exception");
          }
@@ -256,13 +256,13 @@ public class TestPub extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPub
+    * Invoke: java testsuite.org.xmlBlaster.TestPub
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPub</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPub</pre>
     */
    public static void main(String args[])
    {

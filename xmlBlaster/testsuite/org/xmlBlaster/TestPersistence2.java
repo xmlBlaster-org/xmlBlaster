@@ -10,7 +10,7 @@ Version:   ? cvs will update it ?
 // 
 // to test this code Alown : 
 //  java \
-//      -cp lib/jacorb.jar:lib/xmlBlaster.jar:lib/test.jar:lib/testsuite.jar \
+//      -cp lib/javarb.jar:lib/xmlBlaster.jar:lib/junit.jar:lib/testsuite.jar \
 //      test.textui.TestRunner \
 //      testsuite.org.xmlBlaster.TestPersistence2
 //
@@ -32,7 +32,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.util.ServerThread;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -40,9 +40,9 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  * </pre>
  */
 public class TestPersistence2 extends TestCase implements I_Callback
@@ -151,7 +151,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       waitOnUpdate(1000L, 0);
@@ -236,13 +236,13 @@ public class TestPersistence2 extends TestCase implements I_Callback
             assertEquals("Written content is corrupted", senderContent, persistenceContent);
          }
          catch (Exception e) {
-            assert("Couldn't read file " + FileUtil.concatPath(path, publishOid), false);
+            assertTrue("Couldn't read file " + FileUtil.concatPath(path, publishOid), false);
          }
       }
       else { // Check if erased
          java.io.File f = new java.io.File(path, publishOid);
          if (f.exists())
-            assert("File " + FileUtil.concatPath(path, publishOid) + " is not erased properly", false);
+            assertTrue("File " + FileUtil.concatPath(path, publishOid) + " is not erased properly", false);
       }
    }
 
@@ -302,13 +302,13 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPersistence2
+    * Invoke: java testsuite.org.xmlBlaster.TestPersistence2
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2</pre>
     */
    public static void main(String args[])
    {

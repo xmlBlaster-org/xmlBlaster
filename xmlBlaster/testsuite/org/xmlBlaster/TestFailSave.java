@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.29 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.30 2002/05/09 11:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -167,10 +167,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          Log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscriptionId", subscriptionId != null);
-      // NOT FOR FAIL SAVE: assertNotEquals("returned subscriptionId is empty", 0, subscriptionId.length());
+      assertTrue("returned null subscriptionId", subscriptionId != null);
    }
 
 
@@ -221,9 +220,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             if (e.id.equals("TryingReconnect"))
                Log.warn(ME, e.id + " exception: Lost connection, my connection layer is polling");
             else if (e.id.equals("NoConnect"))
-               assert("Lost connection, my connection layer is NOT polling", false);
+               assertTrue("Lost connection, my connection layer is NOT polling", false);
             else
-               assert("Publishing problems id=" + e.id + ": " + e.reason, false);
+               assertTrue("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
          //Util.delay(3000L);    // Wait some time
       }
@@ -247,7 +246,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          con.flushQueue();    // send all tailback messages
          // con.resetQueue(); // or discard them (it is our choice)
       } catch (XmlBlasterException e) {
-         assert("Exception during reconnection recovery: " + e.reason, false);
+         assertTrue("Exception during reconnection recovery: " + e.reason, false);
       }
    }
 

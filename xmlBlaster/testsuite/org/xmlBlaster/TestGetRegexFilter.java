@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.1 2002/05/06 07:36:11 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.2 2002/05/09 11:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -141,7 +141,7 @@ public class TestGetRegexFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       try {
@@ -149,14 +149,14 @@ public class TestGetRegexFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assert("Expected one returned message", msgUnits!=null);
-         assert("Expected exactly one returned message", msgUnits.length==1);
-         assert("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
+         assertTrue("Expected one returned message", msgUnits!=null);
+         assertTrue("Expected exactly one returned message", msgUnits.length==1);
+         assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
                 msgUnits[0].getContent().length == content.length());
          Log.info(ME, "Success: Got one message.");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("get - XmlBlasterException: " + e.reason, false);
+         assertTrue("get - XmlBlasterException: " + e.reason, false);
       }
 
 
@@ -165,7 +165,7 @@ public class TestGetRegexFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", new String("aaaaaac").getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       try {
@@ -173,12 +173,12 @@ public class TestGetRegexFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         assert("Expected zero returned message", msgUnits!=null);
-         assert("Expected zero returned message", msgUnits.length==0);
+         assertTrue("Expected zero returned message", msgUnits!=null);
+         assertTrue("Expected zero returned message", msgUnits.length==0);
          Log.info(ME, "Success: Got no message.");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("get - XmlBlasterException: " + e.reason, false);
+         assertTrue("get - XmlBlasterException: " + e.reason, false);
       }
 
       Log.info(ME, "Success in testFilter()");

@@ -54,11 +54,10 @@ All packages allow free use for both commercial and non-commercial applications.
    Download http://java.sun.com/xml
 
 
-4) test.jar
-===========
-   JUNIT 1.0 testsuite from Kent Beck and Erich Gamma
+4) junit.jar
+============
+   JUNIT 3.7 testsuite from Kent Beck and Erich Gamma
 
-   Download http://members.pingnet.ch/gamma/junit.htm
    http://www.junit.org/
 
    Please read the

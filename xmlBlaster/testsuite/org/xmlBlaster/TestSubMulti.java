@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.7 2002/05/01 21:40:25 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.8 2002/05/09 11:54:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -86,7 +86,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
-          assert("Login failed: " + e.toString(), false);
+          assertTrue("Login failed: " + e.toString(), false);
       }
    }
 
@@ -129,7 +129,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       }
       catch(XmlBlasterException e) {
         Log.warn(ME, "XmlBlasterException: " + e.reason);
-        assert("publish - XmlBlasterException: " + e.reason, false);
+        assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -153,7 +153,7 @@ public class TestSubMulti extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -191,7 +191,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
 
       // Test requirement "engine.qos.update.rcvTimestamp":
-      assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQos.getRcvTimestamp(),
+      assertTrue("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQos.getRcvTimestamp(),
              sentTimestamp.getMillis() < updateQos.getRcvTimestamp().getMillis() &&
              (sentTimestamp.getMillis()+1000) > updateQos.getRcvTimestamp().getMillis());
       return "";
@@ -213,7 +213,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
@@ -236,13 +236,13 @@ public class TestSubMulti extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestSubMulti
+    * Invoke: java testsuite.org.xmlBlaster.TestSubMulti
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubMulti</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubMulti</pre>
     */
    public static void main(String args[])
    {

@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.25 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.26 2002/05/09 11:54:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -36,9 +36,9 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
  * </pre>
  */
 public class TestPtD extends TestCase implements I_Callback
@@ -142,7 +142,7 @@ public class TestPtD extends TestCase implements I_Callback
          Log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       waitOnUpdate(5000L, 1);
@@ -179,7 +179,7 @@ public class TestPtD extends TestCase implements I_Callback
          Log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
       waitOnUpdate(5000L, 2);
@@ -249,13 +249,13 @@ public class TestPtD extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPtD
+    * Invoke: java testsuite.org.xmlBlaster.TestPtD
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD</pre>
     */
    public static void main(String args[])
    {

@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.6 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.7 2002/05/09 11:54:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -23,7 +23,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -75,7 +75,7 @@ public class TestCallback extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
    }
 
@@ -95,7 +95,7 @@ public class TestCallback extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
    }
 
@@ -121,12 +121,12 @@ public class TestCallback extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
          waitOnUpdate(2000L, 1);
-         assert("Expected a dead letter", isDeadLetter);
+         assertTrue("Expected a dead letter", isDeadLetter);
          isDeadLetter = false;
 
          try { // this should fail
             con.subscribe("<key oid='testCallbackMsg'/>", null);
-            assert("Session should be destroyed by xmlBlaster", false);
+            assertTrue("Session should be destroyed by xmlBlaster", false);
             //con.disconnect(null);
          }
          catch (Exception e2) {
@@ -135,7 +135,7 @@ public class TestCallback extends TestCase implements I_Callback
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
       Log.info(ME, "Success in testCallbackFailure()");
    }
@@ -169,7 +169,7 @@ public class TestCallback extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving

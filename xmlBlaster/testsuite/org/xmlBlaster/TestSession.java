@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.5 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestSession.java,v 1.6 2002/05/09 11:54:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -87,7 +87,7 @@ public class TestSession extends TestCase implements I_Callback
          ConnectQos qos = new ConnectQos(null, name, passwd);
          qos.setMaxSessions(-16);
          con.connect(qos, this); // Login to xmlBlaster
-         assert("Connecting with zero sessions should not be possible", false);
+         assertTrue("Connecting with zero sessions should not be possible", false);
       }
       catch (Exception e) {
          Log.info(ME, "Success, can't connect with zero sessions");
@@ -113,7 +113,7 @@ public class TestSession extends TestCase implements I_Callback
                qos.setMaxSessions(maxSessions);
                con[ii].connect(qos, this); // Login to xmlBlaster
                if (ii >= maxSessions)
-                  assert("Connecting number " + ii + " of max=" + maxSessions + " is not allowed", false);
+                  assertTrue("Connecting number " + ii + " of max=" + maxSessions + " is not allowed", false);
             }
             catch (Exception e) {
                if (ii >= maxSessions) {
@@ -121,7 +121,7 @@ public class TestSession extends TestCase implements I_Callback
                }
                else {
                   Log.error(ME, e.toString());
-                  assert("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
+                  assertTrue("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
                }
             }
          }
@@ -134,7 +134,7 @@ public class TestSession extends TestCase implements I_Callback
             }
          }
          catch (Throwable e) {
-            assert(e.toString(), false);
+            assertTrue(e.toString(), false);
          }
       }
       Log.info(ME, "Success in testSessionOverflow()");
@@ -159,7 +159,7 @@ public class TestSession extends TestCase implements I_Callback
          }
          catch (Exception e) {
             Log.error(ME, e.toString());
-            assert("Login failed" + e.toString(), false);
+            assertTrue("Login failed" + e.toString(), false);
          }
 
          try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { } // wait until session expires
@@ -167,7 +167,7 @@ public class TestSession extends TestCase implements I_Callback
          try {
             Log.info(ME, "Check access ...");
             con.get("<key oid='__sys__FreeMem'/>", null);
-            assert("get of expired login session is not possible", false);
+            assertTrue("get of expired login session is not possible", false);
          }
          catch (Exception e) {
             Log.info(ME, "Success, no access after session expiry");
@@ -178,7 +178,7 @@ public class TestSession extends TestCase implements I_Callback
             con.disconnect(null);
          }
          catch (Throwable e) {
-            assert(e.toString(), false);
+            assertTrue(e.toString(), false);
          }
       }
       Log.info(ME, "Success in testSessionTimeout()");
@@ -204,7 +204,7 @@ public class TestSession extends TestCase implements I_Callback
          }
          catch (Exception e) {
             Log.error(ME, e.toString());
-            assert("Login failed" + e.toString(), false);
+            assertTrue("Login failed" + e.toString(), false);
          }
 
          try {
@@ -217,7 +217,7 @@ public class TestSession extends TestCase implements I_Callback
          }
          catch (Exception e) {
             Log.error(ME, "No access: " + e.toString());
-            assert("Session is expired", false);
+            assertTrue("Session is expired", false);
          }
       }
       finally { // clean up
@@ -225,7 +225,7 @@ public class TestSession extends TestCase implements I_Callback
             con.disconnect(null);
          }
          catch (Throwable e) {
-            assert(e.toString(), false);
+            assertTrue(e.toString(), false);
          }
       }
       Log.info(ME, "Success in testSessionTimeoutRespan()");
@@ -261,12 +261,12 @@ public class TestSession extends TestCase implements I_Callback
                }
                catch (Exception e2) {
                   Log.error(ME, e2.toString());
-                  assert("Login failed" + e2.toString(), false);
+                  assertTrue("Login failed" + e2.toString(), false);
                }
             }
             else {
                Log.error(ME, e.toString());
-               assert("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
+               assertTrue("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
             }
          }
       }
@@ -279,7 +279,7 @@ public class TestSession extends TestCase implements I_Callback
          }
       }
       catch (Throwable e) {
-         assert(e.toString(), false);
+         assertTrue(e.toString(), false);
       }
       Log.info(ME, "Success in testClearSession()");
    }
@@ -313,7 +313,7 @@ public class TestSession extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
+         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving

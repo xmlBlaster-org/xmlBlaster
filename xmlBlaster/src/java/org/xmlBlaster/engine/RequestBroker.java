@@ -147,7 +147,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       pluginManager = new PersistencePluginManager(getGlobal());
 
-      useCluster = getGlobal().getProperty().get("cluster", false);
+      useCluster = getGlobal().getProperty().get("cluster", true);
 
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);

@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.17 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.18 2002/05/09 11:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -40,8 +40,8 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
- *   jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   java test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   java test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
  * </pre>
  */
 public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionProblems
@@ -137,7 +137,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       String[] strArr = null;
       try {
          strArr = con.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { assert("tearDown - XmlBlasterException: " + e.reason, false); }
+      } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.reason, false); }
       assertEquals("Wrong number of message erased", 1, strArr.length);
 
       Util.delay(500L);    // Wait some time
@@ -168,10 +168,9 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      // NOT FOR FAIL SAVE: assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assertTrue("returned null subscribeOid", subscribeOid != null);
    }
 
 
@@ -239,9 +238,9 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          if (e.id.equals("TryingReconnect"))
             Log.warn(ME, e.id + " exception: Lost connection, my connection layer is polling");
          else if (e.id.equals("NoConnect"))
-            assert("Lost connection, my connection layer is not polling", false);
+            assertTrue("Lost connection, my connection layer is not polling", false);
          else
-            assert("Publishing problems id=" + e.id + ": " + e.reason, false);
+            assertTrue("Publishing problems id=" + e.id + ": " + e.reason, false);
       }
 
       con.resetQueue(); // discard messages (dummy)
@@ -320,13 +319,13 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestFailSavePing
+    * Invoke: java testsuite.org.xmlBlaster.TestFailSavePing
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing</pre>
     */
    public static void main(String args[])
    {

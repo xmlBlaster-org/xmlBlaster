@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.9 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.10 2002/05/09 11:54:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import test.framework.*;
+import junit.framework.*;
 
 
 /**
@@ -41,8 +41,8 @@ import test.framework.*;
  *
  *  java testsuite.org.xmlBlaster.TestSubManyClients -numClients 10000 -client.protocol RMI -warn false
  *
- *  jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
- *  jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
  * </pre>
  */
 public class TestSubManyClients extends TestCase implements I_Callback
@@ -103,7 +103,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
-          assert("Login failed: " + e.toString(), false);
+          assertTrue("Login failed: " + e.toString(), false);
       }
    }
 
@@ -191,7 +191,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          }
          catch (Exception e) {
              Log.error(ME, "Login failed: " + e.toString());
-             assert("Login failed: " + e.toString(), false);
+             assertTrue("Login failed: " + e.toString(), false);
          }
 
          try {
@@ -199,7 +199,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
             Log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
          } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
-            assert("subscribe - XmlBlasterException: " + e.reason, false);
+            assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
          }
 
          manyClients[ii] = sub;
@@ -255,7 +255,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("publishOne - XmlBlasterException: " + e.reason, false);
+         assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -311,7 +311,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          Log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getUniqueKey());
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
+         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -347,7 +347,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
             assertEquals("Wrong publishOid2", publishOid2, tmp);
          } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
-            assert("publishOne - XmlBlasterException: " + e.reason, false);
+            assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
          }
       }
 
@@ -395,13 +395,13 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestSubManyClients
+    * Invoke: java testsuite.org.xmlBlaster.TestSubManyClients
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients</pre>
     */
    public static void main(String args[])
    {
