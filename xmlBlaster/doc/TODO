@@ -129,6 +129,7 @@ proprietary Protocol plugins (not CORBA)
   For HTTP and XML see XML-RPC:
      http://www.xmlrpc.com/spec
   and SOAP:
+     http://www.w3.org/TR/SOAP/
      http://www.soap-wrc.com
      http://www.alphaWorks.ibm.com/tech/soap4j
      http://msdn.microsoft.com/xml/general/toolkit_intro.asp
@@ -148,3 +149,5 @@ xmlBlaster homepage
      http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/
      http://www.hpc.uh.edu/fvwm/archive/
 
+- Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
+  http://www.unicorn-enterprises.com/ 
