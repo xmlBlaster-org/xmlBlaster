@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.14 1999/11/22 18:17:31 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.15 1999/11/23 13:59:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -15,11 +15,11 @@ import java.util.*;
 
 
 /**
- * Handles a MessageUnit and its subscribers. 
+ * Handles a MessageUnit and its subscribers.
  */
 public class MessageUnitHandler
 {
-   private String ME = "MessageUnitHandler";
+   private final static String ME = "MessageUnitHandler";
 
    /**
     * The broker which manages me
@@ -29,7 +29,7 @@ public class MessageUnitHandler
 
    /**
     * This map knows all clients which have subscribed on this message content
-    * and knows all individual wishes of the subscription (QoS). 
+    * and knows all individual wishes of the subscription (QoS).
     *
     * The map contains SubscriptionInfo objects.
     *
@@ -119,7 +119,7 @@ public class MessageUnitHandler
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
       if (this.xmlKey == null) {
-         this.xmlKey = xmlKey; // storing the key from the first publish() invokation
+         this.xmlKey = xmlKey; // storing the key from the first publish() invocation
          this.messageUnit.xmlKey = xmlKey.literal();
       }
 
@@ -197,7 +197,7 @@ public class MessageUnitHandler
 
 
    /**
-    * A client wants to unsubscribe from this message
+    * A client wants to unSubscribe from this message
     * @return the removed SubscriptionInfo object or null if not found
     */
    public SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey) throws XmlBlasterException
@@ -228,7 +228,7 @@ public class MessageUnitHandler
     */
    public String getMimeType() throws XmlBlasterException
    {
-      if (messageUnit.xmlKey == null) {
+      if (getMessageUnit().xmlKey == null) {
          Log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
          throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
       }
@@ -237,7 +237,7 @@ public class MessageUnitHandler
 
    /**
     * A Set subscriberMap.entrySet() would be enough in most cases
-    * but I'm not quite shure how to synchronize it ...
+    * but I'm not quite sure how to synchronize it ...
     */
    public Map getSubscriberMap()
    {
@@ -246,7 +246,20 @@ public class MessageUnitHandler
 
 
    /**
-    * Send updates to all subscribed clients. 
+    * This is the unique key of the messageUnit
+    */
+   public MessageUnit getMessageUnit() throws XmlBlasterException
+   {
+      if (messageUnit == null) {
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
+         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
+      }
+      return messageUnit;
+   }
+
+
+   /**
+    * Send updates to all subscribed clients.
     * The whole update blocks if one client would block - to avoid this the IDL update()
     * method is marked <code>oneway</code>
     */
@@ -254,7 +267,7 @@ public class MessageUnitHandler
    {
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
-      // PREFORMANCE: All updates for each client should be collected !!!
+      // PERFORMANCE: All updates for each client should be collected !!!
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
 
@@ -266,9 +279,6 @@ public class MessageUnitHandler
 
 
    /**
-    * Send updates to all subscribed clients. 
-    * The whole update blocks if one client would block - to avoid this the IDL update()
-    * method is marked <code>oneway</code>
     */
    public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
@@ -276,13 +286,24 @@ public class MessageUnitHandler
          Log.warning(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return;
       }
-      BlasterCallback cb = sub.getClientInfo().getCB();
+      MessageUnitHandler.sendUpdate(sub.getClientInfo(), xmlKey, getMessageUnit());
+   }
+
+
+   /**
+    * This sends the update to the client. 
+    * TODO: 1. Create a singleton UpdateHandler.java, supporting CORBA,http,email
+    *       2. change arguments?
+    */
+   public final static void sendUpdate(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit messageUnit) throws XmlBlasterException
+   {
+      BlasterCallback cb = clientInfo.getCB();
       XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
       MessageUnit[] updateMsgArr = new MessageUnit[1];
       updateMsgArr[0] = messageUnit;
       String[] qarr = new String[1];
       qarr[0] = xmlQoS.toString();
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + clientInfo.toString());
       cb.update(updateMsgArr, qarr);
    }
 

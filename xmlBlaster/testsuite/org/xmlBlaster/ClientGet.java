@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.1 1999/11/22 23:32:34 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.2 1999/11/23 13:59:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,16 +20,16 @@ public class ClientGet
    private Server xmlBlaster = null;
    private String ME = "Heidi";
 
-   public ClientGet(String args[]) 
-   { 
+   public ClientGet(String args[])
+   {
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
          String authServerIOR = null;
 
          if (args.length == 1) {
-            authServerIOR = args[0];  // args[0] is an IOR-string 
-         } 
+            authServerIOR = args[0];  // args[0] is an IOR-string
+         }
          else if (args.length > 1) {
             String argv = args[0];
             if (argv.equals("-name")) {
@@ -74,18 +74,17 @@ public class ClientGet
 
          String publishOid = "";
 
-         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                         "<key oid='' contentMime='text/xml'>\n" +
-                         "<AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                         "<DRIVER id='FileProof' pollingFreq='10'>" +
-                         "</DRIVER>"+
-                         "</AGENT>" +
-                         "</key>";
-
 
          //----------- Construct a message and publish it ---------
          {
-            String content = "<person><firstName>heidi</firstName><age>36</age></person>";
+            String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                            "<key oid='' contentMime='text/xml'>" +
+                            "   <AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                            "      <DRIVER id='FileProof' pollingFreq='10'>" +
+                            "      </DRIVER>"+
+                            "   </AGENT>" +
+                            "</key>";
+            String content = "<file><size>1024 kBytes</size><creation>1.1.2000</creation></file>";
             MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.trace(ME, "Publishing ...");
             stop.restart();
@@ -100,10 +99,60 @@ public class ClientGet
 
 
          //----------- get() the previous message OID -------
-         Log.trace(ME, "get() using the exact oid ...");
-         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                  "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                  "</key>";
+         {
+            Log.trace(ME, "get() using the exact oid ...");
+            String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                            "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                            "</key>";
+            stop.restart();
+            MessageUnit[] msgArr = null;
+            try {
+               msgArr = xmlBlaster.get(xmlKey, qos);
+            } catch(XmlBlasterException e) {
+               Log.error(ME, "XmlBlasterException: " + e.reason);
+            }
+
+            Log.info(ME, "Got " + msgArr.length + " messages:");
+            for (int ii=0; ii<msgArr.length; ii++) {
+               Log.plain(ME, msgArr[ii].xmlKey +
+                          "\n################### RETURN CONTENT: ##################\n\n" +
+                           new String(msgArr[ii].content) +
+                          "\n\n#######################################");
+            }
+         }
+
+
+         //----------- Construct a second message and publish it ---------
+         {
+            String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                            "<key oid='Export-11' contentMime='text/plain'>" +
+                            "<AGENT id='192.168.124.29' subId='1' type='generic'>" +
+                               "<DRIVER id='ProgramExecute'>" +
+                                  "<EXECUTABLE>export</EXECUTABLE>" +
+                                  "<FILE>out.txt</FILE>" +
+                               "</DRIVER>" +
+                            "</AGENT>" +
+                            "</key>";
+            String content = "Export program started";
+            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
+            Log.trace(ME, "Publishing ...");
+            stop.restart();
+            try {
+               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               Log.info(ME, "   Returned oid=" + publishOid);
+            } catch(XmlBlasterException e) {
+               Log.warning(ME, "XmlBlasterException: " + e.reason);
+            }
+            Log.trace(ME, "Publishing done" + stop.nice());
+         }
+
+
+         //----------- get() with XPath -------
+         Log.trace(ME, "get() using the Xpath query syntax ...");
+         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                         "<key oid='' queryType='XPATH'>\n" +
+                         "   //DRIVER[@id='ProgramExecute']" +
+                         "</key>";
          stop.restart();
          MessageUnit[] msgArr = null;
          try {
@@ -112,12 +161,18 @@ public class ClientGet
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
-         Log.info(ME, "Got " + msgArr.length + " messages:");
+         if (msgArr.length == 1)
+            Log.info(ME, "Got " + msgArr.length + " messages:");
+         else
+            Log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            Log.plain(ME, msgArr[ii].xmlKey + "\n\n" + msgArr[ii].content.toString());
+            Log.plain(ME, msgArr[ii].xmlKey +
+                          "\n################### RETURN CONTENT: ##################\n\n" + 
+                          new String(msgArr[ii].content) +
+                          "\n\n#######################################");
          }
 
-         
+
          ask("logout()");
 
 
@@ -181,7 +236,7 @@ public class ClientGet
    }
 
 
-   public static void main(String args[]) 
+   public static void main(String args[])
    {
       new ClientGet(args);
    }

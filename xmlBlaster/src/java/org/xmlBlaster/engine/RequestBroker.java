@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.22 1999/11/23 12:59:41 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.23 1999/11/23 13:59:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -185,6 +185,27 @@ public class RequestBroker implements ClientListener
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
          subscribeToOid(subs);                // fires event for subscription
       }
+   }
+
+
+   /**
+    * Invoked by a client, to subscribe to one/many MessageUnit
+    */
+   public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   {
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+      MessageUnit[] messageUnitArr = new MessageUnit[xmlKeyVec.size()];
+
+      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+         if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
+            xmlKeyExact = xmlKey;
+
+         MessageUnitHandler msgHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+         messageUnitArr[ii] = msgHandler.getMessageUnit();;
+      }
+
+      return messageUnitArr;
    }
 
 

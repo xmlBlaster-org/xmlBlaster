@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.19 1999/11/22 18:07:41 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.20 1999/11/23 13:59:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -160,7 +160,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnit[] get(String xmlKey_literal, String qos) throws XmlBlasterException
+   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + requestBroker.printOn().toString());
@@ -168,10 +168,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       ClientInfo clientInfo = authenticate.check();
 
-      MessageUnit[] messageUnitArr = new MessageUnit[0];
-
-      Log.error(ME+".NotImplemented", "Sorry, get() is not yet implemented");
-      //throw new XmlBlasterException(ME+".NotImplemented", "Sorry, get() is not yet implemented");
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      MessageUnit[] messageUnitArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + requestBroker.printOn().toString());
