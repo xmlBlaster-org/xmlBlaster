@@ -28,8 +28,10 @@ Configure in xmlBlaster.properties:
 Activate the persitence:
 set the following variables:
 
-persistence/defaultPlugin=CACHE,1.0
-queue/defaultPlugin=CACHE,1.0
+persistence/msgUnitStore/defaultPlugin=CACHE,1.0
+queue/subject/defaultPlugin=CACHE,1.0
+queue/history/defaultPlugin=CACHE,1.0
+queue/callback/defaultPlugin=CACHE,1.0
 useTopicStore=true
 
 
