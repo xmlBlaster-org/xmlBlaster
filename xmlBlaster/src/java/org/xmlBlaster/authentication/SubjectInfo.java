@@ -696,9 +696,10 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       }
       if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(""));
 
-      if (log.TRACE) log.trace(ME, "Flushing " + this.subjectQueue.getNumOfEntries() + " messages");
-      // returns here with no waiting ...
-      this.glob.getSubjectInfoShuffler().shuffle(this);
+      if (this.subjectQueue.getNumOfEntries() > 0) {
+         if (log.TRACE) log.trace(ME, "Flushing " + this.subjectQueue.getNumOfEntries() + " messages");
+         this.glob.getSubjectInfoShuffler().shuffle(this); // Background thread
+      }
    }
 
    /**
