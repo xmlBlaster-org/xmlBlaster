@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.9 2000/01/30 20:19:57 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.10 2000/02/01 12:29:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -205,7 +205,7 @@ public class FileUtil
 
 
    /**
-    * Delete a file. 
+    * Delete a file.
     * @param parent Path to the file
     * @param fileName name of file
     */
@@ -231,11 +231,6 @@ public class FileUtil
 
    /**
     * Write data from <code>byte[]</code> into a file.
-    * <p />
-    * All error handling and reporting is done by this method<br>
-    * Nice function for testing
-    * <br><b>Example:</b><br>
-    *    <code>FileUtil.writeFile(myBytes, "/tmp/hello");</code>
     * @param parent   the path
     * @param child    the name
     * @param arr      data
@@ -258,24 +253,28 @@ public class FileUtil
 
    /**
     * Write data from <code>StringBuffer</code> into a file.
-    * <p />
-    * All error handling and reporting is done by this method<br>
-    * Nice function for testing
-    * <br><b>Example:</b><br>
-    *    <code>FileUtil.writeFile(myBytes, "/tmp/hello");</code>
     * @param outName  name of file including path
-    * @param arr      data
+    * @param str      data
     */
-   public static final void writeFile(String parent, String child, String arr) throws XmlBlasterException
+   public static final void writeFile(String parent, String child, String str) throws XmlBlasterException
    {
-      writeFile(parent, child, arr.toString().getBytes() );
+      writeFile(parent, child, str.getBytes() );
+   }
+
+
+   /**
+    * Write data from <code>StringBuffer</code> into a file.
+    * @param outName  name of file including path
+    * @param str      data
+    */
+   public static final void writeFile(String name, String str) throws XmlBlasterException
+   {
+      writeFile(null, name, str.getBytes() );
    }
 
 
    /**
     * Append data from into a file.
-    * <p />
-    * Nice function for testing
     * @param outName  name of file including path
     * @param str      Text
     */

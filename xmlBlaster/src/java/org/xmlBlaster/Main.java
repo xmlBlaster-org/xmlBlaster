@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.19 2000/02/01 12:08:06 ruff Exp $
+Version:   $Id: Main.java,v 1.20 2000/02/01 12:29:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -54,7 +54,7 @@ public class Main
 
 
    /**
-    * Start xmlBlaster. 
+    * Start xmlBlaster.
     * @param args The command line parameters
     */
    public Main(String[] args)
@@ -120,9 +120,10 @@ public class Main
          Log.info(ME, Memory.getStatistic());
 
          if (controlPanel == null) {
-            Log.info(ME, "########################################################################");
-            Log.info(ME, "# xmlBlaster is ready for requests (press <?> and <enter> for options) #");
-            Log.info(ME, "########################################################################");
+            Log.info(ME, "#####################################");
+            Log.info(ME, "# xmlBlaster is ready for requests  #");
+            Log.info(ME, "# press <?> and <enter> for options #");
+            Log.info(ME, "#####################################");
          }
          else
             Log.info(ME, "xmlBlaster is ready for requests");
@@ -137,7 +138,7 @@ public class Main
 
 
    /**
-    * Check for keyboard entries from console. 
+    * Check for keyboard entries from console.
     * <p />
     * Supported input is:
     * &lt;ul>
@@ -150,12 +151,11 @@ public class Main
     */
    private void checkForKeyboardInput()
    {
-      InputStreamReader in = new InputStreamReader(System.in);
+      BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
       while (true) {
          try {
-            int key = in.read();
-            char keyChar = new Character((char)key).charValue();
-            if (Character.toLowerCase(keyChar) == 'g') {
+            String line = in.readLine().trim();
+            if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   Log.info(ME, "Invoking control panel GUI ...");
                   controlPanel = new MainGUI(); // the constructor sets the variable controlPanel
@@ -164,21 +164,32 @@ public class Main
                else
                   controlPanel.showWindow();
             }
-            else if (Character.toLowerCase(keyChar) == 'd') {
+            else if (line.toLowerCase().startsWith("d")) {
                try {
+                  String fileName = null;
+                  if (line.length() > 1) fileName = line.substring(1).trim();
+
                   Authenticate auth = Authenticate.getInstance();
-                  Log.dump(ME, auth.printOn().toString());
-                  Log.dump(ME, RequestBroker.getInstance(auth).printOn().toString());
-                  Log.error(ME, "Dump done");
+
+                  if (fileName == null) {
+                     Log.plain(ME, auth.printOn().toString());
+                     Log.plain(ME, RequestBroker.getInstance(auth).printOn().toString());
+                     Log.info(ME, "Dump done");
+                  }
+                  else {
+                     FileUtil.writeFile(fileName, auth.printOn().toString());
+                     FileUtil.appendToFile(fileName, RequestBroker.getInstance(auth).printOn().toString());
+                     Log.info(ME, "Dumped internal state to '" + fileName + "'");
+                  }
                }
                catch(XmlBlasterException e) {
                   Log.error(ME, "Sorry, dump failed: " + e.reason);
                }
             }
-            else if (Character.toLowerCase(keyChar) == 'q') {
+            else if (line.toLowerCase().equals("q")) {
                Log.exit(ME, "Good bye");
             }
-            else if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
+            else // if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
                keyboardUsage();
          }
          catch (IOException e) {
@@ -232,7 +243,7 @@ public class Main
 
 
    /**
-    * Keyboard input usage. 
+    * Keyboard input usage.
     */
    private void keyboardUsage()
    {
