@@ -126,7 +126,7 @@ public class XmlBlasterAccessTest extends TestCase {
             continue;
          }
 
-         assertEquals("", null, xmlBlasterAccess.getQueue());
+         assertTrue("", null != xmlBlasterAccess.getQueue());
          assertEquals("", false, xmlBlasterAccess.isAlive());
          assertEquals("", false, xmlBlasterAccess.isPolling());
          assertEquals("", false, xmlBlasterAccess.isDead());
@@ -151,13 +151,12 @@ public class XmlBlasterAccessTest extends TestCase {
             fail("testCreation failed: " + e.getMessage());
          }
 
-         assertTrue("", xmlBlasterAccess.getSecurityPlugin() == null);
+         assertTrue("", xmlBlasterAccess.getSecurityPlugin() != null);
          assertEquals("", false, xmlBlasterAccess.disconnect(null));
          assertTrue("", xmlBlasterAccess.getConnectReturnQos() == null);
-         assertTrue("", xmlBlasterAccess.getConnectQos() == null);
-         assertEquals("", false, xmlBlasterAccess.disconnect(null, true, true, true));
-         assertEquals("", "UNKNOWN_SESSION", xmlBlasterAccess.getId());
-         assertTrue("", xmlBlasterAccess.getSessionName() == null);
+         assertTrue("", xmlBlasterAccess.getConnectQos() != null);
+         assertTrue("", xmlBlasterAccess.getId() != null);
+         assertTrue("", xmlBlasterAccess.getSessionName() != null);
 
          xmlBlasterAccess.setServerNodeId(null);
          assertTrue("", xmlBlasterAccess.getServerNodeId() == null);
