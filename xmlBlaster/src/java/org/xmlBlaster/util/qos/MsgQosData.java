@@ -5,10 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
@@ -16,8 +14,6 @@ import org.xmlBlaster.util.SessionName;
 
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.cluster.RouteInfo;
 
 import java.util.ArrayList;
 
@@ -42,16 +38,15 @@ import java.util.ArrayList;
  * </p>
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
-public final class MsgQosData implements java.io.Serializable
+public final class MsgQosData extends QosData implements java.io.Serializable, Cloneable
 {
    private String ME = "MsgQosData";
-   private transient Global glob;
-   private transient LogChannel log;
    private transient I_MsgQosFactory factory;
-   private final String serialData;
    private transient boolean isExpired = false; // cache the expired state for performance reasons
+
+   private TopicProperty topicProperty;
 
    /**
     * A message lease lasts forever if not otherwise specified. <p />
@@ -61,11 +56,6 @@ public final class MsgQosData implements java.io.Serializable
     * -1L sets the life cycle on forever.
     */ // TODO: Change to use glob instead of Global singleton! What about performance? Put variable into Global?
    private static final long maxLifeTime = Global.instance().getProperty().get("message.maxLifeTime", -1L);
-
-   /** the state of the message, defaults to "OK" if no state is returned */
-   private String state = Constants.STATE_OK;
-   /** Human readable information */
-   private String stateInfo;
 
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId;
@@ -78,10 +68,10 @@ public final class MsgQosData implements java.io.Serializable
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
 
-   public static boolean DEFAULT_isVolatile = false;
-   private boolean volatileFlag = DEFAULT_isVolatile;
+   //public transient final static boolean DEFAULT_isVolatile = false;
+   //private boolean volatileFlag = DEFAULT_isVolatile;
 
-   public static boolean DEFAULT_isDurable = false;
+   public transient final static boolean DEFAULT_isDurable = false;
    private boolean durable = DEFAULT_isDurable;
 
    /**
@@ -89,28 +79,22 @@ public final class MsgQosData implements java.io.Serializable
     * <br />
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
     */
-   public static boolean DEFAULT_forceUpdate = true;
+   public transient final static boolean DEFAULT_forceUpdate = true;
    private boolean forceUpdate = DEFAULT_forceUpdate;
 
-   public static boolean DEFAULT_readonly = false;
-   private boolean readonly = DEFAULT_readonly;
-
-   /** 
-    * The receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   private Timestamp rcvTimestamp;
-   private boolean rcvTimestampFound = false;
-
+   public final static long DEFAULT_lifeTime = maxLifeTime;
    /** 
     * A message expires after some time and will be discarded.
     * Clients will get a notify about expiration.
     * This is the configured lifeTime in millis of the message.
+    * It defaults to -1L (== forever).
     */
-   private long lifeTime = -1L;
+   private long lifeTime = DEFAULT_lifeTime;
 
    private long remainingLifeStatic = -1L;
+
+   public transient final static boolean DEFAULT_forceDestroy = false;
+   private boolean forceDestroy = DEFAULT_forceDestroy;
 
    /** the sender (publisher) of this message (unique loginName) */
    private SessionName sender;
@@ -122,24 +106,14 @@ public final class MsgQosData implements java.io.Serializable
     * ArrayList for loginQoS, holding all destination addresses (Destination objects)
     */
    protected ArrayList destinationList;
-   protected Destination destination;
-
-   /**
-    * ArrayList containing RouteInfo objects
-    */
-   protected ArrayList routeNodeList;
-   /** Cache for RouteInfo in an array */
-   protected RouteInfo[] routeNodes;
-   private static RouteInfo[] ROUTE_INFO_ARR_DUMMY = new RouteInfo[0];
-
-   public long size;
+   protected transient Destination[] destinationArrCache;
+   public final static Destination[] EMPTY_DESTINATION_ARR = new Destination[0];
 
    // TODO: Pass with client QoS!!!
-   private static final boolean recieveTimestampHumanReadable = Global.instance().getProperty().get("cb.recieveTimestampHumanReadable", false);
+   private static final boolean receiveTimestampHumanReadable = Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
 
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
-    * @param The factory which knows how to serialize and parse me
     */
    public MsgQosData(Global glob) {
       this(glob, null, null);
@@ -147,11 +121,11 @@ public final class MsgQosData implements java.io.Serializable
 
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
-    * @param The factory which knows how to serialize and parse me
-    */
+    * @param the XML based ASCII string
    public MsgQosData(Global glob, String serialData) {
       this(glob, null, serialData);
    }
+    */
 
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
@@ -165,14 +139,10 @@ public final class MsgQosData implements java.io.Serializable
     * Constructs the specialized quality of service object for a publish() call.
     * For internal use only, this message is sent from the persistence layer
     * @param the XML based ASCII string
-    * @param true
     */
    public MsgQosData(Global glob, I_MsgQosFactory factory, String serialData) {
-      this.glob = glob;
-      this.log = glob.getLog("core");
-      this.factory = (factory == null) ? glob.getMsgQosFactory() : factory;
-      this.serialData = serialData;
-      this.size = (serialData == null) ? 0 : serialData.length();
+      super(glob, serialData);
+      this.factory = (factory == null) ? this.glob.getMsgQosFactory() : factory;
    }
 
    /**
@@ -182,7 +152,7 @@ public final class MsgQosData implements java.io.Serializable
     *         false if addressing of the destination is used
     */
    public boolean isPubSubStyle() {
-      return destinationList == null;
+      return this.destinationList == null;
    }
 
    /**
@@ -196,88 +166,34 @@ public final class MsgQosData implements java.io.Serializable
    }
 
    /**
-    * @param state The state of an update message
-    */
-   public void setState(String state) {
-      this.state = state;
-   }
-
-   /**
-    * Access state of message on update().
-    * @return OK (Other values are not yet supported)
-    */
-   public String getState() {
-      return state;
-   }
-
-   /**
-    * @param state The human readable state text of an update message
-    */
-   public void setStateInfo(String stateInfo) {
-      this.stateInfo = stateInfo;
-   }
-
-   /**
-    * Access state of message on update().
-    * @return The human readable info text
-    */
-   public String getStateInfo() {
-      return this.stateInfo;
-   }
-
-   /**
-    * True if the message is OK on update(). 
-    */
-   public boolean isOk() {
-      return Constants.STATE_OK.equals(state);
-   }
-
-   /**
-    * True if the message was erased by timer or by a
-    * client invoking erase(). 
-    */
-   public boolean isErased() {
-      return Constants.STATE_ERASED.equals(state);
-   }
-
-   /**
-    * True if a timeout on this message occurred. 
-    * <p />
-    * Timeouts are spanned by the publisher and thrown by xmlBlaster
-    * on timeout to indicate for example
-    * STALE messages or any other user problem domain specific event.
-    */
-   public final boolean isTimeout() {
-      return Constants.STATE_TIMEOUT.equals(state);
-   }
-
-   /**
-    * True on cluster forward problems
-    */
-   public final boolean isForwardError() {
-      return Constants.STATE_FORWARD_ERROR.equals(state);
-   }
-
-   /**
     * @param volatile true/false
     */
    public void setVolatile(boolean volatileFlag) {
-      this.volatileFlag = volatileFlag;
+      if (volatileFlag) {
+         setLifeTime(0L);
+         setForceDestroy(false);
+      }
+      else {
+         setLifeTime(maxLifeTime);
+         setForceDestroy(false);
+      }
+      //this.volatileFlag = volatileFlag;
    }
 
    /**
     * @return true/false
     */
    public boolean isVolatile() {
-      return this.volatileFlag;
+      return getLifeTime()==0L && isForceDestroy()==false;
+      //return this.volatileFlag;
    }
 
-   /**
+   /*
     * @return true If the default is the current setting. 
-    */
    public boolean isVolatileDefault() {
       return this.DEFAULT_isVolatile == this.volatileFlag;
    }
+    */
 
    /**
     * If Pub/Sub style update: contains the subscribe ID which caused this update
@@ -334,14 +250,15 @@ public final class MsgQosData implements java.io.Serializable
     * @return readonly Once published the message can't be changed. 
     */
    public void setReadonly(boolean readonly) {
-      this.readonly = readonly;
+      TopicProperty prop = getTopicProperty();
+      prop.setReadonly(true);
    }
 
    /**
     * @return true/false
     */
    public boolean isReadonly() {
-      return readonly;
+      return getTopicProperty().isReadonly();
    }
 
    /**
@@ -431,78 +348,6 @@ public final class MsgQosData implements java.io.Serializable
    }
 
    /**
-    * Adds a new route hop to the QoS of this message. 
-    * The added routeInfo is assumed to be one stratum closer to the master
-    * So we will rearrange the stratum here. The given stratum in routeInfo
-    * is used to recalculate the other nodes as well.
-    */
-   public void addRouteInfo(RouteInfo routeInfo) {
-      if (routeInfo == null) {
-         log.error(ME, "Adding null routeInfo");
-         return;
-      }
-
-      this.routeNodes = null; // clear cache
-
-      if (routeNodeList == null)
-         routeNodeList = new ArrayList();
-      routeNodeList.add(routeInfo);
-
-      // Set stratum to new values
-      int offset = routeInfo.getStratum();
-      if (offset < 0) offset = 0;
-
-      for (int ii=routeNodeList.size()-1; ii>=0; ii--) {
-         RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
-         ri.setStratum(offset++);
-      }
-   }
-
-   /**
-    * @return never null, but may have length==0
-    */
-   public RouteInfo[] getRouteNodes() {
-      if (routeNodeList == null)
-         this.routeNodes = ROUTE_INFO_ARR_DUMMY;
-      if (this.routeNodes == null)
-         this.routeNodes = (RouteInfo[]) routeNodeList.toArray(new RouteInfo[routeNodeList.size()]);
-      return this.routeNodes;
-   }
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   public int count(NodeId nodeId) {
-      int count = 0;
-      if (routeNodeList == null)
-         return count;
-      for (int ii=0; ii<routeNodeList.size(); ii++) {
-         RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
-         if (ri.getNodeId().equals(nodeId))
-            count++;
-      }
-      return count;
-   }
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   public boolean dirtyRead(NodeId nodeId) {
-      int count = 0;
-      if (routeNodeList == null || nodeId == null)
-         return false;
-      for (int ii=0; ii<routeNodeList.size(); ii++) {
-         RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
-         if (ri.getNodeId().equals(nodeId)) {
-            return ri.getDirtyRead();
-         }
-      }
-      return false;
-   }
-
-   /**
     * Message priority.
     * @return priority 0-9
     * @see org.xmlBlaster.engine.helper.Constants
@@ -587,6 +432,9 @@ public final class MsgQosData implements java.io.Serializable
       if (lifeTime == Long.MAX_VALUE || lifeTime <= 0L) {
          return false; // lifes forever
       }
+      if (getRcvTimestamp() == null) {
+         return false;
+      }
       if (isExpired) { // cache
          return true;
       }
@@ -618,24 +466,6 @@ public final class MsgQosData implements java.io.Serializable
       return maxLifeTime;
    }
 
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   public void setRcvTimestamp(Timestamp rcvTimestamp) {
-      this.rcvTimestamp = rcvTimestamp;
-   }
-
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   public Timestamp getRcvTimestamp() {
-      return rcvTimestamp;
-   }
-
    /**
     * Tagged form of message receive, e.g.:<br />
     * &lt;rcvTimestamp nanos='1007764305862000004'/>
@@ -643,7 +473,8 @@ public final class MsgQosData implements java.io.Serializable
     * @see org.xmlBlaster.util.Timestamp
     */
    public String getXmlRcvTimestamp() {
-      if (recieveTimestampHumanReadable)
+      if (getRcvTimestamp() == null) return "";
+      if (receiveTimestampHumanReadable)
          return getRcvTimestamp().toXml(null, true);
       else
          return getRcvTimestamp().toXml();
@@ -656,14 +487,22 @@ public final class MsgQosData implements java.io.Serializable
     * @deprecated Use getXmlRcvTimestamp()
     */
    public String getRcvTime() {
-      return rcvTimestamp.toString();
+      return (rcvTimestamp != null) ? rcvTimestamp.toString() : "";
    }
 
    /**
-    * Set timestamp to current time.
+    * @param forceDestroy true Force message destroy on message expire<br />
+    *        false On message expiry messages which are already in callback queues are delivered.
     */
-   public void touchRcvTimestamp() {
-      rcvTimestamp = new RcvTimestamp();
+   public void setForceDestroy(boolean forceDestroy) {
+      this.forceDestroy = forceDestroy;
+   }
+
+   /**
+    * @return true/false, defaults to false
+    */
+   public boolean isForceDestroy() {
+      return this.forceDestroy;
    }
 
    /**
@@ -675,7 +514,29 @@ public final class MsgQosData implements java.io.Serializable
     *         null if Publish/Subscribe style is used
     */
    public ArrayList getDestinations() {
-      return destinationList;
+      return this.destinationList;
+   }
+
+   public int getNumDestinations() {
+      if (this.destinationList == null) {
+         return 0;
+      }
+      return this.destinationList.size();
+   }
+
+   /**
+    * @return The destinations in array form
+    */
+   public Destination[] getDestinationArr() {
+      if (this.destinationArrCache == null) {
+         if (this.destinationList == null) {
+            this.destinationArrCache = EMPTY_DESTINATION_ARR;
+         }
+         else {
+            this.destinationArrCache = (Destination[])this.destinationList.toArray(new Destination[this.destinationList.size()]);
+         }
+      }
+      return this.destinationArrCache;
    }
 
    /**
@@ -683,8 +544,49 @@ public final class MsgQosData implements java.io.Serializable
     */
    public void addDestination(Destination destination) {
       if (destination == null) return;
-      if (destinationList == null) destinationList = new ArrayList();
-      destinationList.add(destination);
+      if (this.destinationList == null) this.destinationList = new ArrayList();
+      this.destinationArrCache = null;
+      this.destinationList.add(destination);
+   }
+
+   /**
+    * Remove a destination. 
+    */
+   public void removeDestination(Destination destination) {
+      if (destination == null || this.destinationList == null) return;
+      this.destinationArrCache = null;
+      this.destinationList.remove(destination);
+      if (this.destinationList.size() < 1) {
+         this.destinationList = null;
+      }
+   }
+
+   /**
+    * The getTopicProperty() creates an initial TopicHandler,
+    * this method allows to check without creation
+    */
+   public boolean hasTopicProperty() {
+      return this.topicProperty != null;
+   }
+
+   /**
+    * The configuration for the TopicHandler (topic)
+    * @return never null (a default is created if none is available)
+    */
+   public TopicProperty getTopicProperty() {
+      if (this.topicProperty == null) {
+         this.topicProperty = new TopicProperty(glob);
+      }
+      return this.topicProperty;
+   }
+
+   /**
+    * @param The new topicProperty, usually you should create the instance with getTopicProperty()
+    *        to not loose any readonly settings.<br />
+    *        null resets the settings
+    */
+   public void setTopicProperty(TopicProperty topicProperty) {
+      this.topicProperty = topicProperty;
    }
 
    /**
@@ -706,13 +608,20 @@ public final class MsgQosData implements java.io.Serializable
       return factory.writeObject(this, extraOffset);
    }
 
+   /**
+    * Returns a shallow clone, you can change savely all basic or immutable types
+    * like boolean, String, int.
+    * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
+    */
+   public Object clone() {
+      return super.clone();
+   }
 
    /**
-    * Sets the global object (used whendeserializing the object)
+    * Sets the global object (used when deserializing the object)
     */
    public void setGlobal(Global glob) {
-      this.glob = glob;
-      this.log = glob.getLog("core");
+      super.setGlobal(glob);
       this.factory = glob.getMsgQosFactory();
    }
 }
