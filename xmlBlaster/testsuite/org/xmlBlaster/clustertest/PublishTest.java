@@ -314,6 +314,7 @@ public class PublishTest extends TestCase {
          assertEquals("frodo is reachable again, subscribe should work", 1, updateCounterFrodo);
       }
       catch (XmlBlasterException e) {
+         e.printStackTrace();
          fail("PublishToBilbo-Exception: " + e.toString());
       }
       finally {
