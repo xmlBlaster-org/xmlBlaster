@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.19 2002/06/18 18:17:33 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.20 2002/06/22 12:20:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -57,7 +57,7 @@ public class HttpIORServer extends Thread
       this.log = glob.getLog("protocol");
       this.ip_addr = ip_addr;
       this.HTTP_PORT = port;
-      this.ME += "-" + glob.getId();
+      this.ME +=  this.glob.getLogPraefixDashed();
       if (log.CALL) log.call(ME, "Creating new HttpServer");
       start();
    }
@@ -157,12 +157,13 @@ public class HttpIORServer extends Thread
  */
 class HandleRequest extends Thread
 {
-   private String ME = "HandleRequest";
+   private final String ME;
    private final Global glob;
    private final LogChannel log;
    private final Socket sock;
    private final Hashtable knownRequests;
    private final String CRLF = "\r\n";
+   private final String VERSION = "1.0";
 
 
    /**
@@ -170,6 +171,7 @@ class HandleRequest extends Thread
    public HandleRequest(Global glob, LogChannel log, Socket sock, Hashtable knownRequests)
    {
       this.glob = glob;
+      this.ME = "HandleRequest" + this.glob.getLogPraefixDashed();
       this.log = log;
       this.sock = sock;
       this.knownRequests = knownRequests;
@@ -187,16 +189,20 @@ class HandleRequest extends Thread
       if (log.CALL) log.call(ME, "Handling client request, accessing AuthServer IOR ...");
       BufferedReader iStream = null;
       DataOutputStream oStream = null;
+      String clientRequest = "";
       try {
          iStream = new BufferedReader(new InputStreamReader(sock.getInputStream()));
          oStream = new DataOutputStream(sock.getOutputStream());
 
-         String clientRequest = iStream.readLine();
+         clientRequest = iStream.readLine();
          iStream.readLine(); // "\r\n"
 
+         if (log.CALL) log.call(ME, "Request from client " + getSocketInfo());
+
          if (clientRequest == null) {
-            errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            log.warn(ME, "Empty client request");
+            String info = "Empty request ignored " + getSocketInfo();
+            errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true, info);
+            log.warn(ME, info);
             return;
          }
 
@@ -204,8 +210,9 @@ class HandleRequest extends Thread
 
          StringTokenizer toks = new StringTokenizer(clientRequest);
          if (toks.countTokens() != 3) {
-            errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            log.warn(ME, "Wrong syntax in client request: '" + clientRequest + "'");
+            String info = "Wrong syntax in client request: '" + clientRequest + "', closing " + getSocketInfo() + " connection.";
+            errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true, info);
+            log.warn(ME, info);
             return;
          }
 
@@ -228,8 +235,9 @@ class HandleRequest extends Thread
                if (log.CALL) log.call(ME, "Request is" + uri.toXml());
             }
             catch (XmlBlasterException e) {
-               log.call(ME, e.toString());
-               errorResponse(oStream, "HTTP/1.1 400 Bad Request", e.toString(), true);
+               String info = getSocketInfo() + ": " + e.toString();
+               log.call(ME, info);
+               errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true, info);
                return;
             }
             finally {
@@ -246,21 +254,23 @@ class HandleRequest extends Thread
 
          // RFC 2068 enforces minimum implementation GET and HEAD
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
-            errorResponse(oStream, "HTTP/1.1 501 Method Not Implemented", "Allow: GET", true);
-            log.warn(ME, "Invalid method in client request: '" + clientRequest + "'");
+            String info = "Invalid method in client " + getSocketInfo() + " request: '" + clientRequest + "'";
+            errorResponse(oStream, "HTTP/1.1 501 Method Not Implemented", "Allow: GET", true, info);
+            log.warn(ME, info);
             return;
          }
 
          String responseStr = (String)knownRequests.get(resource.trim());
 
          if (responseStr == null) {
-            errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true);
-            log.warn(ME, "Ignoring unknown data from client request: '" + clientRequest + "'");
+            String info = "Ignoring unknown data '" + resource.trim() + "' from client " + getSocketInfo() + " request: '" + clientRequest + "'";
+            errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true, info);
+            log.warn(ME, info);
             return;
          }
 
          // java.net.HttpURLConnection.HTTP_OK:
-         errorResponse(oStream, "HTTP/1.1 200 OK", null, false);
+         errorResponse(oStream, "HTTP/1.1 200 OK", null, false, null);
          String length = "Content-Length: " + responseStr.length();
          oStream.write((length+CRLF).getBytes());
          //oStream.write(("Transfer-Encoding: chunked"+CRLF).getBytes()); // java.io.IOException: Bogus chunk size
@@ -272,7 +282,7 @@ class HandleRequest extends Thread
          oStream.flush();
       }
       catch (IOException e) {
-         log.error(ME, "Problems with sending IOR to client: " + e.toString());
+         log.error(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }
       finally {
@@ -283,12 +293,31 @@ class HandleRequest extends Thread
    }
 
 
-   private void errorResponse(DataOutputStream oStream, String code, String extra, boolean body) throws IOException
+   private void errorResponse(DataOutputStream oStream, String code, String extra, boolean body, String info) throws IOException
    {
       oStream.write((code+CRLF).getBytes());
-      oStream.write(("Server: XmlBlaster HttpServer/1.0"+CRLF).getBytes());
+      oStream.write(("Server: XmlBlaster HttpServer/"+VERSION+CRLF).getBytes());
       if (extra != null) oStream.write((extra+CRLF).getBytes());
       oStream.write(("Connection: close"+CRLF).getBytes());
-      if (body) oStream.write((CRLF+"<html><head><title>"+code+"</title></head><body>"+code+"</body></html>").getBytes());
+      if (body) {
+        oStream.write((CRLF+"<html><head><title>"+code+"</title></head><body>" + 
+                      "<h2>XmlBlaster HTTP server " + VERSION + "</h2>" +
+                      "<p>" + code + "</p>" +
+                      "<p>" + info + "</p>" +
+                      "<p><a href='" + glob.getProperty().get("http.info.url", "http://www.xmlBlaster.org") + "'>Info</a></p>" +
+                      "</body></html>").getBytes());
+      }
+   }
+
+   private String getSocketInfo() {
+      StringBuffer sb = new StringBuffer(196);
+      if (sock == null)
+         return "";
+      sb.append(sock.getInetAddress().getHostAddress());
+      sb.append(":").append(sock.getPort());
+      sb.append(" -> ");
+      sb.append(sock.getLocalAddress().getHostAddress());
+      sb.append(":").append(sock.getLocalPort());
+      return sb.toString();
    }
 }
