@@ -618,6 +618,16 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
    }
 
    /**
+    * Check if the MsgUnitWrapper is owned by the TopicHandler (during construction). 
+    * NOTE: You need to synchronize this call over msgUnitCache
+    */
+   boolean isInMsgStore(MsgUnitWrapper msgUnitWrapper) {
+      synchronized(this.msgUnitWrapperUnderConstruction) {
+         return !this.msgUnitWrapperUnderConstruction.containsKey(new Long(msgUnitWrapper.getUniqueId()));
+      }
+   }
+
+   /**
     * Implements I_ChangeCallback, invoked by this.msgUnitCache.change() above
    public I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException {
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)entry;

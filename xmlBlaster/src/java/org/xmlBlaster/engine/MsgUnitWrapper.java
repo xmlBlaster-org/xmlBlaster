@@ -270,7 +270,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          if (this.referenceCounter > 0L) {
             if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
                // Update persistence store
-               if (count != 0) {
+               if (count != 0 && getTopicHandler().isInMsgStore(this)) {
                   I_MapEntry ret = cache.change(this, null);
                   //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
                   if (ret != this) {
