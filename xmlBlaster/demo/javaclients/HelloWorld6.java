@@ -4,6 +4,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -29,12 +30,12 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * This client connects to xmlBlaster in fail save mode and uses specific update handlers. 
  * <p />
  * In fail save mode the client will poll for the xmlBlaster server and
- * queue messages until the server is available.
- * Here you see how to configure the connection behavior hardcoded.
+ * queue messages until the server is available.<br />
+ * Further you see how to configure the connection behavior hard coded.
  * <p />
- * Invoke: java HelloWorld6
+ * Invoke: java HelloWorld6 -session.name jack/5
  * <p />
- * Invoke: java HelloWorld6 -session.name joe -passwd secret -dispatch/clientSide/protocol XML-RPC
+ * Invoke: java HelloWorld6 -session.name joe/2 -passwd secret -dispatch/clientSide/protocol XML-RPC
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld6
@@ -43,7 +44,6 @@ public class HelloWorld6
    private final LogChannel log;
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
-   private boolean connected;
 
    public HelloWorld6(final Global glob) {
       
@@ -62,40 +62,46 @@ public class HelloWorld6
          glob.init(args);
          */
 
-         ConnectQos qos = new ConnectQos(glob);
+         ConnectQos connectQos = new ConnectQos(glob);
+
+         ClientQueueProperty prop = new ClientQueueProperty(glob, null);
+         prop.setMaxEntries(10000);    // Client side queue up to 10000 entries if not connected
 
          Address address = new Address(glob);
          address.setDelay(4000L);      // retry connecting every 4 sec
          address.setRetries(-1);       // -1 == forever
          address.setPingInterval(0L);  // switched off
+         //address.setType("IOR");       // force CORBA (which is default)
 
-         qos.setAddress(address);
+         prop.setAddress(address);
+         connectQos.addClientQueueProperty(prop);
 
          CallbackAddress cbAddress = new CallbackAddress(glob);
          cbAddress.setDelay(4000L);      // retry connecting every 4 sec
          cbAddress.setRetries(-1);       // -1 == forever
          cbAddress.setPingInterval(4000L); // ping every 4 seconds
-         qos.addCallbackAddress(cbAddress);
+         connectQos.addCallbackAddress(cbAddress);
 
+         connectQos.addClientQueueProperty(prop);
+
+         // We want to be notified about connection states:
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
                public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  connected = true;
                   conRetQos = connection.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   // we can access the queue via connectionHandler and for example erase the entries ...
                }
                public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
-                  connected = false;
                }
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD");
-                  connected = false;
                }
             });
 
-         conRetQos = con.connect(qos, new I_Callback() {
+         // We connect to xmlBlaster and register the callback handle:
+         this.conRetQos = con.connect(connectQos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString());
@@ -120,10 +126,8 @@ public class HelloWorld6
          });  // Login to xmlBlaster, default handler for updates
 
 
-         log.info(ME, "STATE=" + conRetQos.getInitialConnectionState());
-         connected = (conRetQos.getInitialConnectionState() == ConnectionStateEnum.ALIVE);
-         if (connected)
-            log.info(ME, "Connected as " + qos.getUserId() + " to xmlBlaster: " + conRetQos.getSessionName());
+         if (con.isAlive())
+            log.info(ME, "Connected as " + connectQos.getUserId() + " to xmlBlaster: " + this.conRetQos.getSessionName());
          else
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 
