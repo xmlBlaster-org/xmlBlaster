@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.BatchUpdateException;
+// import java.sql.BatchUpdateException;
 
 import java.util.Hashtable;
 
@@ -91,9 +91,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String nodesTableName = null;
    private String queuesTableName = null;
    private String entriesTableName = null;
-//   private boolean hasAdminPermission = true;
-
-//   private final int queueIncrement;
    private java.util.HashSet nodesCache;
    private String pingStatement;
    private String blobVarName;
@@ -107,7 +104,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     * tells wether the used database supports batch updates or not.
     */
-        private boolean supportsBatch = true;
+    private boolean supportsBatch = true;
+
+    /** forces the desactivation of batch mode when adding entries */
+    private boolean enableBatchMode = true;
 
    /**
     * @param JdbcConnectionPool the pool to be used for the connections to
@@ -200,6 +200,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       this.entriesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
       this.entriesTableName = this.entriesTableName.toUpperCase();
+      
+      this.enableBatchMode = this.pool.isBatchModeEnabled();
+
       this.nodesCache = new java.util.HashSet();
       this.pool.registerManager(this);
    }
@@ -802,9 +805,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param queueName The name of the queue on which to perform the operation
     * @param entry the object to be stored.
     *
-    * @return true on success
+    * @return true on success false if the entry was already in the table.
     *
-    * @throws SQLException if an error occured while adding the row
+    * @throws SQLException if an error other than double entry occured while adding the row
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
    private final boolean addSingleEntry(String queueName, String nodeId, I_Entry entry, Connection conn)
@@ -830,7 +833,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       
       if (this.log.DUMP)
          this.log.dump(ME, "addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
-
+      
       try {
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), req);
@@ -848,9 +851,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
          preStatement.setBinaryStream(8, blob_stream, blob.length); //(int)sizeInBytes);
          // preStatement.setBytes(8, blob);
-
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), preStatement.toString());
-
          int num = preStatement.executeUpdate();
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), "Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
@@ -932,15 +933,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    private int[] addEntriesSingleMode(Connection conn, String queueName, String nodeId, I_Entry[] entries)
       throws XmlBlasterException {
-      // entries, conn
+      // due to a problem in Postgres (implicit abortion of transaction by exceptions)
+      // we can't do everything in the same transaction. That's why we simulate a single 
+      // transaction by deleting the processed entries in case of a failure other than
+      // double entries exception.
       int i = 0;
       int[] ret = new int[entries.length];
       try {
-         if (this.log.TRACE) this.log.trace(ME, "addEntries adding each entry in single mode since an exception occured when using 'batch mode'");
+         if (this.log.TRACE) this.log.trace(ME, "addEntriesSingleMode adding each entry in single mode since an exception occured when using 'batch mode'");
          for (i=0; i < entries.length; i++) {
             if (addSingleEntry(queueName, nodeId, entries[i], conn)) ret[i] = 1; 
             else ret[i] = 0;
-            if (this.log.TRACE) this.log.trace(ME, "addEntries adding entry '" + i + "' in single mode succeeded");
+            if (this.log.TRACE) this.log.trace(ME, "addEntriesSingleMode adding entry '" + i + "' in single mode succeeded");
          }
          if (!conn.getAutoCommit()) conn.commit();
          return ret;
@@ -953,7 +957,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex2) {
-            this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+            this.log.error(ME, "addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
          }
          throw ex1;
       }
@@ -965,9 +969,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex2) {
-            this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+            this.log.error(ME, "addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
          }
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntries", "", ex1); 
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntriesSingleMode", "", ex1); 
       }
    }
 
@@ -997,10 +1001,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       Connection conn = null;
       try {
          conn = this.pool.getConnection();
-         if (conn.getAutoCommit()) conn.setAutoCommit(false);
-
-         if (!this.supportsBatch)
+         if (!this.supportsBatch || !this.enableBatchMode)
             return addEntriesSingleMode(conn, queueName, nodeId, entries);
+         if (conn.getAutoCommit()) conn.setAutoCommit(false);
 
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), req);
@@ -1047,7 +1050,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ex.printStackTrace(); // original stack trace
          }
          this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " + ex.toString());
-         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
+         if ((!this.supportsBatch || !this.enableBatchMode) ||
+            checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
          else { // check if the exception was due to an already existing entry by re
             return addEntriesSingleMode(conn, queueName, nodeId, entries);
@@ -1758,6 +1762,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   tableName the name of the table on which to delete the entries
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
+/*   
    public int[] deleteEntriesBatch(String queueName, String nodeId, long[] uniqueIds)
       throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntriesBatch"), "Entering");
@@ -1832,7 +1837,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
       }
    }
-
+*/
 
    /**
     * Deletes the entry specified

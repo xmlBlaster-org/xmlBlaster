@@ -12,22 +12,17 @@ import org.jutils.log.LogChannel;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
 import java.sql.DatabaseMetaData;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 // only for testing
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.enum.ErrorCode;
 
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
@@ -74,6 +69,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private int queryTimeout = 0; // wait indefinetely
    private int managerCount = 0;
    private boolean isShutdown = false;
+   private boolean enableBatchMode;
 
    /**
     * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
@@ -339,6 +335,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (Exception ex) {
          this.log.warn(ME, "the 'maxWaitingThreads' plugin-property is not parseable: '" + help + "' will be using the default '" + this.maxWaitingThreads + "'");
+      }
+
+      help = pluginProp.getProperty("enableBatchMode", "true");
+      try {
+         this.enableBatchMode = Boolean.getBoolean(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'enableBatchMode' plugin-property is not parseable: '" + help + "' will be using the default '" + this.enableBatchMode + "'");
       }
 
       // these should be handled by the JdbcManager
@@ -696,7 +700,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.info(ME, "establishing the connection");
          conn = DriverManager.getConnection(url, user, password);
          log.info(ME, "connection established. Sleeping 1 second");
-         Thread.currentThread().sleep(1000L);
+         Thread.sleep(1000L);
          log.info(ME, "finished");
       }
       catch (/*SQL*/Exception ex) {
@@ -736,6 +740,17 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.managerCount--;
       if (this.managerCount == 0) shutdown();
    }
+
+   /**
+    * The batch mode means that insertions in the database are made in batch mode,
+    * i.e. several entries in one sweep. This can increase perfomance significantly
+    * on some DBs.   
+    *    
+    * @return true if batch mode has been enabled, false otherwise (defaults to true).
+    */
+   public boolean isBatchModeEnabled() {
+      return this.enableBatchMode;
+   }   
 
 }
 

@@ -1397,7 +1397,7 @@ public class I_QueueTest extends TestCase {
          {
             this.log.trace(ME, "start test");
             int imax = 3; 
-            long msgSize = 2202010; // 2.1 MB
+            long msgSize = 202010;
             DummyEntry[] entries = new DummyEntry[imax];
             ArrayList list = new ArrayList();
 

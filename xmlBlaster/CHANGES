@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Added flag enableBatchMode in the jdbc queue plugins
+
+ o added storage of blob in DummyEntry (before it was a fictive size, now its complete size is stored/retrieved from the DB).
  o Moved to JacORB 2.0 beta 2 + (cvs) from 2003-09-14 15:00
    You can check out this version with:
     cvs -d :pserver:anonymous@www.jacorb.org/cvsroot/jacorb checkout -D '2003-09-14 15:00' JacORB

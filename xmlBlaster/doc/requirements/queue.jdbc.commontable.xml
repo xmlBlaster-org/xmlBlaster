@@ -175,6 +175,18 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
             <td>The maximum SQL statement length supported by this JDBC driver.
             If the JDBC meta data delivers this information this property is ignored.</td>
          </tr>
+         <tr>
+            <td>enableBatchMode</td>
+            <td>true</td>
+            <td>Tells the driver to make the addition of entries in batch mode, i.e. several entries are
+	        added in the same sweep. This can improve performance on some DB's significantly. The 
+		drawback is that it could loose performance and create noisy logs in the case you insert
+		several entries and one of them is already in the DB. Then everything would be rolled back
+		and repeated in single mode (we can not save the current state since PostGres implicitly
+		aborts transactions in case of an SQLException is thrown). If the DB used does not support
+		batch mode, then this option is ignored.
+	    </td>
+         </tr>
      </table>
    </configuration>
 
@@ -192,7 +204,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2003 01 28</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
