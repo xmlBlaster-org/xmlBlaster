@@ -27,6 +27,12 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
 /**
  * Default xmlBlaster handling of Sax callbacks and errors.<p />
  * You may use this as a base class for your SAX handling.
+ * <p>The encoding can be changed with <tt>xmlBlaster/encoding=<enc></tt> where
+ * this is typically "iso-8859-1" or "UTF-8"
+ * </p>
+ * <p>
+ * NOTE: Multibyte encoding "UTF-8" is currently not supported for xmlBlaster internal xml key and QoS markup!
+ * </p>
  */
 class Dll_Export Sax2Parser : public I_Parser, public DefaultHandler,
                               public virtual org::xmlBlaster::util::plugin::I_Plugin
