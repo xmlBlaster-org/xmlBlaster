@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.6 2002/05/19 12:55:44 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.7 2002/05/20 13:30:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -171,6 +171,19 @@ public class MsgQueueEntry
       return this.receiverSessionInfo;
    }
 
+   /**
+    * Access the unique login name of the receiver. 
+    * <p />
+    * The receiver of this message.
+    * @return loginName of the receiver.
+    *         If not known, an empty string "" is returned
+    */
+   public final String getReceiverName() {
+      if (this.receiverSubjectInfo != null)
+         return this.receiverSubjectInfo.getUniqueKey();
+      return "";
+   }
+
    public final MsgQueue getMsgQueue()
    {
       if (this.subscriptionInfo != null)
@@ -209,7 +222,7 @@ public class MsgQueueEntry
     * <p />
     * The sender of this message.
     * @return loginName of the data source which last updated this message
-    *         If not known, en empty string "" is returned
+    *         If not known, an empty string "" is returned
     */
    public final String getPublisherName() {
       if (publishQosCurrent.getSender() == null)
