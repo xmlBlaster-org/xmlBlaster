@@ -642,6 +642,7 @@ public class Global implements Cloneable
     */
    public final I_CallbackDriver getNativeCallbackDriver(String key)
    {
+      if (log.CALL) log.call(ME, "getNativeCallbackDriver(" + key + ")");
       return (I_CallbackDriver)nativeCallbackDriverMap.get(key);
    }
 
@@ -653,6 +654,7 @@ public class Global implements Cloneable
     */
    public final void addNativeCallbackDriver(String key, I_CallbackDriver driver)
    {
+      if (log.CALL) log.call(ME, "addNativeCallbackDriver(" + key + "," + driver.getName() + ")");
       nativeCallbackDriverMap.put(key, driver);
    }
 
@@ -664,6 +666,7 @@ public class Global implements Cloneable
     */
    public final void removeNativeCallbackDriver(String key)
    {
+      if (log.CALL) log.call(ME, "removeNativeCallbackDriver(" + key + ")");
       nativeCallbackDriverMap.remove(key);
    }
 
