@@ -28,9 +28,6 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * Created: Sat Jan 27 20:22:32 2001
- *
- * @author 
- * @version
  */
 
 public interface BlasterConnection  {
@@ -40,8 +37,8 @@ public interface BlasterConnection  {
        
        public String subscribe(String xmlKey, String qos) 
     throws XmlBlasterException;
-	
-	public void unSubscribe(String xmlKey, String qos) 
+        
+        public void unSubscribe(String xmlKey, String qos) 
     throws XmlBlasterException;
     */
 
@@ -49,7 +46,7 @@ public interface BlasterConnection  {
      * Fetch a message from server
      */
     public MessageUnit[] get(String xmlKey, String qos) 
-	throws XmlBlasterException;
+        throws XmlBlasterException;
     
     /**
      * Publish one message

@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.12 2002/05/01 21:40:14 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.13 2002/05/19 12:55:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -25,7 +25,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements I_InvocationRecorder
@@ -235,7 +235,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -255,7 +255,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * For I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -274,7 +274,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -294,7 +294,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
@@ -313,7 +313,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -333,7 +333,7 @@ public class InvocationRecorder implements I_InvocationRecorder
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -354,7 +354,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * For I_InvocationRecorder interface
     * @return false No connection to server, off line recording messages.
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public boolean ping()
    {

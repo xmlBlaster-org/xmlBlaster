@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.8 2001/12/08 22:54:53 ruff Exp $
+ * Version:   $Id: ConnectionDescriptor.java,v 1.9 2002/05/19 12:55:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -164,7 +164,7 @@ public class ConnectionDescriptor {
    }
 
    /**
-    * @return
+    * @return Intercation string
     */
    public String getInteraction() {
       return interaction;
@@ -179,7 +179,6 @@ public class ConnectionDescriptor {
 
    /**
     * TODO: pass through to PoolManager
-    * @return
     */
    public long getConnectionlifespan() {
       return connectionlifespan;
@@ -193,14 +192,12 @@ public class ConnectionDescriptor {
    }
 
    /**
-    * @return
     */
    public String getDocumentrootnode() {
       return documentrootnode;
    }
 
    /**
-    * @return
     */
    public String getRowrootnode() {
       return rowrootnode;

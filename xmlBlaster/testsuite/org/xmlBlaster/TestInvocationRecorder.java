@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.18 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.19 2002/05/19 12:55:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -143,7 +143,6 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -157,7 +156,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * For I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -168,7 +167,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -180,7 +179,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
@@ -192,7 +191,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -204,7 +203,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
    /**
     * @return dummy to match I_InvocationRecorder interface
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {

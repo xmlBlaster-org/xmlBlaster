@@ -32,9 +32,6 @@ import javax.resource.spi.security.PasswordCredential;
  *
  *
  * Created: Fri Jan 26 21:04:58 2001
- *
- * @author 
- * @version
  */
 
 public class BlasterCred  {
@@ -42,45 +39,45 @@ public class BlasterCred  {
     public String pwd;
 
     public BlasterCred() {
-	
+        
     }
         /**
      * Get our own simple cred
      */
     public static BlasterCred getBlasterCred(ManagedConnectionFactory mcf,
-					     Subject subject, 
-					     ConnectionRequestInfo info) 
-	throws SecurityException {
+                                             Subject subject, 
+                                             ConnectionRequestInfo info) 
+        throws SecurityException {
 
-	BlasterCred bc = new BlasterCred();
-	if (subject == null && info !=null ) {
-	    // Credentials specifyed on connection request
-	    bc.name = ((BlasterConnectionRequestInfo)info).getUserName();
-	    bc.pwd = ((BlasterConnectionRequestInfo)info).getPassword();
-	} else if (subject != null) {
-	    // Credentials from appserver
-	    Set creds = 
-		subject.getPrivateCredentials(PasswordCredential.class);
-	    PasswordCredential pwdc = null;
-	    Iterator credentials = creds.iterator();
-	    while(credentials.hasNext()) {
-		PasswordCredential curCred = 
-		    (PasswordCredential) credentials.next();
-		if (curCred.getManagedConnectionFactory().equals(mcf)) {
-		    pwdc = curCred;
-		    break;
-		}
-	    }
-	    if(pwdc == null) {
-		// No hit - we do need creds
-		throw new SecurityException("No Passwdord credentials found");
-	    }
-	    bc.name = pwdc.getUserName();
-	    bc.pwd = new String(pwdc.getPassword());
-	} else {
-	    throw new SecurityException("No Subject or ConnectionRequestInfo set, could not get credentials");
-	}
-	return bc;
+        BlasterCred bc = new BlasterCred();
+        if (subject == null && info !=null ) {
+            // Credentials specifyed on connection request
+            bc.name = ((BlasterConnectionRequestInfo)info).getUserName();
+            bc.pwd = ((BlasterConnectionRequestInfo)info).getPassword();
+        } else if (subject != null) {
+            // Credentials from appserver
+            Set creds = 
+                subject.getPrivateCredentials(PasswordCredential.class);
+            PasswordCredential pwdc = null;
+            Iterator credentials = creds.iterator();
+            while(credentials.hasNext()) {
+                PasswordCredential curCred = 
+                    (PasswordCredential) credentials.next();
+                if (curCred.getManagedConnectionFactory().equals(mcf)) {
+                    pwdc = curCred;
+                    break;
+                }
+            }
+            if(pwdc == null) {
+                // No hit - we do need creds
+                throw new SecurityException("No Passwdord credentials found");
+            }
+            bc.name = pwdc.getUserName();
+            bc.pwd = new String(pwdc.getPassword());
+        } else {
+            throw new SecurityException("No Subject or ConnectionRequestInfo set, could not get credentials");
+        }
+        return bc;
     }
 } // BlasterCred
 

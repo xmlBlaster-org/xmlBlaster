@@ -7,7 +7,13 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * This client connects to xmlBlaster and gets synchronous a message and disconnects. 
- * Invoke: java HelloWorld
+ * <p />
+ * Invoke:
+ * <pre>
+ *   cd xmlBlaster                  // Change to xmlBlaster distribution directory
+ *   java -jar libXmlBlaster.jar    // Start the server
+ *   java HelloWorld                // Start this demo
+ * </pre>
  */
 public class HelloWorld
 {

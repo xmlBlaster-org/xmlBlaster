@@ -75,9 +75,10 @@ JUTILS_PACKGS =
 
 
 
-TEST_PACKGS = testsuite.org.xmlBlaster
+TEST_PACKGS = testsuite.org.xmlBlaster classtest clustertest
 
-DEMO_PACKGS = javaclients javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet http.dhtml.systemInfo
+# We use special notation demo/javaclients/*.java because of HelloWorld.java is without package name
+DEMO_PACKGS = demo/javaclients/*.java javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet http.dhtml.systemInfo
 
 DOC_PACKGS = doc.requirements
 
@@ -99,7 +100,7 @@ doc: javadoc
 
 javadoc:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
-	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo $(PACKGS) $(JUTILS_PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo:./testsuite/org/xmlBlaster $(PACKGS) $(JUTILS_PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
 	# making requirements.html from xml requirements:
 	( cd ${SRC_DOCS_DIR}; make doc)
 	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)

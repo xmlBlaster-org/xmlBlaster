@@ -25,7 +25,6 @@ import javax.resource.ResourceException;
  * Created: Fri Jan 26 13:28:54 2001
  *
  * @author Peter Antman
- * @version
  */
 
 public interface BlasterConnectionFactory  {

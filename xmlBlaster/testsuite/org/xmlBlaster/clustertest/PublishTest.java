@@ -24,7 +24,7 @@ import junit.framework.*;
  * </pre>
  * NOTE: asserts() in update() methods are routed back to server and are not handled
  *       by the junit testsuite, so we check double (see code).
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">Cluster requirement</a>
  */
 public class PublishTest extends TestCase {
    private String ME = "PublishTest";

@@ -32,58 +32,55 @@ import java.util.Stack;
  *
  *
  * Created: Mon Jan 29 22:15:35 2001
- *
- * @author 
- * @version
  */
 
 public class PseudoUserPool  {
     Hashtable users = new Hashtable();
     public PseudoUserPool() {
-	
+        
     }
 
     public String popPseudoUser(String name) {
-	UserPool up = null;
-	synchronized(users) {
-	    if(users.containsKey(name)) {
-		up = (UserPool)users.get(name);
-	    } else {
-		up = new UserPool();
-		up.name = name;
-		users.put(name,up);
-	    }
-	}
-	return up.pop();
+        UserPool up = null;
+        synchronized(users) {
+            if(users.containsKey(name)) {
+                up = (UserPool)users.get(name);
+            } else {
+                up = new UserPool();
+                up.name = name;
+                users.put(name,up);
+            }
+        }
+        return up.pop();
     }
 
     public void push(String name, String pseudoUser) {
-	UserPool up = (UserPool)users.get(name);
-	if (up != null)
-	    up.push(pseudoUser);
-	// Should never be null
+        UserPool up = (UserPool)users.get(name);
+        if (up != null)
+            up.push(pseudoUser);
+        // Should never be null
     }
 
     // Do we need synchronization here - I think not because it
     // will not matter if we miss an n or so. 
     class UserPool {
-	int n = 0;
-	public String name;
-	Stack pseudousers = new Stack();
+        int n = 0;
+        public String name;
+        Stack pseudousers = new Stack();
 
-	public String pop() {
-	    //String user = null;
-	    synchronized(pseudousers) {
-		if (pseudousers.empty())
-		    return name + "_" + Integer.toString(++n);
-		else 
-		    return (String)pseudousers.pop();
-	    }
-	}
+        public String pop() {
+            //String user = null;
+            synchronized(pseudousers) {
+                if (pseudousers.empty())
+                    return name + "_" + Integer.toString(++n);
+                else 
+                    return (String)pseudousers.pop();
+            }
+        }
 
-	public void push(String pu) {
-	    pseudousers.push(pu);
-	}
+        public void push(String pu) {
+            pseudousers.push(pu);
+        }
     }
     
 } // PseudoUserPool

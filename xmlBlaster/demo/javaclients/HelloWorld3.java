@@ -20,6 +20,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * Invoke: java HelloWorld3
  * <p />
  * Invoke: java HelloWorld3 -loginName joe -passwd secret
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
  */
 public class HelloWorld3 implements I_Callback
 {

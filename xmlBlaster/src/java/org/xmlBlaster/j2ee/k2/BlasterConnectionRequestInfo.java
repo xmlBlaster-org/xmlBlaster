@@ -24,25 +24,22 @@ import javax.resource.spi.ConnectionRequestInfo;
  *
  *
  * Created: Fri Jan 26 20:55:32 2001
- *
- * @author 
- * @version
  */
 
 public class BlasterConnectionRequestInfo implements ConnectionRequestInfo {
     private String userName;
     private String password;
     public BlasterConnectionRequestInfo(String userName, String passwd) {
-	this.userName = userName;
-	this.password =passwd;
+        this.userName = userName;
+        this.password =passwd;
     }
     
     public String getUserName() {
-	return userName;
+        return userName;
     }
     
     public String getPassword() {
-	return password;
+        return password;
     }
     
     public boolean equals(Object obj) {

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.17 2002/05/16 20:08:13 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.18 2002/05/19 12:55:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Implements the xmlBlaster server CORBA interface.
  * <p />
- * @see xmlBlaster.idl
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
  */
 public class ServerImpl extends ServerPOA {            // inheritance approach
@@ -77,7 +77,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -97,7 +97,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String publish(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -116,7 +116,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
@@ -147,7 +147,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
@@ -170,7 +170,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -190,7 +190,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * Synchronous access
     * @return content
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {

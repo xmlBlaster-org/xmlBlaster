@@ -52,7 +52,7 @@ public interface I_ClientPlugin {
     * @param str The the received message (which is probably crypted)
     * @return The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #exportMessage(str)
+    * @see #exportMessage(String)
     */
    public String importMessage(String str) throws XmlBlasterException;
    /** Use this to import (decrypt) the content */

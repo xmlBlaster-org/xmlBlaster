@@ -32,8 +32,8 @@ import javax.servlet.http.*;
  * This could (should) be an interface and the different https methods
  * should be implemented in derived classes, but this is better performing :-)
  * <p />
+ * See Java Servlet Programming from Jason Hunter
  * @author Marcel Ruff ruff@swand.lake.de
- * @see Java Servlet Programming from Jason Hunter
  */
 public class HttpPushHandler
 {
@@ -128,7 +128,7 @@ public class HttpPushHandler
       if (this.head == null) {
          if (!isApplet)
             this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
-				 "<HTML>\n" +
+                                 "<HTML>\n" +
           "<HEAD>\n" +
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
           "   <meta http-equiv='Pragma' content='no-cache'>\n" +

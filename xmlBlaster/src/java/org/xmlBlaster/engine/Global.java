@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.10 2002/05/16 15:38:54 ruff Exp $
+Version:   $Id: Global.java,v 1.11 2002/05/19 12:55:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -76,8 +76,9 @@ public final class Global extends org.xmlBlaster.util.Global
 
    /**
     * Calls super.init and checks the environment for "cluster.node.id"
+    * <p />
+    * See private org.xmlBlaster.Main#createNodeId()
     * @return 1 Show usage, 0 OK, -1 error
-    * @see org.xmlBlaster.Main#createNodeId()
     */
    public int init(String[] args) {
       int ret = super.init(args);
@@ -207,7 +208,8 @@ public final class Global extends org.xmlBlaster.util.Global
     * Sets the unique node id of this xmlBlaster server instance (needed for clustering). 
     * <p />
     * The new node ID is only set if my current instance is null!
-    * @see org.xmlBlaster.Main#createNodeId()
+    * <p />
+    * See private org.xmlBlaster.Main#createNodeId()
     */
    public void setUniqueNodeIdName(String uniqueNodeIdName) {
       if (nodeId == null && uniqueNodeIdName != null) {

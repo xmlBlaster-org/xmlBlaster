@@ -35,22 +35,19 @@ import javax.resource.spi.ManagedConnection;
  *
  *
  * Created: Mon Jan 29 22:45:57 2001
- *
- * @author 
- * @version
  */
 
 public class BlasterConnectionManager implements ConnectionManager{
     
     public BlasterConnectionManager() {
-	
+        
 
     }
     public Object allocateConnection(ManagedConnectionFactory mcf,
-				     ConnectionRequestInfo cxRequestInfo) 
-	throws ResourceException{
-	ManagedConnection mc = mcf.createManagedConnection(null,cxRequestInfo);
-	return mc.getConnection(null,cxRequestInfo);
+                                     ConnectionRequestInfo cxRequestInfo) 
+        throws ResourceException{
+        ManagedConnection mc = mcf.createManagedConnection(null,cxRequestInfo);
+        return mc.getConnection(null,cxRequestInfo);
 
     }
 } // BlasterConnectionManager

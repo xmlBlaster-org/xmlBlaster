@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.9 2002/05/01 21:39:52 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.10 2002/05/19 12:55:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -51,7 +51,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    /**
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
    {
@@ -83,7 +83,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     * you loose the application level hand shake.
     *
     * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {

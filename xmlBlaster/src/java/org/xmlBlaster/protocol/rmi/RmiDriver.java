@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.22 2002/05/11 09:36:34 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.23 2002/05/19 12:55:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -78,8 +78,8 @@ import java.rmi.AlreadyBoundException;
  * Another option is to include the directory of xmlBlaster.policy into
  * your CLASSPATH.
  *
- * @see http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html
- * @see http://archives.java.sun.com/archives/rmi-users.html
+ * @see <a href="http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html" target="others">RMI FAQ</a>
+ * @see <a href="http://archives.java.sun.com/archives/rmi-users.html" target="others">RMI USERS</a>
  */
 public class RmiDriver implements I_Driver
 {

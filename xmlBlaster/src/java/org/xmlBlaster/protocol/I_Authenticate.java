@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.5 2002/03/13 16:41:22 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.6 2002/05/19 12:55:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.ConnectReturnQos;
  * All login/logout or connect/disconnect calls access xmlBlaster's
  * authentication plugins through these methods.
  * This interface is implemented by authentication/Authenticate.java
- * @see xmlBlaster.idl
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.authentication.Authenticate
  * @author ruff@swand.lake.de
  */

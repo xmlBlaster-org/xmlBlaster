@@ -82,7 +82,7 @@ public class PluginLoader {
     * @param String The type of the plugin, e.g. "a2Blaster"
     * @param String The version of the plugin, e.g. "1.0"
     * @return I_ClientPlugin
-    * @exception Exception Thrown if the plugin wasn't loadable or initializable
+    * @exception XmlBlasterException Thrown if the plugin wasn't loadable or initializable
     */
    public synchronized I_ClientPlugin getClientPlugin(String mechanism, String version) throws XmlBlasterException
    {

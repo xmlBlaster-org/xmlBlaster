@@ -87,9 +87,6 @@ import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
  *
  *
  * Created: Fri Jan 26 21:03:54 2001
- *
- * @author 
- * @version
  */
 
 public class BlasterManagedConnection implements ManagedConnection {

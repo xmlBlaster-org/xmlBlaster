@@ -46,7 +46,7 @@ public class AuthenticateImpl
 
    /**
     * Do login to xmlBlaster.
-    * @see org.xmlBlaster.authentication.Authenticate.login()
+    * @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQos,String)
     */
    public String login(String loginName, String passwd,
                        String qos_literal, String sessionId)

@@ -35,7 +35,6 @@ import org.xmlBlaster.j2ee.k2.client.*;
  * Created: Fri Jan 26 13:28:54 2001
  *
  * @author Peter Antman
- * @version
  */
 
 public class BlasterConnectionFactoryImpl  implements BlasterConnectionFactory,
@@ -55,10 +54,10 @@ Serializable, Referenceable{
     
     public BlasterConnectionFactoryImpl(ManagedConnectionFactory mcf,
                           ConnectionManager cm) {
-	this.mcf = mcf;
-	this.cm = cm;
+        this.mcf = mcf;
+        this.cm = cm;
         if (cm == null) {
-	    // This is standalone usage, no appserver
+            // This is standalone usage, no appserver
             this.cm = new BlasterConnectionManager();
         } else {
             this.cm = cm;
@@ -68,20 +67,20 @@ Serializable, Referenceable{
      * Container managed login
      */
     public BlasterConnection getConnection() throws ResourceException{
-	return (BlasterConnection) cm.allocateConnection(mcf, null);
+        return (BlasterConnection) cm.allocateConnection(mcf, null);
     }
     
     /**
      * Client managed login
      */
     public BlasterConnection getConnection(String userName, String password) throws ResourceException{
-	ConnectionRequestInfo info =
-	    new BlasterConnectionRequestInfo(userName, password);
-	Object o = cm.allocateConnection(mcf, info);
-	System.out.println(o);
-	return  (BlasterConnection)o;
-	//return (BlasterConnection) cm.allocateConnection(mcf, info);
-	    
+        ConnectionRequestInfo info =
+            new BlasterConnectionRequestInfo(userName, password);
+        Object o = cm.allocateConnection(mcf, info);
+        System.out.println(o);
+        return  (BlasterConnection)o;
+        //return (BlasterConnection) cm.allocateConnection(mcf, info);
+            
     }
 
     public void setReference(Reference reference) {

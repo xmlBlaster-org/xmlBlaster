@@ -7,7 +7,7 @@ See:       persistentWindow/index.html and demo/http/svg/systemInfo/northFrame.h
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
-// @see xmlBlaster.idl
+// @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
 
 
 /**

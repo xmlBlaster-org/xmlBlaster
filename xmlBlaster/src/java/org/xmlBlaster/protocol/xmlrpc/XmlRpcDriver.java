@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.29 2002/05/11 09:36:34 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.30 2002/05/19 12:55:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -44,7 +44,6 @@ import java.io.IOException;
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
- * @see
  */
 public class XmlRpcDriver implements I_Driver
 {

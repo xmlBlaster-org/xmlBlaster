@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.24 2002/05/11 09:36:23 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.25 2002/05/19 12:55:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -351,8 +351,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Does a logout and removes the callback server.
     * <p />
     * @param sessionId The client sessionId
-    * @exception XmlBlasterException If sessionId is invalid
-    */
+    */       
    public boolean logout()
    {
       if (Log.CALL) Log.call(ME, "Entering logout/disconnect: id=" + sessionId);
@@ -644,7 +643,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
    /**
     * Check server.
-    * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String qos) throws ConnectionException, XmlBlasterException
    {
@@ -665,7 +664,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The update method.
     * <p />
     * Gets invoked from xmlBlaster callback
-    * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
     /*
    public String[] update(MessageUnit[] arr) throws XmlBlasterException

@@ -24,29 +24,26 @@ import javax.resource.spi.ManagedConnectionMetaData;
  *
  *
  * Created: Mon Jan 29 22:09:23 2001
- *
- * @author 
- * @version
  */
 
 public class BlasterMetaData  implements ManagedConnectionMetaData{
     private BlasterManagedConnection mc;
     
     public BlasterMetaData(BlasterManagedConnection mc) {
-	this.mc = mc;
+        this.mc = mc;
     }
     public String getEISProductName() throws ResourceException {
-	return "XmlBlaster";
+        return "XmlBlaster";
     }
 
     public String getEISProductVersion() throws ResourceException {
-	return "0.79";//Is this possible to get another way
+        return "0.79";//Is this possible to get another way
     }
 
     public int getMaxConnections() throws ResourceException {
-	// Dont know how to get this, from XmlBlaster, we
-	// set it to unlimited
-	return 0;
+        // Dont know how to get this, from XmlBlaster, we
+        // set it to unlimited
+        return 0;
     }
     
     public String getUserName() throws ResourceException {

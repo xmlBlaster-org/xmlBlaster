@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.25 2002/05/11 09:36:24 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.26 2002/05/19 12:55:41 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -257,7 +257,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Does a logout. 
     * <p />
     * @param sessionId The client sessionId
-    * @exception XmlBlasterException If sessionId is invalid
     */
    public boolean logout()
    {
@@ -624,7 +623,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
    /**
     * Check server.
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String str) throws ConnectionException
    {

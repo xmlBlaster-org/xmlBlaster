@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.5 2002/05/01 21:40:09 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.6 2002/05/19 12:55:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -240,7 +240,8 @@ public class MsgQueueEntry
 
    /**
     * Get the message unit, creates the update QoS for you. 
-    * @see #getUpdateQos(int,int)
+    * <p />
+    * See private getUpdateQos(int,int,int)
     */
    public final MessageUnit getMessageUnit(int index, int max, int redeliver) throws XmlBlasterException
    {
@@ -254,7 +255,8 @@ public class MsgQueueEntry
 
    /**
     * Get the message unit, you must call getUpdateQos(int,int,int) before to generate the update QoS. 
-    * @see #getUpdateQos(int,int,int)
+    * <p />
+    * See private getUpdateQos(int,int,int)
     */
    public final MessageUnit getMessageUnit() throws XmlBlasterException
    {

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.6 2002/03/18 00:29:36 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.7 2002/05/19 12:55:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -59,7 +59,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
@@ -78,7 +78,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String publish(String sessionId, MessageUnit msgUnit) throws RemoteException, XmlBlasterException
    {
@@ -97,7 +97,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
@@ -111,7 +111,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException
    {
@@ -127,7 +127,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] erase(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
@@ -148,7 +148,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * Synchronous access
     * @return content
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public MessageUnit[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {

@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.10 2002/05/11 10:38:45 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.11 2002/05/19 12:55:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -305,7 +305,7 @@ public class ClientRawSecurity
       /**
        * This oneway method does not return something, it is high performing but
        * you loose the application level hand shake.
-       * @see xmlBlaster.idl
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
        */
       public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
       {

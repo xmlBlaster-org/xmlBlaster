@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.7 2000/12/26 14:56:42 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.8 2002/05/19 12:55:49 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -20,10 +20,6 @@ import org.xmlBlaster.util.Log;
 
 /**
  * Class declaration
- *
- *
- * @author
- * @version %I%, %G%
  */
 public class DBAdapterUtils {
    private static final String ME = "DBAdapterUtils";
@@ -34,9 +30,7 @@ public class DBAdapterUtils {
     *
     * @param rs
     *
-    * @return
-    *
-    * @see
+    * @return Document
     */
    public static Document createDocument(ResultSet rs) throws XmlBlasterException
    {

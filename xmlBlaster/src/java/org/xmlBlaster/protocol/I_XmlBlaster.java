@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.9 2002/03/18 00:29:30 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.10 2002/05/19 12:55:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p />
  * All protocol drivers access xmlBlaster through these methods.
  * This interface is implemented by engine/XmlBlasterImpl.java
- * @see xmlBlaster.idl
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
  * @author ruff@swand.lake.de
  */
@@ -79,7 +79,6 @@ public interface I_XmlBlaster
     * and there are no exceptions supported over the connection to the client.
     *
     * @see org.xmlBlaster.engine.RequestBroker
-    * @exception XmlBlasterException A local exception in the driver (no client exceptions).
     */
    public void publishOneway(String sessionId, MessageUnit[] msgUnitArr);
 

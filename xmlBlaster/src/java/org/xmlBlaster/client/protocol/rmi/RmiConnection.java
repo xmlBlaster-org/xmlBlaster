@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.22 2002/05/11 09:36:22 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.23 2002/05/19 12:55:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -49,7 +49,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -346,7 +346,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * see explanations of publish() method.
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -363,7 +363,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -386,7 +386,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * This call will not block.
     * <p />
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
    {
@@ -403,7 +403,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
    {
@@ -420,7 +420,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
    /**
     * RMI does not support oneway messages. 
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
    {
@@ -429,7 +429,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -445,7 +445,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -463,7 +463,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
    /**
     * Check server.
-    * @see xmlBlaster.idl
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String str) throws ConnectionException
    {

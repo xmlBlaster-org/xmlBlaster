@@ -40,29 +40,26 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * Created: Sat Nov 25 18:07:50 2000
- *
- * @author 
- * @version
  */
 
 public class JmsAdapter implements MessageDrivenBean, MessageListener{
     private MessageDrivenContext ctx = null;
     private BlasterConnectionFactory factory = null;
     public JmsAdapter() {
-	
+        
     }
     public void setMessageDrivenContext(MessageDrivenContext ctx)
-	throws EJBException {
-	this.ctx = ctx;
-	try {
-	    factory = (BlasterConnectionFactory)new InitialContext ().lookup ("java:comp/env/xmlBlaster");
-	} catch (NamingException ex) {
-	    throw new EJBException ("XmlBlaster not found: "+ex.getMessage ());
-	}catch(Throwable th) {
-	    System.err.println("Throwable: " +th);
-	    th.printStackTrace();
-	    throw new EJBException("Throwable in setContext: " +th);
-	}
+        throws EJBException {
+        this.ctx = ctx;
+        try {
+            factory = (BlasterConnectionFactory)new InitialContext ().lookup ("java:comp/env/xmlBlaster");
+        } catch (NamingException ex) {
+            throw new EJBException ("XmlBlaster not found: "+ex.getMessage ());
+        }catch(Throwable th) {
+            System.err.println("Throwable: " +th);
+            th.printStackTrace();
+            throw new EJBException("Throwable in setContext: " +th);
+        }
 
     }
     
@@ -72,47 +69,47 @@ public class JmsAdapter implements MessageDrivenBean, MessageListener{
 
     public void onMessage(Message message) {
 
-	BlasterConnection con = null;
-	try {
-	    // Get message to handle
-	    System.err.println("Got message: " + message);
+        BlasterConnection con = null;
+        try {
+            // Get message to handle
+            System.err.println("Got message: " + message);
 
-	    if (message instanceof TextMessage) {
-		 String msg = ((TextMessage)message).getText();
+            if (message instanceof TextMessage) {
+                 String msg = ((TextMessage)message).getText();
 
-		 // Get connection
-		 con = factory.getConnection();
-		 
-		 // Construct Blaster Headers - howto hanlde key here?
-		 String key ="<key oid=\"" + message.getJMSMessageID() +"\" contentMime=\"text/xml\"></key>";
-		 String qos = "<qos></qos>";
-		 con.publish( new MessageUnit(key,msg.getBytes(),qos));
-		 
-	    } else {
-		System.err.println("Got message type I cant handle");
-	    }
-	    
-	}catch(ResourceException re) {
-	    System.err.println("Resource ex: " +re);
-	    re.printStackTrace();
-	} catch(XmlBlasterException be) {
-	    System.err.println("Blaster ex: " +be);
-	    be.printStackTrace();
-	}catch(JMSException je) {
-	    System.err.println("JMSException ex: " +je);
-	    je.printStackTrace();
-	}catch(Throwable th) {
-	    System.err.println("Throwable: " +th);
-	    th.printStackTrace();
-	    
-	}finally {   
-	    try {
-		if (con != null)
-		    con.close ();
-	    }
-	    catch (Exception ex) {}
-	    
-	}
+                 // Get connection
+                 con = factory.getConnection();
+                 
+                 // Construct Blaster Headers - howto hanlde key here?
+                 String key ="<key oid=\"" + message.getJMSMessageID() +"\" contentMime=\"text/xml\"></key>";
+                 String qos = "<qos></qos>";
+                 con.publish( new MessageUnit(key,msg.getBytes(),qos));
+                 
+            } else {
+                System.err.println("Got message type I cant handle");
+            }
+            
+        }catch(ResourceException re) {
+            System.err.println("Resource ex: " +re);
+            re.printStackTrace();
+        } catch(XmlBlasterException be) {
+            System.err.println("Blaster ex: " +be);
+            be.printStackTrace();
+        }catch(JMSException je) {
+            System.err.println("JMSException ex: " +je);
+            je.printStackTrace();
+        }catch(Throwable th) {
+            System.err.println("Throwable: " +th);
+            th.printStackTrace();
+            
+        }finally {   
+            try {
+                if (con != null)
+                    con.close ();
+            }
+            catch (Exception ex) {}
+            
+        }
     }
 } // MessageBeanImpl
 

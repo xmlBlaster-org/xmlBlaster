@@ -15,7 +15,6 @@ import java.util.Hashtable;
  * if you need LDAP authorization.
  *
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
- * @see org.xmlBlaster.authentication.plugins.htpasswd.LdapGateway
  */
 
 public class Manager implements I_Manager {

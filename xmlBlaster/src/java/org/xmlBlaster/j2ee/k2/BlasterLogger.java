@@ -34,7 +34,6 @@ import org.xmlBlaster.util.Global;
  * Created: Thu Feb 15 11:38:29 2001
  *
  * @author Peter Antman
- * @version
  */
 
 public class BlasterLogger  implements org.jutils.log.LogableDevice {

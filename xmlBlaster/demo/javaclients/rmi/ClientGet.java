@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.12 2002/05/11 09:36:55 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.13 2002/05/19 12:55:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -42,8 +42,8 @@ import java.net.MalformedURLException;
  *     -rmi.XmlBlaster.url "rmi://localhost:1099/I_XmlBlaster"
  *
  * </pre>
- * @see http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html
- * @see http://archives.java.sun.com/archives/rmi-users.html
+ * @see <a href="http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html" target="others">RMI FAQ</a>
+ * @see <a href="http://archives.java.sun.com/archives/rmi-users.html" target="others">RMI USERS</a>
  */
 public class ClientGet
 {

@@ -415,7 +415,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * Client-Callback interface via the update() method.
     * You need to implement the method BlasterCallback.update()<br />
     * This is the push modus.
-    * <p>
+    * <p />
+    * See addListener in Java event model<br />
+    * See addObserver in Java observer pattern
     *
     * @param xmlKey  Key allowing XPath or exact selection<br>
     *                See XmlKey.dtd for a description
@@ -434,9 +436,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    *
-    * @see addListener in Java event model
-    * @see addObserver in Java observer pattern
     */
    String subscribe(SessionInfo sessionInfo, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException
    {

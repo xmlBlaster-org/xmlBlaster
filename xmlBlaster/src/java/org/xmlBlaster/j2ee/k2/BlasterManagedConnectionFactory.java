@@ -51,7 +51,6 @@ import javax.resource.spi.security.PasswordCredential;
  * Created: Fri Jan 26 14:57:16 2001
  *
  * @author Peter Antman
- * @version
  */
 
 public class BlasterManagedConnectionFactory implements ManagedConnectionFactory {

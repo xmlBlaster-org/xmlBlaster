@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.21 2002/05/11 09:36:20 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.22 2002/05/19 12:55:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -157,7 +157,7 @@ public class PublishQosWrapper extends QosWrapper
    }
 
    /**
-    * @see #setIsVolatile()
+    * @see #isVolatile(boolean)
     */
    public boolean isVolatile()
    {

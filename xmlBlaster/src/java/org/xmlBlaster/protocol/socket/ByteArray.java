@@ -168,8 +168,6 @@ public class ByteArray extends OutputStream {
      * stream to zero, so that all currently accumulated output in the 
      * ouput stream is discarded. The output stream can be used again, 
      * reusing the already allocated buffer space. 
-     *
-     * @see     java.io.ByteArrayInputStream#count
      */
     public void reset() {
         count = 0;
@@ -181,7 +179,6 @@ public class ByteArray extends OutputStream {
      * have been copied into it. 
      *
      * @return  the current contents of this output stream, as a byte array.
-     * @see     java.io.ByteArray#size()
      */
     public byte[] toByteArray() {
         byte newbuf[] = new byte[count];
@@ -194,7 +191,6 @@ public class ByteArray extends OutputStream {
      *
      * @return  the value of the <code>count</code> field, which is the number
      *          of valid bytes in this output stream.
-     * @see     java.io.ByteArray#count
      */
     public int size() {
         return count;
@@ -243,9 +239,6 @@ public class ByteArray extends OutputStream {
      *
      * @param      hibyte    the high byte of each resulting Unicode character.
      * @return     the current contents of the output stream, as a string.
-     * @see        java.io.ByteArray#size()
-     * @see        java.io.ByteArray#toString(String)
-     * @see        java.io.ByteArray#toString()
      */
     public String toString(int hibyte) {
         return new String(buf, hibyte, 0, count);
