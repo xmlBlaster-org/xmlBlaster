@@ -55,6 +55,7 @@ public class TestAll
       suite.addTest(TestInvocationRecorder.suite());
       suite.addTest(TestFailSave.suite());
       suite.addTest(TestFailSavePing.suite());
+      suite.addTest(TestFailSaveAsync.suite());
       suite.addTest(TestSubManyClients.suite());
       suite.addTest(LoadTestSub.suite());
       suite.addTest(RamTest.suite());

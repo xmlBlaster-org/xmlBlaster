@@ -33,6 +33,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestPubForce.class \
     $(CLASS_DIR)/TestFailSave.class \
     $(CLASS_DIR)/TestFailSavePing.class \
+    $(CLASS_DIR)/TestFailSaveAsync.class \
     $(CLASS_DIR)/TestSub.class \
     $(CLASS_DIR)/TestSubDispatch.class \
     $(CLASS_DIR)/TestSubExact.class \
