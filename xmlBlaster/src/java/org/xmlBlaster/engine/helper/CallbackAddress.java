@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.6 2002/03/13 16:41:15 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.7 2002/03/18 00:27:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -18,7 +18,7 @@ import org.xml.sax.Attributes;
  * <pre>
  * &lt;callback type='XML-RPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
- *           useForSubjectQueue='true'>
+ *           oneway='false' useForSubjectQueue='true'>
  *    http://server:8080/cb
  *    &lt;compress type='gzip' minSize='1000'/>
  *    &lt;burstMode collectTime='400'/>
@@ -54,6 +54,15 @@ public class CallbackAddress
    /** Shall this session callback be used for subjectQueue messages as well? */
    public static final boolean DEFAULT_useForSubjectQueue = true;
    private boolean useForSubjectQueue = XmlBlasterProperty.get("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue);
+   
+   /**
+    * Shall the update() messages be send oneway (no application level ACK). 
+    * <p />
+    * For more info read the CORBA spec. Only CORBA and our native SOCKET protocol support oneway.
+    * Defaults to false (the update() has a return value and can throw an exception).
+    */
+   public static final boolean DEFAULT_oneway = false;
+   private boolean oneway = XmlBlasterProperty.get("cb.oneway", DEFAULT_oneway);
    
    /** Compress messages if set to "gzip" or "zip" */
    public static final String DEFAULT_compressType = "";
@@ -95,6 +104,17 @@ public class CallbackAddress
       setType(type);
       setAddress(address);
    }
+
+   /**
+    * Show some important settings for logging
+    */
+   public final String getSettings()
+   {
+      StringBuffer buf = new StringBuffer(126);
+      buf.append("type=").append(type).append(" retries=").append(retries).append(" oneway=").append(oneway);
+      return buf.toString();
+   }
+
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
@@ -213,6 +233,26 @@ public class CallbackAddress
          this.delay = 0L;
       else
          this.delay = delay;
+   }
+
+   /**
+    * Shall the callback update() message be oneway. 
+    * Is only with CORBA and our native SOCKET protocol supported
+    * @return true if you want to force oneway updates
+    */
+   public boolean oneway()
+   {
+      return oneway;
+   }
+
+   /**
+    * Shall the callback update() message be oneway. 
+    * Is only with CORBA and our native SOCKET protocol supported
+    * @param oneway false is default
+    */
+   public void setOneway(boolean oneway)
+   {
+      this.oneway = oneway;
    }
 
    /**
@@ -349,6 +389,9 @@ public class CallbackAddress
                      Log.error(ME, "Wrong format of <callback delay='" + ll + "'>, expected a long in milliseconds.");
                   }
                }
+               else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
+                  setOneway(new Boolean(attrs.getValue(i).trim()).booleanValue());
+               }
                else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
                   useForSubjectQueue(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
@@ -476,6 +519,8 @@ public class CallbackAddress
           sb.append(" retries='").append(getRetries()).append("'");
       if (DEFAULT_delay != getDelay())
           sb.append(" delay='").append(getDelay()).append("'");
+      if (DEFAULT_oneway != oneway())
+          sb.append(" oneway='").append(oneway()).append("'");
       if (DEFAULT_useForSubjectQueue != useForSubjectQueue())
           sb.append(" useForSubjectQueue='").append(useForSubjectQueue()).append("'");
       sb.append(">");
