@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.22 2003/01/18 17:08:05 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.23 2003/03/27 17:10:38 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -24,8 +24,8 @@ import java.util.*;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
  */
-public class ServerImpl extends ServerPOA {            // inheritance approach
-//public class ServerImpl implements ServerOperations {    // TIE approach
+//public class ServerImpl extends ServerPOA {            // inheritance approach
+public class ServerImpl implements ServerOperations {    // TIE approach
 
    private final String ME = "ServerImpl";
    private final Global glob;
