@@ -28,7 +28,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       sessionQos_(global, user, publicSessionId),
       ptp_(true),
       addresses_(),
-      cbAddresses_(),
+      //cbAddresses_(),
       clientQueueProperties_(),
       sessionCbQueueProperty_(global, Constants::RELATING_CALLBACK, ""),
       serverReferences_(),
@@ -37,6 +37,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
    clusterNode_      = false;
    duplicateUpdates_ = false;
    persistent_       = false;
+   getCbAddress();  // Force creation, to read environment
 }
 
 ConnectQosData::ConnectQosData(const ConnectQosData& data)
@@ -45,7 +46,7 @@ ConnectQosData::ConnectQosData(const ConnectQosData& data)
       securityQos_(data.securityQos_),
       sessionQos_(data.sessionQos_),
       addresses_(data.addresses_),
-      cbAddresses_(data.cbAddresses_),
+      //cbAddresses_(data.cbAddresses_),
       clientQueueProperties_(data.clientQueueProperties_),
       sessionCbQueueProperty_(data.sessionCbQueueProperty_),
       serverReferences_(data.serverReferences_),
@@ -168,15 +169,18 @@ Address& ConnectQosData::getAddress()
 
 void ConnectQosData::addCbAddress(const CallbackAddress& cbAddress)
 {
-   cbAddresses_.insert(cbAddresses_.begin(), cbAddress);
+   sessionCbQueueProperty_.setCallbackAddress(cbAddress);
+   //cbAddresses_.insert(cbAddresses_.begin(), cbAddress);
 }
 
 CallbackAddress& ConnectQosData::getCbAddress()
 {
-   if (cbAddresses_.empty()) {
-      addCbAddress(CallbackAddress(global_));
-   }
-   return *(cbAddresses_.begin());
+   org::xmlBlaster::util::qos::address::AddressBase &ab = sessionCbQueueProperty_.getCurrentCallbackAddress();
+   return reinterpret_cast<CallbackAddress&>(ab);//sessionCbQueueProperty_.getCurrentCallbackAddress();
+   //if (cbAddresses_.empty()) {
+   //   addCbAddress(CallbackAddress(global_));
+   //}
+   //return *(cbAddresses_.begin());
 }
 
 void ConnectQosData::addClientQueueProperty(const ClientQueueProperty& prop)

@@ -67,7 +67,7 @@ private:
    bool        persistent_;
 
    std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
-   std::vector<org::xmlBlaster::util::qos::address::CallbackAddress> cbAddresses_;
+   //std::vector<org::xmlBlaster::util::qos::address::CallbackAddress> cbAddresses_;
    std::vector<org::xmlBlaster::util::qos::storage::ClientQueueProperty>   clientQueueProperties_;
    org::xmlBlaster::util::qos::storage::CbQueueProperty         sessionCbQueueProperty_;
    std::vector<ServerRef>       serverReferences_;
@@ -84,7 +84,7 @@ private:
       duplicateUpdates_       = data.duplicateUpdates_;
       serverReferences_       = data.serverReferences_;
       addresses_              = data.addresses_;
-      cbAddresses_            = data.cbAddresses_;
+      //cbAddresses_            = data.cbAddresses_;
       clientQueueProperties_  = data.clientQueueProperties_;
       sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
       clientProperties_       = data.clientProperties_;

@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.12 2004/02/09 10:08:04 ruff Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.13 2004/04/09 17:12:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -141,11 +141,14 @@ using namespace org::xmlBlaster::util::qos::address;
    }
 
    /**
-    * @return null if none available
+    * @return a default if none available
     */
-   AddressBase CbQueueProperty::getCurrentCallbackAddress()
+   AddressBase &CbQueueProperty::getCurrentCallbackAddress()
    {
-      if (addressArr_.empty()) return CallbackAddress(global_);
+      if (addressArr_.empty()) {
+         CallbackAddress cb(global_);
+         setCallbackAddress(cb);
+      }
       return *addressArr_.begin();
    }
 
@@ -182,7 +185,7 @@ using namespace org::xmlBlaster::util::qos::address;
 using namespace std;
 using namespace org::xmlBlaster::util::qos::storage;
 
-/** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
+/** For testing */
 int main(int args, char* argv[])
 {
    Global& glob = Global::getInstance();
