@@ -1,0 +1,30 @@
+<svg width='400' height='400' onload="on_load(evt)">
+   <script><![CDATA[
+      /*
+      NOTE:
+      Mozilla 0.96 with Adobe SVG plugin does not support:
+      ->  Exporting the svgdoc handle to the outer HTML
+      ->  Accessing the embeded SVG from out HTML with
+          document.embeds["fritz"].getSVGDocument()
+      ->  Reported to bugzilla # 115528
+      */
+   	function on_load(evt) {
+   		svgdoc = evt.getCurrentNode().getOwnerDocument();
+         alert("svg: svgdoc=" + svgdoc);
+         var owner = svgdoc.ownerDocument;
+         alert("svg: ownerDocument=" + owner);
+      }
+
+      width = 20;
+      function change_attribut(evt) {
+         svgdoc=evt.getTarget().getOwnerDocument();
+         objet=svgdoc.getElementById('rectangle');
+         objet.setAttribute('width',width);
+         width += 5;
+      }
+   ]]></script>
+   <g id='affiche'>
+      <text id='texte' x='100' y='140' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>A SVG with &lt;embed></text>
+      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='50' width='20' height='50' style='fill:blue'/>
+   </g>
+</svg>

@@ -1,0 +1,18 @@
+<html>
+<body>
+   <embed src="test.svg" type="image/svg-xml" name="mySVG" />
+   <script language="Javascript1.2">
+      function check() {
+         var embedWindow = document.embeds["mySVG"];
+         alert("html: document.embeds['mySVG']=" + embedWindow);
+         var owner = embedWindow.ownerDocument;
+         alert("html: owner=" + owner);
+         var svgdoc = embedWindow.getSVGDocument();
+         alert("html: svgdoc=" + svgdoc);
+      }
+   </script>
+   <form>
+      <input type="button" value="Check SVG Access" onClick="javascript:check();">
+   </form>
+</body>
+</html>
