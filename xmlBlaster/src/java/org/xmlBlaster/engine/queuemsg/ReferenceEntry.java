@@ -60,7 +60,7 @@ public class ReferenceEntry extends MsgQueueEntry
    public ReferenceEntry(String ME, Global glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
                          Timestamp timestamp, StorageId storageId, SessionName receiver) throws XmlBlasterException {
       super(glob_, entryType, msgUnitWrapper.getMsgQosData().getPriority(), timestamp,
-            storageId, msgUnitWrapper.getMsgQosData().isPersistent());
+            storageId, msgUnitWrapper.getMsgQosData().isPersistent()); // We may not use msgUnitWrapper.isPersistent() as is forced to transient in TopicHandler during initialization
       this.glob = glob_;
       this.ME = ME;
       setMsgUnitWrapper(msgUnitWrapper);
@@ -93,7 +93,7 @@ public class ReferenceEntry extends MsgQueueEntry
       this.msgUnitWrapperUniqueId = msgUnitWrapperUniqueId;
       setReceiver(receiver);
       super.wantReturnObj = false;
-
+      /*
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
 
       if ( STRICT_REFERENCE_COUNTING_COMPATIBLE ) {
@@ -131,13 +131,18 @@ public class ReferenceEntry extends MsgQueueEntry
       }
       else {
          if (msgUnitWrapper == null) {
-            log.error(ME, "No 'meat' found for MsgQueueEntry '" + getLogId() +
-	                  "' in msgStore: " + Global.getStackTraceAsString());
-
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, 
-	              "No 'meat' found for MsgQueueEntry '" + getLogId() + "' in msgStore");
+            log.warn(ME+"-"+getLogId(), "DEBUG ONLY: No 'meat' found in msgStore, we ignore this entry," +
+                     " this is possible after a server crash for messages which were not acknowldeged to the publisher during the crash." +
+                     " Usually the publisher will send it again");
+            
+            //log.error(ME, "No 'meat' found for MsgQueueEntry '" + getLogId() +
+            //              "' in msgStore: " + Global.getStackTraceAsString());
+	    //
+            //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, 
+            //          "No 'meat' found for MsgQueueEntry '" + getLogId() + "' in msgStore");
          }
       }
+      */
    }
 
    public final Global getGlobal() {
@@ -159,26 +164,38 @@ public class ReferenceEntry extends MsgQueueEntry
       return msgUnitWrapper;
    }
 
+   private void incrementReferenceCounter(int incr, StorageId storageId) {
+      try {
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+         if (msgUnitWrapper != null) {
+            boolean done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
+            if (!done) {
+               this.weakMsgUnitWrapper = null;
+               msgUnitWrapper = getMsgUnitWrapper(); // reload
+               done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
+               if (!done) {
+                  log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
+               }
+            }
+         }
+         else {
+            log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+         }
+         msgUnitWrapper = null;
+      }
+      catch (Throwable ex) {
+         log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
+         //ex.printStackTrace();
+      }
+   }
+
    /**
     * Notification if this entry is added to queue. 
     * It can be added to several queues simultaneously, the reference counter will be incremented each time
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
-      try {
-         //if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
-         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-         if (msgUnitWrapper != null) {
-            msgUnitWrapper.incrementReferenceCounter(1, storageId);
-         }
-         else {
-            log.error(ME, " Entry '" + getLogId() + "' added to queue but no meat found");
-         }
-      }
-      catch (Throwable ex) {
-         log.error(ME, " added '" + storageId + "' raised an exception: " + ex.toString());
-         //ex.printStackTrace();
-      }
+      incrementReferenceCounter(1, storageId);
    }
 
    /**
@@ -186,22 +203,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) {
-      try {
-         //if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
-         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-         if (msgUnitWrapper != null) {
-            msgUnitWrapper.incrementReferenceCounter(-1, storageId);
-            if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed successfully from queue, new reference count is " + msgUnitWrapper.getReferenceCounter());
-            msgUnitWrapper = null;
-         }
-         else {
-            if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
-         }
-      }
-      catch (Throwable ex) {
-         log.error(ME, " removed '" + storageId + "' raised an exception: " + ex.toString());
-         //ex.printStackTrace();
-      }
+      incrementReferenceCounter(-1, storageId);
    }
 
    /**
