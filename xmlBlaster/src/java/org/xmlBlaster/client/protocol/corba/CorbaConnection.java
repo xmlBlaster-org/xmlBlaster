@@ -485,18 +485,14 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please pass a valid QoS for connect()");
 
       this.ME = "CorbaConnection";
-      if (log.CALL) log.call(ME, "connect(xmlBlaster="+xmlBlaster+") ...");
-      if (this.xmlBlaster != null) {
-         log.warn(ME, "You are already logged in.");
-         return "";
-      }
-
-      getAuthenticationService(this.clientAddress);
-
+      if (log.CALL) log.call(ME, "connect(xmlBlaster="+this.xmlBlaster+") ...");
       try {
          AuthServer remoteAuthServer = getAuthenticationService(this.clientAddress);
          if (log.TRACE) log.trace(ME, "Got authServer handle, trying connect ...");
          return remoteAuthServer.connect(connectQos);
+      }
+      catch(XmlBlasterException e) {
+         throw e;
       }
       catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, e);
