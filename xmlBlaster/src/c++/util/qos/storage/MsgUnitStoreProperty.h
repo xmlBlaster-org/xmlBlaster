@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      MsgUnitStoreProperty.h
+Name:      org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 /**
  * Helper class holding properties of the MsgUnit storage. 
  * <p />
- * See ConnectQos for XML sysntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
@@ -17,8 +17,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/storage/QueuePropertyBase.h>
 
-// using namespace org::xmlBlaster::util;
-using namespace std;
+// 
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
@@ -31,7 +31,7 @@ public:
     *                for prop[nodeId] as well,
     * e.g. -persistence/maxEntries and -persistence/maxEntries[heron] will be searched
     */
-   MsgUnitStoreProperty(Global& global, const string& nodeId);
+   MsgUnitStoreProperty(org::xmlBlaster::util::Global& global, const std::string& nodeId);
 
    MsgUnitStoreProperty(const QueuePropertyBase& prop);
 
@@ -40,11 +40,11 @@ public:
    bool onOverflowDeadMessage();
 
    /**
-    * Get a usage string for the connection parameters
+    * Get a usage std::string for the connection parameters
     */
-   string usage();
+   std::string usage();
 
-   string getRootTagName() const;
+   std::string getRootTagName() const;
 };
 
 }}}}}

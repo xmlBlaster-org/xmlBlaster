@@ -9,9 +9,10 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <util/StringStripper.h>
 #include <util/Global.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace authentication {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
 
 SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
@@ -22,7 +23,7 @@ SecurityQos::SecurityQos(Global& global,
    string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", "htpasswd,1.0");
 
    StringStripper stripper(",");
-   vector<string> help1 = stripper.strip(help);
+   vector<std::string> help1 = stripper.strip(help);
    if (help1.size() == 2) {
       type_    = help1[0];
       version_ = help1[1];

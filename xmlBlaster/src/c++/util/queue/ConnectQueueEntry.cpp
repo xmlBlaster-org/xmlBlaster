@@ -9,6 +9,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
+using namespace std;
+using namespace org::xmlBlaster::util::dispatch;
+
 ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool persistent)
    : MsgQueueEntry(global, connectQos, type, priority, persistent)
 {

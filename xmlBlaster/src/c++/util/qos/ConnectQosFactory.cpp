@@ -12,10 +12,10 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+using namespace std;
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-
-
+using namespace org::xmlBlaster::util::qos::storage;
 
 ConnectQosFactory::ConnectQosFactory(Global& global)
    : SaxHandlerBase(global),

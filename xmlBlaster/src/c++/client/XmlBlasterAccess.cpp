@@ -9,13 +9,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/lexical_cast.h>
 #include <util/Timestamp.h>
 
+namespace org { namespace xmlBlaster { namespace client {
+
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::qos::address;
+using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::client::protocol;
-
-namespace org { namespace xmlBlaster { namespace client {
-
+using namespace org::xmlBlaster::client::key;
+using namespace org::xmlBlaster::client::qos;
 
 XmlBlasterAccess::XmlBlasterAccess(Global& global)
    : ME(string("XmlBlasterAccess-UNCONNECTED")),
@@ -31,7 +37,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    connection_         = NULL;
    deliveryManager_    = NULL;
    connectionProblems_ = NULL;
-   instanceName_       = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
+   instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
@@ -259,7 +265,7 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
    if (log_.call()) log_.call(ME, "publishOneway");
    if (log_.dump()) {
       for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
-         log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+         log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<std::string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    connection_->publishOneway(msgUnitArr);
@@ -270,7 +276,7 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
    if (log_.call()) log_.call(ME, "publishArr");
    if (log_.dump()) {
       for (vector<MessageUnit>::size_type i=0; i < msgUnitArr.size(); i++) {
-         log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+         log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<std::string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    return connection_->publishArr(msgUnitArr);

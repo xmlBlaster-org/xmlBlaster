@@ -7,8 +7,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 /**
  * This class encapsulates the qos of a publish() message.
  * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
+ * So you don't need to type the 'ugly' XML ASCII std::string by yourself.
+ * After construction access the ASCII-XML std::string with the toXml() method.
  * <br />
  * A typical <b>publish</b> qos in Publish/Subcribe mode could look like this:<br />
  * <pre>
@@ -45,23 +45,23 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/PriorityEnum.h>
 #include <util/qos/MsgQosData.h>
 
-using namespace org::xmlBlaster::util;
-using namespace std;
+
+
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export PublishQos
 {
 private:
-   string     ME;
-   Global&    global_;
-   MsgQosData msgQosData_;
+   std::string     ME;
+   org::xmlBlaster::util::Global&    global_;
+   org::xmlBlaster::util::qos::MsgQosData msgQosData_;
 
 public:
    /**
     * Default constructor for transient messages.
     */
-   PublishQos(Global& global);
+   PublishQos(org::xmlBlaster::util::Global& global);
 
    /**
     * Default constructor for transient PtP messages.
@@ -70,28 +70,28 @@ public:
     * @param destination The object containing the destination address.<br />
     *        To add more destinations, us the addDestination() method.
     */
-   PublishQos(Global& global, const Destination& destination);
+   PublishQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::Destination& destination);
 
    /**
     * @param persistent true = store the message persistently
     */
-   PublishQos(Global& global, bool persistent);
+   PublishQos(org::xmlBlaster::util::Global& global, bool persistent);
 
-   MsgQosData getData() const;
+   org::xmlBlaster::util::qos::MsgQosData getData() const;
 
    /**
     * Message priority.
     * @return priority 0 (=Lowest) - 9 (=Highest)
     */
-   PriorityEnum getPriority() const;
+   org::xmlBlaster::util::PriorityEnum getPriority() const;
 
    /**
-    * Set message priority value, PriorityEnum::NORM_PRIORITY (5) is default.
-    * PriorityEnum::MIN_PRIORITY (0) is slowest
-    * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
+    * Set message priority value, org::xmlBlaster::util::PriorityEnum::NORM_PRIORITY (5) is default.
+    * org::xmlBlaster::util::PriorityEnum::MIN_PRIORITY (0) is slowest
+    * whereas org::xmlBlaster::util::PriorityEnum.MAX_PRIORITY (9) is highest priority.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.priority.html">The engine.qos.publish.priority requirement</a>
     */
-   void setPriority(PriorityEnum priority);
+   void setPriority(org::xmlBlaster::util::PriorityEnum priority);
 
    /**
     * Send message to subscriber even if the content is the same as the previous?
@@ -142,51 +142,51 @@ public:
     * Note you can invoke this multiple times to send to multiple destinations.
     * @param destination  The loginName of a receiver or some destination XPath query
     */
-   void addDestination(const Destination& destination);
+   void addDestination(const org::xmlBlaster::util::Destination& destination);
 
    /**
     * Access sender name.
     * @return loginName of sender or null if not known
     */
-   SessionQos getSender();
+   org::xmlBlaster::util::qos::SessionQos getSender();
 
    /**
     * Access sender name.
     * @param loginName of sender
     */
-   void setSender(const SessionQos& sender);
+   void setSender(const org::xmlBlaster::util::qos::SessionQos& sender);
 
    /**
     * @param state The state to return to the server.
     *   e.g. Contants.STATE_OK, see Constants::java
     */
-   void setState(const string& state);
+   void setState(const std::string& state);
 
-   string getState();
+   std::string getState();
 
    /**
     * @param stateInfo The state info attribute to return to the server.
     */
-   void setStateInfo(const string& stateInfo);
+   void setStateInfo(const std::string& stateInfo);
 
-   string getStateInfo();
+   std::string getStateInfo();
 
    /**
     * Administer/configure the message topic. 
     */
-   void setTopicProperty(const TopicProperty& topicProperty);
+   void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& topicProperty);
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML ASCII std::string.
+    * @return An XML ASCII std::string
     */
-   string toString();
+   std::string toString();
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML ASCII std::string.
+    * @return An XML ASCII std::string
     */
-   string toXml();
+   std::string toXml();
 };
 
 }}}}

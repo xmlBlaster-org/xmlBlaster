@@ -9,7 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * <p>
  * See QueryKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
- * This is the base class for the UpdateKey and the PublishKey. 
+ * This is the base class for the org::xmlBlaster::client::key::UpdateKey and the org::xmlBlaster::client::key::PublishKey. 
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -21,52 +21,48 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/key/MsgKeyData.h>
 #include <util/Log.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
-
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
 class Dll_Export MsgKeyBase
 {
 protected:
-   string  ME;
-   Global& global_;
-   Log&    log_;
+   std::string  ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
    /**
     * subscribe(), get() and cluster configuration keys may contain a filter rule
     */
-   MsgKeyData msgKeyData_;
+   org::xmlBlaster::util::key::MsgKeyData msgKeyData_;
 
 public:
 
    /**
     * Minimal constructor.
     */
-   MsgKeyBase(Global& global);
+   MsgKeyBase(org::xmlBlaster::util::Global& global);
    
-   MsgKeyBase(Global& global, const MsgKeyData& data);
+   MsgKeyBase(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::MsgKeyData& data);
 
    MsgKeyBase(const MsgKeyBase& key);
 
    MsgKeyBase& operator =(const MsgKeyBase& key);
 
-   MsgKeyData getData() const;
+   org::xmlBlaster::util::key::MsgKeyData getData() const;
 
 
    /**
-    *  @return The key oid or "" if not set (see MsgKeyData.getOid() which generates the oid if it was "").
+    *  @return The key oid or "" if not set (see org::xmlBlaster::util::key::MsgKeyData.getOid() which generates the oid if it was "").
     */
-   string getOid() const;
+   std::string getOid() const;
 
    /**
     * Find out which mime type (syntax) the content of the message has.
     * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
     *         default is "text/plain" if not set
-    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/istd::map-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   string getContentMime() const;
+   std::string getContentMime() const;
 
    /**
     * Some further specifying information of the content.
@@ -75,23 +71,23 @@ public:
     * You may use this attribute for you own purposes.
     * @return The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
+    *         or "" (empty std::string) if not known
     */
-   string getContentMimeExtended() const;
+   std::string getContentMimeExtended() const;
 
    /**
     * Access the domain setting
-    * @return A domain string or null
+    * @return A domain std::string or null
     */
-   string getDomain() const;
+   std::string getDomain() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
+    * @return internal state of the query as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

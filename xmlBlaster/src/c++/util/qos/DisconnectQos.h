@@ -3,14 +3,14 @@ Name:      DisconnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.h,v 1.6 2003/02/09 21:23:31 ruff Exp $
+Version:   $Id: DisconnectQos.h,v 1.7 2003/07/03 20:54:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * This class encapsulates the qos of a logout() or disconnect()
  * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
+ * So you don't need to type the 'ugly' XML ASCII std::string by yourself.
+ * After construction access the ASCII-XML std::string with the toXml() method.
  * <br />
  * A typical <b>logout</b> qos could look like this:<br />
  * <pre>
@@ -32,18 +32,14 @@ Version:   $Id: DisconnectQos.h,v 1.6 2003/02/09 21:23:31 ruff Exp $
 #include <util/Log.h>
 #include <string>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
-
 
 class Dll_Export DisconnectQos
 {
 private:
-   string  ME; // = "DisconnectQos";
-   Global& global_;
-   Log&    log_;
+   std::string  ME; // = "DisconnectQos";
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
    bool    deleteSubjectQueue_; // = true;
    bool    clearSessions_; // = false;
 
@@ -51,7 +47,7 @@ public:
    /**
     * Default constructor
     */
-   DisconnectQos(Global& global);
+   DisconnectQos(org::xmlBlaster::util::Global& global);
 
    /**
     * copy constructor
@@ -86,12 +82,12 @@ public:
    void setClearSessions(bool del);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
+    * @return internal state of the RequestBroker as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

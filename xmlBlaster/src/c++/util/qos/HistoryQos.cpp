@@ -54,7 +54,7 @@ string HistoryQos::toXml(const string& extraOffset) const
    }
    string ret;
    string offset = "\n " + extraOffset;
-   ret += offset + "<history numEntries='" + lexical_cast<string>(getNumEntries()) + "'/>";
+   ret += offset + "<history numEntries='" + lexical_cast<std::string>(getNumEntries()) + "'/>";
    return ret;
 }
 

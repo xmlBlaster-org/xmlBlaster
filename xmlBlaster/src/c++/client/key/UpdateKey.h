@@ -15,15 +15,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-
 #ifndef _CLIENT_KEY_UPDATEKEY_H
 #define _CLIENT_KEY_UPDATEKEY_H
 
 #include <client/key/MsgKeyBase.h>
-
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
@@ -34,9 +29,9 @@ public:
    /**
     * Minimal constructor.
     */
-   UpdateKey(Global& global);
+   UpdateKey(org::xmlBlaster::util::Global& global);
    
-   UpdateKey(Global& global, const MsgKeyData& data);
+   UpdateKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::MsgKeyData& data);
 
    UpdateKey(const UpdateKey& key);
 
@@ -58,7 +53,7 @@ public:
     */
    bool isPluginInternal() const;
 
-   string getClientTags() const;
+   std::string getClientTags() const;
 
 };
 

@@ -3,7 +3,7 @@ Name:      Prop.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding data for a property
-Version:   $Id: Prop.h,v 1.3 2003/02/09 21:23:31 ruff Exp $
+Version:   $Id: Prop.h,v 1.4 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -20,7 +20,7 @@ Version:   $Id: Prop.h,v 1.3 2003/02/09 21:23:31 ruff Exp $
 
 #include <util/Property.h>
 
-using namespace std;
+
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -61,7 +61,7 @@ public:
       return *this;
    }
 
-   bool setValue(Property& prop, const string& propName)
+   bool setValue(Property& prop, const std::string& propName)
    {
       if (origin_ >= CREATED_BY_SETTER) return false;
       if (prop.getTypedProperty(propName, value_, false)) {
@@ -101,11 +101,11 @@ public:
 
    /**
     * writes out the prop as an xml. If forceWrite is set to 'true', then it is always written out, otherwise
-    * it is only written out when different from the default. If it is the default, an empty string is
+    * it is only written out when different from the default. If it is the default, an empty std::string is
     * returned.
     */ 
 /*
-   toXml(const string&  name, const string& offset="", bool forceWrite=false)
+   toXml(const std::string&  name, const std::string& offset="", bool forceWrite=false)
    {
       if (origin_ > CREATED_BY_DEFAULT || forceWrite) {
          return "<" + name + ">" +  .... (not finished yet);

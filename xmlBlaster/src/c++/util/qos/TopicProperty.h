@@ -23,19 +23,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_QOS_TOPICPROPERTY_H
 
 #include <util/xmlBlasterDef.h>
-#include <vector>
 #include <string>
 #include <util/Log.h>
 #include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/HistoryQueueProperty.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::storage;
-
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
-
 
 /**
  * A topic is destroyed 60 sec after state=UNREFERENCED is reached
@@ -45,7 +38,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
  * </pre>
  * Every message can set the destroyDelay value between 1 and destroyDelay_DEFAULT,
  * -1L sets the life cycle on forever.
- */ // TODO: Change to use glob instead of Global singleton! What about performance? Put variable into Global?
+ */ // TODO: Change to use glob instead of org::xmlBlaster::util::Global singleton! What about performance? Put variable into org::xmlBlaster::util::Global?
 extern Dll_Export const long destroyDelay_DEFAULT_DEFAULT;
 /** Is readonly allows only one initial message */
 extern Dll_Export const bool DEFAULT_readonly;
@@ -53,14 +46,14 @@ extern Dll_Export const bool DEFAULT_readonly;
 class Dll_Export TopicProperty
 {
 private:
-   string                ME;
-   Global&               global_;
-   Log&                  log_;
-   MsgUnitStoreProperty*   msgUnitStoreProperty_;
-   HistoryQueueProperty* historyQueueProperty_;
+   std::string                ME;
+   org::xmlBlaster::util::Global&               global_;
+   org::xmlBlaster::util::Log&                  log_;
+   org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty*   msgUnitStoreProperty_;
+   org::xmlBlaster::util::qos::storage::HistoryQueueProperty* historyQueueProperty_;
 
    /* If Pub/Sub style update: contains the subscribe ID which caused this topic */
-   //string subscriptionId;
+   //std::string subscriptionId;
 
    bool readonly_; //  = DEFAULT_readonly;
 
@@ -70,7 +63,7 @@ private:
     */
    long destroyDelay_;
 
-   long destroyDelay_DEFAULT; // = Global.instance().getProperty().get("topic.destroyDelay", destroyDelay_DEFAULT_DEFAULT);
+   long destroyDelay_DEFAULT; // = org::xmlBlaster::util::Global.instance().getProperty().get("topic.destroyDelay", destroyDelay_DEFAULT_DEFAULT);
 
    void copy(const TopicProperty& prop);
 
@@ -78,7 +71,7 @@ public:
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
     */
-   TopicProperty(Global& global);
+   TopicProperty(org::xmlBlaster::util::Global& global);
 
    TopicProperty(const TopicProperty& prop);
    TopicProperty& operator =(const TopicProperty& prop);
@@ -110,26 +103,26 @@ public:
    /**
     * @return the configuration of the message store, is never null
     */
-   MsgUnitStoreProperty getMsgUnitStoreProperty();
+   org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty getMsgUnitStoreProperty();
 
-   void setMsgUnitStoreProperty(const MsgUnitStoreProperty& msgUnitStoreProperty);
+   void setMsgUnitStoreProperty(const org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty& msgUnitStoreProperty);
 
    bool hasHistoryQueueProperty();
 
    /**
     * @return the configuration of the history queue, is never null
     */
-   HistoryQueueProperty getHistoryQueueProperty();
+   org::xmlBlaster::util::qos::storage::HistoryQueueProperty getHistoryQueueProperty();
 
-   void setHistoryQueueProperty(const HistoryQueueProperty& historyQueueProperty);
+   void setHistoryQueueProperty(const org::xmlBlaster::util::qos::storage::HistoryQueueProperty& historyQueueProperty);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the message QoS as a XML ASCII string, never null but "" if all values are default
+    * @return internal state of the message QoS as a XML ASCII std::string, never null but "" if all values are default
     */
-   string toXml(const string& extraOffset="");
+   std::string toXml(const std::string& extraOffset="");
 };
 
 }}}}

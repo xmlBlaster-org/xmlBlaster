@@ -19,16 +19,11 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
 
-#include <client/xmlBlasterClient.h>
+//#include <client/xmlBlasterClient.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
 #include <util/thread/ThreadImpl.h>
 #include <map>
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::util::thread;
-using namespace std;
 
 namespace org {
  namespace xmlBlaster {
@@ -36,29 +31,21 @@ namespace org {
    namespace protocol {
     namespace corba {
 
-/*
-   class CorbaDriver;
-   typedef map<string, CorbaDriver*> DriverMap;
-*/
-
-   using namespace org::xmlBlaster::util::qos;
-
    class Dll_Export CorbaDriver 
-      : public virtual I_CallbackServer, 
-        public virtual I_XmlBlasterConnection
+      : public virtual org::xmlBlaster::client::protocol::I_CallbackServer, 
+        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection
    {
-   friend class CorbaDriverFactory;
+   friend class CorbaDriverFactory; // To be able to create a CorbaDriver instance
 
    private:
-      Mutex&           mutex_;
-      string           instanceName_;
+      org::xmlBlaster::util::thread::Mutex&           mutex_;
+      std::string           instanceName_;
       CorbaConnection* connection_;
       DefaultCallback* defaultCallback_;
-      const string     ME;
-      Global&          global_;
-      Log&             log_;
-      StatusQosFactory statusQosFactory_;
-      MsgQosFactory    msgQosFactory_;
+      const std::string     ME;
+      org::xmlBlaster::util::Global&          global_;
+      org::xmlBlaster::util::Log&             log_;
+      org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
       bool             orbIsThreadSafe_;
 
       /**
@@ -70,14 +57,14 @@ namespace org {
       /**
        * Only used by getInstance()
        * @param global
-       * @param mutex   Global thread synchronization (to avoid static variable)
+       * @param mutex   org::xmlBlaster::util::Global thread synchronization (to avoid static variable)
        * @param doRun   Only for internal main loop for single threaded orbs. false stops the loop
        *                
        * @param isRunning    Feedback is doRun has stopped
        * @param instanceName
        * @param orb
        */
-      CorbaDriver(Global& global, Mutex& mutex, const string instanceName, CORBA::ORB_ptr orb=NULL);
+      CorbaDriver(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::thread::Mutex& mutex, const std::string instanceName, CORBA::ORB_ptr orb=NULL);
 
       CorbaDriver(const CorbaDriver& corbaDriver);
 
@@ -100,37 +87,37 @@ namespace org {
          return this->orbIsThreadSafe_;
       }
 
-      // methods inherited from I_CallbackServer
-      void initialize(const string& name, I_Callback &client);
-      string getCbProtocol();
-      string getCbAddress();
+      // methods inherited from org::xmlBlaster::client::protocol::I_CallbackServer
+      void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client);
+      std::string getCbProtocol();
+      std::string getCbAddress();
       bool shutdownCb();
 
-      // methods inherited from I_XmlBlasterConnection
-      ConnectReturnQos connect(const ConnectQos& qos);
-      bool disconnect(const DisconnectQos& qos);
-      string getProtocol();
-//      string loginRaw();
+      // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
+      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+      bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
+      std::string getProtocol();
+//      std::string loginRaw();
       bool shutdown();
       void resetConnection();
-      string getLoginName();
+      std::string getLoginName();
       bool isLoggedIn();
 
-      string ping(const string& qos);
+      std::string ping(const std::string& qos);
 
-      SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
+      org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
 
-      vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
+      std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
 
-      vector<UnSubscribeReturnQos> unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
+      std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos);
 
-      PublishReturnQos publish(const MessageUnit& msgUnit);
+      org::xmlBlaster::client::qos::PublishReturnQos publish(const org::xmlBlaster::util::MessageUnit& msgUnit);
 
-      void publishOneway(const vector<MessageUnit> &msgUnitArr);
+      void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
-      vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr);
+      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
 
-      vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
+      std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
 
 

@@ -51,16 +51,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/SaxHandlerBase.h>
 #include <util/key/MsgKeyData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
+
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
 class Dll_Export MsgKeyFactory : public SaxHandlerBase
 {
 private:
-    string ME;
-    MsgKeyData msgKeyData_;
+    std::string ME;
+    org::xmlBlaster::util::key::MsgKeyData msgKeyData_;
 
     XMLCh* OID; //                   = "oid";
     XMLCh* CONTENT_MIME; //          = "contentMime";
@@ -73,16 +73,16 @@ public:
    /**
     * Can be used as singleton. 
     */
-   MsgKeyFactory(Global& global);
+   MsgKeyFactory(org::xmlBlaster::util::Global& global);
 
    ~MsgKeyFactory();
 
    /**
-    * Parses the given xml Key and returns a MsgKeyData holding the data. 
+    * Parses the given xml Key and returns a org::xmlBlaster::util::key::MsgKeyData holding the data. 
     * Parsing of update() and publish() key is supported here.
-    * @param the XML based ASCII string
+    * @param the XML based ASCII std::string
     */
-   MsgKeyData readObject(const string& xmlKey);
+   org::xmlBlaster::util::key::MsgKeyData readObject(const std::string& xmlKey);
 
    /**
     * Start element, event from SAX parser.

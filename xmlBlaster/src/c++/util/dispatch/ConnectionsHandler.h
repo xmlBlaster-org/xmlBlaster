@@ -2,7 +2,7 @@
 Name:      ConnectionsHandler.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handles the I_XmlBlasterConnections 
+Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnections 
 ------------------------------------------------------------------------------*/
 
 /**
@@ -11,11 +11,10 @@ Comment:   Handles the I_XmlBlasterConnections
  * <p />
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
-
-
 #ifndef _UTIL_DISPATCH_CONNECTIONSHANDLER_H
 #define _UTIL_DISPATCH_CONNECTIONSHANDLER_H
 
+#include <vector>
 #include <util/xmlBlasterDef.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <client/I_ConnectionProblems.h>
@@ -26,43 +25,38 @@ Comment:   Handles the I_XmlBlasterConnections
 // #include <util/queue/PublishQueueEntry.h>
 // #include <util/queue/ConnectQueueEntry.h>
 
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::util::thread;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::queue;
-
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-class Dll_Export ConnectionsHandler : public I_Timeout, public I_ConnectionsHandler
+class Dll_Export ConnectionsHandler : public I_Timeout, public org::xmlBlaster::util::dispatch::I_ConnectionsHandler
 {
 private:
-   const string            ME;
-   ConnectQos*             connectQos_;
-   ConnectReturnQos*       connectReturnQos_;
-   I_ConnectionProblems*   connectionProblems_;
-   I_XmlBlasterConnection* connection_;
-   enum States             status_;
-   Global&                 global_;
-   Log&                    log_;
-   Mutex                   connectMutex_;
-   Mutex                   publishMutex_;
-   int                     retries_;
-   int                     currentRetry_;
-   Timestamp               timestamp_;
-   MsgQueue*               queue_;
-   bool                    pingIsStarted_;
+   const std::string ME;
+   org::xmlBlaster::util::qos::ConnectQos* connectQos_;
+   org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
+   org::xmlBlaster::client::I_ConnectionProblems* connectionProblems_;
+   org::xmlBlaster::client::protocol::I_XmlBlasterConnection* connection_;
+   enum States status_;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log& log_;
+   org::xmlBlaster::util::thread::Mutex connectMutex_;
+   org::xmlBlaster::util::thread::Mutex publishMutex_;
+   int retries_;
+   int currentRetry_;
+   org::xmlBlaster::util::Timestamp timestamp_;
+   org::xmlBlaster::util::queue::MsgQueue* queue_;
+   bool pingIsStarted_;
    /**
     * Temporary hack until the server will give back the same sessionId. Here all subscriptions and 
     * unSubscriptions are stored. When reconnecting a check is made to see if we got the same sessionId. If
     * the id differe, then all subscribe and unSubscribe are repeated.
     */
-   MsgQueue*               adminQueue_; // used to temporarly store the subscriptions 
-   string                  lastSessionId_;
-   const string            instanceName_;
-   bool                    doStopPing_; // used to stop the pinger when destroying the object
+   org::xmlBlaster::util::queue::MsgQueue* adminQueue_; // used to temporarly store the subscriptions 
+   std::string lastSessionId_;
+   const std::string instanceName_;
+   bool doStopPing_; // used to stop the pinger when destroying the object
 
 public:
-   ConnectionsHandler(Global& global, const string& instanceName);
+   ConnectionsHandler(org::xmlBlaster::util::Global& global, const std::string& instanceName);
 
    virtual ~ConnectionsHandler();
 
@@ -77,54 +71,54 @@ public:
     *
     * @param qos The authentication and other informations
     * @param client A handle to your callback if desired or null
-    * @return ConnectReturnQos
+    * @return org::xmlBlaster::util::qos::ConnectReturnQos
     */
-   ConnectReturnQos connect(const ConnectQos& qos);
+   org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
 
    /**
-    * Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
+    * org::xmlBlaster::util::Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
     * is CONNECTED it disconnects. If the status is something else, it throws an exception.
     * @param qos The QoS or null
     */
-   bool disconnect(const DisconnectQos& qos);
+   bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
 
    /**
     * @return The connection protocol name "IOR" or "RMI" etc.
     */
-   string getProtocol();
+   std::string getProtocol();
 
    /**
     * Is invoked when we poll for the server, for example after we have lost the connection.
     */
-//   string loginRaw();
+//   std::string loginRaw();
 
    bool shutdown();
 
    /** Reset the driver on problems */
    void resetConnection();
 
-   string getLoginName();
+   std::string getLoginName();
 
    bool isLoggedIn();
 
-   string ping(const string& qos);
+   std::string ping(const std::string& qos);
 
-   SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
+   org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
                                                                                 
-   vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
+   std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
 
-   vector<UnSubscribeReturnQos> 
-      unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
+   std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> 
+      unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos);
 
-   PublishReturnQos publish(const MessageUnit& msgUnit);
+   org::xmlBlaster::client::qos::PublishReturnQos publish(const org::xmlBlaster::util::MessageUnit& msgUnit);
 
-   void publishOneway(const vector<MessageUnit> &msgUnitArr);
+   void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
-   vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr);
+   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
 
-   vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
+   std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
-   void initFailsafe(I_ConnectionProblems* connectionProblems);
+   void initFailsafe(org::xmlBlaster::client::I_ConnectionProblems* connectionProblems);
 
    void timeout(void *userData);
 
@@ -135,25 +129,25 @@ public:
     */
    long flushQueue();
 
-   Queue* getQueue();
+   org::xmlBlaster::util::queue::Queue* getQueue();
 
    bool isFailsafe() const;
 
    bool isConnected() const;
 
-   ConnectReturnQos connectRaw(const ConnectQos& connectQos);
+   org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
 
-   virtual I_XmlBlasterConnection& getConnection();
+   virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection();
 
-   virtual ConnectReturnQos* getConnectReturnQos();
+   virtual org::xmlBlaster::util::qos::ConnectReturnQos* getConnectReturnQos();
 
-   virtual ConnectQos* getConnectQos();
+   virtual org::xmlBlaster::util::qos::ConnectQos* getConnectQos();
 
 protected:
    /** only used inside the class to avoid deadlock */
-   long flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove=true);
-   PublishReturnQos queuePublish(const MessageUnit& msgUnit);
-   ConnectReturnQos& queueConnect();
+   long flushQueueUnlocked(org::xmlBlaster::util::queue::MsgQueue *queueToFlush, bool doRemove=true);
+   org::xmlBlaster::client::qos::PublishReturnQos queuePublish(const org::xmlBlaster::util::MessageUnit& msgUnit);
+   org::xmlBlaster::util::qos::ConnectReturnQos& queueConnect();
    bool startPinger();
 
    /**

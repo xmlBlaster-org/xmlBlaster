@@ -1,18 +1,18 @@
 /*------------------------------------------------------------------------------
-Name:      AddressBase.h
+Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.12 2003/05/29 10:35:03 ruff Exp $
+Comment:   Holding connect address and callback address std::string including protocol
+Version:   $Id: AddressBase.h,v 1.13 2003/07/03 20:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
- * Abstract helper class holding connect address and callback address string
- * and protocol string.
+ * Abstract helper class holding connect address and callback address std::string
+ * and protocol std::string.
  * <p />
  * See examples in the implementing classes
- * @see Address
- * @see CallbackAddress
+ * @see org::xmlBlaster::util::qos::address::Address
+ * @see org::xmlBlaster::util::qos::address::CallbackAddress
  */
 
 #ifndef _UTIL_CFG_ADDRESSBASE_H
@@ -21,25 +21,22 @@ Version:   $Id: AddressBase.h,v 1.12 2003/05/29 10:35:03 ruff Exp $
 #include <util/xmlBlasterDef.h>
 #include <util/Constants.h>
 #include <util/Log.h>
-
 #include <string>
-
-using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 extern Dll_Export const int       DEFAULT_port;
-extern Dll_Export const string    DEFAULT_type;
-extern Dll_Export const string    DEFAULT_version;
+extern Dll_Export const std::string    DEFAULT_type;
+extern Dll_Export const std::string    DEFAULT_version;
 extern Dll_Export const long      DEFAULT_collectTime;
 extern Dll_Export const long      DEFAULT_collectTimeOneway;
 extern Dll_Export const bool      DEFAULT_oneway;
-extern Dll_Export const string    DEFAULT_compressType;
+extern Dll_Export const std::string    DEFAULT_compressType;
 extern Dll_Export const long      DEFAULT_minSize;
 extern Dll_Export const bool      DEFAULT_ptpAllowed;
-extern Dll_Export const string    DEFAULT_sessionId;
+extern Dll_Export const std::string    DEFAULT_sessionId;
 extern Dll_Export const bool      DEFAULT_useForSubjectQueue;
-extern Dll_Export       string    DEFAULT_dispatchPlugin;
+extern Dll_Export       std::string    DEFAULT_dispatchPlugin;
 
 
 
@@ -53,35 +50,35 @@ private:
    /**
     * Sets the root xml tag, &lt;callback> or &lt;address>
     */
-   void setRootTag(const string& rootTag)
+   void setRootTag(const std::string& rootTag)
    {
       rootTag_ = rootTag;
    }
 
 protected:
-   string  ME;
-   Global& global_;
-   Log&    log_;
+   std::string  ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
-   string rootTag_;
+   std::string rootTag_;
 
    /** The node id to which we want to connect */
-   string nodeId_;
+   std::string nodeId_;
 
    /** TODO: Move this attribute to CbQueueProperty.java */
-   long maxEntries_; // only used in Address
+   long maxEntries_; // only used in org::xmlBlaster::util::qos::address::Address
 
-   /** The unique address, e.g. the CORBA IOR string */
-   mutable string address_;
+   /** The unique address, e.g. the CORBA IOR std::string */
+   mutable std::string address_;
 
-   mutable string hostname_;
+   mutable std::string hostname_;
    bool isHardcodedHostname_; // = false; // set to true if setHostname() was explicitly called by user
 
    /** The unique protocol type, e.g. "IOR" */
-   string type_; //  = DEFAULT_type;
+   std::string type_; //  = DEFAULT_type;
    
    /** The protocol version, e.g. "1.0" */
-   string version_; // = DEFAULT_version;
+   std::string version_; // = DEFAULT_version;
    
    /** BurstMode: The time to collect messages for publish/update */
    long collectTime_; //  = DEFAULT_collectTime;
@@ -107,7 +104,7 @@ protected:
    bool oneway_; // = DEFAULT_oneway;
    
    /** Compress messages if set to "gzip" or "zip" */
-   string compressType_; // = DEFAULT_compressType;
+   std::string compressType_; // = DEFAULT_compressType;
    
    /** Messages bigger this size in bytes are compressed */
    long minSize_; // = DEFAULT_minSize;
@@ -116,7 +113,7 @@ protected:
    bool ptpAllowed_; // = DEFAULT_ptpAllowed;
    
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
-   string sessionId_; // = DEFAULT_sessionId;
+   std::string sessionId_; // = DEFAULT_sessionId;
 
    /** Shall this session callback be used for subjectQueue messages as well? For &lt;callback> only */
    bool useForSubjectQueue_; // = DEFAULT_useForSubjectQueue;
@@ -131,9 +128,9 @@ protected:
     * </p>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
-   string dispatchPlugin_; // = DEFAULT_dispatchPlugin;
+   std::string dispatchPlugin_; // = DEFAULT_dispatchPlugin;
 
-   void initHostname(const string& hostname)
+   void initHostname(const std::string& hostname)
    {
       hostname_ = hostname;
       address_  = ""; // reset cache
@@ -177,7 +174,7 @@ public:
    /**
     * common constructor
     */
-   AddressBase(Global& global, const string& rootTag="");
+   AddressBase(org::xmlBlaster::util::Global& global, const std::string& rootTag="");
 
    /**
     * copy constructor
@@ -194,7 +191,7 @@ public:
    /**
     * A nice human readable name for this address (used for logging)
     */
-   string getName();
+   std::string getName();
 
    /**
     * Check if supplied address would connect to the address of this instance
@@ -204,23 +201,23 @@ public:
    /**
     * Show some important settings for logging
     */
-   string getSettings() const;
+   std::string getSettings() const;
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
-   void setType(const string& type);
+   void setType(const std::string& type);
 
    /**
     * @param version   The protocol version, e.g. "1.0"
     */
-   void setVersion(const string& version);
+   void setVersion(const std::string& version);
 
    /**
     * Updates the internal address as well. 
     * @param host An IP or DNS
     */
-   void setHostname(const string& host);
+   void setHostname(const std::string& host);
 
    /**
     * @return true if the bootstrapHostname is explicitly set by user with setHostname()
@@ -236,7 +233,7 @@ public:
    /**
     * @return The Hostname, IP or "" if not known
     */
-   string getHostname() const;
+   std::string getHostname() const;
 
    /**
     * Set the bootstrapping port. 
@@ -251,25 +248,25 @@ public:
     *
     * @param address The callback address, e.g. "et@mars.univers"
     */
-   void setAddress(const string& address);
+   void setAddress(const std::string& address);
 
    /**
     * Returns the address.
     * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
     */
-   string getAddress() const;
+   std::string getAddress() const;
 
    /**
     * Returns the protocol type.
     * @return e.g. "EMAIL" or "IOR" (never null).
     */
-   string getType() const;
+   std::string getType() const;
 
    /**
     * Returns the protocol version.
     * @return e.g. "1.0" or null
     */
-   string getVersion() const;
+   std::string getVersion() const;
 
    /**
     * What to do if max retries is exhausted. 
@@ -278,7 +275,7 @@ public:
     * This is interpreted only server side if callback fails.
     * @return Constants.ONEXHAUST_KILL_SESSION="killSession"
     */
-   string getOnExhaust() const;
+   std::string getOnExhaust() const;
 
    /**
     * Kill login session if max callback retries is exhausted?
@@ -368,22 +365,22 @@ public:
     */
    bool isPtpAllowed();
 
-   void setCompressType(const string& compressType);
+   void setCompressType(const std::string& compressType);
 
    /**
     * The identifier sent to the callback client, the client can decide if he trusts this invocation
     * @return never null
     */
-   string getSecretSessionId() const;
+   std::string getSecretSessionId() const;
 
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
-   void setSecretSessionId(const string& sessionId);
+   void setSecretSessionId(const std::string& sessionId);
 
    /**
     * Get the compression method. 
     * @return "" No compression
     */
-   string getCompressType() const;
+   std::string getCompressType() const;
 
    /** 
     * Messages bigger this size in bytes are compressed. 
@@ -416,21 +413,21 @@ public:
     * </p>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
-   void setDispatchPlugin(const string& dispatchPlugin);
+   void setDispatchPlugin(const std::string& dispatchPlugin);
 
    /**
     * @return "undef" or e.g. "Priority,1.0"
     */
-   string getDispatchPlugin() const;
+   std::string getDispatchPlugin() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * Only none default values are dumped for performance reasons
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset = "") const;
+   std::string toXml(const std::string& extraOffset = "") const;
 };
 
 }}}}}

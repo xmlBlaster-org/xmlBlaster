@@ -23,7 +23,7 @@ Comment:   Handling the Client data
  * code below).
  */
 
-using namespace std;
+
 
 namespace org { namespace xmlBlaster { namespace util {
    
@@ -89,22 +89,22 @@ namespace org { namespace xmlBlaster { namespace util {
        */
       int    numWarnInvocations;
       int    numErrorInvocations;
-      string currentLogFormat;
+      std::string currentLogFormat;
       bool   logFormatPropertyRead;
 
-      string   ME;
-      string   name_;
+      std::string   ME;
+      std::string   name_;
 
 #if   _TERM_WITH_COLORS_
-      string timeE, callE, traceE, plainE, infoE;
-      string warnE, errorE, panicE, exitE;
+      std::string timeE, callE, traceE, plainE, infoE;
+      std::string warnE, errorE, panicE, exitE;
 #else
       /**
        * Output text for different logging levels
        * The DOS box does not know any colors
        */
-      string timeX, callX, traceX, plainX, infoX;
-      string warnX, errorX, panicX, exitX;
+      std::string timeX, callX, traceX, plainX, infoX;
+      std::string warnX, errorX, panicX, exitX;
 #endif // _TERM_WITH_COLORS_
 
    private:
@@ -113,7 +113,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * @param for example "TRACE"
        * @return bit setting L_TRACE
        */
-      int logLevelToBit(const string &logLevel) {
+      int logLevelToBit(const std::string &logLevel) {
          if (logLevel == "PANIC")      return L_PANIC;
          else if (logLevel == "ERROR") return L_ERROR;
          else if (logLevel == "WARN" ) return L_WARN;
@@ -125,7 +125,7 @@ namespace org { namespace xmlBlaster { namespace util {
          return L_NOLOG;
       }
 
-      void initSpecificTrace(const string& trace, const string& traceId);
+      void initSpecificTrace(const std::string& trace, const std::string& traceId);
       
       
       /**
@@ -156,7 +156,7 @@ namespace org { namespace xmlBlaster { namespace util {
       inline bool dump() { return dump_; }
       
       
-      Log(Property& properties, int args=0, const char * const argc[]=0, const string& name="default");
+      Log(Property& properties, int args=0, const char * const argc[]=0, const std::string& name="default");
 
 
       ~Log();
@@ -187,14 +187,14 @@ namespace org { namespace xmlBlaster { namespace util {
        * Removes the loglevel
        * @param for example "TRACE"
        */
-      void removeLogLevel(string logLevel);
+      void removeLogLevel(std::string logLevel);
 
 
       /**
        * Adds the loglevel
        * @param for example "DUMP"
        */
-      void addLogLevel(string logLevel);
+      void addLogLevel(std::string logLevel);
             
 
       /**
@@ -212,7 +212,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * @param bit setting for example L_TRACE
        * @return for example "TRACE"
        */
-      string bitToLogLevel(int level);      
+      std::string bitToLogLevel(int level);      
 
       /**
        * Gets the loglevel 0,10,20,30,40,50,60
@@ -222,7 +222,7 @@ namespace org { namespace xmlBlaster { namespace util {
       }
       
 
-      void setLogFormat(const string &format) {
+      void setLogFormat(const std::string &format) {
          currentLogFormat = format;
       }
 
@@ -230,64 +230,64 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * Use this exit for errors
        */
-      void panic(const string &instance, const string &text);
+      void panic(const std::string &instance, const std::string &text);
 
 
       /**
        * Exit without errors
        */
-      void exit(const string &instance, const string &text);
+      void exit(const std::string &instance, const std::string &text);
 
 
       /**
        * Use this for normal logging output
        */
-      void info(const string &instance, const string &text);
+      void info(const std::string &instance, const std::string &text);
       
 
       /**
        * Use this for logging output where the xmlBlaster administrator shall 
        * be informed<br /> for example a login denied event
        */
-      void warn(const string &instance, const string &text);
+      void warn(const std::string &instance, const std::string &text);
       
       
       /**
        * Use this for internal xmlBlaster errors reporting
        */
-      void error(const string &instance, const string &text);
+      void error(const std::string &instance, const std::string &text);
 
 
       /*
        * Log without time/date/instance
        * @param instance (not currently used)
-       * @param text the string to log
+       * @param text the std::string to log
        */
-      void plain(const string &instance, const string &text);
+      void plain(const std::string &instance, const std::string &text);
 
 
       /*
        * Log without time/date
        */
-      void dump(const string &instance, const string &text);
+      void dump(const std::string &instance, const std::string &text);
 
 
       /**
        * Tracing execution
        */
-      void trace(const string &instance, const string &text);
+      void trace(const std::string &instance, const std::string &text);
 
 
       /**
        * Tracing when entering methods
        */
-      void call(const string &instance, const string &text);
+      void call(const std::string &instance, const std::string &text);
 
       
       /**
        * Output of performant measurements (elapsed milliseconds)
        */
-      void time(const string &instance, const string &text);
+      void time(const std::string &instance, const std::string &text);
 
 
       /**
@@ -319,7 +319,7 @@ namespace org { namespace xmlBlaster { namespace util {
       void initialize();       
 
 
-      string getTime();
+      std::string getTime();
 
  
       /**
@@ -333,8 +333,8 @@ namespace org { namespace xmlBlaster { namespace util {
        * @param instance e.g. "RequestBroker" or "Authentication"
        * @param text     e.g. "Login denied"
        */
-      void log(const string &levelStr, int level, const string &instance, 
-               const string &text);
+      void log(const std::string &levelStr, int level, const std::string &instance, 
+               const std::string &text);
 
 
       Property& getProperties() {

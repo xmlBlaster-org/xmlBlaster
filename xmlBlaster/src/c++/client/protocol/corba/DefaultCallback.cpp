@@ -11,7 +11,12 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <client/protocol/corba/DefaultCallback.h>
 #include <util/Global.h>
 
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::protocol::corba;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 
 DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback *boss,
@@ -46,7 +51,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
    serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(msgUnitArr.length());
    res->length(msgUnitArr.length());
 
-   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
+   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<std::string>(msgUnitArr.length()) + " message ..."); }
    
    if (msgUnitArr.length() == 0) {
       log_.warn(me(), "Entering update() with 0 messages");
@@ -70,7 +75,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
             string msg = "\n";
             for (string::size_type j=0; j < msgUnit.content.length(); j++) 
                msg += (char)msgUnit.content[j];
-            log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<string>(msgUnit.content.length()));
+            log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<std::string>(msgUnit.content.length()));
          }
          if (log_.dump()) log_.dump("UpdateQos", "\n" + updateQos->toXml());
          if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
@@ -102,7 +107,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
          (*res)[i] = str;
       }
       catch(...) {
-         string tmp = "Exception caught in update() " + lexical_cast<string>(msgUnitArr.length()) + " messages are handled as not delivered";
+         string tmp = "Exception caught in update() " + lexical_cast<std::string>(msgUnitArr.length()) + " messages are handled as not delivered";
          log_.error(me(), tmp);
          throw serverIdl::XmlBlasterException("user.update.error", "client", 
                                               "client update failed", "en",
@@ -123,7 +128,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
 void DefaultCallback::updateOneway(const char* sessionId,
                       const serverIdl::MessageUnitArr& msgUnitArr) PING_THROW_SPECIFIER
 {
-   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
+   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<std::string>(msgUnitArr.length()) + " message ..."); }
    
    if (msgUnitArr.length() == 0) {
       log_.warn(me(), "Entering update() with 0 messages");

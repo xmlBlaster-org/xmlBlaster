@@ -4,7 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding information about the current node.
 ------------------------------------------------------------------------------*/
-
 #ifndef _UTIL_CLUSTER_NODEINFO_H
 #define _UTIL_CLUSTER_NODEINFO_H
 
@@ -17,29 +16,24 @@ Comment:   Holding information about the current node.
 #include <util/qos/address/Address.h>
 #include <util/cluster/NodeId.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
 /**
  * This class holds the address informations about an
  * xmlBlaster server instance (=cluster node). 
  */
-
-typedef map<string, CallbackAddress> CbAddressMap;
-typedef map<string, Address>         AddressMap;
-typedef map<string, NodeId>          NodeMap;
+typedef std::map<std::string, org::xmlBlaster::util::qos::address::CallbackAddress> CbAddressMap;
+typedef std::map<std::string, org::xmlBlaster::util::qos::address::Address> AddressMap;
+typedef std::map<std::string, org::xmlBlaster::util::cluster::NodeId>          NodeMap;
 
 class Dll_Export NodeInfo
 {
 private:
-   string          ME;
-   Global&         global_;
-   NodeId          nodeId_;
-   Address         tmpAddress_; // = null; // Helper for SAX parsing
-   CallbackAddress tmpCbAddress_; // = null; // Helper for SAX parsing
+   std::string          ME;
+   org::xmlBlaster::util::Global&         global_;
+   org::xmlBlaster::util::cluster::NodeId          nodeId_;
+   org::xmlBlaster::util::qos::address::Address         tmpAddress_; // = null; // Helper for SAX parsing
+   org::xmlBlaster::util::qos::address::CallbackAddress tmpCbAddress_; // = null; // Helper for SAX parsing
    CbAddressMap    cbAddressMap_; // = null;
    AddressMap      addressMap_; // = null;
    NodeMap         backupNodeMap_; // = null;
@@ -71,7 +65,7 @@ private:
     * Holds the addresses of a node. 
     */
 public:
-   NodeInfo(Global& global, NodeId nodeId);
+   NodeInfo(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::cluster::NodeId nodeId);
 
    NodeInfo(const NodeInfo& info);
 
@@ -80,30 +74,30 @@ public:
    /**
     * @return The unique name of the managed xmlBlaster instance e.g. "bilbo.mycompany.com"
     */
-   string getId() const;
+   std::string getId() const;
 
    /**
     * @return The unique name of the managed xmlBlaster instance.
     */
-   NodeId getNodeId() const;
+   org::xmlBlaster::util::cluster::NodeId getNodeId() const;
 
    /**
     * @param The unique name of the managed xmlBlaster instance
     */
-   void setNodeId(NodeId nodeId);
+   void setNodeId(org::xmlBlaster::util::cluster::NodeId nodeId);
 
    /**
     * Access the currently used address to access the node
     * @return null if not specified
     */
-   Address getAddress() const;
+   org::xmlBlaster::util::qos::address::Address getAddress() const;
 
    /**
     * Add another address for this cluster node. 
     * <p />
-    * The map is sorted with the same sequence as the given XML sequence
+    * The std::map is sorted with the same sequence as the given XML sequence
     */
-   void addAddress(Address& address);
+   void addAddress(org::xmlBlaster::util::qos::address::Address& address);
 
    /**
     * Access all addresses of a node, please handle as readonly. 
@@ -113,13 +107,13 @@ public:
    /**
     * Does the given address belong to this node?
     */
-   bool contains(Address& other);
+   bool contains(org::xmlBlaster::util::qos::address::Address& other);
 
    /**
     * Access the currently used callback address for this node
     * @return Never null, returns a default if none specified
     */
-   CallbackAddress getCbAddress();
+   org::xmlBlaster::util::qos::address::CallbackAddress getCbAddress();
 
    /**
     * Currently not used. 
@@ -129,7 +123,7 @@ public:
    /**
     * Add another callback address for this cluster node. 
     */
-   void addCbAddress(CallbackAddress& cbAddress);
+   void addCbAddress(org::xmlBlaster::util::qos::address::CallbackAddress& cbAddress);
 
    /**
     * Is the node acting as a preferred cluster naming service. 
@@ -147,20 +141,20 @@ public:
 
    /**
     * If this node is not accessible, we can use its backup nodes. 
-    * @return a Map containing NodeId objects
+    * @return a Map containing org::xmlBlaster::util::cluster::NodeId objects
     */
    NodeMap getBackupnodeMap() const;
 
    /**
     * Set backup nodes. 
     */
-   void addBackupnode(const NodeId& backupId);
+   void addBackupnode(const org::xmlBlaster::util::cluster::NodeId& backupId);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * @param extraOffset indenting of tags for nice output
     */
-   string toXml(const string& extraOffset="");
+   std::string toXml(const std::string& extraOffset="");
 };
 
 }}}}

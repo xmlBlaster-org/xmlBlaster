@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.11 2003/05/29 10:35:03 ruff Exp $
+Version:   $Id: Address.cpp,v 1.12 2003/07/03 20:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,10 +24,9 @@ Version:   $Id: Address.cpp,v 1.11 2003/05/29 10:35:03 ruff Exp $
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
-
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
+using namespace std;
 
 inline void Address::initialize()
 {
@@ -113,10 +112,10 @@ string Address::getSettings()
    string ret;
    ret = AddressBase::getSettings();
    if (getDelay() > 0)
-      ret += string(" delay=") + lexical_cast<string>(getDelay()) +
-             string(" retries=") + lexical_cast<string>(getRetries()) +
-             string(" maxEntries=") + lexical_cast<string>(getMaxEntries()) +
-             string(" pingInterval=") + lexical_cast<string>(getPingInterval());
+      ret += string(" delay=") + lexical_cast<std::string>(getDelay()) +
+             string(" retries=") + lexical_cast<std::string>(getRetries()) +
+             string(" maxEntries=") + lexical_cast<std::string>(getMaxEntries()) +
+             string(" pingInterval=") + lexical_cast<std::string>(getPingInterval());
    return ret;
 }
 
@@ -136,12 +135,12 @@ string Address::usage()
    // is in ClientQueueProperty.java: text += "   -queue/connection/maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue/callback/onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue/callback/onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
-   text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<string>(DEFAULT_collectTime) + "].\n");
+   text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<std::string>(DEFAULT_collectTime) + "].\n");
    text += string("                       This allows performance tuning, try set it to 200.\n");
  //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
-   text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<string>(defaultPingInterval_) + "]\n");
-   text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<string>(defaultRetries_) + "]\n");
-   text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<string>(defaultDelay_) + "]\n");
+   text += string("   -pingInterval       Pinging every given milliseconds [" + lexical_cast<std::string>(defaultPingInterval_) + "]\n");
+   text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<std::string>(defaultRetries_) + "]\n");
+   text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<std::string>(defaultDelay_) + "]\n");
    text += string("                       A delay value > 0 switches fails save mode on, 0 switches it off\n");
  //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
  //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";

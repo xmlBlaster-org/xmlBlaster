@@ -18,7 +18,6 @@ using namespace org::xmlBlaster::util;
 using namespace std;
 
 
-
 /*---------------------------- SessionQosData --------------------------------*/
 
 SessionQosData::SessionQosData(Global& global, const string& defaultUserName, long publicSessionId)
@@ -86,10 +85,10 @@ void SessionQosData::setAbsoluteName(const string& name)
 
    if (name[0] == '/') { // then it is an absolute name
       StringStripper stripper("/");
-      vector<string> help = stripper.strip(name);
+      vector<std::string> help = stripper.strip(name);
       help.erase(help.begin()); // since it is empty for sure.
       if (help.size() < 4) 
-                         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
+         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
       if (help[0] == "node") clusterNodeId_ = help[1];
       else throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. It should start with '/node'");
       if (help[2] != "client") 
@@ -103,7 +102,7 @@ void SessionQosData::setAbsoluteName(const string& name)
    else relative = name;
 
    StringStripper relStripper("/");
-   vector<string> relHelp = relStripper.strip(relative);
+   vector<std::string> relHelp = relStripper.strip(relative);
    if (relHelp.empty()) {
                 throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
    }
@@ -129,7 +128,7 @@ void SessionQosData::setAbsoluteName(const string& name)
 string SessionQosData::getRelativeName() const
 {
    string ret = string("client/") + subjectId_;
-   if (pubSessionId_ != 0) ret += string("/") + lexical_cast<string>(pubSessionId_);
+   if (pubSessionId_ != 0) ret += string("/") + lexical_cast<std::string>(pubSessionId_);
    return ret;
 }
 
@@ -215,8 +214,8 @@ string SessionQosData::toXml(const string& extraOffset) const
    string ret = string("<session");
 
    ret += string(" name='")  + getAbsoluteName() + string("'");
-   ret += string(" timeout='") + lexical_cast<string>(getTimeout()) + string("'") + 
-          string(" maxSessions='") + lexical_cast<string>(getMaxSessions()) + string("'") +
+   ret += string(" timeout='") + lexical_cast<std::string>(getTimeout()) + string("'") + 
+          string(" maxSessions='") + lexical_cast<std::string>(getMaxSessions()) + string("'") +
           string(" clearSessions='") + Global::getBoolAsString(clearSessions_) + string("'");
    
    if (!sessionId_.empty()) {

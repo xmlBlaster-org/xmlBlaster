@@ -6,7 +6,7 @@ Comment:   Manager to retrieve the correct delivery protocol
 ------------------------------------------------------------------------------*/
 
 /**
- * It returns the appropriate implementation of the I_XmlBlasterConnection
+ * It returns the appropriate implementation of the org::xmlBlaster::client::protocol::I_XmlBlasterConnection
  * interface (note that this is a class in c++) for the given protocol.
  * with your own lowlevel SOCKET or CORBA coding as well.
  *
@@ -25,8 +25,7 @@ Comment:   Manager to retrieve the correct delivery protocol
 #include <string>
 // #include <map>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::client::protocol;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
@@ -34,20 +33,20 @@ class Dll_Export DeliveryManager
 {
 
 private:
-   const string        ME;
-   Global&             global_;
-   Log&                log_;
+   const std::string        ME;
+   org::xmlBlaster::util::Global&             global_;
+   org::xmlBlaster::util::Log&                log_;
 
 public:
-   DeliveryManager(Global& global);
+   DeliveryManager(org::xmlBlaster::util::Global& global);
 
    ~DeliveryManager();
 
-   I_XmlBlasterConnection& getPlugin(const string& instanceName, const string& type, const string& version);
+   org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getPlugin(const std::string& instanceName, const std::string& type, const std::string& version);
 
-   ConnectionsHandler* getConnectionsHandler(const string& instanceName);
+   org::xmlBlaster::util::dispatch::ConnectionsHandler* getConnectionsHandler(const std::string& instanceName);
    
-   void releasePlugin(const string& instanceName, const string& type, const string& version);
+   void releasePlugin(const std::string& instanceName, const std::string& type, const std::string& version);
 
 };
 

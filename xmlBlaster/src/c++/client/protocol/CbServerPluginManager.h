@@ -6,7 +6,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 ------------------------------------------------------------------------------*/
 
 /**
- * It returns the appropriate implementation of the I_CallbackServer
+ * It returns the appropriate implementation of the org::xmlBlaster::client::protocol::I_CallbackServer
  * interface (note that this is a class in c++) for the given protocol.
  * with your own lowlevel SOCKET or CORBA coding as well.
  *
@@ -23,26 +23,24 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #include <client/protocol/I_CallbackServer.h>
 #include <string>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
 class Dll_Export CbServerPluginManager
 {
 
 private:
-   const string ME;
-   Global&      global_;
-   Log&         log_;
+   const std::string ME;
+   org::xmlBlaster::util::Global&      global_;
+   org::xmlBlaster::util::Log&         log_;
 
 public:
-   CbServerPluginManager(Global& global);
+   CbServerPluginManager(org::xmlBlaster::util::Global& global);
 
    ~CbServerPluginManager();
 
-   I_CallbackServer& getPlugin(const string& instanceName, const string& type, const string& version);
+   org::xmlBlaster::client::protocol::I_CallbackServer& getPlugin(const std::string& instanceName, const std::string& type, const std::string& version);
 
-   void releasePlugin(const string& instanceName, const string& type, const string& version);
+   void releasePlugin(const std::string& instanceName, const std::string& type, const std::string& version);
 
 };
 

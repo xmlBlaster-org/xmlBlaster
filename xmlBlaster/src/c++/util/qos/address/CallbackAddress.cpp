@@ -3,7 +3,6 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.6 2003/03/26 22:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/address/CallbackAddress.h>
@@ -12,6 +11,7 @@ Version:   $Id: CallbackAddress.cpp,v 1.6 2003/03/26 22:28:13 ruff Exp $
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
+using namespace std;
 using namespace org::xmlBlaster::util;
 
 
@@ -109,18 +109,18 @@ string CallbackAddress::usage()
    string text;
    text += string("Control xmlBlaster server side callback (if we install a local callback server):\n");
    text += string("   -cb.sessionId       The session ID which is passed to our callback server update() method.\n");
-   text += string("   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [") + lexical_cast<string>(DEFAULT_collectTime) + string("].\n");
+   text += string("   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [") + lexical_cast<std::string>(DEFAULT_collectTime) + string("].\n");
    text += string("                         The burst mode allows performance tuning, try set it to 200.\n");
 
    string help = "false";
    if (DEFAULT_oneway) help = "true";
    text += string("   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [") + help + string("]\n");
 
-   text += string("   -cb.pingInterval    Pinging every given milliseconds [") + lexical_cast<string>(defaultPingInterval_) + string("]\n");
-   text += string("   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [") + lexical_cast<string>(defaultRetries_) + string("]\n");
-   text += string("   -cb.delay           Delay between callback retries in milliseconds [") + lexical_cast<string>(defaultDelay_) + string("]\n");
+   text += string("   -cb.pingInterval    Pinging every given milliseconds [") + lexical_cast<std::string>(defaultPingInterval_) + string("]\n");
+   text += string("   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [") + lexical_cast<std::string>(defaultRetries_) + string("]\n");
+   text += string("   -cb.delay           Delay between callback retries in milliseconds [") + lexical_cast<std::string>(defaultDelay_) + string("]\n");
    text += string("   -cb.compress.type   With which format message be compressed on callback [") + DEFAULT_compressType + string("]\n");
-   text += string("   -cb.compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<string>(DEFAULT_minSize) + string("]\n");
+   text += string("   -cb.compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<std::string>(DEFAULT_minSize) + string("]\n");
 
    help = "false";
    if (DEFAULT_ptpAllowed) help = "true";

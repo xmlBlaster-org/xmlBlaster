@@ -28,15 +28,16 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <util/Global.h>
 #include <client/protocol/corba/CorbaDriver.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 namespace org {
  namespace xmlBlaster {
   namespace client {
    namespace protocol {
     namespace corba {
 
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::key;
 
 CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
   : orb_(0),
@@ -285,8 +286,8 @@ void CorbaConnection::initAuthenticationService()
                      break;
                   }
                   CORBA::ULong index = 0;
-                  string id = lexical_cast<string>(bl[index].binding_name[0].id);
-                  string kind = lexical_cast<string>(bl[index].binding_name[0].kind);
+                  string id = lexical_cast<std::string>(bl[index].binding_name[0].id);
+                  string kind = lexical_cast<std::string>(bl[index].binding_name[0].kind);
                   if (log_.trace()) log_.trace(me(), "id=" + id + " kind=" + kind);
 
                   tmpId = id;
@@ -329,7 +330,7 @@ void CorbaConnection::initAuthenticationService()
          if (CORBA::is_nil(authServer_)) {
             if (!CORBA::is_nil(authServerFirst.in())) {
                if (countServerFound > 1) {
-                  string str = string("Can't choose one of ") + lexical_cast<string>(countServerFound) +
+                  string str = string("Can't choose one of ") + lexical_cast<std::string>(countServerFound) +
                                  " avalailable server in CORBA NameService: " + serverNameList +
                                  ". Please choose one with e.g. -NameService.node.id " + tmpId;
                   log_.warn(me(), str);
@@ -495,7 +496,7 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
 }
 
 
-vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
+vector<std::string> CorbaConnection::unSubscribe(const string &xmlKey,
                                   const string &qos) 
 {
   if (log_.call()) log_.call(me(), "unSubscribe() ...");
@@ -515,7 +516,7 @@ vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
      serverIdl::XmlTypeArr_var 
         retArr = xmlBlaster_->unSubscribe(xmlKey.c_str(), qos.c_str());
      
-     vector<string> vecArr;
+     vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
@@ -604,7 +605,7 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
 * @param A vector with MessageUnit
 * @return A vector of strings each is a publish return QoS. 
 */
-vector<string> 
+vector<std::string> 
 CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec) 
 {
   if (log_.call()) log_.call(me(), "publishArr() ...");
@@ -620,7 +621,7 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
      serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
      copyToCorba(msgUnitArr, msgVec);
      serverIdl::XmlTypeArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
-     vector<string> vecArr;
+     vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
@@ -725,7 +726,7 @@ CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr)
 * <br />
 * Note: You don't need to free anything
 */
-vector<string> 
+vector<std::string> 
 CorbaConnection::erase(const string &xmlKey, const string &qos) 
 {
   if (log_.call()) log_.call(me(), "erase() ...");
@@ -743,7 +744,7 @@ CorbaConnection::erase(const string &xmlKey, const string &qos)
 
   try {
      serverIdl::XmlTypeArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
-     vector<string> vecArr;
+     vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<const char *>(retArr[ii]));
      }
@@ -865,7 +866,7 @@ CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec,
      const serverIdl::MessageUnit &msgUnit = static_cast<const serverIdl::MessageUnit>(units[ii]);
      unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
      const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
-     if (log_.trace()) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<string>(len));
+     if (log_.trace()) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<std::string>(len));
      MsgKeyData key = msgKeyFactory_.readObject(string(msgUnit.xmlKey));
      MsgQosData qos = msgQosFactory_.readObject(string(msgUnit.qos)); 
      const util::MessageUnit msg(key, len, blob, qos);

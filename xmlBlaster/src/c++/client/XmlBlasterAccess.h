@@ -3,7 +3,6 @@ Name:      XmlBlasterAccess.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
 #ifndef _CLIENT_XMLBLASTERACCESS_H
 #define _CLIENT_XMLBLASTERACCESS_H
 
@@ -21,72 +20,66 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 #include <vector>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::dispatch;
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::client::protocol;
-
 namespace org { namespace xmlBlaster { namespace client {
 
 /**
  * <p>
- * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
+ * The interface org::xmlBlaster::client::I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  * </p>
  */
-
-class Dll_Export XmlBlasterAccess : public I_Callback
+class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback
 {
 private:
-   string ME;
+   std::string ME;
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
-   string serverNodeId_;
-   ConnectQos connectQos_;
+   std::string serverNodeId_;
+   org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** The return from connect() */
-   ConnectReturnQos connectReturnQos_;
+   org::xmlBlaster::util::qos::ConnectReturnQos connectReturnQos_;
    /** The dispatcher framework **/
-   DeliveryManager* deliveryManager_;
+   org::xmlBlaster::util::dispatch::DeliveryManager* deliveryManager_;
    /** The callback server */
-   I_CallbackServer* cbServer_;
+   org::xmlBlaster::client::protocol::I_CallbackServer* cbServer_;
    /** The connection server for this address */
-   ConnectionsHandler* connection_;
+   org::xmlBlaster::util::dispatch::ConnectionsHandler* connection_;
 
    /** Used to callback the clients default update() method (as given on connect()) */
-   I_Callback* updateClient_;
+   org::xmlBlaster::client::I_Callback* updateClient_;
    
    /** used to temporarly store the failsafe notification address (if any). Once initFailsafe is called, this
     * pointer is set to NULL again. This way connection_.initFailsafe will be invoked even if the user has
     * called XmlBlasterAccess::initFailsafe before the connection_ member has been created.
     */
-   I_ConnectionProblems* connectionProblems_;
-   Global& global_;
-   Log&    log_;
-   string  instanceName_;
+   org::xmlBlaster::client::I_ConnectionProblems* connectionProblems_;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
+   std::string  instanceName_;
    
 public:
    /**
     * Create an xmlBlaster accessor. 
-    * @param glob Your environment handle or null to use the default Global.instance()
-    * @param instanceName is the name to give to this instance of xmlBlasterAccess. It is used to map the
+    * @param glob Your environment handle or null to use the default org::xmlBlaster::util::Global.instance()
+    * @param instanceName is the name to give to this instance of xmlBlasterAccess. It is used to std::map the
     * connections to a particular instance of XmlBlasterAccess (there will be one connection set 
     * such instance name. This way you can use the same connections for several instances of xmlBlasterAccess
     * provided they all have the same name. This name is also used to identify instances on logging and when
     * throwing exceptions.
     */
-   XmlBlasterAccess(Global& global);
+   XmlBlasterAccess(org::xmlBlaster::util::Global& global);
 
    virtual ~XmlBlasterAccess();
 
    /**
-    * Login to xmlBlaster
+    * org::xmlBlaster::util::Login to xmlBlaster
     * @param qos Your configuration desire
     * @param client If not null callback messages will be routed to client.update()
     */
-   ConnectReturnQos connect(const ConnectQos& qos, I_Callback *clientAddr);
+   org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos, org::xmlBlaster::client::I_Callback *clientAddr);
 
    /**
-    * Extracts address data from ConnectQos (or adds default if missing)
-    * and instantiate a callback server as specified in ConnectQos
+    * Extracts address data from org::xmlBlaster::util::qos::ConnectQos (or adds default if missing)
+    * and instantiate a callback server as specified in org::xmlBlaster::util::qos::ConnectQos
     */
    void createDefaultCbServer();
 
@@ -95,12 +88,12 @@ public:
     * @param type  E.g. "IOR" or "RMI", if null we use the same protocol as our client access (corba is default).
     * @param version The version of the driver, e.g. "1.0"
     */
-   I_CallbackServer* initCbServer(const string& loginName, const string& type, const string& version);
+   org::xmlBlaster::client::protocol::I_CallbackServer* initCbServer(const std::string& loginName, const std::string& type, const std::string& version);
 
    /**
     * Initializes the little client helper framework for authentication.
     * <p />
-    * The first goal is a proper loginQoS xml string for authentication.
+    * The first goal is a proper loginQoS xml std::string for authentication.
     * <p />
     * The second goal is to intercept the messages for encryption (or whatever the
     * plugin supports).
@@ -111,10 +104,10 @@ public:
     *   Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
     * </pre>
     */
-   void initSecuritySettings(const string& secMechanism, const string& secVersion);
+   void initSecuritySettings(const std::string& secMechanism, const std::string& secVersion);
 
    /**
-    * Logout from the server. 
+    * org::xmlBlaster::util::Logout from the server. 
     * <p>
     * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
     * Note that this kills the server ping thread as well (if in failsafe mode)
@@ -127,29 +120,29 @@ public:
     *         <code>false</code> failure on logout
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
-   bool disconnect(const DisconnectQos& qos, bool flush=true, bool shutdown=true, bool shutdownCb=true);
+   bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos, bool flush=true, bool shutdown=true, bool shutdownCb=true);
 
    /**
     * Create a descriptive ME, for logging only
     * @return e.g. "/node/heron/client/joe/3"
     */
-   string getId();
+   std::string getId();
 
    /**
     * The public session ID of this login session. 
     */
-   string getSessionName();
+   std::string getSessionName();
 
    /**
     * Access the login name.
     * @return your login name or null if you are not logged in
     */
-   string getLoginName();
+   std::string getLoginName();
 
    /**
     * Allows to set the node name for nicer logging.
     */
-   void setServerNodeId(const string& nodeId);
+   void setServerNodeId(const std::string& nodeId);
 
    /**
     * The cluster node id (name) to which we want to connect.
@@ -158,49 +151,49 @@ public:
     * Is configurable with "-server.node.id golan"
     * @return e.g. "golan", defaults to "xmlBlaster"
     */
-   string getServerNodeId() const;
+   std::string getServerNodeId() const;
 
    /**
     * Put the given message entry into the queue
     */
-   // MsgQueueEntry queueMessage(const MsgQueueEntry& entry);
+   // org::xmlBlaster::util::queue::MsgQueueEntry queueMessage(const org::xmlBlaster::util::queue::MsgQueueEntry& entry);
 
    /**
     * Put the given message entry into the queue
     */
-   // vector<MsgQueueEntry*> queueMessage(const vector<MsgQueueEntry*>& entries);
+   // std::vector<MsgQueueEntry*> queueMessage(const std::vector<MsgQueueEntry*>& entries);
 
-   // SubscribeReturnQos
-//   string subscribe(const string& xmlKey, const string& qos);
-   SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
+   // org::xmlBlaster::client::qos::SubscribeReturnQos
+//   std::string subscribe(const std::string& xmlKey, const std::string& qos);
+   org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
 
-//   vector<MessageUnit> get(const string&  xmlKey, const string& qos);
-   vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
+//   std::vector<org::xmlBlaster::util::MessageUnit> get(const std::string&  xmlKey, const std::string& qos);
+   std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
 
-   // UnSubscribeReturnQos[]
-//   vector<string> unSubscribe(const string&  xmlKey, const string&  qos);
-   vector<UnSubscribeReturnQos> unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
+   // org::xmlBlaster::client::qos::UnSubscribeReturnQos[]
+//   std::vector<std::string> unSubscribe(const std::string&  xmlKey, const std::string&  qos);
+   std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos);
 
-   // PublishReturnQos
-//   string publish(const MessageUnit& msgUnit);
-   PublishReturnQos publish(const MessageUnit& msgUnit);
+   // org::xmlBlaster::client::qos::PublishReturnQos
+//   std::string publish(const org::xmlBlaster::util::MessageUnit& msgUnit);
+   org::xmlBlaster::client::qos::PublishReturnQos publish(const org::xmlBlaster::util::MessageUnit& msgUnit);
 
-   void publishOneway(const vector<MessageUnit>& msgUnitArr);
+   void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit>& msgUnitArr);
 
-//   vector<string> publishArr(const vector<MessageUnit>& msgUnitArr);
-   vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr);
+//   std::vector<std::string> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit>& msgUnitArr);
+   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
 
-   // EraseReturnQos[]
-//   vector<string> erase(const string& xmlKey, const string& qos);
-   vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
+   // org::xmlBlaster::client::qos::EraseReturnQos[]
+//   std::vector<std::string> erase(const std::string& xmlKey, const std::string& qos);
+   std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
 
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message.
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
+    * @see org.xmlBlaster.client.I_Callback#update(String, org::xmlBlaster::client::key::UpdateKey, byte[], org::xmlBlaster::client::qos::UpdateQos)
     */
-   string update(const string &sessionId, UpdateKey &updateKey, void *content, long contentSize, UpdateQos &updateQos);
+   std::string update(const std::string &sessionId, org::xmlBlaster::client::key::UpdateKey &updateKey, void *content, long contentSize, org::xmlBlaster::client::qos::UpdateQos &updateQos);
 
    /**
     * Command line usage.
@@ -214,7 +207,7 @@ public:
     */
     void initFailsafe(I_ConnectionProblems* connectionProblems=NULL);
 
-    string ping();
+    std::string ping();
 
    /**
     * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.

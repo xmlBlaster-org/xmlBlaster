@@ -3,7 +3,7 @@ Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.17 2003/03/05 11:22:32 ruff Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.18 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -26,10 +26,10 @@ namespace org { namespace xmlBlaster { namespace util {
 
 // change this if it does not compile correctly
 // #define STRING_TO_TIMESTAMP(x) atoll(x)
-// #define      STRING_TO_TIMESTAMP(x) lexical_cast<Timestamp>(x)
+// #define      STRING_TO_TIMESTAMP(x) lexical_cast<org::xmlBlaster::util::Timestamp>(x)
 
 #ifndef _UTIL_GLOBAL_H
-   class Global; // forward declaration for (chicken-egg)
+   class org::xmlBlaster::util::Global; // forward declaration for (chicken-egg)
 #endif
 
 

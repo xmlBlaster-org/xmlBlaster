@@ -19,11 +19,6 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define  SERVER_HEADER 1 // does #include <generated/xmlBlasterS.h> with CompatibleCorba.h, OMNIORB: use -Wbh=.h to force this extension
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
-using namespace std;
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util::qos;
 
 namespace org { 
  namespace xmlBlaster {
@@ -40,18 +35,18 @@ namespace org {
    class Dll_Export DefaultCallback : public virtual POA_clientIdl::BlasterCallback {
 
    protected:
-      Global&       global_;
-      Log&          log_;
-      MsgKeyFactory msgKeyFactory_;
-      MsgQosFactory msgQosFactory_;
+      org::xmlBlaster::util::Global&       global_;
+      org::xmlBlaster::util::Log&          log_;
+      org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
+      org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
 
    private:
-      string me() {
+      std::string me() {
          return "DefaultCallback-" + loginName_;
       }
 
-      I_Callback *boss_;
-      string loginName_;
+      org::xmlBlaster::client::I_Callback *boss_;
+      std::string loginName_;
       // BlasterCache cache_;
 
       
@@ -66,7 +61,7 @@ namespace org {
        * Construct a persistently named object.
        */
    public:
-      DefaultCallback(Global& global, const string &name="", I_Callback *boss=0,
+      DefaultCallback(org::xmlBlaster::util::Global& global, const std::string &name="", org::xmlBlaster::client::I_Callback *boss=0,
                       /*BlasterCache*/ void* /*cache*/=0);
 
       DefaultCallback(const DefaultCallback &el) 
@@ -94,14 +89,14 @@ namespace org {
        * You don't need to use this little method, but it nicely converts
        * the raw CORBA BlasterCallback.update() with raw Strings and arrays
        * in corresponding objects and calls for every received message
-       * the I_Callback.update().
+       * the org::xmlBlaster::client::I_Callback.update().
        * <p />
-       * So you should implement in your client the I_Callback interface -
+       * So you should implement in your client the org::xmlBlaster::client::I_Callback interface -
        * suppling the update() method.
        *
        * @param loginName        The name to whom the callback belongs
-       * @param msgUnit      Contains a MessageUnit structs (your message)
-       * @param qos              Quality of Service of the MessageUnit
+       * @param msgUnit      Contains a org::xmlBlaster::util::MessageUnit structs (your message)
+       * @param qos              Quality of Service of the org::xmlBlaster::util::MessageUnit
        */
       serverIdl::XmlTypeArr* update(const char* sessionId,
                                     const serverIdl::MessageUnitArr& msgUnitArr)

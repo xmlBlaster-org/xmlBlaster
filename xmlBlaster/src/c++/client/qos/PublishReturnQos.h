@@ -14,7 +14,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * <pre>
  *   &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='HelloWorld'/>
+ *     &lt;key oid='HelloWorld'/>
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
@@ -26,18 +26,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/StatusQosData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export PublishReturnQos
 {
 private:
-   string        ME;
-   Global&       global_;
-   StatusQosData data_;
+   std::string        ME;
+   org::xmlBlaster::util::Global&       global_;
+   org::xmlBlaster::util::qos::StatusQosData data_;
 
 public:
 
@@ -49,9 +45,9 @@ public:
     * </p>
     * @param The factory which knows how to serialize and parse me
     */
-   PublishReturnQos(Global& global, const StatusQosData& data);
+   PublishReturnQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::StatusQosData& data);
 
-   PublishReturnQos(Global& global);
+   PublishReturnQos(org::xmlBlaster::util::Global& global);
 
    PublishReturnQos(const PublishReturnQos& data);
 
@@ -61,44 +57,44 @@ public:
     * Access state of message on update().
     * @return "OK", "ERROR" etc. See Constants::java
     */
-   string getState() const;
+   std::string getState() const;
 
    /**
     * Sets the state (used when queuing messages and giving back the status to the client
     */
-    void setState(const string& state);
+    void setState(const std::string& state);
 
    /**
     * Access state of message on update().
     * @return The human readable info text
     */
-   string getStateInfo() const;
+   std::string getStateInfo() const;
 
    /**
     * Access key oid. 
     * @return The unique identifier of a message
     */
-   string getKeyOid() const;
+   std::string getKeyOid() const;
 
    /**
     * Sets the soid (used when queuing messages and giving back the status to the client
     */
-    void setKeyOid(const string& oid);
+    void setKeyOid(const std::string& oid);
 
    /** 
     * The approximate receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
     * In milliseconds elapsed since midnight, January 1, 1970 UTC
     */
-   Timestamp getRcvTimestamp() const;
+   org::xmlBlaster::util::Timestamp getRcvTimestamp() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the status as a XML ASCII string
+    * @return internal state of the status as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

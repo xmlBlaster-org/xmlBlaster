@@ -15,12 +15,18 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  */
 
 #include <client/protocol/CbServerPluginManager.h>
-#include <client/protocol/corba/CorbaDriverFactory.h>
+#ifdef COMPILE_CORBA_PLUGIN
+#  include <client/protocol/corba/CorbaDriverFactory.h>
+#endif
+#ifdef COMPILE_SOCKET_PLUGIN
+#   include <client/protocol/socket/SocketDriverFactory.h>
+#endif
 #include <util/Global.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
 
 CbServerPluginManager::CbServerPluginManager(Global& global)
    : ME("CbServerPluginManager"),
@@ -53,19 +59,14 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
 //   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
    if (type == "IOR") {
-/*
-      ServerMap::iterator iter = serverMap_.find(completeName);
-      if (iter == serverMap_.end()) {
-         corba::CorbaDriver* driver = new corba::CorbaDriver(global_, instanceName + "[callback]");
-         // probably notify the dispatcher framework here since they
-         // share the same object.
-         ServerMap::value_type el(completeName, driver);
-         serverMap_.insert(el);
-         iter = serverMap_.find(completeName);
-      }
-      return *((*iter).second);
-*/
-      return corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     ifdef COMPILE_CORBA_PLUGIN
+      return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     endif
+   }
+   else if (type == "SOCKET") {
+#     ifdef COMPILE_SOCKET_PLUGIN
+      return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     endif
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
@@ -88,8 +89,16 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
    if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
-      corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+#     ifdef COMPILE_CORBA_PLUGIN
+      org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
       return;
+#     endif
+   }
+   else if (type == "SOCKET") {
+#     ifdef COMPILE_SOCKET_PLUGIN
+      org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+      return;
+#     endif
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +

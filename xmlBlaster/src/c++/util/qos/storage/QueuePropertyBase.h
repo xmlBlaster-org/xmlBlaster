@@ -3,13 +3,13 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.12 2003/05/29 10:35:03 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.13 2003/07/03 20:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding callback queue properties.
  * <p />
- * See ConnectQos for XML syntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML syntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
@@ -23,9 +23,6 @@ Version:   $Id: QueuePropertyBase.h,v 1.12 2003/05/29 10:35:03 ruff Exp $
 
 #include <string>
 #include <vector>
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
@@ -43,30 +40,30 @@ extern Dll_Export  const double DEFAULT_reloadSwapLevelRatio;
 extern Dll_Export  const double DEFAULT_reloadSwapBytesRatio;
 extern Dll_Export  const Timestamp DEFAULT_minExpires;
 extern Dll_Export  const Timestamp DEFAULT_maxExpires;
-extern Dll_Export  const string DEFAULT_onOverflow;
-extern Dll_Export  const string DEFAULT_onFailure;
+extern Dll_Export  const std::string DEFAULT_onOverflow;
+extern Dll_Export  const std::string DEFAULT_onFailure;
 
 // static variables
-extern Dll_Export  string DEFAULT_type;
-extern Dll_Export  string DEFAULT_version;
+extern Dll_Export  std::string DEFAULT_type;
+extern Dll_Export  std::string DEFAULT_version;
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue/expires=3600000" milliseconds */
 extern Dll_Export  long DEFAULT_expires;
 
-typedef vector<AddressBase> AddressVector;
+typedef std::vector<org::xmlBlaster::util::qos::address::AddressBase> AddressVector;
 
 class Dll_Export QueuePropertyBase
 {
    friend class QueuePropertyFactory;
 protected:
-   string  ME; //  = "QueuePropertyBase";
-   Global& global_;
-   Log&    log_;
+   std::string  ME; //  = "QueuePropertyBase";
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
    /** The queue plugin type "CACHE" "RAM" "JDBC" */
-   string type_;
+   std::string type_;
 
    /** The queue plugin version "1.0" or similar */
-   string version_;
+   std::string version_;
 
    /** The max setting allowed for queue maxEntries is adjustable with property "queue/maxEntries=1000" (1000 messages is default) */
    long maxEntriesDefault_;
@@ -88,7 +85,7 @@ protected:
 
 
    /** The unique protocol relating, e.g. "IOR" */
-   string relating_; //  = Constants.RELATING_CALLBACK;
+   std::string relating_; //  = Constants.RELATING_CALLBACK;
    /** Span of life of this queue in milliseconds */
    Timestamp expires_; // = DEFAULT_expires;
    /** The max. capacity of the queue in number of entries */
@@ -114,20 +111,20 @@ protected:
    long maxBytesCache_;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
-   string onOverflow_;
+   std::string onOverflow_;
 
    /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADMESSAGE */
-   string onFailure_;
+   std::string onFailure_;
 
    /** The corresponding callback address */
-   AddressVector addressArr_; // = new AddressBase[0];
+   AddressVector addressArr_; // = new org::xmlBlaster::util::qos::address::AddressBase[0];
 
    /** To allow specific configuration parameters for specific cluster nodes */
-   string nodeId_; // = null;
+   std::string nodeId_; // = null;
 
-   string propertyPrefix_;
+   std::string propertyPrefix_;
 
-   string rootTagName_;
+   std::string rootTagName_;
 
    void copy(const QueuePropertyBase& prop)
    {
@@ -159,7 +156,7 @@ protected:
    /**
     * Configure property settings, add your own defaults in the derived class
     */
-   /*inline*/ void initialize(const string& propertyPrefix);
+   /*inline*/ void initialize(const std::string& propertyPrefix);
 
    void setMaxExpires(Timestamp maxExpires)
    {
@@ -187,9 +184,9 @@ public:
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
-   QueuePropertyBase(Global& global, const string& nodeId);
+   QueuePropertyBase(org::xmlBlaster::util::Global& global, const std::string& nodeId);
 
-   QueuePropertyBase(Global& global, Log& log, const string& nodeId);
+   QueuePropertyBase(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::Log& log, const std::string& nodeId);
 
    QueuePropertyBase(const QueuePropertyBase& prop);
 
@@ -200,13 +197,13 @@ public:
    /**
     * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
     */
-   void setRelating(const string& relating);
+   void setRelating(const std::string& relating);
 
    /**
     * Returns the queue type.
     * @return relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
-   string getRelating() const;
+   std::string getRelating() const;
 
    /**
     * Span of life of this queue.
@@ -239,28 +236,28 @@ public:
     * <br />
     * @return e.g. "CACHE"
     */
-   string getType() const;
+   std::string getType() const;
 
    /**
     * The plugin type
     * <br />
     * @param type
     */
-   void setType(const string& type);
+   void setType(const std::string& type);
 
    /**
     * The plugin version. 
     * <br />
     * @return e.g. "1.0"
     */
-   string getVersion() const;
+   std::string getVersion() const;
 
    /**
     * The plugin version
     * <br />
     * @param version
     */
-   void setVersion(const string& version);
+   void setVersion(const std::string& version);
 
    /**
     * Max number of messages for the cache of this queue.
@@ -365,13 +362,13 @@ public:
     *
     * @param onOverflow The callback onOverflow, e.g. "et@mars.univers"
     */
-   void setOnOverflow(const string& onOverflow);
+   void setOnOverflow(const std::string& onOverflow);
 
    /**
     * Returns the onOverflow.
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
-   string getOnOverflow() const;
+   std::string getOnOverflow() const;
 
    /*
     * The default mode, when queue is full the publisher blocks until
@@ -388,13 +385,13 @@ public:
     *
     * @param onFailure The callback onFailure, e.g. "et@mars.univers"
     */
-   void setOnFailure(const string& onFailure);
+   void setOnFailure(const std::string& onFailure);
 
    /**
     * Returns the onFailure.
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
-   string getOnFailure() const;
+   std::string getOnFailure() const;
 
    /**
     * The default mode is to send a dead letter if callback fails permanently
@@ -407,37 +404,37 @@ public:
    AddressVector getAddresses() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
    /**
     * returns the global object
     */
-   Global& getGlobal();
+   org::xmlBlaster::util::Global& getGlobal();
 
 //   void cleanupAddresses();
 
-   string getPropertyPrefix() const;
-   void setpropertyPrefix(const string& prefix);
+   std::string getPropertyPrefix() const;
+   void setpropertyPrefix(const std::string& prefix);
 
    /**
     * The command line prefix to configure the queue or msgUnitStore
     * @return e.g. "persistence/msgUnitStore/" or "queue/history/"
     */
-   string getPrefix();
+   std::string getPrefix();
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
     * @param prop e.g. "maxEntries"
     * @return e.g. "-queue/history/maxEntries" or "-queue/history/maxEntriesCache"
     */
-   string getPropName(const string& token);
+   std::string getPropName(const std::string& token);
 
-   string getRootTagName() const;
+   std::string getRootTagName() const;
 
 };
 

@@ -8,8 +8,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 #ifndef _CLIENT_PROTOCOL_CORBA_NAMESERVERCONTROL_H
 #define _CLIENT_PROTOCOL_CORBA_NAMESERVERCONTROL_H
-using namespace std;
-using namespace org::xmlBlaster::util;
+
+
 
 #include <vector>
 #ifndef STLPORT // Is automatically set by STLport if used, problem is on Linux/g++: STLport-4.5.1/stlport/stl/_algo.h:180: declaration of `operator MICO_LongDouble' as non-function
@@ -22,7 +22,7 @@ using namespace org::xmlBlaster::util;
 #include <util/StringStripper2.h>
 #include <util/XmlBlasterException.h>
 
-typedef vector<string> ListType;
+typedef std::vector<std::string> ListType;
 
 namespace org { namespace xmlBlaster {
 namespace client { namespace protocol { namespace corba {
@@ -37,22 +37,22 @@ namespace client { namespace protocol { namespace corba {
 
    private:
 
-   string me() {
+   std::string me() {
       return "NameServerControl";
    }
 
    CosNaming::NamingContext_var namingContext_;
-   StringStripper2              stripper_;
+   org::xmlBlaster::util::StringStripper2              stripper_;
 
    public:
    /**
     * This contructor takes the orb (which must be a valid orb) and two
-    * string separators. It retrieves a reference to the NameServer
+    * std::string separators. It retrieves a reference to the NameServer
     * sep1: is the main separator, i.e. which separates the names from
     *       each other.
-    * sep2: is the string which separates the name (or id) from the kind
+    * sep2: is the std::string which separates the name (or id) from the kind
     */ 
-   NameServerControl(CORBA::ORB_ptr orb, string sep1="/", string sep2=".") : stripper_(sep1,sep2) {
+   NameServerControl(CORBA::ORB_ptr orb, std::string sep1="/", std::string sep2=".") : stripper_(sep1,sep2) {
       // Get naming service
       CORBA::Object_var obj; //  = (CORBA::Object_var)0;
       try {
@@ -63,30 +63,30 @@ namespace client { namespace protocol { namespace corba {
 #        ifndef XMLBLASTER_OMNIORB
          cerr << "Thrown invalid name exception: " << ex << endl;
 #        endif
-         string txt = me() + ".NameServerControl()";
-         string msg = "can't resolve the NameService";
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".NameServerControl()";
+         std::string msg = "can't resolve the NameService";
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
 
       if(CORBA::is_nil(obj.in())) {
-         string txt = me() + ".NameServerControl()";
-         string msg = "NameService in not a nil reference";
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".NameServerControl()";
+         std::string msg = "NameService in not a nil reference";
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
 
       try {
          namingContext_ = CosNaming::NamingContext::_narrow(obj.in());
       }
       catch (const CORBA::Exception & ex) {
-         string msg="Corba Exception " + to_string(ex);
-         string txt = me() + ".NameServerControl()";
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string msg="Corba Exception " + to_string(ex);
+         std::string txt = me() + ".NameServerControl()";
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
       
       if(CORBA::is_nil(namingContext_.in())) {
-         string txt = me() + ".NameServerControl()";
-         string msg = "NameService is not a NamingContext reference";
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".NameServerControl()";
+         std::string msg = "NameService is not a NamingContext reference";
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
    }
 
@@ -94,7 +94,7 @@ namespace client { namespace protocol { namespace corba {
     * @param relativeContext A relative context in the name service
     * @see Other constructor
     */ 
-   NameServerControl(CosNaming::NamingContext_var &relativeContext, string sep1="/", string sep2=".") :
+   NameServerControl(CosNaming::NamingContext_var &relativeContext, std::string sep1="/", std::string sep2=".") :
       namingContext_(relativeContext), stripper_(sep1,sep2) {
    }
 
@@ -104,11 +104,11 @@ namespace client { namespace protocol { namespace corba {
    * @exception On problems or if reference is nil
    * @see #resolve(CosNaming::Name &)
    */
-   CORBA::Object_ptr resolve(const string &name) {
-      vector<pair<string,string> > nameVector = stripper_.strip(name);
+   CORBA::Object_ptr resolve(const std::string &name) {
+      std::vector<std::pair<std::string,std::string> > nameVector = stripper_.strip(name);
       CosNaming::Name objectName;
       objectName.length(nameVector.size());
-      for (string::size_type i=0; i < nameVector.size(); i++) {
+      for (std::string::size_type i=0; i < nameVector.size(); i++) {
          objectName[i].id   = 
             CORBA::string_dup(nameVector[i].first.c_str());
          objectName[i].kind = 
@@ -129,7 +129,7 @@ namespace client { namespace protocol { namespace corba {
       try {
          CORBA::Object_ptr obj = namingContext_->resolve(nameComponent);
          if (CORBA::is_nil(obj)) {
-            string txt = "Can't resolve CORBA NameService entry for '" +
+            std::string txt = "Can't resolve CORBA NameService entry for '" +
                            NameServerControl::getString(nameComponent) +"', entry is nil";
             //log_.error(me() + ".NoAuthService", txt);
             throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", 
@@ -138,19 +138,19 @@ namespace client { namespace protocol { namespace corba {
          return obj;
       }
       catch(const CosNaming::NamingContext::NotFound& ex) {
-         string txt = me() + ".resolve()";
-         string msg = "CORBA CosNaming::NamingContext::NotFound - name not found exception '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".resolve()";
+         std::string msg = "CORBA CosNaming::NamingContext::NotFound - name not found exception '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
       catch(const CosNaming::NamingContext::CannotProceed& ex) {
-         string txt = me() + ".bind()";
-         string msg = "CORBA CosNaming::NamingContext::CannotProceed '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".bind()";
+         std::string msg = "CORBA CosNaming::NamingContext::CannotProceed '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
       catch(const CosNaming::NamingContext::InvalidName & ex) {
-         string txt = me() + ".bind()";
-         string msg = "CORBA CosNaming::NamingContext::InvalidName '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
-         throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
+         std::string txt = me() + ".bind()";
+         std::string msg = "CORBA CosNaming::NamingContext::InvalidName '" + NameServerControl::getString(nameComponent) + "': " + to_string(ex);
+         throw org::xmlBlaster::util::XmlBlasterException("communication.noConnection", "client", txt, "en", msg);
       }
    }
 
@@ -160,7 +160,7 @@ namespace client { namespace protocol { namespace corba {
     * @return never CORBA::nil
     * @see #resolve(CosNaming::Name &)
     */
-   CORBA::Object_ptr resolve(const string &id, const string &kind) {
+   CORBA::Object_ptr resolve(const std::string &id, const std::string &kind) {
       CosNaming::Name objectName;
       objectName.length(1);
       objectName[0].id =  CORBA::string_dup(id.c_str());
@@ -177,32 +177,32 @@ namespace client { namespace protocol { namespace corba {
    }
 
    /**
-    * Creates a string representation of a NameService name hierarchy. 
+    * Creates a std::string representation of a NameService name hierarchy. 
     * This is useful for logging
     * @return e.g. "xmlBlaster.MOM/heron.MOM"
     */ 
-   static string getString(CosNaming::Name nameComponent, string sep1="/", string sep2=".") {
-      string ret = "";
+   static std::string getString(CosNaming::Name nameComponent, std::string sep1="/", std::string sep2=".") {
+      std::string ret = "";
       for(CORBA::ULong i=0; i<nameComponent.length(); i++) {
          if (i > 0) {
             ret += sep1;
          }
-         ret += string(nameComponent[i].id) + 
+         ret += std::string(nameComponent[i].id) + 
                      ((nameComponent[i].kind != 0 && *nameComponent[i].kind != 0) ?
-                     string(sep2) + string(nameComponent[i].kind) : string(""));
+                     std::string(sep2) + std::string(nameComponent[i].kind) : std::string(""));
       }
       return ret;
    }
 
    /**
-    * Creates a string representation of a NameService name hierarchy. 
+    * Creates a std::string representation of a NameService name hierarchy. 
     * This is useful for logging
     * @param id "xmlBlaster"
     * @param kind "MOM"
     * @return e.g. "xmlBlaster.MOM" with sep2_=="."
     */ 
-   static string getString(const string &id, const string &kind, string sep2=".") {
-      return id + ((kind.size() > 0) ? string(sep2) + kind : string(""));
+   static std::string getString(const std::string &id, const std::string &kind, std::string sep2=".") {
+      return id + ((kind.size() > 0) ? std::string(sep2) + kind : std::string(""));
    }
 
 }; // class NameServerControl

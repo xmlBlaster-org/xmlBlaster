@@ -3,17 +3,16 @@ Name:      QueuePropertyFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyFactory.h,v 1.5 2003/01/16 18:03:56 laghi Exp $
+Author:    laghi
 ------------------------------------------------------------------------------*/
 
 
 /**
- * Factory to construct QueueProperty objects
+ * Factory to construct org::xmlBlaster::util::queue::QueueProperty objects
  * <p />
- * See ConnectQos for XML syntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML syntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
-
 #ifndef _UTIL_QUEUE_QUEUEPROPERTYFACTORY_H
 #define _UTIL_QUEUE_QUEUEPROPERTYFACTORY_H
 
@@ -23,24 +22,21 @@ Version:   $Id: QueuePropertyFactory.h,v 1.5 2003/01/16 18:03:56 laghi Exp $
 #include <util/qos/address/Address.h>
 #include <util/qos/address/CallbackAddress.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
 class Dll_Export QueuePropertyFactory : public SaxHandlerBase
 {
 private:
-   const string       ME;
+   const std::string       ME;
    QueuePropertyBase  prop_;
    bool               inAddress_;
-   AddressFactory     addressFactory_;
-   Address*           address_;
-   CallbackAddress*   cbAddress_;
+   org::xmlBlaster::util::qos::address::AddressFactory     addressFactory_;
+   org::xmlBlaster::util::qos::address::Address*           address_;
+   org::xmlBlaster::util::qos::address::CallbackAddress*   cbAddress_;
    XMLCh*             RELATING;
 
 public:
-   QueuePropertyFactory(Global& global);
+   QueuePropertyFactory(org::xmlBlaster::util::Global& global);
 
    ~QueuePropertyFactory();
 
@@ -60,9 +56,9 @@ public:
 
 /*
    QueuePropertyBase&
-   readQueueProperty(const string& literal, QueuePropertyBase& prop);
+   readQueueProperty(const std::string& literal, QueuePropertyBase& prop);
 */
-   QueuePropertyBase readObject(const string& literal);
+   QueuePropertyBase readObject(const std::string& literal);
 
 };
 

@@ -46,11 +46,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <string>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
-// using namespace org::xmlBlaster::util::qos;
 
-using namespace std;
+
+// 
+
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -60,7 +60,7 @@ private:
 
    mutable bool isExpired_; // = false; // cache the expired state for performance reasons
 
-   TopicProperty* topicProperty_;
+   org::xmlBlaster::util::qos::TopicProperty* topicProperty_;
 
    /**
     * A message lease lasts forever if not otherwise specified. <p />
@@ -68,17 +68,17 @@ private:
     * <code>message.lease.maxLifeTime=3600000 # One hour lease</code><br />
     * Every message can set the lifeTime value between 1 and maxLifeTime, 
     * -1L sets the life cycle on forever.
-    */ // TODO: Change to use glob instead of Global singleton! What about performance? Put variable into Global?
+    */ // TODO: Change to use glob instead of org::xmlBlaster::util::Global singleton! What about performance? Put variable into org::xmlBlaster::util::Global?
    long maxLifeTime_;
 
 /*
    {
-      return Global.instance().getProperty().get("message.maxLifeTime", -1L);
+      return org::xmlBlaster::util::Global.instance().getProperty().get("message.maxLifeTime", -1L);
    }
 */
 
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
-   string subscriptionId_;
+   std::string subscriptionId_;
 
    Prop<bool> subscribeable_;
 
@@ -109,10 +109,10 @@ private:
    long remainingLifeStatic_; // = -1;
 
    /** the sender (publisher) of this message (unique loginName) */
-   mutable SessionQos sender_;
+   mutable org::xmlBlaster::util::qos::SessionQos sender_;
 
    /** The priority of the message */
-   PriorityEnum priority_; // = PriorityEnum.NORM_PRIORITY;
+   org::xmlBlaster::util::PriorityEnum priority_; // = org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY;
 
    void init();
 
@@ -120,11 +120,11 @@ protected:
    /**
     * ArrayList for loginQoS, holding all destination addresses (Destination objects)
     */
-   vector<Destination> destinationList_;
+   std::vector<Destination> destinationList_;
 
 
    // TODO: Pass with client QoS!!!
-   bool receiveTimestampHumanReadable_; // = Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
+   bool receiveTimestampHumanReadable_; // = org::xmlBlaster::util::Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
 
    Prop<bool> forceDestroy_;
 
@@ -137,7 +137,7 @@ public:
     */
 //   long size_;
 
-   MsgQosData(Global& global, const string& serialData="");
+   MsgQosData(org::xmlBlaster::util::Global& global, const std::string& serialData="");
 
    MsgQosData(const MsgQosData& data);
 
@@ -181,13 +181,13 @@ public:
     * If Pub/Sub style update: contains the subscribe ID which caused this update
     * @param subscriptionId null if PtP message
     */
-   void setSubscriptionId(const string& subscriptionId);
+   void setSubscriptionId(const std::string& subscriptionId);
 
    /**
     * If Pub/Sub style update: contains the subscribe ID which caused this update
     * @return subscribeId or null if PtP message
     */
-   string getSubscriptionId() const;
+   std::string getSubscriptionId() const;
 
    /**
     * @param persistent mark a message as persistent
@@ -229,13 +229,13 @@ public:
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
-   SessionQos getSender() const;
+   org::xmlBlaster::util::qos::SessionQos getSender() const;
 
    /**
     * Access sender name.
     * @param loginName of sender
     */
-   void setSender(const SessionQos& senderSessionQos) const;
+   void setSender(const org::xmlBlaster::util::qos::SessionQos& senderSessionQos) const;
 
    /**
     * Set > 0 if the message probably is redelivered (number of retries). 
@@ -279,15 +279,15 @@ public:
     * @return priority 0-9
     * @see org.xmlBlaster.util.enum.PriorityEnum
     */
-   PriorityEnum getPriority() const;
+   org::xmlBlaster::util::PriorityEnum getPriority() const;
 
    /**
-    * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
-    * PriorityEnum.MIN_PRIORITY (0) is slowest
-    * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
+    * Set message priority value, org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY (5) is default. 
+    * org::xmlBlaster::util::PriorityEnum.MIN_PRIORITY (0) is slowest
+    * whereas org::xmlBlaster::util::PriorityEnum.MAX_PRIORITY (9) is highest priority.
     * @see org.xmlBlaster.util.enum.PriorityEnum
     */
-   void setPriority(PriorityEnum priority);
+   void setPriority(org::xmlBlaster::util::PriorityEnum priority);
 
    /**
     * Internal use only, is this message sent from the persistence layer?
@@ -347,7 +347,7 @@ public:
     *
     * @see org.xmlBlaster.util.Timestamp
     */
-   string getXmlRcvTimestamp();
+   std::string getXmlRcvTimestamp();
 
    /**
     * Set timestamp to current time.
@@ -359,10 +359,10 @@ public:
     * This should only be used with PTP style messaging<br />
     * Check <code>if (isPtp()) ...</code> before calling this method
     *
-    * @return a valid ArrayList containing 0 - n strings with destination names (loginName of clients)<br />
+    * @return a valid ArrayList containing 0 - n std::strings with destination names (loginName of clients)<br />
     *         null if Publish/Subscribe style is used
     */
-   vector<Destination> getDestinations() const;
+   std::vector<Destination> getDestinations() const;
 
    /**
     * Add a destination. 
@@ -370,16 +370,16 @@ public:
    void addDestination(const Destination& destination);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the message QoS as a XML ASCII string
+    * @return internal state of the message QoS as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
-   void setTopicProperty(const TopicProperty& prop);
+   void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& prop);
 
-   TopicProperty getTopicProperty();
+   org::xmlBlaster::util::qos::TopicProperty getTopicProperty();
 
    bool hasTopicProperty() const;
 

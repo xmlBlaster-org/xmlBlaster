@@ -7,8 +7,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/PublishQueueEntry.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
 
-
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
+
+using namespace std;
+using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool persistent)
    : MsgQueueEntry(global, msgUnit, type, priority, persistent)

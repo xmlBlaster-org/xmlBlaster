@@ -27,16 +27,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <client/qos/UnSubscribeQos.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
-class Dll_Export EraseQos : public UnSubscribeQos
+class Dll_Export EraseQos : public org::xmlBlaster::client::qos::UnSubscribeQos
 {
 public:
-   EraseQos(Global& global);
+   EraseQos(org::xmlBlaster::util::Global& global);
 
    EraseQos(const EraseQos& qos);
 

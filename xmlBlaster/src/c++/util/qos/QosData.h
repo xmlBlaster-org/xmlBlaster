@@ -36,11 +36,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <string>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
-
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 extern Dll_Export const bool DEFAULT_isSubscribeable;
@@ -51,7 +46,7 @@ extern Dll_Export const bool DEFAULT_forceDestroy;
 
 // extern Dll_Export const bool DEFAULT_readonly;
 
-typedef vector<RouteInfo> RouteVector;
+typedef std::vector<org::xmlBlaster::util::cluster::RouteInfo> RouteVector;
 
 class Dll_Export QosData
 {
@@ -59,15 +54,15 @@ private:
    void init();
 
 protected:
-   string  ME;
-   Global& global_;
-   Log&    log_;
-   string  serialData_;
+   std::string  ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
+   std::string  serialData_;
 
    /** the state of the message, defaults to "OK" if no state is returned */
-   string state_; // = Constants::STATE_OK;
+   std::string state_; // = Constants::STATE_OK;
    /** Human readable information */
-   string stateInfo_;
+   std::string stateInfo_;
 
    /** 
     * The receive timestamp (UTC time),
@@ -78,7 +73,7 @@ protected:
    bool rcvTimestampFound_; // = false;
 
    /**
-    * ArrayList containing RouteInfo objects
+    * ArrayList containing org::xmlBlaster::util::cluster::RouteInfo objects
     */
    RouteVector routeNodeList_;
 
@@ -91,7 +86,7 @@ public:
     */
 //   long size_;
 
-   QosData(Global& global, const string& serialData="");
+   QosData(org::xmlBlaster::util::Global& global, const std::string& serialData="");
 
    QosData(const QosData& data);
 
@@ -102,24 +97,24 @@ public:
    /**
     * @param state The state of an update message
     */
-   void setState(const string& state);
+   void setState(const std::string& state);
 
    /**
     * Access state of message on update().
     * @return OK (Other values are not yet supported)
     */
-   string getState() const;
+   std::string getState() const;
 
    /**
     * @param state The human readable state text of an update message
     */
-   void setStateInfo(const string& stateInfo);
+   void setStateInfo(const std::string& stateInfo);
 
    /**
     * Access state of message on update().
     * @return The human readable info text
     */
-   string getStateInfo() const;
+   std::string getStateInfo() const;
 
    /**
     * True if the message is OK on update(). 
@@ -152,19 +147,19 @@ public:
     * So we will rearrange the stratum here. The given stratum in routeInfo
     * is used to recalculate the other nodes as well.
     */
-   void addRouteInfo(const RouteInfo& routeInfo);
+   void addRouteInfo(const org::xmlBlaster::util::cluster::RouteInfo& routeInfo);
 
    /**
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   int count(const NodeId& nodeId) const;
+   int count(const org::xmlBlaster::util::cluster::NodeId& nodeId) const;
 
    /**
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   bool dirtyRead(NodeId nodeId) const;
+   bool dirtyRead(org::xmlBlaster::util::cluster::NodeId nodeId) const;
 
    /**
     * The approximate receive timestamp (UTC time),
@@ -186,12 +181,12 @@ public:
    void touchRcvTimestamp();
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the message QoS as a XML ASCII string
+    * @return internal state of the message QoS as a XML ASCII std::string
     */
-   virtual string toXml(const string& extraOffset="") const = 0;
+   virtual std::string toXml(const std::string& extraOffset="") const = 0;
 
     // the following where not present before ...
    RouteVector getRouteNodes() const;

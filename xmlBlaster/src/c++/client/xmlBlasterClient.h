@@ -2,6 +2,7 @@
 Name:      xmlBlasterClient.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Can be used for clients to include everything
 ------------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_XMLBLASTERCLIENT_H
@@ -31,8 +32,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/key/UnSubscribeKey.h>
 #include <client/key/UpdateKey.h>
 
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
+/**
+ * Helper namespace for clients which presents all relevant xmlBlaster
+ * namespaces in a simple and short namespace 'xmlBlaster'
+ */
+namespace xmlBlaster {
+   using namespace org::xmlBlaster::util;
+   //using namespace org::xmlBlaster::util::thread;
+   //using namespace org::xmlBlaster::util::dispatch;
+   using namespace org::xmlBlaster::util::qos;
+   using namespace org::xmlBlaster::util::key;
+   using namespace org::xmlBlaster::client;
+   using namespace org::xmlBlaster::client::qos;
+   using namespace org::xmlBlaster::client::key;
+}
 
 #endif

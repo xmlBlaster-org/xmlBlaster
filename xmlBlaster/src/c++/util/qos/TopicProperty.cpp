@@ -189,7 +189,7 @@ const bool DEFAULT_readonly = false;
          ret += " readonly='" + readonlyStr + "'";
       }
       if (destroyDelay_DEFAULT_DEFAULT != destroyDelay_) {
-         ret += " destroyDelay='" + lexical_cast<string>(destroyDelay_) + "'";
+         ret += " destroyDelay='" + lexical_cast<std::string>(destroyDelay_) + "'";
       }
       ret += ">";
       //string subscriptionId;

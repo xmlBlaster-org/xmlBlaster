@@ -47,20 +47,20 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * @param name The login name of the client, for logging only
        * @param client Your implementation to receive the callback messages from xmlBlaster
        */
-      virtual void initialize(const string& name, I_Callback &client) = 0;
+      virtual void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client) = 0;
 
       /**
        * Returns the 'well known' protocol type.
        * @return E.g. "RMI", "SOCKET", "XMLRPC"
        */
-      virtual string getCbProtocol() = 0;
+      virtual std::string getCbProtocol() = 0;
          
       /**
        * Returns the current callback address.
        * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XMLRPC"
        *         or null if not known
        */
-      virtual string getCbAddress() = 0;
+      virtual std::string getCbAddress() = 0;
    
       /**
        * Stop the server

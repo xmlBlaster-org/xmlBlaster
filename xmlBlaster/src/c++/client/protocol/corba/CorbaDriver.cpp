@@ -4,17 +4,11 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The client driver for the corba protocol
 ------------------------------------------------------------------------------*/
-
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>
-
-using namespace org::xmlBlaster::util;
-
-
-using namespace std;
 
 namespace org {
  namespace xmlBlaster {
@@ -22,6 +16,11 @@ namespace org {
    namespace protocol {
     namespace corba {
 
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
 {
@@ -111,7 +110,7 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
                        "unknown node", ME + string(methodName), "en", \
                        "client-c++", "", "",                          \
-       string("type='int', msg='") + lexical_cast<string>(ex) + "'"); \
+       string("type='int', msg='") + lexical_cast<std::string>(ex) + "'"); \
    }                                                                  \
    catch (...) {                                                      \
       freeResources(deleteConnection, deleteCallback);                \
@@ -132,7 +131,6 @@ CorbaDriver::CorbaDriver()
      global_(Global::getInstance()), 
      log_(global_.getLog("client")),
      statusQosFactory_(global_), 
-     msgQosFactory_(global_)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
@@ -148,13 +146,12 @@ CorbaDriver::CorbaDriver(const CorbaDriver& corbaDriver)
      global_(corbaDriver.global_), 
      log_(corbaDriver.log_),
      statusQosFactory_(corbaDriver.global_), 
-     msgQosFactory_(corbaDriver.global_),
      orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
    defaultCallback_ = NULL;
-   if (log_.call()) log_.call("CorbaDriver", string("Constructor orbIsThreadSafe_=") + lexical_cast<string>(orbIsThreadSafe_));
+   if (log_.call()) log_.call("CorbaDriver", string("Constructor orbIsThreadSafe_=") + lexical_cast<std::string>(orbIsThreadSafe_));
 }
 
 CorbaDriver& CorbaDriver::operator =(const CorbaDriver& /*corbaDriver*/)
@@ -169,14 +166,13 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, const string instanceName
      global_(global), 
      log_(global.getLog("corba")),
      statusQosFactory_(global), 
-     msgQosFactory_(global),
      orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
 
    if (log_.call()) log_.call("CorbaDriver", string("getInstance for ") + instanceName +
-                              " orbIsThreadSafe_=" + lexical_cast<string>(orbIsThreadSafe_));
+                              " orbIsThreadSafe_=" + lexical_cast<std::string>(orbIsThreadSafe_));
 
    _COMM_TRY
       connection_ = new CorbaConnection(global_, orb);
@@ -315,8 +311,8 @@ CorbaDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
    Lock lock(mutex_, orbIsThreadSafe_);
    _COMM_TRY
-      vector<string> tmp = connection_->unSubscribe(key.toXml(), qos.toXml());
-      vector<string>::const_iterator iter = tmp.begin();
+      vector<std::string> tmp = connection_->unSubscribe(key.toXml(), qos.toXml());
+      vector<std::string>::const_iterator iter = tmp.begin();
       vector<UnSubscribeReturnQos> ret;
       while (iter != tmp.end()) {
          ret.insert(ret.end(),  UnSubscribeReturnQos(global_, statusQosFactory_.readObject(*iter)));
@@ -349,8 +345,8 @@ vector<PublishReturnQos> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
 {
    Lock lock(mutex_, orbIsThreadSafe_);
    _COMM_TRY
-      vector<string> tmp = connection_->publishArr(msgUnitArr);
-      vector<string>::const_iterator iter = tmp.begin();
+      vector<std::string> tmp = connection_->publishArr(msgUnitArr);
+      vector<std::string>::const_iterator iter = tmp.begin();
       vector<PublishReturnQos> ret;
       while (iter != tmp.end()) {
          ret.insert(ret.end(),  PublishReturnQos(global_, statusQosFactory_.readObject(*iter)) );
@@ -364,8 +360,8 @@ vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& q
 {
    _COMM_TRY
    Lock lock(mutex_, orbIsThreadSafe_);
-      vector<string> tmp = connection_->erase(key.toXml(), qos.toXml());
-      vector<string>::const_iterator iter = tmp.begin();
+      vector<std::string> tmp = connection_->erase(key.toXml(), qos.toXml());
+      vector<std::string>::const_iterator iter = tmp.begin();
       vector<EraseReturnQos> ret;
       while (iter != tmp.end()) {
          ret.insert(ret.end(),  EraseReturnQos(global_, statusQosFactory_.readObject(*iter)) );

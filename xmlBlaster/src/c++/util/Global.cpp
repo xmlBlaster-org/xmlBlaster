@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.38 2003/05/28 11:45:17 johnson Exp $
+Version:   $Id: Global.cpp,v 1.39 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,16 +14,16 @@ Version:   $Id: Global.cpp,v 1.38 2003/05/28 11:45:17 johnson Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.38 2003/05/28 11:45:17 johnson Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.39 2003/07/03 20:54:44 ruff Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.38 2003/05/28 11:45:17 johnson Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.39 2003/07/03 20:54:44 ruff Exp $";
 #endif
 
-using namespace std;
-
-using namespace org::xmlBlaster::client::protocol;
-
 namespace org { namespace xmlBlaster { namespace util {
+
+using namespace std;
+using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::client::protocol;
 
 Global::Global() : ME("Global"), logMap_(), pingerMutex_() 
 {
@@ -160,7 +160,7 @@ string Global::getBootstrapHostname() const
 {
    string bootstrapHostname = getProperty().getStringProperty(string("bootstrapHostname"), getLocalIP());
    int bootstrapPort = getProperty().getIntProperty(string("bootstrapPort"), Constants::XMLBLASTER_PORT);
-   return "http://" + bootstrapHostname + ":" + lexical_cast<string>(bootstrapPort);
+   return "http://" + bootstrapHostname + ":" + lexical_cast<std::string>(bootstrapPort);
 }
 
 string Global::getCbHostname() const

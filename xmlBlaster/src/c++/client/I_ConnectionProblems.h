@@ -3,15 +3,13 @@ Name:      I_ConnectionProblems.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_ConnectionProblems.h,v 1.7 2003/05/21 21:56:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Callback the client from XmlBlasterConnection if the connection to xmlBlaster is lost
  * or was reestablished (failsafe mode).
  * <p>
- * @version $Revision: 1.7 $
-Author:    xmlBlaster@marcelruff.info
+ * @version $Revision: 1.8 $
  * @author <a href='xmlBlaster@marcelruff.info'>Marcel Ruff</a>
  * @author <a href='laghi@swissinfo.org'>Michele Laghi</a>
  */
@@ -21,39 +19,40 @@ Author:    xmlBlaster@marcelruff.info
 
 #include <util/dispatch/I_ConnectionsHandler.h>
 
-using namespace org::xmlBlaster::util::dispatch;
-
 namespace org { namespace xmlBlaster { namespace client {
 
-typedef enum States StatesEnum;
+typedef enum org::xmlBlaster::util::dispatch::States StatesEnum;
 
 class Dll_Export I_ConnectionProblems
 {
 public:
 
    /**
-    * This is the callback method invoked from ConnectionsHandler
+    * This is the callback method invoked from org::xmlBlaster::util::dispatch::ConnectionsHandler
     * notifying the client that a connection has been established and that its status is now ALIVE.
-    * It has a bool return which informs the ConnectionsHandler what to do with the entries in the queue. 
+    * It has a bool return which informs the org::xmlBlaster::util::dispatch::ConnectionsHandler what to do with the entries in the queue. 
     * If you return 'true', then the queue is flushed (i.e. the contents of the queue are sent to 
     * xmlBlaster). If you return 'false', then the contents of the queue are left untouched. You can then 
     * erase all entries manually. Note that this method is invoked also when the connection has been 
     * established the first time.
     */
-   virtual bool reachedAlive(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler) = 0;
+   virtual bool reachedAlive(StatesEnum oldState,
+                  org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
    /**
-    * This is the callback method invoked from ConnectionsHandler
+    * This is the callback method invoked from org::xmlBlaster::util::dispatch::ConnectionsHandler
     * informing the client that the connection was lost (i.e. when the state of the
     * connectionsHandler has gone to DEAD).
     */
-   virtual void reachedDead(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler) = 0;
+   virtual void reachedDead(StatesEnum oldState,
+                  org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
    /**
-    * This is the callback method invoked from ConnectionsHandler
+    * This is the callback method invoked from org::xmlBlaster::util::dispatch::ConnectionsHandler
     * informing the client that the connection state has changed to POLLING.
     */
-   virtual void reachedPolling(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler) = 0;
+   virtual void reachedPolling(StatesEnum oldState,
+                  org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
 };
 

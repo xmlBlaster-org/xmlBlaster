@@ -15,24 +15,20 @@
 
 #include <client/key/UnSubscribeKey.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
-
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
-class Dll_Export SubscribeKey : public UnSubscribeKey
+class Dll_Export SubscribeKey : public org::xmlBlaster::client::key::UnSubscribeKey
 {
 public:
 
    /**
     * Minimal constructor.
     */
-   SubscribeKey(Global& global);
+   SubscribeKey(org::xmlBlaster::util::Global& global);
 
-   SubscribeKey(Global& global, const string& query, const string& queryType);
+   SubscribeKey(org::xmlBlaster::util::Global& global, const std::string& query, const std::string& queryType);
    
-   SubscribeKey(Global& global, const QueryKeyData& data);
+   SubscribeKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::QueryKeyData& data);
 
    SubscribeKey(const SubscribeKey& key);
 
@@ -41,17 +37,17 @@ public:
    /**
     * Set the domain for this message, can be used for a simple grouping of
     * messages to their master node with xmlBlaster clusters. 
-    * @param The domain, any chosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    * @param The domain, any chosen std::string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
     *         defaults to "" where the local xmlBlaster instance is the master of the message.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
     */
-   void setDomain(const string& domain);
+   void setDomain(const std::string& domain);
 
    /**
     * Access the domain setting
-    * @return A domain string or null
+    * @return A domain std::string or null
     */
-   string getDomain() const;
+   std::string getDomain() const;
 
 };
 

@@ -12,9 +12,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/cluster/NodeId.h>
 
-using namespace org::xmlBlaster::util;
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
 /**
@@ -25,14 +22,14 @@ namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 class Dll_Export RouteInfo
 {
 private:
-   NodeId    nodeId_;
+   org::xmlBlaster::util::cluster::NodeId    nodeId_;
    int       stratum_;
    Timestamp timestamp_;
    bool      dirtyRead_;
 
 public:
 
-   RouteInfo(Global& global);
+   RouteInfo(org::xmlBlaster::util::Global& global);
 
    /**
     * @param nodeId The unique name of the xmlBlaster instance
@@ -40,23 +37,23 @@ public:
     *                it set it to 0.
     * @param timestamp The receive timestamp of the message (nano seconds)
     */
-   RouteInfo(const NodeId& nodeId, int stratum, Timestamp timestamp);
+   RouteInfo(const org::xmlBlaster::util::cluster::NodeId& nodeId, int stratum, Timestamp timestamp);
 
    /**
     * The unique node name of the xmlBlaster instance. 
     */
-   void setNodeId(const NodeId& nodeId);
+   void setNodeId(const org::xmlBlaster::util::cluster::NodeId& nodeId);
 
    /**
     * The unique node name of the xmlBlaster instance. 
     */
-   NodeId getNodeId() const;
+   org::xmlBlaster::util::cluster::NodeId getNodeId() const;
 
    /**
     * The unique node name of the xmlBlaster instance. 
-    * @param The string representation of my name
+    * @param The std::string representation of my name
     */
-   string getId() const;
+   std::string getId() const;
 
    /**
     * The distance from the current xmlBlaster node from the
@@ -89,10 +86,10 @@ public:
    bool getDirtyRead() const;
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII std::string. 
     * @param extraOffset indenting of tags for nice output
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 };
 
 }}}}

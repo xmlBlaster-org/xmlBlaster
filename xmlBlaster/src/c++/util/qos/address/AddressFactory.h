@@ -2,54 +2,51 @@
 Name:      AddressFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.h,v 1.3 2003/01/16 18:03:56 laghi Exp $
+Comment:   Factory Object for parsing org::xmlBlaster::util::qos::address::Address objects.
+Author:    laghi
 ------------------------------------------------------------------------------*/
 
 /**
- * Factory for the creation (SAX parsing from string) of AddressBase objects.
- * The created AddressBase objects can easely be converted to Address and
- * CallbackAddress objects.
+ * Factory for the creation (SAX parsing from std::string) of org::xmlBlaster::util::qos::address::AddressBase objects.
+ * The created org::xmlBlaster::util::qos::address::AddressBase objects can easely be converted to org::xmlBlaster::util::qos::address::Address and
+ * org::xmlBlaster::util::qos::address::CallbackAddress objects.
  * See classes of the object it creates.
- * @see AddressBase
- * @see Address
- * @see CallbackAddress
+ * @see org::xmlBlaster::util::qos::address::AddressBase
+ * @see org::xmlBlaster::util::qos::address::Address
+ * @see org::xmlBlaster::util::qos::address::CallbackAddress
  */
-
 #ifndef _UTIL_CFG_ADDRESSFACTORY_H
 #define _UTIL_CFG_ADDRESSFACTORY_H
 
 #include <util/SaxHandlerBase.h>
 #include <util/qos/address/AddressBase.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 class Dll_Export AddressFactory : public SaxHandlerBase
 {
 private:
-   const string ME;
-   AddressBase* address_;
+   const std::string ME;
+   org::xmlBlaster::util::qos::address::AddressBase* address_;
 
 public:
-   AddressFactory(Global& global);
+   AddressFactory(org::xmlBlaster::util::Global& global);
 
    void reset(AddressBase& address);
 
-   AddressBase& getAddress();
+   org::xmlBlaster::util::qos::address::AddressBase& getAddress();
 
    /**
     * Called for SAX callback start tag
     */
-   // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
+   // void startElement(const std::string& uri, const std::string& localName, const std::string& name, const std::string& character, Attributes attrs)
    void startElement(const XMLCh* const name, AttributeList& attrs);
 
    /** End element. */
    // public final void endElement(String uri, String localName, String name, StringBuffer character) {
    void endElement(const XMLCh* const name);
 
-   AddressBase& readAddress(const string& litteral, AddressBase& address);
+   org::xmlBlaster::util::qos::address::AddressBase& readAddress(const std::string& litteral, org::xmlBlaster::util::qos::address::AddressBase& address);
 };
 
 }}}}} // namespaces

@@ -15,6 +15,8 @@ Comment:   Holding a query string and a prepared query object.
 # include <util/qos/Query.h>
 #include <util/Global.h>
 
+using namespace std;
+
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 Query::Query(Global& global, const string& query)

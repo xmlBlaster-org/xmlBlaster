@@ -166,7 +166,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 //         int len = attrs.getLength();
       if (getLongAttr(attrs, LIFE_TIME, tmpLong)) msgQosData_.setLifeTime(tmpLong);
       else {
-         log_.warn(ME, string("QoS <expiration> misses lifeTime attribute, setting default of ") + lexical_cast<string>(msgQosData_.getMaxLifeTime()));
+         log_.warn(ME, string("QoS <expiration> misses lifeTime attribute, setting default of ") + lexical_cast<std::string>(msgQosData_.getMaxLifeTime()));
          msgQosData_.setLifeTime(msgQosData_.getMaxLifeTime());
       }
       if (getBoolAttr(attrs, FORCE_DESTROY, tmpBool)) msgQosData_.setForceDestroy(tmpBool);

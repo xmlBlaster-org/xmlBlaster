@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.17 2003/02/18 21:24:24 laghi Exp $
+Version:   $Id: Log.cpp,v 1.18 2003/07/03 20:54:44 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -276,19 +276,19 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       //       Log.info(ME, Memory.getStatistic());
 #ifdef _TERM_WITH_COLORS_
       if (numErrorInvocations>0) {
-         info(ME, string(BLACK_RED) + "There were " + lexical_cast<string>(numErrorInvocations) +
-                  " ERRORS and " + lexical_cast<string>(numWarnInvocations) + " WARNINGS" + ESC);
+         info(ME, string(BLACK_RED) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
+                  " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
       }
       else if (numWarnInvocations>0) {
-         info(ME, string(BLACK_PINK) + "There were " + lexical_cast<string>(numErrorInvocations) +
-                  " ERRORS and " + lexical_cast<string>(numWarnInvocations) + " WARNINGS" + ESC);
+         info(ME, string(BLACK_PINK) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
+                  " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
       }
       else {
          info(ME, string(BLACK_GREEN) + "No errors/warnings were reported" + ESC);
       }
 #else
       if (numErrorInvocations>0 || numWarnInvocations>0) {
-         info(ME, string("There were ") + lexical_cast<string>(numErrorInvocations) + " ERRORS and " + (lexical_cast<string>(numWarnInvocations)) + " WARNINGS");
+         info(ME, string("There were ") + lexical_cast<std::string>(numErrorInvocations) + " ERRORS and " + (lexical_cast<std::string>(numWarnInvocations)) + " WARNINGS");
       }
       else
          info(ME, "No errors/warnings were reported");

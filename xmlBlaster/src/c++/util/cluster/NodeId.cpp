@@ -18,10 +18,10 @@ Comment:   Holds the unique name of a cluster node
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 
-using namespace org::xmlBlaster::util;
-
-
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
 
 NodeId::NodeId(Global& global, const string& id)
 : ME("NodeId"), global_(global), log_(global.getLog("cluster"))
@@ -61,7 +61,7 @@ void NodeId::setId(const string& id)
       id_ = id_.substr(string("/node/").length()); // strip leading "/node/"
    int index = id_.find_first_of("/");   // strip tailing tokens, e.g. from "heron/client/joe" make a "heron"
    if (index == 0) {
-      throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "setId: The given cluster node ID '" + lexical_cast<string>(id_) + "' may not start with a '/'");
+      throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "setId: The given cluster node ID '" + lexical_cast<std::string>(id_) + "' may not start with a '/'");
    }
    if (index > 0) {
       id_ = id_.substr(0, index);

@@ -27,18 +27,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <client/qos/UnSubscribeQos.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
+
+
+
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
-class Dll_Export GetQos : public UnSubscribeQos
+class Dll_Export GetQos : public org::xmlBlaster::client::qos::UnSubscribeQos
 {
 public:
-   GetQos(Global& global);
+   GetQos(org::xmlBlaster::util::Global& global);
 
-   GetQos(Global& global, const QueryQosData& data);
+   GetQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::QueryQosData& data);
 
    GetQos(const GetQos& qos);
 
@@ -53,12 +53,12 @@ public:
    /**
     * Adds your subplied subscribe filter
     */
-   void addAccessFilter(const AccessFilterQos& filter);
+   void addAccessFilter(const org::xmlBlaster::util::qos::AccessFilterQos& filter);
 
    /**
     * Set the QoS which describes the history query settings. 
     */
-   void setHistoryQos(const HistoryQos& historyQos);
+   void setHistoryQos(const org::xmlBlaster::util::qos::HistoryQos& historyQos);
 
 };
 

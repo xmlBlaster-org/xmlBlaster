@@ -14,7 +14,7 @@ Comment:   Holding destination address attributes
 #include <util/XMLString.hpp> // xerces: used to compare case insensitive str.
 #include <util/qos/SessionQos.h>
 
-using namespace std;
+
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -30,14 +30,14 @@ class Dll_Export Destination
 
 private:
 
-   string ME;
-   Global& global_;
-   Log&    log_;
+   std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
-   /** The destination address (==login name) or the XPath query string */
-   SessionQos sessionQos_;
+   /** The destination address (==login name) or the XPath query std::string */
+   org::xmlBlaster::util::qos::SessionQos sessionQos_;
    /** EXACT is default */
-   string queryType_;
+   std::string queryType_;
    /** No queuing is default */
    bool forceQueuing_;
 
@@ -52,14 +52,14 @@ public:
    /**
     * Constructs the specialized quality of service destination object.
     */
-   Destination(Global& global,
-               const SessionQos& sessionQos,
-               const string &queryType="EXACT",
+   Destination(org::xmlBlaster::util::Global& global,
+               const org::xmlBlaster::util::qos::SessionQos& sessionQos,
+               const std::string &queryType="EXACT",
                bool forceQueuing=false);
 
-   Destination(Global& global,
-               const string& address="",
-               const string &queryType="EXACT",
+   Destination(org::xmlBlaster::util::Global& global,
+               const std::string& address="",
+               const std::string &queryType="EXACT",
                bool forceQueuing=false);
 
     Destination(const Destination& dest);
@@ -92,21 +92,21 @@ public:
    void forceQueuing(bool forceQueuing);
 
    /**
-    * Set the destination address or the destination query string.
-    * @param destination The destination address or the query string
+    * Set the destination address or the destination query std::string.
+    * @param destination The destination address or the query std::string
     */
-   void setDestination(const SessionQos& sessionQos);
+   void setDestination(const org::xmlBlaster::util::qos::SessionQos& sessionQos);
 
    /**
-    * @param The destination address or XPath query string
+    * @param The destination address or XPath query std::string
     */
-   SessionQos getDestination() const;
+   org::xmlBlaster::util::qos::SessionQos getDestination() const;
 
    /**
-    * Compares two strings (where name1 is a Unicode3.0 string!!) for
+    * Compares two std::strings (where name1 is a Unicode3.0 std::string!!) for
     * unsensitive case compare. It returns true if the content of the
-    * strings is equal (no matter what the case is). Using this method to
-    * compare the strings should be portable to all platforms supported by
+    * std::strings is equal (no matter what the case is). Using this method to
+    * compare the std::strings should be portable to all platforms supported by
     * xerces.
     */
    bool caseCompare(const char *name1, const char *name2);
@@ -114,15 +114,15 @@ public:
    /**
     * @param queryType The query type, one of "EXACT" | "XPATH"
     */
-   void setQueryType(const string &queryType);
+   void setQueryType(const std::string &queryType);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return The Destination as a XML ASCII string
+    * @return The Destination as a XML ASCII std::string
     */
-   string toXml(const string &extraOffset="") const;
+   std::string toXml(const std::string &extraOffset="") const;
 };
 
 }}} // namespace

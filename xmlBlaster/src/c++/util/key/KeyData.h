@@ -36,8 +36,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/Log.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
+
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
@@ -53,30 +53,30 @@ extern Dll_Export const char* QUERYTYPE_DEFAULT;
 class Dll_Export KeyData
 {
 protected:
-   string ME;
-   Global& global_;
-   Log&    log_;
+   std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
    /** value from attribute <key oid="..."> */
-   mutable string oid_;
+   mutable std::string oid_;
 
    /** value from attribute <key oid="" contentMime="..."> */
-   string contentMime_;
+   std::string contentMime_;
    
    /** value from attribute <key oid="" contentMimeExtended="..."> */
-   string contentMimeExtended_;
+   std::string contentMimeExtended_;
 
    /** value from attribute <key oid="" domain="..."> */
-   string domain_;
+   std::string domain_;
    
    /** Is the key oid generated? */
    mutable bool isGeneratedOid_;
    
    /** The query type */
-   string queryType_;
+   std::string queryType_;
    
-   /** The query string */
-   string queryString_;
+   /** The query std::string */
+   std::string queryString_;
 
    void init();
 
@@ -86,7 +86,7 @@ public:
    /**
     * Minimal constructor.
     */
-   KeyData(Global& global);
+   KeyData(org::xmlBlaster::util::Global& global);
 
    KeyData(const KeyData& key);
 
@@ -94,12 +94,12 @@ public:
 
    virtual ~KeyData();
 
-   void setOid(const string& oid);
+   void setOid(const std::string& oid);
 
    /**
-    *  @return The key oid or null if not set (see MsgKeyData.getOid() which generates the oid if it was null).
+    *  @return The key oid or null if not set (see org::xmlBlaster::util::key::MsgKeyData.getOid() which generates the oid if it was null).
     */
-   string getOid() const;
+   std::string getOid() const;
 
    /**
     * Test if oid is '__sys__deadMessage'. 
@@ -131,17 +131,17 @@ public:
     * Set mime type (syntax) of the message content. 
     * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
     *         default is "text/plain" if not set
-    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/istd::map-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   void setContentMime(const string& contentMime);
+   void setContentMime(const std::string& contentMime);
 
    /**
     * Find out which mime type (syntax) the content of the message has.
     * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
     *         default is "text/plain" if not set
-    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/istd::map-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   string getContentMime() const;
+   std::string getContentMime() const;
 
    /**
     * Some further specifying information of the content.
@@ -150,9 +150,9 @@ public:
     * You may use this attribute for you own purposes.
     * @param The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
+    *         or "" (empty std::string) if not known
     */
-   void setContentMimeExtended(const string& contentMimeExtended);
+   void setContentMimeExtended(const std::string& contentMimeExtended);
 
    /**
     * Some further specifying information of the content.
@@ -161,35 +161,35 @@ public:
     * You may use this attribute for you own purposes.
     * @return The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
+    *         or "" (empty std::string) if not known
     */
-   string getContentMimeExtended() const;
+   std::string getContentMimeExtended() const;
 
    /**
     * Set the domain for this message, can be used for a simple grouping of
     * messages to their master node with xmlBlaster clusters. 
-    * @param The domain, any chosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    * @param The domain, any chosen std::string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
     *         defaults to "" where the local xmlBlaster instance is the master of the message.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
     */
-   void setDomain(const string& domain);
+   void setDomain(const std::string& domain);
 
    /**
     * Access the domain setting
-    * @return A domain string or null
+    * @return A domain std::string or null
     */
-   string getDomain() const;
+   std::string getDomain() const;
 
    /**
-    * @return true if no domain is given (null or empty string). 
+    * @return true if no domain is given (null or empty std::string). 
     */
    bool isDefaultDomain() const;
 
    /**
     * Access the query type "XPATH" or "EXACT"
-    * @return A queryType string or null
+    * @return A queryType std::string or null
     */
-   string getQueryType() const;
+   std::string getQueryType() const;
 
    bool isExact() const;
 
@@ -205,18 +205,18 @@ public:
    int size() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
+    * @return internal state of the query as a XML ASCII std::string
     */
-   virtual string toXml(const string& extraOffset="") const = 0;
+   virtual std::string toXml(const std::string& extraOffset="") const = 0;
 
    /**
     * Generates a unique key oid in scope of a cluster node (on server or on client side).
     * @param glob.getStrippedId() on server side
     */
-   string generateOid(const string& uniquePrefix) const;
+   std::string generateOid(const std::string& uniquePrefix) const;
    
    /**
     * @return true if the key oid is generated by xmlBlaster

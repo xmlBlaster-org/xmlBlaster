@@ -25,7 +25,7 @@ Comment:   Default handling of Sax callbacks
 
 #include <stdlib.h>
 
-using namespace std;
+
 
 #if defined(XERCES_HAS_CPP_NAMESPACE)
         // Since Xerces 2.2 namespace is introduced:
@@ -44,34 +44,34 @@ class Dll_Export SaxHandlerBase : public DocumentHandler, public ErrorHandler,
    
 private:
    
-   string me() {
+   std::string me() {
       return "SaxHandlerBase";
    }
    
 protected:
-   string            character_;
+   std::string            character_;
    /**
-    * The original XML string in ASCII representation, for example:
+    * The original XML std::string in ASCII representation, for example:
     * <code>   &lt;qos>&lt;/qos>"</code>
     */
-   string  xmlLiteral_;
-   Global& global_;
-   Log&    log_;
+   std::string  xmlLiteral_;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
 public:
    /**
     * Constructs an new object.
-    * You need to call the init() method to parse the XML string.
+    * You need to call the init() method to parse the XML std::string.
     */
     // SaxHandlerBase(int args=0, const char * const argc[]=0);
-   SaxHandlerBase(Global& global);
+   SaxHandlerBase(org::xmlBlaster::util::Global& global);
 
    
    /*
-    * This method parses the XML string using the SAX parser.
-    * @param xmlLiteral The XML string
+    * This method parses the XML std::string using the SAX parser.
+    * @param xmlLiteral The XML std::string
     */
-   void init(const string &xmlLiteral);
+   void init(const std::string &xmlLiteral);
    
 
 private:      
@@ -80,21 +80,21 @@ private:
     * @param xmlData Quality of service in XML notation
     */
    
-   void parse(const string &xmlData);
+   void parse(const std::string &xmlData);
 
 public:      
    /**
-    * @return returns the literal xml string
+    * @return returns the literal xml std::string
     */
-   string toString() {
+   std::string toString() {
       return xmlLiteral_;
    }
 
 
    /**
-    * @return returns the literal xml string
+    * @return returns the literal xml std::string
     */
-   string toXml() {
+   std::string toXml() {
       return xmlLiteral_;
    }
 
@@ -179,8 +179,8 @@ public:
 
    
 private:
-   /** Returns a string of the location. */
-   string getLocationString(const SAXParseException &ex) ;
+   /** Returns a std::string of the location. */
+   std::string getLocationString(const SAXParseException &ex) ;
 
    /**
     * These overwrite some virtual functions 
@@ -202,23 +202,23 @@ public:
 protected:
 
    /**
-    * Compares two strings (where name1 is a Unicode3.0 string!!) for 
+    * Compares two std::strings (where name1 is a Unicode3.0 std::string!!) for 
     * unsensitive case compare. It returns true if the content of the
-    * strings is equal (no matter what the case is). Using this method to
-    * compare the strings should be portable to all platforms supported by
+    * std::strings is equal (no matter what the case is). Using this method to
+    * compare the std::strings should be portable to all platforms supported by
     * xerces.
     */
    bool caseCompare(const XMLCh *name1, const char *name2) ;
 
    /**
-    * Gets the start element parameters, reads them and builds a string.
+    * Gets the start element parameters, reads them and builds a std::string.
     */
-    string getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const;
+    std::string getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const;
 
     /**
-     * returns a trimmed value (usually from an attribute) as a standard C++ string
+     * returns a trimmed value (usually from an attribute) as a standard C++ std::string
      */
-    string getStringValue(const XMLCh* const value) const;
+    std::string getStringValue(const XMLCh* const value) const;
 
     /**
      * returns a value (usually from an attribute) as an integer
@@ -244,9 +244,9 @@ protected:
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
       * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
-      * method. If the 'doTrim' argument is set to true, the string is trimmed before it is given back.
+      * method. If the 'doTrim' argument is set to true, the std::string is trimmed before it is given back.
       */
-     bool getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim=true) const;
+     bool getStringAttr(const AttributeList& list, const XMLCh* const name, std::string& value, bool doTrim=true) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 

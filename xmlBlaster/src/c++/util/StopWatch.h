@@ -13,8 +13,6 @@ Comment:   Handling the Client data
 #include <string>
 #include <util/lexical_cast.h>
 
-using namespace std;
-
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -61,12 +59,12 @@ namespace util {
       
       
       /**
-       * Returns a nice string with elapsed time.
+       * Returns a nice std::string with elapsed time.
        * Resets the stop watch.
-       * @return The elapsed time in a nice formatted string
+       * @return The elapsed time in a nice formatted std::string
        */
-      string nice() {
-         string ret = toString();
+      std::string nice() {
+         std::string ret = toString();
          restart();
          return ret;
       }
@@ -76,10 +74,10 @@ namespace util {
        * Nicely formatted output containing elapsed time since
        * Construction or since last restart().
        * <p />
-       * @return The elapsed time in a nice formatted string
+       * @return The elapsed time in a nice formatted std::string
        */
-      string toString() const {
-         return string("elapsed time: ") + lexical_cast<string>(elapsed()) + " milliseconds";
+      std::string toString() const {
+         return std::string("elapsed time: ") + lexical_cast<std::string>(elapsed()) + " milliseconds";
       }
 
 

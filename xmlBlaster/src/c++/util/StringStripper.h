@@ -2,7 +2,7 @@
 Name:      StringStripper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to strip a string containing separators into a vector
+Comment:   Helper to strip a std::string containing separators into a std::vector
 Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
@@ -13,42 +13,42 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <vector>
 #include <util/XmlBCfg.h>
 
-using namespace std;
+
 
 namespace org { namespace xmlBlaster {
 namespace util {
    
 /**
- * Class StringStripper is used to strip a string with separators into a vector
- * of (separated) strings. It is mostly used to strip a name to be used in a
+ * Class StringStripper is used to strip a std::string with separators into a std::vector
+ * of (separated) std::strings. It is mostly used to strip a name to be used in a
  * name server. An example could be to strip the following name:
  *
  * <pre>
- * string name = "motor.electric.stepper.motor1";
+ * std::string name = "motor.electric.stepper.motor1";
  * StringStripper stripper = new StringStripper(".");
- * vector<String> vec = stripper->strip(name);
+ * std::vector<String> vec = stripper->strip(name);
  * </pre>
  */
    class Dll_Export StringStripper {
       
    private:
-      string separator_;
+      std::string separator_;
       int    sepSize_;
    public:
       
-      StringStripper(const string &separator) {
+      StringStripper(const std::string &separator) {
          separator_ = separator;
          sepSize_   = separator_.length();
       }
       
       /** 
-       * strip strips the string into a vector of strings. If the input 
-       * string terminates with a separator, then the last string in the
-       * vector will be empty. No separator appears in the return strings.
+       * strip strips the std::string into a std::vector of std::strings. If the input 
+       * std::string terminates with a separator, then the last std::string in the
+       * std::vector will be empty. No separator appears in the return std::strings.
        */
-      vector<string> strip(string line) {
-         vector<string> ret;
-         string         sub;
+      std::vector<std::string> strip(std::string line) {
+         std::vector<std::string> ret;
+         std::string         sub;
          int            pos;
          while ((pos=line.find(separator_)) >= 0) {
             sub.assign(line,0, pos);

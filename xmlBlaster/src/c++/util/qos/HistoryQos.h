@@ -29,8 +29,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # include <util/Log.h>
 # include <util/Property.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
+
+
         
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -40,9 +40,9 @@ extern Dll_Export const long DEFAULT_numEntries;
 class Dll_Export HistoryQos
 {
 private:
-   const string ME; //  = "HistoryQos";
-   Global&      global_;
-   Log&         log_;
+   const std::string ME; //  = "HistoryQos";
+   org::xmlBlaster::util::Global&      global_;
+   org::xmlBlaster::util::Log&         log_;
 
    int numEntries_; // = DEFAULT_numEntries;
 
@@ -50,7 +50,7 @@ public:
    /**
     * @param glob The global handle holding environment and logging objects
     */
-   HistoryQos(Global& global, long numOfEntries=-1); 
+   HistoryQos(org::xmlBlaster::util::Global& global, long numOfEntries=-1); 
 
    HistoryQos(const HistoryQos& qos);
 
@@ -68,13 +68,13 @@ public:
    long getNumEntries() const;
  
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * Only none default values are dumped for performance reasons
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation or "" if all settings are default
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 };
 
 }}}} //namespace

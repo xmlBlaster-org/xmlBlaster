@@ -12,10 +12,10 @@ Comment:   The Factory for the client driver for the corba protocol
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/objman.h> // for managed objects
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::util::thread;
+
+
+
+
 
 namespace org {
  namespace xmlBlaster {
@@ -23,8 +23,8 @@ namespace org {
    namespace protocol {
     namespace corba {
 
-typedef pair<CorbaDriver*, int>  DriverEntry;
-typedef map<string, DriverEntry> DriversMap;
+typedef std::pair<CorbaDriver*, int>  DriverEntry;
+typedef std::map<std::string, DriverEntry> DriversMap;
 
 /**
  * Factory used to create instances of CorbaDriver objects. It currently is a singleton class and has for
@@ -44,22 +44,22 @@ typedef map<string, DriverEntry> DriversMap;
  * all resources used by the orb.
  *
  */
-class Dll_Export CorbaDriverFactory : public Thread
+class Dll_Export CorbaDriverFactory : public org::xmlBlaster::util::thread::Thread
 {
-friend CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
+friend CorbaDriverFactory& getFactory(org::xmlBlaster::util::Global& global, CORBA::ORB_ptr orb=NULL);
 
 // required for the managed objects
 friend class Object_Lifetime_Manager;
 friend class ManagedObject;
 
 private:
-   const string   ME;
-   Global&        global_;
-   Log&           log_;
-   DriversMap     drivers_;         // the map containing all drivers created by this factory
+   const std::string   ME;
+   org::xmlBlaster::util::Global&        global_;
+   org::xmlBlaster::util::Log&           log_;
+   DriversMap     drivers_;         // the std::map containing all drivers created by this factory
    bool           doRun_;           // the command: if set to 'false' the thread will stop.
    bool           isRunning_;       // the status: if the thread is running it is 'true'
-   Mutex          mutex_,           // the mutex passed to all CorbaDriver instances (for singlethreaded)
+   org::xmlBlaster::util::thread::Mutex          mutex_,           // the mutex passed to all CorbaDriver instances (for singlethreaded)
                   getterMutex_;     // the mutex used for creating/deleting CorbaDriver instances
    bool           orbIsThreadSafe_; // flag telling if the orb is a singletheraded or multithreaded orb
    CORBA::ORB_ptr orb_;             // the orb used (either created here or passed in constructor
@@ -70,7 +70,7 @@ private:
    /**
     * Only used by getInstance()
     * @param global
-    * @param mutex   Global thread synchronization (to avoid static variable)
+    * @param mutex   org::xmlBlaster::util::Global thread synchronization (to avoid static variable)
     * @param doRun   Only for internal main loop for single threaded orbs. false stops the loop
     *                
     * @param isRunning    Feedback is doRun has stopped
@@ -90,7 +90,7 @@ private:
    /** This is specific for threadsafe orbs like TAO */
    bool orbRun();
 
-   CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb=NULL);
+   CorbaDriverFactory(org::xmlBlaster::util::Global& global, CORBA::ORB_ptr orb=NULL);
 
    CorbaDriverFactory(const CorbaDriverFactory& factory);
    CorbaDriverFactory& operator =(const CorbaDriverFactory& factory);
@@ -110,19 +110,19 @@ public:
     *        then you are responsible of making the orb perform work and you must clean up its resources
     *        i.e. you must call expicitly shutdown and destroy on work completition.
     */
-   static CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
+   static CorbaDriverFactory& getFactory(org::xmlBlaster::util::Global& global, CORBA::ORB_ptr orb=NULL);
 
    /**
     * gets an instance of a corba driver with the specified name.
     */
-   CorbaDriver& getDriverInstance(const string& instanceName);
+   CorbaDriver& getDriverInstance(const std::string& instanceName);
 
    /**
     * Kills the driver instance with the given name. Note that if you invoked getDriverInstance several 
     * times with the same instanceName, you just decrement the internal reference counter. When the reference
     * counter reaches zero, the driver is really destroyed.
     */
-   int killDriverInstance(const string& instanceName);
+   int killDriverInstance(const std::string& instanceName);
 
 };
 

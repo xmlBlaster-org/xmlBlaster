@@ -476,19 +476,19 @@ string MsgQosData::toXml(const string& extraOffset) const
    ret += offset + " <sender>" + sender_.getAbsoluteName() + "</sender>";
 
    if (NORM_PRIORITY != priority_)
-      ret += offset + " <priority>" + lexical_cast<string>(priority_) + "</priority>";
+      ret += offset + " <priority>" + lexical_cast<std::string>(priority_) + "</priority>";
 
    if (!subscriptionId_.empty())
       ret += offset + " <subscribe id='" + subscriptionId_ + "'/>";
 
    if (getLifeTime() > 0) {
-      ret += offset + " <expiration lifeTime='" + lexical_cast<string>(getLifeTime());
+      ret += offset + " <expiration lifeTime='" + lexical_cast<std::string>(getLifeTime());
       bool sendRemainingLife = true; // make it configurable !!!
       if (sendRemainingLife) {
          if (getRemainingLife() > 0)
-            ret += "' remainingLife='" + lexical_cast<string>(getRemainingLife());
+            ret += "' remainingLife='" + lexical_cast<std::string>(getRemainingLife());
          else if (getRemainingLifeStatic() > 0)
-            ret += "' remainingLife='" + lexical_cast<string>(getRemainingLifeStatic());
+            ret += "' remainingLife='" + lexical_cast<std::string>(getRemainingLifeStatic());
       }
       ret +=  "'/>";
    }
@@ -496,9 +496,9 @@ string MsgQosData::toXml(const string& extraOffset) const
    if (getRcvTimestamp() != 0)
       ret += TimestampFactory::toXml(getRcvTimestamp(), extraOffset1, false);
    if(getQueueSize() > 0)
-      ret += offset + " <queue index='" + lexical_cast<string>(getQueueIndex()) + "' size='" + lexical_cast<string>(getQueueSize()) + "'/>";
+      ret += offset + " <queue index='" + lexical_cast<std::string>(getQueueIndex()) + "' size='" + lexical_cast<std::string>(getQueueSize()) + "'/>";
    if (getRedeliver() > 0)
-      ret += offset + " <redeliver>" + lexical_cast<string>(getRedeliver()) + "</redeliver>";
+      ret += offset + " <redeliver>" + lexical_cast<std::string>(getRedeliver()) + "</redeliver>";
    if (isPersistent())
       ret += offset + " <persistent/>";
    if (!isForceUpdateDefault())

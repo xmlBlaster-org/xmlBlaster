@@ -16,7 +16,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <string>
 #include <vector>
 #include <fstream>
-// #include <client/LoginQosWrapper.h>
+// #include <client/org::xmlBlaster::util::LoginQosWrapper.h>
 #include <client/protocol/corba/DefaultCallback.h>
 #include <util/Log.h>
 #include <client/protocol/corba/NameServerControl.h>
@@ -29,10 +29,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <client/protocol/corba/CompatibleCorba.h>  // client side headers
 #include COSNAMING
 
-using namespace std;
-using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
-using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util;
+ // org::xmlBlaster::util::qos::ConnectQos + org::xmlBlaster::util::qos::ConnectReturnQos
 
 namespace org {
  namespace xmlBlaster {
@@ -44,30 +41,27 @@ namespace org {
       
    private:
       
-      string me() const {
-         return string("CorbaConnection");
+      std::string me() const {
+         return std::string("CorbaConnection");
       }
-     /* static*/ CORBA::ORB_ptr           orb_;
+      /* static*/ CORBA::ORB_ptr           orb_;
       /*static*/ PortableServer::POA_ptr  poa_;
-//      static unsigned short           numOfSessions_;
       NameServerControl*              nameServerControl_;
       authenticateIdl::AuthServer_ptr authServer_;
       serverIdl::Server_ptr           xmlBlaster_;
       clientIdl::BlasterCallback_ptr  callback_;
-      string                          loginName_;
-      string                          passwd_;
-//      LoginQosWrapper                 loginQos_;
+      std::string                          loginName_;
+      std::string                          passwd_;
       int                             numLogins_;
       DefaultCallback*                defaultCallback_;
-      ConnectReturnQos                connectReturnQos_;
-      string                          sessionId_;
-      string                          xmlBlasterIOR_;
-      string                          callbackIOR_;
-      Global&                         global_;
-      //mutable util::Log               log_;
-      util::Log&                      log_;
-      MsgKeyFactory                   msgKeyFactory_;
-      MsgQosFactory                   msgQosFactory_;
+      org::xmlBlaster::util::qos::ConnectReturnQos connectReturnQos_;
+      std::string                          sessionId_;
+      std::string                          xmlBlasterIOR_;
+      std::string                          callbackIOR_;
+      org::xmlBlaster::util::Global&       global_;
+      /* mutable */ org::xmlBlaster::util::Log&     log_;
+      org::xmlBlaster::util::key::MsgKeyFactory                   msgKeyFactory_;
+      org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
 
    public:
       /**
@@ -77,21 +71,21 @@ namespace org {
        * <p />
        * @param arg  parameters given on command line
        * <ul>
-       *    <li>-dispatch/connection/plugin/ior/iorString  IOR string is directly given</li>
-       *    <li>-dispatch/connection/plugin/ior/iorFile IOR string is given through a file</li>
+       *    <li>-dispatch/connection/plugin/ior/iorString  IOR std::string is directly given</li>
+       *    <li>-dispatch/connection/plugin/ior/iorFile IOR std::string is given through a file</li>
        *    <li>-bootstrapHostname host name or IP where xmlBlaster is running</li>
        *    <li>-bootstrapPort where the internal xmlBlaster-http server publishes 
        *         its IOR (defaults to 3412)</li>
        *    <li>-dispatch/connection/plugin/ior/useNameService true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(Global& global, CORBA::ORB_ptr orb=NULL);
+      CorbaConnection(org::xmlBlaster::util::Global& global, CORBA::ORB_ptr orb=NULL);
 
       ~CorbaConnection();
 
-      string getAddress() const;
+      std::string getAddress() const;
 
-      string getCbAddress() const;
+      std::string getCbAddress() const;
 
       /**
        * Is used to perform work on the orb (if necessary).
@@ -130,7 +124,7 @@ private:
        * <p />
        * The found name service is cached, for better performance in 
        * subsequent calls
-       * @exception XmlBlasterException
+       * @exception org::xmlBlaster::util::XmlBlasterException
        *                    CORBA error handling if no naming service is found
        */
       void initNamingService();
@@ -142,7 +136,7 @@ public:
        * There are several ways to bootstrap the authentication service:
        * <br />
        * <ul>
-       *    <li>Give the authentication service string-IOR at command line,
+       *    <li>Give the authentication service std::string-IOR at command line,
        * e.g.<br />
        *        <code>   -dispatch/connection/plugin/ior/iorString "IOR:0000..."</code><br />
        *        or giving a file name<br />
@@ -163,12 +157,12 @@ public:
 
 
       /**
-       * Login to the server, using the default BlasterCallback implementation.
+       * org::xmlBlaster::util::Login to the server, using the default BlasterCallback implementation.
        * <p />
-       * You need to implement the I_Callback interface, which informs you 
+       * You need to implement the org::xmlBlaster::client::I_Callback interface, which informs you 
        * about arrived messages with its update() method
        * <p />
-       * If you do multiple logins with the same I_Callback implementation, 
+       * If you do multiple logins with the same org::xmlBlaster::client::I_Callback implementation, 
        * the loginName which is delivered with the update() method may be used
        * to dispatch the message to the correct client.
        * <p />
@@ -180,24 +174,24 @@ public:
        * @param passwd    The login password for xmlBlaster
        * @param qos       The Quality of Service for this client (the callback
        *                  tag will be added automatically if client!=null)
-       * @param client    Your implementation of I_Callback, or null if you 
+       * @param client    Your implementation of org::xmlBlaster::client::I_Callback, or null if you 
        *                  don't want any.
-       * @exception       XmlBlasterException if login fails
+       * @exception       org::xmlBlaster::util::XmlBlasterException if login fails
        */
-//      serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
-//                   const LoginQosWrapper &qos, I_Callback *client=0);
+//      serverIdl::Server_ptr login(const std::string &loginName, const std::string &passwd, 
+//                   const org::xmlBlaster::util::LoginQosWrapper &qos, org::xmlBlaster::client::I_Callback *client=0);
 
 
       /**
        * The new way to connect (i.e. login to xmlBlaster)
        */
-       ConnectReturnQos connect(const ConnectQos& connectQos);
+       org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
 
        /**
         * Disconnects from the xmlBlaster server (the callback server is not
         * disconnected).
         */
-       bool disconnect(const string& qos="");
+       bool disconnect(const std::string& qos="");
 
        /**
         * Shutdown the connection without disconnecting (xmlBlaster does not know that we have disappeared)
@@ -214,11 +208,11 @@ public:
 
 
       /**
-       * Login to the server.
+       * org::xmlBlaster::util::Login to the server.
        * <p />
        * For internal use only.
        * The qos needs to be set up correctly if you wish a callback
-       * @exception       XmlBlasterException if login fails
+       * @exception       org::xmlBlaster::util::XmlBlasterException if login fails
        */
 //      void loginRaw();
 
@@ -227,13 +221,13 @@ public:
        * Access the login name.
        * @return your login name or null if you are not logged in
        */
-      const string &getLoginName() const {
+      const std::string &getLoginName() const {
          return loginName_;
       }
       
       
       /*
-       * Logout from the server.
+       * org::xmlBlaster::util::Logout from the server.
        * @return true successfully logged out
        *         false failure on logout
       bool logout();
@@ -255,10 +249,10 @@ public:
        * Note: You don't need to free anything
        * @return The xml based QoS
        */
-      string subscribe(const string &xmlKey, const string &qos=string("<qos/>"));
+      std::string subscribe(const std::string &xmlKey, const std::string &qos=std::string("<qos/>"));
       
  
-      vector<string> unSubscribe(const string &xmlKey, const string &qos=string("<qos/>"));
+      std::vector<std::string> unSubscribe(const std::string &xmlKey, const std::string &qos=std::string("<qos/>"));
       
       
       /**
@@ -271,10 +265,10 @@ public:
        * @see xmlBlaster.idl
        * @deprecated Please use the util::MessageUnit variant
        */
-      string publish(const serverIdl::MessageUnit &msgUnit);
+      std::string publish(const serverIdl::MessageUnit &msgUnit);
 
       /**
-       * Publish with util MessageUnit (not CORBA specific client code). 
+       * Publish with util org::xmlBlaster::util::MessageUnit (not CORBA specific client code). 
        * <br />
        * This method has a common interface which is not CORBA depending. 
        * Prefer this to publish(const serverIdl::MessageUnit &msgUnit)
@@ -282,7 +276,7 @@ public:
        * Note: You don't need to free anything
        * @return The xml based QoS
        */
-      string publish(const util::MessageUnit &msgUnitUtil);
+      std::string publish(const util::MessageUnit &msgUnitUtil);
       
       /**
        * Publish a bulk of messages. 
@@ -290,14 +284,14 @@ public:
        * This method has a common interface which is not CORBA depending. 
        * <br />
        * Note: You don't need to free anything
-       * @param A vector with MessageUnit
-       * @return A vector of strings each is a publish return QoS. 
+       * @param A std::vector with org::xmlBlaster::util::MessageUnit
+       * @return A std::vector of std::strings each is a publish return QoS. 
        * @see xmlBlaster.idl
        */
-      vector<string> publishArr(const vector<util::MessageUnit> &msgVec);
+      std::vector<std::string> publishArr(const std::vector<util::MessageUnit> &msgVec);
      
       /**
-       * @deprecated Please use the STL vector variant
+       * @deprecated Please use the STL std::vector variant
        */
       serverIdl::XmlTypeArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
 
@@ -307,35 +301,35 @@ public:
        * This method has a common interface which is not CORBA depending. 
        * <br />
        * Note: You don't need to free anything
-       * @param The MessageUnit array as a STL vector
+       * @param The org::xmlBlaster::util::MessageUnit array as a STL std::vector
        * @see xmlBlaster.idl
        */
-      void CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec);
+      void CorbaConnection::publishOneway(const std::vector<util::MessageUnit>& msgVec);
 
       /**
        * Enforced by ServerOperations interface.
        * @see xmlBlaster.idl
-       * @deprecated Use the vector<util::MessageUnit> variant
+       * @deprecated Use the std::vector<util::MessageUnit> variant
        */
       void publishOneway(const serverIdl::MessageUnitArr& msgUnitArr);
 
       /**
        * @see xmlBlaster.idl
        */
-      vector<string> erase(const string &xmlKey, const string &qos=string("<qos/>"));
+      std::vector<std::string> erase(const std::string &xmlKey, const std::string &qos=std::string("<qos/>"));
 
       
       /**
        * Access messages the synchronous way. 
        * <br />
        * Note: You don't need to free anything
-       * @return The STL MessageUnit vector, its a copy so if you have the variable on the
+       * @return The STL org::xmlBlaster::util::MessageUnit std::vector, its a copy so if you have the variable on the
        *         stack it will free itself
        * @see xmlBlaster.idl
        */
-      vector<util::MessageUnit> get(const string &xmlKey, const string &qos=string("<qos/>"));
+      std::vector<util::MessageUnit> get(const std::string &xmlKey, const std::string &qos=std::string("<qos/>"));
 
-      //serverIdl::MessageUnitArr* get(const string &xmlKey, const string &qos);
+      //serverIdl::MessageUnitArr* get(const std::string &xmlKey, const std::string &qos);
       
       
       /**
@@ -348,7 +342,7 @@ public:
        * Enforced by ServerOperations interface (failsafe mode)
        * @see xmlBlaster.idl
        */
-      string ping(const string &qos=string("<qos/>"));
+      std::string ping(const std::string &qos=std::string("<qos/>"));
 
       /**
        * Transform a util::MessageUnit to the corba variant
@@ -356,11 +350,11 @@ public:
       void copyToCorba(serverIdl::MessageUnit &dest, const util::MessageUnit &src) const;
 
       /**
-       * Transform STL vector to corba messageUnit array variant. 
+       * Transform STL std::vector to corba messageUnit array variant. 
        */
-      void copyToCorba(serverIdl::MessageUnitArr_var &units, const vector<util::MessageUnit> &msgVec) const;
+      void copyToCorba(serverIdl::MessageUnitArr_var &units, const std::vector<util::MessageUnit> &msgVec) const;
 
-      void copyFromCorba(vector<util::MessageUnit> &vecArr, serverIdl::MessageUnitArr_var &units);
+      void copyFromCorba(std::vector<util::MessageUnit> &vecArr, serverIdl::MessageUnitArr_var &units);
 
       /**
        * Command line usage.

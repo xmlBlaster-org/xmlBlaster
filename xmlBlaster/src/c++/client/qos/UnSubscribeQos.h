@@ -18,45 +18,41 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">unSubscribe interface</a>
  */
-
 #ifndef _CLIENT_QOS_UNSUBSCRIBEQOS_H
 #define _CLIENT_QOS_UNSUBSCRIBEQOS_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/QueryQosData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export UnSubscribeQos
 {
 protected:
-   string       ME;
-   Global&      global_;
-   QueryQosData data_;
+   std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::qos::QueryQosData data_;
 
 public:
    /**
     * Constructor for default qos (quality of service).
     */
-   UnSubscribeQos(Global& global);
+   UnSubscribeQos(org::xmlBlaster::util::Global& global);
 
-   UnSubscribeQos(Global& global, const QueryQosData& data);
+   UnSubscribeQos(org::xmlBlaster::util::Global& global,
+                  const org::xmlBlaster::util::qos::QueryQosData& data);
 
    UnSubscribeQos(const UnSubscribeQos& qos);
 
    UnSubscribeQos& operator =(const UnSubscribeQos& qos);
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML ASCII std::string.
+    * @return An XML ASCII std::string
     */
-   string toXml() const;
+   std::string toXml() const;
 
-   QueryQosData getData() const;
+   org::xmlBlaster::util::qos::QueryQosData getData() const;
 };
 
 }}}}

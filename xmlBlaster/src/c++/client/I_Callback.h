@@ -12,10 +12,6 @@ Comment:   Helper to easy get the callback messages
 #include <client/key/UpdateKey.h>
 #include <client/qos/UpdateQos.h>
 
-using namespace std;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
-
 namespace org { namespace xmlBlaster { namespace client {
 /**
  * This is a little helper class wraps the CORBA BlasterCallback update(),
@@ -23,8 +19,8 @@ namespace org { namespace xmlBlaster { namespace client {
  * You may use this, if you don't want to program with the rawer CORBA 
  * BlasterCallback.update()
  *
- * @version $Revision: 1.16 $
- * @author $Author: laghi $
+ * @version $Revision: 1.17 $
+ * @author $Author: ruff $
  */
 class Dll_Export I_Callback {
    /**
@@ -44,15 +40,15 @@ class Dll_Export I_Callback {
     *                  we can use it to decide if we trust this update()
     * @param updateKey The arrived key
     * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
-    * @return The status string
+    * @param qos       Quality of Service of the org::xmlBlaster::util::MessageUnit
+    * @return The status std::string
     */
    
 public:
-   virtual string update(const string &sessionId,
-                       UpdateKey &updateKey, 
+   virtual std::string update(const std::string &sessionId,
+                       org::xmlBlaster::client::key::UpdateKey &updateKey, 
                        void *content, long contentSize, 
-                       UpdateQos &updateQos) = 0;
+                       org::xmlBlaster::client::qos::UpdateQos &updateQos) = 0;
 
    virtual ~I_Callback() // = 0;
    {

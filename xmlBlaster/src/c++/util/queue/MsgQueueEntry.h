@@ -27,11 +27,7 @@ class I_ConnectionsHandler;
 }}}}
 #endif
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util::dispatch;
-using namespace org::xmlBlaster::client::qos;
+
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -46,41 +42,41 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
-   string        ME;
-   Global&       global_;
-   Log&          log_;
+   std::string        ME;
+   org::xmlBlaster::util::Global&       global_;
+   org::xmlBlaster::util::Log&          log_;
    int           priority_;
    bool          persistent_;
-   Timestamp     uniqueId_;
-   string        embeddedType_;
-   string        logId_;
-   MessageUnit*  msgUnit_;
-   ConnectQos*   connectQos_;
-   QueryQosData* queryQosData_;
-   QueryKeyData* queryKeyData_;
+   org::xmlBlaster::util::Timestamp     uniqueId_;
+   std::string        embeddedType_;
+   std::string        logId_;
+   org::xmlBlaster::util::MessageUnit*  msgUnit_;
+   org::xmlBlaster::util::qos::ConnectQos*   connectQos_;
+   org::xmlBlaster::util::qos::QueryQosData* queryQosData_;
+   org::xmlBlaster::util::key::QueryKeyData* queryKeyData_;
 
    // specific return values
-   mutable ConnectReturnQos* connectReturnQos_;
-   mutable PublishReturnQos* publishReturnQos_;
-   StatusQosData* statusQosData_;
+   mutable org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
+   mutable org::xmlBlaster::client::qos::PublishReturnQos* publishReturnQos_;
+   org::xmlBlaster::util::qos::StatusQosData* statusQosData_;
 
 public:
 
     /**
      * Constructor suited for operations like publishes
      */
-    MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=5, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::MessageUnit& msgUnit, const std::string& type="publish", int priority=5, bool persistent=false);
 
     /**
      * Constructor suited for operations like connect
      */
-    MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type="connect", int priority=9, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::ConnectQos& connectQos, const std::string& type="connect", int priority=9, bool persistent=false);
 
 
     /**
      * Constructor suited for operations like subscribe and unSubscribe
      */
-    MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type="subscribe", int priority=9, bool persistent=false);
+    MsgQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::QueryKeyData& queryKeyData, const org::xmlBlaster::util::qos::QueryQosData& queryQosData, const std::string& type="subscribe", int priority=9, bool persistent=false);
 
 
     virtual ~MsgQueueEntry();
@@ -91,48 +87,48 @@ public:
           delete connectQos_;
           connectQos_ = NULL;
        }
-       if (entry.connectQos_ != NULL) connectQos_ = new ConnectQos(*entry.connectQos_);
+       if (entry.connectQos_ != NULL) connectQos_ = new org::xmlBlaster::util::qos::ConnectQos(*entry.connectQos_);
 
        if (msgUnit_ != NULL) {
           delete msgUnit_;
           msgUnit_ = NULL;
        }
-       if (entry.msgUnit_ != NULL) msgUnit_ = new MessageUnit(*entry.msgUnit_);
+       if (entry.msgUnit_ != NULL) msgUnit_ = new org::xmlBlaster::util::MessageUnit(*entry.msgUnit_);
 
        if (connectReturnQos_ != NULL) {
           delete connectReturnQos_;
           connectReturnQos_ = NULL; 
        }
        if (entry.connectReturnQos_ != NULL) 
-          connectReturnQos_ = new ConnectReturnQos(*entry.connectReturnQos_);
+          connectReturnQos_ = new org::xmlBlaster::util::qos::ConnectReturnQos(*entry.connectReturnQos_);
 
        if (publishReturnQos_ != NULL) {
           delete publishReturnQos_;
           publishReturnQos_ = NULL; 
        }
        if (entry.publishReturnQos_ != NULL) 
-          publishReturnQos_ = new PublishReturnQos(*entry.publishReturnQos_);
+          publishReturnQos_ = new org::xmlBlaster::client::qos::PublishReturnQos(*entry.publishReturnQos_);
 
        if (queryQosData_ != NULL) {
           delete queryQosData_;
           queryQosData_ = NULL; 
        }
        if (entry.queryQosData_ != NULL)
-          queryQosData_ = new QueryQosData(*entry.queryQosData_);
+          queryQosData_ = new org::xmlBlaster::util::qos::QueryQosData(*entry.queryQosData_);
 
        if (queryKeyData_ != NULL) {
           delete queryKeyData_;
           queryKeyData_ = NULL; 
        }
        if (entry.queryKeyData_ != NULL) 
-          queryKeyData_ = new QueryKeyData(*entry.queryKeyData_);
+          queryKeyData_ = new org::xmlBlaster::util::key::QueryKeyData(*entry.queryKeyData_);
 
        if (statusQosData_ != NULL) {
           delete statusQosData_;
           statusQosData_ = NULL; 
        }
        if (entry.statusQosData_ != NULL) 
-          statusQosData_ = new StatusQosData(*entry.statusQosData_);
+          statusQosData_ = new org::xmlBlaster::util::qos::StatusQosData(*entry.statusQosData_);
 
        uniqueId_     = entry.uniqueId_;
        embeddedType_ = entry.embeddedType_;
@@ -181,7 +177,7 @@ public:
     * This is the second order criteria in the queue
     * @return The unique Id of this entry.
     */
-   Timestamp getUniqueId() const;
+   org::xmlBlaster::util::Timestamp getUniqueId() const;
 
    /**
     * gets the content of this queue entry (the embedded object). In
@@ -194,7 +190,7 @@ public:
     * @return String the identifier which tells the I_EntryFactory how to
     *         deserialize this entry.
     */
-   string getEmbeddedType() const;
+   std::string getEmbeddedType() const;
 
    /**
     * Return a human readable identifier for logging output.
@@ -202,7 +198,7 @@ public:
     * See the derived class for a syntax description.
     * </p>
     */
-   string getLogId();
+   std::string getLogId();
 
    /**
     * returns the size in bytes of this entry.
@@ -211,9 +207,9 @@ public:
 
 
    // this should actually be in another interface but since it is an only method we put it here.
-   virtual MsgQueueEntry& send(I_ConnectionsHandler&); // = 0;
+   virtual MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&); // = 0;
 
-   virtual string toXml(const string& indent="") const; // = 0;
+   virtual std::string toXml(const std::string& indent="") const; // = 0;
 
 };
 

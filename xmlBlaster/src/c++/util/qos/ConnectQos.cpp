@@ -13,9 +13,11 @@ Comment:   Implementation of ConnectQos (ConnectReturnQos ConnectQosData)
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+using namespace std;
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-
+using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::qos::address;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 

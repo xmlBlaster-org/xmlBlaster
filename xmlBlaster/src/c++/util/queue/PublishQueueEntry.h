@@ -19,17 +19,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export PublishQueueEntry : public MsgQueueEntry
+class Dll_Export PublishQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
 public:
 
    /**
     * Constructor. You can provide a name different from 'publish'.
-    * Normally the entry has the priority specified in the PublishQos of the message unit. However, if you
+    * Normally the entry has the priority specified in the org::xmlBlaster::client::qos::PublishQos of the message unit. However, if you
     * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
     * priority of the message unit will be ignored.
     */
-   PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=-1, bool persistent=false);
+   PublishQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::MessageUnit& msgUnit, const std::string& type="publish", int priority=-1, bool persistent=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In
@@ -38,13 +38,13 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler);
+   org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler);
 
-   MessageUnit& getMsgUnit() const;
+   org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
 
-   PublishReturnQos getPublishReturnQos() const;
+   org::xmlBlaster::client::qos::PublishReturnQos getPublishReturnQos() const;
 
-   string toXml(const string& indent="") const;
+   std::string toXml(const std::string& indent="") const;
 
 };
 

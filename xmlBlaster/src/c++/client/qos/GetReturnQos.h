@@ -35,24 +35,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/MsgQosData.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
-
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export GetReturnQos
 {
 protected:
-   string     ME;
-   Global&    global_;
-   Log&       log_;
-   MsgQosData data_;
+   std::string     ME;
+   org::xmlBlaster::util::Global&    global_;
+   org::xmlBlaster::util::Log&       log_;
+   org::xmlBlaster::util::qos::MsgQosData data_;
 
 public:
 
-   GetReturnQos(Global& global, const MsgQosData data);
+   GetReturnQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::MsgQosData data);
 
    GetReturnQos(const GetReturnQos& data);
 
@@ -77,14 +72,14 @@ public:
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
-   SessionQos getSender();
+   org::xmlBlaster::util::qos::SessionQos getSender();
 
    /**
     * Message priority.
     * @return priority 0-9
     * @see org.xmlBlaster.util.enum.PriorityEnum
     */
-   PriorityEnum getPriority() const;
+   org::xmlBlaster::util::PriorityEnum getPriority() const;
 
    /**
     * This is the value delivered in the QoS (as it was calculated by the server on sending)
@@ -97,19 +92,19 @@ public:
    long getRemainingLifeStatic() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the message QoS as a XML ASCII string
+    * @return internal state of the message QoS as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="");
+   std::string toXml(const std::string& extraOffset="");
 
 
    /**
     * Access state of message on update().
     * @return OK (Other values are not yet supported)
     */
-   string getState() const;
+   std::string getState() const;
 
    /**
     * True if the message is OK on update(). 
@@ -136,12 +131,12 @@ public:
     * when message arrived in requestBroker.publish() method.<br />
     * In milliseconds elapsed since midnight, January 1, 1970 UTC
     */
-   Timestamp getRcvTimestamp() const;
+   org::xmlBlaster::util::Timestamp getRcvTimestamp() const;
 
     // the following where not present before ...
-   RouteVector getRouteNodes();
+   org::xmlBlaster::util::qos::RouteVector getRouteNodes();
 
-   string getRcvTime() const;
+   std::string getRcvTime() const;
 
 };
 

@@ -3,13 +3,13 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.7 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: CbQueueProperty.h,v 1.8 2003/07/03 20:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding callback queue properties.
  * <p />
- * See ConnectQos for XML sysntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
@@ -23,10 +23,9 @@ Version:   $Id: CbQueueProperty.h,v 1.7 2003/03/25 07:48:13 ruff Exp $
 #include <util/qos/address/CallbackAddress.h>
 
 #include <string>
-#include <vector>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
+
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
@@ -40,7 +39,7 @@ protected:
     * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
 public:
-   CbQueueProperty(Global& global, const string& relating, const string& nodeId);
+   CbQueueProperty(org::xmlBlaster::util::Global& global, const std::string& relating, const std::string& nodeId);
 
    CbQueueProperty(const QueuePropertyBase& prop);
 
@@ -49,18 +48,18 @@ public:
    /**
     * Show some important settings for logging
     */
-   string getSettings();
+   std::string getSettings();
 
    /**
-    * This method converts a string to lowercase. Note that the input string is
+    * This method converts a std::string to lowercase. Note that the input std::string is
     * modified and a reference to it is returned.
     */
-   static string& toLowerCase(string& ref);
+   static std::string& toLowerCase(std::string& ref);
 
    /**
     * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
-   void setRelating(const string& relating);
+   void setRelating(const std::string& relating);
 
    bool isSubjectRelated();
 
@@ -71,7 +70,7 @@ public:
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
-   void setCallbackAddress(const AddressBase& address);
+   void setCallbackAddress(const org::xmlBlaster::util::qos::address::AddressBase& address);
 
    /**
     */
@@ -85,12 +84,12 @@ public:
    /**
     * @return null if none available
     */
-   AddressBase getCurrentCallbackAddress();
+   org::xmlBlaster::util::qos::address::AddressBase getCurrentCallbackAddress();
 
    /**
-    * Get a usage string for the connection parameters
+    * Get a usage std::string for the connection parameters
     */
-   string usage();
+   std::string usage();
 };
 
 }}}}} // namespace

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.21 2003/05/31 20:10:17 ruff Exp $
+Version:   $Id: Global.h,v 1.22 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -27,9 +27,9 @@ Version:   $Id: Global.h,v 1.21 2003/05/31 20:10:17 ruff Exp $
 //----------------
 // Global.h modification
 
-using namespace std;
-using namespace org::xmlBlaster::client::protocol;
-using namespace org::xmlBlaster::util::dispatch;
+
+
+
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -38,25 +38,25 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 class Dll_Export Global {
 
-typedef map<string, Log> LogMap;
+typedef std::map<std::string, org::xmlBlaster::util::Log> LogMap;
 
-friend Global& getInstance(const string &instanceName);
+friend Global& getInstance(const std::string &instanceName);
 
 // required for managed objects
 template <class TYPE> friend class ManagedObject;
 friend class Object_Lifetime_Manager;
 
 private:
-   const string           ME;
+   const std::string           ME;
    LogMap                 logMap_;
    Property*              property_;
    int                    args_;
    const char * const*    argc_;
    bool                   isInitialized_;
-   CbServerPluginManager* cbServerPluginManager_;
-   DeliveryManager*       deliveryManager_;
+   org::xmlBlaster::client::protocol::CbServerPluginManager* cbServerPluginManager_;
+   org::xmlBlaster::util::dispatch::DeliveryManager* deliveryManager_;
    Timeout*               pingTimer_;
-   string                 id_;
+   std::string                 id_;
    thread::Mutex          pingerMutex_;
    // added for managed objects.
    static Global*         global_; // becomes pointer
@@ -86,23 +86,23 @@ public:
    const char * const* getArgc();
 
    /**
-    * The method to call to get the singleton Timestamp object.
+    * The method to call to get the singleton org::xmlBlaster::util::Timestamp object.
     */
-   static Global& getInstance(const string &instanceName="default");
+   static Global& getInstance(const std::string &instanceName="default");
 
    /**
     * The version field is automatically set by ant on compilation (see filter token in build.xml)
-    * @return The version string e.g. "0.842"
+    * @return The version std::string e.g. "0.842"
     *         or "@version@" if not set
     */
-   static string& getVersion();
+   static std::string& getVersion();
 
    /**
     * The timestamp field is automatically set by ant on compilation (see filter token in build.xml)
     * @return The compilation timestamp of format "MM/dd/yyyy hh:mm aa"
     *         or "@build.timestamp@" if not set
     */
-   static string& getBuildTimestamp();
+   static std::string& getBuildTimestamp();
  
    /**
     * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
@@ -113,62 +113,62 @@ public:
 
    /**
     * If no log is found with that name, one is created and added to the
-    * log map.
+    * log std::map.
     */
-   Log& getLog(const string &logName="default");
+   org::xmlBlaster::util::Log& getLog(const std::string &logName="default");
 
    /**
     * Returns the property object associated to this global
     */
    Property& getProperty() const;
 
-   string getLocalIP() const;
+   std::string getLocalIP() const;
 
    /**
     * Returns the bootstrap host name
     */
-    string getBootstrapHostname() const;
+    std::string getBootstrapHostname() const;
 
-    string getCbHostname() const;
+    std::string getCbHostname() const;
 
-    CbServerPluginManager& getCbServerPluginManager();
+    org::xmlBlaster::client::protocol::CbServerPluginManager& getCbServerPluginManager();
 
-    DeliveryManager& getDeliveryManager();
+    org::xmlBlaster::util::dispatch::DeliveryManager& getDeliveryManager();
 
     Timeout& getPingTimer();
 
     /**
-     * returns the specified value as a string.
+     * returns the specified value as a std::string.
      */
-    static const string& getBoolAsString(bool val);
+    static const std::string& getBoolAsString(bool val);
 
     /**
 
      * Access the id (as a String) currently used on server side.
      * @return ""
      */
-    string getId() const;
+    std::string getId() const;
 
     /**
      * Same as getId() but all 'special characters' are stripped
      * so you can use it for file names.
      * @return ""
      */
-    string getStrippedId() const;
+    std::string getStrippedId() const;
 
     /**
-     * Utility method to strip any string, all characters which prevent
+     * Utility method to strip any std::string, all characters which prevent
      * to be used for e.g. file names are replaced. 
      * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
      * @return e.g. "http_www_xmlBlaster_org_homex"
      */
-    string getStrippedString(const string& text) const;
+    std::string getStrippedString(const std::string& text) const;
 
     /**
      * Currently set by engine.Global, used server side only.
      * @param a unique id
      */
-    void setId(const string& id);
+    void setId(const std::string& id);
 };
 
 }}}; // namespace

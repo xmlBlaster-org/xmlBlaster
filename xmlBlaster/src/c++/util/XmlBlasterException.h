@@ -8,7 +8,7 @@ Comment:   Basic xmlBlaster exception.
 /**
  * The basic exception handling class for xmlBlaster.
  * <p>
- * The getMessage() method returns a configurable formatted string
+ * The getMessage() method returns a configurable formatted std::string
  * (TODO)
  * here is an example how to configure the format in your xmlBlaster.properties:
  * <pre>
@@ -51,70 +51,70 @@ namespace org { namespace xmlBlaster { namespace util {
 class Dll_Export XmlBlasterException
 {
    private:
-      const string errorCodeStr_;
-      const string node_;
-      const string location_;
-      const string lang_;
-      const string message_;
-      const string versionInfo_;
-      string timestamp_;
-      string stackTrace_;
-      string embeddedMessage_;
-      const string transactionInfo_;
+      const std::string errorCodeStr_;
+      const std::string node_;
+      const std::string location_;
+      const std::string lang_;
+      const std::string message_;
+      const std::string versionInfo_;
+      std::string timestamp_;
+      std::string stackTrace_;
+      std::string embeddedMessage_;
+      const std::string transactionInfo_;
 
    public:
 
    /**
     * For internal use: Deserializing and exception creation from CORBA XmlBlasterException
     */
-   XmlBlasterException(const string &errorCodeStr,
-                       const string &node,
-                       const string &location,
-                       const string &lang="en",
-                       const string &message="",
-                       const string &versionInfo="client-c++",
-//                       Timestamp timestamp=0,
-                       const string &timestampStr="",
-                       const string &stackTrace="",
-                       const string &embeddedMessage="",
-                       const string &transactionInfo="<transactioninfo/>");
+   XmlBlasterException(const std::string &errorCodeStr,
+                       const std::string &node,
+                       const std::string &location,
+                       const std::string &lang="en",
+                       const std::string &message="",
+                       const std::string &versionInfo="client-c++",
+//                       org::xmlBlaster::util::Timestamp timestamp=0,
+                       const std::string &timestampStr="",
+                       const std::string &stackTrace="",
+                       const std::string &embeddedMessage="",
+                       const std::string &transactionInfo="<transactioninfo/>");
 
    XmlBlasterException(const ErrorCode &errorCode,
-                       const string &node,
-                       const string &location,
-                       const string &lang,
-                       const string &versionInfo="client-c++",
-//                       Timestamp timestamp=0,
-                       const string &timestampStr="",
-                       const string &stackTrace="",
-                       const string &embeddedMessage="",
-                       const string &transactionInfo="<transactioninfo/>");
+                       const std::string &node,
+                       const std::string &location,
+                       const std::string &lang,
+                       const std::string &versionInfo="client-c++",
+//                       org::xmlBlaster::util::Timestamp timestamp=0,
+                       const std::string &timestampStr="",
+                       const std::string &stackTrace="",
+                       const std::string &embeddedMessage="",
+                       const std::string &transactionInfo="<transactioninfo/>");
 
    XmlBlasterException(const ErrorCode &errorCode,
-                       const string &node,
-                       const string &embeddedMessage);
+                       const std::string &node,
+                       const std::string &embeddedMessage);
 
-   string getErrorCodeStr() const;
-   string getNode() const;
-   string getLocation() const;
-   string getLang() const;
-   string getMessage() const;
+   std::string getErrorCodeStr() const;
+   std::string getNode() const;
+   std::string getLocation() const;
+   std::string getLang() const;
+   std::string getMessage() const;
 
    /**
     * @return The original message text
     */
-   string getRawMessage() const;
+   std::string getRawMessage() const;
 
    /**
     * A comma separated list with key/values containing detailed
     * information about the server environment
     */
-   string getVersionInfo() const;
+   std::string getVersionInfo() const;
 
    /**
-    * Timestamp when exception was thrown
+    * org::xmlBlaster::util::Timestamp when exception was thrown
     */
-   string getTimestamp();
+   std::string getTimestamp();
 
    /**
     * @return The stack trace or null, e.g.
@@ -125,18 +125,18 @@ class Dll_Export XmlBlasterException
     * The first line is the result from toString() and the following lines
     * are the stackTrace
     */
-   string getStackTraceStr() const;
+   std::string getStackTraceStr() const;
 
    /**
     * @return The toString() of the embedded exception which is <classname>:getMessage()<br />
     *         or null if not applicable
     */
-   string getEmbeddedMessage() const;
+   std::string getEmbeddedMessage() const;
 
    /**
     * @return Not defined yet
     */
-   string getTransactionInfo() const;
+   std::string getTransactionInfo() const;
 
    bool isInternal() const;
 
@@ -149,14 +149,14 @@ class Dll_Export XmlBlasterException
    bool isTransaction() const;
 
    /**
-    * Returns a stringified version of the exception
+    * Returns a std::stringified version of the exception
     */
-   string toString() const;
+   std::string toString() const;
 
    /**
     * Parsing what toString() produced
     */
-   static XmlBlasterException parseFromString(string fromString);
+   static XmlBlasterException parseFromString(std::string fromString);
 
    /**
     * Create a XML representation of the Exception.
@@ -167,14 +167,14 @@ class Dll_Export XmlBlasterException
     *   &lt;/exception>
     * </pre>
     */
-   string toXml();
+   std::string toXml();
 
    /**
-    * Returns a string containing the stack trace if the system and the
+    * Returns a std::string containing the stack trace if the system and the
     * compilation permit it (_ENABLE_STACK_TRACE must be set: which is set
     * in xmlBlasterDef.h in case of the gnu compiler.
     */
-   static string getStackTrace(int maxNumOfLines=20);
+   static std::string getStackTrace(int maxNumOfLines=20);
 
 };
 

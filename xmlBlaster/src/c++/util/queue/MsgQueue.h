@@ -13,7 +13,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 
-
 #ifndef _UTIL_QUEUE_MSGQUEUE_H
 #define _UTIL_QUEUE_MSGQUEUE_H
 
@@ -24,20 +23,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/UnSubscribeQueueEntry.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::thread;
-using namespace org::xmlBlaster::util::qos::storage;
-using namespace org::xmlBlaster::util::dispatch;
-
-
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class Dll_Export MsgQueue : public Queue
 {
 
 public:
-   MsgQueue(Global& global, const ClientQueueProperty& property);
+   MsgQueue(org::xmlBlaster::util::Global& global,
+            const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
 
    MsgQueue(const MsgQueue& queue);
 

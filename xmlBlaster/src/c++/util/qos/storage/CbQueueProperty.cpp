@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.9 2003/05/29 10:35:03 ruff Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.10 2003/07/03 20:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -18,11 +18,11 @@ Version:   $Id: CbQueueProperty.cpp,v 1.9 2003/05/29 10:35:03 ruff Exp $
 #include <ctype.h> // for toUpper
 #include <util/Global.h>
 
+namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-
-namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
    CbQueueProperty::CbQueueProperty(Global& global,
                                     const string& relating,
@@ -54,7 +54,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
       string ret;
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
-             string(" maxEntries=") + lexical_cast<string>(getMaxEntries());
+             string(" maxEntries=") + lexical_cast<std::string>(getMaxEntries());
       if (!addressArr_.empty())
          ret += string(" ") + getCurrentCallbackAddress().getSettings();
       return ret;
@@ -156,10 +156,10 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       string text;
       text += string("Control the callback queue properties:\n");
-      text += string("   -queue/callback/maxEntries       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
-      text += string("   -queue/callback/maxEntriesCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
-      text += string("   -queue/callback/maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
-      text += string("   -queue/callback/maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
+      text += string("   -queue/callback/maxEntries       The maximum allowed number of messages in this queue [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("].\n");
+      text += string("   -queue/callback/maxEntriesCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("].\n");
+      text += string("   -queue/callback/maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<std::string>(DEFAULT_bytesDefault) + string("].\n");
+      text += string("   -queue/callback/maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<std::string>(DEFAULT_bytesDefault) + string("].\n");
     //text += "   -queue/callback/expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += "   -queue/callback/onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
       text += string("   -queue/callback/onOverflow What happens if queue is full [") + DEFAULT_onOverflow + string("]\n");

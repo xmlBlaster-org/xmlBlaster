@@ -27,21 +27,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 #include <util/qos/storage/QueuePropertyFactory.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
-using namespace org::xmlBlaster::util::qos::storage;
-using namespace std;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 class Dll_Export MsgQosFactory : public SaxHandlerBase
 {
 private:
-   string               ME;
+   std::string          ME;
    MsgQosData           msgQosData_;
    Destination          destination_;
-   RouteInfo            routeInfo_;
-   QueuePropertyFactory queuePropertyFactory_;
+   org::xmlBlaster::util::cluster::RouteInfo            routeInfo_;
+   org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    bool inState_; // = false;
@@ -80,16 +77,16 @@ public:
    /**
     * Can be used as singleton. 
     */
-   MsgQosFactory(Global& global);
+   MsgQosFactory(org::xmlBlaster::util::Global& global);
 
    ~MsgQosFactory();
 
    /**
     * Parses the given xml Qos and returns a MsgQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
-    * @param the XML based ASCII string
+    * @param the XML based ASCII std::string
     */
-   MsgQosData readObject(const string& xmlQos);
+   MsgQosData readObject(const std::string& xmlQos);
 
    /**
     * Start element, event from SAX parser.

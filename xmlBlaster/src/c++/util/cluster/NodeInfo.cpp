@@ -8,11 +8,11 @@ Comment:   Holding information about the current node.
 #include <util/cluster/NodeInfo.h>
 #include <util/Global.h>
 
+namespace org { namespace xmlBlaster { namespace util { namespace cluster {
+
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-using namespace std;
-
-namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
 /**
  * This class holds the address informations about an

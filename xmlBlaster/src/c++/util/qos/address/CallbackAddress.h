@@ -2,12 +2,12 @@
 Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.5 2003/05/21 20:20:56 ruff Exp $
+Comment:   Holding callback address std::string and protocol std::string
+Version:   $Id: CallbackAddress.h,v 1.6 2003/07/03 20:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
- * Helper class holding callback address string and protocol string.
+ * Helper class holding callback address std::string and protocol std::string.
  * <p />
  * <pre>
  * &lt;callback type='XMLRPC' sessionId='4e56890ghdFzj0'
@@ -20,10 +20,8 @@ Version:   $Id: CallbackAddress.h,v 1.5 2003/05/21 20:20:56 ruff Exp $
  * &lt;/callback>
  * </pre>
  */
-
 #ifndef _UTIL_CFG_CALLBACKADDRESS_H
 #define _UTIL_CFG_CALLBACKADDRESS_H
-
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/address/AddressBase.h>
@@ -31,9 +29,7 @@ Version:   $Id: CallbackAddress.h,v 1.5 2003/05/21 20:20:56 ruff Exp $
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
-using namespace org::xmlBlaster::util;
-
-class Dll_Export CallbackAddress : public AddressBase
+class Dll_Export CallbackAddress : public org::xmlBlaster::util::qos::address::AddressBase
 {
 private:
 
@@ -46,7 +42,7 @@ public:
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
-    * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
+    * @param nodeId  A unique std::string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>
     *   the command line argument (or xmlBlaster.property entry)
@@ -54,17 +50,17 @@ public:
     *   is precedence over
     *    <code>-cb.retries 10</code>
     */
-   CallbackAddress(Global& global, const string& type="", const string nodeId="");
+   CallbackAddress(org::xmlBlaster::util::Global& global, const std::string& type="", const std::string nodeId="");
 
    /**
     * copy constructor
     */
-   CallbackAddress(const AddressBase& addr);
+   CallbackAddress(const org::xmlBlaster::util::qos::address::AddressBase& addr);
 
    /**
     * Assignment operator
     */
-   CallbackAddress& operator =(const AddressBase& addr);
+   CallbackAddress& operator =(const org::xmlBlaster::util::qos::address::AddressBase& addr);
 
    /**
     * Shall this address be used for subject queue messages?
@@ -79,12 +75,12 @@ public:
    void useForSubjectQueue(bool useForSubjectQueue);
 
    /** @return The literal address as given by getAddress() */
-   string toString();
+   std::string toString();
 
    /**
-    * Get a usage string for the server side supported callback connection parameters
+    * Get a usage std::string for the server side supported callback connection parameters
     */
-   string usage();
+   std::string usage();
 };
 
 }}}}} // namespace

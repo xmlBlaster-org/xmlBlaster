@@ -79,7 +79,7 @@ public:
    virtual void run() = 0;
 
    /** Sleeps the specified amount of time in nanoseconds */
-   static void sleepNanos(Timestamp nanoSecondDelay);
+   static void sleepNanos(org::xmlBlaster::util::Timestamp nanoSecondDelay);
 
    /** Sleeps the specified amount of time in nanoseconds */
    static void sleep(long millis);
@@ -88,7 +88,7 @@ public:
    static void sleepSecs(long secs);
 
    /** returns the current timestamp */
-   static Timestamp getCurrentTimestamp();
+   static org::xmlBlaster::util::Timestamp getCurrentTimestamp();
 
 
    /**

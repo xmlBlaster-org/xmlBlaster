@@ -13,8 +13,6 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 #include <util/SaxHandlerBase.h>
 #include <string>
 
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util {
     /**
      * In good old C days this would have been named a 'flag' (with bit wise 
@@ -22,7 +20,7 @@ namespace org { namespace xmlBlaster { namespace util {
      * But this allows to specify QoS (quality of service) in XML syntax.<p />
      * With XML there are no problems to extend the services of the xmlBlaster
      * in unlimited ways.<br />
-     * The xml string is parsed with a SAX parser, since no persistent DOM 
+     * The xml std::string is parsed with a SAX parser, since no persistent DOM 
      * tree is needed and SAX is much faster. <p />
      * You may use this as a base class for your specialized QoS.<br />
      * The &lt;qos> tag is parsed here, and you provide the parsing of the 
@@ -33,7 +31,7 @@ namespace org { namespace xmlBlaster { namespace util {
 
     private:
 
-       string me()
+       std::string me()
        {
           return "XmlQoSBase";
        }
@@ -46,18 +44,18 @@ namespace org { namespace xmlBlaster { namespace util {
 
        /**
         * Constructs an un initialized QoS (quality of service) object.
-        * You need to call the init() method to parse the XML string.
+        * You need to call the init() method to parse the XML std::string.
         */
-       XmlQoSBase(Global& global);
+       XmlQoSBase(org::xmlBlaster::util::Global& global);
 
     protected:
 
        /**
         * To avoid SAX parsing (which costs many CPU cycles)
-        * check the QoS string here if it contains anything useful.
-        * @param qos The literal ASCII xml string
+        * check the QoS std::string here if it contains anything useful.
+        * @param qos The literal ASCII xml std::string
         */
-       bool isEmpty(const string &qos);
+       bool isEmpty(const std::string &qos);
 
        /**
         * Start element callback, does handling of tag &lt;qos>. <p />

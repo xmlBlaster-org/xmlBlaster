@@ -15,10 +15,6 @@
 
 #include <client/key/MsgKeyBase.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
-
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
 class Dll_Export PublishKey : public MsgKeyBase
@@ -28,9 +24,9 @@ public:
    /**
     * Minimal constructor.
     */
-   PublishKey(Global& global, const string& oid="", const string& mime="", const string& mimeExt="");
+   PublishKey(org::xmlBlaster::util::Global& global, const std::string& oid="", const std::string& mime="", const std::string& mimeExt="");
    
-   PublishKey(Global& global, const MsgKeyData& data);
+   PublishKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::MsgKeyData& data);
 
    PublishKey(const PublishKey& key);
 
@@ -39,22 +35,22 @@ public:
    /**
     * Set the domain for this message, can be used for a simple grouping of
     * messages to their master node with xmlBlaster clusters. 
-    * @param The domain, any chosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    * @param The domain, any chosen std::string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
     *         defaults to "" where the local xmlBlaster instance is the master of the message.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
     */
-   void setDomain(const string& domain);
+   void setDomain(const std::string& domain);
 
 
-   void setOid(const string& oid);
+   void setOid(const std::string& oid);
 
    /**
     * Set mime type (syntax) of the message content. 
     * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
     *         default is "text/plain" if not set
-    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/istd::map-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   void setContentMime(const string& contentMime);
+   void setContentMime(const std::string& contentMime);
 
    /**
     * Some further specifying information of the content.
@@ -63,9 +59,9 @@ public:
     * You may use this attribute for you own purposes.
     * @param The MIME-extended info, for example<br />
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
+    *         or "" (empty std::string) if not known
     */
-   void setContentMimeExtended(const string& contentMimeExtended);
+   void setContentMimeExtended(const std::string& contentMimeExtended);
 
    /**
     * Set client specific meta informations. 
@@ -82,7 +78,7 @@ public:
     * </pre>
     * @param str Your tags in ASCII XML syntax
     */
-   void setClientTags(const string& tags);
+   void setClientTags(const std::string& tags);
 
 };
 

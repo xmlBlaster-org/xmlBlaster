@@ -3,13 +3,14 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.10 2003/03/25 09:40:47 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.11 2003/07/03 20:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
 
@@ -85,7 +86,7 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
    prop_ = QueuePropertyBase(global_, "");
    if (log_.trace()) log_.trace(ME, "queue properties are created");
    int len = attrs.getLength();
-   if (log_.trace()) log_.trace(ME, string("length retrieved: ") + lexical_cast<string>(len));
+   if (log_.trace()) log_.trace(ME, string("length retrieved: ") + lexical_cast<std::string>(len));
    if (len > 0) {
       int i=0;
 

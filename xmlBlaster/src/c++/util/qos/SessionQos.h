@@ -2,7 +2,7 @@
 Name:      SessionQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
+Comment:   Factory for SessionQosData (for org::xmlBlaster::util::qos::ConnectReturnQos and org::xmlBlaster::util::qos::ConnectQos)
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_QOS_SESSIONQOS_H
@@ -26,20 +26,20 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-using namespace org::xmlBlaster::util;
+
 
 class Dll_Export SessionQosData
 {
 private:
-   const string ME;
+   const std::string ME;
    long         timeout_;
    int          maxSessions_;
    bool         clearSessions_;
-   string       sessionId_;
-   string       clusterNodeId_;
-   string       subjectId_;
+   std::string       sessionId_;
+   std::string       clusterNodeId_;
+   std::string       subjectId_;
    long         pubSessionId_;
-   Global&      global_;
+   org::xmlBlaster::util::Global&      global_;
 
    friend class SessionQosFactory;
 
@@ -54,21 +54,21 @@ private:
       pubSessionId_  = data.pubSessionId_;
    }
 
-   void initialize(const string& absoluteName, const string& defaultUserName, long publicSessionId);
+   void initialize(const std::string& absoluteName, const std::string& defaultUserName, long publicSessionId);
 
 public:
    /**
-    * When using this constructor you can let it assign the defaults by passing an empty string as the 
+    * When using this constructor you can let it assign the defaults by passing an empty std::string as the 
     * 'absoluteName' argument, or you force the SessionQos to set the SessionName to what you specify in the
     * 'absoluteName' argument. 
     * @param absoluteName the sessionId to assign to this SessionQos. You can either pass an absolute name,
-    * or a relative name or an empty string.
+    * or a relative name or an empty std::string.
     */
-   SessionQosData(Global& global, const string& absoluteName="");
+   SessionQosData(org::xmlBlaster::util::Global& global, const std::string& absoluteName="");
 
    /**
     * @defaultUserName is the name to use as a default for the user (the subjectId). It is stronger than the
-    * properties set but if an empty string is used, then the default name is taken from the 'user' property. 
+    * properties set but if an empty std::string is used, then the default name is taken from the 'user' property. 
     * This is just a default and as such it is weaker than the property 'session.name'. In other words, even
     * if defaultUserName is not empty, it will be overwritten by eventual setting of the property 'session.name'.
     *
@@ -76,7 +76,7 @@ public:
     * have the 'session.name' property set, it will overwrite this. If the publicSessionId is '0', then it
     * is omitted (the server will assign one for you).
     */
-   SessionQosData(Global& global, const string& defaultUserName, long publicSessionId);
+   SessionQosData(org::xmlBlaster::util::Global& global, const std::string& defaultUserName, long publicSessionId);
    SessionQosData(const SessionQosData& data);
    SessionQosData& operator =(const SessionQosData& data);
    long getTimeout() const;
@@ -96,29 +96,29 @@ public:
     * Sets the absolute name. Note that you can overwrite the nodeId here. It returns 'true' if the
     * name was absolute, 'false' otherwise.
     */
-   void setAbsoluteName(/*const string nodeId="",*/ const string& name);
-   string getRelativeName() const;
-   string getAbsoluteName() const;
-   string getClusterNodeId() const;
-   void setClusterNodeId(const string& clusterNodeId);
-   string getSubjectId() const;
-   void setSubjectId(const string& subjectId);
+   void setAbsoluteName(/*const std::string nodeId="",*/ const std::string& name);
+   std::string getRelativeName() const;
+   std::string getAbsoluteName() const;
+   std::string getClusterNodeId() const;
+   void setClusterNodeId(const std::string& clusterNodeId);
+   std::string getSubjectId() const;
+   void setSubjectId(const std::string& subjectId);
    long getPubSessionId() const;
    void setPubSessionId(const long pubSessionId);
 
-   string getSecretSessionId() const;
-   void setSecretSessionId(const string& sessionId);
-   string toXml(const string& extraOffset="") const;
+   std::string getSecretSessionId() const;
+   void setSecretSessionId(const std::string& sessionId);
+   std::string toXml(const std::string& extraOffset="") const;
 };
 
 class Dll_Export SessionQosFactory: public util::XmlQoSBase
 {
 private:
-   const string ME;
+   const std::string ME;
    SessionQosData* sessionQos_;
 
 public:
-   SessionQosFactory(Global& global);
+   SessionQosFactory(org::xmlBlaster::util::Global& global);
 
    ~SessionQosFactory();
 
@@ -147,7 +147,7 @@ public:
 
    SessionQosData getData() const;
 
-   SessionQosData readObject(const string& qos);
+   SessionQosData readObject(const std::string& qos);
 
 };
 

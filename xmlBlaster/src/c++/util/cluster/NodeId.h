@@ -21,34 +21,32 @@ Comment:   Holds the unique name of a cluster node
 #include <string>
 #include <util/Log.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 
 class Dll_Export NodeId
 {
 private:
-   const string ME;
-   string       id_;
-   Global&      global_;
-   Log&         log_;
+   const std::string ME;
+   std::string       id_;
+   org::xmlBlaster::util::Global&      global_;
+   org::xmlBlaster::util::Log&         log_;
 
 public:
-   NodeId(Global& global, const string& id);
+   NodeId(org::xmlBlaster::util::Global& global, const std::string& id);
 
    NodeId(const NodeId& nodeId);
 
    NodeId& operator =(const NodeId& nodeId);
 
-   string getId() const;
+   std::string getId() const;
 
    /**
     * @param id The cluster node id, e.g. "heron".<br />
     * If you pass "/node/heron/client/joe" everything ins stripped to get "heron"
     */
-   void setId(const string& id);
+   void setId(const std::string& id);
 
-   string toString() const;
+   std::string toString() const;
 
    /**
     * Needed for use in TreeSet and TreeMap, enforced by java.lang.Comparable

@@ -11,8 +11,6 @@ Comment:   Interface (virtual class)
  * <p />
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
-
-
 #ifndef _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 #define _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 
@@ -21,11 +19,7 @@ Comment:   Interface (virtual class)
 #include <util/qos/ConnectQos.h>
 #include <string>
 #include <vector>
-
 #include <client/xmlBlasterClient.h>
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
@@ -48,54 +42,54 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        *
        * @param qos The authentication and other informations
        * @param client A handle to your callback if desired or null
-       * @return ConnectReturnQos
+       * @return org::xmlBlaster::util::qos::ConnectReturnQos
        */
-      virtual ConnectReturnQos connect(const ConnectQos& qos) = 0;
+      virtual org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos) = 0;
 
       /**
-       * Logout from xmlBlaster.
+       * org::xmlBlaster::util::Logout from xmlBlaster.
        * @param qos The QoS or null
        */
-      virtual bool disconnect(const DisconnectQos& qos) = 0;
+      virtual bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos) = 0;
 
       // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
-      //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
+      //public org::xmlBlaster::client::I_CallbackServer getCbServerInstance() throws org::xmlBlaster::util::XmlBlasterException;
 
       /**
        * @return The connection protocol name "IOR" or "RMI" etc.
        */
-      virtual string getProtocol() = 0;
+      virtual std::string getProtocol() = 0;
 
       /**
        * Is invoked when we poll for the server, for example after we have lost the connection.
        */
-//      virtual string loginRaw() = 0;
+//      virtual std::string loginRaw() = 0;
 
       virtual bool shutdown() = 0;
 
       /** Reset the driver on problems */
       virtual void resetConnection() = 0;
 
-      virtual string getLoginName() = 0;
+      virtual std::string getLoginName() = 0;
 
       virtual bool isLoggedIn() = 0;
 
-      virtual string ping(const string& qos) = 0;
+      virtual std::string ping(const std::string& qos) = 0;
 
-      virtual SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos) = 0;
+      virtual org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos) = 0;
 
-      virtual vector<MessageUnit> get(const GetKey& key, const GetQos& qos) = 0;
+      virtual std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos) = 0;
 
-      virtual vector<UnSubscribeReturnQos> 
-         unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos) = 0;
+      virtual std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> 
+         unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos) = 0;
 
-      virtual PublishReturnQos publish(const MessageUnit& msgUnit) = 0;
+      virtual org::xmlBlaster::client::qos::PublishReturnQos publish(const org::xmlBlaster::util::MessageUnit& msgUnit) = 0;
 
-      virtual void publishOneway(const vector<MessageUnit> &msgUnitArr) = 0;
+      virtual void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr) = 0;
 
-      virtual vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr) = 0;
+      virtual std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr) = 0;
 
-      virtual vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos) = 0;
+      virtual std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos) = 0;
    };
 
 }}}} // namespaces

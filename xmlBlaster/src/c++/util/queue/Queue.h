@@ -13,7 +13,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 
-
 #ifndef _UTIL_QUEUE_QUEUE_H
 #define _UTIL_QUEUE_QUEUE_H
 
@@ -24,29 +23,24 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 #include <set>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::thread;
-using namespace org::xmlBlaster::util::qos::storage;
-
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 typedef ReferenceHolder<MsgQueueEntry>      EntryType;
-typedef set<EntryType, greater<EntryType> > StorageType;
+typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
 class Dll_Export Queue
 {
 protected:
-   string        ME;
-   Global&       global_;
-   Log&          log_;
-   ClientQueueProperty property_;
+   std::string        ME;
+   org::xmlBlaster::util::Global&       global_;
+   org::xmlBlaster::util::Log&          log_;
+   org::xmlBlaster::util::qos::storage::ClientQueueProperty property_;
    StorageType   storage_;
    long          numOfBytes_;
-   Mutex         accessMutex_;
+   org::xmlBlaster::util::thread::Mutex accessMutex_;
 
 public:
-   Queue(Global& global, const ClientQueueProperty& property);
+   Queue(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
 
    Queue(const Queue& queue);
 
@@ -66,16 +60,16 @@ public:
    /**
     * Returns the entries with the highest priority in the queue. If 'maxNumOfEntries' is positive,
     * this is the maximum number of entries to return. If maxNumOfBytes is positive, only the entries
-    * which fit into the range specified are returned. If there are no such entries, an empty vector is
+    * which fit into the range specified are returned. If there are no such entries, an empty std::vector is
     * returned.
     */
-   vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
+   std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
 
    /**
-    * Deletes the entries specified in the vector in the argument list. If this vector is empty or if
+    * Deletes the entries specified in the std::vector in the argument list. If this std::vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   long randomRemove(vector<EntryType>::const_iterator start, vector<EntryType>::const_iterator end);
+   long randomRemove(std::vector<EntryType>::const_iterator start, std::vector<EntryType>::const_iterator end);
 
    /**
     * Clears (removes all entries) this queue

@@ -3,7 +3,7 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.14 2003/02/18 21:24:24 laghi Exp $
+Version:   $Id: Timestamp.cpp,v 1.15 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
@@ -11,9 +11,10 @@ Version:   $Id: Timestamp.cpp,v 1.14 2003/02/18 21:24:24 laghi Exp $
 #include <util/lexical_cast.h>
 #include <time.h>
 
-
-
 namespace org { namespace xmlBlaster { namespace util {
+
+using namespace std;
+using namespace org::xmlBlaster::util::thread;
 
 TimestampFactory::TimestampFactory() : getterMutex_()
 {
@@ -61,12 +62,12 @@ string TimestampFactory::toXml(Timestamp timestamp, const string& extraOffset, b
    offset += extraOffset;
    if (literal) {
       // implement it here ....
-      ret += offset + "<timestamp nanos='" + lexical_cast<string>(timestamp) + "'>";
+      ret += offset + "<timestamp nanos='" + lexical_cast<std::string>(timestamp) + "'>";
       ret += offset + " " + getTimeAsString(timestamp);
       ret += offset + "</timestamp>";
    }
    else {
-      ret += offset + "<timestamp nanos='" + lexical_cast<string>(timestamp) + "'/>";
+      ret += offset + "<timestamp nanos='" + lexical_cast<std::string>(timestamp) + "'/>";
    }
    return ret;
 }
@@ -81,7 +82,7 @@ string TimestampFactory::getTimeAsString(Timestamp timestamp)
     char *ptr = new char[300];
     /* size_t nmax = */ strftime(ptr, 300, "%Y-%m-%d %H:%M:%S", help);
 
-    string ret = string(ptr) + "." + lexical_cast<string>(nanos);
+    string ret = string(ptr) + "." + lexical_cast<std::string>(nanos);
     delete[] ptr;
     return ret;
 }

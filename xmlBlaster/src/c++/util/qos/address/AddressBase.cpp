@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.13 2003/05/21 20:20:56 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.14 2003/07/03 20:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -19,8 +19,8 @@ Version:   $Id: AddressBase.cpp,v 1.13 2003/05/21 20:20:56 ruff Exp $
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+using namespace std;
 using namespace org::xmlBlaster::util;
-
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
@@ -93,7 +93,7 @@ AddressBase::~AddressBase()
  */
 string AddressBase::getName()
 {
-   return getHostname() + string(":") + lexical_cast<string>(getPort());
+   return getHostname() + string(":") + lexical_cast<std::string>(getPort());
 }
 
 /**
@@ -117,7 +117,7 @@ string AddressBase::getSettings() const
 {
    string onewayStr = "false";
    if (oneway_) onewayStr = "true";
-   string ret = string("type=") + type_ + string(" oneway=") + onewayStr + string(" burstMode.collectTime=") + lexical_cast<string>(getCollectTime());
+   string ret = string("type=") + type_ + string(" oneway=") + onewayStr + string(" burstMode.collectTime=") + lexical_cast<std::string>(getCollectTime());
    return ret;
 }
 
@@ -209,7 +209,7 @@ string AddressBase::getAddress() const
    if (address_ == "") {
       address_ = "http://" + getHostname();
       if (getPort() > 0)
-         address_ += ":" + lexical_cast<string>(getPort());
+         address_ += ":" + lexical_cast<std::string>(getPort());
    }
    return address_;
 }
@@ -307,7 +307,7 @@ void AddressBase::setPingInterval(long pingInterval)
 {
    if (pingInterval <= 0) pingInterval_ = 0;
    else if (pingInterval < 10) {
-      log_.warn(ME, string("pingInterval=") + lexical_cast<string>(pingInterval) + string(" msec is too short, setting it to 10 millis"));
+      log_.warn(ME, string("pingInterval=") + lexical_cast<std::string>(pingInterval) + string(" msec is too short, setting it to 10 millis"));
       pingInterval_ = 10;
    }
    else pingInterval_ = pingInterval;
@@ -490,15 +490,15 @@ string AddressBase::toXml(const string& extraOffset) const
    if (getHostname() != "")
       ret += string(" bootstrapHostname='") + getHostname() + string("'");
    if (DEFAULT_port != getPort())
-       ret += string(" bootstrapPort='") + lexical_cast<string>(getPort()) + string("'");
+       ret += string(" bootstrapPort='") + lexical_cast<std::string>(getPort()) + string("'");
    if (DEFAULT_sessionId != getSecretSessionId())
        ret += string(" sessionId='") + getSecretSessionId() + string("'");
    if (defaultPingInterval_ != getPingInterval())
-       ret += string(" pingInterval='") + lexical_cast<string>(getPingInterval()) + string("'");
+       ret += string(" pingInterval='") + lexical_cast<std::string>(getPingInterval()) + string("'");
    if (defaultRetries_ != getRetries())
-       ret += string(" retries='") + lexical_cast<string>(getRetries()) + string("'");
+       ret += string(" retries='") + lexical_cast<std::string>(getRetries()) + string("'");
    if (defaultDelay_ != getDelay())
-       ret += string(" delay='") + lexical_cast<string>(getDelay()) + string("'");
+       ret += string(" delay='") + lexical_cast<std::string>(getDelay()) + string("'");
    if (DEFAULT_oneway != oneway()) {
        string onewayStr = "false";
        if (oneway()) onewayStr = "true";
@@ -517,13 +517,13 @@ string AddressBase::toXml(const string& extraOffset) const
    if (getCollectTime() != DEFAULT_collectTime || getCollectTimeOneway() != DEFAULT_collectTimeOneway) {
       ret += offset + string("   ") + string("<burstMode");
       if (getCollectTime() != DEFAULT_collectTime)
-         ret += string(" collectTime='") + lexical_cast<string>(getCollectTime()) + string("'");
+         ret += string(" collectTime='") + lexical_cast<std::string>(getCollectTime()) + string("'");
       if (getCollectTimeOneway() != DEFAULT_collectTimeOneway)
-         ret += string(" collectTimeOneway='") + lexical_cast<string>(getCollectTimeOneway()) + string("'");
+         ret += string(" collectTimeOneway='") + lexical_cast<std::string>(getCollectTimeOneway()) + string("'");
       ret += string("/>");
    }
    if (getCompressType() != DEFAULT_compressType)
-      ret += offset + string("   ") + string("<compress type='") + getCompressType() + string("' minSize='") + lexical_cast<string>(getMinSize()) + string("'/>");
+      ret += offset + string("   ") + string("<compress type='") + getCompressType() + string("' minSize='") + lexical_cast<std::string>(getMinSize()) + string("'/>");
    if (ptpAllowed_ != DEFAULT_ptpAllowed) {
       string ptpAllowedStr = "false";
       if (ptpAllowed_) ptpAllowedStr = "true";

@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.15 2003/01/24 01:29:05 johnson Exp $
+Version:   $Id: Timestamp.h,v 1.16 2003/07/03 20:54:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -17,15 +17,11 @@ Version:   $Id: Timestamp.h,v 1.15 2003/01/24 01:29:05 johnson Exp $
 #include <time.h>
 #include <util/thread/ThreadImpl.h>
 
-using namespace std;
-
 /*
 #if defined(_WINDOWS)   
    ostream& operator <<(ostream& target, const __int64& x);
 #endif
 */
-using namespace org::xmlBlaster::util::thread;
-
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -55,7 +51,7 @@ namespace org { namespace xmlBlaster { namespace util {
     
    private:
       Timestamp lastTimestamp_;
-      Mutex getterMutex_;
+      org::xmlBlaster::util::thread::Mutex getterMutex_;
 
       /**
        * The default constructor is made private to implement the singleton
@@ -82,9 +78,9 @@ namespace org { namespace xmlBlaster { namespace util {
        */
       Timestamp getTimestamp();
 
-      static string toXml(Timestamp timestamp, const string& extraOffset="", bool literal=false);
+      static std::string toXml(Timestamp timestamp, const std::string& extraOffset="", bool literal=false);
 
-      static string getTimeAsString(Timestamp timestamp);
+      static std::string getTimeAsString(Timestamp timestamp);
 
    };
 

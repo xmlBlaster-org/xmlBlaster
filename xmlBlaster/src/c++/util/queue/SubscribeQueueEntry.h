@@ -11,8 +11,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/qos/SubscribeQos.h>
 #include <client/qos/SubscribeReturnQos.h>
 #include <client/key/SubscribeKey.h>
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
+
+
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -24,14 +24,14 @@ using namespace org::xmlBlaster::client::key;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export SubscribeQueueEntry : public MsgQueueEntry
+class Dll_Export SubscribeQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
 public:
 
    /**
     * Constructor suited for operations like subscribe and unSubscribe
     */
-   SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type="subscribe", int priority=9, bool persistent=false);
+   SubscribeQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::client::key::SubscribeKey& subscribeKey, const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos, const std::string& type="subscribe", int priority=9, bool persistent=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In
@@ -40,15 +40,15 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler);
+   org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler);
 
-   SubscribeQos getSubscribeQos() const;
+   org::xmlBlaster::client::qos::SubscribeQos getSubscribeQos() const;
 
-   SubscribeKey getSubscribeKey() const;
+   org::xmlBlaster::client::key::SubscribeKey getSubscribeKey() const;
  
-   SubscribeReturnQos getSubscribeReturnQos() const;
+   org::xmlBlaster::client::qos::SubscribeReturnQos getSubscribeReturnQos() const;
 
-   string toXml(const string& indent="") const;
+   std::string toXml(const std::string& indent="") const;
 
 };
 

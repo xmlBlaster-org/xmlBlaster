@@ -2,9 +2,8 @@
 Name:      ConnectQosFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
+Comment:   Factory for org::xmlBlaster::util::qos::ConnectQosData (for org::xmlBlaster::util::qos::ConnectReturnQos and org::xmlBlaster::util::qos::ConnectQos)
 ------------------------------------------------------------------------------*/
-
 #ifndef _UTIL_QOS_CONNECTQOSFACTORY_H
 #define _UTIL_QOS_CONNECTQOSFACTORY_H
 
@@ -38,30 +37,24 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
  * </qos>
  */
 
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-using namespace org::xmlBlaster::authentication;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
-using namespace org::xmlBlaster::util::qos::storage;
-
-class Dll_Export ConnectQosFactory: public util::SaxHandlerBase
+class Dll_Export ConnectQosFactory: public org::xmlBlaster::util::SaxHandlerBase
 {
 private:
-   const string         ME;
-   SessionQosFactory    sessionQosFactory_;
-   SecurityQosFactory   securityQosFactory_;
-   QueuePropertyFactory queuePropertyFactory_;
-   AddressFactory       addressFactory_;
-   string               serverRefType_;
+   const std::string ME;
+   org::xmlBlaster::util::qos::SessionQosFactory sessionQosFactory_;
+   org::xmlBlaster::authentication::SecurityQosFactory securityQosFactory_;
+   org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
+   org::xmlBlaster::util::qos::address::AddressFactory addressFactory_;
+   std::string serverRefType_;
 
    // helper flags for SAX parsing
    bool inSecurityService_;
    bool inServerRef_;
    bool inSession_;
 
-   ConnectQos connectQos_;
+   org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** when the current parsing point should be handled by another qos factory*/
    SaxHandlerBase* subFactory_;
 
@@ -75,7 +68,7 @@ private:
    }
 
 public:
-   ConnectQosFactory(Global& global);
+   ConnectQosFactory(org::xmlBlaster::util::Global& global);
 
 //   ~ConnectQosFactory();
 
@@ -100,7 +93,7 @@ public:
     */
    void endElement(const XMLCh* const name);
 
-   ConnectQosData readObject(const string& qos);
+   org::xmlBlaster::util::qos::ConnectQosData readObject(const std::string& qos);
 };
 
 }}}} // namespaces

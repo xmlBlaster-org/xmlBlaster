@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
- * via the update() method from the I_Callback interface.
+ * via the update() method from the org::xmlBlaster::client::I_Callback interface.
  * <p />
  * If you are a Java client you may use this class to parse the QoS argument.
  * <p />
@@ -47,10 +47,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 # include <client/qos/GetReturnQos.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
 
-using namespace std;
+
+
+
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
@@ -59,7 +59,7 @@ class Dll_Export UpdateQos: public GetReturnQos
 
 public:
 
-   UpdateQos(Global& global, const MsgQosData data);
+   UpdateQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::MsgQosData data);
 
    UpdateQos(const UpdateQos& data);
 
@@ -84,7 +84,7 @@ public:
     * If Pub/Sub style update: contains the subscribe ID which caused this update
     * @return subscribeId or null if PtP message
     */
-   string getSubscriptionId() const;
+   std::string getSubscriptionId() const;
 
    /**
     * Returns > 0 if the message probably is redelivered. 

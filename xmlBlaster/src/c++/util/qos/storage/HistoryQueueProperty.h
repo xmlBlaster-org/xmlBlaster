@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      HistoryQueueProperty.h
+Name:      org::xmlBlaster::util::qos::storage::HistoryQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 /**
  * Helper class holding history queue properties.
  * <p />
- * See ConnectQos for XML sysntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
@@ -16,9 +16,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/storage/QueuePropertyBase.h>
-
-// using namespace org::xmlBlaster::util;
-using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
@@ -30,7 +27,7 @@ public:
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue/history/maxEntries and -queue/history/maxEntries[heron] will be searched
     */
-   HistoryQueueProperty(Global& global, const string& nodeId);
+   HistoryQueueProperty(org::xmlBlaster::util::Global& global, const std::string& nodeId);
 
    HistoryQueueProperty(const QueuePropertyBase& prop);
 
@@ -39,7 +36,7 @@ public:
    /**
     * Show some important settings for logging
     */
-   string getSettings();
+   std::string getSettings();
 
    bool onOverflowDeadMessage();
 };

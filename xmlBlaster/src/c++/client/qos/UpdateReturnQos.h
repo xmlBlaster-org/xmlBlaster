@@ -25,18 +25,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/StatusQosData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
+
+
+
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export UpdateReturnQos
 {
 private:
-   string        ME;
-   Global&       global_;
-   StatusQosData data_;
+   std::string        ME;
+   org::xmlBlaster::util::Global&       global_;
+   org::xmlBlaster::util::qos::StatusQosData data_;
 
 public:
 
@@ -48,7 +48,7 @@ public:
     * </p>
     * @param The factory which knows how to serialize and parse me
     */
-   UpdateReturnQos(Global& global, const StatusQosData& data);
+   UpdateReturnQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::StatusQosData& data);
 
    UpdateReturnQos(const UpdateReturnQos& data);
 
@@ -58,21 +58,21 @@ public:
     * Set state of message on update().
     * @return "OK", "ERROR" etc. See Constants::java
     */
-   void setState(const string& state);
+   void setState(const std::string& state);
 
    /**
     * Set state of message on update().
     * @return The human readable info text
     */
-   void setStateInfo(const string& stateInfo);
+   void setStateInfo(const std::string& stateInfo);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the status as a XML ASCII string
+    * @return internal state of the status as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

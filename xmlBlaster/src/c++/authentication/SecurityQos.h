@@ -7,7 +7,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 
 /**
  * Parse the default security handling with loginName and password
- * from the login qos xml string:
+ * from the login qos xml std::string:
  * <pre>
  *  &lt;securityService type="simple" version="1.0">
  *     &lt;user>aUser&lt;/user>
@@ -15,7 +15,6 @@ Comment:   The qos for the security (a subelement of connect qos)
  *  &lt;/securityService>
  * </pre>
  */
-
 #ifndef _AUTHENTICATION_SECURITY_QOS_H
 #define _AUTHENTICATION_SECURITY_QOS_H
 
@@ -23,21 +22,19 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <string>
 #include <util/SaxHandlerBase.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace authentication {
 
    class Dll_Export SecurityQos
    {
       friend class SecurityQosFactory;
    private:
-      const string ME;
-      Global&      global_;
-      Log&         log_;
-      string       type_;
-      string       version_;
-      string       user_;
-      string       passwd_;
+      const std::string ME;
+      org::xmlBlaster::util::Global& global_;
+      org::xmlBlaster::util::Log& log_;
+      std::string       type_;
+      std::string       version_;
+      std::string       user_;
+      std::string       passwd_;
 
       void copy(const SecurityQos& securityQos)
       {
@@ -48,39 +45,39 @@ namespace org { namespace xmlBlaster { namespace authentication {
       }
 
    public:
-      SecurityQos(Global& global,
-                  const string& loginName="",
-                  const string& password="");
+      SecurityQos(org::xmlBlaster::util::Global& global,
+                  const std::string& loginName="",
+                  const std::string& password="");
 
       SecurityQos(const SecurityQos& securityQos);
 
       SecurityQos& operator =(const SecurityQos& securityQos);
 
-      string getPluginVersion() const;
+      std::string getPluginVersion() const;
 
-      string getPluginType() const;
+      std::string getPluginType() const;
 
-      void setUserId(const string& userId);
+      void setUserId(const std::string& userId);
 
-      string getUserId() const;
+      std::string getUserId() const;
 
       /**
        * @param cred The password
        */
-      void setCredential(const string& cred);
+      void setCredential(const std::string& cred);
 
       /**
-       * @return "" (empty string) (no password is delivered)
+       * @return "" (empty std::string) (no password is delivered)
        */
-      string getCredential() const;
+      std::string getCredential() const;
 
       /**
-       * Dump state of this object into a XML ASCII string.
+       * Dump state of this object into a XML ASCII std::string.
        * <br>
        * @param extraOffset indenting of tags for nice output
        * @return The xml representation
        */
-      string toXml(const string& extraOffset="");
+      std::string toXml(const std::string& extraOffset="");
    };
 
 }}} // namespaces

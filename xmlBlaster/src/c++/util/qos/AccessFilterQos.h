@@ -2,7 +2,7 @@
 Name:      AccessFilterQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding filter address string and protocol string
+Comment:   Holding filter address std::string and protocol std::string
 ------------------------------------------------------------------------------*/
 
 /**
@@ -30,12 +30,7 @@ Comment:   Holding filter address string and protocol string
 #include <util/Log.h>
 #include <util/Property.h>
 
-#include <vector>
 #include <string>
-
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -44,25 +39,25 @@ extern Dll_Export const char* ACCESSFILTER_DEFAULT_type;
 
 class Dll_Export AccessFilterQos
 {
-   const string ME;
-   Global&      global_;
-   Log&         log_;
+   const std::string ME;
+   org::xmlBlaster::util::Global&      global_;
+   org::xmlBlaster::util::Log&         log_;
 
-   /** The filter rule string and an object to hold the prepared query on demand  */
+   /** The filter rule std::string and an object to hold the prepared query on demand  */
    Query query_;
 
    /** The plugin name e.g. "ContentLength" */
-   string type_;
+   std::string type_;
    
    /** The version of the plugin */
-   string version_; // = DEFAULT_version;
+   std::string version_; // = DEFAULT_version;
    
    void copy(const AccessFilterQos& qos);
 
 public:
    /**
     */
-   AccessFilterQos(Global& global);
+   AccessFilterQos(org::xmlBlaster::util::Global& global);
 
    /**
     * @param glob The global handle holding environment and logging objects
@@ -70,7 +65,7 @@ public:
     * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
-   AccessFilterQos(Global& global, const string& type, const string& version, const string& query);
+   AccessFilterQos(org::xmlBlaster::util::Global& global, const std::string& type, const std::string& version, const std::string& query);
 
    /**
     * @param glob The global handle holding environment and logging objects
@@ -78,7 +73,7 @@ public:
     * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
-   AccessFilterQos(Global& global, const string& type, const string& version, const Query& query);
+   AccessFilterQos(org::xmlBlaster::util::Global& global, const std::string& type, const std::string& version, const Query& query);
 
    AccessFilterQos(const AccessFilterQos& qos);
 
@@ -88,24 +83,24 @@ public:
    /**
     * @param type The plugin name, as used in xmlBlaster.properties e.g. "ContentLenFilter".
     */
-   void setType(const string& type);
+   void setType(const std::string& type);
 
    /**
     * Returns the plugins name. 
     * @return e.g. "ContentLenFilter"
     */
-   string getType() const;
+   std::string getType() const;
 
    /**
     * @param version The version of the plugin, defaults to "1.0", but can anything you like. 
     */
-   void setVersion(const string& version);
+   void setVersion(const std::string& version);
 
    /**
     * Returns the plugins version. 
     * @return e.g. "1.0"
     */
-   string getVersion() const;
+   std::string getVersion() const;
 
    /**
     * Set the filter query, it should fit to the protocol-type.
@@ -121,13 +116,13 @@ public:
    Query getQuery() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * Only none default values are dumped for performance reasons
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 };
 
 }}}}

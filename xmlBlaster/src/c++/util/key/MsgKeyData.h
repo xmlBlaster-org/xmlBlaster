@@ -40,22 +40,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/key/KeyData.h>
 #include <string>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
 class Dll_Export MsgKeyData : public KeyData
 {
 private:
-   string clientTags_;
+   std::string clientTags_;
 
 public:
 
    /**
     * Minimal constructor.
     */
-   MsgKeyData(Global& global);
+   MsgKeyData(org::xmlBlaster::util::Global& global);
    
    MsgKeyData(const MsgKeyData& key);
 
@@ -64,7 +61,7 @@ public:
    /**
     * @return never '' (empty), an oid is generated if it was empty.
     */
-   string getOid() const;
+   std::string getOid() const;
 
    /**
     * Set client specific meta informations. 
@@ -81,17 +78,17 @@ public:
     * </pre>
     * @param str Your tags in ASCII XML syntax
     */
-   void setClientTags(const string& tags);
+   void setClientTags(const std::string& tags);
 
-   string getClientTags() const;
+   std::string getClientTags() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
+    * @return internal state of the query as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

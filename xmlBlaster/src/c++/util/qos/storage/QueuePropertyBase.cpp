@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.18 2003/05/29 10:35:03 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.19 2003/07/03 20:54:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -18,11 +18,11 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.18 2003/05/29 10:35:03 ruff Exp $
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
+
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-
-
-namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
 const long DEFAULT_maxEntriesDefault = 1000L;
 const long DEFAULT_maxEntriesCacheDefault = 1000L;
@@ -536,19 +536,19 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
       if (DEFAULT_version != getVersion())
          ret += string("' version='") + getVersion();
       if (DEFAULT_maxEntriesDefault != getMaxEntries())
-         ret += string("' maxEntries='") + lexical_cast<string>(getMaxEntries());
+         ret += string("' maxEntries='") + lexical_cast<std::string>(getMaxEntries());
       if (DEFAULT_maxEntriesCacheDefault != getMaxEntriesCache())
-         ret += string("' maxEntriesCache='") + lexical_cast<string>(getMaxEntriesCache());
+         ret += string("' maxEntriesCache='") + lexical_cast<std::string>(getMaxEntriesCache());
       if (DEFAULT_bytesDefault != getMaxBytes())
-         ret += string("' maxBytes='") + lexical_cast<string>(getMaxBytes());
+         ret += string("' maxBytes='") + lexical_cast<std::string>(getMaxBytes());
       if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
-         ret += string("' maxBytesCache='") + lexical_cast<string>(getMaxBytesCache());
-      ret += string("' storeSwapLevel='") + lexical_cast<string>(getStoreSwapLevel());
-      ret += string("' storeSwapBytes='") + lexical_cast<string>(getStoreSwapBytes());
-      ret += string("' reloadSwapLevel='") + lexical_cast<string>(getReloadSwapLevel());
-      ret += string("' reloadSwapBytes='") + lexical_cast<string>(getReloadSwapBytes());
+         ret += string("' maxBytesCache='") + lexical_cast<std::string>(getMaxBytesCache());
+      ret += string("' storeSwapLevel='") + lexical_cast<std::string>(getStoreSwapLevel());
+      ret += string("' storeSwapBytes='") + lexical_cast<std::string>(getStoreSwapBytes());
+      ret += string("' reloadSwapLevel='") + lexical_cast<std::string>(getReloadSwapLevel());
+      ret += string("' reloadSwapBytes='") + lexical_cast<std::string>(getReloadSwapBytes());
       if (DEFAULT_expires != getExpires())
-         ret += string("' expires='") + lexical_cast<string>(getExpires());
+         ret += string("' expires='") + lexical_cast<std::string>(getExpires());
       if (DEFAULT_onOverflow != getOnOverflow())
          ret += string("' onOverflow='") + getOnOverflow();
       if (DEFAULT_onFailure != getOnFailure())

@@ -16,13 +16,19 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 
 #include <util/dispatch/DeliveryManager.h>
 //  #include <util/dispatch/ConnectionsHandler.h>
-#include <client/protocol/corba/CorbaDriverFactory.h>
+#ifdef COMPILE_CORBA_PLUGIN
+#  include <client/protocol/corba/CorbaDriverFactory.h>
+#endif
+#ifdef COMPILE_SOCKET_PLUGIN
+#  include <client/protocol/socket/SocketDriverFactory.h>
+#endif
 #include <util/Global.h>
 
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::client::protocol::corba;
-
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::client::protocol;
 
 DeliveryManager::DeliveryManager(Global& global)
    : ME("DeliveryManager"),
@@ -44,8 +50,16 @@ void DeliveryManager::releasePlugin(const string& instanceName, const string& ty
    if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
-      corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+#     ifdef COMPILE_CORBA_PLUGIN
+      org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+#     endif
       return;
+   }
+   else if (type == "SOCKET") {
+#     ifdef COMPILE_SOCKET_PLUGIN
+      org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).killDriverInstance(instanceName);
+      return;
+#     endif
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
@@ -67,7 +81,14 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, c
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    
    if (type == "IOR") {
-      return corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     ifdef COMPILE_CORBA_PLUGIN
+      return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     endif
+   }
+   else if (type == "SOCKET") {
+#     ifdef COMPILE_SOCKET_PLUGIN
+      return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(instanceName);
+#     endif
    }
 
    // add here other protocols ....
@@ -104,7 +125,7 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol;
 
-/** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
+/** For testing:  */
 int main(int args, char* argv[])
 {
     Global& glob = Global::getInstance();
@@ -115,17 +136,15 @@ int main(int args, char* argv[])
     }
     catch (XmlBlasterException &ex) {
        cout << ex.toXml() << endl;
-       cout << "exception occured when retrieving a correct callback server" << endl;
+       cout << "exception occured when retrieving a Corba callback server" << endl;
        assert(0);
     }
     try {
        I_XmlBlasterConnection& conn = manager.getPlugin("SOCKET", "1.0");
-       cout << "The socket protocol is not implemented yet" << endl;
-       assert(0);
     }
     catch (XmlBlasterException &ex) {
        cout << ex.toXml() << endl;
-       cout << "The socket protocol is not implemented yet, so the exception was normal" << endl;
+       cout << "exception occured when retrieving a SOCKET callback server" << endl;
     }
 
    return 0;

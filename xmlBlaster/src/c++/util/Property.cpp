@@ -5,9 +5,8 @@
 #include "Property.h"
 #include <util/lexical_cast.h>
 
-
+using namespace std;
 using namespace org::xmlBlaster::util;
-
 
 /**
  * Loads the properties read from the command line (or another array).

@@ -4,13 +4,13 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
 ------------------------------------------------------------------------------*/
-
 #include <util/XmlBlasterException.h>
 #include <util/ErrorCode.h>
 #include <stdexcept>
 #include <util/lexical_cast.h>
 
 
+using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -133,7 +133,7 @@ string XmlBlasterException::getVersionInfo() const
 string XmlBlasterException::getTimestamp()
 {
    if (timestamp_ == "") {
-      timestamp_ = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
+      timestamp_ = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
    }
    return timestamp_;
 }

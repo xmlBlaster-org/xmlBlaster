@@ -9,12 +9,11 @@ Comment:   Holding callback queue properties
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-
+using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-
-namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
    ClientQueueProperty::ClientQueueProperty(Global& global, const string& nodeId) :
       QueuePropertyBase(global, nodeId)
@@ -43,7 +42,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
       string ret;
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
-             string(" maxEntries=") + lexical_cast<string>(getMaxEntries());
+             string(" maxEntries=") + lexical_cast<std::string>(getMaxEntries());
       if (!addressArr_.empty())
          ret += string(" ") + getCurrentAddress().getSettings();
       return ret;
@@ -91,7 +90,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       string text = "";
       text += string("Control client side failsafe queue properties (message recorder):\n");
-      text += string("   -queue/connection/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
+      text += string("   -queue/connection/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("                       0 switches recording of invocations off.\n");
       text += string("                       -1 sets it to unlimited.\n");
       text += string("   -queue/callback/type    The queue plugin type [") + DEFAULT_type + string("].\n");

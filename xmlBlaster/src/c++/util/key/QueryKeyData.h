@@ -25,14 +25,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/key/KeyData.h>
 #include <util/qos/AccessFilterQos.h>
 #include <string>
-
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
+#include <vector>
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
-typedef vector<AccessFilterQos> AccessFilterVector;
+typedef std::vector<org::xmlBlaster::util::qos::AccessFilterQos> AccessFilterVector;
 
 class Dll_Export QueryKeyData : public KeyData
 {
@@ -48,27 +45,27 @@ public:
    /**
     * Minimal constructor.
     */
-   QueryKeyData(Global& global);
+   QueryKeyData(org::xmlBlaster::util::Global& global);
    
-   QueryKeyData(Global& global, const string& query, const string& queryType);
+   QueryKeyData(org::xmlBlaster::util::Global& global, const std::string& query, const std::string& queryType);
 
    QueryKeyData(const QueryKeyData& key);
 
-   string checkQueryType(const string& queryType);
+   std::string checkQueryType(const std::string& queryType);
 
    QueryKeyData& operator =(const QueryKeyData& key);
 
-   void setOid(const string& oid);
+   void setOid(const std::string& oid);
 
-   void setQueryType(const string& queryType);
+   void setQueryType(const std::string& queryType);
 
    /**
-    * Your XPath query string. 
+    * Your XPath query std::string. 
     * @param str Your tags in ASCII XML syntax
     */
-   void setQueryString(const string& tags);
+   void setQueryString(const std::string& tags);
 
-   string getQueryString() const;
+   std::string getQueryString() const;
 
    /**
     * Return the filters or array with size==0 if none is specified. 
@@ -78,15 +75,15 @@ public:
     */
    AccessFilterVector getAccessFilterVector() const;
 
-   void addFilter(const AccessFilterQos& qos);
+   void addFilter(const org::xmlBlaster::util::qos::AccessFilterQos& qos);
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
+    * @return internal state of the query as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
 };
 

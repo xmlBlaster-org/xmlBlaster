@@ -11,7 +11,7 @@ Comment:   Holding some constants
 #include <util/xmlBlasterDef.h>
 #include <string>
 
-using namespace std;
+
 
 namespace org { namespace xmlBlaster {
   namespace util { namespace Constants {
@@ -100,13 +100,13 @@ namespace org { namespace xmlBlaster {
 
 
    /**
-    * Parses given string to extract the priority of a message
+    * Parses given std::string to extract the priority of a message
     * @param prio For example "HIGH" or 7
     * @param defaultPriority Value to use if not parseable
     * @return The int value for the message priority
     */
    
-   /*const int getPriority(string prio, int defaultPriority);*/
+   /*const int getPriority(std::string prio, int defaultPriority);*/
 
    // Status id, on error usually an exception is thrown so we don't need "ERROR":
 
@@ -182,9 +182,9 @@ namespace org { namespace xmlBlaster {
 
    extern Dll_Export const char * INDENT;
 
-   extern Dll_Export const Timestamp THOUSAND;
-   extern Dll_Export const Timestamp MILLION;
-   extern Dll_Export const Timestamp BILLION;
+   extern Dll_Export const org::xmlBlaster::util::Timestamp THOUSAND;
+   extern Dll_Export const org::xmlBlaster::util::Timestamp MILLION;
+   extern Dll_Export const org::xmlBlaster::util::Timestamp BILLION;
 
    /** Prefix to create a sessionId */
    extern Dll_Export const char* SESSIONID_PREFIX;

@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/queue/MsgQueue.h>
 #include <util/Global.h>
-#include <util/XmlBlasterException.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

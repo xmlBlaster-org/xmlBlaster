@@ -2,36 +2,33 @@
 Name:      ServerRef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding serverRef address string and protocol string to
+Comment:   Holding serverRef address std::string and protocol std::string to
            access XmlBlaster
 ------------------------------------------------------------------------------*/
 
 /**
- * Helper class holding serverRef address string and protocol string.
+ * Helper class holding serverRef address std::string and protocol std::string.
  * <p />
- * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.6 $
+ * Holds example a CORBA "IOR:00012..." std::string
+ * @version $Revision: 1.7 $
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-
 #ifndef _UTIL_SERVERREF_H
 #define _UTIL_SERVERREF_H
 
 #include <util/XmlBCfg.h>
 #include <string>
 
-using namespace std;
-
 namespace org { namespace xmlBlaster { namespace util {
 
 class Dll_Export ServerRef
 {
 private:
-   /** The unique address, e.g. the CORBA IOR string */
-   string address_;
+   /** The unique address, e.g. the CORBA IOR std::string */
+   std::string address_;
    /** The unique protocol type, e.g. "IOR" */
-   string type_;
+   std::string type_;
 
 public:
 
@@ -44,39 +41,39 @@ public:
     * @param address A serverRef address for your client, suitable to the protocol
     *                for email e.g. "xmlblaster@xmlBlaster.org"
     */
-   ServerRef(const string& type, const string& address="");
+   ServerRef(const std::string& type, const std::string& address="");
 
    /**
     * Set the serverRef address, it should fit to the protocol-type.
     *
     * @param address The serverRef address, e.g. "et@mars.univers"
     */
-   void setAddress(const string& address);
+   void setAddress(const std::string& address);
 
    /**
     * Returns the address.
     * @return e.g. "IOR:00001100022...."
     */
-   string getAddress() const;
+   std::string getAddress() const;
 
    /**
     * Returns the protocol type.
     * @return e.g. "EMAIL" or "IOR"
     */
-   string getType() const;
+   std::string getType() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     */
-   string toXml() const;
+   std::string toXml() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset) const;
+   std::string toXml(const std::string& extraOffset) const;
 };
 
 }}} // namespaces

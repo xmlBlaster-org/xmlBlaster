@@ -7,7 +7,7 @@ Comment:   The Factory for the simple QosSecurityQos
 
 /**
  * Parse the default security handling with loginName and password
- * from the login qos xml string:
+ * from the login qos xml std::string:
  * <pre>
  *  &lt;securityService type="simple" version="1.0">
  *     &lt;user>aUser&lt;/user>
@@ -21,26 +21,24 @@ Comment:   The Factory for the simple QosSecurityQos
 
 #include <authentication/SecurityQos.h>
 
-using namespace org::xmlBlaster::util;
-
 namespace org { namespace xmlBlaster { namespace authentication {
 
-   class Dll_Export SecurityQosFactory: public util::SaxHandlerBase
+   class Dll_Export SecurityQosFactory: public org::xmlBlaster::util::SaxHandlerBase
    {
    private:
-      const string ME;
+      const std::string ME;
 
       // helper flags for SAX parsing
       bool inSecurityService_;
       bool inUser_;
       bool inPasswd_;
 
-      SecurityQos securityQos_;
+      org::xmlBlaster::authentication::SecurityQos securityQos_;
 
    public:
-      SecurityQosFactory(Global& global);
+      SecurityQosFactory(org::xmlBlaster::util::Global& global);
 
-      SecurityQos parse(const string& xmlQoS_literal);
+      org::xmlBlaster::authentication::SecurityQos parse(const std::string& xmlQoS_literal);
 
       /**
        * Start element, event from SAX parser.

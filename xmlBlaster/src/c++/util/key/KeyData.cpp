@@ -168,7 +168,7 @@ string KeyData::generateOid(const string& uniquePrefix) const
 {
    string ret;
    Timestamp timestamp = TimestampFactory::getInstance().getTimestamp();
-   oid_ += uniquePrefix + "-" + lexical_cast<string>(timestamp);
+   oid_ += uniquePrefix + "-" + lexical_cast<std::string>(timestamp);
    isGeneratedOid_ = true;
    return oid_;
 }

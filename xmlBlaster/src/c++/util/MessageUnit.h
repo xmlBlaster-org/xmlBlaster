@@ -16,11 +16,8 @@ Comment:   Holding a message
 #include <util/qos/MsgQosData.h>
 #include <util/key/MsgKeyData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
-using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util::qos;
+
+
 
 namespace org { namespace xmlBlaster { namespace util {
    
@@ -37,56 +34,56 @@ namespace org { namespace xmlBlaster { namespace util {
    {
 
    private:
-      string me() {
+      std::string me() {
          return "MessageUnit";
       }
 
-//      string key_;
-      MsgKeyData key_;
+//      std::string key_;
+      org::xmlBlaster::util::key::MsgKeyData key_;
 
-      //vector<unsigned char> contentVec_;
+      //std::vector<unsigned char> contentVec_;
       unsigned long len_;
       unsigned char *content_;
 
-//      string qos_;
-      MsgQosData qos_;
+//      std::string qos_;
+      org::xmlBlaster::util::qos::MsgQosData qos_;
 
    public:
       /**
        * Constructs with a 'char *' and its length 'len'. 
        */
-      MessageUnit(const MsgKeyData &key,
+      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &key,
                   unsigned long len,
                   const unsigned char * content, 
-                  const MsgQosData &qos);
+                  const org::xmlBlaster::util::qos::MsgQosData &qos);
 
       /**
-       * Constructs a MessageUnit with a string. 
+       * Constructs a MessageUnit with a std::string. 
        */
-      MessageUnit(const MsgKeyData &key,
-                  const string &content, 
-                  const MsgQosData &qos);
+      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &key,
+                  const std::string &content, 
+                  const org::xmlBlaster::util::qos::MsgQosData &qos);
 
       /**
-       * Constructs a MessageUnit with a string and a PublishQos object
+       * Constructs a MessageUnit with a std::string and a org::xmlBlaster::client::qos::PublishQos object
        */
-      MessageUnit(const PublishKey& xmlKey,
-                  const string &content, 
-                  PublishQos& publishQos);
+      MessageUnit(const org::xmlBlaster::client::key::PublishKey& xmlKey,
+                  const std::string &content, 
+                  org::xmlBlaster::client::qos::PublishQos& publishQos);
 
       /**
        * Constructs the message unit. 
        */
-      MessageUnit(const MsgKeyData &xmlKey,
-                  const vector<unsigned char> &contentVec, 
-                  const MsgQosData &qos);
+      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &xmlKey,
+                  const std::vector<unsigned char> &contentVec, 
+                  const org::xmlBlaster::util::qos::MsgQosData &qos);
 
       /**
-       * Constructs the message unit by taking a PublishQos object.
+       * Constructs the message unit by taking a org::xmlBlaster::client::qos::PublishQos object.
        */
-      MessageUnit(const PublishKey &xmlKey,
-                  const vector<unsigned char> &contentVec, 
-                  PublishQos& publishQos);
+      MessageUnit(const org::xmlBlaster::client::key::PublishKey &xmlKey,
+                  const std::vector<unsigned char> &contentVec, 
+                  org::xmlBlaster::client::qos::PublishQos& publishQos);
 
       /**
        * Copy constructor
@@ -106,7 +103,7 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * @return The xml based key
        */
-      const MsgKeyData& getKey() const {
+      const org::xmlBlaster::util::key::MsgKeyData& getKey() const {
          return key_;
       }
 
@@ -115,7 +112,7 @@ namespace org { namespace xmlBlaster { namespace util {
        *         This is created for each invocation so 
        *         use it sparingly
        */
-      vector<unsigned char> getContentVec() const;
+      std::vector<unsigned char> getContentVec() const;
 
       /**
        * Access the raw user data,
@@ -133,27 +130,27 @@ namespace org { namespace xmlBlaster { namespace util {
       }
 
       /**
-       * @return The user data carried with this message as a string
+       * @return The user data carried with this message as a std::string
        */
-      string getContentStr() const {
-         //return string(contentVec_.begin(), contentVec_.end());
-         return string(reinterpret_cast<const char * const>(content_), static_cast<unsigned int>(len_));
+      std::string getContentStr() const {
+         //return std::string(contentVec_.begin(), contentVec_.end());
+         return std::string(reinterpret_cast<const char * const>(content_), static_cast<unsigned int>(len_));
       }
 
       /**
        * @return The quality of service of this message. 
        */
-      const MsgQosData& getQos() const {
+      const org::xmlBlaster::util::qos::MsgQosData& getQos() const {
          return qos_;
       }
 
       /**
-       * Dump state of this object into a XML ASCII string.
+       * Dump state of this object into a XML ASCII std::string.
        * <br>
        * @param extraOffset indenting of tags for nice output
-       * @return The MessageUnit as a XML ASCII string
+       * @return The MessageUnit as a XML ASCII std::string
        */
-      string toXml(const string &extraOffset="") const;
+      std::string toXml(const std::string &extraOffset="") const;
    };
 }}} // namespace
 

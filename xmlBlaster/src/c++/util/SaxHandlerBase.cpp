@@ -20,11 +20,9 @@ Comment:   Default handling of Sax callbacks
 
 #include <util/lexical_cast.h>
 
+namespace org { namespace xmlBlaster { namespace util {
 
 using namespace std;
-
-using namespace org::xmlBlaster::util;
-
 
 // SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[])
 SaxHandlerBase::SaxHandlerBase(Global& global)
@@ -193,8 +191,8 @@ SaxHandlerBase::getLocationString(const SAXParseException &ex)
     if (index != -1) systemId = systemId.substr(index + 1);
     str = systemId + ":";
   }
-  return str +lexical_cast<string>(ex.getLineNumber()) 
-      + ":" + lexical_cast<string>(ex.getColumnNumber());
+  return str +lexical_cast<std::string>(ex.getLineNumber()) 
+      + ":" + lexical_cast<std::string>(ex.getColumnNumber());
 }
 
 /**
@@ -437,3 +435,6 @@ void SaxHandlerBase::releaseXMLCh(char** data)
 }
 
 #endif
+
+}}} // namespace
+

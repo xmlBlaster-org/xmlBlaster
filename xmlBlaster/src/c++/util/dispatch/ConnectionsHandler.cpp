@@ -10,15 +10,20 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/Timeout.h>
 #include <util/lexical_cast.h>
 
-
-
-using namespace org::xmlBlaster::client::protocol;
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::util::thread;
-
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceName)
+using namespace std;
+using namespace org::xmlBlaster::client::protocol;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
+
+ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
+                                       const string& instanceName)
    : ME(string("ConnectionsHandler-") + instanceName), 
      status_(START), 
      global_(global), 
@@ -78,7 +83,7 @@ ConnectionsHandler::~ConnectionsHandler()
 
 ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 {
-   if (log_.call()) log_.call(ME, string("::connect status is '") + lexical_cast<string>(status_) + "'");
+   if (log_.call()) log_.call(ME, string("::connect status is '") + lexical_cast<std::string>(status_) + "'");
    if (log_.dump()) log_.dump(ME, string("::connect, the qos is: ") + qos.toXml());
    Lock lock(connectMutex_);
    if (isConnected()) {
@@ -94,8 +99,8 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    retries_ = connectQos_->getAddress().getRetries();
    long pingInterval = connectQos_->getAddress().getPingInterval();
    if (log_.trace()) {
-      log_.trace(ME, string("connect: number of retries during communication failure: ") + lexical_cast<string>(retries_));
-      log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<string>(pingInterval));
+      log_.trace(ME, string("connect: number of retries during communication failure: ") + lexical_cast<std::string>(retries_));
+      log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<std::string>(pingInterval));
    }
 
    string type = connectQos_->getServerRef().getType();
@@ -420,7 +425,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
    pingIsStarted_ = false;
    timestamp_ = 0;
    if (doStopPing_) return; // then it must stop
-   if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + lexical_cast<string>(status_) + "'" );
+   if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + lexical_cast<std::string>(status_) + "'" );
    if (status_ == CONNECTED) { // then I am pinging
       if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
       try {
@@ -525,7 +530,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
    if (log_.call()) log_.call(ME, string("::queueConnect with sessionQos: '") + connectQos_->getSessionQos().getAbsoluteName() + "'");
    long tmp = connectQos_->getSessionQos().getPubSessionId(); 
    if ( tmp <= 0) {
-      if (log_.trace()) log_.trace(ME, string("::queueConnect, the public session id is '") + lexical_cast<string>(tmp));
+      if (log_.trace()) log_.trace(ME, string("::queueConnect, the public session id is '") + lexical_cast<std::string>(tmp));
       throw XmlBlasterException(USER_CONNECT, ME + "::queueConnect", "queueing connection request not possible because you did not specify a positive public sessionId");
    }
 
@@ -629,7 +634,7 @@ bool ConnectionsHandler::startPinger()
       pingInterval = tmp.getAddress().getPingInterval();
    }
    if (log_.trace()) {
-      log_.trace(ME, string("startPinger: parameters are: delay '") + lexical_cast<string>(delay)  + "' and pingInterval '" + lexical_cast<string>(pingInterval));
+      log_.trace(ME, string("startPinger: parameters are: delay '") + lexical_cast<std::string>(delay)  + "' and pingInterval '" + lexical_cast<std::string>(pingInterval));
    }
    if (delay > 0 && pingInterval > 0) {
       long delta = delay;

@@ -26,18 +26,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/StatusQosData.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 class Dll_Export SubscribeReturnQos
 {
 private:
-   string        ME;
-   Global&       global_;
-   StatusQosData data_;
+   std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::qos::StatusQosData data_;
 
 public:
 
@@ -49,7 +45,8 @@ public:
     * </p>
     * @param The factory which knows how to serialize and parse me
     */
-   SubscribeReturnQos(Global& global, const StatusQosData& data);
+   SubscribeReturnQos(org::xmlBlaster::util::Global& global,
+                      const org::xmlBlaster::util::qos::StatusQosData& data);
 
    SubscribeReturnQos(const SubscribeReturnQos& data);
 
@@ -59,29 +56,29 @@ public:
     * Access state of message on update().
     * @return "OK", "ERROR" etc. See Constants::java
     */
-   string getState() const;
+   std::string getState() const;
 
    /**
     * Access state of message on update().
     * @return The human readable info text
     */
-   string getStateInfo() const;
+   std::string getStateInfo() const;
 
    /**
     * Access key oid. 
     * @return The unique identifier of a message
     */
-   string getSubscriptionId() const;
+   std::string getSubscriptionId() const;
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the status as a XML ASCII string
+    * @return internal state of the status as a XML ASCII std::string
     */
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
-   StatusQosData getData() const;
+   org::xmlBlaster::util::qos::StatusQosData getData() const;
 
 };
 

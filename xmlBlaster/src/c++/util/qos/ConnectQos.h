@@ -50,33 +50,24 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
  *    </queue>
  * </qos>
  */
-
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
-
-using namespace org::xmlBlaster::authentication;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
-using namespace org::xmlBlaster::util::qos::storage;
 
 class Dll_Export ConnectQosData
 {
 private:
-   Global&     global_;
-   Log&        log_;
-   mutable SecurityQos securityQos_;
-   mutable SessionQos  sessionQos_;
-//   ServerRef   serverRef_;
+   org::xmlBlaster::util::Global&     global_;
+   org::xmlBlaster::util::Log&        log_;
+   mutable org::xmlBlaster::authentication::SecurityQos securityQos_;
+   mutable org::xmlBlaster::util::qos::SessionQos  sessionQos_;
    bool        ptp_;
    bool        clusterNode_;
    bool        duplicateUpdates_;
 
-   vector<Address>         addresses_;
-   vector<CallbackAddress> cbAddresses_;
-   vector<ClientQueueProperty>   clientQueueProperties_;
-//   vector<CbQueueProperty> cbQueueProperties_;
-   CbQueueProperty         sessionCbQueueProperty_;
-   vector<ServerRef>       serverReferences_;
+   std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
+   std::vector<org::xmlBlaster::util::qos::address::CallbackAddress> cbAddresses_;
+   std::vector<org::xmlBlaster::util::qos::storage::ClientQueueProperty>   clientQueueProperties_;
+   org::xmlBlaster::util::qos::storage::CbQueueProperty         sessionCbQueueProperty_;
+   std::vector<ServerRef>       serverReferences_;
 
    friend class ConnectQosFactory;
 
@@ -84,7 +75,6 @@ private:
    {
       securityQos_            = data.securityQos_;
       sessionQos_             = data.sessionQos_;
-//      serverRef_              = data.serverRef_;
       ptp_                    = data.ptp_;
       clusterNode_            = data.clusterNode_;
       duplicateUpdates_       = data.duplicateUpdates_;
@@ -96,45 +86,42 @@ private:
    }
 
 public:
-   ConnectQosData(Global& global, const string& user="", const string& passwd="", long publicSessionId=0);
+   ConnectQosData(org::xmlBlaster::util::Global& global, const std::string& user="", const std::string& passwd="", long publicSessionId=0);
    ConnectQosData(const ConnectQosData& data);
    ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;
-//   string getPtpAsString() const;
-   const string& getBoolAsString(bool boolVal) const;
+   const std::string& getBoolAsString(bool boolVal) const;
    void setPtp(bool ptp);
-   void setSessionQos(const SessionQos& sessionQos);
-   SessionQos& getSessionQos() const;
-   string getSecretSessionId() const;
-   string getUserId() const;
-   string getCallbackType() const;
-   void setSecurityQos(const SecurityQos& securityQos);
-   SecurityQos& getSecurityQos() const;
-//   void setServerRef(const ServerRef& serverRef);
-//   ServerRef getServerRef() const;
+   void setSessionQos(const org::xmlBlaster::util::qos::SessionQos& sessionQos);
+   org::xmlBlaster::util::qos::SessionQos& getSessionQos() const;
+   std::string getSecretSessionId() const;
+   std::string getUserId() const;
+   std::string getCallbackType() const;
+   void setSecurityQos(const org::xmlBlaster::authentication::SecurityQos& securityQos);
+   org::xmlBlaster::authentication::SecurityQos& getSecurityQos() const;
    void setClusterNode(bool clusterNode);
    bool isClusterNode() const;
    void setDuplicateUpdates(bool duplicateUpdates);
    bool isDuplicateUpdates() const;
-   void addServerRef(const ServerRef& serverRef);
-   vector<ServerRef> getServerReferences() const;
+   void addServerRef(const org::xmlBlaster::util::ServerRef& serverRef);
+   std::vector<ServerRef> getServerReferences() const;
    /** returns the first found server reference */
-   ServerRef getServerRef() const;
+   org::xmlBlaster::util::ServerRef getServerRef() const;
 
-   string toXml(const string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset="") const;
 
    // methods for queues and addresses ...
-   void setAddress(const Address& address);
-   Address getAddress() const;
+   void setAddress(const org::xmlBlaster::util::qos::address::Address& address);
+   org::xmlBlaster::util::qos::address::Address getAddress() const;
 
-   void addCbAddress(const CallbackAddress& cbAddress);
-   CallbackAddress getCbAddress() const;
+   void addCbAddress(const org::xmlBlaster::util::qos::address::CallbackAddress& cbAddress);
+   org::xmlBlaster::util::qos::address::CallbackAddress getCbAddress() const;
 
-   void addClientQueueProperty(const ClientQueueProperty& prop);
-   ClientQueueProperty getClientQueueProperty() const;
+   void addClientQueueProperty(const org::xmlBlaster::util::qos::storage::ClientQueueProperty& prop);
+   org::xmlBlaster::util::qos::storage::ClientQueueProperty getClientQueueProperty() const;
 
-   void setSessionCbQueueProperty(const CbQueueProperty& prop);
-   CbQueueProperty getSessionCbQueueProperty() const;
+   void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
+   org::xmlBlaster::util::qos::storage::CbQueueProperty getSessionCbQueueProperty() const;
 
 };
 

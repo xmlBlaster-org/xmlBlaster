@@ -8,7 +8,7 @@ Comment:   Holding callback queue properties
 /**
  * Helper class holding callback queue properties.
  * <p />
- * See ConnectQos for XML sysntax.
+ * See org::xmlBlaster::util::qos::ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
@@ -21,12 +21,7 @@ Comment:   Holding callback queue properties
 #include <util/Constants.h>
 #include <util/qos/storage/QueuePropertyBase.h>
 #include <util/qos/address/Address.h>
-
 #include <string>
-#include <vector>
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
@@ -39,7 +34,7 @@ public:
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
-   ClientQueueProperty(Global& global, const string& nodeId);
+   ClientQueueProperty(org::xmlBlaster::util::Global& global, const std::string& nodeId);
 
    ClientQueueProperty(const QueuePropertyBase& prop);
 
@@ -48,11 +43,11 @@ public:
    /**
     * Show some important settings for logging
     */
-   string getSettings();
+   std::string getSettings();
 
    /**
     */
-   void setAddress(const AddressBase& address);
+   void setAddress(const org::xmlBlaster::util::qos::address::AddressBase& address);
 
    /**
     * clears up all addresses and allocates new ones.
@@ -62,12 +57,12 @@ public:
    /**
     * @return null if none available
     */
-   AddressBase getCurrentAddress();
+   org::xmlBlaster::util::qos::address::AddressBase getCurrentAddress();
 
    /**
-    * Get a usage string for the connection parameters
+    * Get a usage std::string for the connection parameters
     */
-   string usage();
+   std::string usage();
 
 };
 

@@ -11,6 +11,9 @@ Comment:   The qos for the security (a subelement of connect qos)
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
+using namespace std;
+using namespace org::xmlBlaster::util;
+
 SecurityQosFactory::SecurityQosFactory(Global& global)
    : SaxHandlerBase(global), ME("SecurityQosFactory-simple"), securityQos_(global)
 {

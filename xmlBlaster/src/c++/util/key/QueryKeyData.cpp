@@ -11,10 +11,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <algorithm>
 #include <cctype>
 
+namespace org { namespace xmlBlaster { namespace util { namespace key {
+
 using namespace std;
 using namespace org::xmlBlaster::util;
-
-namespace org { namespace xmlBlaster { namespace util { namespace key {
 
 QueryKeyData::QueryKeyData(Global& global) : KeyData(global), accessFilterVector_()
 {

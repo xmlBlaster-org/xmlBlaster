@@ -8,33 +8,14 @@ Comment:   Allows you be called back after a given delay.
 #include <string>
 
 #include <util/Timeout.h>
-
-// #include <boost/thread/thread.hpp>
-// #include <boost/thread/mutex.hpp>
-// #include <boost/thread/condition.hpp>
-// #include <boost/thread/xtime.hpp>
-
 #include <util/lexical_cast.h>
 #include <util/Constants.h>
 #include <util/Global.h>
 
-using namespace std;
-
-
-/*
-#if defined(_WINDOWS)   
-   ostream& operator <<(ostream& target, const __int64& x)
-   {
-     
-     target << x;
-     return target;
-
-   }
-#endif
-*/
 namespace org { namespace xmlBlaster { namespace util {
 
-
+using namespace std;
+using namespace org::xmlBlaster::util::thread;
 
 Timeout::Timeout(Global& global)
    : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
@@ -44,7 +25,7 @@ Timeout::Timeout(Global& global)
      global_(global), log_(global.getLog("util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
-   ME += "-Timeout-Thread-" + lexical_cast<string>(this);
+   ME += "-Timeout-Thread-" + lexical_cast<std::string>(this);
    // the thread will only be instantiated when starting
    log_.call(ME, " default constructor");
    log_.trace(ME, " default constructor: after creating timeout condition");
@@ -61,7 +42,7 @@ Timeout::Timeout(Global& global, const string &name)
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
    // the thread remains uninitialized ...
-   ME += "-" + name + "-" + lexical_cast<string>(this);
+   ME += "-" + name + "-" + lexical_cast<std::string>(this);
    log_.call(ME, " alternative constructor");
    start();
    log_.trace(ME, " default constructor: after starting the thread");
@@ -107,7 +88,7 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
          key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
          TimeoutMap::iterator iter = timeoutMap_.find(key);
          if (iter == timeoutMap_.end()) {
-            log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
+            log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<std::string>(key));
             Container cont(listener, userData);
             TimeoutMap::value_type el(key, cont);
             timeoutMap_.insert(el);
@@ -234,10 +215,10 @@ void Timeout::run()
          else {
             log_.trace(ME, " The timeout is not empty");
             Timestamp nextWakeup = (*iter).first;
-            log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ns");
+            log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<std::string>(nextWakeup) + " ns");
             delay = nextWakeup - timestampFactory_.getTimestamp();
 
-            log_.trace(ME, "run, delay       : " + lexical_cast<string>(nextWakeup) + " ns");
+            log_.trace(ME, "run, delay       : " + lexical_cast<std::string>(nextWakeup) + " ns");
             if ( delay < 0 ) delay = 0;
 
             if (delay <= 0) {
@@ -257,7 +238,7 @@ void Timeout::run()
       }
       Timestamp milliDelay = delay / Constants::MILLION;
       if (milliDelay > 0) {
-         log_.trace(ME, "sleeping ... " + lexical_cast<string>(milliDelay) + " milliseconds");
+         log_.trace(ME, "sleeping ... " + lexical_cast<std::string>(milliDelay) + " milliseconds");
 
          Lock waitForTimeoutLock(waitForTimeoutMutex_);
          if (!mapHasNewEntry_) {

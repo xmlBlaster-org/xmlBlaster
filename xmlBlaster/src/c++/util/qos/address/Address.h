@@ -2,12 +2,12 @@
 Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.4 2003/05/21 20:20:56 ruff Exp $
+Comment:   Holding address std::string and protocol std::string
+Version:   $Id: Address.h,v 1.5 2003/07/03 20:54:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
- * Helper class holding address string, protocol string and client side connection properties.
+ * Helper class holding address std::string, protocol std::string and client side connection properties.
  * <p />
  * <pre>
  * &lt;address type='XMLRPC' sessionId='4e56890ghdFzj0'
@@ -19,7 +19,6 @@ Version:   $Id: Address.h,v 1.4 2003/05/21 20:20:56 ruff Exp $
  * &lt;/address>
  * </pre>
  */
-
 #ifndef _UTIL_CFG_ADDRESS_H
 #define _UTIL_CFG_ADDRESS_H
 
@@ -42,7 +41,7 @@ public:
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
-    * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
+    * @param nodeId  A unique std::string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>
     *   the command line argument (or xmlBlaster.property entry)
@@ -50,7 +49,7 @@ public:
     *   is precedence over
     *    <code>-retries 10</code>
     */
-   Address(Global& global, const string& type="", const string& nodeId="");
+   Address(org::xmlBlaster::util::Global& global, const std::string& type="", const std::string& nodeId="");
 
    /**
     * copy constructor
@@ -70,15 +69,15 @@ public:
    long getMaxEntries() const;
 
    /** For logging only */
-   string getSettings();
+   std::string getSettings();
 
    /** @return The literal address as given by getAddress() */
-   string toString();
+   std::string toString();
 
    /**
-    * Get a usage string for the connection parameters
+    * Get a usage std::string for the connection parameters
     */
-   string usage();
+   std::string usage();
 
 };
 

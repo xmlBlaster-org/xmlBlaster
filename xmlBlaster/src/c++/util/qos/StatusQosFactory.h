@@ -18,8 +18,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * <pre>
  *  &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='yourMessageOid'/> <!-- PublishReturnQos and EraseReturnQos only -->
- *     &lt;subscribe id='_subId:1/> <!-- SubscribeReturnQos and UnSubscribeQos only -->
+ *     &lt;key oid='yourMessageOid'/> <!-- org::xmlBlaster::client::qos::PublishReturnQos and EraseReturnQos only -->
+ *     &lt;subscribe id='_subId:1/> <!-- org::xmlBlaster::client::qos::SubscribeReturnQos and org::xmlBlaster::client::qos::UnSubscribeQos only -->
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.util.qos.StatusQosData
@@ -30,14 +30,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-using namespace org::xmlBlaster::util;
-
-class Dll_Export StatusQosFactory: public util::SaxHandlerBase
+class Dll_Export StatusQosFactory: public org::xmlBlaster::util::SaxHandlerBase
 {
 private:
-   string        ME;
-   Global&       global_;
-   Log&          log_;
+   std::string        ME;
+   org::xmlBlaster::util::Global&       global_;
+   org::xmlBlaster::util::Log&          log_;
    StatusQosData statusQosData_;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
@@ -49,7 +47,7 @@ private:
    void prep();
 
 public:
-   StatusQosFactory(Global& global);
+   StatusQosFactory(org::xmlBlaster::util::Global& global);
 
    /**
     * Start element, event from SAX parser.
@@ -66,7 +64,7 @@ public:
     */
    void endElement(const XMLCh* const name);
 
-   StatusQosData readObject(const string& qos);
+   StatusQosData readObject(const std::string& qos);
 
 };
 

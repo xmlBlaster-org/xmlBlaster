@@ -2,8 +2,8 @@
 Name:      StringStripper2.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to strip a string containing two kinds of separators into a 
-           vector of pairs of strings.
+Comment:   Helper to strip a std::string containing two kinds of separators into a 
+           std::vector of pairs of std::strings.
 Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
@@ -17,21 +17,21 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 
 /**
- * StringStripper2 is a class used to strip a string into a vector of pairs
- * of strings. It needs two separators, a major one and a minor one.
+ * StringStripper2 is a class used to strip a std::string into a std::vector of pairs
+ * of std::strings. It needs two separators, a major one and a minor one.
  *
  * Lets explain it with an example:
  * * if you have set the (default) separators: major sep: "/" and a minor
- * sep: "." and a string to strip: "ti.che/ta.tacat/i.tac/tacum.i.tac"
- * then the external strip would divide the string into a vector containing
- * the following four strings: "ti.che", "ta.tacat", "i.tac", "tacumi.tac".
- * The internal strip (the minor strip) would further divide all these strings
- * into pairs of strings. In the last string there are two separators. The 
- * string will be divided so that the part of the string before the last 
+ * sep: "." and a std::string to strip: "ti.che/ta.tacat/i.tac/tacum.i.tac"
+ * then the external strip would divide the std::string into a std::vector containing
+ * the following four std::strings: "ti.che", "ta.tacat", "i.tac", "tacumi.tac".
+ * The internal strip (the minor strip) would further divide all these std::strings
+ * into pairs of std::strings. In the last std::string there are two separators. The 
+ * std::string will be divided so that the part of the std::string before the last 
  * separator will be the first element in the pair. The result will be:
  * <"ti","che">,<"ta","tacat">,<"i","tac">,<"tacumi","tac">
  */
-using namespace std;
+
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -43,33 +43,33 @@ namespace util {
       
    public:
 
-      StringStripper2(const string &mainSeparator="/", 
-                      const string &minorSeparator=".") 
+      StringStripper2(const std::string &mainSeparator="/", 
+                      const std::string &minorSeparator=".") 
          : mainStrip_(mainSeparator), minorStrip_(minorSeparator) {
       }
 
 
-      vector<pair<string,string> > strip(const string &line) {
+      std::vector<std::pair<std::string,std::string> > strip(const std::string &line) {
 
-         vector<string>               mainVector = mainStrip_.strip(line);
-         string::size_type            vectorSize;
-         pair<string,string>          namePair;
-         vector<pair<string,string> > ret;
+         std::vector<std::string>               mainVector = mainStrip_.strip(line);
+         std::string::size_type            vectorSize;
+         std::pair<std::string,std::string>          namePair;
+         std::vector<std::pair<std::string,std::string> > ret;
          
-         for (string::size_type i=0; i < mainVector.size(); i++) {
-            vector<string> minorVector = minorStrip_.strip(mainVector[i]);
+         for (std::string::size_type i=0; i < mainVector.size(); i++) {
+            std::vector<std::string> minorVector = minorStrip_.strip(mainVector[i]);
 
             if ( (vectorSize = minorVector.size()) > 1) {
-               string name = "";
-               for (string::size_type j=0; j<(vectorSize-1); j++) name += minorVector[j];
-               namePair = pair<string,string>(name,minorVector[vectorSize-1]);
+               std::string name = "";
+               for (std::string::size_type j=0; j<(vectorSize-1); j++) name += minorVector[j];
+               namePair = std::pair<std::string,std::string>(name,minorVector[vectorSize-1]);
             }
 
             else {
                if (vectorSize == 1) 
-                  namePair = pair<string,string>(minorVector[0],"");
+                  namePair = std::pair<std::string,std::string>(minorVector[0],"");
                else 
-                  namePair = pair<string,string>("","");
+                  namePair = std::pair<std::string,std::string>("","");
             }
 
             ret.insert(ret.end(), namePair);

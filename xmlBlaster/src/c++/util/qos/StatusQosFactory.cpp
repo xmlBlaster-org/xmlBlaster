@@ -9,6 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+using namespace std;
 using namespace org::xmlBlaster::util;
 
 void StatusQosFactory::prep()

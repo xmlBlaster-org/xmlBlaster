@@ -11,16 +11,15 @@ Comment:   The client driver for the corba protocol
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 
-//using namespace org::xmlBlaster::util;
-
-
-using namespace std;
-
 namespace org {
  namespace xmlBlaster {
   namespace client {
    namespace protocol {
     namespace corba {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 
 CorbaDriverFactory::CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb)
    : Thread(), 
@@ -33,7 +32,7 @@ CorbaDriverFactory::CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb)
      orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    if (log_.call()) 
-      log_.call("CorbaDriver", string("Constructor orbIsThreadSafe_=") + lexical_cast<string>(orbIsThreadSafe_));
+      log_.call("CorbaDriver", string("Constructor orbIsThreadSafe_=") + lexical_cast<std::string>(orbIsThreadSafe_));
    doRun_     = true;
    isRunning_ = false;
 
@@ -141,7 +140,7 @@ CorbaDriver& CorbaDriverFactory::getDriverInstance(const string& instanceName)
       }
    }
    if (log_.trace()) 
-      log_.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<string>(count));
+      log_.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<std::string>(count));
    return *driver;
 }
 
@@ -153,7 +152,7 @@ int CorbaDriverFactory::killDriverInstance(const string& instanceName)
    DriversMap::iterator iter = drivers_.find(instanceName);
    if (iter == drivers_.end()) return -1;
    int ret = --(*iter).second.second;
-   if (log_.trace()) log_.trace(ME, string("instances before deleting ") + lexical_cast<string>(ret));
+   if (log_.trace()) log_.trace(ME, string("instances before deleting ") + lexical_cast<std::string>(ret));
    if (ret <= 0) {
       if (log_.trace()) log_.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
       // do remove it since the counter is zero
@@ -173,7 +172,7 @@ int CorbaDriverFactory::killDriverInstance(const string& instanceName)
       }
    }
    if (log_.trace()) 
-      log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<string>(ret));
+      log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<std::string>(ret));
    return ret;
 }
 
@@ -207,7 +206,7 @@ void CorbaDriverFactory::run()
             }
             if (log_.trace()) log_.trace(ME, "sleeping for 20 millis");
             sleep(20); // sleep 20 milliseconds
-            if (log_.trace()) log_.trace(ME, string("awakening, doRun is: ") + lexical_cast<string>(doRun_));
+            if (log_.trace()) log_.trace(ME, string("awakening, doRun is: ") + lexical_cast<std::string>(doRun_));
          }
       }
       catch(CORBA::Exception &ex) {

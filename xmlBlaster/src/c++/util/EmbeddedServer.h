@@ -20,20 +20,14 @@ Comment:   Testing the Timeout Features
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 
-using namespace std;
-using namespace org::xmlBlaster::util::thread;
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
-
 namespace org { namespace xmlBlaster { namespace util {
 
 class EmbeddedServer;
 
-class EmbeddedServerRunner : public Thread 
+class EmbeddedServerRunner : public org::xmlBlaster::util::thread::Thread 
 {
 private:
-   const string    ME;
+   const std::string    ME;
    EmbeddedServer& owner_;
 public:
 
@@ -50,13 +44,13 @@ class Dll_Export EmbeddedServer
 {
 friend class EmbeddedServerRunner;
 private:
-   string                ME;
-   Global&               global_;
-   Log&                  log_;
+   std::string                ME;
+   org::xmlBlaster::util::Global&               global_;
+   org::xmlBlaster::util::Log&                  log_;
    bool                  isRunning_;
-   string                applArguments_;
-   string                jvmArguments_;
-   XmlBlasterAccess*     externalAccess_;
+   std::string                applArguments_;
+   std::string                jvmArguments_;
+   org::xmlBlaster::client::XmlBlasterAccess*     externalAccess_;
    EmbeddedServerRunner* runner_;
 public:
    /**
@@ -73,11 +67,11 @@ public:
     * @param glob the global variable
     * @param jvmArguments the arguments to pass to the java virtual machine.
     * @param applArguments the arguments to pass to the application.
-    * @param externalAccess the pointer to the external XmlBlasterAccess object. If this is NULL, then an
+    * @param externalAccess the pointer to the external org::xmlBlaster::client::XmlBlasterAccess object. If this is NULL, then an
     *        own instance is created each time, otherwise the external is used. This parameter is needed
     *        where the communication protocol does not support multithreading.
     */
-   EmbeddedServer(Global& glob, const string& jvmArguments = "", const string& applArguments="", XmlBlasterAccess* externalAccess=NULL);
+   EmbeddedServer(org::xmlBlaster::util::Global& glob, const std::string& jvmArguments = "", const std::string& applArguments="", org::xmlBlaster::client::XmlBlasterAccess* externalAccess=NULL);
 
    virtual ~EmbeddedServer();
 

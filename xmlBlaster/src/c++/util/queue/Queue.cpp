@@ -10,6 +10,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {

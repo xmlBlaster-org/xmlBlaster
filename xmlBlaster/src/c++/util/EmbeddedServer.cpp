@@ -11,6 +11,13 @@ Comment:   Testing the Timeout Features
 
 namespace org { namespace xmlBlaster { namespace util {
 
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos::address;
+using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 EmbeddedServerRunner::EmbeddedServerRunner(EmbeddedServer& owner) : ME("EmbeddedServerRunner"), owner_(owner)
 {
@@ -36,7 +43,7 @@ void EmbeddedServerRunner::run()
       try {
          owner_.isRunning_ = true;
          int ret = system(cmdLine.c_str());
-         owner_.log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + lexical_cast<string>(ret));
+         owner_.log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + lexical_cast<std::string>(ret));
          owner_.isRunning_ = false;
       }
       catch (exception& ex) {
@@ -89,7 +96,7 @@ bool EmbeddedServer::start(bool blockUntilUp)
       bool isConnected = false;
       int count = 0;
       while (!isConnected && count < 60) {
-         if (log_.trace()) log_.trace(ME, "start: establishing a connection: trial nr. '" + lexical_cast<string>(count) + "'");
+         if (log_.trace()) log_.trace(ME, "start: establishing a connection: trial nr. '" + lexical_cast<std::string>(count) + "'");
          try {
             count++;
             XmlBlasterAccess conn(global_);

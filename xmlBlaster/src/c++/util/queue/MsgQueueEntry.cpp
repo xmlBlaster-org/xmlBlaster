@@ -9,10 +9,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-
 /**
  * Class embedding messages or information to be stored on the client queues
  * Note that all content is copied when passed to the constructors.
@@ -22,6 +18,12 @@ using namespace org::xmlBlaster::util::qos;
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::dispatch;
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool persistent)
    : ReferenceCounterBase(), 
@@ -40,7 +42,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    embeddedType_     = type;
    priority_         = priority; // should be normal priority
    persistent_       = persistent; // currently no persistents supported
-   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+   logId_            = embeddedType_ + string(":") + lexical_cast<std::string>(uniqueId_);
 }
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool persistent)
@@ -57,7 +59,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
    embeddedType_     = type;
    priority_         = priority; // should be maximum priority
    persistent_       = persistent; // currently no persistents supported
-   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+   logId_            = embeddedType_ + string(":") + lexical_cast<std::string>(uniqueId_);
 }
 
 
@@ -75,7 +77,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, c
    embeddedType_     = type;
    priority_         = priority; // should be maximum priority
    persistent_          = persistent; // currently no persistents supported
-   logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
+   logId_            = embeddedType_ + string(":") + lexical_cast<std::string>(uniqueId_);
 }
 
 

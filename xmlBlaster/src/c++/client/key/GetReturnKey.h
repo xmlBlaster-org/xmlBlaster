@@ -21,22 +21,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <client/key/UpdateKey.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::key;
-
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
-class Dll_Export GetReturnKey : public UpdateKey
+class Dll_Export GetReturnKey : public org::xmlBlaster::client::key::UpdateKey
 {
 public:
 
    /**
     * Minimal constructor.
     */
-   GetReturnKey(Global& global);
+   GetReturnKey(org::xmlBlaster::util::Global& global);
    
-   GetReturnKey(Global& global, const MsgKeyData& data);
+   GetReturnKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::MsgKeyData& data);
 
    GetReturnKey(const GetReturnKey& key);
 

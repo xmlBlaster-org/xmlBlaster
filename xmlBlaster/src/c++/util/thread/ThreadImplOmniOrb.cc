@@ -11,6 +11,7 @@ Comment:   Encapsulates (and hides) threads for the omnithread
 #include <util/Global.h>
 
 // namespace org { namespace xmlBlaster { namespace util { namespace thread {
+using namespace std;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util;
 
@@ -344,7 +345,7 @@ public:
    void run()
    {
       for (int i=0; i < 5; i++) {
-         cout << "thread nr. '" + lexical_cast<string>(ref_) << " sweep number " << lexical_cast<string>(i) << " static ref is: " << lexical_cast<string>(staticRef2) << endl;
+         cout << "thread nr. '" + lexical_cast<std::string>(ref_) << " sweep number " << lexical_cast<std::string>(i) << " static ref is: " << lexical_cast<std::string>(staticRef2) << endl;
          sleep(10);
          staticRef2++;
          sleep(990);
@@ -352,7 +353,7 @@ public:
       for (int i=0; i < 5; i++) {
          { 
             Lock lock(mutex);
-            cout << "thread nr. '" + lexical_cast<string>(ref_) << " sweep number " << lexical_cast<string>(i) << " static ref is: " << lexical_cast<string>(staticRef2) << endl;
+            cout << "thread nr. '" + lexical_cast<std::string>(ref_) << " sweep number " << lexical_cast<std::string>(i) << " static ref is: " << lexical_cast<std::string>(staticRef2) << endl;
             sleep(10);
             staticRef2++;
          }

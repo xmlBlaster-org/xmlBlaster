@@ -19,14 +19,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export ConnectQueueEntry : public MsgQueueEntry
+class Dll_Export ConnectQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
 public:
 
    /**
     * Constructor suited for operations like publishes
     */
-   ConnectQueueEntry(Global& global, const ConnectQos& connectQos, const string& type="connect", int priority=9, bool persistent=false);
+   ConnectQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::ConnectQos& connectQos, const std::string& type="connect", int priority=9, bool persistent=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In
@@ -35,13 +35,13 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler);
+   org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler);
 
-   ConnectQos getConnectQos() const;
+   org::xmlBlaster::util::qos::ConnectQos getConnectQos() const;
 
-   ConnectReturnQos getConnectReturnQos() const;
+   org::xmlBlaster::util::qos::ConnectReturnQos getConnectReturnQos() const;
 
-   string toXml(const string& indent="") const;
+   std::string toXml(const std::string& indent="") const;
 
 };
 

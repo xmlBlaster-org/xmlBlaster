@@ -17,14 +17,10 @@ Comment:   Allows you be called back after a given delay.
 #include <map>
 #include <util/thread/ThreadImpl.h>
 
-
-
-using namespace org::xmlBlaster::util::thread;
-
 namespace org { namespace xmlBlaster { namespace util {
 
-   typedef pair<I_Timeout*, void*> Container;
-   typedef map<Timestamp, Container> TimeoutMap;
+   typedef std::pair<I_Timeout*, void*> Container;
+   typedef std::map<org::xmlBlaster::util::Timestamp, Container> TimeoutMap;
 
 
 /**
@@ -53,7 +49,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * public class MyClass implements I_Timeout {
  *   ...
  *   Timeout timeout = new Timeout("TestTimer");
- *   Timestamp timeoutHandle = timeout.addTimeoutListener(this, 4000L, "myTimeout");
+ *   org::xmlBlaster::util::Timestamp timeoutHandle = timeout.addTimeoutListener(this, 4000L, "myTimeout");
  *   ...
  *   public void timeout(Object userData) {
  *      // userData contains String "myTimeout"
@@ -71,7 +67,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * Or a short form:
  * <pre>
  *  Timeout timeout = new Timeout("TestTimer");
- *  Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+ *  org::xmlBlaster::util::Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
  *        public void timeout(Object userData) {
  *           System.out.println("Timeout happened");
  *           System.exit(0);
@@ -84,17 +80,17 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-class Dll_Export Timeout : public Thread
+class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
 {
 
  private: 
    /** Name for logging output */
-   string ME; //  = "Timeout";
-   string threadName_;
+   std::string ME; //  = "Timeout";
+   std::string threadName_;
 //   boost::thread* runningThread_;
-   /** Sorted map */
+   /** Sorted std::map */
    TimeoutMap timeoutMap_;
-   // private TreeMap map = null;
+   // private TreeMap std::map = null;
    /** Start/Stop the Timeout manager thread */
    bool isRunning_; //  = true;
    /** On creation wait until thread started */
@@ -108,15 +104,15 @@ class Dll_Export Timeout : public Thread
    /** Switch on debugging output */
    const bool isDebug_; //  = false;
 
-   TimestampFactory& timestampFactory_;
+   org::xmlBlaster::util::TimestampFactory& timestampFactory_;
 
-   Global& global_;
-   Log&    log_;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log&    log_;
 
    /** The synchronization object */
-   Mutex invocationMutex_;   
-   Mutex waitForTimeoutMutex_;
-   Condition waitForTimeoutCondition_;
+   org::xmlBlaster::util::thread::Mutex invocationMutex_;   
+   org::xmlBlaster::util::thread::Mutex waitForTimeoutMutex_;
+   org::xmlBlaster::util::thread::Condition waitForTimeoutCondition_;
 
    size_t Timeout::getTimeoutMapSize();
 
@@ -131,12 +127,12 @@ class Dll_Export Timeout : public Thread
    /**
     * Create a timer thread. 
     */
-   Timeout(Global& global);
+   Timeout(org::xmlBlaster::util::Global& global);
 
    /**
     * Create a timer thread. 
     */
-   Timeout(Global& global, const string &name);
+   Timeout(org::xmlBlaster::util::Global& global, const std::string &name);
 
     ~Timeout();
 
@@ -173,7 +169,7 @@ class Dll_Export Timeout : public Thread
     * @return     A handle which you can use to unregister with 
     *             removeTimeoutListener().
     */
-    Timestamp addTimeoutListener(I_Timeout *listener, long delay, void *userData);
+    org::xmlBlaster::util::Timestamp addTimeoutListener(I_Timeout *listener, long delay, void *userData);
 
    /**
     * Refresh a listener before the timeout happened.<p />
@@ -193,19 +189,19 @@ class Dll_Export Timeout : public Thread
     *             The timeout in milliseconds measured from now.
     * @return     A new handle which you can use to unregister with 
     *             removeTimeoutListener()
-    * @exception  XmlBlasterException 
+    * @exception  org::xmlBlaster::util::XmlBlasterException 
     *             if key is null or unknown or invalid because timer elapsed already
     */
-    Timestamp refreshTimeoutListener(Timestamp key, long delay); 
-   // throws XmlBlasterException
+    org::xmlBlaster::util::Timestamp refreshTimeoutListener(org::xmlBlaster::util::Timestamp key, long delay); 
+   // throws org::xmlBlaster::util::XmlBlasterException
 
    /**
     * Checks if key is null -> addTimeoutListener else refreshTimeoutListener() 
     * in a thread save way. 
     */
-    Timestamp addOrRefreshTimeoutListener(I_Timeout *listener, 
-                                                  long delay, void *userData, Timestamp key);
-   // throws XmlBlasterException
+    org::xmlBlaster::util::Timestamp addOrRefreshTimeoutListener(I_Timeout *listener, 
+                                                  long delay, void *userData, org::xmlBlaster::util::Timestamp key);
+   // throws org::xmlBlaster::util::XmlBlasterException
 
    /**
     * Remove a listener before the timeout happened.<p />
@@ -214,7 +210,7 @@ class Dll_Export Timeout : public Thread
     *             The timeout handle you received by a previous 
     *             addTimeoutListener() call.
     */
-   void removeTimeoutListener(Timestamp key);
+   void removeTimeoutListener(org::xmlBlaster::util::Timestamp key);
 
    /**
     * Is this handle expired?<p />
@@ -224,7 +220,7 @@ class Dll_Export Timeout : public Thread
     *             addTimeoutListener() call<br />
     * @return     true/false
     */
-   bool isExpired(Timestamp key);
+   bool isExpired(org::xmlBlaster::util::Timestamp key);
 
    /**
     * How long to my timeout.<p />
@@ -234,7 +230,7 @@ class Dll_Export Timeout : public Thread
     *             addTimeoutListener() call.
     * @return     Milliseconds to timeout, or -1 if not known.
     */
-   long spanToTimeout(Timestamp key);
+   long spanToTimeout(org::xmlBlaster::util::Timestamp key);
 
    /**
     * Access the end of life span.<p />
@@ -245,7 +241,7 @@ class Dll_Export Timeout : public Thread
     * @return     Time in milliseconds since midnight, January 1, 1970 UTC 
     *             or -1 if not known.
     */
-   long getTimeout(Timestamp key);
+   long getTimeout(org::xmlBlaster::util::Timestamp key);
 
    /**
     * Reset all pending timeouts.<p />

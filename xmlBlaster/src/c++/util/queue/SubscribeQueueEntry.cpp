@@ -9,6 +9,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
+using namespace std;
+using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
+
 SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type, int priority, bool persistent)
    : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), type, priority, persistent)
 {
