@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.29 2002/10/25 08:30:33 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.30 2002/10/26 10:13:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -174,24 +174,35 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     * @param reason An error text or null
     * @return true failure handled
     */
-   private final boolean handleFailure(MsgQueueEntry[] msg, String reason)
+   private final boolean handleFailure(MsgQueueEntry[] msgArr, String reason)
    {
-      if (property != null) {
-         if (property.onFailureDeadLetter()) {
-            if (msg == null)
-               msg = takeMsgs();
-            glob.getRequestBroker().deadLetter(msg, reason);
-            checkForVolatileErase(msg);
-            return true;
+      try {
+         if (property != null) {
+            if (property.onFailureDeadLetter()) {
+               if (msgArr == null)
+                  msgArr = takeMsgs();
+               glob.getRequestBroker().deadLetter(msgArr, reason);
+               checkForVolatileErase(msgArr);
+               return true;
+            }
+            else {
+               log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADLETTER + "' is implemented, " + msgArr.length + " messages are lost.");
+               return false;
+            }
          }
          else {
-            log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADLETTER + "' is implemented, " + msg.length + " messages are lost.");
+            log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msgArr.length + " messages are lost.");
             return false;
          }
       }
-      else {
-         log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msg.length + " messages are lost.");
-         return false;
+      finally {
+         // Delete volatile messages ...
+         if (msgArr == null)
+            msgArr = takeMsgs();
+         for (int i=0; i<msgArr.length; i++) {
+            msgArr[i].getMessageUnitWrapper().addEnqueueCounter(-1);
+         }
+         checkForVolatileErase(msgArr);
       }
    }
 
