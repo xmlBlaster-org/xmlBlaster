@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.activex' type='NEW' prio='MEDIUM' status='INWORK'>
+   <topic>
+      XmlBlaster provides access from C# and VisualBasic with ActiveX.
+   </topic>
+   <description>
+     <p>
+     With the free ActiveX bridge from SUN (JDK 1..4.2 and 1.5) we can export
+     the Java client library into an ActiveX control (Windows only). With this
+     control easy access to xmlBlaster is possible from C# or Visual Basic .net
+     </p>
+     <p>
+      With this control you can access xmlBlaster from C#
+      or VisualBasic which calls a client side java bean
+      which again connects to the xmlBlaster server.
+      All invocations are done with Micheles xml scripting
+      client, see
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html" target="others">client.script requirements</a>
+      and
+      <a href="http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html" target="others">ActiveX bridge howto</a>
+     </p>
+     <h3>Limitations</h3>
+     <p>
+      It seems to work only with the ActiveX bridge from JDK 1.5 or higher.
+      JDK 1.4.2 failed on my Windows XP.
+     </p>
+     <h3>Installations</h3>
+     <p>
+      First you need to create a dll and register it, theses steps are described
+      in the above mentioned howto. We have added these steps into a new <code>ant</code> task
+      called <code>activex</code>, the call below will generate everything and register
+      the ActiveX bridge on the fly:
+     </p>
+<pre>
+   build  -DJRE_HOME=C:\PROGRA~1\Java\j2re1.5.0  activex
+</pre>
+     <p>Please adjust the JRE_HOME setting to point to your Java runtime installation.
+     </p>
+     <p>
+      Now you find all generated files under
+     </p>
+<pre>
+   C:\PROGRA~1\Java\j2re1.5.0\activex
+</pre>
+     <p>
+      and the control is registered in the registry under
+     </p>
+<pre>
+   regedit -> HKEY_CLASSES_ROOT
+           -> CLSID
+           -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
+           -> XmlScriptAccess Bean Control
+</pre>
+
+     <h3>Demonstration clients</h3>
+
+  <p>
+  A functional C# demo client and a VisualBasic .net client you find
+  in directory
+  </p>
+<pre>
+xmlBlaster\demo\activex 
+</pre>
+
+  <p>Here are the steps to use the demonstration clients from Visual Studio:</p> 
+
+<pre>
+  Visual Studio:
+    -> Solution Explorer
+    -> References
+    -> (right mouse): Add Reference
+    -> COM -> XmlScriptAccess
+
+  Task bar: Java Icon:
+    -> Open Console
+</pre>
+
+  <p>Don't forget to start the server first:
+  </p>
+<pre>
+    java -jar lib\xmlBlaster.jar
+</pre>
+   </description>
+
+   <example lang="Csharp" type="HTML">
+      <p><a NAME="example"></a>C# example</p>
+   <pre><![CDATA[
+// HelloWorld.cs
+using System;
+namespace demo
+{
+   class XmlBlasterCSharp
+   {
+      [STAThread]
+      static void Main(string[] args)
+      {
+         // See registry: 
+         //   regedit -> HKEY_CLASSES_ROOT
+         //           -> CLSID
+         //           -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
+         //           -> XmlScriptAccess Bean Control
+         // org.xmlBlaster.client.activex.XmlScriptAccess
+
+         XmlScriptAccess.XmlScriptAccessClass xmlBlaster;
+         xmlBlaster = new XmlScriptAccess.XmlScriptAccessClass();
+
+         string[] argArr = { "-protocol", "SOCKET" };
+         xmlBlaster.initArgs(argArr);
+
+         string request = "<xmlBlaster>" +
+                          "   <connect/>" +
+                          "   <wait delay='1000' />" +
+                          "   <publish>" +
+                          "      <key oid='test'><airport name='london' /></key>" +
+                          "      <content>This is a simple script test</content>" +
+                          "      <qos/>" +
+                          "   </publish>" +
+                          "</xmlBlaster>";
+         string response = xmlBlaster.sendRequest(request);
+         Console.WriteLine("Got response from xmlBlaster: " + response);
+      }
+   }
+}
+   ]]></pre>
+   </example>
+
+   <example lang="VisualBasic" type="HTML">
+      <p><a NAME="example"></a>VisualBasic.net example</p>
+   <pre><![CDATA[
+// HelloWorld.vb
+' Simple VisualBasic HelloWorld example how to access xmlBlaster
+' We connect to xmlBlaster and query the free memory of the server
+' @author Marcel Ruff
+Module HelloWorld
+    Sub Main()
+        Dim request, response As String
+        Dim xmlBlaster As XmlScriptAccess.XmlScriptAccessClass
+
+        xmlBlaster = New XmlScriptAccess.XmlScriptAccessClass
+
+        ' Configure using the SOCKET protocol
+        Dim argArr(1) As String
+        argArr(0) = "-protocol"
+        argArr(1) = "SOCKET"
+        xmlBlaster.initArgs(argArr)
+
+        ' Connect to the server
+        response = xmlBlaster.sendRequest("<xmlBlaster><connect/></xmlBlaster>")
+
+        ' Query the free memory
+        request = "<xmlBlaster><get><key oid='__cmd:?freeMem'/></get></xmlBlaster>"
+        response = xmlBlaster.sendRequest(request)
+        Console.WriteLine("Got response:" & response)
+
+        ' Leave the server
+        response = xmlBlaster.sendRequest("<xmlBlaster><disconnect/></xmlBlaster>")
+    End Sub
+End Module
+   ]]></pre>
+   </example>
+
+   <configuration where="client">
+   </configuration>
+
+   <todo where="client" type="HTML">
+      <ol>
+<li>Fix HSQLDB driver and CORBA loading problem.
+  There seems to be a CLASSLOADER problem which we need to solve</li>
+
+<li>Callback events don't work: They are fired in the Java bean
+  but never arrive in C#/VB</li>
+
+<li>How are XmlScriptAccess exceptions passed back to the VB/C# layer?
+  RuntimeExceptions arrive as expected</li>
+     </ol>
+   </todo>
+
+   <see type="REQ">interface</see>
+   <see type="REQ">client.script</see>
+   <see type="INTERNET">http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/activex/README</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/activex</see>
+
+   <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
+   <date>2004 03 12</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
