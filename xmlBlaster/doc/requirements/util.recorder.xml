@@ -7,16 +7,111 @@
       The class InvocationRecorder can be plugged into a client or the server, to follow
       all CORBA/RMI/XmlRpc method invocations with exact timestamp. Every invocation is
       stored and may be later played back.
-      The recorder is activated when a Java client uses the fail save xmlblaster access mode
+      <p>
+      The recorder is activated when a Java client uses the fail save xmlBlaster access mode
       -> see XmlBlasterConnection.initFailSave()
+      </p>
+
+      <p>
+      Following error handling is possible if the queue overflows:
+      </p>
+      <ul>
+         <li>ONOVERFLOW_EXCEPTION: This is the default behaviour, the recorder framewok throws an XmlBlasterExcption</li>
+         <li>ONOVERFLOW_DISCARD: In this mode messages are destroyed if the queue is full</li>
+         <li>ONOVERFLOW_DISCARDOLDEST: The oldest message from the queue is destroyed to have space for a new one</li>
+      </ul>
+
+      On pullback of messages it is possible to use a motion factor to allow 'slow motion'
+      or 'fast motion' reply:
+      <pre>
+       pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
+      </pre>
+
    </description>
+
+   <configuration where="client">
+      <p>
+      Example how to configure the FileRecorder plugin in your xmlBlaster.properties file:
+      </p>
+      <pre>RecorderPlugin[FileRecorder][1.0]=org.xmlBlaster.util.recorder.file.FileRecorder</pre>
+
+      <p>
+      These parameters allow to configure the message recorder behavior.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>How many messages to tail back on client side if they can't be delivered to xmlBlaster.
+                -1 sets it to unlimited.
+            </td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>recorder.type</td>
+            <td>FileRecorder</td>
+            <td>The plugin type to use for tail back messages in fail save mode</td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>recorder.version</td>
+            <td>1.0</td>
+            <td>The plugin version to use</td>
+            <td>yes</td>
+         </tr>
+      </table>
+      <p>
+      These settings apply only if you use the FileRecorder plugin:         
+      </p>
+      <table border="1">
+         <tr>
+            <td>recorder.path</td>
+            <td>${user.home}/tmp</td>
+            <td>Where to put the persistence file. Please give the path only, without the file name.</td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>recorder.detroyOld</td>
+            <td>false</td>
+            <td>If a file based plugin is configured you can configure to destroy
+                old messages on client restart.
+            </td>
+            <td>yes</td>
+         </tr>
+         
+         <tr>
+            <td>recorder.useSync</td>
+            <td>false</td>
+            <td>true: Sync the harddisk on any IO. This is not recommended as it slows down
+                processing from ~5000msg/sec to ~90msg/sec.
+                Defaults to false, which is save for application crashes.
+            </td>
+            <td>yes</td>
+         </tr>
+
+      </table>
+   </configuration>
+
    <see type="REQ">util.recorder.persistence</see>
    <see type="REQ">client.failsave</see>
-   <see type="API">org.xmlBlaster.util.InvocationRecorder</see>
+   <see type="API">org.xmlBlaster.util.recorder.I_InvocationRecorder</see>
+   <see type="API">org.xmlBlaster.util.recorder.ram.RamRecorder</see>
+   <see type="API">org.xmlBlaster.util.recorder.file.FileRecorder</see>
+   <see type="API">org.xmlBlaster.util.recorder.file.FileIO</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
@@ -25,6 +120,8 @@
       </comment>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave</test>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestInvocationRecorder</test>
+      <test tool="SUITE">classtest.FileIOTest</test>
+      <test tool="SUITE">classtest.InvocationRecorderTest</test>
    </testcase>
 </requirement>
 
