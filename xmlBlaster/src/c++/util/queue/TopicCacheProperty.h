@@ -27,7 +27,8 @@ class Dll_Export TopicCacheProperty : public QueuePropertyBase
 public:
 
    /**
-    * @param nodeId_    If not null, the command line properties will look for prop[nodeId_] as well,
+    * @param nodeId_ If not "" (empty), the command line properties will look
+    *                for prop[nodeId] as well,
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
    TopicCacheProperty(Global& global, const string& nodeId);

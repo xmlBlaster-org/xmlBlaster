@@ -226,7 +226,7 @@ public:
    /**
     * @return true/false
     */
-   bool isReadonly();
+   bool isReadonly() const;
 
    /**
     * Access sender unified naming object.
@@ -379,6 +379,12 @@ public:
     * @return internal state of the message QoS as a XML ASCII string
     */
    string toXml(const string& extraOffset="");
+
+   void setTopicProperty(const TopicProperty& prop);
+
+   TopicProperty getTopicProperty();
+
+   bool hasTopicProperty() const;
 
 };
 

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.8 2002/12/16 14:26:55 laghi Exp $
+Version:   $Id: Global.cpp,v 1.9 2002/12/19 12:12:06 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
@@ -146,6 +146,11 @@ namespace org { namespace xmlBlaster { namespace util {
       return *pingTimer_;
    }
 
+   string Global::getBoolAsString(bool val)
+   {
+      if (val) return "true";
+      else return "false";
+   }
 
 }}}; // namespace
 

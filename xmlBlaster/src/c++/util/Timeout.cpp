@@ -13,6 +13,7 @@ Comment:   Allows you be called back after a given delay.
 #include <boost/thread/condition.hpp>
 #include <boost/thread/xtime.hpp>
 #include <boost/lexical_cast.hpp>
+#include <util/Constants.h>
 #include <util/Global.h>
 
 using boost::lexical_cast;
@@ -82,7 +83,7 @@ namespace org { namespace xmlBlaster { namespace util {
       
       boost::mutex::scoped_lock lock(*invocationMutex_);
       while (true) {
-         key = timestampFactory_.getTimestamp() + (Timestamp)delay * timestampFactory_.MILLION;
+         key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
          TimeoutMap::iterator iter = timeoutMap_.find(key);
          if (iter == timeoutMap_.end()) {
             log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
@@ -144,14 +145,14 @@ namespace org { namespace xmlBlaster { namespace util {
       TimeoutMap::iterator iter = timeoutMap_.find(key);
       if (iter == timeoutMap_.end()) return -1;
       Timestamp currentTimestamp = timestampFactory_.getTimestamp();
-      return getTimeout(key) - (long)(currentTimestamp / timestampFactory_.MILLION);
+      return getTimeout(key) - (long)(currentTimestamp / Constants::MILLION);
    }
 
    long Timeout::getTimeout(Timestamp key) {
       log_.call(ME, " getTimeout");
       std::cout << ME << " getTimeout" << std::endl;
       if (key < 0) return -1;
-      return key / timestampFactory_.MILLION;
+      return (long)(key / Constants::MILLION);
    }
 
    void Timeout::removeAll() {
@@ -203,8 +204,8 @@ namespace org { namespace xmlBlaster { namespace util {
                reference_.log_.trace(ME, " The timeout is not empty");
                Timestamp nextWakeup = (*iter).first;
                reference_.log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
-               double next = nextWakeup / reference_.timestampFactory_.MILLION;
-               double current = reference_.timestampFactory_.getTimestamp() / reference_.timestampFactory_.MILLION;
+               double next = nextWakeup / Constants::MILLION;
+               double current = reference_.timestampFactory_.getTimestamp() / Constants::MILLION;
                delay = next - current;
 
                reference_.log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
@@ -226,8 +227,8 @@ namespace org { namespace xmlBlaster { namespace util {
          }
          {
 //            boost::mutex::scoped_lock waitForTimeoutLock(*reference_.waitForTimeoutMutex_);
-            long int sec = (long int)(delay / reference_.timestampFactory_.TOUSAND);
-            long int nano = (long int)((delay - sec*reference_.timestampFactory_.TOUSAND)*reference_.timestampFactory_.MILLION);
+            long int sec = (long int)(delay / Constants::THOUSAND);
+            long int nano = (long int)((delay - sec*Constants::THOUSAND)*Constants::MILLION);
             timeToWait.sec  +=  sec;
             timeToWait.nsec += nano;
             reference_.log_.trace(ME, "sleeping ... " + lexical_cast<string>(sec) + " seconds and " + lexical_cast<string>(nano));

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.6 2002/12/17 19:09:13 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.7 2002/12/19 12:12:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -54,7 +54,7 @@ extern Dll_Export  long DEFAULT_expires;
 
 typedef vector<AddressBase> AddressVector;
 
-class QueuePropertyBase
+class Dll_Export QueuePropertyBase
 {
    friend class QueuePropertyFactory;
 protected:

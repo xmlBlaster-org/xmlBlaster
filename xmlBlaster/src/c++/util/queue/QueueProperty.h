@@ -30,7 +30,7 @@ using namespace org::xmlBlaster::util::cfg;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class QueueProperty : public QueuePropertyBase
+class Dll_Export QueueProperty : public QueuePropertyBase
 {
 protected:
 

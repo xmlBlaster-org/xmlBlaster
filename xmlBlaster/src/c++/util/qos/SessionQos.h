@@ -54,7 +54,7 @@ private:
 
 
 public:
-   SessionQosData(Global& global);
+   SessionQosData(Global& global, const string& absoluteName="");
    SessionQosData(const SessionQosData& data);
    SessionQosData& operator =(const SessionQosData& data);
    long getTimeout() const;
@@ -63,6 +63,12 @@ public:
    void setMaxSessions(int maxSessions);
    bool getClearSessions() const;
    void setClearSessions(bool clearSessions);
+
+   /**
+    * Sets the absolute name. It checks if it really is an absolute name,
+    * i.e. if it contains the well known structure '/node/....' it parses it,
+    * otherwise it leaves it untouched (i.e. it will not parse it).
+    */
 
    void setAbsoluteName(const string& name);
    string getRelativeName() const;

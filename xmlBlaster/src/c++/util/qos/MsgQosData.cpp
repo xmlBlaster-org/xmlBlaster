@@ -49,6 +49,7 @@ Dll_Export const bool DEFAULT_readonly    = false;
 */
    void MsgQosData::init()
    {
+      ME = "MsgQosData";
       subscriptionId_ = "";
       redeliver_ = 0;
       queueIndex_ = -1;
@@ -126,6 +127,20 @@ Dll_Export const bool DEFAULT_readonly    = false;
    bool MsgQosData::isPtp()
    {
       return !isPubSubStyle();
+   }
+
+
+   void MsgQosData::setReadonly(bool readonly)
+   {
+      if (topicProperty_ == NULL)
+        topicProperty_ = new TopicProperty(global_);
+      topicProperty_->setReadonly(readonly);
+   }
+
+   bool MsgQosData::isReadonly() const
+   {
+      if (topicProperty_ == NULL) return false;
+      return topicProperty_->isReadonly();
    }
 
    /**
@@ -428,9 +443,98 @@ Dll_Export const bool DEFAULT_readonly    = false;
     */
    string MsgQosData::toXml(const string& extraOffset)
    {
-      log_.warn(ME, "toXml not implemented yet");
-//      return factory.writeObject(this, extraOffset);
-      return "";
+      string ret;
+
+      string offset = "\n " + extraOffset;
+      string extraOffset1 = extraOffset + " ";
+
+      // WARNING: This dump must be valid, as it could be used by the
+      //          persistent store
+      ret += offset + "<qos>";
+
+      if (!getState().empty() || !getStateInfo().empty()) {
+         ret += offset + " <state id='" + getState();
+         if (!getStateInfo().empty())
+            ret += "' info='" + getStateInfo();
+         ret += "'/>";
+      }
+
+      vector<Destination>::iterator iter = destinationList_.begin();
+      while (iter != destinationList_.end()) {
+         ret += (*iter).toXml(extraOffset1);
+         iter++;
+      }
+
+      ret += offset + " <sender>" + sender_.getAbsoluteName() + "</sender>";
+
+      if (NORM_PRIORITY != priority_)
+         ret += offset + " <priority>" + lexical_cast<string>(priority_) + "</priority>";
+
+      if (subscriptionId_.empty()) {
+         ret += offset + " <subscriptionId>" + subscriptionId_ + "</subscriptionId>";
+      }
+
+      if (getLifeTime() > 0) {
+         ret += offset + " <expiration lifeTime='" + lexical_cast<string>(getLifeTime());
+         bool sendRemainingLife = true; // make it configurable !!!
+         if (sendRemainingLife) {
+            if (getRemainingLife() > 0)
+               ret += "' remainingLife='" + lexical_cast<string>(getRemainingLife());
+            else if (getRemainingLifeStatic() > 0)
+               ret += "' remainingLife='" + lexical_cast<string>(getRemainingLifeStatic());
+         }
+         ret +=  "'/>";
+      }
+
+      if (getRcvTimestamp() != 0)
+         ret += TimestampFactory::toXml(getRcvTimestamp(), extraOffset1, false);
+      if(getQueueSize() > 0)
+         ret += offset + " <queue index='" + lexical_cast<string>(getQueueIndex()) + "' size='" + lexical_cast<string>(getQueueSize()) + "'/>";
+      if (getRedeliver() > 0)
+         ret += offset + " <redeliver>" + lexical_cast<string>(getRedeliver()) + "</redeliver>";
+      if (!isVolatileDefault())
+         ret += offset + " <isVolatile>" + Global::getBoolAsString(isVolatile()) + "</isVolatile>";
+      if (isDurable())
+         ret += offset + " <isDurable/>";
+      if (!isForceUpdateDefault())
+         ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
+      if (isReadonly())
+         ret += offset + " <readonly/>";
+
+      RouteVector::iterator routeIter = routeNodeList_.begin();
+      ret += offset + " <route>";
+      while (routeIter != routeNodeList_.end()) {
+         ret += (*routeIter).toXml(extraOffset1);
+         routeIter++;
+      }
+      ret += offset + " </route>";
+      ret += offset + "</qos>";
+
+      if (ret.length() < 16) return "";
+
+      return ret;
+   }
+
+
+   void MsgQosData::setTopicProperty(const TopicProperty& prop)
+   {
+      if (topicProperty_ != NULL) {
+        delete topicProperty_;
+        topicProperty_ = NULL;
+      }
+      topicProperty_ = new TopicProperty(prop);
+   }
+
+   TopicProperty MsgQosData::getTopicProperty()
+   {
+      if (topicProperty_ != NULL) return *topicProperty_;
+      topicProperty_ = new TopicProperty(global_);
+      return *topicProperty_;
+   }
+
+   bool MsgQosData::hasTopicProperty() const
+   {
+      return (topicProperty_ != NULL);
    }
 
 }}}}

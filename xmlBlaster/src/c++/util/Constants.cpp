@@ -29,10 +29,12 @@ Dll_Export const char * STATE_FORWARD_ERROR = "FORWARD_ERROR";
 
 Dll_Export const char * INFO_QUEUED = "QUEUED";
 
-Dll_Export const char * RELATING_SESSION = "session";
-Dll_Export const char * RELATING_SUBJECT = "subject";
-Dll_Export const char * RELATING_UNRELATED = "unrelated";
-Dll_Export const char * RELATING_CLIENT = "client";
+Dll_Export const char * RELATING_SESSION    = "session";
+Dll_Export const char * RELATING_SUBJECT    = "subject";
+Dll_Export const char * RELATING_UNRELATED  = "unrelated";
+Dll_Export const char * RELATING_CLIENT     = "client";
+Dll_Export const char * RELATING_HISTORY    = "history";
+Dll_Export const char * RELATING_TOPICCACHE = "topic";
 
 Dll_Export const char * ONOVERFLOW_BLOCK = "block";
 Dll_Export const char * ONOVERFLOW_DEADLETTER = "deadLetter";
@@ -60,6 +62,14 @@ Dll_Export const char * REGEX = "REGEX";
 Dll_Export const char * IOR     = "IOR";
 Dll_Export const char * EMAIL   = "EMAIL";
 Dll_Export const char * XML_RPC = "XML-RPC";
+
+Dll_Export const char * OFFSET  = "   ";
+Dll_Export const char * INDENT  = "   ";
+
+Dll_Export const Timestamp THOUSAND = 1000;
+Dll_Export const Timestamp MILLION  = 1000 * THOUSAND;
+Dll_Export const Timestamp BILLION  = 1000 * MILLION;
+
 
 /*
 const int getPriority(string prio, int defaultPriority)

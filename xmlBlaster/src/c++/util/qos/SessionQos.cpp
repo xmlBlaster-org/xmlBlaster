@@ -6,7 +6,6 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/SessionQos.h>
-// #include <util/XmlBlasterException>
 #include <stdlib.h>
 #include <boost/lexical_cast.hpp>
 #include <util/StringStripper.h>
@@ -21,7 +20,8 @@ using boost::lexical_cast;
 
 /*---------------------------- SessionQosData --------------------------------*/
 
-SessionQosData::SessionQosData(Global& global) : global_(global)
+SessionQosData::SessionQosData(Global& global, const string& absoluteName="")
+    : global_(global)
 {
    timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000ll);
    maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
@@ -44,6 +44,7 @@ SessionQosData::SessionQosData(Global& global) : global_(global)
 
    string name = global_.getProperty().getStringProperty("session.name", "");
    if (name != "") setAbsoluteName(name);
+   if (absoluteName != "") setAbsoluteName(absoluteName);
 }
 
 SessionQosData::SessionQosData(const SessionQosData& data) : global_(data.global_)

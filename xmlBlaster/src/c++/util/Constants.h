@@ -8,7 +8,7 @@ Comment:   Holding some constants
 #ifndef _UTIL_CONSTANTS_H
 #define _UTIL_CONSTANTS_H
 
-#include <util/XmlBCfg.h>
+#include <util/xmlBlasterDef.h>
 #include <string>
 
 using namespace std;
@@ -71,32 +71,32 @@ namespace org { namespace xmlBlaster {
     */
    extern Dll_Export long XMLBLASTER_OID_ROOT[];
 
-   enum MessagePriority {
+//   enum MessagePriority {
       /**
        * The minimum priority of a message (0).
        */
-      MIN_PRIORITY = 0,
+//      MIN_PRIORITY = 0,
 
       /**
        * The lower priority of a message (2).
        */
-      LOW_PRIORITY = 3,
+//      LOW_PRIORITY = 3,
 
       /**
        * The default priority of a message (5).
        */
-      NORM_PRIORITY = 5,
+//      NORM_PRIORITY = 5,
 
       /**
        * The higher priority of a message (7).
        */
-      HIGH_PRIORITY = 7,
+//      HIGH_PRIORITY = 7,
 
       /**
        * The maximum priority of a message (9).
        */
-      MAX_PRIORITY = 9
-   };
+//      MAX_PRIORITY = 9
+//   };
 
 
    /**
@@ -136,6 +136,10 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * RELATING_UNRELATED;
    /** Type of a message queue  on client side */
    extern Dll_Export const char * RELATING_CLIENT;
+   /** Type of a history message queue containing references on messages */
+   extern Dll_Export const char * RELATING_HISTORY;
+   /** Message cache */
+   extern Dll_Export const char * RELATING_TOPICCACHE;
 
    /** message queue onOverflow handling, default is blocking until queue takes messages again */
    extern Dll_Export const char * ONOVERFLOW_BLOCK;
@@ -177,6 +181,15 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * IOR;
    extern Dll_Export const char * EMAIL;
    extern Dll_Export const char * XML_RPC;
+
+   extern Dll_Export const char * OFFSET;
+   extern Dll_Export const char * INDENT;
+
+   extern Dll_Export const char * INDENT;
+
+   extern Dll_Export const Timestamp THOUSAND;
+   extern Dll_Export const Timestamp MILLION;
+   extern Dll_Export const Timestamp BILLION;
 
 //};
 

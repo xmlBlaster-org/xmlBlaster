@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.7 2002/12/16 14:26:55 laghi Exp $
+Version:   $Id: Global.h,v 1.8 2002/12/19 12:12:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -128,6 +128,11 @@ class Dll_Export HappyCompilerFriend
        DeliveryManager& getDeliveryManager();
 
        Timeout& getPingTimer();
+
+       /**
+        * returns the specified value as a string.
+        */
+       static string getBoolAsString(bool val);
 
    };
 
