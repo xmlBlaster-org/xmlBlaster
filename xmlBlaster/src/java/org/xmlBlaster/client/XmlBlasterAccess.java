@@ -289,18 +289,18 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    private void initSecuritySettings(String secMechanism, String secVersion) {
       PluginLoader secPlgnMgr = glob.getClientSecurityPluginLoader();
       try {
-         secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
+         this.secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
          if (secMechanism != null)  // to avoid double logging for login()
             log.info(ME, "Loaded security plugin=" + secMechanism + " version=" + secVersion);
       }
       catch (Exception e) {
          log.error(ME, "Security plugin initialization failed. Reason: "+e.toString());
-         secPlgn = null;
+         this.secPlgn = null;
       }
    }
 
    public I_ClientPlugin getSecurityPlugin() {
-      return secPlgn;
+      return this.secPlgn;
    }
 
    /**
@@ -396,6 +396,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          }
       }
 
+      if (this.secPlgn != null) {
+         this.secPlgn = null;
+      }
+
+      this.connectQos = null;
       this.connectReturnQos = null;
       this.disconnectInProgress = false;
       this.msgErrorHandler = null;
