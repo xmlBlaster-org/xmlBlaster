@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SOCKET internal header (not included directly by clients)
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
+#ifndef XMLBLASTER_SOCKET_H
+#define XMLBLASTER_SOCKET_H
+
 #include <stdlib.h>
 #ifdef _WINDOWS
 #  include <winsock2.h>
@@ -16,6 +19,12 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <arpa/inet.h>   /* inet_addr() */
 #endif
 #include <util/msgUtil.h>
+
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
+extern "C" {
+#endif
+#endif
 
 #define  MAX_MSG_LEN 1000000000
 
@@ -66,10 +75,18 @@ extern char *encodeSocketMessage(
               size_t dataLen,
               bool debug,
               size_t *rawMsgLen);
-extern BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);
-extern BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
+Dll_Export extern BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
+Dll_Export extern BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
 extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
 extern void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
-extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
+Dll_Export extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
 extern QosArr *parseQosArr(size_t dataLen, char *data);
+
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP
+} /* extern "C" */
+#endif
+#endif
+
+#endif /* XMLBLASTER_SOCKET_H */
 
