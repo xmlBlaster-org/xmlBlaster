@@ -92,7 +92,7 @@ protected:
 
 public:
 
-   TestSuite(int args, const char * const argv[], const std::string& name, bool doEmbeddedServerCheck="true") 
+   TestSuite(int args, const char * const argv[], const std::string& name, bool doEmbeddedServerCheck=true) 
       : ME(name), 
         applName_(ME), 
         global_(org::xmlBlaster::util::Global::getInstance().initialize(args, argv)), 
