@@ -435,7 +435,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
             }
             
             if (this.clientProperties != null/* && this.clientProperties.size() > 0*/) {
-               newOne.clientProperties = (Map)this.clientProperties;
+               newOne.clientProperties = (HashMap)((HashMap)this.clientProperties).clone();
             }
          }
       }
