@@ -1,5 +1,17 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for xxx -> see cvs main branch
+==============================
+
+ o Fixed telnet access bug which was introduced in 0.902
+
+ o C client library
+   - Bugfix: hostname copy from command line
+   - Added property dump
+
+ o C++ client library
+   - Bugfix: Client side Address was hold twice (in ConnectQos and in ClientQueueProperty)
+     and was not dumped with toXml()
 
 Changes for 0.902 [2004-05-11]
 ==============================
