@@ -107,7 +107,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * <p />
     * @param cmd "/node/heron/?clientList"
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
-    * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
+    * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
    public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)

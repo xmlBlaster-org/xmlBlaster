@@ -104,7 +104,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
     * @param sessionId Is null if not logged in
     * @param cmd "/node/heron/msg/HelloMsgOid/?content"
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
-    * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
+    * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
    public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
