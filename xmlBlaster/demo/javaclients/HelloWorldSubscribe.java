@@ -164,7 +164,12 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println(updateKey.toXml());
       System.out.println("");
       System.out.println("<content>");
-      System.out.println(new String(content));
+      if (content.length > 100) {
+         System.out.println("  <length>"+content.length+"</length>");
+      }
+      else {
+         System.out.println(new String(content));
+      }
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");
