@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.transaction' type='NEW' prio='MEDIUM' status="OPEN">
+   <topic>XmlBlaster supports transactions built on the CORBA OTS/JTS service</topic>
+   <description>
+      <![CDATA[
+      <strong>This is a collection of thoughts about MOM Transactions from our mailing list</strong>
+
+      <p />
+      General transaction ability of xmlBlaster
+      <ul>
+         <li>2 phase commit</li>
+         <li>long transactions</li>
+         <li>commit, rollback, recovery etc mechanisms</li>
+         <li>nested transactions (to complicated to use for everyday problems?)</li>
+      </ul>
+ 
+      XA-Support 
+      <br />
+      How to become an XA-ResourceManager?
+      <br />
+      Find several transaction monitors/managers with XA-Support to test with.
+  
+      <p />
+      OTS-support<br />
+      How to become a transactional object?
+
+      <p />
+      Compare transaction functionality with other MOM
+      <ul>
+         <li>Transactional queues (IBM's MQSeries, BEA's MessageQ)</li>
+         <li>Transactional publish and subscribe (Tuxedos EventBroker)</li>
+         <li>Transactional Conversations</li>
+      </ul>
+
+      <p />
+      Perhaps we should implement a little TP-Monitor
+      to test our implementation (in fact we need a tool
+      to load balance multiple xmlBlaster servers).
+
+      <p />
+      MOM transactions span across companies or the internet.
+      So we need to be controllable by external TP monitors.
+
+      <p />
+      Maybe MOM will loosely couple together flat transactions from different
+      locations by providing the durable queue part 'D' of the 'ACID'.
+      ]]>
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 05 02</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
