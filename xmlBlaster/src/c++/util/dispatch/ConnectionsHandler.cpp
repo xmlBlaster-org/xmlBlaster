@@ -145,11 +145,11 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
 {
    Lock lock(connectMutex_);
-   if (log_.call()) log_.call(ME, "disconnect");
+   if (log_.call()) log_.call(ME, org::xmlBlaster::util::MethodName::DISCONNECT);
    if (log_.dump()) log_.dump(ME, string("::disconnect, the qos is: ") + qos.toXml());
 
-   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "disconnect");
-   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "disconnect");
+   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, org::xmlBlaster::util::MethodName::DISCONNECT);
+   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, org::xmlBlaster::util::MethodName::DISCONNECT);
    if (status_ == DEAD) {
       log_.warn(ME, "already disconnected");
       return false;
@@ -197,15 +197,15 @@ string ConnectionsHandler::ping(const string& qos)
 
 SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
-   if (log_.call()) log_.call(ME, "subscribe");
+   if (log_.call()) log_.call(ME, MethodName::SUBSCRIBE);
    if (log_.dump()) log_.dump(ME, string("::subscribe, the key is: ") + key.toXml());
    if (log_.dump()) log_.dump(ME, string("::subscribe, the qos is: ") + qos.toXml());
 
 //   Lock lock(connectionMutex_);
 
-   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "subscribe");
-   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "subscribe");
-   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "subscribe");
+   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, MethodName::SUBSCRIBE);
+   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, MethodName::SUBSCRIBE);
+   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, MethodName::SUBSCRIBE);
    try {
       SubscribeReturnQos ret = connection_->subscribe(key, qos);
       return ret;
@@ -238,12 +238,12 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
 vector<UnSubscribeReturnQos> 
    ConnectionsHandler::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-   if (log_.call()) log_.call(ME, "unSubscribe");
+   if (log_.call()) log_.call(ME, org::xmlBlaster::util::MethodName::UNSUBSCRIBE);
    if (log_.dump()) log_.dump(ME, string("::unSubscribe, the key is: ") + key.toXml());
    if (log_.dump()) log_.dump(ME, string("::unSubscribe, the qos is: ") + qos.toXml());
-   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "unSubscribe");
-   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "unSubscribe");
-   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "unSubscribe");
+   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, org::xmlBlaster::util::MethodName::UNSUBSCRIBE);
+   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, org::xmlBlaster::util::MethodName::UNSUBSCRIBE);
+   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, org::xmlBlaster::util::MethodName::UNSUBSCRIBE);
    try {
       vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
       return ret;
@@ -257,12 +257,12 @@ vector<UnSubscribeReturnQos>
 
 PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 {
-   if (log_.call()) log_.call(ME, "publish");
+   if (log_.call()) log_.call(ME, org::xmlBlaster::util::MethodName::PUBLISH);
    if (log_.dump()) log_.dump(ME, string("::publish, the msgUnit is: ") + msgUnit.toXml());
    Lock lock(publishMutex_);
-   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publish");
+   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, org::xmlBlaster::util::MethodName::PUBLISH);
    if (status_ == POLLING) return queuePublish(msgUnit);
-   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "publish");
+   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, org::xmlBlaster::util::MethodName::PUBLISH);
    try {
       // fill in the sender absolute name
       if (connectReturnQos_) {
@@ -351,13 +351,13 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(const vector<MessageUnit
 
 vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const EraseQos& qos)
 {
-   if (log_.call()) log_.call(ME, "erase");
+   if (log_.call()) log_.call(ME, org::xmlBlaster::util::MethodName::ERASE);
    if (log_.dump()) log_.dump(ME, string("::erase, the key is: ") + key.toXml());
    if (log_.dump()) log_.dump(ME, string("::erase, the qos is: ") + qos.toXml());
 
-   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "erase");
-   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "erase");
-   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "erase");
+   if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, org::xmlBlaster::util::MethodName::ERASE);
+   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, org::xmlBlaster::util::MethodName::ERASE);
+   if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, org::xmlBlaster::util::MethodName::ERASE);
 
    try {
       return connection_->erase(key, qos);
@@ -497,7 +497,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       log_.info(ME, "created a client queue");
-      queue_ = QueueFactory::getFactory(global_).createQueue(connectQos_->getClientQueueProperty());
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
@@ -520,7 +520,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 
    if (!queue_) {
       log_.info(ME, "::queueConnect: created a client queue");
-      queue_ = QueueFactory::getFactory(global_).createQueue(connectQos_->getClientQueueProperty());
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
       log_.trace(ME, string("queueConnect: entry '") + connectQos_->getSessionQos().getAbsoluteName() + "' has been queued");
