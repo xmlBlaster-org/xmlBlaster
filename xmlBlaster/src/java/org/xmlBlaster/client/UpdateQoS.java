@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.5 1999/12/10 09:19:53 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.6 1999/12/20 08:52:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -40,7 +40,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Access sender name. 
+    * Access sender name.
     * @return loginName of sender
     */
    public String getSender()
@@ -92,7 +92,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          inSender = false;
          sender = character.toString().trim();
          if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
-         character = new StringBuffer();
+         character.setLength(0);
          return;
       }
    }
