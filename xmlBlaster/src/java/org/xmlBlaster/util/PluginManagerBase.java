@@ -3,7 +3,7 @@ Name:      PluginManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Baseclass to load plugins.
-Version:   $Id: PluginManagerBase.java,v 1.15 2002/07/21 13:39:50 ruff Exp $
+Version:   $Id: PluginManagerBase.java,v 1.16 2002/08/23 21:34:45 ruff Exp $
 Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -22,7 +22,9 @@ import java.net.URL;
  * <p />
  * A typical syntax in the xmlBlaster.properties file is:
  * <pre>
- *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20
+ *   MimeSubscribePlugin[ContentLenFilter][1.0]=\
+ *       org.xmlBlaster.engine.mime.demo.ContentLenFilter,\
+ *       DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20
  * </pre>
  * @author W. Kleinertz (wkl) H. Goetzger
  * @version 1.0
@@ -40,7 +42,7 @@ abstract public class PluginManagerBase {
    }
 
    /**
-    * Return a specific plugin.
+    * Return a specific plugin, if one is loaded already it is taken from cache. 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
@@ -170,42 +172,21 @@ abstract public class PluginManagerBase {
       String pluginName = pluginNameAndParam[0];
       System.arraycopy(pluginNameAndParam,1,param,0,pluginNameAndParam.length-1);
 
-      I_Plugin manager = null;
+      I_Plugin plugin = null;
       try {
          ClassLoaderFactory factory = glob.getClassLoaderFactory();
          if (factory != null) {
             if (log.TRACE) log.trace(ME, "useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
-            XmlBlasterClassLoader ucl = factory.getXmlBlasterClassLoader(this, pluginName);
-            manager = (I_Plugin)ucl.loadClass(pluginName).newInstance();
 
-            if (log.TRACE) log.trace(ME, "Found I_Plugin '" + pluginName + "'");
-            if (log.TRACE) {
-               URL[] callerURL = ucl.getURLs();
-               log.trace(ME, "ClassLoaderClassPath: BEGIN");
-                      for (int ii = 0; ii < callerURL.length; ii++)
-                      log.trace(ME, "from Loader " + ii +": " + callerURL[ii].toString() );
-               log.trace(ME, "ClassLoaderClassPath: END");
-            }
+            XmlBlasterClassLoader myLoader = factory.getXmlBlasterClassLoader(this, pluginName);
+            if (log.TRACE) log.trace(ME, "Found " + myLoader.getURLs().length + " plugin specific jar files for '" + pluginName + "' preferenced by xmlBlaster classLoader");
 
-            // who loaded plugin?
-            if (log.TRACE) log.trace(ME, "pluginName '" + pluginName + "' loaded by " + factory.which(manager, pluginName) );
-            if (log.TRACE) {
-               log.trace(ME, "listClassPath: BEGIN after instanciation of manager");
-               glob.getClassLoaderFactory().listClassPath(manager);
-               log.trace(ME, "listClassPath: END");
-            }
-
-            if (log.TRACE) {
-               URL[] callerURL = ucl.getURLs();
-               log.trace(ME, "ClassLoaderClassPath: BEGIN after manager");
-                      for (int ii = 0; ii < callerURL.length; ii++)
-                      log.trace(ME, "from Loader " + ii +": " + callerURL[ii].toString() );
-               log.trace(ME, "ClassLoaderClassPath: END");
-            }
-         }
+            plugin = (I_Plugin)myLoader.loadClass(pluginName).newInstance();
+            if (log.TRACE) log.trace(ME, "Found I_Plugin '" + pluginName + "', loaded by XmlBlasterClassLoader");
+          }
          else { // Use JVM default class loader:
            Class cl = java.lang.Class.forName(pluginName);
-           manager = (I_Plugin)cl.newInstance();
+           plugin = (I_Plugin)cl.newInstance();
          }
       }
       catch (IllegalAccessException e) {
@@ -223,17 +204,17 @@ abstract public class PluginManagerBase {
       }
 
       // Initialize the plugin
-      if (manager != null) {
+      if (plugin != null) {
          try {
-            manager.init(glob, param);
+            plugin.init(glob, param);
             log.info(ME, "Plugin '" + pluginName + "' successfully initialized.");
          } catch (XmlBlasterException e) {
-            //log.error(ME, "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
-            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
+            //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.reason);
+            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.reason);
          }
       }
-      managers.put(pluginName, manager);
+      managers.put(pluginName, plugin);
 
-      return manager;
+      return plugin;
    }
 }
