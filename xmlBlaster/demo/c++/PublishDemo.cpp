@@ -83,8 +83,8 @@ void PublishDemo::publish(const string& oid, const string&, const string& conten
 
 static void usage(Log& log) 
 {
-   log.info("PublishDemo", "usage: all typical xmlBlaster command line arguments");
-   log.info("PublishDemo", "plus the following additional command line arguments:");
+   log.info("PublishDemo usage:", Global::usage());
+   log.info("PublishDemo", "Plus the following additional command line arguments:");
    log.info("PublishDemo", " -h (for help: this command)");
    log.info("PublishDemo", " -numOfRuns (int): the number of publishes which have to be done");
    log.info("PublishDemo", " -publishDelay (ms): the delay to wait between each publish. If negative (default) it does not wait");
@@ -107,11 +107,8 @@ int main(int args, char ** argv)
       glob.initialize(args, argv);
       Log& log  = glob.getLog("demo");
 
-      for (int i=0; i < args; i++) {
-         string help = argv[i];
-         if ( help == string("-h") || help == string("-help") || help == string("--help") || help == string("-?") ) {
-            usage(log);
-         }
+      if (glob.wantsHelp()) {
+         usage(log);
       }
 
       int numOfRuns     = glob.getProperty().getIntProperty("numOfRuns", 10);
@@ -147,9 +144,9 @@ int main(int args, char ** argv)
       cout << e.toXml() << endl;
    }
 
-	try {
-	   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
-	}
+        try {
+           org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+        }
    catch (...) {
       cout << "unknown exception occured in fini()" << endl;
       XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");

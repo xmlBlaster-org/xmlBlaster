@@ -152,7 +152,7 @@ public:
    /**
     * Callbacks from xmlBlaster arrive here. 
     */
-   string update(const string& /*sessionId*/, UpdateKey& updateKey, void* /*content*/,
+   string update(const string& /*sessionId*/, UpdateKey& updateKey, const unsigned char* /*content*/,
                  long /*contentSize*/, UpdateQos& updateQos)
    {
       log_.info(ME, "update: key: " + updateKey.toXml());

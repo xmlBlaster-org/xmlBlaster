@@ -53,7 +53,7 @@ public:
       log_.trace(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
    }
 
-   string update(const string& /*sessionId*/, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string& /*sessionId*/, UpdateKey& updateKey, const unsigned char *content, long contentSize, UpdateQos& updateQos)
    {
       log_.info(ME, "update invoked");
       //subscribe("anotherDummy");  -> subscribe in update does not work with single threaded 'mico'
@@ -82,11 +82,18 @@ int main(int args, char ** argv)
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
    TimestampFactory& tsFactory = TimestampFactory::getInstance();
    Timestamp startStamp = tsFactory.getTimestamp();
-   std::cout << " end time: " << tsFactory.toXml(startStamp, "", true) << std::endl;
+   std::cout << " start time: " << tsFactory.toXml(startStamp, "", true) << std::endl;
 
    try {
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
+
+      if (glob.wantsHelp()) {
+         glob.getLog().info("SubscribeDemo", Global::usage());
+         glob.getLog().info("SubscribeDemo", "Example: SubscribeDemo -trace true\n");
+         org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+         return 1;
+      }
 
       SubscribeDemo demo(glob);
       demo.connect();
