@@ -107,6 +107,10 @@ void SocketDriver::freeResources(bool deleteConnection)
    if (deleteConnection && connection_ != 0) {
       freeXmlBlasterAccessUnparsed(connection_);
       connection_ = 0;
+      if (argsStructP_ != 0) {
+         global_.freeArgs(*argsStructP_);
+         argsStructP_ = 0;
+      }
    }
 }
 
@@ -174,6 +178,7 @@ void SocketDriver::freeResources(bool deleteConnection)
 SocketDriver::SocketDriver(const SocketDriver& socketDriver)
    : mutex_(socketDriver.mutex_),
      ME("SocketDriver"), 
+     argsStructP_(0),
      global_(socketDriver.global_), 
      log_(socketDriver.log_),
      statusQosFactory_(socketDriver.global_), 
@@ -183,6 +188,8 @@ SocketDriver::SocketDriver(const SocketDriver& socketDriver)
 {
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
+   argsStructP_ = new ArgsStruct_T;
+   memset(argsStructP_, '\0', sizeof(ArgsStruct_T));
    if (log_.call()) log_.call("SocketDriver", string("Constructor"));
 }
 
@@ -198,6 +205,7 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
      instanceName_(instanceName),
      connection_(NULL),
      ME(string("SocketDriver-") + instanceName), 
+     argsStructP_(0),
      global_(global), 
      log_(global.getLog("org.xmlBlaster.client.protocol.socket")),
      statusQosFactory_(global),
@@ -206,10 +214,11 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
      callbackClient_(0)
 {
    if (log_.call()) log_.call("SocketDriver", string("getInstance for ") + instanceName);
-   int argc = global_.getArgs();
-   const char * const*argv = global_.getArgc();
+
+   argsStructP_ = new ArgsStruct_T;
+   global_.fillArgs(*argsStructP_);
    try {
-      connection_ = getXmlBlasterAccessUnparsed(argc, argv);
+      connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
       connection_->log = myLogger;    // Register our own logging function
       connection_->logUserP = this;   // Pass ourself to myLogger()

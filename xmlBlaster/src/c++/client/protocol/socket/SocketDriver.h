@@ -18,11 +18,17 @@ Comment:   The client driver for the socket protocol
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
 #include <util/key/MsgKeyFactory.h>
+//#include <util/Global.h>    // For org::xmlBlaster::util::ArgsStruct_T argsStruct_
 /* Don't include this in this header to avoid dependency: */
 //#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
 
 struct XmlBlasterAccessUnparsed;
 struct XmlBlasterException;
+namespace org {
+ namespace xmlBlaster {
+   namespace util {
+    struct ArgsStruct;
+}}}
 
 namespace org {
  namespace xmlBlaster {
@@ -41,6 +47,7 @@ namespace org {
       std::string instanceName_;
       struct ::XmlBlasterAccessUnparsed* connection_;
       std::string ME;
+      struct org::xmlBlaster::util::ArgsStruct *argsStructP_;
       org::xmlBlaster::util::Global& global_;
       org::xmlBlaster::util::I_Log& log_;
       org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
