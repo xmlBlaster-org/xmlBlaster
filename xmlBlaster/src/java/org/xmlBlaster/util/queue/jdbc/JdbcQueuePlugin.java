@@ -66,7 +66,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.property = null;
             setProperties(userData);
             this.glob = this.property.getGlobal();
-            this.log = this.glob.getLog("queue");
+            this.log = this.glob.getLog("jdbc");
             this.ME = this.getClass().getName() + "-" + uniqueQueueId;
             this.storageId = uniqueQueueId;
 

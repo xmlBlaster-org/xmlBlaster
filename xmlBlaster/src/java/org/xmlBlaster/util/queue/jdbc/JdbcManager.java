@@ -94,7 +94,7 @@ public class JdbcManager implements I_ConnectionListener {
       throws XmlBlasterException {
       this.pool = pool;
       this.glob = this.pool.getGlobal();
-      this.log = glob.getLog("queue");
+      this.log = glob.getLog("jdbc");
       if (this.log.CALL) this.log.call(ME, "Constructor called");
 
       this.factory = factory;

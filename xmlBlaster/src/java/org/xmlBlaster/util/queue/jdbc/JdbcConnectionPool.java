@@ -204,7 +204,7 @@ public class JdbcConnectionPool implements I_Timeout {
    public synchronized void initialize(Global glob, String prefix)
       throws ClassNotFoundException, SQLException, XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("queue");
+      this.log = this.glob.getLog("jdbc");
       if (this.log.CALL) this.log.call(ME, "initialize. Used Property Prefix: " + prefix);
 
       if (this.initialized) return;
