@@ -3,6 +3,25 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o Fixed to deliver correct queue size in UpdateQos
+
+ o Server side SOCKET plugin: Added support to choose between UDP or TCP
+   for publishOneway() and updateOneway()
+   Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
+
+ o Server side SOCKET plugin: Added support for multiple SOCKET plugin instances
+   with separate configurations. 
+
+ o Configuration attributes in xmlBlasterPlugin.xml are now used as
+   default settings for all protocol plugins
+
+ o Added separate statistic counter for updateOneway
+
+ o Added updateOneway flag to SubscribeQos to control
+   callback delivery for this subscription
+
+ o Fixed XML dump of properties (jutils.jar)
+
  o C client: Added support for UDP based publishOneway() and updateOneway()
    Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
 
