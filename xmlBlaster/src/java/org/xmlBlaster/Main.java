@@ -152,6 +152,13 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             System.exit(0);
       }
 
+      long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
+      if (sleepOnStartup > 0L) {
+        log.info(ME, "Going to sleep as configured xmlBlaster/sleepOnStartup=" + sleepOnStartup);
+        try { Thread.sleep(sleepOnStartup);
+        } catch(InterruptedException e) { log.warn(ME, "Caught exception during xmlBlaster/sleepOnStartup=" + sleepOnStartup + ": " + e.toString()); }
+      }
+
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
          runlevelManager = glob.getRunlevelManager();
@@ -502,12 +509,13 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, glob.usage());
       log.plain(ME, "");
       log.plain(ME, "Other stuff:");
-      log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
-      log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
-      log.plain(ME, "   -admin.remoteconsole.port If port > 1000 a server is started which is available with telnet [2702].");
-      log.plain(ME, "   -xmlBlaster.isEmbedded    If set to true no System.exit() is possible [false].");
-      log.plain(ME, "   -xmlBlaster.activateJmx   Set to true to enable JMX access [false].");
-      log.plain(ME, "   -wipeOutJdbcDB true Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
+      log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
+      log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background.");
+      log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning.");
+      log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702].");
+      log.plain(ME, "   -xmlBlaster.isEmbedded     If set to true no System.exit() is possible [false].");
+      log.plain(ME, "   -xmlBlaster.activateJmx    Set to true to enable JMX access [false].");
+      log.plain(ME, "   -wipeOutJdbcDB true        Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
       log.plain(ME, "   java org.xmlBlaster.Main -cluster false");
