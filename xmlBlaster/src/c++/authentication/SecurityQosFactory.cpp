@@ -6,7 +6,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 ------------------------------------------------------------------------------*/
 #include <authentication/SecurityQosFactory.h>
 #include <string>
-
+#include <util/StringTrim.h>
 #include <util/PlatformUtils.hpp>
 
 namespace org { namespace xmlBlaster { namespace authentication {
@@ -100,21 +100,14 @@ void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& at
    log_.call(ME, "endElement");
    if (SaxHandlerBase::caseCompare(name, "user")) {
       inUser_ = false;
-      char *help = charTrimmer_.trim(character_.c_str());
-      securityQos_.setUserId(string(help));
-      delete help;
+      securityQos_.setUserId(StringTrim::trim(character_));
       character_.erase();
       return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "passwd")) {
       inPasswd_ = false;
-      char *help = charTrimmer_.trim(character_.c_str());
-      if (help != NULL) {
-         securityQos_.setCredential(string(help));
-         delete help;
-      }
-      else securityQos_.setCredential("");
+      securityQos_.setCredential(StringTrim::trim(character_));
       character_.erase();
       return;
    }
