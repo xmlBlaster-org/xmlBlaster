@@ -52,6 +52,7 @@ namespace org {
     * If it is zero '0', it stops the singleton. if it is negative it returns -1.
     */
 //   friend int killInstance(const string& instanceName);
+   friend class CorbaDriverFactory;
 
    private:
       static DriverMap& getDrivers();
