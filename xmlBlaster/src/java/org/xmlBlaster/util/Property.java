@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.12 2000/05/09 14:57:03 ruff Exp $
+Version:   $Id: Property.java,v 1.13 2000/05/19 20:36:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -403,6 +403,7 @@ public class Property
             String value = "true";
             if ((ii+1) < args.length) {
                String arg2 = args[ii+1];
+               // Problem: How can we specify for example a negative number? "-number -200"
                if (!arg2.startsWith("-") && !arg2.startsWith("+")) { // parameter with a given value?
                   value = arg2;
                   ii++;
