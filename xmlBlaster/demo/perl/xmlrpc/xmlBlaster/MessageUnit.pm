@@ -1,13 +1,13 @@
-# MessageUnit.pm
+# MsgUnit.pm
 #
 # 04/07/02 17:17 mad@ktaland.com
-#	upgrade
+#       upgrade
 # 11/02/02 15:04 mad@ktaland.com
 #
-package xmlBlaster::MessageUnit ;
+package xmlBlaster::MsgUnit ;
 
-use Data::Dumper ;	# for sub dump()
-use MIME::Base64;	# to decode xml-rpc data type : Frontier::RPC2::Base64
+use Data::Dumper ;      # for sub dump()
+use MIME::Base64;       # to decode xml-rpc data type : Frontier::RPC2::Base64
 
 use strict ;
 
@@ -18,112 +18,112 @@ use strict ;
 #
 sub new {
 
-	my $class = shift;
-	# init from hash
-	#my $self = ($#_ == 0) ? { %{ (shift) } } : { @_ };
-	# init from ref
-	my $data = shift ;
-	my $self = {} ;
-	bless( $self, $class );
+        my $class = shift;
+        # init from hash
+        #my $self = ($#_ == 0) ? { %{ (shift) } } : { @_ };
+        # init from ref
+        my $data = shift ;
+        my $self = {} ;
+        bless( $self, $class );
 
-	$self->{'key_xml'} = '' ;
-	$self->{'qos_xml'} = '' ;
-	$self->{'content'} = '' ;
-	$self->{'frontier_content'} = undef ;
-	$self->{'frontier_data'} = $data ;
+        $self->{'key_xml'} = '' ;
+        $self->{'qos_xml'} = '' ;
+        $self->{'content'} = '' ;
+        $self->{'frontier_content'} = undef ;
+        $self->{'frontier_data'} = $data ;
 
-	###print STDERR '='x40,"\n", Dumper($data) , '='x40, "\n";
+        ###print STDERR '='x40,"\n", Dumper($data) , '='x40, "\n";
 
-	if( defined $data && ref($data) eq 'ARRAY' ){
+        if( defined $data && ref($data) eq 'ARRAY' ){
 
-		#
-		# $data should be a Frontier ( Frontier-RPC ) returned message.
-		#
+                #
+                # $data should be a Frontier ( Frontier-RPC ) returned message.
+                #
 
-		my $aref = $data ;
-		$self->{'key_xml'} = $aref->[0] if( ref($aref->[0]) eq '' );
-		my $frontier_content = $aref->[1] ;
-		$self->{'qos_xml'} = $aref->[2] if( ref($aref->[2]) eq '' );
+                my $aref = $data ;
+                $self->{'key_xml'} = $aref->[0] if( ref($aref->[0]) eq '' );
+                my $frontier_content = $aref->[1] ;
+                $self->{'qos_xml'} = $aref->[2] if( ref($aref->[2]) eq '' );
 
-		#
-		# Frontier Type ( Frontier-RPC-0.07b3 )
-		#	Frontier::RPC2::Boolean
-		#	Frontier::RPC2::DateTime::ISO8601
-		#	Frontier::RPC2::Base64
-		#
+                #
+                # Frontier Type ( Frontier-RPC-0.07b3 )
+                #       Frontier::RPC2::Boolean
+                #       Frontier::RPC2::DateTime::ISO8601
+                #       Frontier::RPC2::Base64
+                #
 
-		if( ref( $frontier_content ) eq 'Frontier::RPC2::Base64' ){
+                if( ref( $frontier_content ) eq 'Frontier::RPC2::Base64' ){
 
-			my $base64encoded = $frontier_content->value() ;
-			$self->{'content'} = decode_base64( $base64encoded );
-			$self->{'frontier_content'} = $frontier_content ;
+                        my $base64encoded = $frontier_content->value() ;
+                        $self->{'content'} = decode_base64( $base64encoded );
+                        $self->{'frontier_content'} = $frontier_content ;
 
-		}elsif( ref( $frontier_content ) eq 'Frontier::RPC2::DateTime::ISO8601' ){
+                }elsif( ref( $frontier_content ) eq 'Frontier::RPC2::DateTime::ISO8601' ){
 
-			# never tested !!!
-			# TODO : is the right way ???!!!
+                        # never tested !!!
+                        # TODO : is the right way ???!!!
 
-			$self->{'content'} = $frontier_content->value() ;
-			$self->{'frontier_content'} = $frontier_content ;
+                        $self->{'content'} = $frontier_content->value() ;
+                        $self->{'frontier_content'} = $frontier_content ;
 
-		}elsif( ref( $frontier_content ) eq 'Frontier::RPC2::Boolean' ){
+                }elsif( ref( $frontier_content ) eq 'Frontier::RPC2::Boolean' ){
 
-			# never tested !!!
-			# TODO : is the right way ???!!!
+                        # never tested !!!
+                        # TODO : is the right way ???!!!
 
-			$self->{'content'} = $frontier_content->value() ;
-			$self->{'frontier_content'} = $frontier_content ;
+                        $self->{'content'} = $frontier_content->value() ;
+                        $self->{'frontier_content'} = $frontier_content ;
 
-		}else{
-			print STDERR "ERROR: Unknow that Frontier Type ", ref($frontier_content),"\n";
-		}
+                }else{
+                        print STDERR "ERROR: Unknow that Frontier Type ", ref($frontier_content),"\n";
+                }
 
-	}
+        }
 
-	return $self ;
+        return $self ;
 
 }#new
 
 ###################
 
 sub keyOid {
-	my $self = shift ;
+        my $self = shift ;
 
-	my $keyoid = $self->{'key_xml'} ;
-	$keyoid =~ /<key (.*|[ ])oid=['"](.*?)['"]/mo ;
-	$keyoid = $2 ;
+        my $keyoid = $self->{'key_xml'} ;
+        $keyoid =~ /<key (.*|[ ])oid=['"](.*?)['"]/mo ;
+        $keyoid = $2 ;
 
-	return $keyoid ;
+        return $keyoid ;
 }
 sub xmlKey {
-	my $self = shift ;
-	return $self->{'key_xml'} ;
+        my $self = shift ;
+        return $self->{'key_xml'} ;
 }
 sub xmlQos {
-	my $self = shift ;
-	return $self->{'qos_xml'} ;
+        my $self = shift ;
+        return $self->{'qos_xml'} ;
 }
 sub content {
-	my $self = shift ;
-	return $self->{'content'} ;
+        my $self = shift ;
+        return $self->{'content'} ;
 }
 
 #############
 
 sub dump {
-	my( $self, $debug )=@_;
+        my( $self, $debug )=@_;
 
-	my $str = '' ;
-	$str .= ('='x40)."\n" ;
-	$str .= "MessageUnit::dump :\n" ;
-	if( defined $debug ){
-		$str .= "Frontier data : [ ".Dumper( $self->{'frontier_data'} ). " ]\n";
-	}
-	$str .= "KeyOid : [". $self->keyOid ."]\n";
-	$str .= "Qos : [". $self->xmlQos ."]\n";
-	$str .= "Content : [". $self->content ."]\n";
-	$str .= ('='x40)."\n" ;
-	return $str ;
+        my $str = '' ;
+        $str .= ('='x40)."\n" ;
+        $str .= "MsgUnit::dump :\n" ;
+        if( defined $debug ){
+                $str .= "Frontier data : [ ".Dumper( $self->{'frontier_data'} ). " ]\n";
+        }
+        $str .= "KeyOid : [". $self->keyOid ."]\n";
+        $str .= "Qos : [". $self->xmlQos ."]\n";
+        $str .= "Content : [". $self->content ."]\n";
+        $str .= ('='x40)."\n" ;
+        return $str ;
 
 }#dump
 

@@ -9,7 +9,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -60,7 +60,7 @@ public class Latency implements I_Callback
 
          PublishKey pk = new PublishKey(glob, "Latency", "text/xml", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
 
          SubscribeKey sk = new SubscribeKey(glob, "Latency");
          SubscribeQos sq = new SubscribeQos(glob);

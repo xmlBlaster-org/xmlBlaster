@@ -19,7 +19,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -125,7 +125,7 @@ public class HelloWorld4
 
          PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          PublishReturnQos retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
@@ -133,12 +133,12 @@ public class HelloWorld4
          pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
          pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(glob, pk, "Ho".getBytes(), pq);
          retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem: " + e.toString());
+         log.error(ME, "Houston, we have a problem: " + e.getMessage());
       }
       finally {
          // Wait a second for messages to arrive before we logout
@@ -160,7 +160,7 @@ public class HelloWorld4
                try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Houston, we have a problem: " + e.toString());
+               log.error(ME, "Houston, we have a problem: " + e.getMessage());
                e.printStackTrace();
             }
             

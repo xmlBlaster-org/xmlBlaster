@@ -21,7 +21,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.awt.event.*;
 import java.awt.*;
@@ -105,12 +105,12 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
 
    protected void publishMessage(String content) {
-      xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+      try {
+         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                        "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                        "</key>";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-      log.trace(ME, "Publishing ...");
-      try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         log.trace(ME, "Publishing ...");
          xmlBlasterConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -127,7 +127,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       publishMessage("I am retrieving the connected users list (ignore this)");
       try {
          GetKey getKeyWrapper = new GetKey(glob, "__sys__UserList");
-         MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
+         MsgUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
          if (msgUnit != null) {
             for (int i=0; i < msgUnit.length; i++) {
                 appendOutput("users: " + System.getProperty("line.separator") +

@@ -1,6 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorld.java
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -22,7 +22,7 @@ public class HelloWorld
 
          con.connect(null, null);    // Login to xmlBlaster as "guest"
 
-         MessageUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
+         MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
 
          System.out.println("\nHelloWorld: xmlBlaster has currently " +
                 new String(msgs[0].getContent()) + " bytes of free memory\n");
@@ -30,7 +30,7 @@ public class HelloWorld
          con.disconnect(null);
       }
       catch (Exception e) {
-         System.err.println("We have a problem: " + e.toString());
+         System.err.println("We have a problem: " + e.getMessage());
       }
    }
 

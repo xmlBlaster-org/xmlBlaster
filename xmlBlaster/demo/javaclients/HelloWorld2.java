@@ -7,7 +7,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -28,8 +28,11 @@ public class HelloWorld2 implements I_Callback
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");
+         
+         // A similar subscription with XPATH:
+         //con.subscribe("<key oid='' queryType='XPATH'>//key[@oid='HelloWorld2']</key>", "<qos/>");
 
-         con.publish(new MessageUnit("<key oid='HelloWorld2'/>", "Hi".getBytes(),
+         con.publish(new MsgUnit("<key oid='HelloWorld2'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
          try {
@@ -42,7 +45,7 @@ public class HelloWorld2 implements I_Callback
          con.disconnect(null);
       }
       catch (Exception e) {
-         System.err.println(e.toString());
+         System.err.println(e.getMessage());
       }
    }
 

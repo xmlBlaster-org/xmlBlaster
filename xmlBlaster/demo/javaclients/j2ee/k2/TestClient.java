@@ -21,7 +21,7 @@ package javaclients.j2ee.k2;
 import org.xmlBlaster.j2ee.k2.client.*;
 import org.xmlBlaster.j2ee.k2.*;
 
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 /**
  * TestClient.java
  *
@@ -54,7 +54,7 @@ public class TestClient {
                 "<head> <title>Blodiga strider i Kongo-Kinshasa</title></head></key>";
             String qos = "<qos></qos>";
             String msg = "Meddelande";
-            con.publish( new MessageUnit(key,msg.getBytes(),qos));
+            con.publish( new MsgUnit(key,msg.getBytes(),qos));
 
             con.close();
 

@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.12 2002/11/26 12:36:22 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.13 2002/12/18 13:50:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -97,7 +97,7 @@ public class ClientSubDispatch implements I_Callback
                            "   </DispatchTest>" +
                            "</key>";
          String content = "Some content #1";
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid1 = blasterConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Publishing done, returned oid=" + publishOid1);
 
@@ -107,7 +107,7 @@ public class ClientSubDispatch implements I_Callback
          xmlKey = "<key oid='A message id' contentMime='text/xml'>\n" +
                   "</key>";
          content = "Some content #2";
-         msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid2 = blasterConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Publishing done, returned oid=" + publishOid2);
 

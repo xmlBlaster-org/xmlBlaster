@@ -3,7 +3,7 @@ Name:      ChessMover.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The demo class which moves around the chess peaces
-Version:   $Id: ChessMover.java,v 1.6 2002/11/26 12:36:33 ruff Exp $
+Version:   $Id: ChessMover.java,v 1.7 2002/12/18 13:50:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.rhino;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import java.util.Random;
 
 
@@ -57,7 +57,7 @@ public class ChessMover
       String qos = "<qos></qos>";
       String transform = "translate(" + x + "," + y + ")";
       String content = "<chess><id>" + id + "A</id><transform>" + transform + "</transform></chess>";
-      MessageUnit msg = new MessageUnit(key, content.getBytes(), qos);
+      MsgUnit msg = new MsgUnit(key, content.getBytes(), qos);
       this.connection.publish(msg);
       try {
          Thread.currentThread().sleep(this.sleepTime);

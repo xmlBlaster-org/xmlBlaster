@@ -34,7 +34,7 @@ import javax.resource.ResourceException;
 import org.xmlBlaster.j2ee.k2.client.*;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 /**
  * MessageBeanImpl.java
  *
@@ -83,7 +83,7 @@ public class JmsAdapter implements MessageDrivenBean, MessageListener{
                  // Construct Blaster Headers - howto hanlde key here?
                  String key ="<key oid=\"" + message.getJMSMessageID() +"\" contentMime=\"text/xml\"></key>";
                  String qos = "<qos></qos>";
-                 con.publish( new MessageUnit(key,msg.getBytes(),qos));
+                 con.publish( new MsgUnit(key,msg.getBytes(),qos));
                  
             } else {
                 System.err.println("Got message type I cant handle");

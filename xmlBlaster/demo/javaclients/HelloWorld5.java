@@ -13,7 +13,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
 
 
@@ -71,10 +71,10 @@ public class HelloWorld5
                      PublishKey pk = new PublishKey(glob, "HelloWorld5:ACK", "text/plain", "1.0");
                      PublishQos pq = new PublishQos(glob);
                      pq.addDestination(new Destination(updateQos.getSender()));
-                     MessageUnit msgUnit = new MessageUnit(pk.toXml(), "ACK".getBytes(), pq.toXml());
+                     MsgUnit msgUnit = new MsgUnit(glob, pk, "ACK", pq);
                      boolean oneway = false; // just for demo, you can try a variant with never blocking oneway
                      if (oneway) {
-                        MessageUnit[] arr = new MessageUnit[1];
+                        MsgUnit[] arr = new MsgUnit[1];
                         arr[0] = msgUnit;
                         receiver.publishOneway(arr);
                         log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
@@ -85,7 +85,7 @@ public class HelloWorld5
                      }
                   }
                   catch (XmlBlasterException e) {
-                     log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed: " + e.toString());
+                     log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed: " + e.getMessage());
                   }
 
                   return "";
@@ -99,13 +99,13 @@ public class HelloWorld5
          PublishKey pk = new PublishKey(glob, "HelloWorld5", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          pq.addDestination(new Destination(new SessionName(glob, receiverName)));
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          PublishReturnQos retQos = sender.publish(msgUnit);
          log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);
 
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem: " + e.toString());
+         log.error(ME, "Houston, we have a problem: " + e.getMessage());
       }
       finally {
          // Wait a second for messages to arrive before we logout

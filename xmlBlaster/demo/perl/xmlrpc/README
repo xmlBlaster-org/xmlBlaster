@@ -22,8 +22,8 @@ Howto start the Perl/XmlRpc demo:
 
       2/ if it doesn't work, look at the file xmlBlasterClient.pl
       The only 2 configuration stuff are :
-      	authentification type (plugin default is htpasswd )
-      	two valid users on xmlBlaster server (default users are guest & admin ).
+        authentification type (plugin default is htpasswd )
+        two valid users on xmlBlaster server (default users are guest & admin ).
 
  - Run another Perl demo client : messagesList.pl
 
@@ -76,17 +76,17 @@ with all allowed server-methods you can invoke.
 CHANGES :
 
 2002-07-08 cyrille@ktaland.com
-	- put xmlBlaster's perl packages in a folder
-	- all xml-rpc calls are encapsuled in a XmlBlaster package.
+        - put xmlBlaster's perl packages in a folder
+        - all xml-rpc calls are encapsuled in a XmlBlaster package.
 
 2002-02-12 cyrille@ktaland.com
 
 add demo scripts :
-	xmlBlasterClient.pl
-	messagesList.pl
+        xmlBlasterClient.pl
+        messagesList.pl
 
 and some packages to help in managing xmlBlaster stuff :
-	messageUnit.pm : manage MessageUnit
-	connectQos.pm : manage connectQos
-	Exception.pm : not xmlBlaster specific, it's my Exception like management package.
+        messageUnit.pm : manage MsgUnit
+        connectQos.pm : manage connectQos
+        Exception.pm : not xmlBlaster specific, it's my Exception like management package.
 

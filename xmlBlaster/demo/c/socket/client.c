@@ -3,7 +3,7 @@ Name:      client.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   client connects with raw socket to xmlBlaster
-Author:    "Marcel Ruff" <ruff@swand.lake.de>
+Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -o client client.c callbackServer.c -lpthread
 Compile-Win: cl /MT -D_WINDOWS client.c callbackServer.c ws2_32.lib
 Invoke:    client -socket.hostCB develop -socket.portCB 7608
@@ -150,7 +150,7 @@ void publish(char *key, char *content, int contentLen, char *qos)
  * NOTE: After this call the memory of msg is freed immediately by callbackServer.c
  *       So you need to take a copy of all msg members if needed.
  */
-void update(MessageUnit *msg)
+void update(MsgUnit *msg)
 {
    char *xml = messageUnitToXml(msg);
    if (XMLBLASTER_DEBUG) printf("client.update(): Asynchronous message update arrived:\n%s\n", xml);

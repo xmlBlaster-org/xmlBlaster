@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.15 2002/11/26 12:36:30 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.16 2002/12/18 13:50:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -12,7 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
 
@@ -80,7 +80,7 @@ public class ClientGet
                             "   </AGENT>" +
                             "</key>";
             String content = "<file><size>1024 kBytes</size><creation>1.1.2000</creation></file>";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+            MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey, content.getBytes(), "<qos></qos>");
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
@@ -100,7 +100,7 @@ public class ClientGet
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             stop.restart();
-            MessageUnit[] msgArr = null;
+            MsgUnitRaw[] msgArr = null;
             try {
                msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
@@ -129,7 +129,7 @@ public class ClientGet
                             "</AGENT>" +
                             "</key>";
             String content = "Export program started";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+            MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey, content.getBytes(), "<qos></qos>");
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
@@ -148,7 +148,7 @@ public class ClientGet
                          "   //DRIVER[@id='ProgramExecute']" +
                          "</key>";
          stop.restart();
-         MessageUnit[] msgArr = null;
+         MsgUnitRaw[] msgArr = null;
          try {
             msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {

@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.19 2002/11/26 12:36:23 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.20 2002/12/18 13:50:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -51,7 +51,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    private String senderName = "HelloWorld-Applet";
    private ConnectReturnQos conRetQos = null;
 
-   private MessageUnit msgUnit;     // a message to play with
+   private MsgUnit msgUnit;     // a message to play with
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
 
@@ -142,7 +142,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
                          "</key>";
          String senderContent = "Hello world!";
          String qos = "<qos><forceUpdate /></qos>";
-         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
+         msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
 
          doSubscribe();
       }

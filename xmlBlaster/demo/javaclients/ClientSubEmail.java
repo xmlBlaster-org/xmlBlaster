@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.16 2002/11/26 12:36:22 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.17 2002/12/18 13:50:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
                                                        
 
@@ -32,7 +32,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSubEmail -email ruff@swand.lake.de
+ *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSubEmail -email xmlBlaster@marcelruff.info
  *
  *    java javaclients.ClientSubEmail -help
  * </pre>
@@ -142,7 +142,7 @@ public class ClientSubEmail implements I_Callback
                             "   </DemoMail>\n" +
                             "</key>";
             String content = Args.getArg(args, "-email.content", "Hello world");
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+            MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
             log.info(ME, "Publishing ...");
             try {
                publishOid = blasterConnection.publish(msgUnit).getKeyOid();
@@ -207,7 +207,7 @@ public class ClientSubEmail implements I_Callback
          log.plain(ME, "\nAvailable options:");
          log.plain(ME, "   -loginName          The login name [ClientSubEmail].");
          log.plain(ME, "   -passwd             The login name [secret].");
-         log.plain(ME, "   -email              An email address to send updates [ruff@swand.lake.de].");
+         log.plain(ME, "   -email              An email address to send updates [xmlBlaster@marcelruff.info].");
          log.plain(ME, "   -email.content      The content of the email [Hello world].");
          log.plain(ME, "NOTE:");
          log.plain(ME, "   Activate the email callback plugin in xmlBlaster.properies first, for example:");

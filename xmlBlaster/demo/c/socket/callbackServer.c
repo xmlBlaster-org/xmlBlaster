@@ -3,7 +3,7 @@ Name:      callbackServer.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
-Author:    "Marcel Ruff" <ruff@swand.lake.de>
+Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
            cl /MT -DUSE_MAIN -D_WINDOWS callbackServer.c ws2_32.lib
 -----------------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ void initCallbackServer(callbackData *cbArgs)
    char msgLengthP[MSG_LEN_FIELD_LEN+1];
    char msgFlagP[MSG_FLAG_FIELD_LEN+1];
    int numRead, msgLength;
-   MessageUnit messageUnit;
+   MsgUnit messageUnit;
 
    char serverHostName[256];
    if (cbArgs->hostCB == NULL) {
@@ -184,9 +184,9 @@ void shutdownCallbackServer()
  *
  * @return A ASCII XML formatted message
  */
-char *messageUnitToXml(MessageUnit *msg)
+char *messageUnitToXml(MsgUnit *msg)
 {
-	//char content[msg->contentLength+1];
+        //char content[msg->contentLength+1];
    char *content = malloc(msg->contentLength+1);
    int len = 100 + strlen(msg->xmlKey) + msg->contentLength + strlen(msg->qos);
    char *xml = (char *)malloc(len*sizeof(char));
@@ -194,11 +194,11 @@ char *messageUnitToXml(MessageUnit *msg)
                       msg->xmlKey,
                       contentToString(content, msg), /* append \0 */
                       msg->qos);
-	free(content);
+        free(content);
    return xml;
 }
 
-char *contentToString(char *content, MessageUnit *msg)
+char *contentToString(char *content, MsgUnit *msg)
 {
    strncpy(content, msg->content, msg->contentLength);
    *(content + msg->contentLength) = 0;

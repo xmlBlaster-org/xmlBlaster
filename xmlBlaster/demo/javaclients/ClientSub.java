@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.36 2002/11/26 12:36:22 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.37 2002/12/18 13:50:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -126,7 +126,7 @@ public class ClientSub implements I_Callback
                             "   </ClientSub-AGENT>" +
                             "</key>";
             String content = "Yeahh, i'm the new content";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+            MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
             log.info(ME, "Publishing ...");
             try {
                startTime = System.currentTimeMillis();
@@ -184,7 +184,7 @@ public class ClientSub implements I_Callback
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKey   The arrived key
     * @param content     The arrived message content
-    * @param qos         Quality of Service of the MessageUnit
+    * @param qos         Quality of Service of the MsgUnit
     *
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */

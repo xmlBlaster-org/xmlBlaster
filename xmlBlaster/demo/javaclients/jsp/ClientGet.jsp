@@ -20,7 +20,7 @@
    <%@ page import = "org.xmlBlaster.client.qos.GetQos" %>
    <%@ page import = "org.xmlBlaster.util.XmlBlasterException" %>
    <%@ page import = "org.xmlBlaster.util.XmlBlasterProperty" %>
-   <%@ page import = "org.xmlBlaster.engine.helper.MessageUnit" %>
+   <%@ page import = "org.xmlBlaster.util.MsgUnit" %>
 
    <%
       XmlBlasterConnection blasterConnection = null;
@@ -44,7 +44,7 @@
             GetQos qos = new GetQos(glob); // helps us to create "<qos></qos>":
 
             try {
-               MessageUnit[] msgArr = null;
+               MsgUnit[] msgArr = null;
                msgArr = blasterConnection.get(key.toXml(), qos.toXml());
                log.info(ME, "Get done.");
                // We expect for this get() only one returned massage (msgArr.length == 1):

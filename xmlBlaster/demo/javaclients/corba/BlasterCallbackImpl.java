@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.12 2002/11/26 12:36:26 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.13 2002/12/18 13:50:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -60,19 +60,24 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    {
       log.info(ME, "#================== BlasterCallback update START =============");
       log.info(ME, "cbSessionId=" + cbSessionId);
-      MessageUnit[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(glob, corbaMsgUnitArr);
-      String[] ret = new String[msgUnitArr.length];
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         MessageUnit msgUnit = msgUnitArr[ii];
-         UpdateKey xmlKey = null;
-         try {
-            xmlKey = new UpdateKey(null, msgUnit.getKey());
-         } catch (XmlBlasterException e) {
-            log.error(ME, e.getMessage());
+      String[] ret = new String[corbaMsgUnitArr.length];
+      try {
+         MsgUnitRaw[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(glob, corbaMsgUnitArr);
+         for (int ii=0; ii<msgUnitArr.length; ii++) {
+            MsgUnitRaw msgUnit = msgUnitArr[ii];
+            UpdateKey xmlKey = null;
+            try {
+               xmlKey = new UpdateKey(null, msgUnit.getKey());
+            } catch (XmlBlasterException e) {
+               log.error(ME, e.getMessage());
+            }
+            log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.getContent().length);
+            log.info(ME, new String(msgUnit.getContent()));
+            ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
          }
-         log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.getContent().length);
-         log.info(ME, new String(msgUnit.getContent()));
-         ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, e.getMessage());
       }
       log.info(ME, "#================== BlasterCallback update END ===============");
       return ret;

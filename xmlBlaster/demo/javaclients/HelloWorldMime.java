@@ -23,7 +23,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 
@@ -63,14 +63,14 @@ public class HelloWorldMime implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorldMime", "text/xml");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "<news type='sport'/>".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "<news type='sport'/>".getBytes(), pq.toXml());
          con.publish(msgUnit);
 
 
          GetKey gk = new GetKey(glob, "HelloWorldMime");
          GetQos gq = new GetQos(glob);
          gq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
-         MessageUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
 
          log.info("", "Accessed xmlBlaster message synchronous with get() with content '" + new String(msgs[0].getContent()) + "'");
 
@@ -81,7 +81,7 @@ public class HelloWorldMime implements I_Callback
          SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
-         msgUnit = new MessageUnit(pk.toXml(), "<news type='fishing'/>".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "<news type='fishing'/>".getBytes(), pq.toXml());
          con.publish(msgUnit);
 
 
@@ -101,7 +101,7 @@ public class HelloWorldMime implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         log.error("", e.toString());
+         log.error("", e.getMessage());
       }
    }
 

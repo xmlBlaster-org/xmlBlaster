@@ -165,7 +165,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
       var qos = "<qos></qos>";
      
-      messageUnit = new MessageUnit(key, content, qos);
+      messageUnit = new MsgUnit(key, content, qos);
       xmlBlaster.publish(messageUnit);
    }
   

@@ -3,7 +3,7 @@ Name:      callbackServer.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
-Author:    "Marcel Ruff" <ruff@swand.lake.de>
+Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -21,12 +21,12 @@ Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
 
 #define XMLBLASTER_DEBUG 1
 
-typedef struct MessageUnitStruct {
+typedef struct MsgUnitStruct {
    char *xmlKey;   /* XML formatted ASCII string of message key */
    char *content;  /* Raw data */
    int contentLength;
    char *qos;      /* XML formatted ASCII string of Quality of Service */
-} MessageUnit;
+} MsgUnit;
 
 
 #define MSG_LEN_FIELD_LEN 10
@@ -35,13 +35,13 @@ typedef struct MessageUnitStruct {
 /* sprintf(LenFormatStr, "%%%d.%dd", MSG_LEN_FIELD_LEN, MSG_LEN_FIELD_LEN); */
 
 /* Callback from xmlBlaster */
-typedef void (*updateFp)(MessageUnit *msg);
+typedef void (*updateFp)(MsgUnit *msg);
 
 typedef struct callbackDataStruct {
    char *hostCB;
    int portCB;
    /**
-    * void update(MessageUnit *msg)   //////(char *key, char *content, int contentLen, char *qos)
+    * void update(MsgUnit *msg)   //////(char *key, char *content, int contentLen, char *qos)
     */
    updateFp update;
 } callbackData;
@@ -54,6 +54,6 @@ extern int getLength(char *data);
 extern int isListening();
 extern int isConnected();
 extern void shutdownCallbackServer();
-extern char *contentToString(char *content, MessageUnit *msg);
-extern char *messageUnitToXml(MessageUnit *msg);
+extern char *contentToString(char *content, MsgUnit *msg);
+extern char *messageUnitToXml(MsgUnit *msg);
 

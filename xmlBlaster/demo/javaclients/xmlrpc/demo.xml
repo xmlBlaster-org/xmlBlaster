@@ -46,7 +46,7 @@
   </params>
 </methodCall>
 
-<!-- COMMAND: call to xmlBlaster.publish (String sessionId, MessageUnit msgUnit) -->
+<!-- COMMAND: call to xmlBlaster.publish (String sessionId, MsgUnit msgUnit) -->
 <?xml version='1.0'?>
 <methodCall>
   <methodName>xmlBlaster.publish</methodName>

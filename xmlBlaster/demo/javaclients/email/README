@@ -3,7 +3,7 @@
 #
 #TODO:  Specify a requirement and define the email behavior with xmlBlaster
 #
-#AUTHOR: ruff@swand.lake.de
+#AUTHOR: xmlBlaster@marcelruff.info
 #------------------------------------------------------------------------------
 
 Steps to setup email updates from xmlBlaster

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.24 2002/11/26 12:36:22 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.25 2002/12/18 13:50:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -73,7 +73,7 @@ public class ClientXml implements I_Callback
          //----------- Construct a message and publish it ---------
          {
             String content = "<person><name>Ghandi</name></person>";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "");
+            MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "");
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
@@ -135,7 +135,7 @@ public class ClientXml implements I_Callback
                //----------- Construct a message and publish it ---------
                String content = "<person><name>Castro</name><age>" + ii + "</age></person>";
                xmlKey = "<key oid='" + publishOid + "' contentMime='text/xml'>\n</key>";
-               MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "");
+               MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "");
                log.trace(ME, "Publishing ...");
                stop.restart();
                try {

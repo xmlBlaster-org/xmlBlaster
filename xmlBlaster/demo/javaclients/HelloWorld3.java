@@ -23,7 +23,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -65,13 +65,13 @@ public class HelloWorld3 implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          con.publish(msgUnit);
 
 
          GetKey gk = new GetKey(glob, "HelloWorld3");
          GetQos gq = new GetQos(glob);
-         MessageUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
          GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
 
          log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
@@ -83,7 +83,7 @@ public class HelloWorld3 implements I_Callback
          SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
-         msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(glob, pk, "Ho".getBytes(), pq);
          PublishReturnQos prq = con.publish(msgUnit);
 
          log.info("", "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
@@ -104,7 +104,7 @@ public class HelloWorld3 implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         log.error("", e.toString());
+         log.error("", e.getMessage());
       }
    }
 

@@ -8,7 +8,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
 
@@ -37,7 +37,7 @@ public class Demo
 
          con.subscribe("<key oid='EmailDemo'/>", "<qos/>");
 
-         con.publish(new MessageUnit("<key oid='EmailDemo'/>", "Hi".getBytes(),
+         con.publish(new MsgUnit("<key oid='EmailDemo'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
          try { Thread.currentThread().sleep(1000); } 
@@ -53,7 +53,7 @@ public class Demo
    /**
     * Invoke:
     * <pre>
-    *    java javaclients.email.Demo -email.receiver ruff@swand.lake.de
+    *    java javaclients.email.Demo -email.receiver xmlBlaster@marcelruff.info
     * </pre>
     */
    public static void main(String args[]) {

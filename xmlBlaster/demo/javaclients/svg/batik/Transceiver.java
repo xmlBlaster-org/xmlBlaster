@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.8 2002/11/26 12:36:32 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.9 2002/12/18 13:50:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -28,7 +28,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlNotPortable;
 
@@ -119,7 +119,7 @@ public class Transceiver implements I_Callback
             String qos = "<qos></qos>";
             // retrieve the file content
             byte[] content = this.readFromFile(this.svgFileName);
-            MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
+            MsgUnit messageUnit = new MsgUnit(xmlKey, content, qos);
             PublishReturnQos ret = this.xmlBlasterConnection.publish(messageUnit);
             log.info(ME, "constructor: " + ret.getKeyOid());
          }
@@ -331,8 +331,8 @@ public class Transceiver implements I_Callback
       // retrieve the file content
       byte[] content = XmlUtility.write(el).getBytes();
 
-      MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
       try {
+         MsgUnit messageUnit = new MsgUnit(xmlKey, content, qos);
          PublishReturnQos ret = this.xmlBlasterConnection.publish(messageUnit);
          log.trace(ME, "move: " + ret.getKeyOid());
       }

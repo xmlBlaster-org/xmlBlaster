@@ -13,7 +13,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
 
 
@@ -81,7 +81,7 @@ public class PtpSend
                dest.forceQueuing(glob.getProperty().get("forceQueuing", false));
                pq.addDestination(dest);
 
-               MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+               MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
                
                PublishReturnQos retQos = sender.publish(msgUnit);
                log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);

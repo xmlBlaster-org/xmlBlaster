@@ -13,7 +13,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -71,7 +71,7 @@ public class PublishToSlave implements I_Callback
                System.out.println("Hit a key to publish ...");
                try { System.in.read(); } catch(Exception e2) { }
             }
-            MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
+            MsgUnit msgUnit = new MsgUnit(pk.toXml(), content.getBytes(), pq.toXml());
             PublishReturnQos retQos = con.publish(msgUnit);
             log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
