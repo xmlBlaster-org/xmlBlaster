@@ -681,7 +681,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             try {
                MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
                         destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                        Constants.SUBSCRIPTIONID_PtP);
+                        Constants.SUBSCRIPTIONID_PtP, false);
                destinationClient.queueMessage(msgEntrySubject);
                continue;
             }
@@ -755,7 +755,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                      cacheEntry,
                      receiverSessionInfo.getSessionQueue().getStorageId(),
                      destination.getDestination(),
-                     Constants.SUBSCRIPTIONID_PtP);
+                     Constants.SUBSCRIPTIONID_PtP, false);
             receiverSessionInfo.queueMessage(msgEntry);
             continue;
          }
@@ -1180,7 +1180,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                if (handleException) {
                   MsgQueueEntry[] entries = {
                        new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                   sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
+                                   sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
+                                   sub.getSubscribeQosServer().getWantUpdateOneway()) };
                   requestBroker.deadMessage(entries, null, reason);
                }
 
@@ -1191,7 +1192,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                /*
                MsgQueueEntry entry =
                     new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
+                                sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
+                                sub.getSubscribeQosServer().getWantUpdateOneway());
                publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
                */
                //retCount++;
@@ -1225,7 +1227,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
    public final MsgQueueUpdateEntry createEntryFromWrapper(MsgUnitWrapper msgUnitWrapper, SubscriptionInfo sub) 
       throws XmlBlasterException {
       return new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-               sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
+               sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
+               sub.getSubscribeQosServer().getWantUpdateOneway());
    }
 
    /**
@@ -1281,7 +1284,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
          try {
             MsgQueueEntry[] entries = {
                   new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                              sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
+                              sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
+                              sub.getSubscribeQosServer().getWantUpdateOneway()) };
             String reason = e.toString();
             if (e instanceof XmlBlasterException)
                reason = ((XmlBlasterException)e).getMessage();
