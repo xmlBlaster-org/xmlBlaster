@@ -32,9 +32,11 @@
   &lt;command>INSERT&lt;/command>
   &lt;ident>EDDI&lt;/ident>
   &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>
+              CPU&lt;/colname>
   &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
-  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2'
+              precision='10'>ICAO_ID&lt;/colname>
  &lt;/desc>
  &lt;row num='0'>
   &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
@@ -200,6 +202,42 @@
    adjust your query configuration and start it interactively. The <tt>testlog.properties</tt>
    in the same directory switches on fine logging and you can manually see what happens.
    </p>
+
+   <h2>Limitations</h2>
+   <p>Every change detector has pro and cons and limitations, the following table
+   gives an overview for the currently supplied detector plugins.</p>
+   <table border="1">
+     <tr>
+       <th>DB statement</th>
+       <th>MD5ChangeDetector</th>
+       <th>TimestampChangeDetector</th>
+     </tr>
+     <tr>
+       <td>CREATE</td>
+       <td>OK</td>
+       <td>OK</td>
+     </tr>
+     <tr>
+       <td>INSERT</td>
+       <td>OK</td>
+       <td>OK (reported as UPDATE)</td>
+     </tr>
+     <tr>
+       <td>UPDATE</td>
+       <td>OK</td>
+       <td>OK</td>
+     </tr>
+     <tr>
+       <td>DELETE</td>
+       <td>OK</td>
+       <td>Not detected</td>
+     </tr>
+     <tr>
+       <td>DROP</td>
+       <td>OK (see <tt>mom.eraseOnDrop</tt> setting)</td>
+       <td>OK (see <tt>mom.eraseOnDrop</tt> setting)</td>
+     </tr>
+   </table>
    </description>
 
 
@@ -229,19 +267,27 @@ SELECT * FROM TEST_POLL ORDER BY CAR;
    </p>
 
   <pre>
-&lt;plugin id='DbWatcherPlugin.testPoll' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+&lt;plugin id='DbWatcherPlugin.testPoll' 
+           className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
    &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
    &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
    &lt;attribute id='db.user'>system&lt;/attribute>
    &lt;attribute id='db.password'>secret&lt;/attribute>
-   &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR&lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR
+   &lt;/attribute>
    &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
    &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
    &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
-   &lt;attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector&lt;/attribute>
+   &lt;attribute id='changeDetector.class'>
+      org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
+   &lt;/attribute>
    &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
-   &lt;attribute id='changeDetector.detectStatement'>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL&lt;/attribute>
-   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+   &lt;attribute id='changeDetector.detectStatement'>
+      SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL
+   &lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
+              onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
 &lt;/plugin>
   </pre>
@@ -384,9 +430,11 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
   &lt;command>INSERT&lt;/command>
   &lt;ident>EDDI&lt;/ident>
   &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' scale='0'
+              signed='false'>CPU&lt;/colname>
   &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
-  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2'
+              precision='10'>ICAO_ID&lt;/colname>
  &lt;/desc>
  &lt;row num='0'>
   &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
@@ -439,6 +487,8 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
  &lt;/desc>
 &lt;/sql>
 </pre>
+   <p>Use the <tt>mom.eraseOnDrop=true</tt> configuration to delete the topic on
+   a table DROP event</p>
 
    </example>
 
@@ -504,7 +554,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          Configures your implementation of interface <tt>I_AlertProducer</tt>
          Here you can configure multiple classes with a comma separated list.
          Each of them can trigger an new check in parallel, for example
-         <tt>alertProducer.class= org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher, org.xmlBlaster.contrib.dbwatcher.detector.AlertSchedulery</tt> will check regularly via
+         <tt>alertProducer.class= org.xmlBlaster.contrib.dbwatcher. mom.XmlBlasterPublisher, org.xmlBlaster.contrib.dbwatcher. detector.AlertSchedulery</tt> will check regularly via
          the AlertScheduler and on message via XmlBlasterPublisher.
          </td>
        </tr>
@@ -678,7 +728,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          </td>
        </tr>
        <tr>
-         <td>changeDetector.groupColName</td>
+         <td>changeDetector. groupColName</td>
          <td>String</td>
          <td>no</td>
          <td>null</td>
@@ -689,7 +739,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          </td>
        </tr>
        <tr>
-         <td>changeDetector.detectStatement</td>
+         <td>changeDetector. detectStatement</td>
          <td>String</td>
          <td>yes</td>
          <td>null</td>
@@ -702,7 +752,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          </td>
        </tr>
        <tr>
-         <td>changeDetector.timestampColNum</td>
+         <td>changeDetector. timestampColNum</td>
          <td>String</td>
          <td>no</td>
          <td>1</td>
@@ -764,7 +814,8 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
   <xmlBlaster>
     ...
 
-  <plugin id='DbWatcherPlugin.MD5' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+  <plugin id='DbWatcherPlugin.MD5'
+          className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
      <attribute id='topicName'>poller.test</attribute> 
      <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
      <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
@@ -776,13 +827,20 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
      <attribute id='mom.password'>secret</attribute>
      <attribute id='mom.alertSubscribeKey'><key oid=''/></attribute>
      <attribute id='mom.alertSubscribeQos'><qos/></attribute>
-     <attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector</attribute>
+     <attribute id='changeDetector.class'>
+        org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector
+     </attribute>
      <attribute id='alertScheduler.pollInterval'>5000</attribute>
      <attribute id='changeDetector.groupColName'>ICAO_ID</attribute>
-     <attribute id='changeDetector.detectStatement'>SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID</attribute>
-     <attribute id='converter.class'>org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter</attribute>
+     <attribute id='changeDetector.detectStatement'>
+        SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID
+     </attribute>
+     <attribute id='converter.class'>
+        org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter
+     </attribute>
      <attribute id='transformer.class'></attribute>
-     <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+     <action do='LOAD' onStartupRunlevel='9' sequence='6'
+             onFail='resource.configuration.pluginFailed'/>
      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
    ...
@@ -825,6 +883,8 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    </todo>
 
    <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
+   <see type="API">org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector</see>
+   <see type="API">org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector</see>
    <see type="REQ">engine.runlevel</see>
    <author>xmlblast@marcelruff.info</author>
    <hacker>xmlblast@marcelruff.info</hacker>
