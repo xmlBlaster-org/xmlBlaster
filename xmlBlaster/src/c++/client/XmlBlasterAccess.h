@@ -85,7 +85,7 @@ public:
 
    /**
     * Create a new instance of the desired protocol driver like CORBA or RMI driver using the plugin loader. 
-    * @param type  E.g. "IOR" or "RMI", if null we use the same protocol as our client access (corba is default).
+    * @param type  E.g. "IOR" or "SOCKET", if null we use the same protocol as our client access.
     * @param version The version of the driver, e.g. "1.0"
     */
    org::xmlBlaster::client::protocol::I_CallbackServer* initCbServer(const std::string& loginName, const std::string& type, const std::string& version);
@@ -181,7 +181,7 @@ public:
    void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit>& msgUnitArr);
 
 //   std::vector<std::string> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit>& msgUnitArr);
-   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
+   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
    // org::xmlBlaster::client::qos::EraseReturnQos[]
 //   std::vector<std::string> erase(const std::string& xmlKey, const std::string& qos);
@@ -193,7 +193,7 @@ public:
     * delivering us a new asynchronous message.
     * @see org.xmlBlaster.client.I_Callback#update(String, org::xmlBlaster::client::key::UpdateKey, byte[], org::xmlBlaster::client::qos::UpdateQos)
     */
-   std::string update(const std::string &sessionId, org::xmlBlaster::client::key::UpdateKey &updateKey, void *content, long contentSize, org::xmlBlaster::client::qos::UpdateQos &updateQos);
+   std::string update(const std::string &sessionId, org::xmlBlaster::client::key::UpdateKey &updateKey, const unsigned char *content, long contentSize, org::xmlBlaster::client::qos::UpdateQos &updateQos);
 
    /**
     * Command line usage.

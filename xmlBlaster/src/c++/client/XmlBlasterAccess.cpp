@@ -84,7 +84,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    if (!dispatchManager_) dispatchManager_ = &(global_.getDispatchManager());
 
 /*
-   string type = connectQos_.getServerRef().getType();
+   string type = connectQos_.getAddress().getType();
    string version = "1.0";
    connection_ = &(dispatchManager_->getPlugin(type, version));
 */
@@ -271,7 +271,7 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
    connection_->publishOneway(msgUnitArr);
 }
 
-vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUnitArr)
+vector<PublishReturnQos> XmlBlasterAccess::publishArr(const vector<MessageUnit> &msgUnitArr)
 {
    if (log_.call()) log_.call(ME, "publishArr");
    if (log_.dump()) {
@@ -293,7 +293,7 @@ vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQ
 }
 
 string
-XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, void *content, long contentSize, UpdateQos &updateQos)
+XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, const unsigned char *content, long contentSize, UpdateQos &updateQos)
 {
    if (log_.call()) log_.call(ME, "::update");
    if (log_.trace()) log_.trace(ME, string("update. The sessionId is '") + sessionId + "'");
@@ -310,10 +310,9 @@ std::string XmlBlasterAccess::usage()
 {
    string text = string("\n");
    text += string("Choose a connection protocol:\n");
-   text += string("   -dispatch/connection/protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XMLRPC'.\n");
-   text += string("                       Current setting is '") + Global::getInstance().getProperty().getStringProperty("client.protocol", "IOR") + string("'. See below for protocol settings.\n");
-   text += string("                       Example: java MyApp -dispatch/connection/protocol RMI -dispatch/clientside/plugin/rmi/hostname 192.168.10.34\n");
-   text += string("\n");
+   text += string("   -protocol           Specify a protocol to talk with xmlBlaster, choose 'SOCKET' or 'IOR' depending on your compilation.\n");
+   text += string("                       Current setting is '") + Global::getInstance().getProperty().getStringProperty("protocol", Global::getDefaultProtocol());
+   text += string("\n\n");
    text += string("Security features:\n");
    text += string("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");
    text += string("                       Force the given authentication schema, here the GUI is enforced\n");
