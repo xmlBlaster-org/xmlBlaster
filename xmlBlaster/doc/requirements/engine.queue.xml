@@ -180,6 +180,59 @@
       
       ]]>
    </example>
+   <configuration where="server">
+      These parameters allow to configure the xmlBlaster server default behavior.
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>The max setting allowed for queue size (number of messages in queue until it overflows)</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>queue.maxSize</td>
+            <td>4000 (4 MB)</td>
+            <td>The max setting allowed for queue maxSize in kBytes</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>queue.expires.min</td>
+            <td>1000</td>
+            <td>The min span of life is one second</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>queue.expires.max</td>
+            <td>0</td>
+            <td>The max span of life of a queue is currently forever (=0)</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>queue.expires</td>
+            <td>0</td>
+            <td>If not otherwise noted a queue dies after the max value (0 is forever)</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>queue.onOverflow</td>
+            <td>block</td>
+            <td>Error handling when queue is full: <i>block</i> or <i>deadLetter</i></td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>queue.onFailure</td>
+            <td>deadLetter</td>
+            <td>Error handling when callback failed (after all retries etc.)</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
    <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
@@ -187,9 +240,12 @@
    <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
+   <see type="REQ">util.property</see>
+   <see type="REQ">util.property.args</see>
+   <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

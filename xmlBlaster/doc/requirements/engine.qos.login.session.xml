@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.login.session' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='engine.qos.login.session' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Clients of XmlBlaster can use configurable session parameters on login</topic>
    <description>
       <p>
@@ -26,7 +26,8 @@
       <p>
       XmlBlaster allows to check clients with a ping to the callback server.
       The ping frequency is adjustable at login time by the client itself.
-      A client session disappears when it does a logout or on failure (no response to the ping)
+      A client session disappears when it does a logout or on failure
+      (ping() or update() fails after configured retry attempts)
       or on session-timeout or when clearSessions='true' is set.
       </p>
       <p>
@@ -35,70 +36,94 @@
       </p>
    </description>
 
-   <changerequest>
-      <p>
-      We should support a mode where callbacks (or callback pings) may for example fail 5 times
-      until we drop the session (requested by Heinrich Goetzger)
-      </p>
-   </changerequest>
-
    <example lang="Java">
-      <![CDATA[
-      Setting default configuration parameters for the xmlBlaster server
-      (on command line or in xmlBlaster.properties):
+<![CDATA[
+<!-- Simple QoS of the connect() method, this raw string is delivered to xmlBlaster -->
+<qos>
+   <securityService type="simple" version="1.0"> <!-- protected by CDATA -->
+      <user>michele</user>
+      <passwd>secret</passwd>
+   </securityService>
 
-         -session.timeout      86400000  // One day in millis
-         -session.maxPerClient 10        // Max 10 simultaneous logins for same client
+   <session timeout='3600000' maxSessions='20' clearSessions='false'/>
 
-
-
-      <!-- QoS of the connect() method, this raw string is delivered to xmlBlaster -->
-      <qos>
-         <securityService type="simple" version="1.0"> <!-- protected by CDATA -->
-            <user>michele</user>
-            <passwd>secret</passwd>
-         </securityService>
-
-         <session timeout='3600000' maxSessions='20' clearSessions='false'/>
-
-         <callback type='IOR'> <!-- Use CORBA to callback messages for this session -->
-            IOR:00011200070009990000....
-            <compress type='gzip' minSize='1000' />
-                      <!-- compress messages bigger 1000 bytes before sending them to me -->
-
-            <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
-                       them in one callback (burst mode)
-                       This update mode is a 'transaction' for all collected messages -->
-         </callback>
-
-         <callback type='XML-RPC' sessionId='sldg03loQ22' pingInterval='60000' useForSubjectQueue='false'>
-            http:/www.mars.universe:8080/RPC2
-         </callback>
-              <!-- The session id is passed to the client callback server, he can check
-              if he trusts this sender, it defaults to the login name of the sender
-              The callback address is not used for queued subject messages
-               -->
-
-         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
-            <!-- Qualifies the session based queue, with a maximum of 1000 messages
-                 or 4000 KBytes of capacity, whichever is reached first.
-                 If exceeded a dead letter is published -->
-         </queue>
-
-         <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000' onOverflow='block'/>
-            <!-- The login name based queue expires after given milliseconds.
-                 If exceeded the the publisher blocks until there is space in the queue again -->
-      </qos>
-      ]]>
+   <callback type='XML-RPC' sessionId='sldg03loQ22'>
+      http:/www.mars.universe:8080/RPC2
+   </callback>
+</qos>
+]]>
    </example>
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the xmlBlaster server default behavior.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>session.timeout</td>
+            <td>86400000</td>
+            <td>Default session span of life is one day, given in millis</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>session.maxSessions</td>
+            <td>10</td>
+            <td>Maximum of ten parallel logins for the same client</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+   <configuration where="client">
+      <hr />
+      <p>
+      These parameters can be specified on client side with java clients (see ConnectQos API).
+      </p>
+      <p>
+      Other programming languages need to supply these setting with a raw XML string (see example section above).
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>session.timeout</td>
+            <td>86400000</td>
+            <td>Default session span of life is one day, given in millis</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>session.maxSessions</td>
+            <td>10</td>
+            <td>Maximum of ten parallel logins for the same client</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>session.clearSessions</td>
+            <td>false</td>
+            <td>Clear on login all other sessions of this user (for recovery reasons)</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
    <see type="REQ">protocol</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
+   <see type="REQ">util.property</see>
+   <see type="REQ">util.property.args</see>
+   <see type="REQ">util.property.env</see>
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
    <author>ruff@swand.lake.de</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>

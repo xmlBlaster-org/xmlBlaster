@@ -27,9 +27,10 @@
          <li>If xmlBlaster is shutdown or crashes, transient messages are lost.</li>
          <li>If the client can't be reached or the client does not acknowledge the
          message, xmlBlaster will redeliver the message. Such messages are marked with
-         a QoS tag &lt;redeliver>12&lt;/redeliver> whereby 12 is the current attempt. xmlBlaster retries
-         until the message or queue span of life expires and in this case the lost messages
-         are published as <i>dead letters</i>.
+         a QoS tag &lt;redeliver>12&lt;/redeliver> whereby 12 is the current attempt.
+         xmlBlaster retries as configured (see below) or until the message or queue
+         span of life expires and in this case the lost messages
+         are published as <i>dead letters</i> (the login session is destroyed as well).
          Redelivering can be switched off, resulting in immediate <i>dead letters</i> and
          garbage collection of resources.
          </li>
@@ -142,33 +143,33 @@
       </p>
    </description>
    <example lang="Java">
-      <![CDATA[
-         
-         <!--
-            Example:
+   <![CDATA[
+   <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
+      IOR:00044550005...
+      <compress type='gzip' minSize='1000'/>
+      <burstMode collectTime='400'/>
+   </callback>
+   ]]>
+   Use CORBA to callback messages, on error retry 5 times pausing 60000 millis between retries.
+   
+   Deliver the given sessionId with update() to the client so that the client can trust us.
+   
+   Ping the client every 60000 millis (one minute) to check if he is alive.
+   
+   The given callback may be used by the subjectQueue as well.
 
-            Use CORBA to callback messages, on error retry 5 times pausing 60000 millis between retries
-            
-            Deliver the given sessionId with update() to the client so that the client can trust us.
-            
-            Ping the client every 60000 millis (one minute) to check if he is alive.
-            
-            The given callback may be used by the subjectQueue as well
-            
-            Compress messages bigger 1000 bytes before sending them to me.
+   Compress messages bigger 1000 bytes before sending them to me.
 
-            Collect messages for 400 milliseconds and update them in one callback (burst mode)
-            This update mode is a 'transaction' for all collected messages
-          -->
-         
-         <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
-            IOR:00044550005...
-            <compress type='gzip' minSize='1000'/>
-            <burstMode collectTime='400'/>
-         </callback>
-      ]]>
+   Collect messages for 400 milliseconds and update them in one callback (burst mode)
+   This update mode is a 'transaction' for all collected messages.
    </example>
-   <configuration where="server">
+   <configuration where="client">
+      <p>
+      These parameters can be specified on client side with java clients (see ConnectQos API).
+      </p>
+      <p>
+      Other programming languages need to supply these setting with a raw XML string (see example section above).
+      </p>
       <table border="1">
          <tr>
             <td>Property</td>
@@ -244,7 +245,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
