@@ -9,21 +9,32 @@ use lib '.';
 use COPE::CORBA::ORB;
 use authenticateIdl::AuthServer;
 use serverIdl::Server;
-use clientIdl::BlasterCallback;
+use clientIdl::BlasterCallback_impl;
 use Experimental::Exception;
+
+print "\nIs xmlBlaster server running?\n\n";
 
 my $orb = CORBA::ORB_init();
 
-$ARGV[0] or die "Usage: $0 <ior_string>";
 
+#--------------- find server object reference IOR -------
+$ARGV[0] or die "Usage: $0 <ior_string>";
 my $super = $orb->string_to_object($ARGV[0]);
 $super = authenticateIdl::AuthServer->_narrow($super);
 
 
+#--------------- create my BlasterCallback server ----
+my $boa = $orb->BOA_init();
+my $callback = clientIdl::BlasterCallback_impl->new();
+my $callback_ref = $orb->object_to_string($callback);
+print "BlasterCallback IOR:\n";
+print $callback_ref, "\n\n";
+
+
 #-------------- login() to AuthServer_obj ---------
 my $loginName = "Perl-Heidi";
-my $xmlBlaster = $super->login($loginName, "secret", "", "");
-print "login($loginName) successfull\n";
+my $xmlBlaster = $super->login($loginName, "secret", $callback, "");
+print "login($loginName) successfull\n\n";
 
 
 #-------------- publish() a message -------------
@@ -38,21 +49,24 @@ print "publish() of xmlKey=\n$xmlKey";
 
 my $content = "Hello xmlBlaster, i'm a C++ client";
 
-#@serverIdl::MessageUnit::message[$xmlKey, $content];
-#@serverIdl::MessageUnit::message::xmlKey = $xmlKey;
-#@serverIdl::MessageUnit::message::content = $content;
-
-
-#my $message = {};
-#$message->xmlKey = $xmlKey;
-#my serverIdl::MessageUnit message;
-#my message.xmlKey = xmlKey.c_str();
-#$message->content = $content;
-#??? my message.content(MICO_ULong(content.size()), MICO_ULong(content.size()), (CORBA::Octet*)content.c_str());
-
+$message = {xmlKey => $xmlKey, content => $content};
 my $qos = "";
-
 my $publishOid = $xmlBlaster->publish($message, $qos);
 
-print "Successfull published message with new oid=$publishOid";
+print "Successfull published message with new oid=$publishOid\n\n";
+
+
+#-------------- subscribe() to the previous message OID -------
+print "Subscribing using the exact oid=$publishOid ...\n";
+$xmlKey =  "<?xml version='1.0' encoding='ISO-8859-1' ?>\n";
+$xmlKey .= "<key oid='" . $publishOid . "'>\n";
+$xmlKey .= "</key>";
+$qualityOfService = "";
+
+$xmlBlaster->subscribe($xmlKey, $qualityOfService);
+print "Subscribed to '$publishOid' ...\n\n";
+
+
+# Go into the BOA's event loop waiting for and processing requests
+$boa->impl_is_ready();
 
