@@ -87,7 +87,6 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       this.priority = priority;
       this.storageId = storageId;
       this.durable = durable;
-      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Creating new MsgQueueEntry for published message, id=" + getUniqueId());
    }
 
    public final void setGlobal(Global global) {
