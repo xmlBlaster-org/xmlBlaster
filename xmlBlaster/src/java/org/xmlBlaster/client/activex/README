@@ -15,6 +15,7 @@ PRECOND:
 
  It seems to work only with the ActiveX bridge from JDK 1.5 or higher.
  JDK 1.4 failed on my Windows XP.
+ Java objects are accessible via wrapper objects supporting the IDispatch interface.
 
 INSTALL:
 
@@ -36,6 +37,12 @@ INSTALL:
 DEMO:
 
   A C# demo client is under xmlBlaster\demo\activex 
+
+  Visual Studio:
+    -> References -> (right mouse): Add Reference -> XmlScriptAccess
+
+  Task bar: Java Icon:
+    -> Open Console
 
 
 TODO:
