@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.publish.ForceQueuing' type='NEW' prio='LOW' status="CLOSED">
+   <topic>Published messages can be queued by xmlBlaster if the receiver is not logged in</topic>
+   <description>
+      If you publish a message and the receiver is not online, you get an exception
+      by default. If you set the &lt;ForceQueuing&gt; flag is set in the publishing qos,
+      the messages are queued by xmlBlaster. As soon as the receiver logs in,
+      all queued messages are flushed to the recevier.
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 02 02</date>
+   <revision>$Revision: 1.1 $</revision>
+   <fix status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPtDQueue</test>
+   </fix>
+</requirement>
+
