@@ -29,10 +29,10 @@ CacheQueuePlugin::CacheQueuePlugin(Global& global, const ClientQueueProperty& pr
 {
    // TODO: type/version should be set from outside!!!
 
-   transientQueueP_ = &QueueFactory::getFactory(global_).getPlugin(property, "RAM", "1.0");
+   transientQueueP_ = &QueueFactory::getFactory().getPlugin(global_, property, "RAM", "1.0");
 
    try {
-      persistentQueueP_ = &QueueFactory::getFactory(global_).getPlugin(property, "SQLite", "1.0");
+      persistentQueueP_ = &QueueFactory::getFactory().getPlugin(global_, property, "SQLite", "1.0");
 
       // Note: On startup we can only load the highest priority in a bulk, peekWithSamePriority() does not support to get all!
       reloadFromPersistentStore();
@@ -69,8 +69,8 @@ CacheQueuePlugin& CacheQueuePlugin::operator =(const CacheQueuePlugin& queue)
 CacheQueuePlugin::~CacheQueuePlugin()
 {
    if (log_.call()) log_.call(ME, "destructor");
-   QueueFactory::getFactory(global_).releasePlugin(transientQueueP_);
-   if (persistentQueueP_) QueueFactory::getFactory(global_).releasePlugin(persistentQueueP_);
+   QueueFactory::getFactory().releasePlugin(transientQueueP_);
+   if (persistentQueueP_) QueueFactory::getFactory().releasePlugin(persistentQueueP_);
 } 
 
 void CacheQueuePlugin::put(const MsgQueueEntry &entry)

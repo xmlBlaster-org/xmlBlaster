@@ -32,26 +32,22 @@ using namespace org::xmlBlaster::util;
     
 QueueFactory* QueueFactory::factory_ = NULL;
 
-QueueFactory& QueueFactory::getFactory(Global& global)
+QueueFactory& QueueFactory::getFactory()
 {
    if (factory_ == NULL) {
-      factory_ = new QueueFactory(global);
+      factory_ = new QueueFactory();
       org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object("XB_QueueFactory", factory_);  // if not pre-allocated.
    }
    return *factory_;
 }
 
-QueueFactory::QueueFactory(Global& global) :
-     ME("QueueFactory"), 
-     global_(global), 
-     log_(global_.getLog("org.xmlBlaster.util.queue"))
+QueueFactory::QueueFactory() :
+     ME("QueueFactory")
 {
 }
 
 QueueFactory::QueueFactory(const QueueFactory& factory) :
-               ME(factory.ME),
-               global_(factory.global_),
-               log_(factory.log_)
+               ME(factory.ME)
 {
    throw util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
 }
@@ -63,26 +59,26 @@ QueueFactory& QueueFactory::operator =(const QueueFactory&)
 
 QueueFactory::~QueueFactory()
 {
-   if (log_.call()) log_.call(ME, "~QueueFactory()");
 }
 
-I_Queue& QueueFactory::getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property, const string& type, const string& version)
+I_Queue& QueueFactory::getPlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property, const string& type, const string& version)
 {
-   if (log_.call()) log_.call(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
+   org::xmlBlaster::util::I_Log& log = global.getLog("queue");
+   if (log.call()) log.call(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
    string typ = type.empty() ? property.getType() : type;
    string ver = version.empty() ? property.getVersion() : version;
 
    if (typ == Constants::CACHE) {
-      return *(new CacheQueuePlugin(global_, property));
+      return *(new CacheQueuePlugin(global, property));
    }
    else if (typ == Constants::RAM) {
-      return *(new RamQueuePlugin(global_, property));
+      return *(new RamQueuePlugin(global, property));
    }
    else if (typ == Constants::SQLITE) {
 #     ifdef XMLBLASTER_PERSISTENT_QUEUE
-         return *(new SQLiteQueuePlugin(global_, property));  //#ifdef XMLBLASTER_PERSISTENT_QUEUE
+         return *(new SQLiteQueuePlugin(global, property));  //#ifdef XMLBLASTER_PERSISTENT_QUEUE
 #     else
-         log_.error(ME, "Please compile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined to have SQLite persistent queue support");
+         log.error(ME, "Please compile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined to have SQLite persistent queue support");
 #     endif
    }
    string embeddedMsg = string("Plugin: '") + property.getType() +
@@ -92,7 +88,7 @@ I_Queue& QueueFactory::getPlugin(const org::xmlBlaster::util::qos::storage::Queu
                     "client-c++",
                     ME + string("::getPlugin"),
                     "en",
-                    global_.getVersion() + " " + global_.getBuildTimestamp(),
+                    global.getVersion() + " " + global.getBuildTimestamp(),
                     "",
                     "",
                     embeddedMsg);

@@ -58,7 +58,7 @@ void XmlHandlerBase::parse(const string &xmlData)
    StopWatch stopWatch;
    I_Parser *parser = NULL;
    try {
-      parser = ParserFactory::getFactory(global_).createParser(this);
+      parser = ParserFactory::getFactory().createParser(global_, this);
       Lock lock(invocationMutex_);
       parser->parse(xmlData);
       delete parser;

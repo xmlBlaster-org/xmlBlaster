@@ -27,39 +27,23 @@ using namespace org::xmlBlaster::util;
     
 ParserFactory* ParserFactory::factory_ = NULL;
 
-ParserFactory& ParserFactory::getFactory(Global& global)
+ParserFactory& ParserFactory::getFactory()
 {
    if (factory_ == NULL) {
-      factory_ = new ParserFactory(global);
+      factory_ = new ParserFactory();
       org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object("XB_ParserFactory", factory_);  // if not pre-allocated.
    }
    return *factory_;
 }
 
-ParserFactory::ParserFactory(Global& global) :
-     ME("ParserFactory"), 
-     global_(global), 
-     log_(global_.getLog("org.xmlBlaster.util.xml"))
+ParserFactory::ParserFactory() :
+     ME("ParserFactory")
 {
-   try {
-      if (!global.isUsingXerces()) {
-         XMLPlatformUtils::Initialize();
-         global.setUsingXerces();
-      }   
-   }
-   catch (const XMLException& toCatch) {
-      char* message = XMLString::transcode(toCatch.getMessage());
-      std::string txt = std::string("Constructor - error during initialization. Exception message is: ") + std::string(message);
-      log_.error(ME, txt);
-      Sax2Parser::releaseXMLCh(&message);
-      throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
-   }
+   isUsingXerces_ = false;
 }
 
 ParserFactory::ParserFactory(const ParserFactory& factory) :
-               ME(factory.ME),
-               global_(factory.global_),
-               log_(factory.log_)
+     ME(factory.ME)
 {
    throw util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
 }
@@ -71,26 +55,37 @@ ParserFactory& ParserFactory::operator =(const ParserFactory&)
 
 ParserFactory::~ParserFactory()
 {
-   if (global_.isUsingXerces()) {
+   if (isUsingXerces_) {
+      std::cerr << "ParserFactory destructor" << std::endl;
       XMLPlatformUtils::Terminate();
-      global_.setUsingXerces(false);
    }
-   if (log_.call()) log_.call(ME, "~ParserFactory()");
 }
 
 /**
    * Creates a parser implementation. It is the responsibility of the user to delete the I_Parser
    * object once it is not needed anymore.
    */
-I_Parser* ParserFactory::createParser(XmlHandlerBase *handler)
+I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler)
 {
    try {
-      return new Sax2Parser(global_, handler);
+      if (!isUsingXerces_) {
+         std::cerr << "initializing xerces" << std::endl;
+         XMLPlatformUtils::Initialize();
+         isUsingXerces_ = true;
+      }
+   }
+   catch (const XMLException& toCatch) {
+      char* message = XMLString::transcode(toCatch.getMessage());
+      std::string txt = std::string("Constructor - error during initialization. Exception message is: ") + std::string(message);
+      Sax2Parser::releaseXMLCh(&message);
+      throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
+   }
+   try {
+      return new Sax2Parser(global, handler);
    }
    catch (const XMLException& toCatch) {
       char* message = XMLString::transcode(toCatch.getMessage());
       std::string txt = std::string("createParser: error during SAX parser initialization. Exception message is: ") + std::string(message);
-      log_.error(ME, txt);
       Sax2Parser::releaseXMLCh(&message);
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.34 2004/06/03 19:21:21 laghi Exp $
+Version:   $Id: Global.h,v 1.35 2004/06/20 10:36:19 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -69,8 +69,6 @@ private:
    // added for managed objects.
    static Global*         global_; // becomes pointer
 
-   bool usingXerces_ ;
-
    void copy()
    {
       args_        = 0 ;
@@ -80,7 +78,6 @@ private:
       dispatchManager_ = NULL;
       cbServerPluginManager_;
       id_          = "";
-      usingXerces_ = false;
    }
 
 public:
@@ -251,15 +248,6 @@ public:
      * @param a unique id
      */
     void setId(const std::string& id);
-    
-    /**
-     * returns true if the application is using Xerces as the xml parser.
-     * Used either for informative reasons but also to ensure the initialization
-     * of xerces is done only one time.
-     */
-    bool isUsingXerces() const { return usingXerces_; };
-    
-    void setUsingXerces(bool val=true) { usingXerces_ = val; };
     
 };
 

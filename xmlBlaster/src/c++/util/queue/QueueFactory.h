@@ -29,11 +29,9 @@ class Dll_Export QueueFactory {
 
    private:
    const std::string ME;
-   org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::I_Log& log_;
    static QueueFactory* factory_;
    
-   QueueFactory(org::xmlBlaster::util::Global& global);
+   QueueFactory();
    QueueFactory(const QueueFactory& factory);
    QueueFactory& operator =(const QueueFactory& factory);
 
@@ -44,7 +42,7 @@ class Dll_Export QueueFactory {
     * Static access to the factory. 
     * @exception XmlBlasterException
     */
-   static QueueFactory& getFactory(org::xmlBlaster::util::Global& global);
+   static QueueFactory& getFactory();
 
    /**
     * Creates a queue implementation. It is the responsibility of the user to delete the I_Queue
@@ -54,7 +52,7 @@ class Dll_Export QueueFactory {
     * @param version The queue version, defaults to "1.0", if empty the setting from argument 'property' is used
     * @throws XmlBlasterException: "resource.configuration.pluginFailed" if plugin is not known or other errorCodes if it can't be initialized. 
     */
-   I_Queue& getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property,
+   I_Queue& getPlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property,
                       const std::string& type="", const std::string& version="");
 
    /**

@@ -29,12 +29,11 @@ class Dll_Export ParserFactory {
 
    private:
    const std::string ME;
-   org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::I_Log& log_;
+   bool isUsingXerces_;
 
    static ParserFactory* factory_;
    
-   ParserFactory(org::xmlBlaster::util::Global& global);
+   ParserFactory();
    ParserFactory(const ParserFactory& factory);
    ParserFactory& operator =(const ParserFactory& factory);
 
@@ -45,7 +44,7 @@ class Dll_Export ParserFactory {
     * Static access to the factory. 
     * @exception XmlBlasterException
     */
-   static ParserFactory& getFactory(org::xmlBlaster::util::Global& global);
+   static ParserFactory& getFactory();
 
    /**
     * Creates a parser implementation. 
@@ -54,7 +53,7 @@ class Dll_Export ParserFactory {
     * object once it is not needed anymore.
     * @exception XmlBlasterException
     */
-   I_Parser* createParser(XmlHandlerBase *handler);
+   I_Parser* createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler);
 };
 
 }}}} // namespace

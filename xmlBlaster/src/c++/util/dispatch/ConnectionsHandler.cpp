@@ -509,7 +509,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       if (log_.trace()) log_.trace(ME+":queuePublish", "creating a client queue ...");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
       log_.info(ME+":queuePublish", "created a client queue");
    }
    if (log_.trace()) 
@@ -533,7 +533,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 
    if (!queue_) {
       log_.info(ME, "::queueConnect: created a client queue");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
       log_.trace(ME, string("queueConnect: entry '") + connectQos_->getSessionQos().getAbsoluteName() + "' has been queued");
@@ -570,7 +570,7 @@ long ConnectionsHandler::flushQueue()
          log_.error(ME+".flusgQueue", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       if (log_.trace()) log_.trace(ME+".flushQueue", "creating the client queue ...");
-      queue_ = &QueueFactory::getFactory(global_).getPlugin(connectQos_->getClientQueueProperty());
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
       if (queue_->getNumOfEntries() < 1) {
          if (log_.trace()) log_.trace(ME+".flushQueue", "Created queue [" + queue_->getType() + "][" + queue_->getVersion() +
                                                         "], it is empty, nothing to do.");
