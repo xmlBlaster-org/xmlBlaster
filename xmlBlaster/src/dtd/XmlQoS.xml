@@ -8,7 +8,36 @@
 
 <demo>
 
-   <!-- QoS when publishing -->
+   <!-- QoS when publishing without addressing (clients need to subscribe) -->
+   <publish>
+      <qos>
+      </qos>
+   </publish>
+
+
+   <!-- QoS when publishing with direct addressing or broadcast -->
+   <publish>
+      <qos>
+         <destination queryType='EXACT'>
+            Tim
+         </destination>
+
+         <destination queryType='EXACT'>
+            Ben
+         </destination>
+
+         <destination queryType='XPATH'>
+            //[GROUP='Manager']
+         </destination>
+
+         <destination queryType='XPATH'>
+            //ROLE/[@id='Developer']
+         </destination>
+      </qos>
+   </publish>
+
+
+   <!-- QoS when publishing, supported flags (not yet :-) -->
    <publish>
       <qos>
          <expires>        <!-- Expires after given milliseconds, clients will get a notify about expiration -->
