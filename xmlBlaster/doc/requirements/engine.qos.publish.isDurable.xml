@@ -18,9 +18,10 @@
       ]]>
    </example>
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
+   <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 25</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

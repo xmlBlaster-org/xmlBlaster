@@ -18,9 +18,10 @@
       ]]>
    </example>
    <see type="API">org.xmlBlaster.client.UpdateQoS</see>
+   <see type="API">org.xmlBlaster.client.UpdateKey</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 02</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
