@@ -3,13 +3,55 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
- o Commented out RMI in property files, this protocol driver is currently
-   buggy.
+ o Perl client library:
+   - Added a retries and delay option to the subscribe/callback tag
+   - Added ReuseAddr => 1 to the Frontier::Daemon
+   Contributed by Jason Martin <jhmartin@toger.us>
+
+ o Python client library:
+   - Added missing return values for remote calls, added publishArr()
+
+ o C client library:
+   - Bugfix in messageUnitToXmlLimited() for msg content smaller 5 bytes
+   - Added support for UDP based publishOneway() and updateOneway()
+     Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
+   - Added PTHREAD_CREATE_DETACHED to cleanup resources
+   - Fixed publishOneway() to be a real 'oneway'
+     Fixed reusingConnectionSocket check on shutdown of callback server
+     Thanks to Michal Masa <xmasam@sgi.felk.cvut.cz> for reporting
+   - Extended multi threading to support calling methods
+     like publish() and subscribe() from within the update() callback thread.
+   - Fixed C demo clients to use xmlBlasterFree() instead of free() directly
+     Thanks to Martin Johnson <mjohnson@quickcut.com.au>
+
+ o C++ client library:
+   - Added UDP datagram support via SOCKET protocol, try
+     java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true
+     PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
+     SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
+     C: HelloWorldUdp -plugin/socket/useUdpForOneway true
+   - Fixed publishOneway()
+   - Added <updateOneway/> support to SubscribeQos
+   - ClientProperty: Fixed float/double etc. assignement warning for templates
+   - Removed boost source from our C++ source tree (we use omnithread)
+   - Requests are now threadsafe: mutual block on requests (update thread is
+     not blocked). For example a publish can not be done simultaneously as a publish on the
+     same connection.
+   - Fixed bug in lexical_cast for string to string on solaris
+   - QueueFactory and ParserFactory are now stateless (no global nor log)
+   - Bugfix in C++ client properties: empty spaces are allowed inside strings.
+   - CorbaDriverFactory and SocketDriverFactory in C++ client keep now
+     driver instances with Global* as key instead of instanceName. 
+   - Added individual callbacks for subscriptions
+   - Added DisconnectQos::setClearClientQueue
+   - Global constructors are now public. The user is responsible for
+     cleaning up additional Global instances.
+
+ o RMI protocol driver:
+   Commented out RMI in property files, this protocol driver is currently buggy.
 
  o MsgUnitRaw needs to implement Serializable for RMI but may not use it for J2ME,
    this issue needs to be resolved
-
- o C client library: Bugfix in messageUnitToXmlLimited() for msg content smaller 5 bytes
 
  o Incompatible JDBC persistence change:
    -> Removed XB_NODES table (is backward compatible)
@@ -37,16 +79,6 @@ Current cvs
 
  o Cluster: Fixed clustered get() to not return message twice
 
- o C++ client: Added UDP datagram support via SOCKET protocol, try
-    java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true
-    C++: PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
-    C++: SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
-    C:   HelloWorldUdp -plugin/socket/useUdpForOneway true
-
- o C++ client: Fixed publishOneway()
-
- o C++ client: Added <updateOneway/> support to SubscribeQos
-
  o Fixed to deliver correct queue size in UpdateQos
 
  o Server side SOCKET plugin: Added support to choose between UDP or TCP
@@ -66,25 +98,11 @@ Current cvs
 
  o Fixed XML dump of properties (jutils.jar)
 
- o C client: Added support for UDP based publishOneway() and updateOneway()
-   Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
-
  o Bugfix for sending ERASE events in UNREFERENCED topics with XPath subscription
-
- o C client: Added PTHREAD_CREATE_DETACHED to cleanup resources
- 
- o C client: 
-     Fixed publishOneway() to be a real 'oneway'
-     Fixed reusingConnectionSocket check on shutdown of callback server
-   Thanks to Michal Masa <xmasam@sgi.felk.cvut.cz> for reporting
-
- o Python client: Added missing return values for remote calls, added publishArr()
+   Topics delivered by XPATH subscriptions don't send erase notifications
+   when they disappear as they match again if the appear again
 
  o XmlRpc access: Added support for message contents of type 'String' besides 'byte[]'
-
- o C++ ClientProperty: Fixed float/double etc. assignement warning for templates
-
- o Removed boost source from our C++ source tree (we use omnithread)
 
  o Support for JDK 1.5 by forcing source/target compilation to 1.4
 
@@ -99,38 +117,12 @@ Current cvs
  
  o added missing logkit and avalon framework to distribution- and client distribution build
 
- o C client library: Extended multi threading to support calling methods
-   like publish() and subscribe() from within the update() callback thread.
- 
- o C++ Clients: requests are now threadsafe: mutual block on requests (update thread is
-   not blocked). For example a publish can not be done simultaneously as a publish on the
-   same connection.
-
- o C++ Clients: fixed bug in lexical_cast for string to string on solaris
-
- o C++ clients: QueueFactory and ParserFactory are now stateless (no global nor log)
-
- o bugfix in c++ client properties: empty spaces are allowed inside strings.
-
- o CorbaDriverFactory and SocketDriverFactory in c++ client keep now
-   driver instances with Global* as key instead of instanceName. 
- 
- o added individual callbacks for subscriptions in c++ client library
- 
- o added DisconnectQos::setClearClientQueue to c++ client library
-
- o Fixed C demo clients to use xmlBlasterFree() instead of free() directly
-   Thanks to Martin Johnson <mjohnson@quickcut.com.au>
-
  o Fixed topic lifecycle: XPATH subscriptions don't
    prevent a topic from going to dead anymore
    Thanks to David Kerry <xml@navahonetworks.com>
 
  o Fixed xml dump to be well formed again
  
- o c++ Global constructors are now public. The user is responsible for
-   cleaning up additional Global instances.
-
  o Fixed get() mime filter query plugin load bug
    Thanks to jlc.xmlblaster.0504@jambotech.com
 
