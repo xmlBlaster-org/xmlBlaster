@@ -11,8 +11,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define true 1
 #define false 0
 
+#ifndef _WINDOWS
 #ifndef u_short
 #define u_short unsigned short
+#endif
 #endif
 
 #define MAX_ERRNO_LEN 256
