@@ -843,8 +843,8 @@ public final class ClusterManager implements I_RunlevelListener
          return;
 
       if (to > from) { // startup
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-            postInit(); // Assuming the protocol drivers are initialized to deliver their addresses
+         if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) {
+            postInit(); // Assuming the protocol drivers are initialized to deliver their addresses, currently they are started at run level 3
          }
       }
       if (to < from) { // shutdown
