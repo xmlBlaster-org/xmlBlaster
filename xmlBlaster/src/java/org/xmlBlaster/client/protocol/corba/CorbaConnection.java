@@ -634,7 +634,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
    /**
     * Enforced by I_XmlBlasterConnection interface (failsafe mode).
-    * see explanations of publish() method.
+    * see explanations of subscribe() method.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException {
