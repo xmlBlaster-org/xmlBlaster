@@ -169,7 +169,7 @@ namespace org { namespace xmlBlaster {
    /** XmlKey queryType enum */
    extern Dll_Export const char * XPATH;
    extern Dll_Export const char * EXACT;
-   // const char * const DOMAIN; // doesn't compile with g++ 3.1.1
+//   extern Dll_Export const char * DOMAIN; // doesn't compile with g++ 3.1.1
    extern Dll_Export const char * D_O_M_A_I_N;
    extern Dll_Export const char * REGEX;
 

@@ -61,8 +61,8 @@ const char * OID_DEAD_LETTER = "__sys__deadLetter";
 
 const char * XPATH = "XPATH";
 const char * EXACT = "EXACT";
-//const char * const Constants::DOMAIN = "DOMAIN"; // doesn't compile with g++ 3.1.1
-const char * D_O_M_A_I_N = "DOMAIN"; // doesn't compile with g++ 3.1.1
+//const char * DOMAIN = "DOMAIN"; // doesn't compile with g++ 3.1.1
+const char * D_O_M_A_I_N = "DOMAIN";
 const char * REGEX       = "REGEX";
 
 const char * SOCKET  = "SOCKET";
