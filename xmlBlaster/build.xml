@@ -62,12 +62,14 @@ Else add it manually.
    <property file="build.properties"/>
  
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="0.74-dev"/>
-   <property name="year" value="2000"/>
+   <property name="version" value="0.79-dev"/>
+   <property name="year" value="2002"/>
  
    <property name="build.compiler" value="classic"/>
    <property name="debug" value="off"/>
    <property name="JVM.target" value="1.1" />
+   <property name="optimize" value="off" />
+   <property name="deprecation" value="off" />
  
    <property name="src.dir" value="./src/java"/>
    <property name="dtd.dir" value="./src/dtd"/>
@@ -138,8 +140,9 @@ Else add it manually.
       <echo message="   cpp-test    --> generates C++ test clients"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
-      <echo message="   dist        --> generates the xmlBlaster distribution"/>
-      <echo message="   clean       --> cleans up the directory"/>
+      <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
+      <echo message="   clean       --> cleans up the class directory"/>
+      <echo message="   delete      --> cleans up the class directory and all created distribution jar files"/>
       <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
       <echo message="                   demonstrates persistent http callbacks"/>
       <echo message="   k2          --> create the J2EE connector"/>
@@ -148,6 +151,7 @@ Else add it manually.
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
+      <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should user your own [false]"/>
       <echo message=""/>
       <echo message=" See the comments inside the build.xml file for more details."/>
       <echo message="-------------------------------------------------------------"/>
@@ -155,6 +159,7 @@ Else add it manually.
       <echo message="Examples:"/>
       <echo message="   ${script} clean"/>
       <echo message="   ${script} all"/>
+      <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
       <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true dist-client"/>
       <echo message=""/>
       <echo message=""/>
@@ -229,6 +234,8 @@ Else add it manually.
             destdir="${build.dest}"
             classpath="${classpath}"
             debug="${debug}"
+            optimize="${optimize}"
+            deprecation="${deprecation}"
             target="${JVM.target}" />
 
       <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
@@ -259,6 +266,8 @@ Else add it manually.
             destdir="${build.dest}"
             classpath="${classpath}:${lib.dir}/${name}.jar"
             debug="${debug}"
+            optimize="${optimize}"
+            deprecation="${deprecation}"
             target="${JVM.target}" />
       <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
@@ -290,6 +299,8 @@ Else add it manually.
             destdir="${build.dest}"
             classpath="${classpath}:${lib.dir}/${name}.jar"
             debug="${debug}"
+            optimize="${optimize}"
+            deprecation="${deprecation}"
             target="${JVM.target}" />
       <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
       <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
@@ -330,7 +341,10 @@ Else add it manually.
       <javac srcdir="${build.src}/javaclients/j2ee/k2/"
             destdir="${build.dest}"
             classpath="${classpath}:${lib.dir}/${name}.jar"
-            debug="${debug}"/>
+            debug="${debug}"
+            optimize="${optimize}"
+            deprecation="${deprecation}"
+            target="${JVM.target}" />
 
       <jar destfile="${build.dir}/JmsAdapter.jar">
          <fileset dir="${build.dest}" includes="**/JmsAdapter.class"/>
@@ -424,11 +438,18 @@ Else add it manually.
    <target name="dist" depends="all">
       <mkdir dir="${dist.dir}"/>
       <mkdir dir="${dist.dir}/bin"/>
-      <mkdir dir="${dist.dir}/src"/>
+      <mkdir dir="${dist.dir}/lib"/>
+      <copy todir="${dist.dir}/bin">
+         <fileset dir="${bin.dir}"/>
+      </copy>
+      <copy todir="${dist.dir}/lib">
+         <fileset dir="${lib.dir}"/>
+      </copy>
+
+      <!-- mkdir dir="${dist.dir}/src"/>
       <mkdir dir="${dist.dir}/demo"/>
       <mkdir dir="${dist.dir}/doc"/>
       <mkdir dir="${dist.dir}/testsuite"/>
-      <mkdir dir="${dist.dir}/lib"/>
 
       <copy todir="${dist.dir}/src/java">
          <fileset dir="${src.dir}"/>
@@ -445,22 +466,16 @@ Else add it manually.
       </copy>
       <copy todir="${dist.dir}/demo">
          <fileset dir="${demo.dir}"/>
-      </copy>
-      <copy todir="${dist.dir}/lib">
-         <fileset dir="${lib.dir}"/>
-      </copy>
-      <copy todir="${dist.dir}/bin">
-         <fileset dir="${bin.dir}"/>
-      </copy>
+      </copy -->
 
       <copy file="README" tofile="${dist.dir}/README"/>
       <copy file="INSTALL" tofile="${dist.dir}/INSTALL"/>
-      <copy file="LICENSE" tofile="${dist.dir}/LICENSE"/>
+      <copy file="doc/LICENSE" tofile="${dist.dir}/LICENSE"/>
       <copy file="config/xmlBlaster.properties.template" tofile="${dist.dir}/config/xmlBlaster.properties.template"/>
       <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template"/>
       <copy file="config/xmlBlaster.policy" tofile="${dist.dir}/config/xmlBlaster.policy"/>
       <copy file=".bashrc" tofile="${dist.dir}/.bashrc"/>
-      <copy file="build.xml" tofile="${dist.dir}/build.xml"/>
+      <!-- copy file="build.xml" tofile="${dist.dir}/build.xml"/ -->
       <jar destfile="${name}-${version}.jar" basedir="${dist.dir}"/>
    </target>
  
@@ -475,6 +490,7 @@ Else add it manually.
       <property name="ADD_COLLECTION" value="false"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
+      <property name="ADD_XML_PARSER" value="false"/>
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
@@ -497,7 +513,19 @@ Else add it manually.
             <echo message="Adding ${lib.dir}/collections.jar for JDK 1.1x support" />
             <unjar src="${lib.dir}/collections.jar" dest="${dist-client.dir}/classes" />
          </case>
-         <default></default>
+         <default>
+            <echo message="ADD_COLLECTION=${ADD_COLLECTION}: No java.util collections added, we assume your client runs with JDK 1.2 or better!" />
+         </default>
+      </switch>
+      <switch value="${ADD_XML_PARSER}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/parser.jar and ${lib.dir}/jaxp.jar XML parser" />
+            <unjar src="${lib.dir}/parser.jar" dest="${dist-client.dir}/classes" />
+            <unjar src="${lib.dir}/jaxp.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default>
+            <echo message="ADD_XML_PARSER=${ADD_XML_PARSER}: No XML parser added, we assume you supply one yourself!" />
+         </default>
       </switch>
       
       <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
@@ -507,7 +535,6 @@ Else add it manually.
       <echo message="--------------------------------------------"/>
       <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
       <echo message="It supports xmlBlaster java clients with the above noted protocols"/>
-      <echo message="Note: The XML parser support is not included, we expect your XML library."/>
       <echo message="--------------------------------------------"/>
    </target>
  
@@ -684,11 +711,7 @@ Else add it manually.
     </target>
  
     <target name="delete" depends="clean">
-       <delete>
-          <fileset dir="${dist.dir}" includes="**"/>
-       </delete>
-       <delete>
-          <fileset dir="${dist-client.dir}" includes="**"/>
-       </delete>
+       <delete dir="${dist.dir}"/>
+       <delete dir="${dist-client.dir}"/>
    </target>
 </project>
