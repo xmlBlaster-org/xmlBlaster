@@ -440,7 +440,7 @@ int main(int argc, char** argv)
          }
       }
 
-      {  /* get synchnronous ... */
+      {  /* get synchronous ... */
          size_t i;
          const char *key = "<key queryType='XPATH'>//key</key>";
          const char *qos = "<qos/>";
@@ -705,6 +705,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
 </requirement>
 
