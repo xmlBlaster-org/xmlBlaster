@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.1 1999/11/23 16:46:20 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.2 1999/11/30 11:19:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -78,12 +78,9 @@ public class ClientSub
          org.omg.PortableServer.POA poa =
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
-         // Intializing my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
+         // Intialize my Callback interface:
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new SubCallback(ME));
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-         // A dummy implementation of the Callback is in:
-         //    xmlBlaster/src/java/org/xmlBlaster/clientIdl/BlasterCallbackImpl.java
-
 
 
          //----------- Login to the server -----------------------
@@ -207,4 +204,51 @@ public class ClientSub
       new ClientSub(args);
       Log.exit(ClientSub.ME, "Good bye");
    }
-}
+} // ClientSub
+
+
+class SubCallback implements BlasterCallbackOperations
+{
+   final String ME;
+
+   /**
+    * Construct a persistently named object.
+    */
+   public SubCallback(java.lang.String name) {
+      this.ME = "SubCallback-" + name;
+      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+   }
+
+
+   /**
+    * Construct a transient object.
+    */
+   public SubCallback() {
+      super();
+      this.ME = "SubCallback";
+      if (Log.CALLS) Log.trace(ME, "Entering constructor without argument");
+   }
+
+
+   /**
+    * This is the callback method invoked from the server
+    * informing the client in an asynchronous mode about new messages
+    */
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         MessageUnit messageUnit = messageUnitArr[ii];
+         XmlKeyBase xmlKey = null;
+         try {
+            xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, e.reason);
+         }
+         Log.info(ME, "================== BlasterCallback update START =============");
+         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + messageUnit.content.length);
+         Log.info(ME, new String(messageUnit.content));
+         Log.info(ME, "================== BlasterCallback update END ===============");
+      }
+   }
+} // SubCallback
+
