@@ -74,8 +74,16 @@
     * LORE http://www-db.Stanford.edu/lore/
     * DOM - RDBMS see http://www.alphaWorks.ibm.com/tech/databasedom
     * OZONE Database see http://www.ozone-db.org/ozone_main.html
+	 * SQL->XML PXSL Servlet: http://www.pault.com/ (store XML in SLQ DB)
   - Content
     How should we store the data blobs?
+  - Test FileDriver with ReiserFS 
+            The FileDriver is not suitable for production purposes.
+            If you really want to use this driver for more than some hundred different messages
+            we recommend to use it with the ReiserFS.<br />
+            Reiserfs is a file system using a plug-in based object oriented variant on classical balanced tree algorithms.<br />
+            See <a href="http://devlinux.com/projects/reiserfs">the ReiserFS homepage</a>
+            for further informations, and download it at <a href="ftp://ftp.suse.com:/pub/suse/i386/update/6.3/reiserfs/">Suse ftp site</a>.
 
 - Evaluate other query engines for better performance, see
    http://www-db.research.bell-labs.com/user/simeon/xquery.html
@@ -110,10 +118,10 @@ xmlBlaster homepage
 -------------------
 - Allow search e.g. with
      glimpse http://glimpse.cs.arizona.edu/
-	  Wilma at http://www.hpc.uh.edu/majordomo/#wilma integrates glimpse and MHonArc
+     Wilma at http://www.hpc.uh.edu/majordomo/#wilma integrates glimpse and MHonArc
   or
-	  ht://Dig http://www.htdig.org/
+     ht://Dig http://www.htdig.org/
   for an example see
      http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/
-	  http://www.hpc.uh.edu/fvwm/archive/
+     http://www.hpc.uh.edu/fvwm/archive/
 
