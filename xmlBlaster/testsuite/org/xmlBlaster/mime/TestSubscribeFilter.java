@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.1 2002/06/08 19:59:45 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/06/15 16:21:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -50,7 +50,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
    private ServerThread serverThread;
-   private int serverPort = 7604;
+   private int serverPort = 7624;
    private int filterMessageContentBiggerAs = 10;
 
    /**

@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.1 2002/06/08 19:59:45 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.2 2002/06/15 16:21:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.mime;
 
@@ -39,14 +39,14 @@ import junit.framework.*;
  */
 public class TestGetFilter extends TestCase
 {
-   private static String ME = "Tim";
+   private static String ME = "TestGetFilter";
    private final Global glob;
 
    private XmlBlasterConnection con = null;
    private String name;
    private String passwd = "secret";
    private ServerThread serverThread;
-   private int serverPort = 7604;
+   private int serverPort = 7615;
    private int filterMessageContentBiggerAs = 10;
 
    /**
