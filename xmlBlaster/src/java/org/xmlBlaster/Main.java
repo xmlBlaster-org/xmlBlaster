@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      Main.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.7 $ $Date: 1999/11/16 18:16:24 $
+Version:   $Id: Main.java,v 1.8 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 

@@ -1,10 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      BlasterCallbackImpl.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
-           $Revision: 1.3 $
-           $Date: 1999/11/12 14:31:29 $
+Version:   $Id: BlasterCallbackImpl.java,v 1.4 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      MainGUI.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.1 $ $Date: 1999/11/15 09:35:48 $
+Version:   $Id: MainGUI.java,v 1.2 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -58,7 +58,7 @@ public class MainGUI extends Frame implements Runnable
    {
       MainGUI mg = new MainGUI();
       mg.run();
-      
+
       new org.xmlBlaster.Main(args);
    }
 }

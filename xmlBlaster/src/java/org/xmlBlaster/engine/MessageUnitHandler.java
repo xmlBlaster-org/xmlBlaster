@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-           $Revision: 1.3 $  $Date: 1999/11/12 14:31:32 $
+Version:   $Id: MessageUnitHandler.java,v 1.4 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 

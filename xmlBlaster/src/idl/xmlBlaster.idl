@@ -2,8 +2,7 @@
 Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
-Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.13 1999/11/16 18:16:21 ruff Exp $
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   JacORB:
@@ -12,6 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
+Version:   $Id: xmlBlaster.idl,v 1.14 1999/11/16 18:44:45 ruff Exp $
 ================================================================================
 */
 
@@ -38,9 +38,10 @@ module serverIdl
    typedef string ExceptionIdType;
 
    /**
-    * This contains all informations about a Message and the Message itself
+    * This contains all informations about a Message and the Message itself.
+    *
     * @param xmlKey  Unique message key with index attributes
-    * @param content The data itself (XML data, java objects, ...)
+    * @param content The data itself (XML data, java objects, jpeg pictures ...)
     */
    struct MessageUnit {
       XmlType xmlKey;
@@ -55,6 +56,7 @@ module serverIdl
 
 /**
  * Decration of the client Callback interface.
+ *
  * Declared before the server, so that the server declaration
  * can use the BlasterCallback interface
  *
@@ -134,7 +136,7 @@ module serverIdl
     *   - Task handling
     *     This feature allows automatical notification, when a task
     *     for a special user is available.
-    *   - Inter client communication (chat rooms, grahic rooms etc.)
+    *   - Inter client communication (chat rooms, graphic rooms etc.)
     *   - Broadcasts over well known attribute-keys
     *     or by notifing all known client-callback interfaces
     *   - email like instant notifications
@@ -144,10 +146,11 @@ module serverIdl
     *   - controler support functionality like subsystem-alive slots,
     *     start and stop events etc.
     *   - configuration attributes with auto-notification
+    *   - Central logging facility for client/server systems
     *
     * RELATED DESIGN PATTERNS:
-    *   @see Java Message Service, http://java.sun.com/products/jms/
-    *   @see Java Naming & Directory Interface, www.javasoft.com/products/jndi
+    *   @see JMS - Java Message Service, http://java.sun.com/products/jms/
+    *   @see JNDI - Java Naming & Directory Interface, www.javasoft.com/products/jndi
     *   @see Observer Pattern, Gamma et.al
     *   @see CORBA Property Service, http://www.omg.org
     *   @see CORBA Notifiction Service ftp://ftp.omg.org/pub/docs/telecom/98-01-01.pdf
@@ -231,8 +234,6 @@ module serverIdl
        */
       long erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
-
-
    };
 
 }; // org::xmlBlaster::serverIdl
@@ -240,22 +241,27 @@ module serverIdl
 
 
 /**
- * The xmlBlaster authentication interface
- * If the login is successfull, an IOR for the xmlBlaster server interface is returned
- * This is a sort of a factory
+ * The xmlBlaster authentication interface.
+ * <p>
+ * Use this interface to access via login() the xmlBlaster
  */
 module authenticateIdl
 {
    interface AuthServer
    {
       /**
-       * Login to server
+       * Login to server.
+       * <p>
+       * This is a factory for server interfaces
+       *
        * @param loginName A unique name - Not yet necessary
        * @param passwd    Pasword - Not yet necessary
        * @param cb        Reference to the BlasterCallback interface or null for synchronous access
        * @param qos       Quality of Service, flags for additional client informations
        *                  like clientCertificate (X.509), timeouts etc.
-       * @return ior      The IOR of the server interface
+       *
+       * @return if the login is successfull, the xmlBlaster server interface is returned
+       * @exception if the login fails
        */
       serverIdl::Server login(in string loginName, in string passwd,
                    in clientIdl::BlasterCallback cb,
@@ -265,6 +271,8 @@ module authenticateIdl
 
       /**
        * Logout from server
+       *
+       * @param The server interface handle from the login() method
        */
       void logout(in serverIdl::Server xmlBlaster) raises (serverIdl::XmlBlasterException);
    };

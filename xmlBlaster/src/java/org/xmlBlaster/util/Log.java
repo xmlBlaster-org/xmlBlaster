@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      RequestBroker.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-           $Revision: 1.8 $  $Date: 1999/11/16 18:16:25 $
+Version:   $Id: Log.java,v 1.9 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      StopWatch.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-           $Revision: 1.2 $  $Date: 1999/11/15 14:47:54 $
+Version:   $Id: StopWatch.java,v 1.3 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -47,7 +47,7 @@ public class StopWatch
       return str;
    }
 
- 
+
    /**
     * Nicely formatted output containing elapsed time since
     * Construction or since last restart()
@@ -59,9 +59,9 @@ public class StopWatch
       long sec = (seconds % 3600) % 60;
       long min = (seconds % 3600) / 60;
       long hour = seconds / 3600;
-      
+
       StringBuffer strbuf = new StringBuffer(60);
-      
+
       strbuf.append(" [ ");
 
       if (hour > 0L)

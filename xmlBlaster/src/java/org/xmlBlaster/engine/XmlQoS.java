@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      XmlQoS.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-           $Revision: 1.1 $  $Date: 1999/11/11 12:03:46 $
+Version:   $Id: XmlQoS.java,v 1.2 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 

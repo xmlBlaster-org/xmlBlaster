@@ -1,10 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      Authenticate.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-           $Revision: 1.6 $
-           $Date: 1999/11/16 18:16:24 $
+Version:   $Id: Authenticate.java,v 1.7 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -21,6 +20,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 import java.util.*;
 
 import org.omg.PortableServer.*;
+
 
 /**
  * Authenticate. 
@@ -83,7 +83,7 @@ public class Authenticate
    {
       this.authServerImpl = authServerImpl;
 
-      if (Log.CALLS) Log.trace(ME, "Entering constructor");
+      if (Log.CALLS) Log.calls(ME, "Entering constructor");
 
       orb = authServerImpl.getOrb();
 
@@ -115,7 +115,7 @@ public class Authenticate
 
          xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
          poaMgr.activate();
-         
+
          // orb.run();
          // Log.info(ME, "Default Active Object Map ID=" + default_oid);
          if (Log.TRACE) Log.trace(ME, "Default xmlBlasterServant activated");
@@ -218,7 +218,7 @@ public class Authenticate
       try { 
          // who is it?
          // find out by asking the xmlBlasterPOA
-         
+
          // org.omg.PortableServer.Current poa_current = xmlBlasterPOA.getORB().orb.getPOACurrent();
          org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
                                                       orb.resolve_initial_references("POACurrent"));
@@ -240,7 +240,8 @@ public class Authenticate
       }
       ClientInfo clientInfo = (ClientInfo)obj;
 
-      Log.info(ME, "Succesfully granted access for " + clientInfo.toString() + " oid=<" + uniqueClientKey + ">" + stop.nice());
+      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() + " oid=<" + uniqueClientKey + ">" + stop.nice());
+      if (Log.TIME) Log.time(ME, "Elapsed time in check()" + stop.nice());
       return clientInfo;
    }
 }

@@ -1,10 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      RequestBroker.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-           $Revision: 1.8 $
-           $Date: 1999/11/16 18:16:25 $
+Version:   $Id: RequestBroker.java,v 1.9 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -130,8 +129,8 @@ public class RequestBroker
 
             while (iterator.hasNext())
             {
-               if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
                BlasterCallback cb = sub.getClientInfo().getCB();
                XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
                MessageUnit[] marr = new MessageUnit[1];

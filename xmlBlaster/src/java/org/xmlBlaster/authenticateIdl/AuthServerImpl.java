@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-           $Revision: 1.6 $  $Date: 1999/11/16 18:16:24 $
+Version:   $Id: AuthServerImpl.java,v 1.7 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
@@ -32,7 +32,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public AuthServerImpl(org.omg.CORBA.ORB orb)
    {
-      if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
+      if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.authenticate = Authenticate.getInstance(this);
    }
@@ -49,7 +49,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public AuthServerImpl()
    {
       super();
-      if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
+      if (Log.CALLS) Log.calls(ME, "Entering constructor without ORB argument");
       this.authenticate = Authenticate.getInstance(this);
    }
 
@@ -63,7 +63,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
                        BlasterCallback cb,
                        String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal + ")"*/);
+      if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal + ")"*/);
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       org.xmlBlaster.serverIdl.Server server =
@@ -80,7 +80,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Entering logout()");
+      if (Log.CALLS) Log.calls(ME, "Entering logout()");
 
       authenticate.logout(xmlServer);
    }

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      ClientPeer.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-           $Revision: 1.1 $  $Date: 1999/11/14 21:53:18 $
+Version:   $Id: ClientPeer.java,v 1.2 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -24,7 +24,7 @@ public class ClientPeer
       if (Log.HACK_POA) {
          Log.warning(ME, "Entering constructor: " + niceName);
       }
-      
+
       ME += "-";
       ME += niceName;
    }

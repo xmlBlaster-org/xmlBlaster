@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-           $Revision: 1.3 $  $Date: 1999/11/11 16:15:00 $
+Version:   $Id: SubscriptionInfo.java,v 1.4 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 

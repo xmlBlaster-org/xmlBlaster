@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+Name:      Client.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Demo code for a client using xmlBlaster
+Version:   $Id: Client.java,v 1.14 1999/11/16 18:44:48 ruff Exp $
+------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
@@ -129,7 +136,7 @@ public class Client
          }
          Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
 
-         //----------- Logout -----------------------
+         Log.trace(ME, "Trying logout ...");
          try {
             authServer.logout(xmlServer);
          } catch(XmlBlasterException e) {

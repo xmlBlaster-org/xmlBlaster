@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      ClientInfo.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org (LGPL)
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-           $Revision: 1.6 $  $Date: 1999/11/15 14:47:54 $
+Version:   $Id: ClientInfo.java,v 1.7 1999/11/16 18:44:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * ClientInfo stores all known data about a client
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Name:  $
  */
 public class ClientInfo
