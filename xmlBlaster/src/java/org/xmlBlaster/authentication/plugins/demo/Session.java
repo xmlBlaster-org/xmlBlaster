@@ -3,6 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -43,14 +44,27 @@ public class Session implements I_Session {
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
     *                                exist or the passwd is incorrect.
     */
-   public String init(String xmlQoS_literal) throws XmlBlasterException {
+   public String init(String securityQos_literal) throws XmlBlasterException {
+      return init(new SecurityQos(securityQos_literal));
+   }
+
+
+   /**
+    * Initialize the Session for a login or connect call.<br/>
+    * [I_Session]
+    * <p/>
+    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
+    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
+    *                                exist or the passwd is incorrect.
+    */
+   public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
-      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
-      subject = determineSubject(xmlQoS.getUserId(), xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
+      subject = determineSubject(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 
       return null; // no extra information
    }
+
 
    public void changeSessionId(String sessionId) throws XmlBlasterException {
       if(this.sessionId.equals(sessionId)) return;

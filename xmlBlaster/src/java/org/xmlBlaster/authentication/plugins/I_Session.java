@@ -7,7 +7,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * @author  W. Kleinertz
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2001/09/08 22:51:50 $)
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2001/12/20 22:04:41 $)
  */
 
 public interface I_Session {
@@ -17,10 +17,23 @@ public interface I_Session {
     * E.g.: An implementation could include authentication etc.
     * <p/>
     * @param String A qos-literal. The meaning will be defined by the real implementation.
-    * @return String Like the securityQoS param, but the other direction.
+    * @return String Like the securityQos param, but the other direction.
     * @exception XmlBlasterException The initialization failed (key exchange, authentication ... failed)
     */
-   public String init(String securityQoS) throws XmlBlasterException;
+   public String init(String securityQos) throws XmlBlasterException;
+
+
+   /**
+    * Initialize a new session.<br\>
+    * E.g.: An implementation could include authentication etc.
+    * <p/>
+    * @param String The already parsed QoS. The meaning will be defined by the real implementation.
+    * @return String Like the securityQos param, but the other direction.
+    * @exception XmlBlasterException The initialization failed (key exchange, authentication ... failed)
+    * @see #init(String)
+    */
+   public String init(I_SecurityQos securityQos) throws XmlBlasterException;
+
 
    /**
     * Get the owner of this session.

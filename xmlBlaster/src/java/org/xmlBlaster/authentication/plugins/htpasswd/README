@@ -56,6 +56,17 @@ Then configure xmlBlaster for that htpasswd auth plugin :
 That not a perfomante way for authentification, but it's very simple for managing 3 to 10 users ...
 That's my need ;o)
 
+The used connect() QoS looks like this:
+
+  <securityService type="htpasswd" version="1.0">
+     <![CDATA[
+     <user>Joel</user>
+     <passwd>secret</passwd>
+     ]]>
+  </securityService>
+
+
+
 // TODO :
 
 Following the Apache style htpasswd / htaccess.

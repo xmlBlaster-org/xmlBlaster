@@ -7,12 +7,15 @@ import org.xml.sax.helpers.*;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.jutils.text.StringHelper;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.1 $ (State: $State) (Date: $Date: 2001/09/04 17:25:21 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/12/20 22:04:41 $)
  */
-public class SecurityQos extends SaxHandlerBase {
+public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
+{
 
    private static String ME = "SecurityQos";
 
@@ -29,9 +32,18 @@ public class SecurityQos extends SaxHandlerBase {
    private        String    a2BlasterSessionId = null;
 
 
-   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException {
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
-      init(xmlQoS_literal);
+   public SecurityQos(String xmlQos_literal) throws XmlBlasterException {
+      parse(xmlQos_literal);
+   }
+
+   public void parse(String xmlQos_literal) throws XmlBlasterException
+   {
+      // Strip CDATA tags that we are able to parse it:
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
+
+      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
+      init(xmlQos_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
@@ -46,7 +58,7 @@ public class SecurityQos extends SaxHandlerBase {
     * <p/>
     * @return String The security plugin version.
     */
-   public String getVersion() {
+   public String getPluginVersion() {
       return version;
    }
 
@@ -55,7 +67,7 @@ public class SecurityQos extends SaxHandlerBase {
     * <p/>
     * @return String The security plugin type.
     */
-   public String getType() {
+   public String getPluginType() {
       return type;
    }
 
@@ -66,6 +78,16 @@ public class SecurityQos extends SaxHandlerBase {
     */
    public String getUserId() {
       return user;
+   }
+
+   public void setUserId(String userId)
+   {
+      this.user = userId;
+   }
+
+   public void setCredential(String cred)
+   {
+      this.passwd = cred;
    }
 
    /**
@@ -172,17 +194,20 @@ public class SecurityQos extends SaxHandlerBase {
    /**
     * Dump state of this object into a XML ASCII string.
     */
-   public final String toXml()
+   public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(200);
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
 
-      sb.append("<securityService type=\"" + getType() + "\" version=\"" + getVersion() + "\">\n");
-      sb.append("   <![CDATA[");
-      sb.append("   <user>" + user + "</user>\n");
-      sb.append("   <passwd>" + passwd + "</passwd>\n");
-      sb.append("   ]]>");
-      sb.append("   <sessionId>" + a2BlasterSessionId + "</sessionId>");
-      sb.append("</securityService>");
+      sb.append(offset).append("<securityService type=\"").append(getPluginType()).append("\" version=\"").append(getPluginVersion()).append("\">\n");
+      sb.append(offset).append("   <![CDATA[");
+      sb.append(offset).append("   <user>").append(user).append("</user>\n");
+      sb.append(offset).append("   <passwd>").append(passwd).append("</passwd>\n");
+      sb.append(offset).append("   ]]>");
+      sb.append(offset).append("   <sessionId>").append(a2BlasterSessionId).append("</sessionId>");
+      sb.append(offset).append("</securityService>");
 
       return sb.toString();
    }

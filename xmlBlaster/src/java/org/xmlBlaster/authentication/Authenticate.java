@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.43 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.44 2001/12/20 22:04:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -77,22 +77,27 @@ final public class Authenticate implements I_Authenticate
    /**
     * Authentication of a client.
     * <p>
-    * @param xmlQoS_literal
-    *     <pre>
-    *        &lt;client>
-    *           &lt;compress type='gzip'>
-    *              1000
-    *           &lt;/compress>
-    *           &lt;queue>
-    *              &lt;size>
-    *                 1000
-    *              &lt;/size>
-    *              &lt;timeout>
-    *                 3600
-    *              &lt;/timeout>
-    *           &lt;/queue>
-    *        &lt;/client>
-    *     </pre>
+    * If the qos contains security tags with credentials, e.g.
+    * <pre>
+    *  &lt;qos>
+    *     &lt;securityService type="simple" version="1.0">
+    *        &lt;![CDATA[
+    *           &lt;user>michele&lt;/user>
+    *           &lt;passwd>secret&lt;/passwd>
+    *        ]]>
+    *     &lt;/securityService>
+    *  &lt;/qos>
+    * </pre>
+    * these are stronger and the given loginName / password arguments of this
+    * method are ignored. 
+    * @param xmlQoS_literal, for example
+    * <pre>
+    *    &lt;qos>
+    *       &lt;callback type='XML-RPC'>
+    *          http:/www.mars.universe:8080/RPC2
+    *       &lt;/callback>
+    *    &lt;/qos>
+    * </pre>
     * @param sessionId The user session ID if generated outside, otherwise null
     * @return The sessionId on successful login
     * @exception XmlBlasterException Access denied
@@ -138,11 +143,15 @@ final public class Authenticate implements I_Authenticate
       }
 
       sessionSecurityCtx = securityMgr.reserveSession(sessionId);
-      String securityQoS = "<securityPlugin type=\"" + DEFAULT_SECURITYPLUGIN_TYPE +
+
+      String securityQoS = xmlQoS.getSecurityData();
+      if (securityQoS == null)
+         securityQoS = "<securityPlugin type=\"" + DEFAULT_SECURITYPLUGIN_TYPE +
                            "\" version=\"" + DEFAULT_SECURITYPLUGIN_VERSION + "\">\n" +
                            "   <user>" + loginName + "</user>\n" +
                            "   <passwd>" + passwd + "</passwd>\n" +
                            "</securityPlugin>";
+      
       String clientSecurityInfo = sessionSecurityCtx.init(securityQoS); // throws XmlBlasterExceptions
       if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
          Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
@@ -220,10 +229,10 @@ final public class Authenticate implements I_Authenticate
 
       // --- try to get a suitable SecurityManager ----------------------------
       securityMgr = plgnLdr.getManager(connectQos.getSecurityPluginType(),
-                                               connectQos.getSecurityPluginVersion()); // throws XmlBlasterExceptions
+                                       connectQos.getSecurityPluginVersion()); // throws XmlBlasterExceptions
 
       sessionSecurityCtx = securityMgr.reserveSession(sessionId);
-      String clientSecurityInfo = sessionSecurityCtx.init(connectQos.getSecurityData()); // throws XmlBlasterExceptions
+      String clientSecurityInfo = sessionSecurityCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions
       if (clientSecurityInfo != null && clientSecurityInfo.length() > 1)
          Log.warn(ME, "Ignoring security info: " + clientSecurityInfo);
       subject = sessionSecurityCtx.getSubject();
@@ -280,10 +289,10 @@ final public class Authenticate implements I_Authenticate
       fireClientEvent(clientInfo, true);
 
       // --- compose an answer -----------------------------------------------
-      ConnectReturnQos returnQos = new ConnectReturnQos(connectQos.toXml());
+      ConnectReturnQos returnQos = new ConnectReturnQos(connectQos);
       returnQos.setSessionId(sessionId); // clientSecurityInfo is not coded yet !
 
-      if (Log.DUMP) Log.dump(ME, returnQos.toXml());
+      if (Log.DUMP) Log.dump(ME, "Returned QoS:\n" + returnQos.toXml());
       Log.info(ME, "Successful login for client " + subject.getName());
       if (Log.CALL) Log.call(ME, "-------END-connect()---------");
       if (Log.DUMP) Log.dump(ME, toXml().toString());

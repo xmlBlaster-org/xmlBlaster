@@ -3,6 +3,7 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -60,26 +61,35 @@ public class Session
    }//Session
 
    /**
-    * Initialize the Session. (In this case, it's a login.)<br/>
+    * Initialize the Session. (In this case, it's a login or connect.)<br/>
     * [I_Session]
     * <p/>
     * @param String A xml-String containing the loginname, password, etc.
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
     *                                exist or the passwd is incorrect.
     */
-   public String init( String xmlQoS_literal ) throws XmlBlasterException {
+   public String init( String securityQos_literal ) throws XmlBlasterException {
+      return init(new SecurityQos(securityQos_literal));
+   }
 
+   /**
+    * Initialize the Session for a login or connect call.<br/>
+    * [I_Session]
+    * <p/>
+    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
+    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
+    *                                exist or the passwd is incorrect.
+    */
+   public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
-      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
-
-      loginName = xmlQoS.getUserId();
-      String passwd = xmlQoS.getCredential();
+      loginName = securityQos.getUserId();
+      String passwd = ((SecurityQos)securityQos).getCredential();
 
       if (Log.TRACE) Log.trace( ME, "Checking password ...");
       authenticated = htpasswd.checkPassword(loginName, passwd);
 
       if (Log.TRACE) Log.trace( ME, "Checking subject ...");
-      subject = determineSubject(xmlQoS.getUserId(), xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
+      subject = determineSubject(securityQos.getUserId(), passwd); // throws XmlBlasterException if authentication fails
 
       if (Log.TRACE) Log.trace( ME, "The password" /*+ passwd */+ " for " + loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
 

@@ -46,14 +46,14 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       this.passwd = password;
    }
 
-   public void parse(String xmlQoS_literal) throws XmlBlasterException
+   public void parse(String xmlQos_literal) throws XmlBlasterException
    {
       // Strip CDATA tags that we are able to parse it:
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
 
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
-      init(xmlQoS_literal);
+      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
+      init(xmlQos_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
@@ -163,7 +163,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 
    public String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(200);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
@@ -171,13 +171,13 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       if(passwd==null) passwd="";
       if(user==null) user="";
 
-      sb.append(offset+"<securityService type=\""+type+"\" version=\""+version+"\">");
+      sb.append(offset).append("<securityService type=\"").append(type).append("\" version=\"").append(version).append("\">");
       // The XmlRpc driver does not like it.
-      sb.append(offset+"   <![CDATA[");
-      sb.append(offset+"      <user>"+user+"</user>");
-      sb.append(offset+"      <passwd>"+passwd+"</passwd>");
-      sb.append(offset+"   ]]>");
-      sb.append(offset+"</securityService>");
+      sb.append(offset).append("   <![CDATA[");
+      sb.append(offset).append("      <user>").append(user).append("</user>");
+      sb.append(offset).append("      <passwd>").append(passwd).append("</passwd>");
+      sb.append(offset).append("   ]]>");
+      sb.append(offset).append("</securityService>");
       return sb.toString();
    }
 

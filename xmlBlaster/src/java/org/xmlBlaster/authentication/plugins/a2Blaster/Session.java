@@ -6,13 +6,14 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.client.api.CorbaConnection;
 
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2001/09/05 12:21:26 $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2001/12/20 22:04:41 $)
  */
 
 public class Session implements I_Session, I_Subject {
@@ -90,18 +91,29 @@ public class Session implements I_Session, I_Subject {
     *                                exist, the passwd or the sessionId is incorrect.
     * implements: I_Session.init();<br>
     */
-   public String init(String xmlQoS_literal) throws XmlBlasterException {
+   public String init(String securityQos_literal) throws XmlBlasterException {
+      return init(new SecurityQos(securityQos_literal));
+   }
+
+   /**
+    * Initialize the Session for a login or connect call.<br/>
+    * [I_Session]
+    * <p/>
+    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
+    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
+    *                                exist or the passwd is incorrect.
+    */
+   public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME+".init(String qos=...)=...", "-------START-----\n");
       String result = null;
       authenticated = false;
-      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
-      name = xmlQoS.getUserId();
+      name = securityQos.getUserId();
 
       // Ok, we have to decide, if we have to log on the a2Blaster, or if the
       // Client has done it, and we only use this session.
-      a2BlasterSessionId = xmlQoS.getA2BlasterSessionId();
+      a2BlasterSessionId = ((SecurityQos)securityQos).getA2BlasterSessionId();
       if (a2BlasterSessionId == null) { // we've to do the job
-         a2BlasterSessionId = authenticate(xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
+         a2BlasterSessionId = authenticate(((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
       }
 
       result ="   <securityPlugin type=\""+Manager.TYPE+"\" version=\""+Manager.VERSION+"\">\n"+

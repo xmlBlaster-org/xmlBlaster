@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.3 2001/09/05 13:11:18 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.4 2001/12/20 22:04:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -227,7 +227,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Return the SecurityPlugin specific information.
     * <p/>
-    * @return String depending on plugin, e.g.
+    * @return String depending on plugin, or null e.g.
     * <pre>
     *  &lt;securityService type=\"gui\" version=\"3.0\">
     *     &lt;![CDATA[
@@ -238,7 +238,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * </pre>
     */
    public String getSecurityData() {
-      return securityQos.toXml("   ");
+      if (securityQos != null)
+         return securityQos.toXml("   ");
+      else
+         return null;
    }
 
 
@@ -386,6 +389,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       addressArr = null; // reset to be recalculated on demand
    }
 
+   /**
+    * @return the login credentials or null if not set
+    */
    public I_SecurityQos getSecurityQos() throws XmlBlasterException
    {
       return this.securityQos;

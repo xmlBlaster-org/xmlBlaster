@@ -38,19 +38,19 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    {
    }
 
-   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException
+   public SecurityQos(String xmlQos_literal) throws XmlBlasterException
    {
-      parse(xmlQoS_literal);
+      parse(xmlQos_literal);
    }
 
-   public void parse(String xmlQoS_literal) throws XmlBlasterException
+   public void parse(String xmlQos_literal) throws XmlBlasterException
    {
       // Strip CDATA tags that we are able to parse it:
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
+      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
 
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
-      init(xmlQoS_literal);
+      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
+      init(xmlQos_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 

@@ -6,6 +6,18 @@ import org.xmlBlaster.util.XmlBlasterException;
  *
  * The reason is for clients to access xmlBlaster
  * transparently from the authentication method
+ * <p />
+ * Here is a typical example for a password based QoS
+ * <pre>
+ *  &lt;qos>
+ *     &lt;securityService type="simple" version="1.0">
+ *        &lt;![CDATA[
+ *           &lt;user>michele&lt;/user>
+ *           &lt;passwd>secret&lt;/passwd>
+ *        ]]>
+ *     &lt;/securityService>
+ *  &lt;/qos>
+ * </pre>
  */
 public interface I_SecurityQos {
 

@@ -3,6 +3,7 @@ package org.xmlBlaster.authentication.plugins.ldap;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -48,11 +49,23 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
-      authenticated = false;
-      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
+      return init(new SecurityQos(xmlQoS_literal));
+   }
 
-      loginName = xmlQoS.getUserId();
-      String passwd = xmlQoS.getCredential();
+
+   /**
+    * Initialize the Session for a login or connect call.<br/>
+    * [I_Session]
+    * <p/>
+    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
+    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
+    *                                exist or the passwd is incorrect.
+    */
+   public String init(I_SecurityQos securityQos) throws XmlBlasterException {
+      authenticated = false;
+
+      loginName = securityQos.getUserId();
+      String passwd = ((SecurityQos)securityQos).getCredential();
 
       if (Log.TRACE) Log.trace(ME, "Checking password ...");
       authenticated = ldap.checkPassword(loginName, passwd);

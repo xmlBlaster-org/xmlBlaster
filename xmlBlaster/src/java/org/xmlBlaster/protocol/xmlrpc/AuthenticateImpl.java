@@ -14,6 +14,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.jutils.text.StringHelper;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
  * The methods of this class are callable bei XML-RPC clients.
@@ -58,7 +59,15 @@ public class AuthenticateImpl
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       ConnectQos connectQos = new ConnectQos(qos_literal);
-      connectQos.setSecurityPluginData(null, null, loginName, passwd);
+      I_SecurityQos securityQos = connectQos.getSecurityQos();
+      if (securityQos == null)
+         connectQos.setSecurityPluginData(null, null, loginName, passwd);
+      else {
+         loginName = securityQos.getUserId();
+         passwd = "";
+         if (Log.TRACE) Log.trace(ME, "login() method uses security plugin from qos instead of supplied loginName/password");
+      }
+         
 
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
