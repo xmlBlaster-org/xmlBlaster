@@ -81,7 +81,8 @@ AUTHOR:
          function cleanup()
          {
             if ((typeof top.xmlBlasterWindow) != "undefined" &&
-                (typeof top.xmlBlasterWindow.location) != "undefined")
+                (typeof top.xmlBlasterWindow.location) != "undefined" &&
+                top.xmlBlasterWindow.location != null)
                top.xmlBlasterWindow.location.href = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=logout";
          }
       </script>
