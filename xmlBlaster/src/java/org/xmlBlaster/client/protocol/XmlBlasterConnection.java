@@ -957,18 +957,25 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public synchronized boolean disconnect(DisconnectQos qos, boolean flush, boolean shutdown, boolean shutdownCb)
    {
       if (Log.CALL) Log.call(ME, "disconnect() ...");
+
+      if (disconnectInProgress) {
+         Log.warn(ME, "Calling disconnect again is ignored, you are in shutdown progress already");
+         return false;
+      }
+
       disconnectInProgress = true;
 
       killPing();
 
       if (!isLoggedIn()) {
-         if (isInFailSaveMode() || recorder != null && recorder.size() > 0)
-            Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invocations/messages in the queue");
-         else
-            Log.trace(ME, "No logout, you are not logged in");
+         Log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
          disconnectInProgress = false;
+         //Thread.currentThread().dumpStack();
          return false;
       }
+
+      if (recorder != null && recorder.size() > 0)
+         Log.warn(ME, "You called disconnect(). Please note that there are " + recorder.size() + " unsent invocations/messages in the queue");
 
       synchronized (callbackMap) {
          Set keys = callbackMap.keySet();
