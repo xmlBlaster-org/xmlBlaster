@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/13 17:20:38 $
+           $Date: 1999/11/14 21:55:20 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -28,16 +28,15 @@ public class ServerImpl implements ServerOperations {    // tie approach
    private RequestBroker requestBroker;
    private Authenticate authenticate;
 
-
    /**
     * Construct a persistently named object.
     */
-   public ServerImpl(org.omg.CORBA.ORB orb)
+   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate)
    {
       if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.requestBroker = RequestBroker.getInstance(this);
-      this.authenticate = Authenticate.getInstance(this);
+      this.authenticate = authenticate;
    }
 
 
@@ -47,33 +46,12 @@ public class ServerImpl implements ServerOperations {    // tie approach
    public ServerImpl()
    {
       super();
+      /*
       if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
       this.requestBroker = RequestBroker.getInstance(this);
-      this.authenticate = Authenticate.getInstance(this);
-   }
-
-
-   /**
-    * Authentication of a client
-    * @param cb The Callback interface of the client
-    * @return a unique sessionId for the client, to be used in following calls
-    */
-   public String login(String loginName, String passwd,
-                       BlasterCallback cb,
-                       String qos_literal) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName + ", qos=" + qos_literal + ")");
-      return authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
-   }
-
-
-   /**
-    * Logout of a client
-    */
-   public void logout(String sessionId) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.trace(ME, "Entering logout(sessionId=" + sessionId);
-      authenticate.logout(sessionId);
+      this.authenticate = Authenticate.getInstance();
+      */
+      Log.panic(ME, "Wrong constructor");
    }
 
 
@@ -83,6 +61,18 @@ public class ServerImpl implements ServerOperations {    // tie approach
    public void subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering subscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
+
+      if (Log.HACK_POA) {
+         try {
+            org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
+                                                         orb.resolve_initial_references("POACurrent"));
+            Log.warning(ME, "subscribe for oid: " + poa_current.get_object_id());
+         } catch (Exception e) {
+            Log.error(ME, "subscribe for oid");
+         }
+      }
+
+
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       requestBroker.subscribe(authenticate.check(sessionId), xmlKey, xmlQoS);
@@ -123,7 +113,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
    public int erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       authenticate.check(sessionId);
-      
+
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");

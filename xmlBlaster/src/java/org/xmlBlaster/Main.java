@@ -3,13 +3,15 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.4 $
-           $Date: 1999/11/11 12:07:53 $
+           $Revision: 1.5 $
+           $Date: 1999/11/14 21:55:16 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
+import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.serverIdl.*;
+import org.xmlBlaster.authenticateIdl.*;
 import java.io.*;
 import org.omg.CosNaming.*;
 
@@ -19,7 +21,8 @@ import org.omg.CosNaming.*;
  */
 public class Main
 {
-   org.omg.CORBA.ORB orb = null;
+   final private String ME = "Main";
+   static public org.omg.CORBA.ORB orb;
 
    public Main( String[] args )
    {
@@ -29,8 +32,17 @@ public class Main
          org.omg.PortableServer.POA poa = 
          org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
-         org.omg.CORBA.Object o = poa.servant_to_reference(new ServerPOATie(new ServerImpl(orb)) );
-         // org.omg.CORBA.Object o = poa.servant_to_reference(new ServerImpl(orb));
+         // USING TIE:
+         org.omg.PortableServer.Servant servantAuth = new AuthServerPOATie(new AuthServerImpl(orb));
+         // NOT TIE:
+         // org.omg.PortableServer.Servant servantAuth = new AuthServerImpl(orb);
+
+         // poa.set_servant(servantAuth); OK as well?
+         org.omg.CORBA.Object o = poa.servant_to_reference(servantAuth);
+
+         Log.info(ME, "Active Object Map ID=" + poa.servant_to_id(servantAuth));
+         Log.info(ME, "Active Object Map ID=" + poa.servant_to_id(servantAuth));
+         Log.info(ME, "Active Object Map ID=" + poa.servant_to_id(servantAuth));
 
          if( args.length == 1 ) 
          {
@@ -47,7 +59,7 @@ public class Main
             NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
             NameComponent [] name = new NameComponent[1];
             name[0] = new NameComponent();
-            name[0].id = "xmlBlaster";
+            name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
 
             nc.bind(name, o);
@@ -60,9 +72,9 @@ public class Main
             // jacorb.naming.NameServer.registerService( o, "grid" );
          }
       } 
-      catch ( Exception e )
-      {
+      catch ( Exception e ) {
          e.printStackTrace();
+         Log.panic(ME, e.toString());
       }
       //System.exit(0);
       orb.run();

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.4 $  $Date: 1999/11/10 20:26:04 $
+           $Revision: 1.5 $  $Date: 1999/11/14 21:55:20 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,6 +14,8 @@ package org.xmlBlaster.util;
 public class Log
 {
    private final static String ME = "Log";
+
+   public static boolean HACK_POA = true;
 
    /**
     * Switch DEBUG mode on or of for performance reasons

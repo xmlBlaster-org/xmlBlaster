@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = util serverIdl engine clientIdl
+SUB_DIRS = util authenticateIdl serverIdl engine authentication clientIdl 
 LOCAL_FILES = \
 			$(CLASS_DIR)/Main.class \
 			$(CLASS_DIR)/Client.class

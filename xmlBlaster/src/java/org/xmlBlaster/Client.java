@@ -1,6 +1,7 @@
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
+import org.xmlBlaster.authenticateIdl.*;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 import jacorb.naming.NameServer;
@@ -14,22 +15,23 @@ public class Client
 
       org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init(args,null);
       try {
+         AuthServer authServer;
          Server xmlServer;
 
          if(args.length==1 ) {
              // args[0] is an IOR-string 
 
-             xmlServer = ServerHelper.narrow(orb.string_to_object(args[0]));
+             authServer = AuthServerHelper.narrow(orb.string_to_object(args[0]));
          } 
          else {
             // CORBA compliant:
             NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
             NameComponent [] name = new NameComponent[1];
             name[0] = new NameComponent();
-            name[0].id = "xmlBlaster";
+            name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
 
-            xmlServer = ServerHelper.narrow(nc.resolve(name));
+            authServer = AuthServerHelper.narrow(nc.resolve(name));
          }
 
          // Getting the default POA implementation "RootPOA"
@@ -54,10 +56,18 @@ public class Client
          try {
             String loginName = "Karl";
             String passwd = "some";
-            sessionId = xmlServer.login(loginName, passwd, callback, qos);
+            sessionId = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
+
+         Log.info(ME, "Got xmlBlaster IOR= " + sessionId);
+         
+         org.omg.CORBA.Object oo = orb.string_to_object(sessionId);
+
+         Log.info(ME, "Got xmlBlaster = " + oo.getClass().getName() + " : " + oo.toString());
+
+         xmlServer = ServerHelper.narrow(oo);
 
          String xmlKey = "KEY_FOR_SMILEY";
 
@@ -126,8 +136,8 @@ public class Client
       catch( InterruptedException i)
       {}
    }
-   
-   
+
+
    public static void main(String args[]) 
    {
       new Client(args);

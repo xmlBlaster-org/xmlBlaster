@@ -14,7 +14,8 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/serverIdl
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
-			$(CLASS_DIR)/ServerImpl.class
+			$(CLASS_DIR)/ServerImpl.class \
+			$(CLASS_DIR)/ServerPOATie.class
 #------------------------------------------------------------------------------
 
 
