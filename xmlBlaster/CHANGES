@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o C++: Added first code to embedd C SOCKET lib as a C++ protocol plugin,
+   see COMPILE_SOCKET_PLUGIN and COMPILE_CORBA_PLUGIN switches in build.xml
+
+ o C++: Removed ALl 'using namespace' declarations from C++ header files.
+
  o Implemented hsqldb as the embedded database. Persistence is now supported per
    default
  
