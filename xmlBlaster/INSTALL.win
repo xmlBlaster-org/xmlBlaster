@@ -51,9 +51,9 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
     	 +- jdk
     	 +- xmlBlaster
     	 
-     set JDK_HOME=C:\jdk
+     set JDK_HOME=C:/jdk
      set PATH=%JDK_HOME%/bin;%PATH%
-     set XMLBLASTER_HOME=C:\xmlBlaster
+     set XMLBLASTER_HOME=C:/xmlBlaster
      set JacORB_HOME=%XMLBLASTER_HOME%
      set JacORB_LIB=%JacORB_HOME%/lib
 
@@ -162,10 +162,13 @@ For the compilation on the Windows platform you need a proper make utility.
 It works perfect with cygwin environment. You can download it over this site:
 http://sourceware.cygnus.com/cygwin/mirrors.html.
 
+Switch the makefile.include file to the windows version
+   ren makefile.include makefile.include.ux
+   ren makefile.include.win makefile.include
+
 To compile you should set the following environment variables:
    SET MAKE_MODE=UNIX
-   SET OS=Windows_NT
-   
+      
 Add the path to the cygwin directory to your PATH environment variable.
    SET PATH=%PATH%;<cygwin-installdir>\bin
 

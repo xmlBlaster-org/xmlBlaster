@@ -32,6 +32,7 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 
 #------------------------------------------------------------------------------
 IDL2JAVA=$(JacORB_HOME)/bin/idl -p org.xmlBlaster.protocol.corba
+#IDL2JAVA=D:\\DvlpApp\\Orbs\\JacORB1_0-beta15\\bin\\idl.bat -p org.xmlBlaster.protocol.corba
 #IDL2JAVA=/DEVELOP/opt/java/JacORB1_0-beta13/bin/idl -p org.xmlBlaster.protocol.corba
 #IDL2JAVA=/usr/local/vbroker/bin/idl2java
 #------------------------------------------------------------------------------
@@ -41,16 +42,12 @@ IDL2JAVA=$(JacORB_HOME)/bin/idl -p org.xmlBlaster.protocol.corba
 JAVAC_FLAGS= -deprecation -g
 
 ifdef JIKES_HOME
-  JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 else
 ifdef JDK_1_1
-  JAVAC= javac $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+JAVAC= javac $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 else
-  if [ "$(OS)" = "Windows_NT" ]; then \
-	JAVAC= javac $(JAVAC_FLAGS) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR) \
-  else \
-	JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)  \
-  fi
+JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
 endif
 endif
 #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
@@ -71,8 +68,8 @@ JAVA=  java
 #------------------------------------------------------------------------------
 #JAVADOC= javadoc -author -version -private -J-ms39m -J-mx40m
 #JAVADOC= javadoc -author -version -overview \
-#																	-group  "engine" "org.xmlBlaster.engine" \
-#																	-J-ms39m -J-mx40m
+#                                                  -group  "engine" "org.xmlBlaster.engine" \
+#                                                  -J-ms39m -J-mx40m
 JAVADOC= javadoc -J-ms39m -J-mx40m -author -version -private 
 #------------------------------------------------------------------------------
 
@@ -109,29 +106,29 @@ BlasterServerMemory=-Xms10m -Xmx80m
 #------------------------------------------------------------------------------
 
 help:
-	@echo "xmlBlaster generation utility"
-	@echo "--> Usage: "
-	@echo "   make all       --> makes everything new"
-	@echo "   make clean     --> deletes all classes"
-	@echo "   make distclean --> deletes all classes/doc/jar"
-	@echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
-	@echo "   make demo      --> makes everything new and starts a demo"
-	@echo "   make test      --> makes everything new and starts a test scenario"
-	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
+   @echo "xmlBlaster generation utility"
+   @echo "--> Usage: "
+   @echo "   make all       --> makes everything new"
+   @echo "   make clean     --> deletes all classes"
+   @echo "   make distclean --> deletes all classes/doc/jar"
+   @echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
+   @echo "   make demo      --> makes everything new and starts a demo"
+   @echo "   make test      --> makes everything new and starts a test scenario"
+   @echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
 
 all_SUB_DIRS:
-	@for i in $(SUB_DIRS) ; do \
-	   cd $$i; \
-	   echo "Making $$i" ; \
-	   $(MAKE) all; \
-	   cd ..; \
-	done
+   @for i in $(SUB_DIRS) ; do \
+      cd $$i; \
+      echo "Making $$i" ; \
+      $(MAKE) all; \
+      cd ..; \
+   done
 
 clean_SUB_DIRS:
-	@for i in $(SUB_DIRS) ; do \
-	   cd $$i; \
-	   echo "Cleaning $$i" ; \
-	   $(MAKE) clean; \
-	   cd ..; \
-	done
+   @for i in $(SUB_DIRS) ; do \
+      cd $$i; \
+      echo "Cleaning $$i" ; \
+      $(MAKE) clean; \
+      cd ..; \
+   done
 
