@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Starting the SAXCounter using IBM-SAXParser (Validating)
+#
+
+java testsuite.dom.DOMFilter $@
