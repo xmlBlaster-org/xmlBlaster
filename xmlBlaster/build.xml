@@ -230,8 +230,8 @@ Else add it manually.
     <copyfile src="README" dest="${dist.dir}/README"/>
     <copyfile src="INSTALL" dest="${dist.dir}/INSTALL"/>
     <copyfile src="LICENSE" dest="${dist.dir}/LICENSE"/>
-    <copyfile src="xmlBlaster.properties.template" dest="${dist.dir}/xmlBlaster.properties.template"/>
-    <copyfile src="jacorb.properties.template" dest="${dist.dir}/jacorb.properties.template"/>
+    <copyfile src="config/xmlBlaster.properties.template" dest="${dist.dir}/config/xmlBlaster.properties.template"/>
+    <copyfile src="config/jacorb.properties.template" dest="${dist.dir}/config/jacorb.properties.template"/>
     <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
         <echo message="Creating jar file"/>
