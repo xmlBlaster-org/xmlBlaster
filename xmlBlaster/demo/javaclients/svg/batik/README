@@ -1,6 +1,7 @@
-This is a demo on how to use xmlBlaster together with svg clients. In this
-case the svg clients are en extention to the batik package 
-(see http://xml.apache.org).
+This is a demo on how to use xmlBlaster together with svg clients. It makes 
+use of the batik package (see http://xml.apache.org).
+
+The demo is a chess board where you can move around the pieces. 
 
 To run the demo do the following:
 
@@ -9,10 +10,10 @@ To run the demo do the following:
 
 2) start another term and change to the directory 
    $XMLBLASTER_HOME/demo/javaclients/svg/batik and invoke
-   > java javaclients.svg.batik.ExtendedApplication -svgMaster simple.svg -svgUser user1
+   > java javaclients.svg.batik.ExtendedApplication -svgMaster chess.svg -svgUser user1
 
 3) start another term and change to the same directory as in 2). Invoke
-   > java javaclients.svg.batik.ExtendedApplication -svgSlave simple.svg -svgUser user2
+   > java javaclients.svg.batik.ExtendedApplication -svgSlave chess.svg -svgUser user2
 
 
 enjoy
