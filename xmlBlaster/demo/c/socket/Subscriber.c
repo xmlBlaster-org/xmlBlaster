@@ -100,17 +100,21 @@ int main(int argc, char** argv)
 
    {  /* connect */
       char *response = (char *)0;
-      const char * const sessionName = xa->props->getString(xa->props, "session.name", "Subscriber");
-      const bool persistent = xa->props->getBool(xa->props, "persistentConnection", false);
       char connectQos[4096];
       char callbackQos[1024];
+      const char * const sessionName = xa->props->getString(xa->props, "session.name", "Subscriber");
+      const bool persistent = xa->props->getBool(xa->props, "dispatch/connection/persistent", false);
+      const long pingInterval = xa->props->getLong(xa->props, "dispatch/callback/pingInterval", 10000L);
+      const long delay = xa->props->getLong(xa->props, "dispatch/callback/delay", 60000L);
+      const long retries = xa->props->getLong(xa->props, "dispatch/callback/retries", 0L); /* Set to -1 to keep the session on server side during a missing client */
+      callbackSessionId = xa->props->getString(xa->props, "dispatch/callback/sessionId", callbackSessionId);
       sprintf(callbackQos,
                "<queue relating='callback' maxEntries='10000000' maxEntriesCache='10000000'>"
-               "  <callback type='SOCKET' sessionId='%.256s'>"
+               "  <callback type='SOCKET' sessionId='%.256s' pingInterval='%ld' retries='%ld' delay='%ld' oneway='false'>"
                "    socket://%.120s:%d"
                "  </callback>"
                "</queue>",
-               callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+               callbackSessionId, pingInterval, retries, delay, xa->callbackP->hostCB, xa->callbackP->portCB);
       sprintf(connectQos,
                "<qos>"
                " <securityService type='htpasswd' version='1.0'>"
@@ -157,6 +161,7 @@ int main(int argc, char** argv)
       const char *filterType = xa->props->getString(xa->props, "filter.type", "GnuRegexFilter");
       const char *filterVersion = xa->props->getString(xa->props, "filter.version", "1.0");
       const char *filterQuery = xa->props->getString(xa->props, "filter.query", 0);  /* "^H.*$" */
+      bool interactiveSubscribe = xa->props->getBool(xa->props, "interactiveSubscribe", false);
 
       if (domain) {
          sprintf(key, "<key domain='%.512s'/>", domain);
@@ -200,8 +205,16 @@ int main(int argc, char** argv)
                    historyNumUpdates,
                    historyNewestFirst?"true":"false"
                    );
+
       printf("[client] Subscribe key: %s\n", key);
       printf("[client] Subscribe qos: %s\n", qos);
+
+      if (interactiveSubscribe) {
+         char msg[20];
+         printf("(Hit a key to subscribe) >> ");
+         fgets(msg, 19, stdin);
+      }
+
       response = xa->subscribe(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[client] Caught exception in subscribe errorCode=%s, message=%s\n",
