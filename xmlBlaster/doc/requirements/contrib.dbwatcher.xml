@@ -774,6 +774,16 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
 
    </configuration>
 
+   <todo type="HTML">
+   <p>Port testsuite to run with HSQLDB and MS-SQLServer, currently the SQL statements from the testsuite
+   are Oracle specific, currently you need a running Oracle, a running xmlBlaster and start the tests separately:</p>
+   <p>
+   <tt>java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.TestResultSetToXmlConverter</tt>
+   </p>
+   <p>
+   <tt>java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.TestTimestamp</tt>
+   </p>
+   </todo>
 
    <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
    <see type="REQ">engine.runlevel</see>
