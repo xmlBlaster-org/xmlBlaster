@@ -211,6 +211,7 @@ Else add it manually.
       <fileset dir="${demo.dir}">
         <exclude name="README"/>
         <exclude name="Makefile"/>
+        <exclude name="c/**"/>
         <exclude name="**/XmlRpcHttpClient.java"/>
       </fileset>
     </copy>
