@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.79 2000/07/14 13:07:46 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.80 2000/09/03 17:55:40 kron Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
-import org.xmlBlaster.engine.I_PersistenceDriver;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 
 import java.util.*;
 import java.io.*;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.79 $
+ * @version $Revision: 1.80 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -132,12 +132,36 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    private void loadPersistentMessages()
    {
+      if(Log.CALLS) Log.calls(ME,"Loding messages from persistence to Memory.....");
       persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (persistenceDriver == null) return;
       try {
          boolean lazyRecovery = XmlBlasterProperty.get("Persistence.LazyRecovery", false);
-         if (!lazyRecovery)
-            persistenceDriver.recover(unsecureClientInfo, this); // recover all messages now
+         if(Log.TRACE) Log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
+
+         if (lazyRecovery)
+         {
+            // Recovers all persistent messages from the loaded persistence driver.
+            // The RequestBroker must self pulish messages.
+            Enumeration oidContainer = persistenceDriver.fetchAllOids();
+
+            while(oidContainer.hasMoreElements())
+            {
+               String oid = (String)oidContainer.nextElement();
+               // Fetch the MessageUnit by oid from the persistence
+               MessageUnit msgUnit = persistenceDriver.fetch(oid);
+
+               PublishQoS publishQos = new PublishQoS(msgUnit.getQos());
+
+               // PublishQos flag: 'fromPersistenceStore' must be true
+               publishQos.setFromPersistenceStore(true);
+
+               XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+
+               // RequestBroker publishes messages self
+               this.publish(unsecureClientInfo, xmlKey, msgUnit, publishQos);
+            }
+         }
       }
       catch (Exception e) {
          Log.error(ME, "Complete recover from persistence store failed: " + e.toString());
