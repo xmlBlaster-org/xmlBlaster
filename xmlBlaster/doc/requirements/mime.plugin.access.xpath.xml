@@ -122,6 +122,12 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>engine.mime.xpath.types</td>
+            <td>text/xml;image/svg+xml</td>
+            <td>List of mime type which will trigger this plugin.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>engine.mime.xpath.maxcachesize</td>
             <td>10</td>
             <td>Max cache of loaded DOM trees for messages.</td>
@@ -149,7 +155,7 @@
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
    <date>2003 09 09</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
