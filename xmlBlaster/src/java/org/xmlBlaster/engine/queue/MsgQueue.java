@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.6 2002/03/17 13:32:49 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.7 2002/03/18 00:25:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -59,7 +59,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       this.cbWorkerPool = glob.getCbWorkerPool();
       this.burstModeTimer = glob.getBurstModeTimer();
       setProperty(prop);
-      Log.info(ME, "Created queue with max=" + prop.getMaxMsg() + " capacity");
+      log.info(ME, "Created queue: " + prop.getSettings());
    }
 
    public void finalize()
@@ -78,7 +78,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       synchronized (this) {
          if (super.size() > 0) {
             Log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
-            handleFailure();
+            handleFailure(null);
          }
          isShutdown = true;
       }
@@ -96,16 +96,24 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    }
 
    /**
+    * @param msg The messages to handle, if null we take all messages from queue to recover. 
     * @return true failure handled
     */
-   private final boolean handleFailure()
+   private final boolean handleFailure(MsgQueueEntry[] msg)
    {
-      if (property.onFailureDeadLetter()) {
-         glob.getRequestBroker().deadLetter(takeMsgs());
-         return true;
+      if (property != null) {
+         if (property.onFailureDeadLetter()) {
+            if (msg == null) msg = takeMsgs();
+            glob.getRequestBroker().deadLetter(msg);
+            return true;
+         }
+         else {
+            Log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, " + msg.length + " messages are lost.");
+            return false;
+         }
       }
       else {
-         Log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, messages are lost.");
+         Log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msg.length + " messages are lost.");
          return false;
       }
    }
@@ -197,6 +205,9 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          if (addr.length > 1) {
             log.error(ME, "Ignoring multiple callback address");
          }
+         if (addr.length > 0) {
+            log.info(ME, this.property.getSettings());
+         }
          cbInfo = new CbInfo(glob, addr);
       }
    }
@@ -284,6 +295,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       if (isShutdown) {
          Log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed");
          Thread.currentThread().dumpStack();
+         handleFailure(msg);
          return;
       }
       try {
@@ -335,7 +347,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
                burstModeTimer.removeTimeoutListener(timerKey);
                Log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
 
-               handleFailure();
+               handleFailure(null);
 
                if (this instanceof SessionMsgQueue) {
                   SessionMsgQueue q = (SessionMsgQueue)this;
