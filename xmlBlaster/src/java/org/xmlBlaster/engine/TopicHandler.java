@@ -37,6 +37,7 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -1529,6 +1530,26 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
          msgUnitArr[i] = msgUnitWrapper[i].getMsgUnit();
       }
       return msgUnitArr;
+   }
+
+   /**
+    * Erase message instances but not the topic itself. 
+    * @param sessionInfo The user which has called erase()
+    * @param historyQos Describes which message instances
+    * @throws XmlBlasterException Currently only all history entries can be destroyed
+    */
+   public long eraseFromHistoryQueue(SessionInfo sessionInfo, HistoryQos historyQos) throws XmlBlasterException {
+      //if (hasHistoryEntries()) {
+         if (log.TRACE) log.trace(ME, "Erase request for " + historyQos.toXml() +
+             " history entries, we currently contain " + this.historyQueue.getNumOfEntries() + " entries.");
+         if (historyQos.getNumEntries() == -1) {
+            return this.historyQueue.clear();
+         }
+         else {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+                  "Erasing of specific history entries is not yet implemented, you can only erase all of them");
+         }
+      //}
    }
 
    /**

@@ -52,6 +52,11 @@ void EraseQos::setForceDestroy(bool forceDestroy)
    data_.setForceDestroy(forceDestroy);
 }
 
+void EraseQos::setHistoryQos(HistoryQos historyQos)
+{
+   data_.setHistoryQos(historyQos);
+}
+
 /*
  * NOT IMPLEMENTED
  * @param notify true - notify subscribers that message is erased (default is true)

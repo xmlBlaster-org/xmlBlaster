@@ -26,6 +26,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <client/qos/UnSubscribeQos.h>
+#include <util/qos/HistoryQos.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
@@ -58,6 +59,8 @@ public:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
    void setForceDestroy(bool forceDestroy);
+
+   void setHistoryQos(org::xmlBlaster::util::qos::HistoryQos historyQos);
 
    /*
     * Mark the erase request to be persistent. 

@@ -1864,10 +1864,16 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             //log.info(ME, "Erasing " + topicHandler.toXml());
 
             oidSet.add(topicHandler.getUniqueKey());
-            try {
-               topicHandler.fireMessageEraseEvent(sessionInfo, eraseQos);
-            } catch (XmlBlasterException e) {
-               if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
+            if (eraseQos.getData().containsHistoryQos()) {
+               if (log.TRACE) log.trace(ME, "Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
+               long num = topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
+            }
+            else { // erase the complete topic
+               try {
+                  topicHandler.fireMessageEraseEvent(sessionInfo, eraseQos);
+               } catch (XmlBlasterException e) {
+                  if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
+               }
             }
          }
          //log.info(ME, "AFTER ERASE: " + toXml());

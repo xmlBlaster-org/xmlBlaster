@@ -73,6 +73,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /** Query history messages */
    private HistoryQos historyQos;
+   private boolean containsHistoryQos;
 
    /** true if query has to be 
 
@@ -103,6 +104,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    public QueryQosData(Global glob, I_QueryQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
       this.factory = (factory==null) ? glob.getQueryQosFactory() : factory;
+      this.containsHistoryQos = (this.historyQos != null);
    }
 
    /**
@@ -333,6 +335,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     */
    public void setHistoryQos(HistoryQos historyQos) {
       this.historyQos = historyQos;
+      this.containsHistoryQos = (historyQos == null) ? false : true;
    }
 
    /**
@@ -344,6 +347,13 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
          this.historyQos = new HistoryQos(glob);
       }
       return this.historyQos;
+   }
+
+   /**
+    * Was a history qos specified?
+    */
+   public boolean containsHistoryQos() {
+      return this.containsHistoryQos;
    }
 
    /**
