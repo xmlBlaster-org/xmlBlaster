@@ -32,6 +32,8 @@ import java.util.ArrayList;
 public final class MsgErrorHandler implements I_MsgErrorHandler
 {
    private final String ME;
+   private final long MAX_BYTES = 1000000L; // to avoid out of mem, max 1 MB during error handling
+   
    private final Global glob;
    private final LogChannel log;
    private /*final -> shutdown*/ SessionInfo sessionInfo;
@@ -86,14 +88,6 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
 
-      // Try to safe some of the PtP messages
-      try {
-         msgQueueEntries = putPtPBackToSubjectQueue(this.sessionInfo, msgQueueEntries);
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "handleError() problems: " + e.getMessage());
-      }
-
       if (msgQueueEntries != null && msgQueueEntries.length > 0) {
          // 1. Generate dead letters from passed messages
          glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
@@ -121,22 +115,22 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          return;
       }
 
-      // 2. Generate dead letters if there are some in the queue
+      // 2. Generate dead letters if there are some entries in the queue
       long size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
       if (log.TRACE) log.trace(ME, "Flushing " + size + " remaining message from queue");
       if (size > 0) {
          try {
             QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
             if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
-               // TODO: loop with small amounts to avoid OutOfMemory !
-               ArrayList list = msgQueue.peek(-1, -1L);
-               MsgQueueEntry[] msgArrAll = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-               MsgQueueEntry[] msgArr = putPtPBackToSubjectQueue(this.sessionInfo, msgArrAll);
-               if (msgArr.length > 0) {
-                  glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
-               }
-               if (msgArrAll.length > 0) {
-                  msgQueue.removeRandom(msgArrAll);
+               while (msgQueue.getNumOfEntries() > 0L) {
+                  ArrayList list = msgQueue.peek(-1, MAX_BYTES);
+                  MsgQueueEntry[] msgArr = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+                  if (msgArr.length > 0) {
+                     glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
+                  }
+                  if (msgArr.length > 0) {
+                     msgQueue.removeRandom(msgArr);
+                  }
                }
             }
             else {
@@ -151,13 +145,16 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          }
       }
 
+      // We do a auto logout if the callback is down
       if (dispatchManager == null || dispatchManager.isDead()) {
          if (log.TRACE) log.trace(ME, "Doing error handling for dead connection state ...");
 
          if (dispatchManager!=null) dispatchManager.shutdown();
 
          // 3. Kill login session
-         if (this.sessionInfo != null) {
+         if (this.sessionInfo != null && // if callback has been configured (async) 
+             sessionInfo.getConnectQos().getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+            
             try {
                //if (address == null || address.getOnExhaustKillSession()) {
                   log.warn(ME, "Callback server is lost, killing login session of client " +
@@ -183,64 +180,6 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                               " messages are lost: " + message + ": " + e.toString());
             }
          }
-      }
-   }
-
-   /**
-    * All PtP messages which were sent to a destination subject (without a pubSessionId)
-    * are put back to the subject queue to be delivered later with another login session
-    * of this user.
-    * @return The remaining entries to be error handled
-    */
-   public MsgQueueEntry[] putPtPBackToSubjectQueue(SessionInfo sessionInfo, MsgQueueEntry[] entries) 
-         throws XmlBlasterException {
-      if (entries == null || entries.length < 1) return entries;
-      if (log.CALL) log.call(ME, "Entering putPtPBackToSubjectQueue() for " + entries.length + " entries");
-      if (sessionInfo == null) {
-         return entries;
-      }
-      SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
-      if (subjectInfo == null) {
-         return entries;
-      }
-      I_Queue subjectQueue = subjectInfo.getSubjectQueue();
-      if (subjectQueue == null) {
-         return entries;
-      }
-
-      try {
-         ArrayList list = new ArrayList(entries.length);
-         for(int ii=0; ii<entries.length; ii++) {
-            ReferenceEntry en = (ReferenceEntry)entries[ii];
-            MsgUnitWrapper msgUnitWrapper = en.getMsgUnitWrapper();
-            if (msgUnitWrapper == null) {
-               log.warn(ME, "Message '" + en.getLogId() + "' is not referenced anymore, we ignore it.");
-               continue;
-            }
-            if (msgUnitWrapper.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
-                msgUnitWrapper.getReferenceCounter() <= 2) {
-               // The getReferenceCounter() check is buggy (Marcel 2003.03.20):
-               // 1. It includes a history entry and this entry but the history is optional
-               // 2. We may send the same message twice with another session if such a callback references the message
-               //    and we stuff the message back to the subject queue
-               // -> We need to specify a PtP load balancer plugin framework and than resolve this issue
-               log.info(ME, "We are the last session taking care on PtP message '" + en.getLogId() + "', putting it back to subject queue");
-               try {
-                  subjectQueue.put(en, false);
-                  continue;
-               }
-               catch (XmlBlasterException e) {
-                  log.error(ME, "Failed to put entry '" + en.getLogId() + "' into subject queue, forwarding it to error handling manager: " + e.getMessage());
-               }
-            }
-            list.add(entries[ii]);
-         }
-         return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-      }
-      catch (Throwable e) {
-         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString() +
-                 ((sessionInfo.getDispatchManager() != null) ? sessionInfo.getDispatchManager().toXml("") : ""));
-         return entries;
       }
    }
 
