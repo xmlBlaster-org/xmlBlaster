@@ -44,7 +44,7 @@ import org.apache.xmlrpc.WebServer;
  * The correct port is automatically transferred in the login - QoS - so that xmlBlaster
  * can find the callback server.
  * <p />
- * @author michele.laghi@attglobal.net
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class XmlRpcCallbackServer implements I_CallbackServer

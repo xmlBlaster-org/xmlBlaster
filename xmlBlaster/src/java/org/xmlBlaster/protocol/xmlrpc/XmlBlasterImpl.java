@@ -29,7 +29,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  * void return is not allowed so we return an empty string instead
  * </pre>
  * <p />
- * @author "Michele Laghi" <michele.laghi@attglobal.net>
+ * @author "Michele Laghi" (laghi@swissinfo.org)
  */
 public class XmlBlasterImpl
 {

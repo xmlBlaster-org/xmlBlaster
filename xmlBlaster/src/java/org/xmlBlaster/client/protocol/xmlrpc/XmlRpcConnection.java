@@ -3,8 +3,8 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.29 2002/06/27 11:04:54 ruff Exp $
-Author:    michele.laghi@attglobal.net
+Version:   $Id: XmlRpcConnection.java,v 1.30 2002/09/18 16:33:38 laghi Exp $
+Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
 
@@ -41,7 +41,7 @@ import org.apache.xmlrpc.XmlRpcException;
  * xmlBlaster would be on the same VM, making this way the xml-rpc protocol
  * totally transparent.
  * <p />
- * @author michele.laghi@attglobal.net
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class XmlRpcConnection implements I_XmlBlasterConnection
