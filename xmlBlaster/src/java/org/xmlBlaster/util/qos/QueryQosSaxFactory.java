@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import org.xml.sax.*;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
  * <pre>
  *&lt;qos>
  *   &lt;subscribe id='_subId:1'/>  &lt;!-- Force a subscription ID from client side -->
+ *   &lt;erase forceDestroy='true'/>  &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions -->
  *   &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the xmlKey meta data on updates -->
  *   &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
  *   &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
@@ -28,11 +30,12 @@ import java.util.ArrayList;
  *   &lt;notify>false&lt;/notify>;  &lt;!-- Suppress erase event to subcribers -->
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
  *                                  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
+ *   &lt;history numEntries='20'/>  &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
  *&lt;/qos>
  * </pre>
  * @see org.xmlBlaster.util.qos.QueryQosData
  * @see org.xmlBlaster.test.classtest.qos.QueryQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_QueryQosFactory
 {
@@ -44,14 +47,17 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inSubscribe = false;
+   private boolean inErase = false;
    private boolean inMeta = false;
    private boolean inContent = false;
    private boolean inLocal = false;
    private boolean inInitialUpdate = false;
    private boolean inNotify = false;
    private boolean inFilter = false;
+   private boolean inHistory = false;
 
    private AccessFilterQos tmpFilter = null;
+   private HistoryQos tmpHistory = null;
 
    /**
     * Can be used as singleton. 
@@ -96,6 +102,16 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          inSubscribe = true;
          if (attrs != null) {
             queryQosData.setSubscriptionId(attrs.getValue("id"));
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("erase")) {
+         if (!inQos)
+            return;
+         inErase = true;
+         if (attrs != null) {
+            queryQosData.setForceDestroy(new Boolean(attrs.getValue("forceDestroy")).booleanValue());
          }
          return;
       }
@@ -181,6 +197,18 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             tmpFilter = null;
          return;
       }
+
+      if (name.equalsIgnoreCase("history")) {
+         inHistory = true;
+         tmpHistory = new HistoryQos(glob);
+         boolean ok = tmpHistory.startElement(uri, localName, name, character, attrs);
+         if (ok) {
+            queryQosData.setHistoryQos(tmpHistory);
+         }
+         else
+            tmpHistory = null;
+         return;
+      }
    }
 
    /**
@@ -193,6 +221,11 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
 
       if (name.equalsIgnoreCase("subscribe")) {
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("erase")) {
          character.setLength(0);
          return;
       }
@@ -244,6 +277,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("history")) {
+         inHistory = false;
+         if (tmpHistory != null)
+            tmpHistory.endElement(uri, localName, name, character);
+         return;
+      }
+
       character.setLength(0); // reset data from unknown tags
    }
 
@@ -259,13 +299,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
    public static final String writeObject_(QueryQosData queryQosData, String extraOffset) {
       StringBuffer sb = new StringBuffer(512);
-      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- SubscribeRetQos -->");
       if (queryQosData.getSubscriptionId() != null)
          sb.append(offset).append(" <subscribe id='").append(queryQosData.getSubscriptionId()).append("'/>");
+      sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
       if (!queryQosData.getWantMeta()) sb.append(offset).append(" <meta>false</meta>");
       if (!queryQosData.getWantContent()) sb.append(offset).append(" <content>false</content>");
       if (!queryQosData.getWantLocal()) sb.append(offset).append(" <local>false</local>");
@@ -274,12 +314,18 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
       AccessFilterQos[] list = queryQosData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {
-         sb.append(list[ii].toXml(" "));
+         sb.append(list[ii].toXml(extraOffset+Constants.INDENT));
       }
+
+      HistoryQos historyQos = queryQosData.getHistoryQos();
+      if (historyQos != null) {
+         sb.append(historyQos.toXml(extraOffset+Constants.INDENT));
+      }
+
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)
-         return "";  // minimal footprint
+         return "<qos/>";  // minimal footprint
 
       return sb.toString();
    }
