@@ -1,4 +1,7 @@
 #********************************************************************
+# See: 
+#   http://wrapper.sourceforge.net/
+#   http://wrapper.tanukisoftware.org/doc/english/introduction.html
 # Wrapper Properties
 # You need to set XMLBLASTER_HOME to use this file
 # Then install the Windows service with
@@ -86,7 +89,7 @@ wrapper.logfile.maxsize=2m
 wrapper.logfile.maxfiles=10
 
 # Log Level for sys/event log output.  (See docs for log levels)
-wrapper.syslog.loglevel=NONE
+wrapper.syslog.loglevel=STATUS
 
 #********************************************************************
 # Wrapper NT Service Properties
