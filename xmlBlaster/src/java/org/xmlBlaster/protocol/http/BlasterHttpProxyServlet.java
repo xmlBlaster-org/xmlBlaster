@@ -11,6 +11,7 @@ import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -165,10 +166,10 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
             String loginName = Util.getParameter(req, "xmlBlaster.loginName", null);    // "Joe";
             if (loginName == null || loginName.length() < 1)
-               throw new XmlBlasterException(ME, "Missing login name. Pass xmlBlaster.loginName=xy with your URL or in your cookie.");
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Missing login name. Pass xmlBlaster.loginName=xy with your URL or in your cookie.");
             String passwd = Util.getParameter(req, "xmlBlaster.passwd", null);  // "secret";
             if (passwd == null || passwd.length() < 1)
-               throw new XmlBlasterException(ME, "Missing passwd");
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Missing passwd");
 
             ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
             log.info(ME, "Login action");
@@ -306,7 +307,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else {
             String text = "Unknown ActionType '" + actionType + "', request for permanent http connection ignored";
-            throw new XmlBlasterException(ME, text);
+            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
          }
 
 
@@ -541,22 +542,16 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       Properties props = System.getProperties();
       LogChannel log = Global.instance().getLog("http");
 
-      // XmlBlaster uses as a default JacORB
-      if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) {
+      // Check for orb configuration
+      if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) { // "org.jacorb.orb.ORB"
          props.put( "org.omg.CORBA.ORBClass", conf.getInitParameter("org.omg.CORBA.ORBClass"));
-         log.trace(ME, "Found system parameter org.omg.CORBA.ORBClass=" + conf.getInitParameter("org.omg.CORBA.ORBClass"));
+         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
       }
-      else
-         props.put("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
-      log.info(ME, "Using system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
 
-      if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) {
+      if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) { // "org.jacorb.orb.ORBSingleton");
          props.put( "org.omg.CORBA.ORBSingletonClass", conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
-         log.trace(ME, "Found system parameter org.omg.CORBA.ORBSingletonClass=" + conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
+         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
       }
-      else
-         props.put("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
-      log.info(ME, "Using system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
 
       // xmlBlaster uses Suns XML parser as default
       if (conf.getInitParameter("org.xml.sax.parser") != null) {
@@ -567,7 +562,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          props.put("org.xml.sax.parser", "org.apache.crimson.parser.Parser2"); // xmlBlaster uses Suns XML parser as default
       log.info(ME, "Using system parameter org.xml.sax.parser=" + props.get("org.xml.sax.parser"));
 
-      System.setProperties(props);
+      if (props.size() > 0) {
+         System.setProperties(props);
+      }
    }
 
 

@@ -34,7 +34,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.39 $
+ * @version $Revision: 1.40 $
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
@@ -160,9 +160,10 @@ public class ProxyConnection implements I_Callback
          if (httpConnections.isEmpty()) {
             // Logout from xmlBlaster if no browser uses this connection anymore
             if (xmlBlasterConnection != null) {
-               BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getSessionName().getLoginName());
+               String loginName = xmlBlasterConnection.getSessionName().getLoginName();
+               BlasterHttpProxy.cleanupByLoginName(loginName);
                xmlBlasterConnection.disconnect(null);
-               log.info(ME, "Corba connection for '" + xmlBlasterConnection.getSessionName().getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
+               log.info(ME, "Corba connection for '" + loginName + "' for browser with sessionId=" + sessionId + " removed");
                xmlBlasterConnection = null;
             }
          }
