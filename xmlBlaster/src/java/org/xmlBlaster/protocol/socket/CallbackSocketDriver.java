@@ -12,6 +12,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 
 /**
@@ -21,7 +22,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
  * assumed for CORBA/RMI/XMLRPC a separate callback connection
  * @author xmlBlaster@marcelruff.info
  */
-public class CallbackSocketDriver implements I_CallbackDriver
+public class CallbackSocketDriver implements I_CallbackDriver /* which extends I_Plugin */
 {
    private String ME = "CallbackSocketDriver";
    private Global glob = null;
@@ -30,6 +31,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    private HandleClient handler;
    private CallbackAddress callbackAddress;
    private boolean isFirstPing_hack = true;
+   private PluginInfo pluginInfo;
 
    /**
     * Should not be instantiated by plugin loader.
@@ -68,7 +70,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * @return "SOCKET"
     */
    public String getProtocolId() {
-      return "SOCKET";
+      return (this.pluginInfo == null) ? "SOCKET" : this.pluginInfo.getType();
    }
 
    /** Enforced by I_Plugin */
@@ -78,14 +80,16 @@ public class CallbackSocketDriver implements I_CallbackDriver
 
    /** Enforced by I_Plugin */
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      log.error(ME, "init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
+      this.pluginInfo = pluginInfo;
    }
 
    /**
