@@ -58,10 +58,19 @@ void XmlHandlerBase::parse(const string &xmlData)
    I_Parser *parser = NULL;
    try {
       parser = ParserFactory::getFactory().createParser(global_, this);
-      Lock lock(invocationMutex_);
+	}
+   catch (XmlBlasterException& ex) {
+      throw ex;
+   }
+   catch (...) {
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: unknown exception"));
+   }
+
+   Lock lock(invocationMutex_);
+
+   try {
       parser->parse(xmlData);
       delete parser;
-      parser = NULL;
    }
    catch (StopParseException&) {
       // If it does not work, it could be wrapped into SAXParseException
@@ -74,24 +83,25 @@ void XmlHandlerBase::parse(const string &xmlData)
       return;
    }
    catch (XmlBlasterException& ex) {
+      log_.error(ME, ex.getMessage() + ": " + xmlData);	// Remove logging here
       delete parser;
       throw ex;
    }
    catch (const exception& err) {
-      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err.what());
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err.what() + ": " + xmlData);
    }
    catch (const string& err) {
-      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err);
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err + ": " + xmlData);
    }
    catch (const char* err) {
-      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err);
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err + ": " + xmlData);
    }
    catch (...) {
-      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: unknown exception."));
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: unknown exception: ") + xmlData);
    }
    if (log_.trace()) log_.trace(ME, "Time used for parsing: " + stopWatch.nice());
 }

@@ -58,7 +58,6 @@ void Sax2Parser::parse(const string &xmlData)
       MemBufInputSource inSource((const XMLByte*)xmlData.c_str(), xmlData.size(), "xmlBlaster", false);
       parser->parse(inSource);
       delete parser;
-      parser = NULL;
    }
    catch (StopParseException&) {
       // If it does not work, it could be wrapped into SAXParseException
@@ -71,15 +70,34 @@ void Sax2Parser::parse(const string &xmlData)
       delete parser; // just in case it did not 
       return;
    }
-   catch (const XMLException &err) {
+   catch (SAXParseException &err) {
+      string loc = getLocationString(err) + string(": ") + getStringValue(err.getMessage());
       delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXParseException") + loc);
+   }
+   catch (SAXNotRecognizedException &err) {
       string msg = getStringValue(err.getMessage());
-      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("sax parser exception: ") + msg);
+      delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXNotRecognizedException: ") + msg);
+	}
+   catch (SAXNotSupportedException &err) {
+      string msg = getStringValue(err.getMessage());
+      delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXNotSupportedException: ") + msg);
+	}
+   catch (const XMLException &err) {
+      string msg = getStringValue(err.getMessage());
+      delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("XMLException: ") + msg);
    }
    catch (SAXException &err) {
-      delete parser;
       string msg = getStringValue(err.getMessage());
-      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("sax parser exception: ") + msg);
+      delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXException: ") + msg);
+   }
+   catch (...) {
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("Unknown parse exception: ") + xmlData);
    }
 }
 
