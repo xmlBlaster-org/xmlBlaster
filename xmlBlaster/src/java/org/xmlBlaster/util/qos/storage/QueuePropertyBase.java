@@ -31,27 +31,27 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /** The queue plugin type "CACHE" "RAM" "JDBC" or others */
    public static String DEFAULT_type = "CACHE";
-   protected String type;
+   protected String type = DEFAULT_type;
 
    /** The queue plugin version "1.0" or similar */
    public static String DEFAULT_version = "1.0";
-   protected String version;
+   protected String version = DEFAULT_version;
 
    /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
    public static final long DEFAULT_maxMsgDefault = 1000L;
-   protected long maxMsgDefault;
+   protected long maxMsgDefault = DEFAULT_maxMsgDefault;
 
    /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
    public static final long DEFAULT_maxMsgCacheDefault = 1000L;
-   protected long maxMsgCacheDefault;
+   protected long maxMsgCacheDefault = DEFAULT_maxMsgCacheDefault;
 
    /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (4 MBytes is default) */
    public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB
-   protected long maxBytesDefault;
+   protected long maxBytesDefault = DEFAULT_bytesDefault;
 
    /** The max setting allowed for queue max size of cache in bytes is adjustable with property "queue.maxBytesCache=4000000" (4 MBytes is default) */
    public static final long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
-   protected long maxBytesCacheDefault;
+   protected long c = DEFAULT_bytesCacheDefault;
 
    /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
    public static final double DEFAULT_storeSwapLevelRatio = 0.70;
@@ -81,34 +81,34 @@ public abstract class QueuePropertyBase implements Cloneable
    /** Span of life of this queue in milliseconds */
    protected long expires = DEFAULT_expires;
    /** The max. capacity of the queue in number of entries */
-   protected long maxMsg;
+   protected long maxMsg = maxMsgDefault;
    /** The max. capacity of the queue in Bytes */
-   protected long maxBytes;
+   protected long maxBytes = maxBytesDefault;
    /** The max. capacity of the cache of the queue in number of entries */
-   protected long maxMsgCache;
+   protected long maxMsgCache = maxMsgCacheDefault;
 
    /** The settings for the storeSwapLevel */
-   protected long storeSwapLevel;
+   protected long storeSwapLevel = (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache);
 
    /** The settings for the storeSwapBytes */
-   protected long storeSwapBytes;
+   protected long storeSwapBytes = (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache);
 
-   /** The settings for the storeSwapLevel */
-   protected long reloadSwapLevel;
+   /** The settings for the reloadSwapLevel */
+   protected long reloadSwapLevel = (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache);
 
    /** The settings for the storeSwapBytes */
-   protected long reloadSwapBytes;
+   protected long reloadSwapBytes = (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache);
 
    /** The max. capacity of the queue in Bytes for the cache */
-   protected long maxBytesCache;
+   protected long maxBytesCache = c;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
    public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
-   protected String onOverflow;
+   protected String onOverflow = DEFAULT_onOverflow;
 
    /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADMESSAGE */
    public static final String DEFAULT_onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
-   protected String onFailure;
+   protected String onFailure = DEFAULT_onFailure;
 
    /** The corresponding callback address */
    protected AddressBase[] addressArr = new AddressBase[0];
@@ -117,8 +117,12 @@ public abstract class QueuePropertyBase implements Cloneable
    protected String nodeId = null;
 
    /**
+    * @param glob The global handle containing env informations
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched<br />
+    * The nodeId should be stripped from special characters (see glob.getStrippedId())
+    * e.g. '/' or '[' is not allowed in the nodeId
+    * @see Global#getStrippedId()
     */
    public QueuePropertyBase(Global glob, String nodeId) {
       if (glob == null) {
@@ -741,47 +745,53 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return The xml representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer buf = new StringBuffer(256);
+      StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       // open <queue ...
-      buf.append(offset).append("<").append(getRootTagName()).append(" relating='").append(getRelating());
-      if (DEFAULT_type != getType())
-         buf.append("' type='").append(getType());
-      if (DEFAULT_version != getVersion())
-         buf.append("' version='").append(getVersion());
+      sb.append(offset).append("<").append(getRootTagName());
+      sb.append(" relating='").append(getRelating()).append("'");
+      if (!DEFAULT_type.equals(getType()))
+         sb.append(" type='").append(getType()).append("'");
+      if (!DEFAULT_version.equals(getVersion()))
+         sb.append(" version='").append(getVersion()).append("'");
       if (DEFAULT_maxMsgDefault != getMaxMsg())
-         buf.append("' maxMsg='").append(getMaxMsg());
+         sb.append(" maxMsg='").append(getMaxMsg()).append("'");
       if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
-         buf.append("' maxMsgCache='").append(getMaxMsgCache());
+         sb.append(" maxMsgCache='").append(getMaxMsgCache()).append("'");
       if (DEFAULT_bytesDefault != getMaxBytes())
-         buf.append("' maxBytes='").append(getMaxBytes());
+         sb.append(" maxBytes='").append(getMaxBytes()).append("'");
       if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
-         buf.append("' maxBytesCache='").append(getMaxBytesCache());
-      buf.append("' storeSwapLevel='").append(getStoreSwapLevel());
-      buf.append("' storeSwapBytes='").append(getStoreSwapBytes());
-      buf.append("' reloadSwapLevel='").append(getReloadSwapLevel());
-      buf.append("' reloadSwapBytes='").append(getReloadSwapBytes());
+         sb.append(" maxBytesCache='").append(getMaxBytesCache()).append("'");
+
+      if ((long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache) != getStoreSwapLevel())
+         sb.append(" storeSwapLevel='").append(getStoreSwapLevel()).append("'");
+      if ((long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache) != getStoreSwapBytes())
+         sb.append(" storeSwapBytes='").append(getStoreSwapBytes()).append("'");
+      if ((long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache) != getReloadSwapLevel())
+         sb.append(" reloadSwapLevel='").append(getReloadSwapLevel()).append("'");
+      if ((long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache) != getReloadSwapBytes())
+         sb.append(" reloadSwapBytes='").append(getReloadSwapBytes()).append("'");
       if (DEFAULT_expires != getExpires())
-         buf.append("' expires='").append(getExpires());
+         sb.append(" expires='").append(getExpires()).append("'");
       if (DEFAULT_onOverflow != getOnOverflow())
-         buf.append("' onOverflow='").append(getOnOverflow());
+         sb.append(" onOverflow='").append(getOnOverflow()).append("'");
       if (DEFAULT_onFailure != getOnFailure())
-         buf.append("' onFailure='").append(getOnFailure());
+         sb.append(" onFailure='").append(getOnFailure()).append("'");
 
       if (addressArr.length > 0 && addressArr[0] != null) {
-         buf.append("'>");
+         sb.append(">");
          for (int ii=0; ii<addressArr.length; ii++) {
             AddressBase ad = addressArr[ii];
-            buf.append(ad.toXml(extraOffset+Constants.INDENT));
+            sb.append(ad.toXml(extraOffset+Constants.INDENT));
          }
-         buf.append(offset).append("</").append(getRootTagName()).append(">");  // closing </queue>
+         sb.append(offset).append("</").append(getRootTagName()).append(">");  // closing </queue>
       }
       else
-         buf.append("'/>");
+         sb.append("/>");
 
-      return buf.toString();
+      return sb.toString();
    }
 
    /**
