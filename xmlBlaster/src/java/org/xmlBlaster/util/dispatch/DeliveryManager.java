@@ -562,7 +562,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       synchronized (this) {
          if (this.isShutdown) return false;
          if (this.timerKey == null) {
-            log.info(ME, "Starting burstMode timer with " + collectTime + " msec");
+            if (log.TRACE) log.trace(ME, "Starting burstMode timer with " + collectTime + " msec");
             this.timerKey = burstModeTimer.addTimeoutListener(this, collectTime, null);
          }
       }
@@ -605,7 +605,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       }
 
       if (fromTimeout) {
-         log.info(ME, "Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
+         if (log.TRACE) log.trace(ME, "Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
       }
       else {
          if (log.TRACE) log.trace(ME, "Last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
@@ -678,7 +678,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     */
    public void timeout(Object userData) {
       this.timerKey = null;
-      log.info(ME, "Burst mode timeout occurred, starting callback worker thread ...");
+      if (log.TRACE) log.trace(ME, "Burst mode timeout occurred, queue entries=" + msgQueue.getNumOfEntries() + ", starting callback worker thread ...");
       startWorkerThread(true);
    }
 
