@@ -1623,6 +1623,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       private XmlBlasterConnection con;
       private final long RETRY_INTERVAL; // would this be smarter? glob.getProperty().get("Failsave.retryInterval", 4000L);
       private final int RETRIES;         // -1 = forever
+      private int counter = 0;
+      private int logInterval = 10;
 
 
       /**
@@ -1633,6 +1635,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          this.con = con;
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
+         if (retryInterval > 30000)  // millisec
+            logInterval = 1;
+         else
+            logInterval = (int)(30000L / retryInterval);
          if (Log.CALL) Log.call(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
       }
 
@@ -1646,7 +1652,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                con.isReconnectPolling = false;
                return;
             } catch(Exception e) {
-               Log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down");
+               if ((counter % logInterval) == 0)
+                  Log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down after " + (counter+1) + " pings.");
+               counter++;
                try {
                   Thread.currentThread().sleep(RETRY_INTERVAL);
                } catch (InterruptedException i) { }
