@@ -1720,8 +1720,13 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             }
             else {
                if (!isUnconfigured()) {
-                  log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
-                  Thread.dumpStack();
+                  if (isSoftErased()) {
+                     log.trace(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+                  }
+                  else {
+                     log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+                     Thread.dumpStack();
+                  }
                   return;
                }
             }
