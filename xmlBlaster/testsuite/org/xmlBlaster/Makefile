@@ -45,3 +45,19 @@ clean: clean_SUB_DIRS
 
 doc:
 	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
+
+sleep4:
+	sleep 4
+
+xmlBlaster: all
+	@echo -e "\nStarting xmlBlaster server (without jit) ...\n"
+	xterm -bg yellow -fg black -sb -sl 4000 -geom 160x24 \
+	      -T "xmlBlaster server without JIT and ${BlasterSystemProperties} ${BlasterServerMemory}" \
+	      -e jaco -Djava.compiler= ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.MainGUI &
+
+testsuite:
+	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
+	jaco  -Djava.compiler= $(BlasterSystemProperties) test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+
+test: xmlBlaster sleep4 testsuite
+
