@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestGet.java,v 1.3 2002/09/19 09:18:36 antman Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -120,7 +120,7 @@ public class TestGet extends TestCase
             log.info(ME, "Success, got zero messages when trying to get unknown message");
       } catch(XmlBlasterException e) {
          log.error(ME, "get of not existing message should not throw an exception");
-         System.exit(1);
+         //System.exit(1);
          assertTrue("get of not existing message should not throw an exception", false);
          //log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
       }
