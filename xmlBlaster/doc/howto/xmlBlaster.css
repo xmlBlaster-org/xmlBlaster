@@ -5,34 +5,40 @@ Name:      xmlBlaster.css
 
 body {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; BACKGROUND-COLOR: #FFFFFF; }
 table { width: "100%"; BORDER-WIDTH: 0; CELL-PADDING: 10; CELL-SPACING: 10; }
-td {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:10pt;}
-th {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:10pt;}
-p,i,li,ul,ol {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; font-size:10pt;}
-a {FONT-FAMILY: verdana,arial,helvetica,sans-serif; font-size:10pt; color: #901B1B;}
+td {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:90%;}
+th {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%;}
+p,i,li,ul,ol {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; font-size:100%;}
+a {FONT-FAMILY: verdana,arial,helvetica,sans-serif; font-size:100%; color: #901B1B;}
 
 a:visited {color: #4D0F0F;}
 a:active {color: #F1C101;}
 
-.sitetitel {font-size: 18pt; font-weight: bold; text-align : center;}
+.sitetitel {font-size: 180%; font-weight: bold; text-align : center;}
 .celltitel {font-weight: bold;}
-.small {font-size: 8pt;}
+.small {font-size: 80%;}
 .sideend {color: #aaaaaa}
 
 
 /*----------------------------------------------------------------------------------------------
 	The folowing classes are used for the requirements tables:
 ----------------------------------------------------------------------------------------------*/
-td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:10pt;}
-td.topic {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:10pt;}
-td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:10pt;}
+td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%;}
+td.topic {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:100%;}
+td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:100%;}
 ol,ul,li { margin-top:1em; }
 
-td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:10pt;}
+td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:100%;}
 /* OPEN/INWORK/CLOSED corresponds to status attribute in requirement.dtd: */ 
 td.OPEN { BACKGROUND-COLOR: #E6E6E6; }
 td.INWORK { BACKGROUND-COLOR: #FFFF99; }
 td.CLOSED { BACKGROUND-COLOR: #3DEB3D; }
 
-code.BORDER {FONT-FAMILY: courier; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:10pt; border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
-pre.BORDER {FONT-FAMILY: courier; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:10pt; border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
+code {FONT-FAMILY: courier, monospace; FONT-STYLE: italic; font-size:100%; }
+code.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:80%;
+             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 
+pre {FONT-FAMILY: courier, monospace; font-size:80%; }
+pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:80%;
+            border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
+#pre.BORDER { font-family : 'courier new', monospace; background-color : #CCCCFF; border : #000000 1px solid;
+             color : #000000; font-size : 90%; margin : 1.5em 2.5em; padding : 5px; }
