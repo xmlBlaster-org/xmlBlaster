@@ -106,29 +106,29 @@ BlasterServerMemory=-Xms10m -Xmx80m
 #------------------------------------------------------------------------------
 
 help:
-   @echo "xmlBlaster generation utility"
-   @echo "--> Usage: "
-   @echo "   make all       --> makes everything new"
-   @echo "   make clean     --> deletes all classes"
-   @echo "   make distclean --> deletes all classes/doc/jar"
-   @echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
-   @echo "   make demo      --> makes everything new and starts a demo"
-   @echo "   make test      --> makes everything new and starts a test scenario"
-   @echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
+	@echo "xmlBlaster generation utility"
+	@echo "--> Usage: "
+	@echo "   make all       --> makes everything new"
+	@echo "   make clean     --> deletes all classes"
+	@echo "   make distclean --> deletes all classes/doc/jar"
+	@echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
+	@echo "   make demo      --> makes everything new and starts a demo"
+	@echo "   make test      --> makes everything new and starts a test scenario"
+	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
 
 all_SUB_DIRS:
-   @for i in $(SUB_DIRS) ; do \
-      cd $$i; \
-      echo "Making $$i" ; \
-      $(MAKE) all; \
-      cd ..; \
-   done
+	@for i in $(SUB_DIRS) ; do \
+	   cd $$i; \
+	   echo "Making $$i" ; \
+	   $(MAKE) all; \
+	   cd ..; \
+	done
 
 clean_SUB_DIRS:
-   @for i in $(SUB_DIRS) ; do \
-      cd $$i; \
-      echo "Cleaning $$i" ; \
-      $(MAKE) clean; \
-      cd ..; \
-   done
+	@for i in $(SUB_DIRS) ; do \
+	   cd $$i; \
+	   echo "Cleaning $$i" ; \
+	   $(MAKE) clean; \
+	   cd ..; \
+	done
 
