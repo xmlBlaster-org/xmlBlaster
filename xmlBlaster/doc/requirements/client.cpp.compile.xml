@@ -8,14 +8,14 @@
    </topic>
    <description>
      <h2>Overview</h2>
-     <p>You can use the <a href="http://ant.apache.org/" target="others">ant</a> tool with
-     the C++ compile extension <a href="http://sourceforge.net/projects/ant-contrib/" target="others">cpptasks</a>
+     <p>You can use the <b><a href="http://ant.apache.org/" target="others">ant tool</a></b> with
+     the C++ compile extension <b><a href="http://sourceforge.net/projects/ant-contrib/" target="others">cpptasks</a></b>
      to compile the xmlBlaster client C++ library, the C++ demo clients and the C++ testsuite.
      All necessary compile tools are provide in the xmlBlaster distribution.
      </p>
-     <p>The rules to compile C++ code with ant are in the file xmlBlaster/build.xml which
+     <p>The rules to compile C++ code with ant are in the file <b>xmlBlaster/build.xml</b> which
      loads your configuration settings (like the installation path of your CORBA library or XML parser)
-     from build.properties. See the configuration example below how to set up build.properties.
+     from <b>build.properties</b>. See the configuration example below how to set up build.properties.
      </p>
      <p>
      The cpptasks support many compilers on many platforms (like OS 390/400, SUN, HP, IBM, g++, intel, borland, VC++),
@@ -43,8 +43,8 @@
 
      <h2>The C++ threading abstraction library</h2>
         <p>In order to have multi threading support on all different operating systems
-        we can link with the <a href="http://www.boost.org" target="others">boost</a> C++ multi threading
-        library or with the <a href="http://omniorb.sourceforge.net/" target="others">omniORB - omnithreads</a>
+        we can link with the <b><a href="http://www.boost.org" target="others">boost</a> C++ multi threading
+        library</b> or with the <b><a href="http://omniorb.sourceforge.net/" target="others">omniORB - omnithreads</a></b>
         multi threading library. Both support many platforms like Linux, Windows, Solaris, AIX, HPUX, MAC etc.
         </p>
         <p>
@@ -202,6 +202,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 </requirement>
 
