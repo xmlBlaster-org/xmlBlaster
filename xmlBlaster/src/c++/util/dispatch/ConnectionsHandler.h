@@ -51,7 +51,6 @@ private:
     * the id differe, then all subscribe and unSubscribe are repeated.
     */
    org::xmlBlaster::util::queue::MsgQueue* adminQueue_; // used to temporarly store the subscriptions 
-   std::string lastSessionId_;
    const std::string instanceName_;
    bool doStopPing_; // used to stop the pinger when destroying the object
 
@@ -153,7 +152,7 @@ protected:
    /**
     * Going to polling status in case we are in failsafe mode or to DEAD if we are not in failsafe mode.
     */
-   void toPollingOrDead();
+   void toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason);
 };
 
 

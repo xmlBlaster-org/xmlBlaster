@@ -110,6 +110,7 @@ SocketDriver::SocketDriver(const SocketDriver& socketDriver)
 
 SocketDriver& SocketDriver::operator =(const SocketDriver& /*socketDriver*/)
 {
+   if (log_.call()) log_.call(ME, "operator=()");
    return *this;
 }
 
@@ -128,11 +129,38 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
 {
    if (log_.call()) log_.call("SocketDriver", string("getInstance for ") + instanceName);
    int argc = global_.getArgs();
-   const char * const*argv = global.getArgc();
+   const char * const*argv = global_.getArgc();
    try {
       connection_ = getXmlBlasterAccessUnparsed(argc, argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
    } catch_MACRO("::Constructor", true)
+}
+
+/** Called on polling, must be synchronized from outside */
+void SocketDriver::reconnect(void)
+{
+   log_.info(ME, "Trying to reconnect to server");
+
+   freeResources(true); // Cleanup if old connection exists
+
+   int argc = global_.getArgs();
+   const char * const*argv = global_.getArgc();
+   ::XmlBlasterException socketException;
+
+   try {
+      connection_ = getXmlBlasterAccessUnparsed(argc, argv);
+      connection_->userObject = this; // Transports us to the myUpdate() method
+   } catch_MACRO("::Constructor", true)
+   
+   try {
+      if (log_.trace()) log_.trace(ME, "Before createCallbackServer");
+      if (connection_->initialize(connection_, myUpdate, &socketException) == false) {
+         log_.error(ME, "Connection to xmlBlaster failed,"
+                " please start the server or check your configuration\n");
+         freeResources(true);
+      }
+      if (log_.trace()) log_.trace(ME, "After createCallbackServer");
+   } catch_MACRO("::initialize", true)
 }
 
 SocketDriver::~SocketDriver()
@@ -202,10 +230,12 @@ I_Callback* SocketDriver::getCallbackClient()
    return callbackClient_;
 }
 
+/** Enforced by I_CallbackServer */
 void SocketDriver::initialize(const string& name, I_Callback &client)
 {
    ::XmlBlasterException socketException;
    ME = string("SocketDriver-") + instanceName_ + "-" + name;
+   if (log_.call()) log_.call(ME, "initialize() callback server");
    callbackClient_ = &client;
    Lock lock(mutex_);
    try {
@@ -244,13 +274,24 @@ bool SocketDriver::shutdownCb()
 
 ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlasterException) // Visual C++ emits a warning with this throw clause
 {
+   if (log_.call()) log_.call(ME, string("connect() ") + string((connection_==0)?"connection_==0":"connection_!=0") +
+                              ", secretSessionId_="+secretSessionId_);
+                              //+" isConnected=" + ((connection_==0)?"false":lexical_cast<string>(connection_->isConnected(connection_))));
    ::XmlBlasterException socketException;
    Lock lock(mutex_);
    try {
       loginName_ = qos.getUserId();
       if (connection_ == 0) {
-         throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Please check your configuration to find the server");
+         if (secretSessionId_ == "") {
+            throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Please check your configuration to find the server");
+         }
+         else {
+            reconnect();
+            // Happens in ConnectionsHandler.cpp already: ???
+            qos.getSessionQos().setSecretSessionId(secretSessionId_);
+         }
       }
+
       char *retQos = connection_->connect(connection_, qos.toXml().c_str(),
                                           myUpdate, &socketException);
       if (*socketException.errorCode != 0) {
@@ -266,6 +307,7 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
 
 bool SocketDriver::disconnect(const DisconnectQos& qos)
 {
+   if (log_.call()) log_.call(ME, "disconnect()");
    if (connection_ == 0) return false;
    ::XmlBlasterException socketException;
    Lock lock(mutex_);
@@ -284,8 +326,10 @@ string SocketDriver::getProtocol()
    return "SOCKET";
 }
 
+/** Called when going to POLLING mode */
 bool SocketDriver::shutdown()
 {
+   if (log_.call()) log_.call(ME, "shutdown()");
    Lock lock(mutex_);
    if (connection_ == 0) return false;
    freeResources(true);
@@ -309,9 +353,14 @@ bool SocketDriver::isLoggedIn()
 
 string SocketDriver::ping(const string& qos)
 {
+   ::XmlBlasterException socketException;
    Lock lock(mutex_);
    try {
-      return connection_->ping(connection_, qos.c_str());
+      const char *retQosP = connection_->ping(connection_, qos.c_str(), &socketException);
+      if (retQosP == 0 || *socketException.errorCode != 0) {
+         throw socketException; // Is converted to util::XmlBlasterException in catch_MACRO
+      }
+      return retQosP;
    } catch_MACRO("::ping", false)
 }
 

@@ -154,7 +154,7 @@ namespace org { namespace xmlBlaster { namespace util {
    );
 
    const ErrorCode COMMUNICATION_NOCONNECTION("communication.noConnection",
-         "A specific remote connection throws an exception on invocation."
+         "A method invocation on a remote connection failed."
    );
 
    const ErrorCode COMMUNICATION_NOCONNECTION_POLLING("communication.noConnection.polling",

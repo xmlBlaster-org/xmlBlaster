@@ -56,6 +56,11 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true);
 
+      /** 
+       * Called on polling, try to reconnect to server
+       */
+      void reconnect(void);
+
       /**
        * Only used by getInstance()
        * @param global
