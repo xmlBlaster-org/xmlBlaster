@@ -15,6 +15,7 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #define _CLIENT_UPDATEQOS_H
 
 #include <util/Log.h>
+#include <util/Constants.h>
 #include <util/XmlQoSBase.h>
 
 using namespace std;
@@ -39,7 +40,7 @@ namespace org { namespace xmlBlaster {
       /** helper flag for SAX parsing: parsing inside <state> ? */
       bool inState_; //  = false;
       /** the state of the message */
-      string state_; //  = null;
+      string state_; //  = Constants::STATE_OK;
       /** helper flag for SAX parsing: parsing inside <sender> ? */
       bool inSender_; //  = false;
       /** the sender (publisher) of this message (unique loginName) */
@@ -59,16 +60,14 @@ namespace org { namespace xmlBlaster {
        * update() call.
        */
       UpdateQos(const string &xmlQoS_literal, int args=0, char *argc[]=0) 
-         : util::XmlQoSBase(args, argc) {
+               : util::XmlQoSBase(args, argc),
+               inState_(false), state_(util::Constants::STATE_OK),  
+               inSender_(false), sender_(""),
+               inSubscriptionId_(false), subscriptionId_("")
+               {
+
          if (log_.CALL) log_.call(me(), string("Creating UpdateQos(") + 
                                     xmlQoS_literal + ")");
-         //if (Log.CALL) Log.call(ME, "Creating UpdateQos()");
-         inState_          = false;
-         state_            = "";
-         inSender_         = false;
-         sender_           = "";
-         inSubscriptionId_ = false;
-         subscriptionId_   = "";
          init(xmlQoS_literal);
       }
       
@@ -209,7 +208,7 @@ namespace org { namespace xmlBlaster {
       /**
        * Since xerces ver 1.2
        */
-      void setDocumentLocator(const Locator *loc) {
+      void setDocumentLocator(const Locator */*loc*/) {
       }
 
       /**
