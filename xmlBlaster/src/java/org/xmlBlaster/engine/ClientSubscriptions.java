@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.26 2002/05/26 20:04:51 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.27 2002/06/11 14:20:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -28,7 +28,7 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.26 2002/05/26 20:04:51 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.27 2002/06/11 14:20:22 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -157,7 +157,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
 
 
    /**
-    * Event invoked on new SubjectInfo. 
+    * Event invoked on new created SubjectInfo. 
     */
    public void subjectAdded(ClientEvent e) throws XmlBlasterException
    {
