@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.58 $
+# $Revision: 1.59 $
 #-----------------------------------------------------------
 
 
@@ -213,8 +213,10 @@ fi
 #  Run testsuite, invoke again
 #   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
 #  until Main-xy.tjp shows no Java classes anymore.
-#  Other options:
-#   tj -b-jdk 2  -nofeedback
+#  Other 'final' options (increase 4%):
+#   tj -b-jdk 2  -nofeedback -mode optimize -O-omit-checks
+#   tj -b-jdk 2  -nofeedback -b-disable-tjlib -mode optimize -O-omit-checks
+#   ( -O-inline-threshold 100 fails to compile)
 #   tj -b-jdk 2  -O-closed
 TOWERJ=/opt/TowerJ
 export TOWERJ
