@@ -1,5 +1,5 @@
-#This file was created by <ruff> Sun Nov 21 18:51:58 1999
-#LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
+#This file was created by <ruff> Fri Jan  7 20:28:52 2000
+#LyX 0.12 (C) 1995-1998 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
 \language default
@@ -37,7 +37,7 @@ ruff@swand.lake.de, manuel.kron@gmx.net
 \layout Standard
 
 
-\begin_inset LatexCommand \tableofcontents{}
+\begin_inset LatexCommand \tableofcontents
 
 \end_inset 
 
@@ -61,8 +61,8 @@ Application area of xmlBlaster
 XmlBlaster is a pure Java message orientated middleware (MOM) to support
  instantaneous delivery of message objects via IIOP, TCP, SSL or HTTP.
  XmlBlaster offers a very generic solution for wide range of applications,
- such e-commerce, Client/Server applications, enterprise applicaions integration
-, groupware applications, and information distribution among embedded systems.
+ such e-commerce, Client/Server applications, enterprise applications integratio
+n, groupware applications, and information distribution among embedded systems.
 \layout Chapter
 
 Installing xmlBlaster
@@ -78,32 +78,64 @@ Obtaining xmlBlaster
 The xmlBlaster can be obtained as agzipped tar-achive or as a zp-archive
  from the xmlBlaster home page at 
 \family typewriter 
-http://www.xmlBlaster.org/xmlBlaster.html.
- 
+http://www.xmlBlaster.org 
 \newline 
 
 \family default 
-To install xmlBlaster, just gun-zip and make untar the archive somewhere.
- This will be the result durectory 
-\family typewriter 
-xmlBlasterX.X
-\family default 
-.
- Make sure your CLASSPATH environment varivale contains 
-\family typewriter 
-xmlBlasterX.X/classes
-\family default 
-.
  
 \layout Section
 
 Installation
+\layout Standard
+
+To install xmlBlaster, just gunzip/bunzip2/unzip it and untar the archive
+ somewhere (we usually do it in our home directory).
+ This would be the result directory 
+\family typewriter 
+$HOME/xmlBlaster
+\family default 
+.
+ 
+\layout Standard
+
+Read the 
+\family typewriter 
+$HOME/xmlBlaster/INSTALL
+\family default 
+ file how to set up your CLASSPATH variable.
 \layout Subsection
 
 Make and Makefiles
+\layout Standard
+
+Only GNU make is supported.
 \layout Subsection
 
 Configuration
+\layout Standard
+
+For the moment there is no xmlBlaster specific configuration file.
+ The only configuration file delivered is for the CORBA library JacORB.
+ Copy manually the 
+\family typewriter 
+$HOME/xmlBlaster/jacorb_properties.templateINSTALL 
+\family default 
+file to 
+\family typewriter 
+$HOME/.jacorb_properties.
+
+\family default 
+ If you use the delivered 
+\family typewriter 
+.bashrc
+\family default 
+ file you don't need to copy it, it is done automatically.
+ Edit 
+\family typewriter 
+.jacorb_properties
+\family default 
+ if necessary.
+ If you need help about this, check the JacORB documentation.
 \layout Chapter
 
 Architecture
@@ -761,6 +793,101 @@ Message content
 \layout Subsection
 
 Message key
+\layout Subsubsection
+
+What is a message key?
+\layout Standard
+
+The message key, is used for two purposes: 
+\layout Standard
+
+- It holds the unique message identifyier, called 'oid' = object idenitfyier
+\layout Standard
+
+- It contains user supplied meta data about the message
+\layout Standard
+
+To allow this, the syntax of the message key is XML based, so we will call
+ it XmlKey form now on.
+\layout Subsubsection
+
+How to query the internal state of xmlBlaster
+\layout Standard
+
+There are 3 internal state variable which you may query: 
+\layout Standard
+\added_space_top 0.3cm \added_space_bottom 0.3cm \align center \LyXTable
+multicol5
+4 2 0 0 -1 -1 -1 -1
+1 1 0 0
+1 1 0 0
+0 1 0 0
+0 1 0 0
+2 1 0 "" ""
+2 1 1 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 2 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 2 0 1 0 0 0 "" ""
+
+Variable name
+\newline 
+Comment
+\newline 
+__sys__TotalMem
+\newline 
+The current allocated amount of RAM in the virtual machine [byte]
+\newline 
+__sys__FreeMem
+\newline 
+The currently not used amount of memory [byte]
+\newline 
+__sys__UsedMem
+\newline 
+Effective used memory [byte]
+\layout Standard
+
+But how do you access these values?
+\layout Standard
+
+Believe it or not, you access them as a MessageUnit, using the get() method.
+ Use the variable name as the identifier for your XmlKey.
+\layout Standard
+
+If you are an experienced RDBMS user (like Orcale), you will notice the
+ similarity.
+ The internal state of Oracle is stored in 'sys' database tables as well.
+\layout Standard
+
+The following example shows you how to query the currently used memory:
+\layout LyX-Code
+
+<key oid='__sys__UsedMem' queryType='EXACT'>
+\layout LyX-Code
+
+</key>
+\layout Standard
+
+Sending this XmlKey with the get() method to the xmlBlaster, returns a message
+ with the currently used memory of the xmlBlaster server.
+ In the message content you find the number of bytes consumed.
+\layout Standard
+
+Please note that subscribing to these internal state variables is not supported,
+ you will only receive the actual value but no following updates.
+ This is for performance reasons, the internal state values are calculated
+ on demand.
+\layout Standard
+
+If you want to study some real code which queries the internal state of
+ xmlBlaster, please have a look into 
+\layout LyX-Code
+
+xmlBlaster/testsuite/org/xmlBlaster/RamTest.java
 \layout Subsection
 
 Message QoS
