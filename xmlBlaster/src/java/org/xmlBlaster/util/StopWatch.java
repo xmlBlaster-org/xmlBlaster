@@ -3,10 +3,11 @@ Name:      StopWatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: StopWatch.java,v 1.6 2000/05/27 11:57:44 ruff Exp $
+Version:   $Id: StopWatch.java,v 1.7 2000/06/05 13:44:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.jutil.TimeHelper;
 
 /**
  * Measure the elapsed time.
