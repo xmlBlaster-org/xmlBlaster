@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 
 /**
  * Test I_Map e.g. MapPlugin which allows to store randomly messages. 
@@ -43,19 +46,26 @@ public class I_MapTest extends TestCase {
    private final boolean IS_TRANSIENT = false;
 
    private I_Map currMap;
+   private int count;
+/*
    static I_Map[] IMPL = {
                    new org.xmlBlaster.engine.msgstore.ram.MapPlugin(),
                    new org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin(),
                    new org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin()
                  };
+*/
+   static String[] PLUGIN_TYPES = { new String("RAM"),
+                                    new String("JDBC"),
+                                    new String("CACHE") };
 
    public I_MapTest(String name, int currImpl) {
       super(name);
-      this.currMap = IMPL[currImpl];
-      String[] args = { // configure the cache
+      this.count = currImpl;
+
+      String[] args = { //configure the cache
          "-persistence.persistentQueue", "JDBC,1.0",
-         "-persistence.transientQueue", "RAM,1.0",
-      };
+         "-persistence.transientQueue", "RAM,1.0" };
+
       this.glob = new Global(args);
       this.log = glob.getLog(null);
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
@@ -65,6 +75,24 @@ public class I_MapTest extends TestCase {
    protected void setUp() {
       try {
          glob.getProperty().set("topic.queue.persistent.tableNamePrefix", "TEST");
+
+         String type = PLUGIN_TYPES[this.count];
+         StoragePluginManager pluginManager = this.glob.getStoragePluginManager();
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
+
+         pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+
+         MsgUnitStoreProperty storeProp = new MsgUnitStoreProperty(glob, "/node/test");
+         StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
+
+         this.currMap = pluginManager.getPlugin(pluginInfo, queueId, storeProp);
+         this.currMap.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'topic.queue.persistent.tableNamePrefix' to 'TEST': " + ex.getMessage());
@@ -636,7 +664,7 @@ public class I_MapTest extends TestCase {
    {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i<IMPL.length; i++) {
+      for (int i=0; i<PLUGIN_TYPES.length; i++) {
          suite.addTest(new I_MapTest("testConfig", i));
          suite.addTest(new I_MapTest("testPutMsg", i));
          suite.addTest(new I_MapTest("testGetMsg", i));
@@ -656,7 +684,7 @@ public class I_MapTest extends TestCase {
 
       Global glob = new Global(args);
 
-      for (int i=0; i < IMPL.length; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          I_MapTest testSub = new I_MapTest("I_MapTest", i);
 
          long startTime = System.currentTimeMillis();
