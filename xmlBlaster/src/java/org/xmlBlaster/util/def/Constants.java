@@ -43,6 +43,22 @@ public class Constants
    public final static String TYPE_LONG = "long";
 
    /**
+    * The SOCKET protocol can support zlib compression with streaming compression
+    * A partial flush means that all data will be output,
+    * but the next packet will continue using compression tables from the end of the previous packet.
+    * As described in [RFC-1950] and in [RFC-1951]
+    * @see http://www.jcraft.com/jzlib/
+    */
+   public final static String COMPRESS_ZLIB_STREAM = "zlib:stream";
+
+   /**
+    * The SOCKET protocol supports zlib compression for each message individually
+    * As described in [RFC-1950] and in [RFC-1951]
+    * @see http://www.jcraft.com/jzlib/
+    */
+   public final static String COMPRESS_ZLIB = "zlib";
+
+   /**
     * The native authentication instance of the xmlBlaster server is available
     * under this key in Global.instance().getProperties(). 
     * <pre>
