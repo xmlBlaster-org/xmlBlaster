@@ -115,6 +115,12 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          this.log = glob.getLog("queue");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.queueId = uniqueQueueId;
+         try {
+            this.property = (QueuePropertyBase)userData;
+         }
+         catch(Throwable e) {
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't configure queue, your properties are invalid", e);
+         }
          if (log.CALL) log.call(ME, "Entering initialize()");
 
          MsgUnitStorePluginManager pluginManager = glob.getMsgUnitStorePluginManager();
@@ -151,8 +157,6 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
             catch (XmlBlasterException ex) {
                this.log.error(ME, "could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down" + ex.getMessage());
             }
-
-            setProperties(userData);
 
             // prefill cache (hack: works only for our JDBC queue which implements I_Queue as well)
             if (this.persistentStore instanceof org.xmlBlaster.util.queue.I_Queue) {
@@ -321,16 +325,21 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
 
    /**
     * Check is storage is big enough for entry
+    * @param mapEntry may not be null
     * @return null There is space (otherwise the error text is returned)
     */
    private String spaceLeft(I_MapEntry mapEntry, I_Map map) {
-       if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
+      if (map == null || this.property == null) {
+         return "Storage framework is down, current settings are" + toXml("");
+      }
+
+      if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
          return "Queue overflow (number of entries), " + getNumOfEntries() +
                 " entries are in queue, try increasing property '" +
                 this.property.getPropName("maxMsg") + "' and '" +
                 this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
 
-       if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
+      if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
          return "Queue overflow, " + getMaxNumOfBytes() +
                 " bytes are in queue, try increasing property '" + 
                 this.property.getPropName("maxBytes") + "' and '" +
@@ -353,6 +362,10 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
       if (mapEntry != null) {
          return mapEntry;
       }
+
+      if (this.persistentStore == null)
+         return null;
+
       mapEntry = this.persistentStore.get(uniqueId);
       if (mapEntry == null) {
          return null;
@@ -413,7 +426,8 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
          int num = this.transientStore.remove(mapEntry);
          int num2 = 0;
          if (mapEntry.isDurable() || (num == 0 && numSwapped() > 0)) {
-            num2 = this.persistentStore.remove(mapEntry);
+            if (this.persistentStore != null)
+               num2 = this.persistentStore.remove(mapEntry);
          }
          return Math.max(num, num2);
       }
