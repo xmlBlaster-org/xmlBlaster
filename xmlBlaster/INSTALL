@@ -57,7 +57,7 @@ Type a 'g' if you want the GUI to pop up.
 
 Now start a client:
 
-  java -classpath lib/xmlBlaster.jar javaclients.corba.ClientSub
+  java -classpath lib/xmlBlaster.jar javaclients.ClientSub
 
 You should see some output on your terminal telling
 that a message is published and subscribed.
@@ -195,7 +195,7 @@ One important note:
 
    and a testclient
     
-     jaco javaclients.corba.ClientSub
+     jaco javaclients.ClientSub
 
 
 
@@ -205,7 +205,7 @@ One important note:
 
    and a testclient
 
-     jaco javaclients.corba.ClientSub -iorHost localhost -iorPort 7609
+     jaco javaclients.ClientSub -iorHost localhost -iorPort 7609
 
 
 
@@ -215,7 +215,7 @@ One important note:
 
    and a testclient
 
-     jaco javaclients.corba.ClientSub -iorFile /tmp/Blaster_Ref
+     jaco javaclients.ClientSub -iorFile /tmp/Blaster_Ref
 
 
 
