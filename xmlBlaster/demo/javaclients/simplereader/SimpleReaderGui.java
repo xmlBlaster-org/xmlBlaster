@@ -1,0 +1,263 @@
+/*------------------------------------------------------------------------------
+Name:      SimpleReaderGui.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Author:    Thomas Bodemer
+------------------------------------------------------------------------------*/
+package javaclients.simplereader;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+
+import java.awt.event.*;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.util.*;
+
+public class SimpleReaderGui extends JFrame implements I_Callback {
+   private static final String ME = "SimpleReaderGui";
+
+   private static final String USR_LOGIN  = ME;
+   private static final String USR_PASSWD = "secret";
+
+   private static final String SECPLUGIN_MECHANISM = "simple";
+   private static final String SECPLUGIN_VERSION   = "1.0";
+
+   private ImageIcon image = null;
+
+   private XmlBlasterConnection xmlBlaster = null;
+   private DefaultListModel listModel = new DefaultListModel();
+   private JList jList1 = new JList();
+   private JScrollPane jScrollPane1 = new JScrollPane();
+   private JSplitPane jSplitPane1 = new JSplitPane();
+   private JPanel jPanel1 = new JPanel();
+   private JPanel jPanel2 = new JPanel();
+   private BorderLayout borderLayout1 = new BorderLayout();
+   private BorderLayout borderLayout2 = new BorderLayout();
+   private JScrollPane jScrollPane2 = new JScrollPane();
+   private JTextArea jTextArea1 = new JTextArea();
+   private JPanel jPanel4 = new JPanel();
+   private JTextField jTextField1 = new JTextField();
+   private JPanel jPanel3 = new JPanel();
+   private JButton jButton1 = new JButton();
+   private BorderLayout borderLayout3 = new BorderLayout();
+   private JButton jButton2 = new JButton();
+   private BorderLayout borderLayout4 = new BorderLayout();
+
+
+   public SimpleReaderGui(XmlBlasterConnection _xmlBlaster) throws Exception{
+      this.xmlBlaster = _xmlBlaster;
+      try {
+        jbInit();
+      }
+      catch(Exception e) {
+        e.printStackTrace();
+      }
+
+   }
+
+   public static void main(String[] args) {
+      SimpleReaderGui srGui = null;
+      try {
+         Global glob = new Global(args);
+         XmlBlasterConnection xmlBlaster = new XmlBlasterConnection( glob );
+         srGui = new SimpleReaderGui(xmlBlaster);
+         srGui.loadImage();
+         ConnectQos qos = new ConnectQos(glob, USR_LOGIN, USR_PASSWD);
+         xmlBlaster.connect(qos, srGui);
+      }
+      catch(Exception ex) {
+         log_error( ME, ex.toString(), "");
+         ex.printStackTrace();
+      }
+      if( srGui != null ) {
+         srGui.setSize(640,480);
+         srGui.show();
+      }
+   }
+
+   public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
+   {
+      MessageWrapper messageWrapper = new MessageWrapper(loginName, updateKey, content, updateQos);
+      listModel.addElement(messageWrapper);
+      System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
+      return ("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
+   }
+
+
+  private void jbInit() throws Exception {
+     jList1.setFixedCellHeight(15);
+     jList1.setModel(listModel);
+     jList1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+     jList1.setMaximumSize(new Dimension(1000, 1000));
+     jList1.setMinimumSize(new Dimension(100, 10));
+     jList1.setCellRenderer(new MyCellRenderer());
+     this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+     jList1.addListSelectionListener(new ListSelectionListener() {
+         public void valueChanged(ListSelectionEvent evt) {
+            JList source = (JList) evt.getSource();
+            MessageWrapper selection = (MessageWrapper) source.getSelectedValue();
+            if (selection != null) {
+               String loginName = selection.getLoginName();
+               UpdateKey updateKey = selection.getUpdateKey();
+               byte[] content = selection.getContent();
+               UpdateQos updateQos = selection.getUpdateQos();
+
+               String text = (
+                  new StringBuffer()
+                     .append(" - - - loginName: - - -\n")
+                     .append(loginName)
+                     .append("\n - - - updateKey: - - -")
+                     .append(updateKey.toXml())
+                     .append("\n - - - content: - - -\n")
+                     .append(new String(content))
+                     .append("\n - - - updateQos: - - -")
+                     .append(updateQos.toXml()))
+                     .append("\n - - - end - - -\n")
+                     .toString();
+               jTextArea1.setText(text);
+            } else {
+               jTextArea1.setText("");
+            }
+         }
+      });
+      jPanel1.setLayout(borderLayout1);
+      jPanel2.setLayout(borderLayout2);
+      jTextArea1.setMinimumSize(new Dimension(20, 23));
+      jTextArea1.setEditable(false);
+      jPanel1.setMaximumSize(new Dimension(400, 300));
+      jPanel1.setMinimumSize(new Dimension(200, 300));
+      jPanel1.setPreferredSize(new Dimension(200, 300));
+      jScrollPane2.setAutoscrolls(true);
+      jScrollPane2.setPreferredSize(new Dimension(300, 26));
+      jSplitPane1.setMinimumSize(new Dimension(234, 400));
+      jSplitPane1.setPreferredSize(new Dimension(512, 400));
+      jTextField1.setText("//");
+      jPanel3.setLayout(borderLayout4);
+      jPanel3.setMaximumSize(new Dimension(120, 40));
+      jPanel3.setMinimumSize(new Dimension(120, 40));
+      jPanel3.setPreferredSize(new Dimension(120, 40));
+      jButton1.setSelected(true);
+      jButton1.setText("subscribe");
+      jButton1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+           jButton1_actionPerformed(e);
+        }
+      });
+      jPanel4.setLayout(borderLayout3);
+      jPanel4.setMaximumSize(new Dimension(32767, 70));
+      jPanel4.setMinimumSize(new Dimension(120, 70));
+      jPanel4.setPreferredSize(new Dimension(120, 70));
+      jScrollPane1.setAutoscrolls(true);
+      jButton2.setText("clear");
+      jButton2.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            jButton2_actionPerformed(e);
+         }
+      });
+      jPanel1.add(jScrollPane1,  BorderLayout.CENTER);
+      jScrollPane1.getViewport().add(jList1);
+      jPanel1.add(jPanel4, BorderLayout.NORTH);
+      jPanel3.add(jButton1,  BorderLayout.WEST);
+      jPanel3.add(jButton2, BorderLayout.CENTER);
+      jPanel4.add(jPanel3, BorderLayout.CENTER);
+      jPanel4.add(jTextField1,  BorderLayout.NORTH);
+      jSplitPane1.add(jPanel2, JSplitPane.RIGHT);
+      jPanel2.add(jScrollPane2,  BorderLayout.CENTER);
+      jSplitPane1.add(jPanel1, JSplitPane.LEFT);
+      jScrollPane2.getViewport().add(jTextArea1, null);
+      this.getContentPane().add(jSplitPane1, BorderLayout.CENTER);
+  }
+
+   void jButton1_actionPerformed(ActionEvent e) {
+      String text = jTextField1.getText();
+      try {
+         SubscribeKey key = new SubscribeKey(xmlBlaster.getGlobal(), text, "XPATH");
+         SubscribeQos qos = new SubscribeQos( xmlBlaster.getGlobal() );
+         xmlBlaster.subscribe(key.toXml(), qos.toXml());
+      }
+      catch( Exception ex ) {
+         log_error(ME, "error-error-error-error >>>"+ex.toString(), "");
+         System.out.println(ME + " " + ex.getMessage());
+         ex.printStackTrace();
+      }
+
+   }
+
+   void jButton2_actionPerformed(ActionEvent ae) {
+      try {
+         listModel.clear();
+      } catch (Exception e) {
+         log_error(ME, "error-error-error-error >>>"+e.toString(), "");
+         System.out.println(ME + " " + e.getMessage());
+         e.printStackTrace();
+      }
+   }
+
+   public static void log_error(String ME, String text1, String text2) {
+      System.err.println("ME:" + ME + "text:" + text1 +  text2);
+   }
+
+
+   public void loadImage() {
+      try {
+         String filename = "red.gif";
+         String description = "Knoepfle";
+         Image img = Toolkit.getDefaultToolkit().createImage(getClass().getResource(filename));
+         image = new ImageIcon( img );
+      }
+      catch (Exception ex) {
+         log_error(ME, "error-error-error-error >>>"+ex.toString(), "");
+         System.out.println(ME + " " + ex.getMessage());
+         ex.printStackTrace();
+      }
+   }
+
+   class MyCellRenderer extends DefaultListCellRenderer {
+      public Component getListCellRendererComponent(
+          JList list,
+          Object value,
+          int index,
+          boolean isSelected,
+          boolean cellHasFocus)
+      {
+          setComponentOrientation(list.getComponentOrientation());
+     if (isSelected) {
+         setBackground(list.getSelectionBackground());
+         setForeground(list.getSelectionForeground());
+     }
+     else {
+         setBackground(list.getBackground());
+         setForeground(list.getForeground());
+     }
+
+     if (value instanceof Icon) {
+         setIcon((Icon)value);
+         setText("");
+     }
+     else {
+         setIcon(image);
+         setText((value == null) ? "" : ( ((MessageWrapper) value).getUpdateKey().getOid()));
+     }
+
+     setEnabled(list.isEnabled());
+     setFont(list.getFont());
+     setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
+
+     return this;
+      }
+   }
+
+
+} // -- class
+
+// -- file

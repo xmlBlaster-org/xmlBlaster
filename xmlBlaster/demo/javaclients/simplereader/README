@@ -1,0 +1,32 @@
+These are two pretty basic kind of xmlBlaster clients.
+
+The goal is to be able to connect to xmlBlaster which runns embedded or is otherwise not
+available for starting the build-in gui.
+
+These two clients act as MultiMeter like every electrician worker has one.
+You can easy observe all publishing or get an overview about the available topics.
+
+Compile it (make all) and start it like that:
+
+ 1.  java javaclients.simplereader.SimpleReader -key "//key[@oid='__sys__UserList']"
+
+     whereat the argument for key is a XPATH expression of your subscription.
+
+ 2. java javaclients.SimpleReaderGui
+    
+    opens a little SwingUI.
+
+    On the top left field you may enter your subsribing key, i.e. //key[@oid='__sys__UserList'] 
+ 
+    After you hit the subscribe button, you'll get an update every time the topic gets a new
+    value.
+
+    Using the Clear button clears the left column.
+
+    Yo may try to enter //key as well to see all available topics.
+
+Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
+
+You may add all other parameters you need to connect to a certain xmlBlaster node.
+
+Enjoy!
