@@ -26,29 +26,53 @@ import org.xmlBlaster.util.queue.StorageId;
 public final class MsgQueueUpdateEntry extends ReferenceEntry
 {
    private final static String ME = "MsgQueueUpdateEntry";
+   private final String subscriptionId;
+   private final String state;
 
    /**
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
-   public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver) throws XmlBlasterException {
+   public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
+                              String subscriptionId, String state) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, storageId, receiver);
+      this.subscriptionId = subscriptionId;
+      this.state = state;
    }
 
    /**
     * For persistence recovery
     */
    public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
-                              String keyOid, long msgUnitWrapperUniqueId, boolean isDurable, SessionName receiver) {
+                              String keyOid, long msgUnitWrapperUniqueId, boolean isDurable, SessionName receiver,
+                              String subscriptionId, String state, int redeliverCount) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
             updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, isDurable, receiver);
+      this.subscriptionId = subscriptionId;
+      this.state = state;
+      super.redeliverCounter = redeliverCount;
+   }
+
+   public String getSubscriptionId() {
+      return this.subscriptionId;
+   }
+
+   public String getState() {
+      return this.state;
    }
 
    /**
-    * The embeddded object for this implementing class is an Object[4]
+    * The embeddded object for this implementing class is an Object[7]
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.getUniqueIdLong(), this.keyOid, new Long(this.msgUnitWrapperUniqueId), this.receiver.getAbsoluteName() };
+      Object[] obj = { this.getUniqueIdLong(),
+                       this.keyOid,
+                       new Long(this.msgUnitWrapperUniqueId),
+                       this.receiver.getAbsoluteName(),
+                       this.subscriptionId,
+                       this.state,
+                       new Integer(getRedeliverCounter())
+                        };
       return obj;
    }
 
