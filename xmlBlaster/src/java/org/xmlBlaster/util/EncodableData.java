@@ -35,6 +35,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
    /** Needed for Base64 encoding */
    public static final boolean isChunked = false;
    protected String tagName;
+   private long size = -1L;
+   private boolean forceCdata = false;
 
    /**
     * @param name  The unique property key
@@ -81,6 +83,26 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
    public String getType() {
       return this.type;
+   }
+
+   /**
+    * The real, raw content size (not the base64 size)
+    * @return -1 if not set
+    */
+   public long getSize() {
+      return this.size;
+   }
+
+   public void forceCdata(boolean forceCdata) {
+      this.forceCdata = forceCdata;
+   }
+
+   /**
+    * The real, raw content size (not the base64 size)
+    * @param size If set >= 0 force to dump the size attribute
+    */
+   public void setSize(long size) {
+      this.size = size;
    }
 
    public boolean isBase64() {
@@ -299,6 +321,9 @@ public class EncodableData implements java.io.Serializable, Cloneable
       if (getName() != null) {
          sb.append(" name='").append(getName()).append("'");
       }
+      if (getSize() >= 0) {
+         sb.append(" size='").append(getSize()).append("'");
+      }
       if (getType() != null) {
          sb.append(" type='").append(getType()).append("'");
       }
@@ -312,7 +337,9 @@ public class EncodableData implements java.io.Serializable, Cloneable
          sb.append("/>");
       else {
          sb.append(">");
+         if (this.forceCdata) sb.append("<![CDATA[");
          sb.append(val);
+         if (this.forceCdata) sb.append("]]>");
          sb.append("</").append(this.tagName).append(">");
       }
 
