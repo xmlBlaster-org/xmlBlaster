@@ -245,7 +245,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       }
       catch (IllegalArgumentException e) {
          glob.getLog("core").error("XmlBlasterException", "Please check your formatting string for exceptions, usually set by 'XmlBlasterException.logFormat=...'" +
-                   " as described in http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html: " + e.toString());
+                   " as described in http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html: " + e.toString() +
+                   "\nOriginal exception is: errorCode=" + errorCodeStr + " message=" + getRawMessage());
          if (isInternal() || handleAsInternal) {
             return MessageFormat.format(this.DEFAULT_LOGFORMAT_INTERNAL, arguments);
          }
