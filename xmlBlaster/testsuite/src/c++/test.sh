@@ -4,6 +4,9 @@ export USE_EMBEDDED="-embeddedServer true"
 echo "Please make sure there i no xmlBlaster server running when runnigng these tests"
 echo "since the tests have an own embedded server"
 
+echo "going to test the TestStringTrim ..."
+sleep $DELAY_TIME
+bin/TestStringTrim
 echo "going to test the ConnectQos ..."
 sleep $DELAY_TIME
 bin/TestConnectQos
