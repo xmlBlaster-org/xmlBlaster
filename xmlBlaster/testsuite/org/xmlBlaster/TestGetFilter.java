@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestSubscribeFilter.java
+Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.6 2002/03/28 15:21:03 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.1 2002/03/28 15:21:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.GetQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
@@ -37,29 +37,28 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
  * </pre>
  */
-public class TestSubscribeFilter extends TestCase implements I_Callback
+public class TestGetFilter extends TestCase
 {
    private static String ME = "Tim";
 
    private XmlBlasterConnection con = null;
    private String name;
    private String passwd = "secret";
-   private int numReceived = 0;         // error checking
    private ServerThread serverThread;
    private int serverPort = 7604;
    private int filterMessageContentBiggerAs = 10;
 
    /**
-    * Constructs the TestSubscribeFilter object.
+    * Constructs the TestGetFilter object.
     * <p />
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestSubscribeFilter(String testName, String name)
+   public TestGetFilter(String testName, String name)
    {
        super(testName);
        this.name = name;
@@ -95,24 +94,26 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          Log.info(ME, "Connecting ...");
          con = new XmlBlasterConnection(args);
          ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
-         con.connect(qos, this); // Login to xmlBlaster
+         con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
          Log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
 
-      // Subscribe to a message with a supplied filter
+      /*
+      // Get a message with a supplied filter
       try {
-         SubscribeQosWrapper qos = new SubscribeQosWrapper();
+         GetQosWrapper qos = new GetQosWrapper();
          qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml());
-         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
+         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         Log.info(ME, "Success: Get ription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
+      */
    }
 
    /**
@@ -148,73 +149,72 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       Log.info(ME, "testFilter() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
 
       Log.info(ME, "TEST 1: Testing unfiltered message");
+      String content = "1234567890";
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
+         con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
-      waitOnUpdate(2000L, 1); // message should come back as it is only 10 bytes
+
+      try {
+         GetQosWrapper qos = new GetQosWrapper();
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+
+         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         assert("Expected one returned message", msgUnits!=null);
+         assert("Expected exactly one returned message", msgUnits.length==1);
+         assert("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
+                msgUnits[0].getContent().length == content.length());
+         Log.info(ME, "Success: Got one message.");
+      } catch(XmlBlasterException e) {
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         assert("get - XmlBlasterException: " + e.reason, false);
+      }
 
 
       Log.info(ME, "TEST 2: Testing filtered message");
+      content = "12345678901"; // content is too long, our plugin denies this message
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
+         con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
-      waitOnUpdate(2000L, 0); // message should be filtered as it is longer 10 bytes
+
+      try {
+         GetQosWrapper qos = new GetQosWrapper();
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+
+         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         assert("Expected one returned message", msgUnits!=null);
+         assert("Expected exactly one returned message", msgUnits.length==0);
+         Log.info(ME, "Success: Got no message.");
+      } catch(XmlBlasterException e) {
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         assert("get - XmlBlasterException: " + e.reason, false);
+      }
 
 
       Log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
-         assert("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
+      } catch(XmlBlasterException e) {
+         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         assert("publish - XmlBlasterException: " + e.reason, false);
+      }
+
+      try {
+         GetQosWrapper qos = new GetQosWrapper();
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+
+         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         assert("get() message should throw an XmlBlasterException, but it didn't happen", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }
-      waitOnUpdate(2000L, 0); // no message expected on exception
 
       Log.info(ME, "Success in testFilter()");
-   }
-
-   /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
-   {
-      Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
-      numReceived++;
-      return "";
-   }
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      // check if too few are arriving
-      while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
-         sum += pollingInterval;
-         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
-      }
-
-      // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
-      assertEquals("Wrong number of messages arrived", numWait, numReceived);
-
-      numReceived = 0;
    }
 
    /**
@@ -224,15 +224,15 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubscribeFilter("testFilter", "Tim"));
+       suite.addTest(new TestGetFilter("testFilter", "Tim"));
        return suite;
    }
 
    /**
     * Invoke: 
     * <pre>
-    *   java testsuite.org.xmlBlaster.TestSubscribeFilter
-    *   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
+    *   java testsuite.org.xmlBlaster.TestGetFilter
+    *   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
     * <pre>
     */
    public static void main(String args[])
@@ -242,10 +242,10 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      TestSubscribeFilter testSub = new TestSubscribeFilter("TestSubscribeFilter", "Tim");
+      TestGetFilter testSub = new TestGetFilter("TestGetFilter", "Tim");
       testSub.setUp();
       testSub.testFilter();
-      Log.exit(TestSubscribeFilter.ME, "Good bye");
+      Log.exit(TestGetFilter.ME, "Good bye");
    }
 }
 

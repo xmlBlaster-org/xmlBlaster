@@ -43,6 +43,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestSubMulti.class \
     $(CLASS_DIR)/TestSubscribeFilter.class \
     $(CLASS_DIR)/TestGet.class \
+    $(CLASS_DIR)/TestGetFilter.class \
     $(CLASS_DIR)/TestUnSub.class \
     $(CLASS_DIR)/TestInvocationRecorder.class \
     $(CLASS_DIR)/TestSubManyClients.class \
