@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.27 2001/09/30 13:48:34 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.28 2001/11/30 08:06:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -67,7 +67,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -648,8 +648,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          nsis.close();
          String ior = bos.toString();
-         if (!ior.startsWith("IOR:"))
+         if (!ior.startsWith("IOR:")) {
             ior = "IOR:000" + ior; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
+            Log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
+         }
          if (Log.TRACE) Log.trace(ME, "Retrieved authentication service IOR='" + ior + "'");
          return ior;
       }

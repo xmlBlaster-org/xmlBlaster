@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.21 2001/09/30 13:48:15 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.22 2001/11/30 08:05:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -77,11 +77,20 @@ public class CorbaDriver implements I_Driver
       #  4. check in the orb.properties file located in the java.home/lib directory
       #  5. fall back on a hardcoded default behavior (use the Java IDL implementation)
       */
+
+      /* OpenOrb:
+         "org.omg.CORBA.ORBClass=org.openorb.CORBA.ORB"
+         "org.omg.CORBA.ORBSingletonClass=org.openorb.CORBA.ORBSingleton"
+         java -Dorg.omg.CORBA.ORBClass=org.openorb.CORBA.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.openorb.CORBA.ORBSingleton org.xmlBlaster.Main
+      */
+
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
          System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
          System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
       }
+      if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
+      if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
 
       // We use default Port 7608 for naming service to listen ...
       // Start Naming service
