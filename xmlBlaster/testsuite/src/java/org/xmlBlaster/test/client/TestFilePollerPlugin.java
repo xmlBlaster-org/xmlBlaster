@@ -24,6 +24,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.MsgInterceptor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.qos.address.Address;
 
 import junit.framework.TestCase;
@@ -54,6 +55,27 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    
    private MsgInterceptor updateInterceptor;
 
+   private class PluginProperties extends Properties implements I_PluginConfig {
+      
+      public PluginProperties() {
+         super();
+      }
+      
+      /**
+       * @see org.xmlBlaster.util.plugin.I_PluginConfig#getParameters()
+       */
+      public Properties getParameters() {
+         return this;
+      }
+      
+      /**
+       * @see org.xmlBlaster.util.plugin.I_PluginConfig#getPrefix()
+       */
+      public String getPrefix() {
+         return "";
+      }
+   }
+   
    public TestFilePollerPlugin() {
       this(null);
    }
@@ -78,7 +100,9 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          this.connGlobal = this.global.getClone(null);
          this.updateInterceptor = new MsgInterceptor(this.connGlobal, this.log, null);
          this.connGlobal.getXmlBlasterAccess().connect(new ConnectQos(this.connGlobal), this.updateInterceptor);
-         this.connGlobal.getXmlBlasterAccess().subscribe(new SubscribeKey(this.connGlobal, this.oid), new SubscribeQos(this.connGlobal));
+         SubscribeQos subQos = new SubscribeQos(this.connGlobal);
+         subQos.setWantInitialUpdate(false);
+         this.connGlobal.getXmlBlasterAccess().subscribe(new SubscribeKey(this.connGlobal, this.oid), subQos);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -127,7 +151,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
     */
    public void testDirectories() {
       // absolute path
-      Properties prop = new Properties();
+      PluginProperties prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", this.dirNameSent);
@@ -142,7 +166,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       checkDirs();
 
       // repeat that with already existing directories
-      prop = new Properties();
+      prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", this.dirNameSent);
@@ -158,7 +182,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       cleanUpDirs();
 
       // relative path are added to the 'directoryName'
-      prop = new Properties();
+      prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", "Sent");
@@ -172,7 +196,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       }
       checkDirs();
       // relative path are added to the 'directoryName' repeat with existing directories
-      prop = new Properties();
+      prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", "Sent");
@@ -198,7 +222,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          assertTrue("could not create the file '" + this.dirName + "'", false);
       }
       
-      prop = new Properties();
+      prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", "Sent");
@@ -223,7 +247,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          assertTrue("could not create the file '" + this.dirNameSent + "'", false);
       }
       
-      prop = new Properties();
+      prop = new PluginProperties();
       prop.put("topicName", "dummy");
       prop.put("directoryName", this.dirName);
       prop.put("sent", "Sent");
@@ -238,30 +262,64 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       cleanUpDirs();
    }
 
+   private void singleDump(String filename, int filesize, String lockExt, long delay, boolean deliver, boolean absSubPath, String movedDir) {
+      String okFile = this.dirName + File.separator + filename;
+      byte[] okBuf = writeFile(okFile, filesize, lockExt, delay);
+      int ret = this.updateInterceptor.waitOnUpdate(delay);
+      boolean exist = false;
+      int sent = 1;
+      String txt = "";
+      if (!deliver) {
+         exist = true;
+         sent = 0;
+         txt = "not ";
+      }
+      assertEquals("expected '" + sent + "' update", sent, ret);
+      File tmp = new File(okFile);
+      assertEquals("the file '" + okFile + "' should " + txt + "have been removed", exist, tmp.exists());
+      if (deliver) {
+         checkMoved(filename, absSubPath, movedDir);
+         boolean sameContent = compareContent(okBuf, this.updateInterceptor.getMsgs()[0].getContent());
+         assertTrue("the content of the file is not the same as the arrived content of the update method", sameContent);
+         String fileName = this.updateInterceptor.getMsgs()[0].getUpdateQos().getClientProperty("_fileName", (String)null);
+         assertNotNull("The fileName is null", fileName);
+         assertEquals("", filename, fileName);
+      }
+      this.updateInterceptor.clear();
+   }
+   
+   private void checkMoved(String name, boolean absSubPath, String subDirName) {
+      if (subDirName == null)
+         return;
+      File discDir = null;
+      if (absSubPath) {
+         discDir = new File(subDirName);
+      }
+      else {
+         discDir = new File(new File(this.dirName), subDirName);
+      }
+      File tmp = new File(discDir, name);
+      assertTrue("The directory '" + subDirName + "' must exist", discDir.exists());
+      assertTrue("The file '" + name + "' must exist in '" + subDirName + "' directory", tmp.exists());
+   }
    
    
-   public void testSimplePublish() {
-      Properties prop = new Properties();
+   private void doPublish(PluginProperties prop, boolean deliverFirst, boolean deliverSecond, boolean absSubPath) {
+      String lockExt = prop.getProperty("lockExtention", null);
+      
       prop.put("topicName", this.oid);
       prop.put("directoryName", this.dirName);
-/*
-      prop.put("sent", "Sent");
-      prop.put("discarded", "Discarded");
-      prop.put("publishKey", "");
-      prop.put("publishQos", "");
-      prop.put("connectQos", "");
-      prop.put("loginName", "");
-      prop.put("password", "");
-      prop.put("fileFilter", "");
-      prop.put("lockExtention", ".lck");
-*/
+
       int maximumSize = 10000;
-      long delaySinceLastChange = 500L;
-      long pollInterval = 250L;
+      long delaySinceLastChange = 1000L;
+      long pollInterval = 500L;
       prop.put("maximumFileSize", "" + maximumSize);
       prop.put("delaySinceLastFileChange", "" + delaySinceLastChange);
       prop.put("pollInterval", "" + pollInterval);
-      prop.put("warnOnEmptyFileDelay", "1000L");
+      prop.put("warnOnEmptyFileDelay", "1000");
+      
+      String sent = prop.getProperty("sent", null);
+      String discarded = prop.getProperty("discarded", null);
       
       org.xmlBlaster.engine.Global engineGlobal = new org.xmlBlaster.engine.Global();
       prop.put("connectQos", this.getConnectQos(engineGlobal));
@@ -274,26 +332,23 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          this.updateInterceptor.clear();
          // too big
          String tooBig = this.dirName + File.separator + "tooBig.dat";
-         writeFile(tooBig, maximumSize+1);
+         writeFile(tooBig, maximumSize+1, lockExt, delaySinceLastChange* 2);
          int ret = this.updateInterceptor.waitOnUpdate(delaySinceLastChange* 2);
          assertEquals("expected no updates", 0, ret);
+
          File tmp = new File(tooBig);
-         assertFalse("the file '" + tooBig + "' should have been removed", tmp.exists());
-         
+         if (deliverFirst) {
+            assertFalse("the file '" + tooBig + "' should have been removed", tmp.exists());
+            checkMoved("tooBig.dat", absSubPath, discarded);
+         }
+         else {
+            assertTrue("the file '" + tooBig + "' should still be here", tmp.exists());
+         }
+
          this.updateInterceptor.clear();
-         // too big
-         String okFile = this.dirName + File.separator + "ok.dat";
-         byte[] okBuf = writeFile(okFile, maximumSize-1);
-         ret = this.updateInterceptor.waitOnUpdate(delaySinceLastChange* 2);
-         assertEquals("expected one update", 1, ret);
-         tmp = new File(okFile);
-         assertFalse("the file '" + okFile + "' should have been removed", tmp.exists());
-         
-         boolean sameContent = compareContent(okBuf, this.updateInterceptor.getMsgs()[0].getContent());
-         assertTrue("the content of the file is not the same as the arrived content of the update method", sameContent);
-         String fileName = this.updateInterceptor.getMsgs()[0].getUpdateQos().getClientProperty("_fileName", (String)null);
-         assertNotNull("The fileName is null", fileName);
-         assertEquals("", "ok.dat", fileName);
+
+         singleDump("ok.dat", maximumSize-1, lockExt, delaySinceLastChange* 2, deliverFirst, absSubPath, sent);
+         singleDump("ok.gif", maximumSize-1, lockExt, delaySinceLastChange* 2, deliverSecond, absSubPath, sent);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -310,8 +365,56 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
             }
          }
       }
-      
    }
+   
+   public void testSimplePublish() {
+      boolean deliverDat = true;
+      boolean deliverGif = true;
+      boolean absSubPath = true;
+      PluginProperties prop = new PluginProperties();
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+
+   public void testSimplePublishWithFilter() {
+      boolean deliverDat = false;
+      boolean deliverGif = true;
+      boolean absSubPath = true;
+      PluginProperties prop = new PluginProperties();
+      prop.put("fileFilter", "*.gif");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+   
+   public void testPublishWithMoveAbsolute() {
+      boolean deliverDat = true;
+      boolean deliverGif = true;
+      boolean absSubPath = true;
+      PluginProperties prop = new PluginProperties();
+      prop.put("sent", this.dirName + File.separator + "Sent");
+      prop.put("discarded", this.dirName + File.separator + "Discarded");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+
+   public void testPublishWithMoveRelative() {
+      boolean deliverDat = true;
+      boolean deliverGif = true;
+      boolean absSubPath = false;
+      PluginProperties prop = new PluginProperties();
+      prop.put("sent", "Sent");
+      prop.put("discarded", "Discarded");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+
+      /*
+      prop.put("sent", "Sent");
+      prop.put("discarded", "Discarded");
+      prop.put("publishKey", "");
+      prop.put("publishQos", "");
+      prop.put("connectQos", "");
+      prop.put("loginName", "");
+      prop.put("password", "");
+      prop.put("fileFilter", "");
+      prop.put("lockExtention", ".lck");
+*/
 
    private boolean compareContent(byte[] buf1, byte[] buf2) {
       if (buf1 == null && buf2 == null)
@@ -329,8 +432,17 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       return true;
    }
    
-   private byte[] writeFile(String filename, int size) {
+   private byte[] writeFile(String filename, int size, String lockExt, long timeToWait) {
       try {
+         File lock = null;
+         if (lockExt != null) {
+            lock = new File(filename + lockExt);
+            boolean ret = lock.createNewFile();
+            assertTrue("could not create lock file '" + filename + lockExt + "'", ret);
+            int upd = this.updateInterceptor.waitOnUpdate(timeToWait);
+            assertEquals("when writing lock file should not update", 0, upd);
+         }
+         
          byte[] buf = new byte[size];
          for (int i=0; i < size; i++) {
             buf[i] = (byte)i;
@@ -338,6 +450,10 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          FileOutputStream fos = new FileOutputStream(filename);
          fos.write(buf);
          fos.close();
+         if (lock != null) {
+            boolean ret = lock.delete();
+            assertTrue("could not remove lock file '" + filename + lockExt + "'", ret);
+         }
          return buf;
       }
       catch (IOException ex) {
@@ -383,10 +499,20 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    }
    
    private void cleanUpDirs() {
+      delete(this.dirNameSent + File.separator + "ok.dat");
+      delete(this.dirNameSent + File.separator + "ok.gif");
       delete(this.dirNameSent);
+      delete(this.dirNameDiscarded + File.separator + "tooBig.dat");
       delete(this.dirNameDiscarded);
       delete(this.dirName + File.separator + "ok.dat");
+      delete(this.dirName + File.separator + "ok.dat.lck");
+      delete(this.dirName + File.separator + "ok.gif");
+      delete(this.dirName + File.separator + "ok.gif.lck");
       delete(this.dirName + File.separator + "tooBig.dat");
+      delete(this.dirName + File.separator + "tooBig.dat.lck");
+
+      
+      
       delete(this.dirName);
    }
    
@@ -414,6 +540,17 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       test.testSimplePublish();
       test.tearDown();
 
+      test.setUp();
+      test.testSimplePublishWithFilter();
+      test.tearDown();
+
+      test.setUp();
+      test.testPublishWithMoveAbsolute();
+      test.tearDown();
+
+      test.setUp();
+      test.testPublishWithMoveRelative();
+      test.tearDown();
    }
 }
 
