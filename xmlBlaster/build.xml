@@ -1892,7 +1892,7 @@ TODO
        </delete>
     </target>
 
-    <target name="clean" depends="cpp-clean" description="Remove generated Java and C++ files">
+    <target name="java-clean" depends="prepare" description="Remove generated Java files">
        <delete dir="${build.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar,xmlBlaster-ear.sar"/>
@@ -1900,9 +1900,15 @@ TODO
        </delete>
     </target>
 
-    <target name="delete" depends="clean,cpp-delete,docs-delete" description="Remove all generated ditribution Java, C++ and documentation files">
+    <target name="java-delete" depends="java-clean,docs-delete" description="Remove all generated ditribution Java and documentation files">
        <delete dir="${dist-classes.dir}"/>
        <delete dir="${dist.dir}"/>
        <delete dir="${dist-client.dir}"/>
+   </target>
+
+    <target name="clean" depends="cpp-clean,java-clean" description="Remove generated Java and C++ files">
+    </target>
+
+    <target name="delete" depends="clean,cpp-delete,java-delete,docs-delete" description="Remove all generated ditribution Java, C++ and documentation files">
    </target>
 </project>
