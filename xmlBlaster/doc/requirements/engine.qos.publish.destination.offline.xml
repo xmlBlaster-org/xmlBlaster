@@ -6,7 +6,7 @@
    <description>
       If you send a message to a named destination, using the qos &lt;destination&gt; tag,
       and there is no callback for this receiver, or the receiver is not logged in
-      and the &lt;ForceUpdate&gt; qos tag is not set in this message, you get a
+      and the &lt;ForceQueuing&gt; qos tag is not set in this message, you get a
       XmlBlasterException.
    </description>
    <example lang="Java">
@@ -33,7 +33,7 @@
    <see>engine.qos.publish.ForceQueuing</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
