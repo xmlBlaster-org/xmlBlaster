@@ -38,7 +38,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    }
 
    /**
-    * Get callback reference here.
+    * Get callback reference here (== connectLowLevel()).
     * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
    public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
