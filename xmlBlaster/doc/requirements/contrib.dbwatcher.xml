@@ -783,6 +783,9 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    <p>
    <tt>java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.TestTimestamp</tt>
    </p>
+
+   <p>Add other <tt>I_ChangeDetector</tt> plugins which scale better for tables with huge amount of entries.
+   </p>
    </todo>
 
    <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
