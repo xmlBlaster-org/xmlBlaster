@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.1 1999/12/27 21:24:01 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.2 1999/12/29 15:43:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,7 +20,7 @@ import test.framework.*;
 
 
 /**
- * This client does a subscribe() with many publish() calls. 
+ * This client does a subscribe() with many publish() calls.
  * <br />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -81,7 +81,7 @@ public class LoadTestSub extends TestCase implements I_Callback
           Log.error(ME, e.toString());
           e.printStackTrace();
       }
-      stopWatch = new StopWatch();
+
    }
 
 
@@ -156,6 +156,7 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
       MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      stopWatch = new StopWatch();
       try {
          for (int ii=0; ii<NUM_PUBLISH; ii++) {
             senderContent = "Yeahh, i'm the new content number " + (ii+1);
@@ -166,8 +167,9 @@ public class LoadTestSub extends TestCase implements I_Callback
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
             */
          }
-         // assertEquals("oid is different", oid, publishOid);
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
+         Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
+         assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
