@@ -215,8 +215,9 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to false. 
+    * Topic erase behavior with pending messages, defaults to false. 
     * @param forceDestroy
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
    public void setForceDestroy(boolean forceDestroy) {
       this.forceDestroy.setValue(forceDestroy);
@@ -224,7 +225,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Defaults to false. 
-    * @return for erase behaviour
+    * @return Topic erase behavior with pending messages
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
    public boolean getForceDestroy() {
       return this.forceDestroy.getValue();
