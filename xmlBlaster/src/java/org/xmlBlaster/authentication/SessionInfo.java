@@ -389,6 +389,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          if (log.TRACE) log.trace(ME, "No callback exists and no callback is desired");
          // nothing to do
       }
+
+      // Remember persistent values:
+      newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
+      newConnectQos.setPersistenceUniqueId(this.connectQos.getPersistenceUniqueId());
+
       this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
    }
 
@@ -570,16 +575,16 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * If the session is not persistent it returns -1L.
     * 
     */
-   public final long getPersistenceId() {
-      return this.persistenceId;
+   public final long getPersistenceUniqueId() {
+      return this.connectQos.getPersistenceUniqueId();
    }
    
    /**
     * Sets the uniqueId used to retrieve this session from the persistence
     * @param persistenceId
     */
-   public final void setPersistenceId(long persistenceId) {
-      this.persistenceId = persistenceId;
+   public final void setPersistenceUniqueId(long persistenceId) {
+      this.connectQos.setPersistenceUniqueId(persistenceId);
    }
 
    /**
