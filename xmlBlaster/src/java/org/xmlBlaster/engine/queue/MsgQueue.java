@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.5 2002/03/17 07:22:43 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.6 2002/03/17 13:32:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -74,7 +74,14 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 
    public void shutdown()
    {
-      isShutdown = true;
+      Log.info(ME, "Entering shutdown(" + super.size() + ")");
+      synchronized (this) {
+         if (super.size() > 0) {
+            Log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
+            handleFailure();
+         }
+         isShutdown = true;
+      }
       if (Log.CALL) Log.call(ME, "shutdown() of queue " + this.name);
       if (timerKey != null) {
          this.burstModeTimer.removeTimeoutListener(timerKey);
@@ -86,6 +93,21 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       this.cbWorkerPool = null;
       this.burstModeTimer = null;
       this.property = null;
+   }
+
+   /**
+    * @return true failure handled
+    */
+   private final boolean handleFailure()
+   {
+      if (property.onFailureDeadLetter()) {
+         glob.getRequestBroker().deadLetter(takeMsgs());
+         return true;
+      }
+      else {
+         Log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, messages are lost.");
+         return false;
+      }
    }
 
    /**
@@ -155,6 +177,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final void setCbWorkerIsActive(boolean val)
    {
       cbWorkerIsActive = val;
+   }
+
+   public final boolean isShutdown()
+   {
+      return this.isShutdown;
    }
 
    /**
@@ -306,16 +333,13 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          if (this.errorCounter > 0) {
             if (addr.getRetries() != -1 && this.errorCounter > addr.getRetries()) {
                burstModeTimer.removeTimeoutListener(timerKey);
-               Log.error(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
+               Log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client, producing now dead letters.");
 
-               if (property.onFailureDeadLetter())
-                  glob.getRequestBroker().deadLetter(takeMsgs());
-               else
-                  Log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, messages are lost.");
+               handleFailure();
 
                if (this instanceof SessionMsgQueue) {
                   SessionMsgQueue q = (SessionMsgQueue)this;
-                  Log.error(ME, "Callback server is lost, killing login session '" + q.getSessionId() + "' of client " + q.getSessionInfo().getLoginName() + ".");
+                  Log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
                   glob.getAuthenticate().disconnect(q.getSessionId(), null);
                }
                else

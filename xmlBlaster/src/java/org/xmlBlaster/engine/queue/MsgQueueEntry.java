@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.2 2002/03/13 16:41:19 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.3 2002/03/17 13:32:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -18,7 +18,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
-import org.xmlBlaster.engine.callback.CbQueue;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.SessionInfo;
