@@ -136,7 +136,7 @@ public final class ClusterManager
    }
 
    private void publish() {
-      log.warn(ME, "publish() of cluster messages is missing");
+      log.warn(ME, "publish() of cluster internal messages is missing");
    /*
       StringBuffer buf = new StringBuffer(256);
       buf.append("<key oid='").append(Constants.OID_CLUSTER_INFO).append("[").append(getId()).append("]").append("'><").append(Constants.OID_CLUSTER_INFO)("/></key>");
@@ -148,7 +148,7 @@ public final class ClusterManager
    }
 
    private void subscribe() {
-      log.warn(ME, "subscribe() of cluster messages is missing");
+      log.warn(ME, "subscribe() of cluster internal messages is missing");
    }
 
    /**
