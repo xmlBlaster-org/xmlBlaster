@@ -105,6 +105,8 @@ public final class TopicHandler implements I_Timeout
    private XmlKey xmlKey;
    /** Attribute oid of key tag: <key oid="..."> </key> */
    private String uniqueKey;
+   /** This holds the quick parsed key information, if you need the DOM use xmlKey instead */
+   private MsgKeyData msgKeyData;
 
    private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MsgUnit is new created
 
@@ -172,7 +174,7 @@ public final class TopicHandler implements I_Timeout
 
       this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
-      this.xmlKey = new XmlKey(glob, (MsgKeyData)msgUnit.getKeyData());
+      this.msgKeyData = (MsgKeyData)msgUnit.getKeyData();
       this.id = this.glob.getNodeId() + "/msg/" + msgUnit.getKeyOid();
       this.ME += this.glob.getLogPrefixDashed() + "/msg/" + msgUnit.getKeyOid();
       this.uniqueKey = msgUnit.getKeyOid();
@@ -235,6 +237,16 @@ public final class TopicHandler implements I_Timeout
       this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
    }
 
+   /**
+    * @return false if topicProperty.isCreateDomEntry() was configured to false
+    */
+   public boolean hasDomTree() {
+      if (topicProperty == null) {
+         return false;
+      }
+      return topicProperty.createDomEntry();
+   }
+
    public void finalize() {
       if (log.TRACE) log.trace(ME, "finalize - garbage collect " + getId());
    }
@@ -244,39 +256,21 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
-    * Accessing the wrapper object of the MsgUnit
-    * @return MsgUnitWrapper object
-    * @exception XmlBlasterException if MsgUnitWrapper is unknown
-   public final MsgUnitWrapper getMsgUnitWrapper() throws XmlBlasterException
-   {
-      if (msgUnitWrapper == null) {
-         log.error(ME + ".EmptyMsgUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.runtime.StackTrace.getStackTrace());
-         throw new XmlBlasterException(ME + ".EmptyMsgUnit", "Internal problem, msgUnitWrapper = null");
-      }
-      return msgUnitWrapper;
-   }
-    */
-
-   /**
     * Accessing the DOM parsed key of this message. 
-    * @exception XmlBlasterException in state UNCONFIGURED
+    * @return Never null
+    * @exception XmlBlasterException in state UNCONFIGURED or on DOM parse problems
     */
    public final XmlKey getXmlKey() throws XmlBlasterException {
-      if (isUnconfigured()) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, getId(), "In state 'UNCONFIGURED' no XmlKey object is available");
+      if (this.msgKeyData == null) { // isUnconfigured()) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, getId(), "In state '" + getStateStr() + "' no XmlKey object is available");
       }
-      return this.xmlKey;
-   }
-
-   /**
-    * Accessing the key of this message.
-    * <p />
-    * Convenience if the caller is too lazy to catch exceptions
-    * @return null            !!!! REMOVE
-    */
-   public final XmlKey getXmlKeyOrNull() {
-      if (isUnconfigured())
-         return null;
+      if (this.xmlKey == null) {
+         synchronized (this) {
+            if (this.xmlKey == null) {  // expensive DOM parse
+               this.xmlKey = new XmlKey(glob, this.msgKeyData);
+            }
+         }
+      }
       return this.xmlKey;
    }
 
@@ -286,7 +280,7 @@ public final class TopicHandler implements I_Timeout
     * Publish filter plugin checks are done already<br />
     * Cluster forwards are done already.
     *
-    * @param xmlKey      The XmlKey object, derived from msgUnit.getKey() string
+    * @param publisherSessionInfo  The publisher
     * @param msgUnit     The new message
     * @param publishQos  The decorator for msgUnit.getQosData()
     *
@@ -299,8 +293,8 @@ public final class TopicHandler implements I_Timeout
       MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
       MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
 
-      if (this.xmlKey == null) { // If TopicHandler existed because of a subscription: remember xmlKey on first publish
-         this.xmlKey = new XmlKey(glob, msgKeyData);
+      if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
+         this.msgKeyData = msgKeyData;
       }
 
       if (isUnconfigured()) {
@@ -376,17 +370,9 @@ public final class TopicHandler implements I_Timeout
       if (changed || msgQosData.isForceUpdate()) // if the content changed of the publisher forces updates ...
          invokeCallback(publisherSessionInfo, cacheEntry, Constants.STATE_OK);
 
-      // if it was a volatile message we need to check unreferenced state
-      if (!cacheEntry.isAlive()) {
-         if (!hasCacheEntries() && !hasSubscribers()) {
-            try {
-               toUnreferenced();
-            }
-            catch (XmlBlasterException e) {
-               log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
-            }
-         }
-      }
+      // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+      // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+      cacheEntry.incrementReferenceCounter(0);
 
       return publishReturnQos;
    }
@@ -451,6 +437,21 @@ public final class TopicHandler implements I_Timeout
 
    public MsgUnitWrapper getMsgUnitWrapper(long uniqueId) throws XmlBlasterException {
       return (MsgUnitWrapper)this.msgUnitCache.get(uniqueId);
+   }
+
+   /**
+    * Event triggered by MsgUnitWrapper itself when it reaches destroy state
+    */
+   public void destroyed(MsgUnitWrapper msgUnitWrapper) {
+      // if it was a volatile message we need to check unreferenced state
+      if (!hasCacheEntries() && !hasSubscribers()) {
+         try {
+            toUnreferenced();
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
+         }
+      }
    }
 
    /**
@@ -569,12 +570,23 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
+    * @return The key data of this topic (not DOM parsed) or null of not yet known
+    */
+   public MsgKeyData getMsgKeyData() {
+      return this.msgKeyData;
+   }
+
+   /**
     * What is the MIME type of this message content?
     * <p />
-    * @return the MIME type of the MsgUnit.content
+    * @return the MIME type of the MsgUnit.content or null if not known
     */
-   public String getContentMime() throws XmlBlasterException {
-      return getXmlKey().getContentMime();
+   public String getContentMime() {
+      return (this.msgKeyData != null) ? this.msgKeyData.getContentMime() : null;
+   }
+
+   public String getContentMimeExtended() {
+      return (this.msgKeyData != null) ? this.msgKeyData.getContentMimeExtended() : null;
    }
 
    /**
@@ -662,11 +674,10 @@ public final class TopicHandler implements I_Timeout
                //SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
                //SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
                for (int ii=0; ii<filterQos.length; ii++) {
-                  XmlKey key = sub.getTopicHandler().getXmlKey(); // This key is DOM parsed
                   try {
                      I_AccessFilter filter = requestBroker.getAccessPluginManager().getAccessFilter(
                                                filterQos[ii].getType(), filterQos[ii].getVersion(), 
-                                               this.xmlKey.getContentMime(), this.xmlKey.getContentMimeExtended());
+                                               getContentMime(), getContentMimeExtended());
                      if (filter != null && filter.match(publisherSessionInfo, sub.getSessionInfo(),
                                 msgUnitWrapper.getMsgUnit(), filterQos[ii].getQuery()) == false) {
                         retCount++; // filtered message is not send to client
@@ -814,6 +825,8 @@ public final class TopicHandler implements I_Timeout
     * @return Checked entries (destroyed and expired ones are removed), never null
     */
    public MsgUnitWrapper[] getMsgUnitWrapperArr(int num) throws XmlBlasterException {
+      if (this.historyQueue == null)
+         return new MsgUnitWrapper[0];
       ArrayList list = this.historyQueue.peek(num, -1);
       ArrayList aliveList = new ArrayList();
       ArrayList destroyList = null;
@@ -1082,7 +1095,10 @@ public final class TopicHandler implements I_Timeout
       if (isRegisteredInBigXmlDom) {
          return;
       }
-      this.xmlKey.mergeRootNode(requestBroker.getBigXmlKeyDOM());
+      if (!topicProperty.createDomEntry()) {
+         return;
+      }
+      getXmlKey().mergeRootNode(requestBroker.getBigXmlKeyDOM());
       isRegisteredInBigXmlDom = true;
    }
 
@@ -1093,6 +1109,9 @@ public final class TopicHandler implements I_Timeout
       if (!isRegisteredInBigXmlDom) {
          return;
       }
+      //if (!topicProperty.createDomEntry()) {
+      //   return;
+      //}
       try {
          requestBroker.getBigXmlKeyDOM().messageErase(this);
          isRegisteredInBigXmlDom = false;
