@@ -5,6 +5,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build.sh c
+           or e.g.:
+            cd xmlBlaster\demo\c\socket
+            cl /MT /W4 -D_WINDOWS  -DDLL_IGNORE -I..\..\..\src\c -I..\..\..\src\c\pthreads /FeHelloWorld3.exe HelloWorld3.c
+            ..\..\..\src\c\util\*.c ..\..\..\src\c\socket\*.c ws2_32.lib ..\..\..\src\c\socket\pthreadVC.lib
+           (copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
 Invoke:    HelloWorld3 -help
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
@@ -17,7 +22,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
  * Here we receive the callback messages from xmlBlaster
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    bool testException = false;
