@@ -11,13 +11,21 @@ To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
    java -DOAIAddr=198.197.24.129 javaclients.chat.SimpleChat -name Ben -iorHost 62.132.140.7
 
+   -DOAIAddr is the IP address for our internal chat CORBA callback server.
+   -iorHost is the xmlBlaster server,
+
+
 To chat from you multi homed host the another server running xmlBlaster (XML-RPC):
 
    java javaclients.chat.SimpleChat -name Tim -client.protocol XML-RPC -xmlrpc.hostnameCB 198.197.24.129 -xmlrpc.hostname 62.132.140.7
 
--DOAIAddr is the IP address for our internal chat CORBA callback server.
--iorHost is the xmlBlaster server,
 
+To chat from you multi homed host the another server running xmlBlaster (RMI):
+
+   java javaclients.chat.SimpleChat -name RMI -client.protocol RMI -rmi.hostnameCB 198.197.24.129 -rmi.hostname 62.132.140.7
+
+
+Toget help:
 
    java javaclients.chat.SimpleChat -?
 
