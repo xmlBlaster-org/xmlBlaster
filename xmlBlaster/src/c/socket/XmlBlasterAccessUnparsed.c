@@ -141,7 +141,8 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    }
 
    if (xa->callbackP != 0) {
-      const bool USE_DETACH_MODE = true;  /* Detach or join? On Linux both work fine. On Windows it blocks sometimes forever during join */
+      /* Detach or join? On Linux both work fine. On Windows it blocks sometimes forever during join */
+      const bool USE_DETACH_MODE = xa->props->getBool(xa->props, "plugin/socket/detachCbThread", true);
       int retVal;
       if (!xa->callbackP->isShutdown) {
 
@@ -174,9 +175,13 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       }
 
       if (USE_DETACH_MODE) {
-         retVal = pthread_detach(xa->callbackThreadId);
+         retVal = pthread_detach(xa->callbackThreadId); /* Frees resources (even if thread has died already), don't call multiple times on same thread! */
          if (retVal != 0) {
             xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching callback thread 0x%x failed with error number %d", __LINE__, xa->callbackThreadId, retVal);
+         }
+         else {
+            if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+                                          "pthread_detach(id=%ld) succeeded for callback server thread", (long)xa->callbackThreadId);
          }
       }
       else { /* JOIN mode */
@@ -186,7 +191,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
          }
          else {
             if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
-                                          "Pthread_join(id=%ld) succeeded for callback server thread", xa->callbackThreadId);
+                                          "pthread_join(id=%ld) succeeded for callback server thread", (long)xa->callbackThreadId);
          }
       }
 
