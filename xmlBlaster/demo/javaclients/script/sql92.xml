@@ -1,0 +1,43 @@
+<!-- java javaclients.script.XmlScript -requestFile sql92.xml -->
+
+<xmlBlaster>
+
+  <connect/>
+
+  <subscribe>
+    <key queryType='XPATH'>//taxi[@type='limousine']</key>
+    <qos>
+       <filter type='Sql92Filter'>
+         xPos BETWEEN 0 AND 100 AND yPos BETWEEN 20 AND 130
+       </filter>
+     </qos>
+  </subscribe>
+  
+  <!-- you should become this one -->
+  <publish>
+    <key oid='ti4747'><taxi type='limousine'/></key>
+    <content>just some content</content>
+    <qos>
+       <clientProperty type='Integer' name='xPos'>100</clientProperty>
+       <clientProperty type='Integer' name='yPos'>120</clientProperty>
+    </qos>
+  </publish>
+
+  <!-- this one should be rejected by the mime plugin -->
+  <publish>
+    <key oid='ti4747'><taxi type='limousine'/></key>
+    <content>just some content</content>
+    <qos>
+       <clientProperty type='Integer' name='xPos'>110</clientProperty>
+       <clientProperty type='Integer' name='yPos'>120</clientProperty>
+    </qos>
+  </publish>
+  <wait delay='500' />
+  <unsubscribe><key queryType='XPATH'>//taxi[@type='limousine']</key></unsubscribe>
+  <erase><key oid='ti4747' />></erase>
+
+  <disconnect />
+
+</xmlBlaster>
+      
+      
