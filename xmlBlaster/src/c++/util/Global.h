@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.10 2003/01/07 20:41:36 laghi Exp $
+Version:   $Id: Global.h,v 1.11 2003/01/16 21:36:25 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -14,40 +14,18 @@ Version:   $Id: Global.h,v 1.10 2003/01/07 20:41:36 laghi Exp $
 #include <util/XmlBlasterException.h>
 #include <util/Property.h>
 
+#include <client/protocol/CbServerPluginManager.h>
+#include <util/dispatch/DeliveryManager.h>
+#include <util/Timeout.h>
+
 #include <string>
 #include <map>
-
-#ifndef _CBSERVERPLUGINMANAGER_CLASS
-namespace org { namespace xmlBlaster { namespace client { namespace protocol {
-   class CbServerPluginManager;
-}}}}
-#endif
-
-#ifndef _DELIVERYMANAGER_CLASS
-namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
-   class DeliveryManager;
-}}}}
-#endif
-
 
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
 
 namespace org { namespace xmlBlaster { namespace util {
-
-#ifndef _UTIL_TIMEOUT_H
-class Timeout;
-#endif
-
-class Dll_Export HappyCompilerFriend
-{
-   /**
-    * This class is a friend of Global to make the warnings of some
-    * compilers disappear (since Global has private constructors and
-    * destructors).
-    */
-};
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -56,8 +34,7 @@ class Dll_Export Global {
 
 typedef map<char*, Log> LogMap;
 
- friend class HappyCompilerFriend;
-
+friend Global& getInstance(const char* instanceName);
 private:
    const string           ME;
    LogMap                 logMap_;

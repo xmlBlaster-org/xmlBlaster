@@ -33,7 +33,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _CLIENT_QOS_GETRETURNQOS_H
 #define _CLIENT_QOS_GETRETURNQOS_H
 
-# include <util/qos/MsgQosData.h>
+#include <util/qos/MsgQosData.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;

@@ -22,13 +22,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * </pre>
  */
 
+#ifndef _UTIL_QOS_HISTORYQOS_H
+#define _UTIL_QOS_HISTORYQOS_H
+
 # include <util/xmlBlasterDef.h>
 # include <util/Log.h>
 # include <util/Property.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-
+        
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 extern Dll_Export const long DEFAULT_numEntries;
@@ -76,4 +79,5 @@ public:
 
 }}}} //namespace
 
+#endif
 

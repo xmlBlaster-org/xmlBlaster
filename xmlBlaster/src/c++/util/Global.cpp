@@ -3,14 +3,14 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.16 2003/01/16 10:11:44 laghi Exp $
+Version:   $Id: Global.cpp,v 1.17 2003/01/16 21:36:25 laghi Exp $
 ------------------------------------------------------------------------------*/
-#include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
 #include <util/Timeout.h>
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using namespace std;
 using namespace boost;

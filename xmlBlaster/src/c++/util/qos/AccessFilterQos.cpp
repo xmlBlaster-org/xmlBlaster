@@ -32,8 +32,8 @@ using namespace org::xmlBlaster::util::qos;
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 
-Dll_Export const char* DEFAULT_version = "1.0";
-Dll_Export const char* DEFAULT_type    = "";
+Dll_Export const char* ACCESSFILTER_DEFAULT_version = "1.0";
+Dll_Export const char* ACCESSFILTER_DEFAULT_type    = "";
   
    void AccessFilterQos::copy(const AccessFilterQos& qos) 
    {
@@ -47,8 +47,8 @@ Dll_Export const char* DEFAULT_type    = "";
       : ME("AccessFilterQos"), global_(global), log_(global.getLog("mime")), query_(global)
    {
       type_ = "";
-      setVersion(global_.getProperty().getStringProperty("accessFilter.version", DEFAULT_version));
-      setType(global_.getProperty().getStringProperty("accessFilter.type", DEFAULT_type));
+      setVersion(global_.getProperty().getStringProperty("accessFilter.version", ACCESSFILTER_DEFAULT_version));
+      setType(global_.getProperty().getStringProperty("accessFilter.type", ACCESSFILTER_DEFAULT_type));
     }
 
    /**
@@ -156,7 +156,7 @@ Dll_Export const char* DEFAULT_type    = "";
       string offset = "\n " + extraOffset;
 
       ret += offset + "<filter type='" + getType() + "'";
-      if (DEFAULT_version != getVersion())
+      if (ACCESSFILTER_DEFAULT_version != getVersion())
           ret += " version='" + getVersion() + "'";
       ret += ">";
       string help = getQuery().toString();
@@ -170,5 +170,4 @@ Dll_Export const char* DEFAULT_type    = "";
    }
 
 }}}}
-
 

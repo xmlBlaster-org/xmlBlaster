@@ -6,7 +6,6 @@ Comment:   Handles the I_XmlBlasterConnections
 ------------------------------------------------------------------------------*/
 
 #include <util/dispatch/ConnectionsHandler.h>
-#include <util/dispatch/DeliveryManager.h>
 #include <util/Global.h>
 #include <util/Timeout.h>
 #include <boost/lexical_cast.hpp>
@@ -19,9 +18,8 @@ using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& deliveryManager, const string& instanceName)
+ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceName)
    : ME(string("ConnectionsHandler-") + instanceName), 
-     deliveryManager_(deliveryManager), 
      status_(START), 
      global_(global), 
      log_(global.getLog("dispatch")),
@@ -46,7 +44,8 @@ ConnectionsHandler::~ConnectionsHandler()
 {
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
-   deliveryManager_.releasePlugin(instanceName_, type, version);
+
+   global_.getDeliveryManager().releasePlugin(instanceName_, type, version);
 
    if (timestamp_ != 0) {
 //      Lock lock(connectionMutex_);
@@ -87,7 +86,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
-   connection_ = &(deliveryManager_.getPlugin(instanceName_, type, version));
+   connection_ = &(global_.getDeliveryManager().getPlugin(instanceName_, type, version));
    if (connectReturnQos_) {
       delete connectReturnQos_;
       connectReturnQos_ = NULL;

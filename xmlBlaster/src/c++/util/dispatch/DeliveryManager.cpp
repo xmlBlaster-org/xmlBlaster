@@ -28,28 +28,14 @@ DeliveryManager::DeliveryManager(Global& global)
    : ME("DeliveryManager"),
      global_(global),
      log_(global.getLog("dispatch"))
-//     serverMap_()
 {
    if (log_.CALL) log_.call(ME, "::constructor");
-//   connectionsHandler_ = NULL;
 }
 
 
 DeliveryManager::~DeliveryManager()
 {
    if (log_.CALL) log_.call(ME, "::destructor");
-
-/*
-   ServerMap::iterator iter = serverMap_.begin();
-   while (iter != serverMap_.end()) {
-      if (log_.TRACE)
-         log_.trace(ME, string("destructor: deleting type: '") + (*iter).first + string("'"));
-      I_XmlBlasterConnection* el = (*iter).second;
-      serverMap_.erase(iter);
-//      delete el; ---> not owned by this container !!!
-      iter = serverMap_.begin();
-   }
-*/
 }
 
 void DeliveryManager::releasePlugin(const string& instanceName, const string& type, const string& version)
@@ -80,23 +66,12 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, c
    if (log_.TRACE)
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    
-//   string completeName = /*string(instanceName) + "/" + */ type + "/" + version; 
    if (type == "IOR") {
-/*
-      ServerMap::iterator iter = serverMap_.find(completeName);
-      if (iter == serverMap_.end()) {
-         corba::CorbaDriver* driver =   &corba::CorbaDriver::getInstance(global_, instanceName);
-         // probably notify the dispatcher framework here since they
-         // share the same object.
-         ServerMap::value_type el(completeName, driver);
-         serverMap_.insert(el);
-         iter = serverMap_.find(completeName);
-      }
-      return *((*iter).second);
- */
       return corba::CorbaDriver::getInstance(global_, instanceName);
-
    }
+
+   // add here other protocols ....
+
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
                         string("' not supported");
@@ -114,7 +89,7 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, c
 ConnectionsHandler* DeliveryManager::getConnectionsHandler(const string& instanceName)
 {
    // it makes sense to have one per XmlBlasterAccess (must be destructed by the invoker of this method !!!)
-   return new ConnectionsHandler(global_, *this, instanceName);
+   return new ConnectionsHandler(global_, instanceName);
 }
 
 

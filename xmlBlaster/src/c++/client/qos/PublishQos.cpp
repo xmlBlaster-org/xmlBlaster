@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <client/qos/PublishQos.h>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using namespace std;

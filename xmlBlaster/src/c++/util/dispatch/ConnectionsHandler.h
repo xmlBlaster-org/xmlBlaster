@@ -18,7 +18,6 @@ Comment:   Handles the I_XmlBlasterConnections
 
 #include <util/xmlBlasterDef.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
-// #include <util/dispatch/DeliveryManager.h>
 #include <client/I_ConnectionProblems.h>
 #include <util/XmlBlasterException.h>
 #include <util/thread/Thread.h>
@@ -35,11 +34,6 @@ using namespace org::xmlBlaster::util::queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-#ifndef _UTIL_DISPATCH_DELIVERYMANAGER_H
-   class DeliveryManager;
-#endif
-
-
 enum States {START, CONNECTED, POLLING, DEAD, END};
 
 class Dll_Export ConnectionsHandler : public I_Timeout
@@ -48,7 +42,6 @@ private:
    const string            ME;
    ConnectQos*             connectQos_;
    ConnectReturnQos*       connectReturnQos_;
-   DeliveryManager&        deliveryManager_;
    I_ConnectionProblems*   connectionProblems_;
    I_XmlBlasterConnection* connection_;
    enum States             status_;
@@ -70,7 +63,7 @@ private:
    const string            instanceName_;
 
 public:
-   ConnectionsHandler(Global& global, DeliveryManager& deliveryManager, const string& instanceName);
+   ConnectionsHandler(Global& global, const string& instanceName);
 
    virtual ~ConnectionsHandler();
 

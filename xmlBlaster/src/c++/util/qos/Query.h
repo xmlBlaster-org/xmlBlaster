@@ -12,6 +12,9 @@ Comment:   Holding a query string and a prepared query object.
  * @see org.xmlBlaster.engine.mime.regex.GnuRegexFilter
  */
 
+#ifndef _UTIL_QOS_QUERY_H
+#define _UTIL_QOS_QUERY_H
+
 #include <util/xmlBlasterDef.h>
 #include <string>
 
@@ -38,4 +41,4 @@ public:
 
 }}}} // namespace
 
-
+#endif

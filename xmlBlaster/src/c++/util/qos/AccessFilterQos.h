@@ -39,8 +39,8 @@ using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-extern Dll_Export const char* DEFAULT_version;
-extern Dll_Export const char* DEFAULT_type;
+extern Dll_Export const char* ACCESSFILTER_DEFAULT_version;
+extern Dll_Export const char* ACCESSFILTER_DEFAULT_type;
 
 class Dll_Export AccessFilterQos
 {
