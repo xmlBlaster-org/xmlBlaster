@@ -109,9 +109,12 @@ These are example QoS of a connect() invocation:
    <!-- SessionQueue callback: Use CORBA to send messages back -->
    <queue relating='session' maxMsg='1600' expires='360000000'
             onOverflow='block' onFailure='deadLetter'>
-      <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
+      
+      <callback type='IOR' sessionId='sd3lXjs9Fdlggh'
+                pingInterval='60000' useForSubjectQueue='true'>
          IOR:00011200070009990000....
       </callback>
+   
    </queue>
 </qos>
 
@@ -131,11 +134,16 @@ These are example QoS of a connect() invocation:
          Use CORBA to send messages back with default queue parameters
    -->
    <callback type='IOR'>
+   
       IOR:00011200070009990000....
+   
       <compress type='gzip' minSize='1000' />
-                  <!-- compress messages bigger 1000 bytes before sending them to me -->
-      <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
-                  them in one callback (burst mode) -->
+         <!-- compress messages bigger 1000 bytes before sending them to me -->
+   
+      <burstMode collectTime='400' />
+         <!-- Collect messages for 400 milliseconds and update
+              them in one callback (burst mode) -->
+   
    </callback>
 </qos>
 
@@ -154,21 +162,25 @@ These are example QoS of subscribe() invocations:
 
 Any other queue overwrites session delivery:
 
-<!-- The subscribed messages are only delivered via the SubjectQueue of the current client -->
+<!-- The subscribed messages are only delivered via the
+     SubjectQueue of the current client -->
 <qos>
    <queue relating='subject'/>
    <queue relating='subject:somebodyElse'/>
 </qos>
 
 <qos>
-   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
+   <queue relating='unrelated' maxMsg='1000' maxSize='4000'
+          onOverflow='deadLetter'/>
       <callback type='EMAIL'>
-         et@mars.universe   <!-- Sends messages to et with specified queue attributes -->
+         et@mars.universe
+         <!-- Sends messages to et with specified queue attributes -->
       </callback>
    </queue>
 
    <callback type='EMAIL' onFailure='deadLetter'>
-      tolkien@mars.universe <!-- Sends messages to tolkien, with default queue settings -->
+      tolkien@mars.universe
+      <!-- Sends messages to tolkien, with default queue settings -->
    </callback>
 
    <callback type='XML-RPC' sessionId='8sd3lXjspx9Fdlggh'>
@@ -257,7 +269,7 @@ This is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
