@@ -1,4 +1,4 @@
-#This file was created by <ruff> Thu Jan 20 11:12:52 2000
+#This file was created by <ruff> Thu Jan 20 11:22:54 2000
 #LyX 0.12 (C) 1995-1998 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
@@ -1082,6 +1082,30 @@ Writing an own persitence layer is very easy:
 
 Note that this interface is very likely to change in one of the next xmlBlaster
  releases, since it is to simple to support caching.
+\layout Standard
+
+Please remind, that the FileDriver implementation is only a simple demo,
+ it is based on your filesystem.
+ So don't try to store more then some thousands messages with this layer!
+\layout Standard
+
+Only messages which are marked as 'durable' are stored using this persistent
+ layer.
+ The following example shows how to store selected messages with the qos
+ (quality of service) flag 'isDurable' set:
+\layout LyX-Code
+
+<qos>
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+<isDurable/>
+\layout LyX-Code
+
+</qos>
 \layout Chapter
 
 Writing a client application for xmlBlaster
