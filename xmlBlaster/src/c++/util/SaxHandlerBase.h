@@ -120,8 +120,8 @@ namespace util {
 
 
       /** Processing instruction. (do we really need this ?) */
-      void processingInstruction ( const XMLCh* const target, 
-                                   const XMLCh* const data ) {
+      void processingInstruction ( const XMLCh* const /*target*/, 
+                                   const XMLCh* const /*data*/ ) {
       }
 
 
@@ -132,7 +132,7 @@ namespace util {
 
       /** Start element. */
       
-      void startElement(const XMLCh* const name, AttributeList& attrs) {
+      void startElement(const XMLCh* const /*name*/, AttributeList& /*attrs*/) {
          log_.warn(me(),"Please provide your startElement() impl.");
       }
 
@@ -159,13 +159,13 @@ namespace util {
       }
 
       /** Ignorable whitespace. */
-      void ignorableWhitespace(const XMLCh* const ch, 
-                               const unsigned int length) {
+      void ignorableWhitespace(const XMLCh* const /*ch*/, 
+                               const unsigned int /*length*/) {
       }
       
 
       /** End element. */
-      void endElement(const XMLCh* const name) {
+      void endElement(const XMLCh* const /*name*/) {
          log_.warn(me(),"Please provide your startElement() impl.");
       }
       
