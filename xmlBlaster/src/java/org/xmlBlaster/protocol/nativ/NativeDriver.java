@@ -3,12 +3,12 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.8 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.9 2002/03/17 07:29:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -68,9 +68,11 @@ public class NativeDriver implements I_Driver
     * Start xmlBlaster native access.
     * <p />
     * Enforced by interface I_Driver.
-    * @param args The command line parameters
+    * @param glob Global handle to access logging, property and commandline args
+    * @param authenticate Handle to access authentication server
+    * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public void init(final Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;

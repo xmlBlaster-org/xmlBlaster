@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.11 2002/03/13 16:41:08 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.12 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -12,7 +12,7 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -36,16 +36,20 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
  */
 public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations, I_CallbackServer
 {
-   private org.omg.CORBA.ORB orb = null;
+   /** made static that we can recycle the orb */
+   private static org.omg.CORBA.ORB orb = null;
    private org.omg.PortableServer.POA rootPOA = null;
    private BlasterCallback callback = null;
 
-   private final String ME;
-   private final I_CallbackExtended boss;
-   private final String loginName;
+   private String ME;
+   private Global glob;
+   private I_CallbackExtended boss;
+   private String loginName;
 
    private PluginLoader  secPlgnMgr = null;
    private I_ClientPlugin secPlgn = null;
+
+   public CorbaCallbackServer() {}
 
    /**
     * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
@@ -54,8 +58,29 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     * @param boss My client which wants to receive the update() calls.
     * @param orb  A handle to my initialized orb
     */
-   public CorbaCallbackServer(String name, I_CallbackExtended boss, org.omg.CORBA.ORB orb) throws XmlBlasterException
+   public CorbaCallbackServer(Global glob, String name, I_CallbackExtended boss, org.omg.CORBA.ORB orb_) throws XmlBlasterException
    {
+      orb = orb_;
+      initialize(glob, name, boss);
+   }
+
+   /**
+    * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
+    * <p />
+    * @param name The login name of the client, for logging and identification with update() callbacks.
+    * @param boss My client which wants to receive the update() calls.
+    */
+   public void initialize(Global glob, String name, I_CallbackExtended boss) throws XmlBlasterException
+   {
+      this.glob = glob;
+      if (this.glob == null)
+         this.glob = new Global();
+
+      if (orb == null) {
+         CorbaDriver.initializeOrbEnv(glob);
+         orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
+      }
+
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;
       this.loginName = name;
@@ -70,7 +95,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       createCallbackServer();
       Log.info(ME, "Success, created CORBA callback server for " + loginName);
    }
-
 
    /**
     * Building a Callback server, using the tie approach.
@@ -102,16 +126,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException("CallbackCreationError", e.toString());
       }
-   }
-
-   public void initCb()
-   {
-      Log.warn(ME, "initCb() is not implemented");
-   }
-
-   public void setCbSessionId(String sessionId)
-   {
-      Log.warn(ME, "setCbSessionId() is not implemented");
    }
 
    /**
@@ -155,19 +169,21 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       return true;
    }
 
-
    /**
-    * @return The IOR of this server, which can be used for the loginQoS
+    * @return The protocol name "IOR"
     */
-   public CallbackAddress getCallbackIOR()
+   public final String getCbProtocol()
    {
-      // Add the stringified IOR to QoS ...
-      CallbackAddress addr = new CallbackAddress("IOR");
-      addr.setAddress(orb.object_to_string(this.callback));
-      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
-      return addr;
+      return "IOR";
    }
 
+   /**
+    * @return The stringified IOR of this server, which can be used for the connectQos
+    */
+   public String getCbAddress() throws XmlBlasterException
+   {
+      return orb.object_to_string(this.callback);
+   }
 
    /**
     * This is the callback method invoked from the CORBA server

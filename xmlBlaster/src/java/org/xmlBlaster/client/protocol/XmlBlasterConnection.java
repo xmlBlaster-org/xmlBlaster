@@ -8,12 +8,17 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
+import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
 import org.xmlBlaster.client.protocol.rmi.RmiConnection;
+import org.xmlBlaster.client.protocol.rmi.RmiCallbackServer;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
+import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer;
 import org.xmlBlaster.client.protocol.socket.SocketConnection;
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 
 import org.xmlBlaster.client.BlasterCache;
 import org.xmlBlaster.client.PluginLoader;
@@ -96,10 +101,12 @@ import java.util.Iterator;
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer
 {
    private String ME = "XmlBlasterConnection";
-   protected String[] args = null;
+   protected Global glob = null;
 
    /** The driver, e.g. Corba/Rmi/XmlRpc */
    private I_XmlBlasterConnection driver = null;
+   /** The callback server, e.g. Corba/Rmi/XmlRpc */
+   private I_CallbackServer cbServer = null;
 
    /** queue all the messages, and play them back through interface I_InvocationRecorder */
    private InvocationRecorder recorder = null;
@@ -163,7 +170,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection() throws XmlBlasterException
    {
-      initArgs(args);
+      initArgs(null);
       initDriver(null);
       initFailSave(null);
    }
@@ -195,6 +202,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initFailSave(null);
    }
 
+   public XmlBlasterConnection(Global glob) throws XmlBlasterException
+   {
+      this.glob = glob;
+      initDriver(null);
+      initFailSave(null);
+   }
+
    /**
     * Client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
@@ -218,17 +232,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    private void initArgs(String[] args)
    {
-      this.args = args;
-      if (this.args == null)
-         this.args = new String[0];
-      if (this.args.length > 0) {
-         try {
-            XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
-         }
-         catch (JUtilsException e) {
-            Log.warn(ME, e.toString());
-         }
-      }
+      this.glob = new Global(args);
    }
 
    /**
@@ -273,14 +277,18 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       Log.info(ME, "Using 'client.protocol=" + driverType + "' to access xmlBlaster");
 
-      if (driverType.equalsIgnoreCase("SOCKET"))
-         driver = new SocketConnection(this.args);
-      else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
-         driver = new CorbaConnection(this.args);
-      else if (driverType.equalsIgnoreCase("RMI"))
-         driver = new RmiConnection(this.args);
-      else if (driverType.equalsIgnoreCase("XML-RPC"))
-         driver = new XmlRpcConnection(this.args);
+      if (driverType.equalsIgnoreCase("SOCKET")) {
+         driver = new SocketConnection(this.glob);
+      }
+      else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP")) {
+         driver = new CorbaConnection(this.glob);
+      }
+      else if (driverType.equalsIgnoreCase("RMI")) {
+         driver = new RmiConnection(this.glob);
+      }
+      else if (driverType.equalsIgnoreCase("XML-RPC")) {
+         driver = new XmlRpcConnection(this.glob);
+      }
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use SOCKET, IOR, RMI or XML-RPC.";
          Log.error(ME, text);
@@ -300,10 +308,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       try {
          java.lang.Class driverClass = Class.forName(driverClassName);
          java.lang.Class[] paramTypes = new java.lang.Class[1];
-         paramTypes[0] = this.args.getClass();
+         paramTypes[0] = this.glob.getArgs().getClass();
          java.lang.reflect.Constructor constructor = driverClass.getDeclaredConstructor(paramTypes);
          Object[] params = new Object[1];
-         params[0] = this.args;
+         params[0] = this.glob;
          driver = (I_XmlBlasterConnection) constructor.newInstance(params);
       }
       catch(Exception e) {
@@ -442,7 +450,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       Log.info(ME,"BlasterCache has been initialized with size="+size);
    }
 
-
    /**
     * Killing the ping thread (not recommended).
     */
@@ -526,7 +533,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * Note that no asynchronous subscribe() method is available if you don't
     * specify a callback in 'qos'.
-    *
+    * <p />
+    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
+    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
+    * <p />
     * Don't forget to authenticate yourself in the qos as well, e.g.
     * with loginName/Password schema:
     * <pre>
@@ -537,7 +547,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *             &lt;passwd>theUsersPwd&lt;/passwd>
     *          ]]>
     *       &lt;/securityService>
-    *       &lt;callback type='IOR'>
+    *       &lt;callback type='IOR' sessionId='w0A0364923x4'>
     *          &lt;PtP>true&lt;/PtP>
     *          IOR:00011200070009990000....
     *          &lt;compress type='gzip' minSize='1000' />
@@ -547,6 +557,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * </pre>
     * @param qos       The Quality of Service for this client,
     *                  you have to pass at least the authentication tags
+    *                  The callback tag will be added automatically if client!=null
+    * @param client    Your client code which implements I_Callback to receive messages via update()
     * @exception       XmlBlasterException if login fails
     */
    public void connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
@@ -554,7 +566,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".Authentication", "Please add your authentication in your login QoS");
 
-      this.ME = "XmlBlasterConnection-" + qos.getSecurityQos().getUserId();
+      String loginName = qos.getSecurityQos().getUserId();
+      this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "connect() ...");
       if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
@@ -562,9 +575,27 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       // Load the client helper to export/import messages:
       initSecuritySettings(qos.getSecurityPluginType(), qos.getSecurityPluginVersion());
 
+      if (client != null) { // Start a default callback server using same protocol
+         this.cbServer = initCbServer(loginName, null);
+
+         // Set the QoS for connect() call
+         CallbackAddress addr = new CallbackAddress(this.cbServer.getCbProtocol()); // "IOR" "RMI" etc.
+         addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+
+         addr.setCollectTime(XmlBlasterProperty.get("cb.burstMode.collectTime", CallbackAddress.DEFAULT_collectTime));
+         addr.setSessionId(XmlBlasterProperty.get("cb.sessionId", CallbackAddress.DEFAULT_sessionId));
+         addr.setPingInterval(XmlBlasterProperty.get("cb.pingInterval", CallbackAddress.DEFAULT_pingInterval));
+         addr.setRetries(XmlBlasterProperty.get("cb.retries", CallbackAddress.DEFAULT_retries));
+         addr.setDelay(XmlBlasterProperty.get("cb.delay", CallbackAddress.DEFAULT_delay));
+         addr.setCompressType(XmlBlasterProperty.get("cb.compressType", CallbackAddress.DEFAULT_compressType));
+         addr.setMinSize(XmlBlasterProperty.get("cb.minSize", CallbackAddress.DEFAULT_minSize));
+         addr.setPtpAllowed(XmlBlasterProperty.get("cb.ptpAllowed", CallbackAddress.DEFAULT_ptpAllowed));
+         qos.addCallbackAddress(addr);
+      }
+
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
-         driver.connect(qos, (client != null) ? this : null);
+         driver.connect(qos);
          numLogins++;
       }
       catch(ConnectionException e) {
@@ -577,6 +608,55 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          clientProblemCallback.reConnected();
 
       startPinging();
+   }
+
+   /**
+    * Load the desired protocol driver like CORBA or RMI driver. 
+    * <p />
+    * TODO: Instantiate driver from xmlBlaster.properties instead of doing it hardcoded
+    *
+    * @param driverType E.g. "IOR" or "RMI", if null we look into the environment "-client.cbProtocol IOR"
+    *                   if not specified as well we use the same protocol as our client access (corba is default).
+    */
+   public I_CallbackServer initCbServer(String loginName, String driverType) throws XmlBlasterException
+   {
+      if (driverType == null) driverType = XmlBlasterProperty.get("client.cbProtocol", driver.getProtocol());
+      Log.info(ME, "Using 'client.cbProtocol=" + driverType + "' to access xmlBlaster, trying to create the callback server ...");
+
+      try {
+         if (driverType.equalsIgnoreCase("SOCKET")) {
+            SocketConnection sc = (SocketConnection)this.driver; // downcast hack
+            I_CallbackServer server =  sc.getCallbackServer();
+            server.initialize(this.glob, loginName, this);
+            return server;
+         }
+         else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP")) {
+            I_CallbackServer server = new CorbaCallbackServer();
+            server.initialize(this.glob, loginName, this);
+            return server;
+         }
+         else if (driverType.equalsIgnoreCase("RMI")) {
+            I_CallbackServer server = new RmiCallbackServer();
+            server.initialize(this.glob, loginName, this);
+            return server;
+         }
+         else if (driverType.equalsIgnoreCase("XML-RPC")) {
+            I_CallbackServer server = new XmlRpcCallbackServer();
+            server.initialize(this.glob, loginName, this);
+            return server;
+         }
+      }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Creation of CallbackServer failed: " + e.toString());
+         e.printStackTrace();
+         throw new XmlBlasterException(ME, "Creation of CallbackServer failed: " + e.toString());
+      }
+      String text = "Unknown driverType '" + driverType + "' to install xmlBlaster callback server.";
+      Log.error(ME, text);
+      throw new XmlBlasterException(ME+".UnknownDriver", text);
    }
 
    /**
@@ -738,14 +818,39 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return false;
    }
 
-   public void initCb() throws XmlBlasterException
+   /**
+    * Initialize and start the callback server 
+    * @param glob if null we use our own Global object
+    */
+   public void initialize(Global global, String name, I_CallbackExtended client) throws XmlBlasterException
    {
-      throw new XmlBlasterException(ME, "initCb() is not implemented");
+      if (global == null) global = this.glob;
+
+      if (this.cbServer != null)
+         this.cbServer.initialize(global, name, client);
    }
 
-   public void setCbSessionId(String sessionId) throws XmlBlasterException
+   /**
+    * Returns the 'well known' protocol type. 
+    * @return E.g. "RMI", "SOCKET", "XML-RPC" or null if not known
+    */
+   public String getCbProtocol()
    {
-      throw new XmlBlasterException(ME, "setCbSessionId() is not implemented");
+      if (this.cbServer != null)
+         return this.cbServer.getCbProtocol();
+      return null;
+   }
+   
+   /**
+    * Returns the current callback address. 
+    * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XML-RPC"
+    *         or null if not known
+    */
+   public String getCbAddress() throws XmlBlasterException
+   {
+      if (this.cbServer != null)
+         return this.cbServer.getCbAddress();
+      return null;
    }
 
    /**
@@ -753,9 +858,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public boolean shutdownCb() throws XmlBlasterException
    {
-      I_CallbackServer cbServer = driver.getCallbackServer();
-      if (cbServer != null)
-         return cbServer.shutdownCb();
+      if (this.cbServer != null)
+         return this.cbServer.shutdownCb();
       return false;
    }
 
@@ -1331,9 +1435,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
-      text += "Server setting:\n";
-      text += "   -burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [0].\n";
+      text += "Control xmlBlaster callback (if we install a callback server)\n";
+      text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
+      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [0].\n";
       text += "                          This allows performance tuning, try set it to 200.\n";
+      text += "   -cb.pingInterval    Pinging every given milliseconds [" + CallbackAddress.DEFAULT_pingInterval + "]\n";
+      text += "   -cb.retries         How often to retry if callback fails [" + CallbackAddress.DEFAULT_retries + "]\n";
+      text += "   -cb.delay           Delay between callback retires in milliseconds [" + CallbackAddress.DEFAULT_delay + "]\n";
+      text += "   -cb.compressType    With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -cb.minSize         Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";

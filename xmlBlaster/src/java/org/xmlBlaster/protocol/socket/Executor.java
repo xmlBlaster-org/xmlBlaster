@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.12 2002/02/25 17:04:36 ruff Exp $
+Version:   $Id: Executor.java,v 1.13 2002/03/17 07:29:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -56,7 +56,7 @@ public abstract class Executor implements ExecutorBase
    /** How long to block on remote call */
    protected long responseWaitTime = 0;
    /** This is the client side */
-   protected I_CallbackExtended callback = null;
+   protected I_CallbackExtended cbClient = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
    protected I_XmlBlaster xmlBlasterImpl = null;
    /** To avoid creating a new dummy on each request, we do it here */
@@ -85,15 +85,18 @@ public abstract class Executor implements ExecutorBase
     * - Everything is together<br />
     * @param sock The open socket to/from a specific client
     * @param xmlBlasterImpl Handle for the server implementation
-    * @param callback Handle for the client implementation
     */
-   protected Executor(Socket sock, I_XmlBlaster xmlBlasterImpl, I_CallbackExtended callback) throws IOException {
+   protected Executor(Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
       this.sock = sock;
       this.xmlBlasterImpl = xmlBlasterImpl;
-      this.callback = callback; 
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
       this.responseWaitTime = XmlBlasterProperty.get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS);
+   }
+
+   public final void setCbClient(I_CallbackExtended cbClient)
+   {
+      this.cbClient = cbClient;
    }
 
    public final OutputStream getOutputStream() {
@@ -211,7 +214,7 @@ public abstract class Executor implements ExecutorBase
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
-            /*String[] response = */callback.update(receiver.getSessionId(), arr);
+            /*String[] response = */this.cbClient.update(receiver.getSessionId(), arr);
             String[] response = new String[arr.length];      // !!! TODO response from update
             for (int ii=0; ii<arr.length; ii++)
                response[ii] = "<qos><state>OK</state></qos>";

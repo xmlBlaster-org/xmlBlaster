@@ -3,12 +3,12 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.23 2002/02/14 15:00:00 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.24 2002/03/17 07:29:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -77,9 +77,11 @@ public class XmlRpcDriver implements I_Driver
     * Start xmlBlaster XML-RPC access.
     * <p />
     * Enforced by interface I_Driver.
-    * @param args The command line parameters
+    * @param glob Global handle to access logging, property and commandline args
+    * @param authenticate Handle to access authentication server
+    * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
+   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering init()");

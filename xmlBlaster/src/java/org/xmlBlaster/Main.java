@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.72 2002/03/13 16:41:07 ruff Exp $
+Version:   $Id: Main.java,v 1.73 2002/03/17 07:29:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -78,7 +78,7 @@ public class Main
    /** command line arguments */
    private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
-   private Global global = null;
+   private Global glob = null;
    /** Version string, please change for new releases (4 digits) */
    private String version = "0.79d";
 
@@ -112,8 +112,8 @@ public class Main
       boolean showUsage = false;
       Thread.currentThread().setName("XmlBlaster MainThread");
 
-      global = new Global();
-      int ret = global.init(args);
+      glob = new Global();
+      int ret = glob.init(args);
       if (ret > 0)
          showUsage = true;
       else if (ret < 0) {
@@ -122,7 +122,7 @@ public class Main
       }
 
       try {
-         authenticate = new Authenticate(global);
+         authenticate = new Authenticate(glob);
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
          catchSignals();
@@ -251,7 +251,7 @@ public class Main
       // Start the driver
       if (driver != null) {
          try {
-            driver.init(args, authenticate, xmlBlasterImpl);
+            driver.init(glob, authenticate, xmlBlasterImpl);
          } catch (XmlBlasterException e) {
             //Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
             throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);

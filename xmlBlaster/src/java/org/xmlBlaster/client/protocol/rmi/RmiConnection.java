@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.16 2002/03/13 16:41:09 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.17 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -14,14 +14,12 @@ import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
-import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
@@ -52,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -68,9 +66,6 @@ public class RmiConnection implements I_XmlBlasterConnection
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
 
-   /** The RMI interface which we implement to allow callbacks */
-   private RmiCallbackServer callback = null; //I_XmlBlasterCallback
-
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
 
@@ -79,7 +74,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * <p />
     * @param arg  parameters given on command line
     */
-   public RmiConnection(String[] args) throws XmlBlasterException
+   public RmiConnection(Global glob) throws XmlBlasterException
    {
       XmlBlasterSecurityManager.createSecurityManager();
    }
@@ -124,7 +119,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          Log.info(ME, "Accessed xmlBlaster authentication reference with '" + addr + "'");
       }
       else {
-         throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
+         throw new XmlBlasterException("InvalidRmi", "No connect to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
       }
 
 
@@ -136,7 +131,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          Log.info(ME, "Accessed xmlBlaster server reference with '" + addr + "'");
       }
       else {
-         throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
+         throw new XmlBlasterException("InvalidRmi", "No connect to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
       }
    }
 
@@ -151,19 +146,19 @@ public class RmiConnection implements I_XmlBlasterConnection
       }
       catch (RemoteException e) {
          Log.error(ME, "Can't access address ='" + addr + "', no rmi registry running");
-         throw new XmlBlasterException("CallbackHandleInvalid", "Can't access address ='" + addr + "', no rmi registry running");
+         throw new XmlBlasterException(ME, "Can't access address ='" + addr + "', no rmi registry running");
       }
       catch (NotBoundException e) {
          Log.error(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
+         throw new XmlBlasterException(ME, "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
          Log.error(ME, "The given address ='" + addr + "' is invalid: " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is invalid: " + e.toString());
+         throw new XmlBlasterException(ME, "The given address '" + addr + "' is invalid: " + e.toString());
       }
       catch (Throwable e) {
          Log.error(ME, "The given address ='" + addr + "' is invalid : " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is invalid : " + e.toString());
+         throw new XmlBlasterException(ME, "The given address '" + addr + "' is invalid : " + e.toString());
       }
    }
 
@@ -175,14 +170,6 @@ public class RmiConnection implements I_XmlBlasterConnection
       authServer = null;
       blasterServer = null;
       sessionId = null;
-   }
-
-   /**
-    * Access the callback server or null
-    */
-   public I_CallbackServer getCallbackServer()
-   {
-      return callback;
    }
 
    /**
@@ -200,27 +187,18 @@ public class RmiConnection implements I_XmlBlasterConnection
       return blasterServer;
    }
 
-
    /**
-    * Login to the server, specify your own callback in the qos if desired.
-    * <p />
-    * Note that no asynchronous subscribe() method is available if you don't
-    * specify a callback in 'qos'.
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client, you may pass 'null' for default behavior
-    * @exception       XmlBlasterException if login fails
+    * @return The connection protocol name "RMI"
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public final String getProtocol()
    {
-      login(loginName, passwd, qos, null);
+      return "RMI";
    }
-
 
    /**
     * @param qos Has all credentials
     */
-   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -236,37 +214,18 @@ public class RmiConnection implements I_XmlBlasterConnection
          return;
       }
 
-      if (client != null) {
-         try {
-            this.callback = new RmiCallbackServer(loginName, client);
-         }
-         catch (RemoteException e) {
-            Log.error(ME, "Creation of RmiCallbackServer failed: " + e.toString());
-            throw new XmlBlasterException("RmiDriverFailed", e.toString());
-         }
-         loginQos.addCallbackAddress(this.callback.getCallbackHandle());
-      }
-
       loginRaw();
    }
 
    /**
-    * Login to the server, using the default BlasterCallback implementation.
+    * Login to the server. 
     * <p />
-    * If you do multiple logins with the same I_Callback implementation, the loginName
-    * which is delivered with the update() method may be used to dispatch the message
-    * to the correct client.
-    * <p />
-    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
-    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
-    *
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
+    * @param qos       The Quality of Service for this client
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       this.ME = "RmiConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "login() ...");
@@ -282,20 +241,8 @@ public class RmiConnection implements I_XmlBlasterConnection
       else
          this.loginQos = qos;
 
-      if (client != null) {
-         try {
-            this.callback = new RmiCallbackServer(loginName, client);
-         }
-         catch (RemoteException e) {
-            Log.error(ME, "Creation of RmiCallbackServer failed: " + e.toString());
-            throw new XmlBlasterException("RmiDriverFailed", e.toString());
-         }
-         loginQos.addCallbackAddress(this.callback.getCallbackHandle());
-      }
-
       loginRaw();
    }
-
 
    /**
     * Login to the server.
@@ -357,7 +304,7 @@ public class RmiConnection implements I_XmlBlasterConnection
                authServer.logout(sessionId);
             }
          }
-         shutdown(); // the callback server
+         shutdown();
          init();
          return true;
       } catch(XmlBlasterException e) {
@@ -367,22 +314,18 @@ public class RmiConnection implements I_XmlBlasterConnection
          e.printStackTrace();
       }
 
-      shutdown(); // the callback server
+      shutdown();
       init();
       return false;
    }
 
 
    /**
-    * Shut down the callback server.
+    * Shut down.
     * Is called by logout()
     */
    public boolean shutdown()
    {
-      if (this.callback != null) {
-         this.callback.shutdownCb();
-         this.callback = null;
-      }
       return true;
    }
 

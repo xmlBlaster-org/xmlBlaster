@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.16 2002/03/13 16:41:10 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.17 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -14,9 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -26,8 +29,6 @@ import org.xmlBlaster.engine.xml2java.GetQoS;
 import org.xmlBlaster.protocol.socket.ExecutorBase;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -81,8 +82,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected OutputStream oStream;
    /** SocketCallbackImpl listens on socket to receive callbacks */
    protected SocketCallbackImpl cbReceiver = null;
-   /** The client code which wants the callback messages */
-   protected I_CallbackExtended client = null;
    private String passwd = null;
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
@@ -95,7 +94,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Connect to xmlBlaster using plain socket with native message format.
     */
-   public SocketConnection(String[] args) throws XmlBlasterException
+   public SocketConnection(Global glob) throws XmlBlasterException
    {
       SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
    }
@@ -125,8 +124,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    private void initSocketClient() throws XmlBlasterException, ConnectionException
    {
-      try {
+      if (isConnected())
+         return;
 
+      try {
          port = XmlBlasterProperty.get("socket.port", DEFAULT_SERVER_PORT);
          if (port < 1) {
             String str = "Option socket.port set to " + port + ", socket client not started";
@@ -175,10 +176,15 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          }
          else {
             this.sock = new Socket(inetAddr, port);
-            Log.info(ME, "Created socket client connected to " + hostname + " on port " + port);
+            this.localPort = sock.getLocalPort();
+            this.localHostname = sock.getLocalAddress().getHostAddress();
+            Log.info(ME, "Created socket client connected to " + hostname + " on port " + port + ", callback address is " + getLocalAddress());
          }
          oStream = this.sock.getOutputStream();
          iStream = this.sock.getInputStream();
+
+         // start the socket sender and callback thread here
+         this.cbReceiver = new SocketCallbackImpl(this);
       }
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
@@ -187,7 +193,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname=<ip> -socket.port=<port>': " + e.toString();
+         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname=<ip> -socket.port=<port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
          //Log.error(ME+".constructor", e.toString());
          throw new XmlBlasterException(ME, str);
       }
@@ -231,10 +237,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
     * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       this.ME = "SocketConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "Entering login: name=" + loginName);
@@ -245,7 +250,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       this.loginName = loginName;
       this.passwd = passwd;
-      this.client = client;
       if (qos == null)
          this.loginQos = new ConnectQos();
       else
@@ -255,7 +259,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
 
-   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -270,7 +274,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       this.loginQos = qos;
       this.loginName = qos.getUserId();
       this.passwd = null;
-      this.client = client;
 
       loginRaw();
    }
@@ -287,13 +290,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       try {
          initSocketClient();
-
-         // start the socket sender and callback thread here
-         this.cbReceiver = new SocketCallbackImpl(this, client);
-         if (client != null) { // We want to receive callbacks:
-             // We set our IP:port just for information, it is not actively used by xmlBlaster:
-            loginQos.addCallbackAddress(new CallbackAddress("SOCKET", getLocalAddress()));
-         }
 
          if (passwd == null) { // connect() the new schema
             Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
@@ -332,6 +328,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       return this.loginName;
    }
 
+   /**
+    * Returns the protocol type. 
+    * @return "SOCKET"
+    */
+   public final String getProtocol()
+   {
+      return "SOCKET";
+   }
 
    /**
     * Does a logout and removes the callback server.
@@ -368,15 +372,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
    /**
-    * Returns the valid SocketCallbackImpl or throws an exception if not connected
-    */
-   private final SocketCallbackImpl getCbReceiver() throws ConnectionException
-   {
-      if (!isLoggedIn()) throw new ConnectionException(ME, "No connection to server"); // cbReceiver == null
-      return this.cbReceiver;
-   }
-
-   /**
     * Shut down the callback server.
     * Is called by logout()
     */
@@ -392,20 +387,42 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       return true;
    }
 
-
    /**
     * @return true if you are logged in
     */
    public final boolean isLoggedIn()
+   {
+      return this.sessionId != null;
+   }
+
+   /**
+    * @return true if the socket connection is established
+    */
+   public final boolean isConnected()
    {
       return this.sock != null; // && cbReceiver != null
    }
 
    /**
     * Access handle of callback server. 
+    * <p />
+    * Opens the socket connection if not logged in.
     */
-   public I_CallbackServer getCallbackServer()
+   public I_CallbackServer getCallbackServer() throws ConnectionException, XmlBlasterException
    {
+      return getCbReceiver();
+   }
+
+   /**
+    * Access handle of callback server. 
+    * <p />
+    * Returns the valid SocketCallbackImpl, opens the socket connection if not logged in.
+    */
+   private final SocketCallbackImpl getCbReceiver() throws ConnectionException, XmlBlasterException
+   {
+      if (!isConnected()) {
+         initSocketClient();
+      }
       return this.cbReceiver;
    }
 
@@ -617,21 +634,22 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Gets invoked from xmlBlaster callback
     * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
     */
+    /*
    public String update(MessageUnit[] arr) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update()");
-      if (client == null) {
+      if (cbClient == null) {
          Log.warn(ME, "Ignoring callback message, client is not interested in it");
          return "<qos><state>OK</state></qos>";
       }
       if (arr != null) {
          for (int ii=0; ii<arr.length; ii++) {
-            client.update(getLoginName(), arr[ii].getXmlKey(), arr[ii].getContent(), arr[ii].getQos());
+            cbClient.update(getLoginName(), arr[ii].getXmlKey(), arr[ii].getContent(), arr[ii].getQos());
          }
       }
       return "<qos><state>OK</state></qos>";
    }
-
+    */
 
    /**
     * Dump of the state, remove in future.

@@ -3,12 +3,12 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.12 2002/02/26 10:47:24 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.13 2002/03/17 07:29:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -57,6 +57,8 @@ import java.io.OutputStream;
 public class SocketDriver extends Thread implements I_Driver
 {
    private static final String ME = "SocketDriver";
+   /** The global handle */
+   private Global glob;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -106,12 +108,15 @@ public class SocketDriver extends Thread implements I_Driver
     * Start xmlBlaster SOCKET access.
     * <p />
     * Enforced by interface I_Driver.
-    * @param args The command line parameters
+    * @param glob Global handle to access logging, property and commandline args
+    * @param authenticate Handle to access authentication server
+    * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
+   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering init()");
+      this.glob = glob;
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
@@ -141,7 +146,10 @@ public class SocketDriver extends Thread implements I_Driver
       start(); // Start the listen thread
    }
 
-
+   final Global getGlobal()
+   {
+      return this.glob;
+   }
 
    /**
     * Starts the server socket and waits for clients to connect. 

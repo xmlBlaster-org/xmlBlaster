@@ -3,13 +3,14 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.14 2002/03/13 16:41:10 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.15 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -45,13 +46,12 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * @param sockCon    The socket driver main code
     * @param callback   Our implementation of I_CallbackExtended.
     */
-   SocketCallbackImpl(SocketConnection sockCon, I_CallbackExtended callback) throws XmlBlasterException, IOException
+   SocketCallbackImpl(SocketConnection sockCon) throws XmlBlasterException, IOException
    {
-      super(sockCon.getSocket(), null, callback);
+      super(sockCon.getSocket(), null);
       setLoginName(sockCon.getLoginName());
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
-      this.callback = callback;
       this.callbackAddressStr = sockCon.getLocalAddress();
       this.SOCKET_DEBUG = sockCon.SOCKET_DEBUG;
 
@@ -60,6 +60,33 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       t.start();
    }
 
+   /** Initialize and start the callback server */
+   public final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException
+   {
+      setCbClient(cbClient); // access callback client in super class Executor:callback
+   }
+
+   /**
+    * Returns the protocol type. 
+    * @return "SOCKET"
+    */
+   public final String getCbProtocol()
+   {
+      return "SOCKET";
+   }
+
+   /**
+    * Returns the callback address. 
+    * <p />
+    * This is no listen socket, as we need no callback server.
+    * It is just the client side socket data of the established connection to xmlBlaster.
+    * @return "192.168.2.1:34520"
+    */
+   public String getCbAddress() throws XmlBlasterException
+   {
+      return sockCon.getLocalAddress();
+   }
+   
    /**
     * Starts the callback thread
     */
@@ -99,16 +126,6 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       CallbackAddress addr = new CallbackAddress("SOCKET");
       addr.setAddress(callbackAddressStr);
       return addr;
-   }
-
-   public void initCb()
-   {
-      Log.warn(ME, "initCb() is not implemented");
-   }
-
-   public void setCbSessionId(String sessionId)
-   {
-      Log.warn(ME, "setCbSessionId() is not implemented");
    }
 
    /**

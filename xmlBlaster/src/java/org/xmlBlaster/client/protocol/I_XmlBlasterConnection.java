@@ -43,18 +43,24 @@ public interface I_XmlBlasterConnection
     * @param qos The authentication and other informations
     * @param client A handle to your callback if desired or null
     */
-   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
+   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException;
    //public void disconnect(in string sessionId, in serverIdl::XmlType qos)
 
-   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
+   // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
+   //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
+
+   /**
+    * @return The connection protocol name "IOR" or "RMI" etc.
+    */
+   public String getProtocol();
+
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException;
 
    public void loginRaw() throws XmlBlasterException, ConnectionException;
 
    public boolean logout();
 
    public boolean shutdown();
-
-   public I_CallbackServer getCallbackServer();
 
    /** Reset the driver on problems */
    public void init();

@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.9 2002/03/13 16:41:09 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.10 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -14,6 +14,7 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -54,30 +55,32 @@ import java.rmi.AlreadyBoundException;
  *        MyApp -rmi.registryPort 2079
  * </pre>
  */
-class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
+public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
 {
-   private final String ME;
-   private final I_CallbackExtended boss;
-   private final String loginName;
+   private String ME;
+   private I_CallbackExtended client;
+   private String loginName;
    /** The name for the RMI registry */
    private String callbackRmiServerBindName = null;
    /** XmlBlaster RMI registry listen port is 1099, to register callback server */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
 
 
+   public RmiCallbackServer() throws java.rmi.RemoteException
+   {
+   }
+
    /**
-    * Construct a persistently named object.
-    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
+    * Construct the callback server. 
     */
-   public RmiCallbackServer(String name, I_CallbackExtended boss) throws RemoteException, XmlBlasterException
+   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "RmiCallbackServer-" + name;
-      this.boss = boss;
+      this.client = client;
       this.loginName = name;
       createCallbackServer(this);
       Log.info(ME, "Success, created RMI callback server for " + loginName);
    }
-
 
    /**
     * Building a Callback server, using the tie approach.
@@ -90,7 +93,6 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
    {
       bindToRegistry(callbackRmiServer);
    }
-
 
    /**
     * Publish the RMI xmlBlaster server to rmi registry.
@@ -164,26 +166,20 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
       }
    }
 
+   /**
+    * @return The protocol name "RMI"
+    */
+   public final String getCbProtocol()
+   {
+      return "RMI";
+   }
 
    /**
-    * @return The RMI registry entry of this server, which can be used for the loginQoS
+    * @return The RMI address of this server, which can be used for the connectQos
     */
-   public CallbackAddress getCallbackHandle()
+   public String getCbAddress() throws XmlBlasterException
    {
-      CallbackAddress addr = new CallbackAddress("RMI");
-      addr.setAddress(callbackRmiServerBindName);
-      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
-      return addr;
-   }
-
-   public void initCb()
-   {
-      Log.warn(ME, "initCb() is not implemented");
-   }
-
-   public void setCbSessionId(String sessionId)
-   {
-      Log.warn(ME, "setCbSessionId() is not implemented");
+      return callbackRmiServerBindName;
    }
 
    /**
@@ -203,7 +199,6 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
       return true;
    }
 
-
    /**
     * This is the callback method invoked from xmlBlaster
     * informing the client in an asynchronous mode about new messages.
@@ -219,7 +214,7 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
    public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
-      boss.update(loginName, msgUnitArr); // !!! TODO: add String as return type
+      client.update(loginName, msgUnitArr); // !!! TODO: add String as return type
       String[] ret = new String[msgUnitArr.length];
       for (int ii=0; ii<ret.length; ii++)
          ret[ii] = "<qos><state>OK</state></qos>";

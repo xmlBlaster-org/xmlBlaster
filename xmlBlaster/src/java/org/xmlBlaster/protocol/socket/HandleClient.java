@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.13 2002/03/13 16:41:30 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.14 2002/03/17 07:29:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -40,13 +41,14 @@ public class HandleClient extends Executor implements Runnable
    private I_Authenticate authenticate;
    private CallbackSocketDriver callback;
    private boolean running = true;
+   private String cbKey = null; // Remember the key for the Global map
 
 
    /**
     * Creates an instance which serves exactly one client. 
     */
    public HandleClient(SocketDriver driver, Socket sock) throws IOException {
-      super(sock, driver.getXmlBlaster(), null);
+      super(sock, driver.getXmlBlaster());
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
       this.SOCKET_DEBUG = driver.SOCKET_DEBUG;
@@ -60,6 +62,9 @@ public class HandleClient extends Executor implements Runnable
     */
    public void shutdown() {
       if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Schutdown connection ...");
+      if (cbKey != null)
+         driver.getGlobal().removeNativeCallbackDriver(cbKey);
+   
       if (sessionId != null) {
          String tmp = sessionId;
          sessionId = null;
@@ -149,7 +154,12 @@ public class HandleClient extends Executor implements Runnable
                      this.ME += "-" + this.loginName;
                      Log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
                      callback = new CallbackSocketDriver(this.loginName, this);
-                     conQos.setCallbackDriver(callback);  // tell that we are the callback driver as well (see hack in CbInfo.java)
+
+                     CallbackAddress[] cbArr = conQos.getSessionQueueProperty().getCallbackAddresses();
+                     for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
+                        cbKey = cbArr[ii].getType() + cbArr[ii].getAddress();
+                        driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well (see CbInfo.java)
+                     }
 
                      ConnectReturnQos retQos = authenticate.connect(conQos);
                      this.sessionId = retQos.getSessionId();

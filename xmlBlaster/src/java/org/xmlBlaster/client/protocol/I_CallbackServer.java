@@ -3,11 +3,12 @@ Name:      I_CallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_CallbackServer.java,v 1.2 2002/03/13 16:41:08 ruff Exp $
+Version:   $Id: I_CallbackServer.java,v 1.3 2002/03/17 07:29:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -27,8 +28,26 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_CallbackServer
 {
+   /** Initialize and start the callback server */
+   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException;
+
+   /**
+    * Returns the 'well known' protocol type. 
+    * @return E.g. "RMI", "SOCKET", "XML-RPC"
+    */
+   public String getCbProtocol();
+   
+   /**
+    * Returns the current callback address. 
+    * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XML-RPC"
+    *         or null if not known
+    */
+   public String getCbAddress() throws XmlBlasterException;
+   
+   /**
+    * Stop the server
+    * @return true if everything went fine.
+    */
    public boolean shutdownCb() throws XmlBlasterException;
-   public void initCb() throws XmlBlasterException;
-   public void setCbSessionId(String sessionId) throws XmlBlasterException;
 }
 

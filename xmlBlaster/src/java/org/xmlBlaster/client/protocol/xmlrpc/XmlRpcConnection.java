@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.18 2002/03/13 16:41:10 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.19 2002/03/17 07:29:03 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -11,22 +11,22 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.xmlBlaster.util.Log;
 import org.jutils.text.StringHelper;
 
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.protocol.ProtoConverter;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import java.applet.Applet;
 
@@ -36,8 +36,8 @@ import org.apache.xmlrpc.XmlRpcException;
 
 
 /**
- * This is an xmlBlaster proxy. It implements the interface I_XmlBlaster
- * through AbstractCallbackExtended. The client can invoke it as if the
+ * This is an xmlBlaster proxy. It implements the interface I_XmlBlasterConnection. 
+ * The client can invoke it as if the
  * xmlBlaster would be on the same VM, making this way the xml-rpc protocol
  * totally transparent.
  * <p />
@@ -50,7 +50,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public static final int DEFAULT_SERVER_PORT = 8080; // port of xmlBlaster server
    private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
    private XmlRpcClient xmlRpcClient = null; // xml-rpc client to send method calls.
-   protected XmlRpcCallbackServer callback = null;
    private String sessionId = null;
    protected String loginName = null;
    private String passwd = null;
@@ -60,7 +59,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Connect to xmlBlaster using XML-RPC.
     */
-   public XmlRpcConnection(String[] args) throws XmlBlasterException
+   public XmlRpcConnection(Global glob) throws XmlBlasterException
    {
    }
 
@@ -69,6 +68,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public XmlRpcConnection(Applet ap) throws XmlBlasterException
    {
+   }
+
+   /**
+    * @return The connection protocol name "XML-RPC"
+    */
+   public final String getProtocol()
+   {
+      return "XML-RPC";
    }
 
    private void initXmlRpcClient() throws XmlBlasterException
@@ -104,19 +111,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
    }
 
-
    public void init()
    {
       Log.trace(ME, "XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
-   }
-
-   /**
-    * Access the callback server or null
-    */
-   public I_CallbackServer getCallbackServer()
-   {
-      return callback;
    }
 
    private XmlRpcClient getXmlRpcClient() throws ConnectionException
@@ -142,11 +140,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * </pre>
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
+    * @param qos       The Quality of Service for this client
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       this.ME = "XmlRpcConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "Entering login: name=" + loginName);
@@ -162,17 +159,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       else
          this.loginQos = qos;
 
-      if (client != null) {
-         // start the WebServer object here (to receive callbacks)
-         this.callback = new XmlRpcCallbackServer(loginName, client);
-         loginQos.addCallbackAddress(this.callback.getCallbackHandle());
-      }
-
       loginRaw();
    }
 
 
-   public void connect(ConnectQos qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -188,12 +179,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.loginName = qos.getUserId();
       this.passwd = null;
 
-      if (client != null) {
-         // start the WebServer object here (to receive callbacks)
-         this.callback = new XmlRpcCallbackServer(loginName, client);
-         loginQos.addCallbackAddress(this.callback.getCallbackHandle());
-      }
-
       loginRaw();
    }
 
@@ -202,7 +187,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Login to the server.
     * <p />
     * For internal use only.
-    * The qos needs to be set up correctly if you wish a callback
     * @exception       XmlBlasterException if login fails
     */
    public void loginRaw() throws XmlBlasterException, ConnectionException
@@ -267,7 +251,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Does a logout and removes the callback server.
+    * Does a logout. 
     * <p />
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
@@ -296,7 +280,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
                this.xmlRpcClient.execute("authenticate.logout", args);
             }
          }
-         shutdown(); // the callback server
+         shutdown();
          init();
          return true;
       }
@@ -307,22 +291,18 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.warn(ME+".logout", "xml-rpc exception: " + extractXmlBlasterException(e).toString());
       }
 
-      shutdown(); // the callback server
+      shutdown();
       init();
       return false;
    }
 
 
    /**
-    * Shut down the callback server.
+    * Shut down. 
     * Is called by logout()
     */
    public boolean shutdown()
    {
-      if (this.callback != null) {
-         this.callback.shutdownCb();
-         this.callback = null;
-      }
       return true;
    }
 

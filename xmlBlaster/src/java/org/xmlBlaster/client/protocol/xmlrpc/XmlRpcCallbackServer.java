@@ -12,6 +12,7 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -47,26 +48,28 @@ import org.apache.xmlrpc.WebServer;
  * @author michele.laghi@attglobal.net
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-class XmlRpcCallbackServer implements I_CallbackServer
+public class XmlRpcCallbackServer implements I_CallbackServer
 {
    private String ME = "XmlRpcCallbackServer";
-   private final I_CallbackExtended boss;
-   private final String loginName;
+   private I_CallbackExtended client;
+   private String loginName;
    /** The name for the XML-RPC registry */
    private String callbackServerUrl = null;
    /** XmlBlaster XML-RPC callback web server listen port is 8081 */
    public static final int DEFAULT_CALLBACK_PORT = 8081; // org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_CALLBACK_PORT;
    private WebServer webServer = null;
 
+   /** You must call initialize after constructing me */
+   public XmlRpcCallbackServer() {}
 
    /**
     * Construct a persistently named object.
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     */
-   public XmlRpcCallbackServer(String name, I_CallbackExtended boss) throws XmlBlasterException
+   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "XmlRpcCallbackServer-" + name;
-      this.boss = boss;
+      this.client = client;
       this.loginName = name;
       createCallbackServer();
       Log.info(ME, "Success, created XML-RPC callback server for " + loginName);
@@ -137,30 +140,27 @@ class XmlRpcCallbackServer implements I_CallbackServer
       }
    }
 
-
    /**
-    * @return The XML-RPC registry entry of this server, which can be used for the loginQoS
+    * Returns the 'well known' protocol type. 
+    * @return "XML-RPC"
     */
-   public CallbackAddress getCallbackHandle()
+   public String getCbProtocol()
    {
-      CallbackAddress addr = new CallbackAddress("XML-RPC");
-      addr.setAddress(callbackServerUrl);
-      addr.setCollectTime(XmlBlasterProperty.get("burstMode.collectTime", 0L));
-      return addr;
+      return "XML-RPC";
    }
-
-   public void initCb()
+   
+   /**
+    * Returns the current callback address. 
+    * @return Something like "http://myserver.com/xmlrpc"
+    */
+   public String getCbAddress() throws XmlBlasterException
    {
-      Log.warn(ME, "initCb() is not implemented");
+      return callbackServerUrl;
    }
-
-   public void setCbSessionId(String sessionId)
-   {
-      Log.warn(ME, "setCbSessionId() is not implemented");
-   }
-
+   
    /**
     * Shutdown the callback server.
+    * @return true if everything went fine.
     */
    public boolean shutdownCb()
    {
@@ -171,7 +171,6 @@ class XmlRpcCallbackServer implements I_CallbackServer
       return true;
    }
 
-
    /**
     * The update method.
     * <p />
@@ -181,7 +180,7 @@ class XmlRpcCallbackServer implements I_CallbackServer
                        String updateQoS) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update(): sessionId: " + cbSessionId);
-      boss.update(cbSessionId, updateKey, content, updateQoS);
+      client.update(cbSessionId, updateKey, content, updateQoS);
       return "<qos><state>OK</state></qos>";
    }
 } // class XmlRpcCallbackServer
