@@ -2,7 +2,6 @@ NOTE: This demo is currently not supported !
 See ../README for XML-RPC demonstration.
 
 
-
 To run this demo do the following:
 
 
@@ -16,16 +15,20 @@ To run this demo do the following:
 
 - Start xmlBlaster:
 
-  ${JAVA_WRAP} org.xmlBlaster.MainGUI
+     ${JAVA_WRAP} org.xmlBlaster.MainGUI
 
-     or
+  or
 
-  ${JAVA_WRAP} org.xmlBlaster.Main
+     ${JAVA_WRAP} org.xmlBlaster.Main
 
 
 - Start the xml-rpc client from this directory
 
-  java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml
+     java javaclients.xmlrpc.XmlRpcHttpClientRaw  -xmlrpc.host myHostName  < demo.xml
+
+  Type your host name instead of 'myHostName',
+  where the xmlBlaster xmlrpc server is listening.
+
 
 NOTE: The client sends the data from demo.xml
 
