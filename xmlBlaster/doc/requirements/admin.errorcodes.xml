@@ -66,11 +66,10 @@
      <tr><td>...</td><td>...</td></tr>
     </table>
 
+    <br />
     <p>
-    All ID's are available in a java.util.ResourceBundle
-    the question is if the server already uses the localized
-    text for the client language, or if the client uses the
-    errorCode to find its localized error text. 
+    All ID's could be made available in a java.util.ResourceBundle,
+    the client or server can display a localized text for the errorCode in this case.
     </p>
 
    </description>
@@ -157,7 +156,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
