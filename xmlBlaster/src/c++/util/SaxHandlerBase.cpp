@@ -12,7 +12,7 @@ Comment:   Default handling of Sax callbacks
   #pragma warning(disable:4786)
 #endif
 
-#include <SaxHandlerBase.h>
+#include <util/SaxHandlerBase.h>
 
 using namespace std;
 

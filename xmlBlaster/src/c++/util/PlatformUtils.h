@@ -3,7 +3,7 @@
 #ifndef _UTIL_PLATFORMUTILS_H
 #define _UTIL_PLATFORMUTILS_H
 
-#include <util/xmlbcfg.h>
+#include <util/XmlBCfg.h>
 
 namespace org { namespace xmlBlaster {
 namespace util {
