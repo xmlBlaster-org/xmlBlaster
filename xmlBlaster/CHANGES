@@ -2,6 +2,13 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
+  - The C++ client helper classes are now collected into a
+    shared library, on Linux e.g.
+       xmlBlaster/lib/libxmlBlasterClient.so
+
+  - Added an email callback plugin.
+    This allows callbacks to be send using email instead e.g. CORBA
+
   - New 'passwd' style Security Plugin from Cyrille Giquello, see
 
       xmlBlaster/src/java/org/xmlBlaster> cd authentication/plugins/htpasswd/README
