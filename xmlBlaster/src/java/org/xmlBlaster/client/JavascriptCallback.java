@@ -22,7 +22,7 @@ import org.mozilla.javascript.JavaScriptException;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XML-RPC.
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 public class JavascriptCallback implements I_Callback
@@ -41,7 +41,7 @@ public class JavascriptCallback implements I_Callback
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKey   The arrived key
     * @param content     The arrived message content
-    * @param qos         Quality of Service of the MessageUnit
+    * @param qos         Quality of Service of the MsgUnit
     *
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
