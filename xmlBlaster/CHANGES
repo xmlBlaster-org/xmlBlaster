@@ -696,6 +696,11 @@ Changes for 0.8+ [Nov, 25 2002]
     message filtering of mime type XML (xml is in the content)
     with XPath.
 
+  - Renamed <isDurable> tag to <persistent> to be prepared for
+    o persistent Sessions
+    o persistent Subscriptions
+    o persistent Topics
+
 
 Changes for 0.80 [Sep, 25 2002]
 ===============================
