@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.20 2002/02/26 10:48:48 ruff Exp $
+Version:   $Id: TestGet.java,v 1.21 2002/04/16 20:46:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -116,9 +116,15 @@ public class TestGet extends TestCase
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
-         assert("get of not existing message is not possible", false);
+         if (msgArr.length > 0)
+            assert("get of not existing message is not possible", false);
+         else
+            Log.info(ME, "Success, got zero messages when trying to get unknown message");
       } catch(XmlBlasterException e) {
-         Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
+         Log.error(ME, "get of not existing message should not throw an exception");
+         System.exit(1);
+         assert("get of not existing message should not throw an exception", false);
+         //Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
       }
 
       if (Log.TRACE) Log.trace(ME, "2. Publish a message ...");
@@ -159,15 +165,17 @@ public class TestGet extends TestCase
     */
    public void testGetMany()
    {
-      int num = XmlBlasterProperty.get("numTries", 200);
+      int num = XmlBlasterProperty.get("numTries", 5);
       Log.info(ME, "Get " + num + " not existing messages ...");
       String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
          try {
             MessageUnit[] msgArr = connection.get(xmlKey, qos);
-            assert("get of not existing message is not possible", false);
+            if (msgArr.length > 0)
+               assert("get() of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
+            assert("get() of not existing message should not throw an Exception: " + e.toString(), false);
             // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
          }
       }
