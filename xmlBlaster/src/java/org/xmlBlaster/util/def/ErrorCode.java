@@ -302,6 +302,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_WRONG_API_USAGE = new ErrorCode("user.wrongApiUsage",
+         "Please check your client code.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode USER_CONFIGURATION = new ErrorCode("user.configuration",
          "Login to xmlBlaster failed due to configuration problems.",
          new ResourceInfo[] {
