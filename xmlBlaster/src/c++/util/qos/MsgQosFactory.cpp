@@ -3,12 +3,10 @@ Name:      MsgQosSaxFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
 #include <util/qos/MsgQosFactory.h>
 #include <util/Global.h>
 #include <util/StringTrim.h>
 #include <util/lexical_cast.h>
-
 
 
 using namespace org::xmlBlaster::util;
@@ -205,7 +203,7 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       }
       return;
    }
-   if (name.compare("subscribe") == 0) {
+   if (name.compare(MethodName::SUBSCRIBE) == 0) {
       if (!inQos_) return;
       inSubscribe_ = true;
       AttributeMap::const_iterator iter = attrs.begin();
@@ -355,7 +353,7 @@ void MsgQosFactory::endElement(const string &name)
       return;
    }
 
-   if (name.compare("subscribe") == 0) {
+   if (name.compare(MethodName::SUBSCRIBE) == 0) {
       inSubscribe_ = false;
       character_.erase();
       return;

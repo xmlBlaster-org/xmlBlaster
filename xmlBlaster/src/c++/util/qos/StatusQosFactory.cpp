@@ -73,7 +73,7 @@ void StatusQosFactory::startElement(const string &name, const AttributeMap& attr
       return;
    }
 
-   if (name.compare("subscribe") == 0) {
+   if (name.compare(MethodName::SUBSCRIBE) == 0) {
       if (!inQos_) return;
       inSubscribe_ = true;
       AttributeMap::const_iterator iter = attrs.begin();
@@ -118,7 +118,7 @@ void StatusQosFactory::endElement(const string &name)
       character_.erase();
       return;
    }
-   if (name.compare("subscribe") == 0) {
+   if (name.compare(MethodName::SUBSCRIBE) == 0) {
       inSubscribe_ = false;
       character_.erase();
       return;
