@@ -11,7 +11,6 @@
    - a 'make' utility recommended. For DOS/Windows, e.g. cygwin's make.
 	  Note that Windows nmake will not work properly with xmlBlaster Makefiles
    - JacOrb (CORBA)
-   - XSL processor
 
 
                         Environment
