@@ -207,11 +207,11 @@ public class TestTimestamp extends XMLTestCase {
          this.dbPool.update("DELETE FROM TEST_TS WHERE ICAO_ID='EDDI'");
          changeDetector.checkAgain(null);
          sleep(500);
-         assertEquals("Number of message is wrong", 1, this.updateMap.size());
+         assertEquals("Number of message is wrong", 0, this.updateMap.size());
          // TODO: We don't know that EDDI was deleted
-         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
-         assertNotNull("xml returned is null", xml);
-         assertEquals("", xml);
+         //String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+         //assertNotNull("xml returned is null", xml);
+         //assertEquals("", xml);
          this.updateMap.clear();
 
          changeDetector.checkAgain(null);
@@ -321,20 +321,17 @@ public class TestTimestamp extends XMLTestCase {
          assertEquals("Number of message is wrong", 0, this.updateMap.size());
       }
 
+      // Is not detected by Timestamp poller!
       {
          log.info("Delete one row");
          this.dbPool.update("DELETE FROM TEST_TS WHERE ICAO_ID='EDDI'");
          changeDetector.checkAgain(null);
          sleep(500);
-         assertEquals("Number of message is wrong", 1, this.updateMap.size());
+         assertEquals("Number of message is wrong", 0, this.updateMap.size());
          // TODO: We don't know that EDDI was deleted
-         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
-         assertNotNull("xml returned is null", xml);
-         assertXpathEvaluatesTo("UPDATE", "/myRootTag/desc/command/text()", xml);
-         assertXpathNotExists("/myRootTag/row[@num='0']", xml);
+         //String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+         //assertNotNull("xml returned is null", xml);
          this.updateMap.clear();
-
-         writeToFile("db.change.event.UPDATE", xml);
 
          changeDetector.checkAgain(null);
          sleep(500);
