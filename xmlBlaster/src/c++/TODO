@@ -9,9 +9,13 @@ o Add expat xml parser into the distribution
   and use the Arabica SAX2 layer for simple parsing
   -> This avoids to download Xerces separately
 
-o Change ConnectQos  to use ClientProperty as well
+o Change ConnectQos to use ClientProperty as well
   (similar to MsgQosData.h)
   This has currently no operational impact
+
+o Check return values 'vector<MsgUnit>' which
+  are copies. We could change this to a reference
+  argument to improove performance.
 
 o Extend testsuite to check ALL parameters shown with
   PublishDemo -help
@@ -23,7 +27,7 @@ o TestQueue: this test shows memory leaks with valgrind,
   we need to investigate further
 
 o The client side queue is RAM based only.
-  We could embedd http://www.sqlite.org/ for persistence
+  We could embed http://www.sqlite.org/ for persistence
 
 o Add subscribe specific 'update()' similar to the Java
   client library approach
