@@ -28,7 +28,7 @@
 # Client side
 #queue/connection/defaultPlugin=RAM,1.0
 
-# NOTE: If you don't want the embedded hsqldb database to handle persistence you need to install a 
+# NOTE: If you don't want the embedded hsqldb database to handle persistence you need to install a
 # Postgres, Oracle or MS-SQL-Server database
 #   See
 #    xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
@@ -339,7 +339,7 @@ logDevice=console
 #------------------------------------------------------------------------------
 # When an XmlBlasterException is thrown, how to format the getMessage() string, see:
 # http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html
-XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideException={3} node=[{1}] location=[{2}] message=[{4} : {8}]
+XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideException={3} location=[{2}] message=[{4} : {8}] [See URL {9}]
 
 # Control logging output format (examples are provided below)
 # <timestamp>:<levelStr>:<instance>:<text>

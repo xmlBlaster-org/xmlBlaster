@@ -118,7 +118,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                                String stackTrace, String embeddedMessage, String transcationInfo,
                                boolean isServerSide, Throwable cause) {
       //super(message, cause); // JDK 1.4 only
-      super((message == null || message.length() < 1) ? errorCodeEnum.getDescription() : message);
+      super((message == null || message.length() < 1) ? errorCodeEnum.getLongDescription() : message);
       this.glob = (glob == null) ? Global.instance() : glob;
       this.logFormat = this.glob.getProperty().get("XmlBlasterException.logFormat", DEFAULT_LOGFORMAT);
       this.logFormatInternal = this.glob.getProperty().get("XmlBlasterException.logFormat.internal", DEFAULT_LOGFORMAT_INTERNAL);
@@ -208,7 +208,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                               (timestamp==null) ? "" : timestamp.toString(),  // {6}
                               (stackTrace==null) ? "" : stackTrace,           // {7}
                               (embeddedMessage==null) ? "" : embeddedMessage, // {8}
-                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription() // {9}
+                              (errorCodeEnum==null) ? "" : errorCodeEnum.getUrl() // {9}
+                              // NOTE: IBM JDK 1.3 can't handle {} greater 9!
+                              //(errorCodeEnum==null) ? "" : errorCodeEnum.getLongDescription(), // {9}
                               //(transactionInfo==null) ? "" : transactionInfo, // {10}
                               //(lang==null) ? "" : lang,                  // {11}
                               };
