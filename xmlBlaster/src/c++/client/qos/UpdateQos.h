@@ -16,7 +16,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *     &lt;state id='OK'/>
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
- *     &lt;subscriptionId>subId:1&lt;/subscriptionId>
+ *     &lt;subscribe id='__subId:1'/&lt;
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
