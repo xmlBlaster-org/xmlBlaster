@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Global.detachJdbcManagerCommonTable() removed (was obsolete)
+
  o the EntryFactories are now threadsafe and the Global.getEntryFactory now
    does not take any name and the factory is a singleton. EntryFactory.getName
    does not exist anymore. I_StoragePlugin.getType can be used instead
