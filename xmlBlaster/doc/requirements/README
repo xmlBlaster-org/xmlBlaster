@@ -12,6 +12,21 @@ or locally
 to read the requirements.
 
 
+
+Generate requirement HTML pages:
+================================
+
+cd xmlBlaster
+build.sh requirements
+
+That's it!
+
+
+
+OLD REMAKRS:
+============
+
+
 The requirement document layout is validated with requirement.dtd
 
 Each requirement is described in an own xml file
