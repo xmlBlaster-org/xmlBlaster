@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.17 2000/01/13 06:18:25 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.18 2000/01/17 20:06:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -55,7 +55,8 @@ public class CorbaConnection
     */
    public CorbaConnection()
    {
-      args = new String[0];  // dummy
+      args = new String[1];  // dummy
+      args[0] = ME;
       orb = org.omg.CORBA.ORB.init(args, null);
    }
 
@@ -119,7 +120,19 @@ public class CorbaConnection
     */
    public CorbaConnection(Applet ap)
    {
-      orb = org.omg.CORBA.ORB.init(ap, null);
+      java.util.Properties props = null;
+      /*
+      // try to force to use JacORB instead of builtin CORBA:
+      String orbClassName = "jacorb.orb.ORB";
+      String orbSingleton = "jacorb.orb.ORBSingleton";
+      java.util.Properties props = new java.util.Properties();
+      props.put("org.omg.CORBA.ORBClass", orbClassName);
+      props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
+   
+      Log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
+      */
+
+      orb = org.omg.CORBA.ORB.init(ap, props);
    }
 
 
@@ -458,6 +471,13 @@ public class CorbaConnection
     */
    public BlasterCallback createCallbackServer(BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
+      // Intialize my Callback interface (tie approach):
+      BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
+      callbackTie._orb( orb );
+      callback = callbackTie._this();
+      return callback;
+
+      /* !!! works a well:
       org.omg.PortableServer.POA poa;
       BlasterCallbackPOATie callbackTie;
 
@@ -469,9 +489,6 @@ public class CorbaConnection
          throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
       }
 
-      // Intialize my Callback interface (tie approach):
-      callbackTie = new BlasterCallbackPOATie(callbackImpl);
-
       try {
          callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
          return callback;
@@ -480,6 +497,7 @@ public class CorbaConnection
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
       }
+      */
    }
 
 
