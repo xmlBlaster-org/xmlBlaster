@@ -22,7 +22,7 @@
   <methodName>xmlBlaster.publish</methodName>
   <params>
     <param><value><string>Session 1</string></value></param>
-    <param>   
+    <param>
        <value>
           <string>
              &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
@@ -34,30 +34,12 @@
                  &lt;/runway>
                &lt;/airport>
              &lt;/key>
-          </string> 
-       </value>  
+          </string>
+       </value>
     </param>
     <param>
       <value>
-        <array>
-           <data>
-              <value>
-                <string>
-                  &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
-                  &lt;key oid=''>
-                    &lt;airport id='London'>
-                      &lt;runway id='1'>
-                        &lt;windspeed id='south'>
-                        &lt;/windspeed>
-                      &lt;/runway>
-                    &lt;/airport>
-                  &lt;/key>
-                </string> 
-              </value>  
-              <value><base64>aAbBcCdDeEfFgGhHiIlLmMnNoOpPqQrRsStTuUvVzZ</base64></value>
-              <value><string>&lt;qos>&lt;/qos></string></value>  
-           </data>   
-        </array>
+        <string>aAbBcCdDeEfFgGhHiIlLmMnNoOpPqQrRsStTuUvVxXzZ</string>
       </value>
     </param>
     <param><value><string>&lt;qos>&lt;/qos></string></value></param>
@@ -85,11 +67,11 @@
                       &lt;/runway>
                     &lt;/airport>
                   &lt;/key>
-                </string> 
-              </value>  
-              <value><base64>abcdefg</base64></value>
-              <value><string>&lt;qos>&lt;/qos></string></value>  
-           </data>   
+                </string>
+              </value>
+              <value><base64>abcdefgh</base64></value>
+              <value><string>&lt;qos>&lt;/qos></string></value>
+           </data>
         </array>
       </value>
     </param>
