@@ -93,6 +93,8 @@ RM_RECURSIVE= rm -rf
 CP= cp -f
 CP_RECURSIVE= cp -Rf
 
+CD= cd
+
 SYMBOLIC_LINK=ln -s
 
 JAR= jar
