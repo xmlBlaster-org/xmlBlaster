@@ -3,13 +3,14 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.2 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.3 2000/10/22 17:26:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
+import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.util.XmlKeyBase;
 
@@ -33,7 +34,9 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref
+ *
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -ior `cat /tmp/NS_Ref`
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -name "Jeff" `cat /tmp/NS_Ref`
  * </pre>
@@ -49,19 +52,13 @@ public class ClientRaw
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
-         String authServerIOR = null;
-
-         if (args.length == 1) {
-            authServerIOR = args[0];  // args[0] is an IOR-string
-         }
-         else if (args.length > 1) {
-            String argv = args[0];
-            if (argv.equals("-name")) {
-               ME = args[1];
-            }
-         }
-
+         ME = Args.getArg(args, "-name", ME);
          String loginName = ME;
+
+         String fileName = Args.getArg(args, "-iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = Args.getArg(args, "-ior", (String)null); // the IOR string
+
+         if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
 
          if (authServerIOR != null) {
             authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
@@ -76,7 +73,7 @@ public class ClientRaw
             if (nc == null) {
                Log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref\n"
-                           + "   jaco javaclients.corba.ClientRaw `cat /tmp/NS_Ref`\n");
+                           + "   jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref\n");
                Log.panic(ME, "Read xmlBlaster/INSTALL for help");
             }
             authServer = AuthServerHelper.narrow(nc.resolve(name));
@@ -186,6 +183,7 @@ public class ClientRaw
          orb.shutdown(true);
       }
       catch (Exception e) {
+          Log.panic(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -210,9 +208,24 @@ public class ClientRaw
       } catch (java.io.IOException e) {}
    }
 
+   static void usage()
+   {
+      Log.plain("\nAvailable options:");
+      Log.plain("   -name               The login name [ClientRaw].");
+      Log.plain("   -iorFile            File with the IOR string from xmlBlaster.");
+      Log.usage();
+      Log.exit(ME, "Example: jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref\n");
+   }
 
    public static void main(String args[])
    {
+      try {  // Initialize command line argument handling (this is optional)
+         if (org.xmlBlaster.util.XmlBlasterProperty.init(args)) ClientRaw.usage();
+      } catch(org.jutils.JUtilsException e) {
+         Log.error(ME, e.toString());
+         ClientRaw.usage();
+      }
+
       new ClientRaw(args);
       Log.exit(ClientRaw.ME, "Good bye");
    }

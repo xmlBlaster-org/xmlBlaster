@@ -1,41 +1,43 @@
+We have provided ClientRaw.java if you wish to study the raw CORBA access.
+
+Another source to see how CORBA access is implemented, see files in
+ xmlBlaster/src/java/org/xmlBlaster/client/protocol/corba
+
+
+1. Example using a file to pass the server IOR:
+
    Start xmlBlaster server:
 
-      jaco org.xmlBlaster.Main
+      jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
 
 
-   Start one of the clients, for example:
+   Start the client:
 
-      jaco javaclients.corba.ClientSub
+      jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref
 
 
    To get some more logging infos try:
 
-      jaco javaclients.corba.ClientSub -trace true
+      jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref -trace true
 
 
    This displays the usage:
 
-     jaco javaclients.corba.ClientSub -?
+     jaco javaclients.corba.ClientRaw -?
 
 
-   Query xmlBlaster:
+2. Example using a naming service to pass the server IOR.
 
-      jaco javaclients.corba.ClientQuery -queryXpath "/xmlBlaster/key"
+   Another variant is to access xmlBlaster using a naming service.
+   Please see our INSTALL file how to use the naming service.
 
-      jaco javaclients.corba.ClientQuery -queryXpath "//AGENT/DRIVER"
+   If you have the naming service running, and xmlBlaster has
+   published itself to the naming service try:
+
+     jaco javaclients.corba.ClientRaw
 
 
-Running a client with CORBA protocol (default):
+3. Example using the xmlBlaster builtin http server.
 
-      jaco javaclients.corba.ClientSub -client.protocol IOR
-
-Running a client with RMI protocol:
-
-      jaco javaclients.corba.ClientSub -client.protocol RMI
-
-Running a client with XML-RPC protocol:
-
-      jaco javaclients.corba.ClientSub -client.protocol XML-RPC
-
-Note: To run these other protocols, the xmlBlaster server must
-      have switched the supporting driver on (see xmlBlaster.properties)
+   This is only available with our CorbaConnection.java
+   helper classes (see examples in demo/javaclients).
