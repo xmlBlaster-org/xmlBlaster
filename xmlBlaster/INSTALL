@@ -125,12 +125,13 @@ precedence.
 | PERSISTENCE CONFIGURATION  |
 +----------------------------+
 
+XmlBlaster is ready configured to
+suppport server crash recovery and huge message
+amount to be queued (swapping) with the embedded
+database HSQLDB.
 
-To suppport server crash recovery and huge message
-amount to be queued (swapping) you need to start a
-database.
-
-Oracle, Postgres and others are supported.
+However you can choose to use an external database for persistency.
+Oracle, Postgres, MS-SQL-Server and others are supported.
 Expect some 20 minutes to setup Postgres to run
 with xmlBlaster and one to two days if you decide
 to use Oracle.
@@ -139,6 +140,8 @@ The details are described in
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.sqlserver.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.mysql.html
   xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
 
 
@@ -159,7 +162,7 @@ ant build tool.
 
 Now you are done.
 
-To see other compilation options (e.g. for C++) get the usage with:
+To see other compilation options (e.g. for C or C++) get the usage with:
 
    UNIX:       build.sh
 
@@ -204,7 +207,8 @@ Further description you find in the README files:
 | START XMLBLASTER AS A CORBA SERVER  |
 +-------------------------------------+
 
-You have three options to start the xmlBlaster-Server.
+You have three options to start the xmlBlaster-Server. The main goal
+is how to pass the initial IOR string from the server to the client.
 
 See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more
 instructions.
@@ -380,9 +384,9 @@ Don´t forget to start the server (java org.xmlBlaster.Main) first.
 In the directory ${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
    
-The xmlBlaster test suite is based on the JUNIT 1.0 testsuite
+The xmlBlaster test suite is based on the JUNIT testsuite
 from Kent Beck and Erich Gamma, see
-   http://members.pingnet.ch/gamma/junit.htm
+   http://www.junit.org/index.htm
 
 There is a GUI based and a command line based variant of the testsuite available.
 
