@@ -213,8 +213,10 @@ public class HelloWorldPublish
          log.info(ME, "Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
 
-         DisconnectQos dq = new DisconnectQos(glob);
-         con.disconnect(dq);
+         if (disconnect) {
+            DisconnectQos dq = new DisconnectQos(glob);
+            con.disconnect(dq);
+         }
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
