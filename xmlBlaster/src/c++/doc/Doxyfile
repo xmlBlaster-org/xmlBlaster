@@ -116,7 +116,7 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the 
 # path to strip.
 
-STRIP_FROM_PATH        = $(XMLBLASTER_HOME)/src/c++/ $(XMLBLASTER_HOME)/src/c/ $(XMLBLASTER_HOME)/
+STRIP_FROM_PATH        = $(XMLBLASTER_HOME)/src/c++/ $(XMLBLASTER_HOME)/src/c/ $(XMLBLASTER_HOME)/src/java/org/xmlBlaster/ $(XMLBLASTER_HOME)/
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
 # the path mentioned in the documentation of a class, which tells 
@@ -425,7 +425,8 @@ INPUT                  = ../client \
                          ../../../testsuite/src/c++ \
                          ../../../demo/c++ \
 			 ../../c/XmlBlasterAccessUnparsed.h \
-			 ../../c/util/queue/QueueInterface.h
+			 ../../c/util/queue/QueueInterface.h \
+			 ../../java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -435,7 +436,9 @@ INPUT                  = ../client \
 # *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm
 
 FILE_PATTERNS          = *.h \
-                         *.cpp
+                         *.cpp \
+                         *.c \
+                         *.idl
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
