@@ -33,7 +33,7 @@ import java.net.URL;
 abstract public class PluginManagerBase implements I_PluginManager{
 
    private static String ME = "PluginManagerBase";
-   protected Hashtable pluginCache = new Hashtable(); // currently loaded plugins
+   private Hashtable pluginCache; // currently loaded plugins  (REMOVE???)
    private final Global glob;
    private final LogChannel log;
    public final static String NO_PLUGIN_TYPE = "undef";
@@ -111,7 +111,13 @@ abstract public class PluginManagerBase implements I_PluginManager{
 
    public I_Plugin getFromPluginCache(String className) {
       if (className == null) return null;
-      return (I_Plugin)pluginCache.get(className);
+      if (this.pluginCache == null) return null;
+      return (I_Plugin)this.pluginCache.get(className);
+   }
+
+   public I_Plugin removeFromPluginCache(String className) {
+      if (this.pluginCache == null) return null;
+      return (I_Plugin)this.pluginCache.remove(className);
    }
 
    /**
@@ -166,7 +172,11 @@ abstract public class PluginManagerBase implements I_PluginManager{
     * @return I_Plugin or null if plugin type is set to "undef"
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   protected I_Plugin instantiatePlugin(PluginInfo pluginInfo) throws XmlBlasterException
+   protected I_Plugin instantiatePlugin(PluginInfo pluginInfo) throws XmlBlasterException {
+      return instantiatePlugin(pluginInfo, false);
+   }
+
+   protected I_Plugin instantiatePlugin(PluginInfo pluginInfo, boolean usePluginCache) throws XmlBlasterException
    {
       // separate parameter and plugin name
 
@@ -221,7 +231,11 @@ abstract public class PluginManagerBase implements I_PluginManager{
             throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
          }
       }
-      pluginCache.put(pluginName, plugin);
+
+      if (usePluginCache) {
+         if (this.pluginCache == null) this.pluginCache = new Hashtable();
+         this.pluginCache.put(pluginName, plugin);
+      }
 
       return plugin;
    }
@@ -233,5 +247,10 @@ abstract public class PluginManagerBase implements I_PluginManager{
       if (NO_PLUGIN_TYPE.equalsIgnoreCase(typeVersion) || "undef,1.0".equalsIgnoreCase(typeVersion))
          return true;
       return false;
+   }
+
+   public void shutdown() {
+      if (this.pluginCache != null)
+         this.pluginCache.clear();
    }
 }
