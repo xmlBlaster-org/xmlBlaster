@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.13 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.14 2001/01/30 13:02:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -79,6 +79,11 @@ public class XmlQoSBase extends SaxHandlerBase
    {
       if (name.equalsIgnoreCase("qos")) {
          inQos = true;
+         return true;
+      }
+      if (!inQos) {
+         Log.warn(ME, "Ignoring unknown element '" + name + "'.");
+         character.setLength(0);
          return true;
       }
       return false;

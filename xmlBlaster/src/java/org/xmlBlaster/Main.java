@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.64 2000/11/16 08:47:04 ruff Exp $
+Version:   $Id: Main.java,v 1.65 2001/01/30 13:02:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -58,7 +58,7 @@ import java.lang.reflect.Method;
  * <p />
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
- * <code>   jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true</code>
+ * <code>   jaco org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -260,8 +260,11 @@ public class Main
     */
    public void shutdown()
    {
-      if (protocols.size() > 0)
+      if (protocols.size() > 0) {
          Log.info(ME, "Shutting down xmlBlaster ...");
+         if (Log.DUMP) ThreadLister.listAllThreads(System.out);
+      }
+
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          try {
@@ -446,7 +449,7 @@ public class Main
       Log.plain(ME, "Example:");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main -trace true -dump true -call true -time true");
       Log.plain(ME, "");
    }
 

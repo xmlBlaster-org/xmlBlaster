@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.56 2000/11/14 17:02:40 ruff Exp $
+Version:   $Id: Log.java,v 1.57 2001/01/30 13:02:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -387,7 +387,7 @@ public class Log
       Log.plain(ME, "   -info  false        Supress info output.");
       Log.plain(ME, "   -trace true         Show code trace.");
       Log.plain(ME, "   -dump  true         Dump internal state.");
-      Log.plain(ME, "   -calls true         Show important method entries");
+      Log.plain(ME, "   -call  true         Show important method entries");
       Log.plain(ME, "   -time true          Display some performance data.");
       Log.plain(ME, "   -logFile <fileName> Log to given file.");
       Log.plain(ME, "   -logConsole false   Supress logging to console.");
