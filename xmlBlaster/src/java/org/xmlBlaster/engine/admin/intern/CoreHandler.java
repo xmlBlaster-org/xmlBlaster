@@ -352,9 +352,9 @@ class Invoker
          }
       }
 
-      // Methode da ?
       Method method = null;
 
+      /*
       if (debug)
       {
          System.err.println("Searching for method: " + methodName);
@@ -362,12 +362,12 @@ class Invoker
                System.err.println("Parameter " + i + ": " +
                      argClasses[i] + " = " + argValues[i]);
       }
+      */
 
       try
       {
          method = targetClass.getMethod(methodName, argClasses);
       }
-      // Wenn nicht da dann entsprechende Exception returnen
       catch (NoSuchMethodException nsm_e)
       {
          throw nsm_e;
