@@ -1008,6 +1008,7 @@ TODO
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
           <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
+          <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
        </delete>
     </target>
 
