@@ -619,6 +619,7 @@ TODO
       <copy file="${config.dir}/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
+      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties" filtering="true"/>
       <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
 
       <switch value="${need.JDK.14}">
@@ -652,7 +653,7 @@ TODO
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,manifest.xmlBlaster,*.xml"/>
+           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,xmlBlasterJdk14Logging.properties,manifest.xmlBlaster,*.xml"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
@@ -2908,7 +2909,7 @@ TODO
    </target>
 
    <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
-      <foreach list="Publisher,HelloWorld3,LogRedirect,HelloWorldUdp,Subscriber"
+      <foreach list="HelloWorld,Publisher,HelloWorld3,LogRedirect,HelloWorldUdp,Subscriber"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
       </foreach>
