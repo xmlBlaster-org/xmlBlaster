@@ -120,7 +120,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
     *   <li>retries[heron] defaults to -1 == forever</li>
     *   <li>queue.maxMsg[heron] defaults to 100000</li>
-    *   <li>security.plugin.type[heron] defaults to "simple"</li>
+    *   <li>security.plugin.type[heron] defaults to "htpasswd"</li>
     *   <li>security.plugin.version[heron] defaults to "1.0"</li>
     *   <li>name[heron] the login name defaults to our local node id</li>
     *   <li>passwd[heron] defaults to secret</li>
@@ -155,7 +155,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             callback.setSessionId(createCbSessionId());
          this.cbSessionId = callback.getSessionId();
 
-         ConnectQos qos = new ConnectQos(getId(), connectGlob);
+         ConnectQos qos = new ConnectQos(glob.getId(), connectGlob);
 
          qos.setUserId(connectGlob.getId()); // the login name
          // The password is from the environment -passwd or more specific -passwd[heron]
