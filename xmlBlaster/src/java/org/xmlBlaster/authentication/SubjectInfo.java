@@ -144,7 +144,6 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
 
-      this.authenticate.addLoginName(this); // register myself
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
 
@@ -177,11 +176,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
       this.subjectQueue = createSubjectQueue(prop);
 
-      if (isDead()) {
-         this.authenticate.addLoginName(this); // register myself
-      }
-
       this.state = ALIVE;
+
+      this.authenticate.addLoginName(this); // register myself
 
       if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
    }
