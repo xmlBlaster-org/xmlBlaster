@@ -28,7 +28,7 @@ public class XmlBlasterClassLoader extends URLClassLoader {
 
    public XmlBlasterClassLoader(URL[] urls, String pluginName) {
       super(urls);
-      log = Global.instance().getLog(null);
+      log = Global.instance().getLog("classloader");
       this.pluginName = pluginName;
       this.pluginPackage = pluginName.substring(0, pluginName.lastIndexOf("."));
       this.ME = "XmlBlasterClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
@@ -37,9 +37,10 @@ public class XmlBlasterClassLoader extends URLClassLoader {
    public Class loadClass(String name) throws ClassNotFoundException {
       ClassLoader parent = getClass().getClassLoader();
       if (name.startsWith("java.") ) {
+         if (log.TRACE) log.trace(ME, "Using default JVM class loader for java class " + name);
          return parent.loadClass(name);
       }
-      if (name.startsWith("org.xmlBlaster") ) {
+      if (name.startsWith("org.xmlBlaster") || name.startsWith("org.jutils")) {
          if (!name.startsWith(pluginPackage)) {
             if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
             return parent.loadClass(name);
@@ -54,8 +55,8 @@ public class XmlBlasterClassLoader extends URLClassLoader {
 
       try {
          clazz = findClass(name);
-          if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
-          return clazz;
+         if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
+         return clazz;
       }
       catch (ClassNotFoundException e) {
           if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader");
