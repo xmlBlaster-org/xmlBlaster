@@ -298,7 +298,7 @@ int main(int args, char ** argv)
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 1.6</a></td>
        <td>2003-02-19</td>
        <td>Guy Donadio</td>
-       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build -Duse-CC=true cpp</i></td>
        </tr>
 
        <tr>
@@ -311,7 +311,8 @@ int main(int args, char ** argv)
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 1.6</a></td>
        <td>2003-03-02</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile
+           <br /><i>./build -Duse-gcc=true c cpp</i></td>
        </tr>
 
        <tr>
@@ -407,13 +408,13 @@ int main(int args, char ** argv)
 
        <tr>
        <td>14</td>
-       <td>Linux 2.4.21</td>
-       <td><a href="http://gcc.gnu.org/">g++</a> 3.3.1</td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85e+</a></td>
+       <td>Linux 2.6.8</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3.4</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
-       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
-       <td>2004-01-14</td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.6</a></td>
+       <td>2004-12-01</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
@@ -446,13 +447,13 @@ int main(int args, char ** argv)
 
        <tr>
        <td>17</td>
-       <td>Linux 2.4.21</td>
-       <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit applications, Version 8.0 (icc)</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9</a></td>
+       <td>Linux 2.6.8</td>
+       <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit applications, Version 8.1 (icc)</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
-       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.5</a></td>
-       <td>2004-04-01</td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.6</a></td>
+       <td>2004-12-01</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build -Duse-icc=true cpp</i></td>
        </tr>
@@ -469,6 +470,21 @@ int main(int args, char ** argv)
        <td><a href="mailto:laghi@swissinfo.org">Michele</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build cpp</i></td>
        </tr>
+
+       <tr>
+       <td>19</td>
+       <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
+       <td>CC: Forte Developer 7 Sun C++ 5.5 2003/03/12</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.6</a></td>
+       <td>2004-12-01</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile
+           <br /><i>./build -Duse-CC=true c cpp</i></td>
+       </tr>
+
 
       </table>
       <p>
