@@ -109,6 +109,30 @@ public final class RunlevelManager
    }
 
    /**
+    * Allows to pass the newRunlevel as a String like "RUNLEVEL_STANDBY" or "6"
+    * @see #changeRunlevel(int, boolean)
+    */
+   public final int changeRunlevel(String newRunlevel, boolean force) throws XmlBlasterException {
+      if (newRunlevel == null || newRunlevel.length() < 1) {
+         String text = "Runlevel " + newRunlevel + " is not allowed, please chooes one of " +
+                       RUNLEVEL_HALTED + "|" + RUNLEVEL_STANDBY + "|" +
+                       RUNLEVEL_CLEANUP + "|" + RUNLEVEL_RUNNING;
+         log.warn(ME, text);
+         throw new XmlBlasterException(ME, text);
+      }
+
+      int level = 0;
+      try {
+         level = Integer.parseInt(newRunlevel.trim());
+         return glob.getRunlevelManager().changeRunlevel(level, true);
+      }
+      catch(NumberFormatException e) {
+         level = toRunlevelInt(newRunlevel);
+         return glob.getRunlevelManager().changeRunlevel(level, true);
+      }
+   }
+
+   /**
     * Change the run level to the given newRunlevel. 
     * <p />
     * See RUNLEVEL_HALTED etc.
@@ -289,5 +313,42 @@ public final class RunlevelManager
          return "RUNNING_POST";
       else
          return "RUNLEVEL_UNKNOWN(" + level + ")";
+   }
+
+   /**
+    * Parses given string to extract the priority of a message
+    * @param prio For example "HIGH" or 7
+    * @param defaultPriority Value to use if not parseable
+    * @return -10 if no valid run level
+    */
+   public final static int toRunlevelInt(String level) {
+      if (level.equalsIgnoreCase("HALTED_PRE"))
+         return RUNLEVEL_HALTED_PRE;
+         /*
+      else if (level == RUNLEVEL_HALTED)
+         return "HALTED";
+      else if (level == RUNLEVEL_HALTED_POST)
+         return "HALTED_POST";
+      else if (level == RUNLEVEL_STANDBY_PRE)
+         return "STANDBY_PRE";
+      else if (level == RUNLEVEL_STANDBY)
+         return "STANDBY";
+      else if (level == RUNLEVEL_STANDBY_POST)
+         return "STANDBY_POST";
+      else if (level == RUNLEVEL_CLEANUP_PRE)
+         return "CLEANUP_PRE";
+      else if (level == RUNLEVEL_CLEANUP)
+         return "CLEANUP";
+      else if (level == RUNLEVEL_CLEANUP_POST)
+         return "CLEANUP_POST";
+      else if (level == RUNLEVEL_RUNNING_PRE)
+         return "RUNNING_PRE";
+      else if (level == RUNLEVEL_RUNNING)
+         return "RUNNING";
+      else if (level == RUNLEVEL_RUNNING_POST)
+         return "RUNNING_POST";
+         */
+      else
+         return -10;
    }
 }
