@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.38 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.39 2000/06/25 20:15:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -16,8 +16,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
-
-import jacorb.util.Environment;
 
 
 /**
@@ -107,6 +105,11 @@ public class XmlKeyBase
 
    /** Is the internal state of xmlBlaster queried? */
    protected boolean isInternalStateQuery = false;
+
+   /** IP address to generate unique oid */
+   private String ip_addr = null; // jacorb.util.Environment.getProperty("OAIAddr");
+
+   private String oa_port = null; // jacorb.util.Environment.getProperty("OAPort");
 
 
    /**
@@ -513,7 +516,6 @@ public class XmlKeyBase
    {
       StringBuffer oid = new StringBuffer(60);
 
-      String ip_addr = Environment.getProperty("OAIAddr");
       if (ip_addr == null) {
          try {
             ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // "192.168.1.1" from "swand.lake.de/192.168.1.1"
@@ -524,8 +526,9 @@ public class XmlKeyBase
       if (ip_addr == null)
          ip_addr = "127.0.0.0";
 
-      String oa_port = Environment.getProperty("OAPort");
-      //  java.net.ServerSocket.getLocalPort();
+      if (oa_port == null)
+         oa_port = XmlBlasterProperty.get("iorPort", "7609"); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
+         //  java.net.ServerSocket.getLocalPort();
 
       long currentTime = System.currentTimeMillis();
 
