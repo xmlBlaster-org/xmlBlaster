@@ -348,7 +348,7 @@ java HelloWorld2 -help
                      -dispatch/clientSide/pingInterval 3000
       </pre>
       The <i>-dispatch/callback/pingInterval</i> property is sent to the server with the ConnectQos
-      and configure the server behaviour. The <i>-dispatch/clientSide/pingInterval</i> is only
+      and configures the server behavior. The <i>-dispatch/clientSide/pingInterval</i> setting is only
       evaluated on the client side. <i>-maxEntries 100</i> is looked at on client and on server side.
 
       </p>
@@ -372,6 +372,6 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
 </requirement>
 
