@@ -4,6 +4,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Added possibility to activate/inhibit dispatch of callback entries (SessionInfo.activateDispatcher)
+
+ o Added support for primitive and buildin types such as Boolean, Short, Integer, Float and Double
+   in admin messages
+
  o Added new QoS 'newestFirst' to control the deliver ordering of messages
    when querying the history queue with 'get()' or 'subscribe()'
 
