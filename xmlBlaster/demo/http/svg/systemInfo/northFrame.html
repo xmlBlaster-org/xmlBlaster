@@ -58,7 +58,7 @@ COMMENT:
             if (keyOid == "meminfo") rectangleName = "rectangle.RAM";
             Log.trace("Drawing to SVG in frame '" + rectangleName + "': '" + value + "'");
 
-            var svgdoc = getSVGDocument(parent.svgFrame, "systemInfoSVGPlugin");
+            var svgdoc = getSVGDocument(parent.svgFrame, "systemInfoSVGPlugin", value);
             if (svgdoc == null) return;
 
             var myRectangle=svgdoc.getElementById(rectangleName);
@@ -84,7 +84,7 @@ COMMENT:
           *        <embed src="systemInfo.svg" type="image/svg-xml" name="systemInfoSVGPlugin" />
           * @return The SVG root document, or null on error
           */
-         function getSVGDocument(svgFrame, pluginName)
+         function getSVGDocument(svgFrame, pluginName, value)
          {
             var Log = top.xmlBlasterWindow.Log;
 
