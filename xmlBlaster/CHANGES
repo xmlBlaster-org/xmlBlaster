@@ -7,6 +7,8 @@ Changes for 0.79 [?, ? 2000]
 
   - NOTE: JDK_HOME is not used anymore, use JAVA_HOME instead.
 
+  - Migrated to Ant 1.1
+
   - Migrated to JacORB 1.2.1
 
   - Changed package for FileDriver, modify xmlBlaster.properties to
