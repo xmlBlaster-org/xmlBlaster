@@ -47,93 +47,109 @@ Attribute VB_Exposed = False
 ' If you forget this the update thread of the java bean will block forever
 '---------------------------------------------------------------------------
 Public Sub XmlScriptAccess_update(ByVal msg As Object)
-   Dim age As String
-   age = msg.getQos().getClientProperty("myAge").getStringValue()
-   log ("SUCCESS: Update arrived: " & msg.getCbSessionId() & _
-           ", oid=" & msg.getKey().getOid() & _
-           ", content=" & msg.getContentStr() & _
-           ", myAge=" & age)
-   MsgBox ("Success, message arrived:" & Str)
-   xmlBlaster.setUpdateReturn ("<qos><state id='OK'/></qos>")
+   On Error GoTo UpdateErrorHandler
+      Dim age As String
+      age = msg.getQos().getClientProperty("myAge").getStringValue()
+      log ("SUCCESS: Update arrived: " & msg.getCbSessionId() & _
+              ", oid=" & msg.getKey().getOid() & _
+              ", content=" & msg.getContentStr() & _
+              ", myAge=" & age)
+      MsgBox ("Success, message arrived:" & Str)
+      xmlBlaster.setUpdateReturn ("<qos><state id='OK'/></qos>")
+   Exit Sub
+UpdateErrorHandler:
+      log (Err.Number & ": " & Err.Description)
+      xmlBlaster.setUpdateException "user.update.internalError", Err.Description
+   Exit Sub
 End Sub
-
 
 '---------------------------------------------------------------------------
 ' Connect to xmlBlaster and try all possible methods
 '---------------------------------------------------------------------------
 Private Sub xmlBlasterDemo()
-   Set xmlBlaster = CreateObject("XmlScriptAccess.Bean")
+   On Error GoTo ErrorHandler
+      Set xmlBlaster = CreateObject("XmlScriptAccess.Bean")
+      
+      Set prop = xmlBlaster.createPropertiesInstance()
+      Rem CallByName(prop, "setProperty", vbLet, "protocol","SOCKET")
+      Rem prop.setProperty("protocol", "SOCKET")
+      Rem prop.setProperty("trace", "false")
+      xmlBlaster.Initialize (prop)
+      
+      Dim argArr(3) As String
+      argArr(0) = "-protocol"
+      argArr(1) = "SOCKET"
+      argArr(2) = "-trace"
+      argArr(3) = "false"
+      xmlBlaster.initArgs (argArr)
+      
+      ' Connect to the server
+      qos = "<qos>" & _
+            "  <securityService type='htpasswd' version='1.0'>" & _
+            "   <![CDATA[" & _
+            "   <user>HelloWorld3</user>" & _
+            "   <passwd>secret</passwd>" & _
+            "   ]]>" & _
+            "  </securityService>" & _
+            "</qos>"
+      Dim connectReturnQos As Object
+      
+      'On Error Resume Next
+      'Err.Raise 99, "Marcel", "Marcels Error"
+      
+      Set connectReturnQos = xmlBlaster.Connect(qos)
+            
+      sessionId = connectReturnQos.getSecretSessionId()
+      log ("Connected to xmlBlaster, sessionId=" & sessionId)
+      
+      ' Publish a message
+      Key = "<key oid='HelloWorld3' contentMime='text/xml'>" & _
+            "  <org.xmlBlaster><demo/></org.xmlBlaster>" & _
+            "</key>"
+      contentStr = "Hi"
+      qos = "<qos>" & _
+            "<clientProperty name='myAge' type='int'>18</clientProperty>" & _
+            "</qos>"
+      Set publishReturnQos = xmlBlaster.publishStr(Key, contentStr, qos)
+      log ("Published message id=" & publishReturnQos.getRcvTimestamp().toXml("", True))
    
-   Set prop = xmlBlaster.createPropertiesInstance()
-   Rem CallByName(prop, "setProperty", vbLet, "protocol","SOCKET")
-   Rem prop.setProperty("protocol", "SOCKET")
-   Rem prop.setProperty("trace", "false")
-   xmlBlaster.Initialize (prop)
+      ' Get synchronous the above message
+      getMsgArr = xmlBlaster.get("<key oid='HelloWorld3'/>", "<qos/>")
+      For Each msg In getMsgArr
+         log ("Get returned:" & msg.toXml())
+      Next
    
-   Dim argArr(3) As String
-   argArr(0) = "-protocol"
-   argArr(1) = "SOCKET"
-   argArr(2) = "-trace"
-   argArr(3) = "false"
-   xmlBlaster.initArgs (argArr)
+      ' Subscribe
+      Set subscribeReturnQos = xmlBlaster.subscribe("<key oid='HelloWorld3'/>", "<qos/>")
+      log ("Got subscribe response:" & subscribeReturnQos.getSubscriptionId())
    
-   ' Connect to the server
-   qos = "<qos>" & _
-         "  <securityService type='htpasswd' version='1.0'>" & _
-         "   <![CDATA[" & _
-         "   <user>HelloWorld3</user>" & _
-         "   <passwd>secret</passwd>" & _
-         "   ]]>" & _
-         "  </securityService>" & _
-         "</qos>"
-   Dim connectReturnQos As Object
-   Set connectReturnQos = xmlBlaster.Connect(qos)
+      Call loopEvents
+      
+      ' Publish again, message arrives asynchronously in
+      ' Sub XmlScriptAccess_update() (see above)
+      Set publishReturnQos = xmlBlaster.publishStr(Key, "Ho", qos)
+      log ("Got publish response:" & publishReturnQos.toXml())
+      
+      Call loopEvents
+            
+      ' UnSubscribe
+      k = "<key oid='" & subscribeReturnQos.getSubscriptionId() & "'/>"
+      unSubscribeReturnQos = xmlBlaster.unSubscribe(k, "<qos/>")
    
-   sessionId = connectReturnQos.getSecretSessionId()
-   log ("Connected to xmlBlaster, sessionId=" & sessionId)
+      ' Destroy the topic "HelloWorld3"
+      eraseReturnQos = xmlBlaster.erase("<key oid='HelloWorld3'/>", "<qos/>")
    
-   ' Publish a message
-   Key = "<key oid='HelloWorld3' contentMime='text/xml'>" & _
-         "  <org.xmlBlaster><demo/></org.xmlBlaster>" & _
-         "</key>"
-   contentStr = "Hi"
-   qos = "<qos>" & _
-         "<clientProperty name='myAge' type='int'>18</clientProperty>" & _
-         "</qos>"
-   Set publishReturnQos = xmlBlaster.publishStr(Key, contentStr, qos)
-   log ("Published message id=" & publishReturnQos.getRcvTimestamp().toXml("", True))
-
-   ' Get synchronous the above message
-   getMsgArr = xmlBlaster.get("<key oid='HelloWorld3'/>", "<qos/>")
-   For Each msg In getMsgArr
-      log ("Get returned:" & msg.toXml())
-   Next
-
-   ' Subscribe
-   Set subscribeReturnQos = xmlBlaster.subscribe("<key oid='HelloWorld3'/>", "<qos/>")
-   log ("Got subscribe response:" & subscribeReturnQos.getSubscriptionId())
-
-   Call loopEvents
+      Call loopEvents
+      
+      xmlBlaster.disconnect ("<qos/>")
+      Set xmlBlaster = Nothing
+      Rem MsgBox ("Hit a key to continue ...")
+   Exit Sub
    
-   ' Publish again, message arrives asynchronously in
-   ' Sub XmlScriptAccess_update() (see above)
-   Set publishReturnQos = xmlBlaster.publishStr(Key, "Ho", qos)
-   log ("Got publish response:" & publishReturnQos.toXml())
-   
-   Call loopEvents
-         
-   ' UnSubscribe
-   k = "<key oid='" & subscribeReturnQos.getSubscriptionId() & "'/>"
-   unSubscribeReturnQos = xmlBlaster.unSubscribe(k, "<qos/>")
-
-   ' Destroy the topic "HelloWorld3"
-   eraseReturnQos = xmlBlaster.erase("<key oid='HelloWorld3'/>", "<qos/>")
-
-   Call loopEvents
-   
-   xmlBlaster.disconnect ("<qos/>")
-   Set xmlBlaster = Nothing
-   Rem MsgBox ("Hit a key to continue ...")
+ErrorHandler:
+   log (Err.Number & ": " & Err.Description)
+   MsgBox ("Error, giving up: " & Err.Description)
+   Exit Sub
 End Sub
 
 Private Sub loopEvents()
@@ -146,10 +162,7 @@ Private Sub log(text)
    Logger.text = Logger.text & vbCrLf & text
 End Sub
 
-Private Sub Form_Load()
-
-End Sub
-
 Private Sub Start_Click()
     Call xmlBlasterDemo
 End Sub
+
