@@ -19,6 +19,7 @@ extern "C" {
 #define XMLBLASTER_MAX_USAGE_LEN 2048 /* Change XmlBlasterAccessUnparsed.c accordingly */
 #define MAX_REQUESTID_LEN 256
 #define MAX_SECRETSESSIONID_LEN 256
+#define MAX_SESSIONID_LEN 256
 
 /* See org.xmlBlaster.util.enum.MethodName.java */
 #define MAX_METHODNAME_LEN 20
@@ -60,23 +61,40 @@ typedef struct XmlBlasterBlobStruct {
    char *data;
 } XmlBlasterBlob;
 
-/* Holds a message */
-/* All member pointers are allocated with malloc(), you need to free() them */
+/** Holds a message
+    All member pointers are allocated with malloc(), you need to free() them */
 typedef struct MsgUnitStruct {
-   char *key;               /* XML formatted ASCII string of message key */
+   const char *key;               /* XML formatted ASCII string of message key */
    size_t contentLen;       /* Number of bytes in content */
-   char *content;           /* Raw data (not 0 terminated) */
-   char *qos;               /* XML formatted ASCII string of Quality of Service */
+   const char *content;           /* Raw data (not 0 terminated) */
+   const char *qos;               /* XML formatted ASCII string of Quality of Service */
    char *responseQos;       /* Used to transport the response QoS string back to caller */
 } MsgUnit;
+/* Note: We use the above 'const' to simplify assignment from C++ like 'msgUnit.key = std::string.c_str() */
 
+/**
+ * Holds an array of Messages
+ */
 typedef struct MsgUnitStructArr {
+   /** Oneway updates are marked with true */
    bool isOneway;
+   /** Authenticate callback messages, this sessionId is returned by xmlBlaster and was initially passed from the client on login */
+   char secretSessionId[MAX_SESSIONID_LEN];
    size_t len;
    MsgUnit *msgUnitArr;
 } MsgUnitArr;
 
-/* Used to transport information back to callback functions */
+/**
+ * Holds an array of QoS XML strings returned by unSubscribe() and erase()
+ */
+typedef struct QosStructArr {
+   size_t len;  /* Number of XML QoS strings */
+   const char **qosArr;
+} QosArr;
+
+/**
+ * Used to transport information back to callback functions
+ */
 typedef struct MsgRequestInfoStruct {
    const char *requestIdStr;
    const char *methodName;
@@ -105,6 +123,8 @@ Dll_Export extern void xmlBlasterFree(char *p);
 Dll_Export extern void freeMsgUnitData(MsgUnit *msgUnit);
 Dll_Export extern void freeMsgUnit(MsgUnit *msgUnit);
 Dll_Export extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
+Dll_Export extern void freeMsgUnitArrInternal(MsgUnitArr *msgUnitArr);
+Dll_Export extern void freeQosArr(QosArr *qosArr);
 Dll_Export extern char *messageUnitToXml(MsgUnit *msg);
 Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
 Dll_Export extern char *strcpyAlloc(const char *src);
