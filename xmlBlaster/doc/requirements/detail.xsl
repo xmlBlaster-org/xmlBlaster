@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.25 2002/12/18 14:42:17 ruff Exp $
+Version:   $Id: detail.xsl,v 1.26 2003/02/04 15:22:40 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -22,6 +22,53 @@ Author:    xmlBlaster@marcelruff.info
 <xsl:output method="html"/>
 
 
+<!-- These are added to tokenize a string i.e. to use it as translate but to be able to replace strings
+     which are longer than just one character
+-->
+
+<xsl:template name="tokenize">
+  <xsl:param name="pat"/><!-- String with record separators inserted -->
+  <xsl:param name="myUrl"/>
+  <xsl:param name="prefix"/>
+  <xsl:param name="postfix"/>
+  <xsl:param name="withNamespace"/>
+  <xsl:choose>
+    <xsl:when test="contains($pat,'::')">
+      <xsl:call-template name="tokenize">
+        <xsl:with-param name="pat" select="substring-after($pat,'::')"/>
+        <xsl:with-param name="myUrl" select="concat($myUrl,substring-before($pat,'::'),'_1_1')"/>
+        <xsl:with-param name="prefix" select="$prefix"/>
+        <xsl:with-param name="postfix" select="$postfix"/>
+        <xsl:with-param name="withNamespace" select="$withNamespace"/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:choose>
+         <xsl:when test="contains($withNamespace,'true')">
+           <xsl:element name="a">
+              <xsl:attribute name="href"><xsl:value-of select="concat($prefix,$myUrl,$pat,$postfix)"/>
+              </xsl:attribute>
+              <xsl:value-of select="$pat"/>
+           </xsl:element>
+    	 </xsl:when>
+         <xsl:otherwise>
+           <xsl:element name="a">
+              <xsl:attribute name="href"><xsl:value-of select="concat($prefix,$pat,$postfix)"/>
+              </xsl:attribute>
+              <xsl:value-of select="$pat"/>
+           </xsl:element>
+         </xsl:otherwise>
+       </xsl:choose>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+
+
+
+
+
+
 <!-- Create the HTML output for one requirement -->
 <xsl:template match="requirement">
    <html>
@@ -35,7 +82,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/12/18 14:42:17 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2003/02/04 15:22:40 $ $Author: laghi $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -143,14 +190,30 @@ Author:    xmlBlaster@marcelruff.info
       <xsl:for-each select="see">
          <tr>
             <xsl:if test="@type='API'">
-               <td class="reqId">See API</td>
-               <td>
-               <a>
-                  <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
-                  <xsl:value-of select="."/>
-               </a>
-               </td>
+              <xsl:choose>
+                <xsl:when test="@lang='CPP'">
+                  <td class="reqId">See API</td>
+                  <td>
+                    <xsl:call-template name="tokenize">
+                      <xsl:with-param name="pat" select="."/>
+                      <xsl:with-param name="prefix" select="'../doxygen/c++/class'"/>
+                      <xsl:with-param name="postfix" select="'.html'"/>
+                      <xsl:with-param name="withNamespace" select="'true'"/>
+                    </xsl:call-template>
+                  </td>
+   	        </xsl:when>
+   	        <xsl:otherwise>
+                  <td class="reqId">See API</td>
+                  <td>
+                  <a>
+                     <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
+                     <xsl:value-of select="."/>
+                  </a>
+                  </td>
+                </xsl:otherwise>
+              </xsl:choose>
             </xsl:if>
+
 
             <xsl:if test="@type='REQ'">
                <td class="reqId">See REQ</td>
@@ -188,7 +251,27 @@ Author:    xmlBlaster@marcelruff.info
                </td>
             </xsl:if>
 
+            <xsl:if test="@type='CODE'">
+               <td class="reqId">See CODE</td>
+               <td>
+                 <xsl:if test="@lang='CPP'">
+                    <xsl:call-template name="tokenize">
+                      <xsl:with-param name="pat" select="."/>
+                      <xsl:with-param name="prefix" select="'../doxygen/c++/'"/>
+                      <xsl:with-param name="postfix" select="'_8cpp-source.html'"/>
+                      <xsl:with-param name="withNamespace" select="'false'"/>
+                    </xsl:call-template>
+                 </xsl:if>
 
+                 <xsl:if test="@lang='Java'">
+                  <a>
+                     <xsl:attribute name="href">../../src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>
+                     <xsl:value-of select="."/>
+                  </a>
+                 </xsl:if>
+
+               </td>
+            </xsl:if>
          </tr>
       </xsl:for-each>
 

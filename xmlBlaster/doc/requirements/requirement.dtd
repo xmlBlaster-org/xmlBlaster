@@ -87,7 +87,8 @@ Comment:   Validates xml requirements
    Example: (don't give any extensions)
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
  -->
-<!ATTLIST see type (API | REQ | OTHER | INTERNET | LOCAL) "API">
+<!ATTLIST see type (API | REQ | OTHER | INTERNET | LOCAL | CODE) "API"
+              lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript | XmlRpc) "Java">
 
 <!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">
 

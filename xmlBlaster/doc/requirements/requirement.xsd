@@ -129,6 +129,23 @@
                   <xsd:enumeration value="OTHER"/>
                   <xsd:enumeration value="INTERNET"/>
                   <xsd:enumeration value="LOCAL"/>
+                  <xsd:enumeration value="CODE"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+         <xsd:attribute name="lang" use="default" value="Java">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="any"/>
+                  <xsd:enumeration value="XML"/>
+                  <xsd:enumeration value="Java"/>
+                  <xsd:enumeration value="C"/>
+                  <xsd:enumeration value="CPP"/>
+                  <xsd:enumeration value="Perl"/>
+                  <xsd:enumeration value="Python"/>
+                  <xsd:enumeration value="TCL"/>
+                  <xsd:enumeration value="Javascript"/>
+                  <xsd:enumeration value="XmlRpc"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
