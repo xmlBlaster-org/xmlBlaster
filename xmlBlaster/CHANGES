@@ -78,6 +78,7 @@ Changes cvs
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - Added zlib:stream compression support
    - Added C client API documentation with doxygen, see
      http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/index.html
    - Changed 'ExceptionStruct: bool remote;' to type 'int' to have 4 byte struct alignment
@@ -90,6 +91,7 @@ Changes cvs
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Added zlib:stream compression support with via C SOCKET protocol plugin
    - Incompatible API change (the compiler will tell you everything - no risk!): 
       o 'class Destination' constructor expects now the new SessionName instead of SessionQos
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
