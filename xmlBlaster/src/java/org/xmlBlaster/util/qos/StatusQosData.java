@@ -24,14 +24,14 @@ import org.xmlBlaster.engine.helper.Constants;
  * </p>
  * @see org.xmlBlaster.util.qos.StatusQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
-public final class StatusQosData implements java.io.Serializable
+public final class StatusQosData implements java.io.Serializable, Cloneable
 {
    private String ME = "StatusQosData";
    private transient final Global glob;
    private transient final I_StatusQosFactory factory;
-   private final String serialData;
+   private transient final String serialData;
 
    /** the state of the message, defaults to "OK" if no state is returned */
    private String state = Constants.STATE_OK;
@@ -178,6 +178,13 @@ public final class StatusQosData implements java.io.Serializable
    }
 
    /**
+    * The size in bytes of the data in XML form. 
+    */
+   public int size() {
+      return toXml().length();
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of the status as a XML ASCII string
@@ -203,4 +210,17 @@ public final class StatusQosData implements java.io.Serializable
       return org.xmlBlaster.util.qos.StatusQosSaxFactory.writeObject_(state, stateInfo, subscriptionId, keyOid, null);
    }
    */
+
+   /**
+    * Returns a shallow clone, you can change savely all basic or immutable types
+    * like boolean, String, int.
+    */
+   public Object clone() {
+      try {
+         return super.clone();
+      }
+      catch (CloneNotSupportedException e) {
+         return null;
+      }
+   }
 }
