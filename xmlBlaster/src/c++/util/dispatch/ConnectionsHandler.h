@@ -54,7 +54,7 @@ private:
    enum States             status_;
    Global&                 global_;
    Log&                    log_;
-   Mutex                   connectionMutex_;
+//   Mutex                   connectionMutex_;
    int                     retries_;
    int                     currentRetry_;
    Timestamp               timestamp_;

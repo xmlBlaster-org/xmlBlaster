@@ -24,8 +24,8 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
      deliveryManager_(deliveryManager), 
      status_(START), 
      global_(global), 
-     log_(global.getLog("dispatch")),
-     connectionMutex_()
+     log_(global.getLog("dispatch"))
+//     connectionMutex_()
 {
    QueueProperty prop(global_, "");
    adminQueue_ = new MsgQueue(global, prop);
@@ -44,12 +44,12 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
 ConnectionsHandler::~ConnectionsHandler()
 {
    if (timestamp_ != 0) {
-      Lock lock(connectionMutex_);
+//      Lock lock(connectionMutex_);
       global_.getPingTimer().removeTimeoutListener(timestamp_);
       timestamp_ = 0;
    }
    if ( queue_ ) {
-      Lock lock(connectionMutex_);
+//      Lock lock(connectionMutex_);
       delete queue_;
       queue_ = NULL;
    }
@@ -66,7 +66,7 @@ ConnectionsHandler::~ConnectionsHandler()
 
 ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 {
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
    if (log_.CALL) log_.call(ME, "::connect");
    if (connectQos_) {
       delete connectQos_;
@@ -108,7 +108,7 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
 {
    if (log_.CALL) log_.call(ME, "disconnect");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "disconnect");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "disconnect");
@@ -159,7 +159,7 @@ bool ConnectionsHandler::isLoggedIn()
 
 string ConnectionsHandler::ping(const string& qos)
 {
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
    return connection_->ping(qos);
 }
 
@@ -167,7 +167,7 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
 {
    if (log_.CALL) log_.call(ME, "subscribe");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "subscribe");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "subscribe");
@@ -207,7 +207,7 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
 {
    if (log_.CALL) log_.call(ME, "get");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "get");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "get");
@@ -227,7 +227,7 @@ vector<UnSubscribeReturnQos>
 {
    if (log_.CALL) log_.call(ME, "unSubscribe");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "unSubscribe");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "unSubscribe");
@@ -249,7 +249,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 {
    if (log_.CALL) log_.call(ME, "publish");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publish");
    if (status_ == POLLING) return queuePublish(msgUnit);
@@ -272,7 +272,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
    if (log_.CALL) log_.call(ME, "publishOneway");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishOneway");
    if (status_ == POLLING) {
@@ -297,7 +297,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 {
    if (log_.CALL) log_.call(ME, "publishArr");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishArr");
    if (status_ == POLLING) {
@@ -329,7 +329,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
 {
    if (log_.CALL) log_.call(ME, "erase");
 
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "erase");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "erase");
@@ -346,7 +346,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
 
 void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 {
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
    connectionProblems_ = connectionProblems;
 }
 
@@ -372,7 +372,7 @@ void ConnectionsHandler::toPollingOrDead()
       log_.warn(ME, "exception when trying to disconnect");
    }
    */
-   connection_->shutdown();
+//   connection_->shutdown();
    if (connectionProblems_) connectionProblems_->toPolling();
    startPinger();
 }
@@ -380,7 +380,7 @@ void ConnectionsHandler::toPollingOrDead()
 
 void ConnectionsHandler::timeout(void *userData)
 {
-  Lock lock(connectionMutex_);
+//  Lock lock(connectionMutex_);
   pingIsStarted_ = false;
   timestamp_ = 0;
   if ( log_.CALL ) log_.call(ME, "ping timeout occured");
@@ -487,7 +487,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 long ConnectionsHandler::flushQueue()
 {
    if (log_.CALL) log_.call(ME, "flushQueue");
-   Lock lock(connectionMutex_);
+//   Lock lock(connectionMutex_);
    return flushQueueUnlocked(queue_, true);
 }  
 

@@ -10,11 +10,13 @@ Comment:   Encapsulates (and hides) threads
 #include <boost/thread/condition.hpp>
 #include <boost/thread/xtime.hpp>
 
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadBase.h>
 #include <util/Constants.h>
 #include <util/Global.h>
 
-namespace org { namespace xmlBlaster { namespace util { namespace thread {
+// namespace org { namespace xmlBlaster { namespace util { namespace thread {
+using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util;
 
 /*
 typedef boost::thread             ThreadImpl; 
@@ -22,6 +24,8 @@ typedef boost::mutex              MutexImpl;
 typedef boost::mutex::scoped_lock LockImpl;
 typedef boost::condition          ConditionImpl;
 */
+
+namespace org { namespace xmlBlaster { namespace util { namespace thread {
 
 struct ThreadImpl : public boost::thread {
    explicit ThreadImpl(const boost::function0<void>& threadfunc) : boost::thread(threadfunc) {}
@@ -33,6 +37,9 @@ struct LockImpl : public boost::mutex::scoped_lock {
 };
 struct ConditionImpl : public boost::condition {
 };
+
+}}}}
+
 
 // ----------------------------- ThreadRunner ----------------------------
 
@@ -108,14 +115,14 @@ Timestamp Thread::getCurrentTimestamp()
 
 
 
-// ----------------------------- Mutex ----------------------------------
+// ----------------------------- MutexClass ----------------------------------
 
-Mutex::Mutex() 
+MutexClass::MutexClass() 
 {
    mutex_ = new MutexImpl();
 }
 
-Mutex::~Mutex() 
+MutexClass::~MutexClass() 
 {
    delete mutex_;
 }
@@ -123,7 +130,7 @@ Mutex::~Mutex()
 
 // ----------------------------- Lock ------------------------------------
 
-Lock::Lock(const Mutex& mutex)
+Lock::Lock(const MutexClass& mutex)
 {
    lock_ = new LockImpl(*(mutex.mutex_));
 }
@@ -164,7 +171,7 @@ void Condition::notify()
 }
 
 
-}}}} // namespaces
+// }}}} // namespaces
 
 
 #ifdef _XMLBLASTER_CLASSTEST
@@ -182,7 +189,7 @@ private:
 public:
    static int staticRef;
    static int staticRef2;
-   static Mutex mutex;
+   static MutexClass mutex;
    static Condition condition;
 
    SimpleThread()
@@ -195,18 +202,18 @@ public:
    {
       for (int i=0; i < 5; i++) {
          cout << "thread nr. '" + lexical_cast<string>(ref_) << " sweep number " << lexical_cast<string>(i) << " static ref is: " << lexical_cast<string>(staticRef2) << endl;
-	 sleep(10);
-	 staticRef2++;
-	 sleep(990);
+         sleep(10);
+         staticRef2++;
+         sleep(990);
       }
       for (int i=0; i < 5; i++) {
          { 
-	    Lock lock(mutex);
+            Lock lock(mutex);
             cout << "thread nr. '" + lexical_cast<string>(ref_) << " sweep number " << lexical_cast<string>(i) << " static ref is: " << lexical_cast<string>(staticRef2) << endl;
-   	    sleep(10);
-	    staticRef2++;
+            sleep(10);
+            staticRef2++;
          }
-	 sleep(990);
+         sleep(990);
       }
    }
 
@@ -214,7 +221,7 @@ public:
 
 int SimpleThread::staticRef  = 0;
 int SimpleThread::staticRef2 = 0;
-Mutex SimpleThread::mutex;
+MutexClass SimpleThread::mutex;
 Condition SimpleThread::condition;
 
 int main()

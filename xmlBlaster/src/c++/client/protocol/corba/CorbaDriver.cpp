@@ -118,12 +118,12 @@ CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName
    static Mutex mutex;
    static bool  isRunning = false;
    static bool  doRun     = false;
-//	 Lock lock(mutex);
+//       Lock lock(mutex);
    CorbaDriver*  driver = NULL;
    DriverMap& driverMap = CorbaDriver::getDrivers();
    DriverMap::iterator iter = driverMap.find(instanceName);
    if (iter == driverMap.end()) {
-      driver = new CorbaDriver(global, mutex, doRun, isRunning, false);
+      driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, false);
       driverMap.insert(DriverMap::value_type(instanceName, driver));
       if (!isRunning) driver->start();
    }
@@ -141,7 +141,7 @@ int CorbaDriver::killInstance(const string& instanceName)
       bool doRestartThread = false;
       if (iter == driverMap.begin()) { // then it is the one which has the running thread
          doRestartThread = true;
-   	     while ( (*iter).second->isRunning_) { // wait until it really has stopped
+             while ( (*iter).second->isRunning_) { // wait until it really has stopped
             Thread::sleep(10);
          }
       }
@@ -166,6 +166,7 @@ void CorbaDriver::run()
    while (doRun_) {
       {
          Lock lock(mutex_);
+         log_.trace(ME, "perform work");
          connection_->orbPerformWork();
       }
       sleep(20); // sleep 20 milliseconds
@@ -175,12 +176,12 @@ void CorbaDriver::run()
 }
 
 
-CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, bool connectionOwner)
+CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner)
    : doRun_(doRun),
      isRunning_(isRunning),
      mutex_(mutex),
      count_(0),
-     ME("CorbaDriver"), 
+     ME(string("CorbaDriver-") + instanceName), 
      global_(global), 
      log_(global.getLog("client")),
      statusQosFactory_(global), 

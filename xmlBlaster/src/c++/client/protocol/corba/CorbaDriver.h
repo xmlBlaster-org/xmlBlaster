@@ -75,7 +75,7 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
-      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, bool connectionOwner = false);
+      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner = false);
 
 //      CorbaDriver();
 
