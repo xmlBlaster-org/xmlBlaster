@@ -72,7 +72,7 @@ function PublishKeyWrapperToXml()
    str += ">\n";
    str += this.clientTags;
    str += "\n</key>";
-   Log.info(str);
+   if (Log.INFO) Log.info(str);
    return str;
 }
 function PublishKeyWrapperWrap(tags)
@@ -218,7 +218,7 @@ function FrameMessageQueue( frameHandle )
  */
 function queue_( message )
 {
-   Log.trace("Queueing message oid='"+message.key.oid+"' in queue "+this.frame.name + ", is msg-no=" + this.messageQueue.length);
+   if (Log.TRACE) Log.trace("Queueing message oid='"+message.key.oid+"' in queue "+this.frame.name + ", is msg-no=" + this.messageQueue.length);
    this.messageQueue[this.messageQueue.length] = message;
 
    if( !queueing ) {
@@ -260,7 +260,7 @@ function sendMessageQueue(queueName)
 
    if( fmq.ready ) {
       if( fmq.frame.update != null ) {
-         Log.trace("Frame "+fmq.frame.name+" is ready, sending update ...");
+         if (Log.TRACE) Log.trace("Frame "+fmq.frame.name+" is ready, sending update ...");
          fmq.frame.update( fmq.messageQueue );
          if (Log.TRACE) {
             var str = "Update:<br />";
@@ -320,14 +320,14 @@ function setReady( frame, ready )
  */
 function addUpdateListener( listenerFrame )
 {
-   Log.trace("Adding frame '" + listenerFrame.name + "' as update-listener");
+   if (Log.TRACE) Log.trace("Adding frame '" + listenerFrame.name + "' as update-listener");
    if(listenerFrame.update==null) {
       return;
    }
 
    for( i = 0; i < listenerList.length;) {
       if (listenerList[i].frame.closed ) {
-         Log.warning("Frame has been closed, removing it ...");
+         if (Log.INFO) Log.info("Frame '" + listenerList[i].frame.name + "' has been closed, removing it ...");
          removeUpdateListenerAtPos( i );
          continue;
       }
@@ -421,14 +421,14 @@ function fireMessageUpdateEvent( message )
 {
    for( var i = 0; i < listenerList.length;  ) {
       if (listenerList[i].frame.closed ) {
-         Log.warning("Frame has been closed, removing it ...");
+         if (Log.INFO) Log.info("Frame '" + listenerList[i].frame.name + "' has been closed, removing it. No message fired.");
          removeUpdateListenerAtPos( i );
          continue;
       }
       i++;
    }
 
-   Log.trace(getListeners());
+   if (Log.TRACE) Log.trace(getListeners());
 
    for( var i = 0; i < listenerList.length; i++ ) {
       listenerList[i].queue( message );
@@ -451,7 +451,7 @@ function update( updateKey, content, updateQoS)
       Log.error("Wrong type '" + type + "' of update xmlKey, callback ignored");
       return;
    }
-   Log.trace("Update coming in, updateKey="+updateKey.toString());
+   if (Log.TRACE) Log.trace("Update coming in, updateKey="+updateKey.toString());
 
    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
    var content_d   = unescape( content.replace(/\+/g, " ") );
@@ -460,7 +460,7 @@ function update( updateKey, content, updateQoS)
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);
 
-   Log.trace("Update coming in key.oid="+key.oid);
+   if (Log.TRACE) Log.trace("Update coming in key.oid="+key.oid);
    if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {
       alert("Exception:\n\n"+content_d );
    }
@@ -477,7 +477,7 @@ function update( updateKey, content, updateQoS)
 function message(msg)
 {
    var decoded = unescape( msg.replace(/\+/g, " ") );
-   Log.info(decoded);
+   if (Log.INFO) Log.info(decoded);
    alert( decoded );
 }
 
