@@ -3,7 +3,7 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.7 2002/09/02 08:29:18 kkrafft2 Exp $
+Version:   $Id: SoapDriver.java,v 1.8 2002/09/06 20:37:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
@@ -46,6 +46,7 @@ import java.io.File;
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.soap.html">The protocol.soap requirement</a>
  */
 public class SoapDriver implements I_Driver
 {
