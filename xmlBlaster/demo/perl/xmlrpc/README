@@ -16,6 +16,8 @@ Required libraries :
       Look at CPAN for this package or
       http://bitsko.slc.ut.us/~ken/xml-rpc/
       (Frontier-RPC-0.07b4.tar.gz)
+      cpan Frontier::Daemon
+      (cpan Frontier::Daemon::Forking)
 -------------------------------------------------------------------
 
 -------------------------------------------------------------------
@@ -111,6 +113,18 @@ with all allowed server-methods you can invoke.
 
 -------------------------------------------------------------------
 CHANGES :
+
+2004-08-30 Jason Martin <jhmartin@toger.us>
+   * Print out Header / Messages / Qos of update messages.
+   * Add a retries and delay option to the subscribe/callback tag to reduce
+     the chance xmlblaster will attempt to ping the callback server
+     before it is created and thus unsubscribe it.
+   * Add ReuseAddr => 1 to the Frontier::Daemon invocation to
+     prevent "Address already in use" errors due to TIME_WAIT's when
+     the script is killed and restarted quickly.
+   * Print out an error message if the xmlrpc server does not start
+     properly.
+   * Add commenting for the above.
 
 2002-07-08 cyrille@ktaland.com
         - put xmlBlaster's perl packages in a folder
