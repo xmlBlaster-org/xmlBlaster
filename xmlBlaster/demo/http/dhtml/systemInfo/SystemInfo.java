@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.4 2001/12/16 20:32:45 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.5 2001/12/17 16:42:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
@@ -30,13 +30,13 @@ import java.io.*;
  * This servlets subscribes to messages in xmlBlaster, which are requested
  * from the browser, currently 'cpuinfo' and 'meminfo' messages.<br />
  * You see in your browser two bars displaying the current load of the
- * xmlBlaster.org web server.
+ * xmlBlaster.org web server.<br />
+ * Inside the browser the bars are updated with DHTML.
  * <p />
  * If you want to do something similar, you can use this as a base
  * for your application.
  * <p />
- * With Apache/Jserv add this line to zone.properties:<br />
- *   <code>servlet.SystemInfo.code=html.systemInfo.SystemInfo</code>
+ * See xmlBlaster/demo/http/README for further informations
  */
 public class SystemInfo extends HttpServlet
 {
