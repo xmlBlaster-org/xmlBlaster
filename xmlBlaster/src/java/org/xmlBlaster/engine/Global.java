@@ -49,6 +49,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private ClusterManager clusterManager;
    private Timeout sessionTimer;
    private Timeout topicTimer;
+   private Timeout telnetSessionTimer;
 
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
@@ -75,6 +76,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (topicTimer != null) {
          topicTimer.shutdown();
          topicTimer = null;
+      }
+      if (telnetSessionTimer != null) {
+         telnetSessionTimer.shutdown();
+         telnetSessionTimer = null;
       }
    }
 
@@ -372,6 +377,35 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
+    * Access the handle of the TopicHandler timer thread.
+    * @return The Timeout instance
+    */
+   public final Timeout getTelnetSessionTimer() {
+      if (this.telnetSessionTimer == null) {
+         synchronized(this) {
+            if (this.telnetSessionTimer == null)
+               this.telnetSessionTimer = new Timeout("XmlBlaster.TelnetSessionTimer");
+         }
+      }
+      return this.telnetSessionTimer;
+   }
+
+   public final boolean hasTelnetSessionTimer() {
+      return this.telnetSessionTimer != null;
+   }
+
+   public final void removeTelnetSessionTimer() {
+      if (this.telnetSessionTimer != null) {
+         synchronized(this) {
+            if (this.telnetSessionTimer != null) {
+              this.telnetSessionTimer.shutdown(); 
+              this.telnetSessionTimer = null;
+            }
+         }
+      }
+   }
+
+   /**
     * The factory creating queue or msgUnitStore entries from persistent store.
     * Is derived from util.Global
     * @param name A name identifying this plugin.
@@ -561,6 +595,15 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       }
       sb.append(offset).append("</xmlBlaster>");
       return sb.toString();
+   }
+
+   /**
+    * Check where we are, on client or on server side?
+    * util.Global returns false
+    * @return true As we are engine.Global and running server side
+    */
+   public boolean isServer() {
+      return true;
    }
 
    /**
