@@ -362,7 +362,7 @@ void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exc
  */
 QosArr *parseQosArr(size_t dataLen, char *data)
 {
-   int ii;
+   size_t ii;
    MsgUnitArr *msgUnitArr = parseMsgUnitArr(dataLen, data);
    QosArr* qosArr = (QosArr *)calloc(1, sizeof(QosArr));
    qosArr->len = msgUnitArr->len;

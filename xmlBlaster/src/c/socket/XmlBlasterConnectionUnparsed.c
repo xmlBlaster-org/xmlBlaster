@@ -733,7 +733,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) {
-      int ii;
+      size_t ii;
       for (ii=0; ii<response->len; ii++) {
          xb->log(xb->logLevel, LOG_TRACE, __FILE__,
             "Got response for unSubscribe(): %s", response->qosArr[ii]);
@@ -795,7 +795,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) {
-      int ii;
+      size_t ii;
       for (ii=0; ii<response->len; ii++) {
          xb->log(xb->logLevel, LOG_TRACE, __FILE__,
             "Got response for erase(): %s", response->qosArr[ii]);

@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.20 2004/01/14 14:34:06 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.21 2004/01/14 22:41:25 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.20 2004/01/14 14:34:06 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.21 2004/01/14 22:41:25 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -280,7 +280,7 @@ Dll_Export void freeQosArr(QosArr *qosArr)
    for (i=0; i<qosArr->len; i++) {
       free((char *)qosArr->qosArr[i]);
    }
-   free(qosArr->qosArr);
+   free((char *)qosArr->qosArr);
    qosArr->len = 0;
    free(qosArr);
 }
