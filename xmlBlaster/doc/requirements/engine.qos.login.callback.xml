@@ -22,9 +22,9 @@
       Other scheduled protocols are "EMAIL" or "XML-RPC".<br />
       </p>
       <p>
-      Further protocols may be plugged into xmlBlaster very easy - 
+      Further protocols may be plugged into xmlBlaster very easy -
       you only need to implement the interface I_CallbackDriver.java
-      with your protocol driver and register it in ClientInfo.java.
+      with your protocol driver and register it in xmlBlaster.properties<br />
       </p>
       <p>
       You can specify zero to many callbacks for one single client,
@@ -49,7 +49,7 @@
                                         to receive the updates -->
             http:/www.mars.universe:8080/RPC2
          </callback>
-      
+
       </qos>
 
 
@@ -88,9 +88,10 @@
       // testsuite/c++/clientPOA.cc
       ]]>
    </example>
+   <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
