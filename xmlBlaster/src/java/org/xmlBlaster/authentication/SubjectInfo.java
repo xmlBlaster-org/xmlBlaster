@@ -3,7 +3,7 @@ Name:      SubjectInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -12,7 +12,6 @@ import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
@@ -21,14 +20,16 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryStatistic;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 
@@ -47,7 +48,7 @@ import java.util.Collections;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class SubjectInfo implements I_AdminSubject
 {
@@ -79,7 +80,7 @@ public class SubjectInfo implements I_AdminSubject
 
 
    /**
-    * All MessageUnit which can't be delivered to the client (if he is not logged in)
+    * All MsgUnit which can't be delivered to the client (if he is not logged in)
     * are queued here and are delivered when the client comes on line.
     * <p>
     * Node objects = MsgQueueEntry
@@ -149,7 +150,8 @@ public class SubjectInfo implements I_AdminSubject
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       String type = prop.getType();
       String version = prop.getVersion();
-      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version, "cb:-"+this.subjectName.getAbsoluteName(), prop);
+      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId("cb", this.subjectName.getAbsoluteName()), prop);
+      this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
@@ -285,26 +287,25 @@ public class SubjectInfo implements I_AdminSubject
 
    /**
     * PtP mode: If the qos is set to forceQueuing the message is queued.
-    * @param msgUnitWrapper Wraps the msgUnit with some more infos
+    * @param msgUnit The message
     * @param destination The Destination object of the receiver
     */
-   public final void queueMessage(MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "queuing message");
-      if (msgUnitWrapper == null) {
+      /*
+      if (msgUnit == null) {
          log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
       }
 
-      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnitWrapper.getMessageUnit(),
-         subjectQueue, msgUnitWrapper.getUniqueKey(), msgUnitWrapper.getPublishQos().getData(),
-         getSubjectName());
-
+      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnit, this.subjectQueue, getSubjectName());
+      */
       if (log.DUMP) log.dump(ME, "Putting PtP message to queue: " + entry.toXml(""));
 
       int countForwarded = forwardToSessionQueue(entry);
 
       if (countForwarded == 0) {
-         log.warn(ME, "No login session available, queueing message '" + msgUnitWrapper.getUniqueKey() + "'");
+         log.warn(ME, "No login session available, queueing message '" + entry.getLogId() + "'");
          try {
             this.subjectQueue.put(entry, false);
             forwardToSessionQueue();
@@ -573,21 +574,20 @@ public class SubjectInfo implements I_AdminSubject
     */
    public final String toXml(String extraOffset) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SubjectInfo id='").append(this.subjectName.getAbsoluteName()).append("'>");
       if (isShutdown) {
-         sb.append(offset).append("   <isShutdown/>");
+         sb.append(offset).append(" <isShutdown/>");
       }
       else {
-         sb.append(offset).append("   <subjectId>").append(getLoginName()).append("</subjectId>");
-         sb.append(subjectQueue.toXml(extraOffset+"   "));
+         sb.append(offset).append(" <subjectId>").append(getLoginName()).append("</subjectId>");
+         sb.append(subjectQueue.toXml(extraOffset+Constants.INDENT));
          SessionInfo[] sessions = getSessions();
          for (int i=0; i<sessions.length; i++) {
             SessionInfo sessionInfo = sessions[i];
-            sb.append(sessionInfo.toXml(extraOffset+"   "));
+            sb.append(sessionInfo.toXml(extraOffset+Constants.INDENT));
          }
       }
       sb.append(offset).append("</SubjectInfo>");
