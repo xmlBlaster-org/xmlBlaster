@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.30 2000/06/29 10:52:24 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.31 2000/07/11 13:59:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -175,6 +175,7 @@ public class HttpPushHandler
    {
       try {
          setClosed(true);
+         setBrowserIsReady(false);
 
          if (handlesMultipart) {
             outMulti.close();
@@ -184,7 +185,6 @@ public class HttpPushHandler
          }
 
          pingThread.stopThread();
-         pingThread.join(1); // pingThread should die in one millisecond
          Log.info(ME, "Closed push connection to browser");
       }
       catch(Exception e) {
@@ -242,6 +242,8 @@ public class HttpPushHandler
     */
    public void setBrowserIsReady(boolean ready)
    {
+      if (closed()) { this.browserIsReady=false; return; }
+
       this.browserIsReady = ready;
       if (Log.TRACE) Log.trace(ME, "Setting browserReady=" + browserIsReady);
 
@@ -294,6 +296,7 @@ public class HttpPushHandler
     */
    public void push(String str, boolean confirm) throws ServletException, IOException
    {
+      if (closed()) return;
       synchronized(pushQueue) {
          pushQueue.addElement( str );
          pushToBrowser(confirm);
@@ -301,6 +304,7 @@ public class HttpPushHandler
    }
    public void push(String str) throws ServletException, IOException
    {
+      if (closed()) return;
       synchronized(pushQueue) {
          pushQueue.addElement( str );
          pushToBrowser(true);
@@ -314,6 +318,7 @@ public class HttpPushHandler
    private void pushToBrowser(boolean confirm) throws ServletException, IOException
    {
       if (Log.CALLS) Log.calls(ME, "Entering pushToBrowser() ...");
+
       synchronized(pushQueue) {
          if(pushQueue.size() == 0)
             return;
@@ -507,6 +512,7 @@ public class HttpPushHandler
     */
    public void pong()
    {
+      if (closed()) return;
       if (pingThread != null) pingThread.pong();
    }
 

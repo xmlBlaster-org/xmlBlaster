@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.61 2000/07/06 16:34:12 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.62 2000/07/11 13:59:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.61 $
+ * @version $Revision: 1.62 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -232,7 +232,7 @@ public class CorbaConnection implements I_InvocationRecorder
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
     */
-   public void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
+   public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
       if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
       this.clientCallback = connCallback;
@@ -497,7 +497,7 @@ public class CorbaConnection implements I_InvocationRecorder
     * @param client    Your implementation of I_Callback, or null if you don't want any.
     * @exception       XmlBlasterException if login fails
     */
-   public Server login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
+   public synchronized Server login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
       if (xmlBlaster != null) {
@@ -633,7 +633,7 @@ public class CorbaConnection implements I_InvocationRecorder
     * @return true successfully logged out
     *         false failure on logout
     */
-   public boolean logout()
+   public synchronized boolean logout()
    {
       if (Log.CALLS) Log.calls(ME, "logout() ...");
 

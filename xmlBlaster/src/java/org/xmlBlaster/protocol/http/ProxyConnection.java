@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.21 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.22 2000/07/11 13:59:48 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -47,12 +47,12 @@ public class ProxyConnection implements I_Callback
    private final String loginName;
    private final String passwd;
    private CorbaConnection corbaConnection = null;
-   private Hashtable httpConnections       = null;
+   private Hashtable httpConnections       = new Hashtable(); // must be always != null
    private I_ProxyInterceptor interceptor  = null;
 
 
    /**
-    **/
+    */
    public ProxyConnection(String loginName, String passwd) throws XmlBlasterException
    {
       this.loginName = loginName;
@@ -68,7 +68,6 @@ public class ProxyConnection implements I_Callback
       // initFailSave() ???
 
       corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
-      httpConnections = new Hashtable();
    }
 
    /**
@@ -100,8 +99,10 @@ public class ProxyConnection implements I_Callback
       }
 
       Log.trace(ME, "Update of "+httpConnections.size()+" http connections.");
-      for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
-        ((HttpPushHandler)e.nextElement()).update( s_arr[0], s_arr[1], s_arr[2] );
+      synchronized(httpConnections) {
+         for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
+           ((HttpPushHandler)e.nextElement()).update( s_arr[0], s_arr[1], s_arr[2] );
+      }
    }
 
    /**
@@ -111,19 +112,19 @@ public class ProxyConnection implements I_Callback
    {
       if (Log.CALLS) Log.calls(ME, "Entering cleanup() ...");
 
-      BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
 
-      // Logout from xmlBlaster
-      if (corbaConnection != null) {
-         corbaConnection.logout();
-         Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' removed");
-         corbaConnection = null;
-      }
+      synchronized(httpConnections) {
+         // Logout from xmlBlaster
+         if (corbaConnection != null) {
+            BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
+            corbaConnection.logout();
+            Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' removed");
+            corbaConnection = null;
+         }
 
-      // Disconnect from browsers
-      if (httpConnections != null) {
+         // Disconnect from browsers
          for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
-           ((HttpPushHandler)e.nextElement()).deinitialize();
+            ((HttpPushHandler)e.nextElement()).deinitialize();
          httpConnections.clear();
       }
    }
@@ -137,25 +138,27 @@ public class ProxyConnection implements I_Callback
     */
    public void cleanup(String sessionId)
    {
-      BlasterHttpProxy.cleanupBySessionId(sessionId);
-      HttpPushHandler ph = getHttpPushHandler(sessionId);
-      if (ph == null) {
-         // No error, may be invoked multiple times (e.g. form servlet and pingThread)
-         Log.trace(ME, "Can't cleanup browser connection, your sessionId " + sessionId + " is unknown");
-         return;
-      }
+      if (sessionId == null) return;
 
-      // Disconnect from browser
-      ph.deinitialize();
-      removeHttpPushHandler(sessionId, ph);
+      synchronized(httpConnections) {
+         HttpPushHandler ph = (HttpPushHandler)httpConnections.remove(sessionId);
+         if (ph == null) {
+            // No error, may be invoked multiple times (e.g. form servlet and pingThread)
+            Log.trace(ME, "Can't cleanup browser connection, your sessionId " + sessionId + " is unknown");
+            return;
+         }
 
-      if (httpConnections.isEmpty()) {
-         // Logout from xmlBlaster if no browser uses this connection anymore
-         if (corbaConnection != null) {
-            BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
-            Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
-            corbaConnection.logout();
-            corbaConnection = null;
+         // Disconnect from browser
+         ph.deinitialize();
+
+         if (httpConnections.isEmpty()) {
+            // Logout from xmlBlaster if no browser uses this connection anymore
+            if (corbaConnection != null) {
+               BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
+               corbaConnection.logout();
+               Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
+               corbaConnection = null;
+            }
          }
       }
       Log.info(ME, "Browser connection with sessionId=" + sessionId + " removed");
@@ -174,27 +177,32 @@ public class ProxyConnection implements I_Callback
    /**
     * The HttpPushHandler handles and hides the persistent connection to the browser.
     */
-   public void addHttpPushHandler( String sessionId, HttpPushHandler pushHandler )
+   public void addHttpPushHandler( String sessionId, HttpPushHandler pushHandler ) throws XmlBlasterException
    {
-      if( sessionId == null || pushHandler == null )
+      if( sessionId == null || pushHandler == null ) {
          Log.warning(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
-      httpConnections.put( sessionId, pushHandler );
-   }
-   public void removeHttpPushHandler( String sessionId, HttpPushHandler pushHandler )
-   {
-      HttpPushHandler ph = getHttpPushHandler(sessionId);
-      if( pushHandler == ph )
-        httpConnections.remove( sessionId );
-      // otherwise the PusHandler may be overwritten by an old one
+         throw new XmlBlasterException(ME, "You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
+      }
+
+      synchronized(httpConnections) {
+         httpConnections.put( sessionId, pushHandler );
+      }
    }
 
    /**
-    * @return The HttpPushHandler object or null if not found
+    * @return The HttpPushHandler object or exception if not found
     */
-   public final HttpPushHandler getHttpPushHandler( String sessionId )
+   public final HttpPushHandler getHttpPushHandler( String sessionId ) throws XmlBlasterException
    {
-      if (sessionId == null) return (HttpPushHandler)null;
-      return (HttpPushHandler)httpConnections.get( sessionId );
+      if (sessionId == null)
+         throw new XmlBlasterException(ME+".BrowserLost", "Your sessionId is null");
+
+      HttpPushHandler ph = (HttpPushHandler)httpConnections.get( sessionId );
+
+      if (ph == null || ph.closed())
+         throw new XmlBlasterException(ME+".BrowserLost", "Your sessionId '" + sessionId + "' is invalid");
+
+      return ph;
    }
 
    /**
