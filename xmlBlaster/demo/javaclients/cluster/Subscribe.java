@@ -17,27 +17,24 @@ import org.xmlBlaster.engine.helper.Constants;
  *  java javaclients.cluster.Subscribe -port 7601
  *  java javaclients.cluster.Subscribe -port 7604
  * </pre>
- * We expect avalon to run on 7601, the domain is RUGBY_NEWS if not changed.<br />
- * If we set -port 7604 we expect to find bilbo which routes the message over
- * several node hops to the master. The message content is "We win".
+ * We expect avalon to run on 7601.<br />
+ * If we set -port 7604 we expect to find bilbo which routes the subscribe over
+ * several node hops to the master.
  *
  * <pre>
- *  java javaclients.cluster.Subscribe -port 7601
+ *  java javaclients.cluster.Subscribe -port 7601 -updateSleep 20000
  * </pre>
- * Now our message is sent with domain='STOCK_EXCHANGE', it should be routed to avalon
- *
- * <pre>
- *  java javaclients.cluster.Subscribe -port 7604 -content "We loose"
- * </pre>
- * Now our message is sent with the content "We loose" to bilbo, the message
- * is not forwarded as bilbo filters with a regular expression contents containing the word 'loose'.
+ * Now we sleep 20 sec on every update, simulating a slow client
  */
 public class Subscribe implements I_Callback
 {
    private final String ME = "Subscribe";
+   /** To simulate a slow subscriber client: millis to sleep when update arrives */
+   private long updateSleep = 0L;
 
    public Subscribe(Global glob) {
       XmlBlasterConnection con = null;
+      updateSleep = glob.getProperty().get("updateSleep", 0L);
       try {
          con = new XmlBlasterConnection(glob);
 
@@ -76,8 +73,15 @@ public class Subscribe implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
-      Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
+      if (updateSleep > 0L) {
+         Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
+                                 "' from xmlBlaster, sleeping for " + updateSleep + " millis ...");
+         try { Thread.currentThread().sleep(updateSleep); } catch( InterruptedException i) {}
+         Log.info(ME, "Waking up.");
+      } else {
+         Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
                                  "' from xmlBlaster");
+      }
       return "";
    }
 

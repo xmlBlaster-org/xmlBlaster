@@ -27,10 +27,11 @@ import org.xmlBlaster.engine.helper.Constants;
  * Now our message is sent with domain='STOCK_EXCHANGE', it should be routed to avalon
  *
  * <pre>
- *  java javaclients.cluster.PublishToSlave -port 7604 -content "We loose"
+ *  java javaclients.cluster.PublishToSlave -port 7604 -content "We loose" -numPublish 5 -interactivePublish true
  * </pre>
  * Now our message is sent with the content "We loose" to bilbo, the message
  * is not forwarded as bilbo filters with a regular expression contents containing the word 'loose'.
+ * We send 5 messages, and ask before sending.
  */
 public class PublishToSlave implements I_Callback
 {
@@ -41,6 +42,8 @@ public class PublishToSlave implements I_Callback
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
          String content = glob.getProperty().get("content", "We win");
+         int numPublish = glob.getProperty().get("numPublish", 1);
+         boolean interactivePublish = glob.getProperty().get("interactivePublish", true);
 
          ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -49,11 +52,17 @@ public class PublishToSlave implements I_Callback
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
          pq.setPriority(Constants.MIN_PRIORITY);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
-         String retQos = con.publish(msgUnit);
-         Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+         for (int i=0; i<numPublish; i++) {
+            if (interactivePublish) {
+               System.out.println("Hit a key to publish ...");
+               try { System.in.read(); } catch(Exception e2) { }
+            }
+            MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
+            String retQos = con.publish(msgUnit);
+            Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos);
+         }
       }
       catch (Exception e) {
          Log.error("PublishToSlave-Exception", e.toString());
