@@ -1,24 +1,17 @@
 /*----------------------------------------------------------------------------
-Name:      xmlBlaster/demo/c/socket/HelloWorld3.c
+Name:      xmlBlaster/demo/c/socket/TestLeaveServer.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build c
            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
-           Manually:
-            cd xmlBlaster/src/c
-            gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld3 
-                ../../demo/c/socket/HelloWorld3.c util/*.c socket/*.c -pthread
-Invoke:    HelloWorld3 -help
 See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <XmlBlasterAccessUnparsed.h>
-
-#include <crtdbg.h>
 
 /**
  * Here we receive the callback messages from xmlBlaster
@@ -82,7 +75,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 }
 
 /**
- * Invoke: HelloWorld3 -logLevel TRACE
+ * Invoke: TestLeaveServer -logLevel TRACE
  */
 int main(int argc, char** argv)
 {
@@ -121,7 +114,7 @@ int main(int argc, char** argv)
          "\n   -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]"
          "\n   -sleepInterval       Milliseconds to wait on callback messages [0]"
          "\n\nExample:"
-         "\n  HelloWorld3 -logLevel TRACE"
+         "\n  TestLeaveServer -logLevel TRACE"
          " -dispatch/connection/plugin/socket/hostname 192.168.2.9"
          " -sleepInterval 100000";
          printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
