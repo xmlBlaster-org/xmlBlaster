@@ -58,6 +58,9 @@ public class ConnectReturnQos {
    public final void setSessionId(String id) {
       connectQos.setSessionId(id);
    }
+   public final void setPublicSessionId(String id) {
+      connectQos.setPublicSessionId(id);
+   }
    /**
     * Adds a server reference
     */
@@ -69,5 +72,8 @@ public class ConnectReturnQos {
    }
    public String getSessionId() {
       return connectQos.getSessionId();
+   }
+   public String getPublicSessionId() {
+      return connectQos.getPublicSessionId();
    }
 }
