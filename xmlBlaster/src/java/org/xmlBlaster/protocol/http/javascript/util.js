@@ -126,6 +126,16 @@ function logObject(level_, codePos_, text_)
    this.codePos = codePos_;
    this.text = text_;
 }
+/**
+ * Try to free resources. 
+ */
+function clearLogObject(obj)
+{
+   obj.time = null;
+   obj.level = null;
+   obj.codePos = null;
+   obj.text = null;
+}
 var logEntries = new Array();
 
 function internal_(codePos, str)
@@ -257,6 +267,7 @@ function logToWindow(level, codePos, text)
       logStrippingInfo = "Stripping logging output to " + logEntries.length / 2 + " lines";
       var jj=0;
       for (var ii=logEntries.length/2; ii<logEntries.length; ii++) {
+         clearLogObject(logEntries[jj]);
          logEntries[jj] = logEntries[ii];
          jj++;
       }
