@@ -976,7 +976,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             String subscriptionId = (String)it.next();
             KeyWrapper key = new KeyWrapper(subscriptionId);
             try {
-               driver.unSubscribe(key.toString(), "");
+               driver.unSubscribe(key.toXml(), "");
             }
             catch(XmlBlasterException e) {
                Log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
