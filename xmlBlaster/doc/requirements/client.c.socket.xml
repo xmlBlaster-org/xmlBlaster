@@ -137,7 +137,7 @@ build.bat c   (on Windows)
      </pre>
      </p>
      <p>
-     Currently debugging is switched on as default, to switch it of
+     Currently debugging support in the executable is switched on as default, to switch it off
      try (the -verbose option is to dump the compilation command line only):
      </p>
      <pre>
@@ -158,7 +158,7 @@ build.sh -Duse-icc=true c
 cd xmlBlaster/src/c
 
 Linux C:
-  gcc -Wall -g -I. -o HelloWorld HelloWorld.c util/*.c
+  gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/msgUtil.c util/Properties.c
        socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
 
 Linux C++:
@@ -173,6 +173,12 @@ Solaris:
   cc -Xc -g -I. -o HelloWorld HelloWorld.c util/*.c
    socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
      </pre>
+     <p>In the first example we undef XB_USE_PTHREADS to have no thread ID in the logging
+     output, this switch is optional. In the second example we use the C++ compiler instead
+     of the C compiler and force with XMLBLASTER_C_COMPILE_AS_CPP the code to not include
+     <i>extern "C" { ... }</i> constructs, this way we get a pure C++ binary instead of an
+     extern C module. This switch is optional as well.
+     </p>
      <p>
      To compile a multi threaded client with synchronous access and asynchronous
      callbacks:
@@ -1055,7 +1061,7 @@ build.sh reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.36 $</revision>
+   <revision>$Revision: 1.37 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
