@@ -16,6 +16,13 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.enum.Constants;
+
+import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.Msgs;
+import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
 
@@ -39,7 +46,7 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner org.xmlBlaster.test.authentication.TestLoginLogoutEvent
  * </pre>
  */
-public class TestLoginLogoutEvent extends TestCase implements I_Callback
+public class TestLoginLogoutEvent extends TestCase
 {
    private static String ME = "TestLoginLogoutEvent";
    private final Global glob;
@@ -58,6 +65,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
+
+   private MsgInterceptor updateInterceptFirst; // collects updated messages
+   private MsgInterceptor updateInterceptSecond; // collects updated messages
 
    /**
     * Constructs the TestLoginLogoutEvent object.
@@ -86,13 +96,15 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       try {
          firstConnection = new XmlBlasterConnection(glob); // Find orb
          ConnectQos qos = new ConnectQos(glob, firstName, passwd);
-         firstConnection.connect(qos, this); // Login to xmlBlaster
+         this.updateInterceptFirst = new MsgInterceptor(glob, log, null);
+         firstConnection.connect(qos, this.updateInterceptFirst); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, e.toString());
           e.printStackTrace();
       }
 
+      this.updateInterceptFirst.getMsgs().clear();
    }
 
 
@@ -105,22 +117,22 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    {
       String xmlKey = "<key oid='__sys__Logout' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
-      numReceived = 0;
-      if (firstConnection != null) {
+      this.numReceived = 0;
+      if (this.firstConnection != null) {
          try {
-            firstConnection.unSubscribe(xmlKey, qos);
+            this.firstConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             log.warn(ME+"-subscribe", "XmlBlasterException: " + e.getMessage());
             assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
-         firstConnection.disconnect(null);
-         firstConnection = null;
+         this.firstConnection.disconnect(null);
+         this.firstConnection = null;
       }
 
-      if (secondConnection != null) {
-         secondConnection.disconnect(null);
-         secondConnection = null;
+      if (this.secondConnection != null) {
+         this.secondConnection.disconnect(null);
+         this.secondConnection = null;
       }
    }
 
@@ -150,23 +162,43 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    public void testLoginLogout()
    {
+      long sleep = 1000L;
+
       numReceived = 0;
       expectedName = firstName;   // my first login name should be returned on this subscribe
       subscribe("__sys__Login");
-      waitOnUpdate(1000L, 1);     // expecting a login event message (the login event message exists from my own login)
+      // expecting a login event message (the login event message exists from my own login)
+      assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
+      {
+         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         log.info(ME, "Received login event for " + content);
+         assertEquals("Wrong login name", expectedName, content);
+         this.updateInterceptFirst.getMsgs().clear();
+      }
 
       numReceived = 0;
       expectedName = null;        // no check (the logout event exists with AllTests but not when this test is run alone
       subscribe("__sys__Logout");
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}          // no check
+      this.updateInterceptFirst.getMsgs().clear();
 
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       try {
-         secondConnection = new XmlBlasterConnection(); // Find orb
+         this.secondConnection = new XmlBlasterConnection(); // Find orb
          ConnectQos qos = new ConnectQos(glob, secondName, passwd); // == "<qos></qos>";
-         secondConnection.connect(qos, this); // Login to xmlBlaster
-         waitOnUpdate(1000L, 1);  // login event arrived?
+         this.updateInterceptSecond = new MsgInterceptor(glob, log, null);
+         this.secondConnection.connect(qos, this.updateInterceptSecond); // Login to xmlBlaster
+         
+         // login event arrived?
+         assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
+         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         log.info(ME, "Received login event for " + content);
+         assertEquals("Wrong login name", expectedName, content);
+         this.updateInterceptFirst.getMsgs().clear();
+
+         assertEquals("Not expected update for second con", 0, this.updateInterceptSecond.waitOnUpdate(500L));
+         this.updateInterceptSecond.getMsgs().clear();
 
          // Test the '__sys__UserList' feature:
          MsgUnit[] msgArr = secondConnection.get(
@@ -175,13 +207,15 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertTrue("Expected on __sys__UserList", msgArr.length == 1);
          String clients = new String(msgArr[0].getContent());
          log.info(ME, "Current '__sys__UserList' is\n" + clients);
-         StringTokenizer st = new StringTokenizer(clients);
+         StringTokenizer st = new StringTokenizer(clients, ",");  // joe,jack,averell,...
          int found = 0;
          while (st.hasMoreTokens()) {
             String client = (String)st.nextToken();
-            if (client.equals(this.firstName))
+            log.info(ME, "Parsing name=" + client);
+            SessionName sessionName = new SessionName(glob, client);
+            if (sessionName.getLoginName().equals(this.firstName))
                found++;
-            else if (client.equals(this.secondName))
+            else if (sessionName.getLoginName().equals(this.secondName))
                found++;
          }
          assertTrue("Check of '__sys__UserList' failed", found==2);
@@ -197,14 +231,23 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       secondConnection.disconnect(null);
       secondConnection = null;
 
-      waitOnUpdate(2000L, 1);    // expecting a logout event message
+      // expecting a logout event message
+      {
+         assertEquals("Missing my logout event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Logout", Constants.STATE_OK));
+         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         log.info(ME, "Received logout event for " + content);
+         assertEquals("Wrong logout name", expectedName, content);
+         this.updateInterceptFirst.getMsgs().clear();
+      }
+
+      assertEquals("Not expected update for second con", 0, this.updateInterceptSecond.waitOnUpdate(500L));
+      this.updateInterceptSecond.getMsgs().clear();
    }
 
-   /**
+   /** ----> see this.updateInterceptFirst
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       String name = new String(content);
@@ -217,6 +260,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertEquals("Wrong login name returned", expectedName, name);
       return "";
    }
+    */
 
    /**
     * Little helper, waits until the wanted number of messages are arrived
@@ -224,7 +268,6 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     * <p />
     * @param timeout in milliseconds
     * @param numWait how many messages to wait
-    */
    private void waitOnUpdate(final long timeout, final int numWait)
    {
       long pollingInterval = 50L;  // check every 0.05 seconds
@@ -244,6 +287,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       numReceived = 0;
    }
 
+    */
 
    /**
     * Method is used by TestRunner to load these tests
