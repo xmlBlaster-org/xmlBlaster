@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -37,14 +37,14 @@ import org.jutils.log.LogChannel;
  *
  * <p>You may use this MBean to start one or more XmlBlaster instances in a
  JMX container. It has, however, only been tested with the JBoss 3.0 server. To start it in JBoss copy the xmlBlaster-sar.ear archive into deploy. If you need to change the settings either edit the enbedded xmlBlaster.properties file or change the name of the property file in META-INF/jboss-service.xml and make it available int the XmlBlaster search path or embed it in the sar.</p>
- 
+
 <h3>Requirements</h3>
 <p>.You need to copy the file concurrent.jar from xmlBlaster/lib to the system lib directory of JBoss, overwriting the older version distributed with JBoss.</p><p>When using the RMIDriver JBoss must be run with a security policy file specified, eg, sh run.sh -Djava.security.policy=../server/default/conf/server.policy.</p>
- 
+
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.4 $ $Date: 2002/11/07 13:12:50 $
+ * @version $Revision: 1.5 $ $Date: 2003/01/16 17:22:10 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -56,8 +56,8 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    private XmlBlasterClassLoader cl;
 
    public XmlBlasterService() {
-      // Create a global wothout loading the xmlBlaster.properties file
-      glob= new Global(new String[]{},false); 
+      // Create a global wothout loading the xmlBlaster.properties file but check it's instance
+      glob= new Global(new String[]{},false,true);
    }
    /**
     * Set the name of a propertyfile to read settings from.
@@ -99,9 +99,9 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       loadJacorbProperties();
       loadPropertyFile();
       setupSecurityManager();
-      
-      //To get ok behaviuor we really need to do it this way:
-      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false  );
+
+      //To get ok behavior we really need to do it this way:
+      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false, true  );
 
       //glob.getProperty().set("trace", "true");
       runglob.getProperty().set("xmlBlaster.isEmbedded", "true");
@@ -133,22 +133,22 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          EmbeddedXmlBlaster.stopXmlBlaster(blaster);
          Thread.currentThread().setContextClassLoader(currCl);
       } // end of if ()
-      
+
    }
 
    private void setupSecurityManager() throws Exception {
       // This is really only interesting if we are loading an RMIDriver
       if (glob.getProperty().get("ProtocolPlugin[RMI][1.0]",(String)null) == null) {
          return;// We only care about this if the RMI driver should be loaded
-         
+
       } // end of if ()
-      
+
 
       if (System.getSecurityManager() == null) {
          String exist = System.getProperty("java.security.policy");
          if (exist == null) {
             throw new Exception("You must specify a -Djava.security.policy when starting the server to be able to use the RMI driver");
-         }else {         
+         }else {
             System.setSecurityManager(new RMISecurityManager());
          } // end of else
       }
@@ -157,7 +157,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    /**
     * Jacorb is not capable of finding its jacorb.properties in the
     * context classpath. Since ORB is loaded with args from Glob load
-    * jacorb.properties our self, and set them as args array in glob. 
+    * jacorb.properties our self, and set them as args array in glob.
     * Remember that jacorb.properties is in xmlBlaster.jar.
     */
    private void loadJacorbProperties() throws Exception {
@@ -181,17 +181,17 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          log.warn(ME,"No jacorb.properties found in context classpath");
       }
    }
-   
+
    /**
     * If propertyFile is not null, try load it first from the context class loader, then using the standard xmlBlaster algoritm.
     */
    private void loadPropertyFile() throws IllegalStateException{
       //Only of not null
-      if (propFile== null ) 
+      if (propFile== null )
          return;
       try {
-         
-         
+
+
          Property p = glob.getProperty();
          URL url = Thread.currentThread().getContextClassLoader().getResource(propFile);
          InputStream is = null;
@@ -206,26 +206,26 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
             FileInfo i = p.findPath(propFile);
             is = i.getInputStream();
          } // end of if ()
-         
+
          if ( is != null) {
             log.info(ME,"Loading properties from " + url);
             Properties prop = new Properties();
             prop.load(is);
             String[] args = Property.propsToArgs(prop);
-            p.addArgs2Props( args != null ? args : new String[0] ); 
+            p.addArgs2Props( args != null ? args : new String[0] );
          } // end of if ()
 
          log.trace(ME,"Setting properties: " + p.toXml());
-         
+
       } catch (IOException e) {
          IllegalStateException x = x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
          throw x;
-         
+
       } catch (JUtilsException e) {
          IllegalStateException x = x = new IllegalStateException("Could not load properties into Property: " + e);
          throw x;
       } // end of try-catch
-      
+
    }
 
    /**
@@ -235,7 +235,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
 
       ClassLoaderFactory factory = glob.getClassLoaderFactory();
       cl = factory.getXmlBlasterClassLoader();
-      
+
       // Wont work UCL ALLWAYS return empty array
       //      URL[] blasterJars = ((URLClassLoader)getClass().getClassLoader()).getURLs();
       URL[] blasterJars = cl.getURLs();
@@ -248,7 +248,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
             if ("xmlBlaster.jar".equals( bj.getName())) {
                log.trace(ME,"Found blaster URL");
                blasterFile = bj;
-                
+
             }
          }
 
@@ -258,10 +258,10 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          File tmp = new File( blasterFile.getParent(), "concurrent.jar");
          log.trace(ME,"Appending " + tmp);
          cl.appendURL(tmp.toURL());
-         
+
       }
-      
+
    }
-   
+
 }
 

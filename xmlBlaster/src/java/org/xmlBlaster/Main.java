@@ -73,7 +73,7 @@ public class Main implements I_RunlevelListener, I_Main
    static MainGUI controlPanel = null;
 
    /**
-    * You need to call init() after construction. 
+    * You need to call init() after construction.
     */
    public Main() {
       //System.out.println("Default constructor called ...");
@@ -108,11 +108,9 @@ public class Main implements I_RunlevelListener, I_Main
       return this.glob;
    }
 
-   /*
    public void init(org.xmlBlaster.util.Global g) {
-      init(new org.xmlBlaster.engine.Global(g));
+      init(new org.xmlBlaster.engine.Global(g, true));
    }
-   */
 
    public void init(java.util.Properties props) {
       this.init(new org.xmlBlaster.engine.Global(props));

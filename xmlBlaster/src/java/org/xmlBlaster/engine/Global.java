@@ -30,10 +30,10 @@ import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 import java.util.*;
 import java.io.IOException;
-
+import org.jutils.init.Property;
 
 /**
- * This holds global needed data of one xmlBlaster instance. 
+ * This holds global needed data of one xmlBlaster instance.
  * <p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
@@ -65,7 +65,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private MsgFileDumper msgFileDumper;
 
 
-   public void shutdown() { 
+   public void shutdown() {
       super.shutdown();
       log.info(ME, "Destroying global handle");
       if (sessionTimer != null) {
@@ -103,16 +103,30 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * If you have a util.Global and need a engine.Global. 
+    * If you have a util.Global and need a engine.Global.
     * <p />
     * Note: The cluster node id of utilGlob is overwritten
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
-      super(utilGlob);
+      super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
       initThis();
       utilGlob.setId(getId()); // Inherit backwards the cluster node id
       //Thread.currentThread().dumpStack();
    }
+
+
+   /**
+    * If you have a util.Global and need a engine.Global.
+    * <p />
+    * Note: The cluster node id of utilGlob is overwritten
+    */
+   public Global(org.xmlBlaster.util.Global utilGlob, boolean propertyOnly) {
+      super(utilGlob.getProperty().getProperties());
+      initThis();
+      utilGlob.setId(getId()); // Inherit backwards the cluster node id
+      //Thread.currentThread().dumpStack();
+   }
+
 
    /**
     * Calls super.init and checks the environment for "cluster.node.id"
@@ -141,7 +155,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * The unique name of this xmlBlaster server instance. 
+    * The unique name of this xmlBlaster server instance.
     * @return Can be null during startup
     */
    public final NodeId getNodeId() {
@@ -149,7 +163,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access the unique cluster node id (as a String). 
+    * Access the unique cluster node id (as a String).
     * @return The name of this xmlBlaster instance, e.g. "heron.mycompany.com"
     *         or "http://mycomp:3412"
     *         Can be null during startup
@@ -166,7 +180,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize runlevel manager used to start/stop xmlBlaster with different run levels. 
+    * Initialize runlevel manager used to start/stop xmlBlaster with different run levels.
     */
    public final RunlevelManager getRunlevelManager() {
       if (this.runlevelManager == null) {
@@ -179,7 +193,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access instance which manages myself in a cluster environment. 
+    * Access instance which manages myself in a cluster environment.
     * @return null if cluster support is switched off
     */
    public final ClusterManager getClusterManager() throws XmlBlasterException {
@@ -207,7 +221,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    /**
     * Returns for no cluster an empty string, in
     * cluster environment if more than one node is known
-    * it returns the node id like "/node/heron". 
+    * it returns the node id like "/node/heron".
     * <p />
     * Used for logging
     */
@@ -229,7 +243,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    /**
     * Returns for no cluster the given post string.
     * In cluster environment if more than one node is known
-    * it returns the node id like "/node/heron/client" if post="client". 
+    * it returns the node id like "/node/heron/client" if post="client".
     * <p />
     * Used for logging
     * @param post the postfix string like "client"
@@ -241,7 +255,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    /**
     * Same as getLogPrefix() but if in cluster environment a "-" is prefixed
-    * like "-/node/heron/". 
+    * like "-/node/heron/".
     * <p />
     * Useful for logging information of classes like Authenticate.java
     */
@@ -253,7 +267,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize the instance which manages myself in a cluster environment. 
+    * Initialize the instance which manages myself in a cluster environment.
     * Only the first call will set the sessionInfo
     * @param An internal sessionInfo instance, see RequestBroker.
     * @return null if cluster support is switched off
@@ -273,7 +287,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize protocol manager (to administer CORBA/RMI etc. plugins). 
+    * Initialize protocol manager (to administer CORBA/RMI etc. plugins).
     */
    public final ProtocolManager getProtocolManager() throws XmlBlasterException {
       if (this.protocolManager == null) {
@@ -296,7 +310,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * A helper to dump a message to a file. 
+    * A helper to dump a message to a file.
     */
    public final MsgFileDumper getMsgFileDumper() throws XmlBlasterException {
       if (this.msgFileDumper == null) {
@@ -311,7 +325,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Sets the unique node id of this xmlBlaster server instance (needed for clustering). 
+    * Sets the unique node id of this xmlBlaster server instance (needed for clustering).
     * <p />
     * The new node ID is only set if my current instance is null!
     * <p />
@@ -328,7 +342,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access the handle of the user session timer thread. 
+    * Access the handle of the user session timer thread.
     * @return The Timeout instance
     */
    public final Timeout getSessionTimer() {
@@ -342,7 +356,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access the handle of the TopicHandler timer thread. 
+    * Access the handle of the TopicHandler timer thread.
     * @return The Timeout instance
     */
    public final Timeout getTopicTimer() {
@@ -356,7 +370,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * The factory creating queue or msgUnitStore entries from persistent store. 
+    * The factory creating queue or msgUnitStore entries from persistent store.
     * Is derived from util.Global
     * @param name A name identifying this plugin.
     */
@@ -367,7 +381,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access instance of remote command administration manager. 
+    * Access instance of remote command administration manager.
     * @return null if command administration support is switched off
     */
    public final CommandManager getCommandManager() throws XmlBlasterException {
@@ -393,7 +407,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize instance of remote command administration manager. 
+    * Initialize instance of remote command administration manager.
     * Only the first call will set the sessionInfo
     * @param An internal sessionInfo instance, see RequestBroker.
     * @return null if command support is switched off
@@ -444,7 +458,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler'. 
+    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler'.
     * In util.Global we return the client side implementation 'ClientDeliveryConnectionsHandler'
     * @return A new instance of CbDeliveryConnectionsHandler
     */
@@ -453,7 +467,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Sets the authentication in the engine.Global scope. 
+    * Sets the authentication in the engine.Global scope.
     * <p>
     * Additionally the I_Authentication is registered in the <i>util.Global.addObjectEntry</i>
     * under the name <i>"/xmlBlaster/I_Authenticate"</i> (see Constants.I_AUTHENTICATE_PROPERTY_KEY).<br />
@@ -477,7 +491,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * A human readable name of the listener for logging. 
+    * A human readable name of the listener for logging.
     * <p />
     * Enforced by I_RunlevelListener
     */

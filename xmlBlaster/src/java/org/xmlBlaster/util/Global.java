@@ -168,7 +168,7 @@ public class Global implements Cloneable
       counter++;
       if (this.firstInstance != null) {
          System.out.println("######Global " + counter + " empty constructor invoked again, try Global.instance()");
-         //Thread.currentThread().dumpStack();
+         // Thread.currentThread().dumpStack();
       }
       synchronized (Global.class) {
          if (this.firstInstance == null)
@@ -192,7 +192,6 @@ public class Global implements Cloneable
     */
    public Global(Properties props) {
       this(Property.propsToArgs(props));
-      counter++;
    }
    /**
     * Constructs an initial Global object which is initialized
@@ -200,14 +199,14 @@ public class Global implements Cloneable
     */
    public Global(String[] args)
    {
-      this(args,true);
+      this(args, true, true);
    }
    /**
     * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args).
     *
     * <p>By setting loadPropFile to false it is possible to create a Global
-    * which does not automtically search out the xmlBlaster.properties file, 
+    * which does not automtically search out the xmlBlaster.properties file,
     * which is god when you want to start xmlBlaster in an embedded environment.
     * <p>Its possible to later load the property file if one wants, here is one way to do it:</p>
     * <pre>
@@ -219,18 +218,20 @@ public class Global implements Cloneable
          String[] ar = Property.propsToArgs(prop);
          p.addArgs2Props( ar != null ? ar : new String[0] );
        </pre>
-     <p>It is also possible to load an entire other property file or find it 
+     <p>It is also possible to load an entire other property file or find it
         with some other algoritm byte using the same pattern as obove, just
         don't use findPath, but some other code.</p>
     * @param args args array (usually the command line args).
     * @param loadPropFile if automatic loading of xmlBlaster.properties should be done.
     */
-   public Global(String[] args, boolean loadPropFile)
+   public Global(String[] args, boolean loadPropFile, boolean checkInstance)
    {
-      counter++;
-      if (this.firstInstance != null) {
-         System.out.println("######Global args constructor invoked again, try Global.instance()");
-         //Thread.currentThread().dumpStack();
+      if (checkInstance == true) {
+         counter++;
+         if (this.firstInstance != null) {
+            System.out.println("######Global args constructor invoked again, try Global.instance()");
+            // Thread.currentThread().dumpStack();
+         }
       }
       synchronized (Global.class) {
          if (this.firstInstance == null)
@@ -322,7 +323,7 @@ public class Global implements Cloneable
 
    /**
     * Initialize logging.
-    * 
+    *
     * <p>The pluggable loggers is tested first, see {@link org.xmlBlaster.util.log.LogDevicePluginManager}.
     * <p>If no pluggable loggers is configured the logging is initialized
     * with environment variables.</p>
@@ -336,7 +337,7 @@ public class Global implements Cloneable
    private void initLog(LogChannel lc) {
       String key = lc.getChannelKey();
       boolean useOld = true;//Used to guaranty some logging
-      
+
       // There are situations where the manager is actually not there because
       // its parent sets up logging
       if (logDevicePluginManager != null) {
@@ -349,14 +350,14 @@ public class Global implements Cloneable
                return;// Get out if here quick!
             }
             creatingLogInstance=true;
-               
+
             // Get the plugins for the lc.key, first try with key, then global
             String[] devices = null;
             if (key != null)
                devices = getProperty().get("logDevice[" + key + "]", new String[0], ",");
             if (devices == null  ||  devices.length == 0)
                devices = getProperty().get("logDevice", new String[0], ",");
-            
+
             if (devices != null && devices.length > 0) {
                for(int i = 0;i<devices.length;i++) {
                   try {
@@ -372,13 +373,13 @@ public class Global implements Cloneable
                   //If we ever reach here, we have some logging device set up
                   useOld=false;
                }
-               
-               
+
+
             }
             creatingLogInstance = false;
          }
       }
-      
+
       if (useOld) {
          if (log.TRACE) log.trace(ME,"Using old logging behaviour for '" + key + "'");
          //System.err.println("Using old logging behaviour");
@@ -389,7 +390,7 @@ public class Global implements Cloneable
             LogDeviceConsole ldc = new LogDeviceConsole(lc);
             lc.addLogDevice(ldc);
          }
-         
+
          String strFilename = getProperty().get("logFile", (String)null);
          if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
          if (strFilename != null) {
@@ -398,9 +399,9 @@ public class Global implements Cloneable
             System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
          }
       }
-      
+
       //lc.setDefaultLogLevel();
-      
+
 
 
       // Old logging style:
@@ -675,7 +676,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The unique name of this xmlBlaster server instance. 
+    * The unique name of this xmlBlaster server instance.
     * @return Can be null during startup
     */
    public final ContextNode getContextNode() {
@@ -701,10 +702,10 @@ public class Global implements Cloneable
 
    /**
     * Utility method to strip any string, all characters which prevent
-    * to be used for e.g. file names are replaced. 
+    * to be used for e.g. file names are replaced.
     * <p>
     * This conversion is used for file names and for the administrative
-    * hierarchy e.g. "/node/heron/client/joe" is OK but 'http://xy:8080' instead of 'heron' is not 
+    * hierarchy e.g. "/node/heron/client/joe" is OK but 'http://xy:8080' instead of 'heron' is not
     * </p>
     * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
     * @return e.g. "http_www_xmlBlaster_org_homex"
@@ -852,7 +853,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Return a factory parsing key XML strings from subscribe() and other query invocations. 
+    * Return a factory parsing key XML strings from subscribe() and other query invocations.
     */
    public final I_QueryKeyFactory getQueryKeyFactory() {
       if (this.queryKeyFactory == null) {
@@ -908,7 +909,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Return a factory parsing QoS XML strings from subcribe(), unSubscribe() and erase() returns. 
+    * Return a factory parsing QoS XML strings from subcribe(), unSubscribe() and erase() returns.
     */
    public final I_StatusQosFactory getStatusQosFactory() {
       if (this.statusQosFactory == null) {
@@ -1341,7 +1342,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The factory creating queue or msgUnitStore entries from persistent store. 
+    * The factory creating queue or msgUnitStore entries from persistent store.
     * Is overwritten in engine.Global
     * @param name A name identifying this plugin.
     */
@@ -1431,7 +1432,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the burst mode timer thread. 
+    * Access the handle of the burst mode timer thread.
     * @return The Timeout instance
     */
    public final ProtocolPluginManager getProtocolPluginManager() {
@@ -1445,7 +1446,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the burst mode timer thread. 
+    * Access the handle of the burst mode timer thread.
     * @return The Timeout instance
     */
    public final CbServerPluginManager getCbServerPluginManager() {
@@ -1459,7 +1460,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the burst mode timer thread. 
+    * Access the handle of the burst mode timer thread.
     * @return The Timeout instance
     */
    public final Timeout getBurstModeTimer() {
@@ -1473,7 +1474,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the callback ping timer thread. 
+    * Access the handle of the callback ping timer thread.
     * @return The Timeout instance
     */
    public final Timeout getCbPingTimer() {
@@ -1487,7 +1488,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the message expiry timer thread. 
+    * Access the handle of the message expiry timer thread.
     * NOTE: This holds only weak references to its callback I_Timeout
     * So there is no need to clear the timer registration
     * @return The Timeout instance
@@ -1522,7 +1523,7 @@ public class Global implements Cloneable
 
 
    /**
-    * Access the handle of the callback thread pool. 
+    * Access the handle of the callback thread pool.
     * @return The DeliveryWorkerPool instance
     */
    public final DeliveryWorkerPool getDeliveryWorkerPool() {
@@ -1542,7 +1543,7 @@ public class Global implements Cloneable
       return new ClientDeliveryConnectionsHandler(this, deliveryManager, addrArr);
    }
 
-   public void shutdown() { 
+   public void shutdown() {
       log.info(ME, "Destroying global handle");
       if (deliveryWorkerPool != null) {
          deliveryWorkerPool.shutdown();

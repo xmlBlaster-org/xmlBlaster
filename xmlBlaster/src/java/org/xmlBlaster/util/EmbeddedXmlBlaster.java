@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.3 2002/11/26 12:39:28 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.4 2003/01/16 17:22:10 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -47,7 +47,7 @@ public class EmbeddedXmlBlaster
          "-port", "" + serverPort,
          "-doBlocking", "false",
          "-xmlBlaster.isEmbedded", "true"
-         }; 
+         };
       glob.init(args);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
@@ -78,7 +78,7 @@ public class EmbeddedXmlBlaster
       String[] args2 = {
          "-doBlocking", "false",
          "-xmlBlaster.isEmbedded", "true"
-         }; 
+         };
       glob.init(args2);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
@@ -102,7 +102,7 @@ public class EmbeddedXmlBlaster
       String[] args = {
          "-doBlocking", "false",
          "-xmlBlaster.isEmbedded", "true"
-         }; 
+         };
       glob.init(args);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
@@ -181,8 +181,9 @@ public class EmbeddedXmlBlaster
          if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
 
          xmlBlasterMain = (I_Main)cl.loadClass("org.xmlBlaster.Main").newInstance();
-         java.util.Properties props = glob.getProperty().getProperties();
-         xmlBlasterMain.init(props);
+         // java.util.Properties props = glob.getProperty().getProperties();
+         // xmlBlasterMain.init(props);
+         xmlBlasterMain.init(glob);
          /*
          Class[] paramClasses = { glob.getArgs().getClass() };
          Object[] params = { glob.getArgs() };
