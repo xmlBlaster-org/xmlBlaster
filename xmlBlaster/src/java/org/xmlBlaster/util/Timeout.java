@@ -258,6 +258,7 @@ public class Timeout extends Thread
       synchronized (map) {
          Object obj = map.remove(key);
          if (obj == null) {
+            Thread.currentThread().dumpStack();
             throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
          }
          Container container = (Container)obj;
