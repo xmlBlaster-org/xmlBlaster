@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    xmlBlaster@marcelruff.info
-Version:   $Id: xmlBlaster.idl,v 1.13 2003/01/05 23:06:13 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.14 2003/05/22 18:52:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -65,6 +65,7 @@ module serverIdl
       string embeddedMessage;
       string transactionInfo;
       string reserved;
+      // TODO: boolean isServerSide;
    };
 
 }; // org::xmlBlaster::protocol::corba::serverIdl
