@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.35 2000/11/04 20:21:14 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.36 2001/02/14 01:01:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -93,6 +93,14 @@ public class HttpPushHandler
       this.sessionId = sessionId;
       String browserId = req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
       this.ME  = "HttpPushHandler-" + browserId;
+
+      // Setting HTTP headers to prevent caching
+      /* !!! activate when migrating to servlet 2.2 !!!
+      res.addHeader("Expires", "Tue, 31 Dec 1997 23:59:59 GMT");
+      res.addHeader("Cache-Control", "no-cache");
+      res.addHeader("Pragma", "no-cache");
+      */
+
       initialize(null, null);
 
       pushQueue = new Vector();
@@ -124,6 +132,7 @@ public class HttpPushHandler
           "<HEAD>\n" +
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
           "   <meta http-equiv='Pragma' content='no-cache'>\n" +
+         "    <meta http-equiv='Cache-Control' content='no-cache'>\n" +
           "   <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>\n" +
           "   <TITLE>BlasterHttpProxy Connection</TITLE>\n" +
           "</HEAD>\n" +
