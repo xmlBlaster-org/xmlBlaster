@@ -25,9 +25,9 @@ Destination::Destination(Global& global,
 }
 
 Destination::Destination(Global& global,
-                         const string& address="",
-                         const string &queryType="EXACT",
-                         bool forceQueuing=false)
+                         const string& address,
+                         const string &queryType,
+                         bool forceQueuing)
                        : global_(global),
                          log_(global.getLog("core")),
                          sessionQos_(SessionQos(global, address))
