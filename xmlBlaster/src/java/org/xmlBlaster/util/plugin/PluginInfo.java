@@ -43,7 +43,7 @@ public class PluginInfo {
       this.glob = glob;
       this.log = glob.getLog("core");
       if (this.log.CALL) this.log.call(ME, "constructor type='" + type + "' className='" + className + "'");
-      this.type = type;
+      this.type = type.trim();
       this.className = className;
       this.params = params;
       this.version = "1.0"; // for the moment. Later remove this
@@ -79,7 +79,7 @@ public class PluginInfo {
       String version_;
       if (i==-1) {  // version is optional
          version_ = null;
-         type_ = typeVersion;
+         type_ = typeVersion.trim();
       }
       else {
          version_ = typeVersion.substring(i+1);
@@ -131,8 +131,8 @@ public class PluginInfo {
                      ContextNode contextNode) throws XmlBlasterException {
       this.glob = glob;
       log = glob.getLog("plugin");
-      this.type = type_;
-      this.version = (version_ == null) ? "1.0" : version_;
+      this.type = type_.trim();
+      this.version = (version_ == null) ? "1.0" : version_.trim();
 
       if (manager == null) return;
 
