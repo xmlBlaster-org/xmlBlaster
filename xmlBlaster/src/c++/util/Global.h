@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.15 2003/02/21 11:25:43 ruff Exp $
+Version:   $Id: Global.h,v 1.16 2003/03/02 19:54:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -32,7 +32,7 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 class Dll_Export Global {
 
-typedef map<char*, Log> LogMap;
+typedef map<const char*, Log> LogMap;
 
 friend Global& getInstance(const char* instanceName);
 private:
@@ -101,7 +101,7 @@ public:
     * If no log is found with that name, one is created and added to the
     * log map.
     */
-   Log& getLog(char* logName="default");
+   Log& getLog(const char* logName="default");
 
    /**
     * Returns the property object associated to this global
