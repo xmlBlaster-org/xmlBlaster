@@ -203,7 +203,7 @@ only the SNMP subagent module jax.jar is GPL only!
 
 20) jutils.jar
 ==============
-   Is under LGPL, see www.jutils.org, snapshot from Feb, 20 2003
+   Is under LGPL, see www.jutils.org, cvs snapshot from 2003-07-10
 
 
 21) remotecons.jar
