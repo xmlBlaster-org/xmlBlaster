@@ -3,12 +3,11 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.6 2002/12/10 22:58:39 laghi Exp $
+Version:   $Id: Global.cpp,v 1.7 2002/12/11 14:05:44 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
-
 
 using org::xmlBlaster::client::protocol::CbServerPluginManager;
 
