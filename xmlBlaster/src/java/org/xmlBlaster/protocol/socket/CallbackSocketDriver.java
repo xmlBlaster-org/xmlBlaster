@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.1 2002/02/14 22:53:37 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.2 2002/02/15 19:05:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -22,12 +22,19 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
  */
 public class CallbackSocketDriver implements I_CallbackDriver
 {
+   private final String ME = "CallbackSocketDriver";
    private String loginName;
    private HandleClient handler;
 
-   public CallbackSocketDriver() {}
+   /* Should not be instantiated by plugin loader.
+   public CallbackSocketDriver() {
+      Log.error(ME, "Empty Constructor!");
+      (new Exception("")).printStackTrace();
+   }
+   */
 
    public CallbackSocketDriver(String loginName, HandleClient handler) {
+      if (Log.CALL) Log.call(ME, "Constructor"); // (new Exception("")).printStackTrace());
       this.loginName = loginName;
       this.handler = handler;
    }
@@ -37,6 +44,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void init(CallbackAddress callbackAddress) {
+      Log.warn(ME, "Implement init()");
    }
 
    public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException {
@@ -44,6 +52,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void shutdown() {
+      handler.shutdown();
    }
 }
 
