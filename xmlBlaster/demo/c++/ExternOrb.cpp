@@ -96,7 +96,7 @@ public:
 
    void execute()
    {
-      start(); // to start the orb worker ...
+      start(false); // to start the orb worker ...
       try {
       // CorbaDriver driver = 
          XmlBlasterAccess con(global_);
