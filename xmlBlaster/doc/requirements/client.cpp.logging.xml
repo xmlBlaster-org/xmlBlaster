@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.cpp.logging' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      C++ client logging configuration
+   </topic>
+   <description>
+     <p>
+     XmlBlaster provides for its C++ client library a simple console based logging
+     implementation. Additionally you can configure during compilation to
+     embed the rich featured logging library <a href="http://sourceforge.net/projects/log4cplus/" target="others">log4cplus</a>
+     which supports many features, for example rolling log files.
+     </p>
+     <p>
+     If you have already an own logging facility in your project you can code xmlBlaster
+     to redirect all logging output to your own logging implementation.
+     </p>
+     <h2>
+     XmlBlaster simple logger
+     </h2>
+     <p>
+     This is the default and automatically compiled if not configured otherwise.
+     Logging output in different levels is sent to the console. On UNIX the
+     logging is colored to easily recognize errors. This logger is coded
+     in the file Log.cpp. Try <code>HelloWorld2 -help</code> to get usage informations.
+     </p>
+     <h2>
+     Embed log4cplus
+     </h2>
+     <p>
+     To simplify life we have added <a href="http://sourceforge.net/projects/log4cplus/" target="others">log4cplus</a>
+     (Apache License) from <i>Tad E. Smith</i> to the xmlBlaster distribution.
+     All necessary source files are located under
+     <code>xmlBlaster/src/c++/log4cplus</code>.
+     To configure logging we have added a sample configuration file 
+     <code>xmlBlaster/config/log4cplus.properties</code>.
+     Please read the <a href="http://logging.apache.org/log4j/docs/manual.html" target="others">
+     log4j documentation</a> on how to customize it.
+     </p>
+     <p>
+     To switch on log4cplus logging you need to compile xmlBlaster with the
+     <code>XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN</code> compiler define,
+     usually just set it to 1 in <code>build.properties</code>:
+     <pre>
+XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+     </pre>
+     and compile as usual with the command <code>build cpp</code> (Windows or Unix).
+     </p>
+     <p>
+     The log4cplus library is embedded by
+     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/Log4cplus.cpp.html">Log4cplus.cpp</a> if you
+     are curious about details.
+     </p>
+     <h2>
+     Redirect logging to your own logging library
+     </h2>
+     <p>
+     You need to implement two simple C++ abstract classes (a factory and the
+     logging calls) to redirect all logging output to your own code.
+     We do this as well for the above <code>log4cplus</code> support, you can use
+     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/Log4cplus.cpp.html">Log4cplus.cpp</a>
+     as an example implementation.
+     </p>
+     <p>
+     The first interface you need to implement is 
+     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/I_LogFactory.h.html">I_LogFactory.h</a>
+     which needs to create instances of your logging library (hidden by <code>I_Log</code>):
+     </p>
+     <pre><![CDATA[
+class I_LogFactory 
+  virtual void initialize(const PropMap& propMap) { propMap_ = propMap; };
+  virtual I_Log& getLog(const std::string& name="") = 0;
+  virtual void releaseLog(const std::string& name="") = 0;
+     ]]></pre>
+     <p>
+     The second interface you need to implement is
+     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/I_Log.h.html">I_Log.h</a>:
+     </p>
+     <pre><![CDATA[
+class I_Log
+   virtual void info(const std::string &instance, const std::string &text)= 0;
+   virtual void warn(const std::string &instance, const std::string &text)= 0;
+   virtual void error(const std::string &instance, const std::string &text)= 0;
+   virtual void trace(const std::string &instance, const std::string &text)= 0;
+   virtual void call(const std::string &instance, const std::string &text)= 0;
+   virtual std::string usage() const { return ""; }
+     ]]></pre>
+     <p>
+     For example if xmlBlaster logs an INFO message it invokes <code>info()</code>
+     and your code does with it what it likes to do.
+     </p>
+   </description>
+
+   <see type="API" lang="CPP">org::xmlBlaster::util::I_LogFactory</see>
+   <see type="API" lang="CPP">org::xmlBlaster::util::I_Log</see>
+   <see type="OTHER">http://log4cplus.sourceforge.net/</see>
+   <see type="OTHER">http://logging.apache.org/log4j/docs/manual.html/</see>
+   <see type="REQ">client.cpp.compile</see>
+   <author><a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a></author>
+   <date>2004 02 11</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
