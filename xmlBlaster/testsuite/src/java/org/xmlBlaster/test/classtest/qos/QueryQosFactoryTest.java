@@ -54,6 +54,7 @@ public class QueryQosFactoryTest extends TestCase {
          String xml =
            "<qos>\n" +
            "   <subscribe id='_subId:1'/>\n" +
+           "   <erase forceDestroy='true'/>\n" +
            "   <meta>false</meta>\n" +
            "   <content>false</content>\n" +
            "   <local>false</local>\n" +
@@ -65,6 +66,7 @@ public class QueryQosFactoryTest extends TestCase {
          QueryQosData qos = factory.readObject(xml);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
+         assertEquals("", true, qos.getForceDestroy());
          assertEquals("", false, qos.getWantMeta());
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
@@ -95,6 +97,7 @@ public class QueryQosFactoryTest extends TestCase {
          String xml =
            "<qos>\n" +
            "   <subscribe id='_subId:1'/>\n" +
+           "   <erase forceDestroy='true'/>\n" +
            "   <meta>false</meta>\n" +
            "   <content>false</content>\n" +
            "   <local>false</local>\n" +
@@ -108,6 +111,7 @@ public class QueryQosFactoryTest extends TestCase {
          qos = factory.readObject(newXml);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
+         assertEquals("", true, qos.getForceDestroy());
          assertEquals("", false, qos.getWantMeta());
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
