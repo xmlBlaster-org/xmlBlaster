@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.80 2002/05/09 14:03:10 ruff Exp $
+Version:   $Id: Main.java,v 1.81 2002/05/09 14:53:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -57,6 +57,8 @@ import remotecons.RemoteServer;
  * <code>   java org.xmlBlaster.Main -?</code>
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
 public class Main
 {
