@@ -9,6 +9,14 @@ Changes for 0.79 [?, ? 2000]
 
   - NOTE: JDK_HOME is not used anymore, use JAVA_HOME instead.
 
+  - The built in http IOR download server is now more close
+    to HTTP 1.1 spec RFC 2068
+
+  - New command line argument added to xmlBlaster server:
+    -iorHost <host>
+    allows to specify where the internal http server publishes
+    its bootstrapping IOR (for multi homed hosts).
+
   - build.xml:  Target 'all' collects demo and testuite classes
     into xmlBlaster.jar as well.
 
@@ -21,6 +29,8 @@ Changes for 0.79 [?, ? 2000]
   - RMI driver looks for xmlBlaster.polcy now in CLASSPATH as well, e.g.
        export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
     whith $XMLBLASTER_HOME/config/xmlBlaster.policy
+
+  - Migrated to XML-RPC java.1.0_beta_3 with JDK 1.3 patch
 
   - Migrated to Ant 1.1
 

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.66 2000/10/13 07:51:50 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.67 2000/10/15 10:53:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.66 $
+ * @version $Revision: 1.67 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -411,7 +411,7 @@ public class CorbaConnection implements I_InvocationRecorder
 
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
-      String iorHost = XmlBlasterProperty.get("iorHost", "localhost");
+      String iorHost = getLocalIP();
       int iorPort = XmlBlasterProperty.get("iorPort", org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
@@ -421,6 +421,7 @@ public class CorbaConnection implements I_InvocationRecorder
             return authServer;
          }
          catch(Exception e) {
+            if (Log.TRACE) Log.trace(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ": " + e.toString());
             if (!isReconnectPolling)
                Log.warn(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ".");
          }
@@ -460,6 +461,29 @@ public class CorbaConnection implements I_InvocationRecorder
       if (Log.TRACE) Log.trace(ME, "No -ns ...");
 
       throw new XmlBlasterException("NoAuthService", text);
+   }
+
+
+   /**
+    * The IP address where the HTTP server publishes the IOR.
+    * <p />
+    * You can specify the local IP address with e.g. -iorHost 192.168.10.1
+    * on command line, useful for multi-homed hosts.
+    *
+    * @return The local IP address, defaults to '127.0.0.1' if not known.
+    */
+   public String getLocalIP()
+   {
+      String ip_addr = XmlBlasterProperty.get("iorHost", (String)null);
+      if (ip_addr == null) {
+         try {
+            ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
+         } catch (java.net.UnknownHostException e) {
+            Log.warn(ME, "Can't determine local IP address, try e.g. '-iorHost 192.168.10.1' on command line: " + e.toString());
+         }
+         if (ip_addr == null) ip_addr = "127.0.0.1";
+      }
+      return ip_addr;
    }
 
 
@@ -757,6 +781,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    private String getAuthenticationServiceIOR(String iorHost, int iorPort) throws Exception
    {
+      if (Log.CALL) Log.call(ME, "Trying authentication service on " + iorHost + ":" + iorPort);
       java.net.URL nsURL = new java.net.URL("http", iorHost, iorPort, "/AuthenticationService.ior");
       // Note: the file name /AuthenticationService.ior is ignored in the current server implementation
       java.io.InputStream nsis = nsURL.openStream();
@@ -764,7 +789,7 @@ public class CorbaConnection implements I_InvocationRecorder
       java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
       int numbytes;
       while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
-         bos.write(bytes, 0, numbytes);
+         bos.write(bytes, 0, (numbytes > 4096) ? 4096 : numbytes);
       }
       nsis.close();
       String ior = bos.toString();

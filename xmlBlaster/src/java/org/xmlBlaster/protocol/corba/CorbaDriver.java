@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.8 2000/09/21 08:53:58 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.9 2000/10/15 10:53:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -90,8 +90,9 @@ public class CorbaDriver implements I_Driver
          // 2) Publish IOR on given port (switch off this feature with '-iorPort 0'
          int iorPort = XmlBlasterProperty.get("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
-            httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
-            Log.info(ME, "Published AuthServer IOR on port " + iorPort);
+            String ip_addr = getLocalIP();
+            httpIORServer = new HttpIORServer(ip_addr, iorPort, orb.object_to_string(authRef));
+            Log.info(ME, "Published AuthServer IOR on " + ip_addr + ":" + iorPort);
          }
 
          // 3) Publish IOR to a naming service
@@ -297,6 +298,29 @@ public class CorbaDriver implements I_Driver
 
 
    /**
+    * The IP address where the HTTP server publishes the IOR. 
+    * <p />
+    * You can specify the local IP address with e.g. -iorHost 192.168.10.1
+    * on command line, useful for multi-homed hosts.
+    *
+    * @return The local IP address, defaults to '127.0.0.1' if not known.
+    */
+   public String getLocalIP()
+   {
+      String ip_addr = XmlBlasterProperty.get("iorHost", (String)null);
+      if (ip_addr == null) {
+         try {
+            ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
+         } catch (java.net.UnknownHostException e) {
+            Log.warn(ME, "Can't determine local IP address, try e.g. '-iorHost 192.168.10.1' on command line: " + e.toString());
+         }
+         if (ip_addr == null) ip_addr = "127.0.0.1";
+      }
+      return ip_addr;
+   }
+
+
+   /**
     * Command line usage.
     */
    public String usage()
@@ -304,7 +328,8 @@ public class CorbaDriver implements I_Driver
       String text = "\n";
       text += "CorbaDriver options:\n";
       text += "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).\n";
-      text += "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.\n";
+      text += "   -iorHost            IP address where the builtin http server publishes its AuthServer IOR (useful for multihomed hosts).\n";
+      text += "   -iorPort            Port number where the builtin http server publishes its AuthServer IOR.\n";
       text += "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
       text += "                       Default is to publish the IOR to a naming service.\n";
