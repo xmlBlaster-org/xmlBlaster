@@ -235,6 +235,7 @@ TODO
       <!--  disable Microsoft Extensions   -->
       <compilerarg value="/GR"/> <!--enable C++ RTTI, used in TestQueue.cpp -->
       <compilerarg value="/TP" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ -->
+      <compilerarg value="/YX"/> <!-- use precompiled headers -->
       <compilerarg value="-D${thread.impl}" />  <!-- -DBOOST or  -DOMNITHREAD -->
    </compiler>
 
