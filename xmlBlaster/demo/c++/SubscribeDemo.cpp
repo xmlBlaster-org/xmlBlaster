@@ -134,7 +134,7 @@ public:
       wantContent = global_.getProperty().get("wantContent", true);
       historyNumUpdates = global_.getProperty().get("historyNumUpdates", 1);
       historyNewestFirst = global_.getProperty().get("historyNewestFirst", true);
-      filterType = global_.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
+      filterType = global_.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter | Sql92Filter
       filterVersion = global_.getProperty().get("filter.version", "1.0");
       filterQuery = global_.getProperty().get("filter.query", "");
       unSubscribe = global_.getProperty().get("unSubscribe", true);
