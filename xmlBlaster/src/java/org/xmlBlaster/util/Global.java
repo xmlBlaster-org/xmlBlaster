@@ -1792,6 +1792,11 @@ public class Global implements Cloneable
       return new ClientDeliveryConnectionsHandler(this, deliveryManager, addrArr);
    }
 
+   public void finalize() {
+      if (log.TRACE) log.trace(ME, "Entering finalize");
+      shutdown();
+   }
+
    public void shutdown() {
       log.info(ME, "Destroying global handle");
       if (deliveryWorkerPool != null) {
