@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.21 1999/12/15 00:45:26 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.22 2000/01/15 15:32:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -319,7 +319,8 @@ public class MessageUnitHandler
 
 
    /**
-    * Send updates to all subscribed clients.
+    * Send updates to all subscribed clients. 
+    * <p />
     * The whole update blocks if one client would block - to avoid this the IDL update()
     * method is marked <code>oneway</code>
     */
