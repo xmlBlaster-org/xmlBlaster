@@ -345,7 +345,7 @@ public interface I_Queue extends I_StorageProblemNotifier
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return The number of elements currently in the queue
+    * @return The amount of bytes currently in the queue
     */
    long getNumOfBytes();
 
@@ -354,13 +354,13 @@ public interface I_Queue extends I_StorageProblemNotifier
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return int the number of elements currently in the queue
+    * @return The amount of bytes currently in the queue
     */
    long getNumOfPersistentBytes();
 
    /**
-    * returns the capacity (maximum bytes) for this queue
-    * @return int the maximum number of elements in the queue
+    * Access the configured capacity (maximum bytes) for this queue
+    * @return The maximum capacity for the queue in bytes
     */
    long getMaxNumOfBytes();
 
