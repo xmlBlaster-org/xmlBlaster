@@ -5,15 +5,14 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -74,13 +73,15 @@ public class I_QueueTest extends TestCase {
                  };
 */
 
-   public I_QueueTest(String name, int currImpl) {
+   public I_QueueTest(String name, int currImpl, Global glob) {
       super(name);
 //      this.queue = IMPL[currImpl];
       //this.ME = "I_QueueTest[" + this.queue.getClass().getName() + "]";
 
-      this.glob = Global.instance();
-      this.log = glob.getLog(null);
+      if (glob == null) this.glob = Global.instance();
+      else this.glob = glob;
+
+      this.log = glob.getLog("test");
       try {
          String type = PLUGIN_TYPES[currImpl];
          this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
@@ -282,7 +283,17 @@ public class I_QueueTest extends TestCase {
          this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
          log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
-         ArrayList entryList = queue.takeLowest(1, -1L, null, false);
+         ArrayList entryList = null;
+         try {
+            entryList = queue.peekLowest(1, -1L, null, false);
+            assertEquals("PEEK #1 failed"+queue.toXml(""), 1, entryList.size());
+            log.info(ME, "curr entries="+queue.getNumOfEntries());
+         }
+         catch (XmlBlasterException e) {
+            if (e.getErrorCode()!=ErrorCode.INTERNAL_NOTIMPLEMENTED) throw e;
+         }
+
+         entryList = queue.takeLowest(1, -1L, null, false);
          assertEquals("TAKE #1 failed"+queue.toXml(""), 1, entryList.size());
          log.info(ME, "curr entries="+queue.getNumOfEntries());
 
@@ -723,7 +734,9 @@ public class I_QueueTest extends TestCase {
             queue.put(queueEntries, false);
 
             I_QueueEntry[] testEntryArr = { queueEntries[0] };
-            long numRemoved = queue.removeRandom(testEntryArr);
+            long numRemoved = 0L;
+            boolean[] tmpArr = queue.removeRandom(testEntryArr);
+            for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
 
             assertEquals(ME+": Wrong number removed", 1, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
@@ -742,7 +755,9 @@ public class I_QueueTest extends TestCase {
             I_QueueEntry[] testEntryArr = { queueEntries[0], 
                                             queueEntries[2]
                                           };
-            long numRemoved = queue.removeRandom(testEntryArr);
+            long numRemoved = 0L;
+            boolean[] tmpArr = queue.removeRandom(testEntryArr);
+            for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
 
             assertEquals(ME+": Wrong number removed", 2, numRemoved);
             assertEquals(ME+": Wrong size", 1, queue.getNumOfEntries());
@@ -768,7 +783,9 @@ public class I_QueueTest extends TestCase {
                          new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
                          queueEntries[2],
                                         };
-            long numRemoved = queue.removeRandom(dataIdArr);
+            long numRemoved = 0L;
+            boolean[] tmpArr = queue.removeRandom(dataIdArr);
+            for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
 
             assertEquals(ME+": Wrong number removed", 2, numRemoved);
             assertEquals(ME+": Wrong size", 1, queue.getNumOfEntries());
@@ -787,7 +804,10 @@ public class I_QueueTest extends TestCase {
             queue.put(queueEntries, false);
 
             I_QueueEntry[] dataIdArr = new I_QueueEntry[0];
-            long numRemoved = queue.removeRandom(dataIdArr);
+
+            long numRemoved = 0L;
+            boolean[] tmpArr = queue.removeRandom(dataIdArr);
+            for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
 
             assertEquals(ME+": Wrong number removed", 0, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
@@ -799,7 +819,10 @@ public class I_QueueTest extends TestCase {
          {
             queue.put((DummyEntry[])null, false);
 
-            long numRemoved = queue.removeRandom((I_QueueEntry[])null);
+//            long numRemoved = queue.removeRandom((I_QueueEntry[])null);
+            long numRemoved = 0L;
+            boolean[] tmpArr = queue.removeRandom((I_QueueEntry[])null);
+            for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
 
             assertEquals(ME+": Wrong number removed", 0, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
@@ -857,7 +880,20 @@ public class I_QueueTest extends TestCase {
       assertEquals(me+": Wrong size of entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfBytes());
       assertEquals(me+": Wrong amount of persistent entries in queue before takeLowest invocation ", entriesLeft, queue.getNumOfPersistentEntries());
       assertEquals(me+": Wrong size of persistent entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfPersistentBytes());
-      ArrayList list = queue.takeLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
+
+      ArrayList list = null;
+      try {
+         list = queue.peekLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
+         assertEquals(me+": Wrong number of entries in peekLowest return ", currentEntries, list.size());
+         assertEquals(me+": Wrong number of entries in queue after peekLowest invocation ", entriesLeft, queue.getNumOfEntries());
+         assertEquals(me+": Wrong number of bytes in queue after peekLowest invocation ", size*(entriesLeft), queue.getNumOfBytes());
+         assertEquals(me+": Wrong number of persitent bytes in queue after takeLowest invocation ", size*(entriesLeft), queue.getNumOfPersistentBytes());
+      }
+      catch (XmlBlasterException e) {
+         if (e.getErrorCode()!=ErrorCode.INTERNAL_NOTIMPLEMENTED) throw e;
+      }
+
+      list = queue.takeLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
       assertEquals(me+": Wrong number of entries in takeLowest return ", currentEntries, list.size());
       assertEquals(me+": Wrong number of entries in queue after takeLowest invocation ", entriesLeft-currentEntries, queue.getNumOfEntries());
       assertEquals(me+": Wrong number of bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfBytes());
@@ -1362,16 +1398,16 @@ public class I_QueueTest extends TestCase {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
       for (int i=0; i<PLUGIN_TYPES.length; i++) {
-         suite.addTest(new I_QueueTest("testConfig", i));
-         suite.addTest(new I_QueueTest("testSize1", i));
-         suite.addTest(new I_QueueTest("testPutMsg", i));
-         suite.addTest(new I_QueueTest("testPeekMsg", i));
-         suite.addTest(new I_QueueTest("testRemoveRandom", i));
-         suite.addTest(new I_QueueTest("testRemoveWithPriority", i));
-         suite.addTest(new I_QueueTest("testTakeLowest", i));
-         suite.addTest(new I_QueueTest("testPutEntriesTwice", i));
-         suite.addTest(new I_QueueTest("testPeekWithLimitEntry", i));
-         suite.addTest(new I_QueueTest("testSizesCheck", i));
+         suite.addTest(new I_QueueTest("testConfig", i, glob));
+         suite.addTest(new I_QueueTest("testSize1", i, glob));
+         suite.addTest(new I_QueueTest("testPutMsg", i, glob));
+         suite.addTest(new I_QueueTest("testPeekMsg", i, glob));
+         suite.addTest(new I_QueueTest("testRemoveRandom", i, glob));
+         suite.addTest(new I_QueueTest("testRemoveWithPriority", i, glob));
+         suite.addTest(new I_QueueTest("testTakeLowest", i, glob));
+         suite.addTest(new I_QueueTest("testPutEntriesTwice", i, glob));
+         suite.addTest(new I_QueueTest("testPeekWithLimitEntry", i, glob));
+         suite.addTest(new I_QueueTest("testSizesCheck", i, glob));
       }
       return suite;
    }
@@ -1389,7 +1425,7 @@ public class I_QueueTest extends TestCase {
       Global glob = new Global(args);
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
-         I_QueueTest testSub = new I_QueueTest("I_QueueTest", i);
+         I_QueueTest testSub = new I_QueueTest("I_QueueTest", i, glob);
 
          long startTime = System.currentTimeMillis();
 

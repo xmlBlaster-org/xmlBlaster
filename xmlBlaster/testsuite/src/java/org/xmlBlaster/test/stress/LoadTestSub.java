@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.12 2003/04/21 14:57:31 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.13 2003/04/25 09:51:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -56,13 +56,14 @@ public class LoadTestSub extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private int burstModePublish = 1;
    private boolean publishOneway = false;
+   private boolean persistent = false;
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
    private int lastContentNumber = -1;
    private final String someContent = "Yeahh, i'm the new content, my total length is big an bigger but still i want to be longer and longer until i have reached some 180 bytes, here is remaining blahh to fill the last";
 
    public LoadTestSub() { // JUNIT
-      this(new Global(), "LoadTestSub", "LoadTestSub", "secret", 1000, 1, false);
+      this(new Global(), "LoadTestSub", "LoadTestSub", "secret", 1000, 1, false, false);
    }
    
    /**
@@ -73,7 +74,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     * @param numPublish The number of messages to send
     * @param burstModePublish send given number of publish messages in one bulk
     */
-   public LoadTestSub(Global glob, String testName, String loginName, String passwd, int numPublish, int burstModePublish, boolean publishOneway)
+   public LoadTestSub(Global glob, String testName, String loginName, String passwd, int numPublish, int burstModePublish, boolean publishOneway, boolean persistent)
    {
        super(testName);
        this.glob = glob;
@@ -84,6 +85,7 @@ public class LoadTestSub extends TestCase implements I_Callback
        this.numPublish = numPublish;
        this.burstModePublish = burstModePublish;
        this.publishOneway = publishOneway;
+       this.persistent = persistent;
    }
 
 
@@ -183,7 +185,7 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
       String qos = "";
-      //String qos = "<qos><persistent>false</persistent></qos>";
+      if (this.persistent) qos = "<qos><persistent>true</persistent></qos>";
       //String qos = "<qos><persistent>true</persistent></qos>";
 
       MsgUnit[] arr = new MsgUnit[burstModePublish];
@@ -306,7 +308,7 @@ public class LoadTestSub extends TestCase implements I_Callback
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        int numMsg = 200;
-       suite.addTest(new LoadTestSub(new Global(), "testManyPublish", loginName, "secret", numMsg, 200, false));
+       suite.addTest(new LoadTestSub(new Global(), "testManyPublish", loginName, "secret", numMsg, 200, false, false));
        return suite;
    }
 
@@ -316,6 +318,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       System.out.println("   -numPublish         Number of messages to send [5000].");
       System.out.println("   -publish.burstMode  Collect given number of messages when publishing [1].");
       System.out.println("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
+      System.out.println("   -publish.persistent Send persistent messages if set to true, otherwise transient. [false].");
       System.out.println(Global.instance().usage());
    }
 
@@ -341,10 +344,11 @@ public class LoadTestSub extends TestCase implements I_Callback
       int numPublish = glob.getProperty().get("numPublish", 5000);
       int burstModePublish = glob.getProperty().get("publish.burstMode", 1);
       boolean publishOneway = glob.getProperty().get("publish.oneway", false);
+      boolean persistent = glob.getProperty().get("publish.persistent", false);
 
       LoadTestSub testSub = new LoadTestSub(glob, "LoadTestSub", glob.getProperty().get("name", "Tim"),
                                             glob.getProperty().get("passwd", "secret"),
-                                            numPublish, burstModePublish, publishOneway);
+                                            numPublish, burstModePublish, publishOneway, persistent);
       testSub.setUp();
       testSub.testManyPublish();
       System.out.println("Success, hit a key to logout and exit");

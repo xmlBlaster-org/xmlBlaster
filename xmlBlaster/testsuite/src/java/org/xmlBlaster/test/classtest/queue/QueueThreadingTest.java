@@ -7,8 +7,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 // import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 // import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;

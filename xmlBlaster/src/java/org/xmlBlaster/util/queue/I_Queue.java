@@ -213,6 +213,14 @@ public interface I_Queue extends I_StorageProblemNotifier
    ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException;
 
+
+
+   /**
+    * Same as takeLowest but it does not remove the entries.
+    */
+   ArrayList peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+      throws XmlBlasterException;
+
    /**
     * Returns the first element in the queue
     * but does not remove it from that queue (leaves it untouched).
@@ -389,9 +397,10 @@ public interface I_Queue extends I_StorageProblemNotifier
    /**
     * Removes the given entries.
     * @param queueEntries the entries to erase.
-    * @return the number of elements erased.
+    * @return a boolean array of the same size as the queueEntries array. If an entry is true it means
+    *         it could be removed, if false it means it could not be removed (probably already removed)
     */
-   long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException;
+   boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException;
 
    /**
     * Removes the given entry.

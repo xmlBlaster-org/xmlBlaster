@@ -421,7 +421,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < ids.length; i++)
                ids[i] = ((I_QueueEntry)ret.get(i)).getUniqueId();
 
-            this.numOfEntries -= this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            boolean tmp[] = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            for (int i=0; i < tmp.length; i++) {
+               if (tmp[i]) this.numOfEntries--;
+            }
             return ret;
          }
       }
@@ -454,7 +457,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
       try {
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne);
+            ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
 
@@ -469,6 +472,29 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       catch (SQLException ex) {
          resetCounters();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "takeLowest() caught sql exception, status is" + toXml(""), ex);
+      }
+   }
+
+
+   /**
+    * @see I_Queue#peekLowest(int, long, I_QueueEntry, boolean)
+    */
+   public ArrayList peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+      throws XmlBlasterException {
+
+      long minUniqueId = 0L;
+      int maxPriority = Integer.MAX_VALUE;
+      if (limitEntry != null) {
+         minUniqueId = limitEntry.getUniqueId();
+         maxPriority = limitEntry.getPriority();
+      }
+
+      try {
+         ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, false);
+         return ret.list;
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekLowest() caught sql exception, status is" + toXml(""), ex);
       }
    }
 
@@ -638,7 +664,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public int removeRandom(long dataId) throws XmlBlasterException {
       long[] args = new long[1];
       args[0] = dataId;
-      return (int)removeRandom(args);
+      if (removeRandom(args)[0]) return 1;
+      else return 0;
    }
 
 
@@ -646,7 +673,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * Removes the given entries.
     * @param msgQueueEntry the entry to erase.
     */
-   public long removeRandom(long[] dataIdArray) throws XmlBlasterException {
+   public boolean[] removeRandom(long[] dataIdArray) throws XmlBlasterException {
       try {
          ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), dataIdArray);
          return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
@@ -696,8 +723,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    /**
     * @see I_Queue#removeRandom(I_Entry[])
     */
-   public long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
-      if (queueEntries == null) return 0;
+   public boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
+      if (queueEntries == null || queueEntries.length == 0) return new boolean[0];
+      boolean ret[] = new boolean[queueEntries.length];
       try {
          long[] ids = new long[queueEntries.length];
 
@@ -714,19 +742,33 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          }
 
          synchronized(this.modificationMonitor) {
+/*
+            int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            long sum = 0;
+            for (int i=0; i < tmp.length; i++) {
+               if (this.log.TRACE) this.log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
+               ret[i] = tmp[i] > 0 || tmp[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
+               if (ret[i]) sum++;
+            }
+*/  
+            boolean[] tmp = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            long sum = 0;
+            for (int i=0; i < tmp.length; i++) {
+               if (tmp[i]) sum++;
+            }
 
-            long ret = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
-            this.numOfEntries -= ret;
+            this.numOfEntries -= sum;
 
-            if ((int)ret != queueEntries.length) { // then we need to retrieve the values
-               resetCounters();
+            if ((int)sum != queueEntries.length) { // then we need to retrieve the values
+               resetCounters();  // now it can be optimized since boolean[] is given back
             }
             else {
                this.numOfBytes -= currentAmount;
                this.numOfPersistentBytes -= currentPersistentSize;
                this.numOfPersistentEntries -= currentPersistentEntries;
             }
-            return ret;
+//            return ret;
+            return tmp;
          }
       }
       catch (SQLException ex) {
@@ -742,7 +784,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
       ArrayList array = this.peekWithPriority((int)numOfEntries, numOfBytes, minPriority, maxPriority);
-      return removeRandom((I_QueueEntry[])array.toArray(new I_QueueEntry[array.size()]));
+      boolean ret[] = removeRandom((I_QueueEntry[])array.toArray(new I_QueueEntry[array.size()]));
+      long count = 0L;
+      for (int i=0; i < ret.length; i++) if (ret[i]) count++;
+      return count;
    }
 
    /**

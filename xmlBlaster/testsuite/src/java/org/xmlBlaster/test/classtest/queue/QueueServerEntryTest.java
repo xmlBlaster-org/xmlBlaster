@@ -5,12 +5,8 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-// import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-// import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -51,7 +47,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @see org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry
  * @see org.xmlBlaster.util.queue.I_Queue
  * @see org.xmlBlaster.util.queue.ram.RamQueuePlugin
- * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+ * @see org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin
  */
 public class QueueServerEntryTest extends TestCase {
    private String ME = "QueueServerEntryTest";

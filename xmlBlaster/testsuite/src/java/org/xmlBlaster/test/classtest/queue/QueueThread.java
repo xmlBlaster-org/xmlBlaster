@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.classtest.queue;
 
 // import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;

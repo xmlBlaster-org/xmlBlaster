@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.BatchUpdateException;
 
 import java.util.Hashtable;
 import java.io.IOException;
@@ -1434,10 +1435,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     * Under the same transaction it gets and deletes all the entries which fit
     * into the constrains specified in the argument list.
+    * The entries are really deleted only if doDelete is true, otherwise they are left untouched on the queue
     * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)
     */
    public ReturnDataHolder getAndDeleteLowest(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes,
-      int maxPriority, long minUniqueId, boolean leaveOne) throws XmlBlasterException, SQLException {
+      int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete) throws XmlBlasterException, SQLException {
 
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getAndDeleteLowest"), "Entering");
@@ -1507,18 +1509,21 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (this.log.TRACE) this.log.trace(ME, "takeLowest size to delete: "  + entryToDelete.getSizeInBytes());
             }
          }
-         //first strip the unique ids:
-         long[] uniqueIds = new long[ret.list.size()];
-         for (int i=0; i < uniqueIds.length; i++)
-            uniqueIds[i] = ((I_Entry)ret.list.get(i)).getUniqueId();
 
-         String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(";
-         ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
-         for (int i=0; i < reqList.size(); i++) {
-            req = (String)reqList.get(i);
-            if (this.log.TRACE)
-               this.log.trace(getLogId(queueName, nodeId, "getAndDeleteLowest"), "'delete from " + req + "'");
-            update(req, query.conn);
+         if (doDelete) {
+            //first strip the unique ids:
+            long[] uniqueIds = new long[ret.list.size()];
+            for (int i=0; i < uniqueIds.length; i++)
+               uniqueIds[i] = ((I_Entry)ret.list.get(i)).getUniqueId();
+           
+            String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(";
+            ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
+            for (int i=0; i < reqList.size(); i++) {
+               req = (String)reqList.get(i);
+               if (this.log.TRACE)
+                  this.log.trace(getLogId(queueName, nodeId, "getAndDeleteLowest"), "'delete from " + req + "'");
+               update(req, query.conn);
+            }
          }
 
          query.conn.commit();
@@ -1546,43 +1551,126 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   tableName the name of the table on which to delete the entries
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
-   public int deleteEntries(String queueName, String nodeId, long[] uniqueIds)
+   public boolean[] deleteEntries(String queueName, String nodeId, long[] uniqueIds)
       throws XmlBlasterException, SQLException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntries"), "Entering");
 
       if (!this.isConnected) {
          if (this.log.TRACE)
             this.log.trace(getLogId(queueName, nodeId, "deleteEntries"), "Currently not possible. No connection to the DB");
-         return 0;
+         return new boolean[uniqueIds.length];
       }
 
+      Connection conn = null;
       try {
          int count = 0;
          String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(";
          ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
 
+         conn = pool.getConnection();
+         conn.setAutoCommit(false);
+
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
             if (this.log.TRACE)
                this.log.trace(getLogId(queueName, nodeId, "deleteEntries"), "'delete from " + req + "'");
-
-            count +=  update(req);
+            count +=  update(req, conn);
          }
-         return count;
+         if (count != uniqueIds.length) conn.rollback();
+         else {
+            conn.commit();
+            boolean[] ret = new boolean[uniqueIds.length];
+            for (int i=0; i < ret.length; i++) ret[i] = true;
+            return ret;
+         }
+
       }
       catch (SQLException ex) {
-         Connection conn = null;
-         try {
-            conn = this.pool.getConnection();
-            if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
-               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
-         }
-         finally {
-            if (conn != null) this.pool.releaseConnection(conn);
-         }
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
          throw ex;
       }
+      finally {
+         if (conn != null) {
+            try {
+               conn.setAutoCommit(true);
+            }
+            catch (Throwable ex) {
+               this.log.error(ME, "error when setting autocommit to 'true'. reason: " + ex.toString());
+            }
+            this.pool.releaseConnection(conn);
+         }
+      }
+
+      boolean[] ret = new boolean[uniqueIds.length];
+      for (int i=0; i < uniqueIds.length; i++) {
+         ret[i] = deleteEntry(queueName, nodeId, uniqueIds[i]) == 1;
+      }
+      return ret;
    }
+
+
+   /**
+    * Deletes the entry specified
+    *
+    * @param   tableName the name of the table on which to delete the entries
+    * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
+    */
+   public int[] deleteEntriesBatch(String queueName, String nodeId, long[] uniqueIds)
+      throws XmlBlasterException, SQLException {
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntriesBatch"), "Entering");
+
+      if (!this.isConnected) {
+         if (this.log.TRACE)
+            this.log.trace(getLogId(queueName, nodeId, "deleteEntry"), "Currently not possible. No connection to the DB");
+         int[] ret = new int[uniqueIds.length];
+         for (int i=0; i < ret.length; i++) ret[i] = 0;
+         return ret;
+      }
+
+      Connection conn = null;
+      PreparedStatement st = null;
+      try {
+         conn =  this.pool.getConnection();
+         conn.setAutoCommit(false);
+         String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
+         st = conn.prepareStatement(req);
+
+         for (int i=0; i < uniqueIds.length; i++) {
+            st.setString(1, queueName);
+            st.setString(2, nodeId);
+            st.setLong(3, uniqueIds[i]);
+            st.addBatch();
+         }
+         int[] ret = st.executeBatch();
+         if (!conn.getAutoCommit()) conn.commit();
+         return ret;
+      }
+      catch (BatchUpdateException ex) {
+         if (!conn.getAutoCommit()) conn.commit();
+         return ex.getUpdateCounts();
+      }
+      catch (SQLException ex) {
+         if (!conn.getAutoCommit()) conn.rollback();
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
+         else throw ex;
+      }
+      finally {
+         try {
+            if (st != null) st.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
+         }
+         if (conn != null) {
+            conn.setAutoCommit(true);
+            this.pool.releaseConnection(conn);
+         }
+      }
+   }
+
+
 
 
 

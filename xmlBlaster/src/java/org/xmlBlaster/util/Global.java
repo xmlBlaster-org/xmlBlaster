@@ -54,7 +54,7 @@ import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
+// import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -1490,6 +1490,7 @@ public class Global implements Cloneable
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
+/*
    public synchronized JdbcManager getJdbcQueueManager(PluginInfo pluginInfo)
       throws XmlBlasterException {
 
@@ -1524,7 +1525,6 @@ public class Global implements Cloneable
 
       try {
          if (!manager.getPool().isInitialized()) {
-//            manager.getPool().initialize(this, managerName + ".queue.persistent");
             manager.getPool().initialize(this, pluginInfo.getParameters());
             if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
@@ -1537,7 +1537,7 @@ public class Global implements Cloneable
       }
       return manager;
    }
-
+*/
 
    /**
     * Returns a JdbcManagerCommonTable for a specific queue. It strips the queueId to
@@ -1643,16 +1643,7 @@ public class Global implements Cloneable
       // determine which jdbc manager class to use
       String queueClassName = pluginInfo.getClassName();
       if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
-         // then it is a JdbcManager
-         JdbcManager manager = new JdbcManager(pool, null);
-         pool.registerStorageProblemListener(manager);
-         try {
-            manager.setUp();
-            manager.wipeOutDB();
-         }
-         catch (SQLException ex) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB", ex);
-         }
+         this.log.error(ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
@@ -1845,16 +1836,6 @@ public class Global implements Cloneable
 
       shutdownHttpServer();
 
-      if (this.jdbcQueueManagers != null) {
-         java.util.Enumeration enum = this.jdbcQueueManagers.keys();
-         while (enum.hasMoreElements()) {
-            String key = (String)enum.nextElement();
-            Object obj = this.jdbcQueueManagers.get(key);
-            if (obj != null) ((JdbcManager)obj).shutdown();
-         }
-         this.jdbcQueueManagers.clear();
-         this.jdbcQueueManagers = null;
-      }
       if (this.jdbcQueueManagersCommonTable != null) {
          java.util.Enumeration enum = this.jdbcQueueManagersCommonTable.keys();
          while (enum.hasMoreElements()) {

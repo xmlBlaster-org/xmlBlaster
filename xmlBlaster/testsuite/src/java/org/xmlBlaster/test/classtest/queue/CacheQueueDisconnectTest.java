@@ -7,8 +7,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 // import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 // import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
@@ -198,7 +196,7 @@ public class CacheQueueDisconnectTest extends TestCase {
             long uniqueId = ((DummyEntry)lst.get(i)).getUniqueId();
             assertEquals(me + ": wrong order in entries: ", entries[i].getUniqueId(), uniqueId);
             this.log.info(me, "remove one entry");
-     	    queue.removeRandom(entries[i]);
+            queue.removeRandom(entries[i]);
          }
       }
   

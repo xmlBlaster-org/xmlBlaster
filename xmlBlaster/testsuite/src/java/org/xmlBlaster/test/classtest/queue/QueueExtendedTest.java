@@ -7,8 +7,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 // import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 // import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
@@ -77,7 +75,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  * @see org.xmlBlaster.util.queue.I_Queue
  * @see org.xmlBlaster.util.queue.ram.RamQueuePlugin
- * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+ * @see org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin
  */
 public class QueueExtendedTest extends TestCase {
    private String ME = "QueueExtendedTest";

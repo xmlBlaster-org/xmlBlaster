@@ -7,8 +7,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -97,7 +95,7 @@ public class CacheQueueTest extends TestCase {
 
    protected void setUp() {
       glob = Global.instance();
-      log = glob.getLog(null);
+      log = glob.getLog("test");
       QueuePropertyBase cbProp = null;
 
       try {
@@ -440,7 +438,9 @@ public class CacheQueueTest extends TestCase {
          long uniqueId = ((I_QueueEntry)list.get(i)).getUniqueId();
          assertEquals(ME + " entry sequence is wrong ", entries[i].getUniqueId(), uniqueId);
       }
-      long ret = this.queue.removeRandom( (I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]) );
+      long ret = 0L;
+      boolean[] tmpArr = this.queue.removeRandom( (I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]) );
+      for (int i=0; i < tmpArr.length; i++) if (tmpArr[i]) ret++;
       assertEquals(ME + " number of entries removed is wrong ", (long)entries2, ret);
 
       list = this.queue.peek(-1, -1L);

@@ -193,7 +193,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          totalSize -= size;
          assertEquals(me + " num of bytes in queue 'queue1' after deleting transients", totalSize, numOfBytes);
 
-         ReturnDataHolder retHolder = this.manager.getAndDeleteLowest(storageId, "Fritz", 2, -1, 10, -1, false);
+         ReturnDataHolder retHolder = this.manager.getAndDeleteLowest(storageId, "Fritz", 2, -1, 10, -1, false, true);
          assertEquals(me + " getAndDeleteLowest check", 2, retHolder.countEntries);
 
          long entriesToDelete[] = new long[2];

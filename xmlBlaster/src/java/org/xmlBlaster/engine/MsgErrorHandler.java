@@ -102,7 +102,12 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          // Remove the above published dead message from the queue
          try {
             if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
-            long removed = (msgQueue == null) ? 0 : msgQueue.removeRandom(msgQueueEntries);
+            long removed = 0L;
+            if (msgQueue != null) {
+               boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
+               for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
+            }
+
             if (removed != msgQueueEntries.length) {
                log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
                return;  // Seems to come from mime access plugin as the message where not in the queue

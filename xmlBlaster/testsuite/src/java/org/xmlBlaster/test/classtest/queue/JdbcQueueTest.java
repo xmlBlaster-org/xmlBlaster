@@ -5,12 +5,8 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-// import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin;
-import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-// import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -331,33 +327,33 @@ public class JdbcQueueTest extends TestCase {
          for (int j=0; j < 4; j++) {
             DummyEntry[] entries = new DummyEntry[nmax];
             for (int i=0; i < nmax; i++) {
-      	       entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), size, true);
-     	    }
-     	    long time1 = System.currentTimeMillis();
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), size, true);
+            }
+            long time1 = System.currentTimeMillis();
             tmpQueue.put(entries, false);
-     	    long delta = System.currentTimeMillis() - time1;
-     	    this.log.info(ME, "multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
-     	   
-     	    ArrayList list = tmpQueue.peek(-1, -1L);
+            long delta = System.currentTimeMillis() - time1;
+            this.log.info(ME, "multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+           
+            ArrayList list = tmpQueue.peek(-1, -1L);
             assertEquals("Wrong number of entries in queue", nmax, list.size());
-     	   
-     	    time1 = System.currentTimeMillis();
-     	    tmpQueue.removeRandom(entries);
-     	    delta = System.currentTimeMillis() - time1;
-     	    this.log.info(ME, "multiple remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
-     	    tmpQueue.clear();
-     	   
-     	    time1 = System.currentTimeMillis();
-     	    for (int i=0; i < nmax; i++) {
-     	       tmpQueue.put(entries[i], false);
-     	    }
-     	    delta = System.currentTimeMillis() - time1;
-     	    this.log.info(ME, "repeated single put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
-     	   
-     	    time1 = System.currentTimeMillis();
-     	    for (int i=0; i < nmax; i++) tmpQueue.removeRandom(entries[i]);
-     	    delta = System.currentTimeMillis() - time1;
-     	    this.log.info(ME, "repeated single remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+           
+            time1 = System.currentTimeMillis();
+            tmpQueue.removeRandom(entries);
+            delta = System.currentTimeMillis() - time1;
+            this.log.info(ME, "multiple remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            tmpQueue.clear();
+           
+            time1 = System.currentTimeMillis();
+            for (int i=0; i < nmax; i++) {
+               tmpQueue.put(entries[i], false);
+            }
+            delta = System.currentTimeMillis() - time1;
+            this.log.info(ME, "repeated single put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+           
+            time1 = System.currentTimeMillis();
+            for (int i=0; i < nmax; i++) tmpQueue.removeRandom(entries[i]);
+            delta = System.currentTimeMillis() - time1;
+            this.log.info(ME, "repeated single remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
             nmax *= 10;
          }
          tmpQueue.shutdown(); // to allow to initialize again

@@ -2,6 +2,18 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+
+ o removed JdbcQueuePlugin. Now only JdbcQueueCommonTablePlugin available. This was
+   necessary since maintenance of double code became prohibitive.
+
+ o I_Queue.removeRandom now returns boolean[]
+
+ o CacheQueueInterceptorPlugin synch is now less detailed but more simple
+ 
+ o BUGFIX: deleteAllTransient does only delete own entries 
+ 
+ o BUGFIX: inconsistency between cached numOfEntries and numOfBytes on jdbc fixed
+
  o http push example updated to be functional for this release
 
  o Fixed and updated cluster demo

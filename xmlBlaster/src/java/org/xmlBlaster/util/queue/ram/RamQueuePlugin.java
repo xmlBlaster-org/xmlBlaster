@@ -262,7 +262,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (numOfEntries > Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "remove: too many entries to remove " + numOfEntries);
       ArrayList elementsToRemove = peekWithPriority((int)numOfEntries, numOfBytes, minPriority, maxPriority);
-      return removeRandom((I_Entry[])elementsToRemove.toArray(new I_Entry[elementsToRemove.size()]));
+      boolean[] ret = removeRandom((I_Entry[])elementsToRemove.toArray(new I_Entry[elementsToRemove.size()]));
+      long count = 0L;
+      for (int i=0; i < ret.length;i++) if (ret[i]) count++;
+      return count;
    }
 
    /**
@@ -453,19 +456,18 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public int removeRandom(I_Entry entry) throws XmlBlasterException {
       I_Entry[] arr = new I_Entry[1];
       arr[0] = entry;
-      return (int)removeRandom(arr);
+      if (removeRandom(arr)[0]) return 1; 
+      else return 0;
    }
 
    /**
     * @see I_Queue#removeRandom(I_Entry[])
     */
-   public long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
-      long ret = 0L;
-      if ((queueEntries == null) || (queueEntries.length == 0))
-         return 0;
+   public boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
+      if ((queueEntries == null) || (queueEntries.length == 0)) return new boolean[0];
+      boolean ret[] = new boolean[queueEntries.length];
       synchronized(this) {
-         ret = this.storage.size();
-         if (ret == 0) return 0;
+         if (this.storage.size() == 0) return ret; // all entries are false 
 
          /* Did not work with all virtual machines ...
          this.storage.removeAll(java.util.Arrays.asList(queueEntries));
@@ -477,6 +479,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
             queueEntries[j].setStored(false); // tell the entry it has been removed from the storage ...
             if (this.storage.remove(queueEntries[j])) {
+               ret[j] = true;
                I_Entry entry = queueEntries[j];
                this.sizeInBytes -= entry.getSizeInBytes();
                if (entry.isPersistent()) {
@@ -485,7 +488,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
-         ret -= this.storage.size();
       }
       return ret;
    }
@@ -563,6 +565,22 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
+      return takeOrPeekLowest(numOfEntries, numOfBytes, limitEntry, leaveOne, true);
+   }
+
+   /**
+    * @see I_Queue#peekLowest(int, long, I_QueueEntry, boolean)
+    */
+   public ArrayList peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+      throws XmlBlasterException {
+      return takeOrPeekLowest(numOfEntries, numOfBytes, limitEntry, leaveOne, false);
+   }
+
+   /**
+    * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
+    */
+   private ArrayList takeOrPeekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne, boolean doDelete)
+      throws XmlBlasterException {
 
       synchronized(this) {
          LinkedList list = new LinkedList(this.storage);
@@ -584,18 +602,21 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             count++;
          }
          if (leaveOne && this.storage.size() == ret.size()) ret.remove(ret.size()-1);
-         for (int i=0; i < ret.size(); i++) {
-            // this.storage.removeAll(ret);
-            I_QueueEntry entry =  (I_QueueEntry)ret.get(i);
-            if (this.notifiedAboutAddOrRemove) {
-               entry.removed(this.storageId);
-            }
-            entry.setStored(false); // tell the entry it has been removed from the storage ...
-            if (this.storage.remove(entry)) {
-               this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isPersistent()) {
-                  this.numOfPersistentEntries--;
-                  this.persistentSizeInBytes -= entry.getSizeInBytes();
+
+         if (doDelete) {
+            for (int i=0; i < ret.size(); i++) {
+               // this.storage.removeAll(ret);
+               I_QueueEntry entry =  (I_QueueEntry)ret.get(i);
+               if (this.notifiedAboutAddOrRemove) {
+                  entry.removed(this.storageId);
+               }
+               entry.setStored(false); // tell the entry it has been removed from the storage ...
+               if (this.storage.remove(entry)) {
+                  this.sizeInBytes -= entry.getSizeInBytes();
+                  if (entry.isPersistent()) {
+                     this.numOfPersistentEntries--;
+                     this.persistentSizeInBytes -= entry.getSizeInBytes();
+                  }
                }
             }
          }
