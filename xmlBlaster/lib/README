@@ -141,8 +141,8 @@ All packages allow free use for both commercial and non-commercial applications.
    (see http://www.ruralnet.net/~kelley/java/Base64.java)
 
 
-11) ant.jar 1.2
-===============
+11) ant.jar 1.4.1
+=================
   Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
   (needs parser.jar)
   http://jakarta.apache.org/ant/index.html
