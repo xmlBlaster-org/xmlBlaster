@@ -314,7 +314,15 @@ One important note:
      jaco org.xmlBlaster.MainGUI -iorPort 0
 
    This client looks into jacorb.properties to find the URL with the naming service IOR.
-   Edit ${HOME}/jacorb.properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
+   Edit ${HOME}/jacorb.properties accordingly e.g.
+
+     jacorb.NameServerURL=http://localhost:80/NS_Ref
+   
+   or without http server:
+   
+     jacorb.NameServerURL=file:/usr/local/httpd/htdocs/NS_Ref
+
+   Start a client:
 
      jaco javaclients.ClientXml -iorPort 0
 
@@ -325,6 +333,18 @@ One important note:
 
    you should receive the IOR string, if everything is setup properly and the
    naming service is running.
+
+   Dump an IOR:
+      dior `cat /usr/local/httpd/htdocs/NS_Ref`
+   
+   { OLD stuff:
+   List the naming service:
+      -DORBInitRef.NameService=corbaname:192.168.78.14:2809
+      -DORBInitRef.NameService=corbaloc::eclipse:2809/NameService
+      jaco jacorb.naming.ContextLister
+      jaco -DORBInitRef.NamingService=corbaloc::160.45.11.41:38693/StandardNS/NameServer%2DPOA/_root
+        jacorb.naming.ContextLister
+   }
 
 
 +-----------------------------------+
