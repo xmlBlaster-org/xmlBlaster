@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.15 2004/02/09 10:08:03 ruff Exp $
+Version:   $Id: Address.cpp,v 1.16 2004/05/12 19:38:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -23,6 +23,7 @@ Version:   $Id: Address.cpp,v 1.15 2004/02/09 10:08:03 ruff Exp $
 #include <util/qos/address/Address.h>
 #include <util/lexical_cast.h>
 #include <util/Global.h>
+#include <util/StringTrim.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
@@ -67,6 +68,20 @@ inline void Address::initialize()
    if (nodeId_ != "") {
       setMaxEntries(global_.getProperty().getLongProperty("queue/connection/maxEntries["+nodeId_+"]", getMaxEntries()));
    }
+
+   // Resets cached rawAddress_ :
+   string type = getType();
+   StringTrim::toLowerCase(type);
+   // These properties are evaluated directly by our C SOCKET library:
+   // -dispatch/connection/plugin/socket/port
+   // -dispatch/connection/plugin/socket/hostname
+   // -dispatch/connection/plugin/socket/localPort
+   // -dispatch/connection/plugin/socket/localHostname
+   // -dispatch/callback/plugin/socket/responseTimeout
+   // -dispatch/callback/plugin/socket/threadPrio
+   // -dispatch/callback/plugin/socket/multiThreaded
+   hostname_ = global_.getProperty().getStringProperty("dispatch/connection/plugin/"+type+"/hostname", getHostname());
+   setPort(global_.getProperty().getIntProperty("dispatch/connection/plugin/"+type+"/port", getPort()));
 }
 
 Address::Address(Global& global, const string& type, const string& nodeId)
@@ -118,10 +133,9 @@ string Address::getSettings()
    return ret;
 }
 
-/** @return The literal address as given by getAddress() */
 string Address::toString()
 {
-   return getAddress();
+   return getRawAddress();
 }
 
 /**

@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address std::string and protocol std::string
-Version:   $Id: CallbackAddress.h,v 1.7 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: CallbackAddress.h,v 1.8 2004/05/12 19:38:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -74,7 +74,7 @@ public:
     */
    void useForSubjectQueue(bool useForSubjectQueue);
 
-   /** @return The literal address as given by getAddress() */
+   /** @return The literal address as given by getRawAddress() */
    std::string toString();
 
    /**

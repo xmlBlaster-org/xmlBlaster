@@ -87,11 +87,16 @@ using namespace org::xmlBlaster::util::qos::address;
    /**
     * @return null if none available
     */
-   AddressBase ClientQueueProperty::getCurrentAddress()
+   Address& ClientQueueProperty::getCurrentAddress()
    {
-      if (addressArr_.empty()) return Address(global_);
+      if (addressArr_.empty()) {
+         Address a(global_);
+         addressArr_.push_back(a);
+      }
       // otherwise get the last one added
-      return *addressArr_.begin();
+      AddressBase *ab = addressArr_.begin();
+      Address *a = reinterpret_cast<Address*>(ab);
+      return *a;
    }
 
    /**

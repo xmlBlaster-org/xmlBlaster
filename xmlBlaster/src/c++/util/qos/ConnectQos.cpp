@@ -27,7 +27,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       securityQos_(global, user, passwd),
       sessionQos_(global, user, publicSessionId),
       ptp_(true),
-      addresses_(),
+      //addresses_(),
       //cbAddresses_(),
       clientQueueProperties_(),
       sessionCbQueueProperty_(global, Constants::RELATING_CALLBACK, ""),
@@ -37,7 +37,8 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
    clusterNode_      = false;
    duplicateUpdates_ = false;
    persistent_       = false;
-   getCbAddress();  // Force creation, to read environment
+   getAddress();      // Force creation, to read environment
+   getCbAddress();    // Force creation, to read environment
 }
 
 ConnectQosData::ConnectQosData(const ConnectQosData& data)
@@ -45,7 +46,7 @@ ConnectQosData::ConnectQosData(const ConnectQosData& data)
       log_(data.log_),
       securityQos_(data.securityQos_),
       sessionQos_(data.sessionQos_),
-      addresses_(data.addresses_),
+      //addresses_(data.addresses_),
       //cbAddresses_(data.cbAddresses_),
       clientQueueProperties_(data.clientQueueProperties_),
       sessionCbQueueProperty_(data.sessionCbQueueProperty_),
@@ -139,7 +140,7 @@ void ConnectQosData::addServerRef(const ServerRef& serverRef)
    serverReferences_.insert(serverReferences_.begin(), serverRef);
 }
 
-vector<ServerRef> ConnectQosData::getServerReferences() const
+const vector<ServerRef> ConnectQosData::getServerReferences() const
 {
    return serverReferences_;
 }
@@ -156,15 +157,20 @@ ServerRef ConnectQosData::getServerRef()
 
 void ConnectQosData::setAddress(const Address& address)
 {
-   addresses_.insert(addresses_.begin(), address);
+   getClientQueueProperty().setAddress(address);
+   //addresses_.insert(addresses_.begin(), address);
 }
 
 Address& ConnectQosData::getAddress()
 {
+   org::xmlBlaster::util::qos::address::AddressBase &ab = getClientQueueProperty().getCurrentAddress();
+   return reinterpret_cast<Address&>(ab);
+   /*
    if (addresses_.empty()) {
       setAddress(Address(global_));
    }
    return *(addresses_.begin());
+   */
 }
 
 void ConnectQosData::addCbAddress(const CallbackAddress& cbAddress)

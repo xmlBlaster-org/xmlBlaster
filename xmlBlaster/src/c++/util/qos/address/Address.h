@@ -3,7 +3,7 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address std::string and protocol std::string
-Version:   $Id: Address.h,v 1.6 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: Address.h,v 1.7 2004/05/12 19:38:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -71,7 +71,7 @@ public:
    /** For logging only */
    std::string getSettings();
 
-   /** @return The literal address as given by getAddress() */
+   /** @return The literal address as given by getRawAddress() */
    std::string toString();
 
    /**

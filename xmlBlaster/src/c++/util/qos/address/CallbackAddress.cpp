@@ -94,10 +94,9 @@ void CallbackAddress::useForSubjectQueue(bool useForSubjectQueue)
    useForSubjectQueue_ = useForSubjectQueue;
 }
 
-/** @return The literal address as given by getAddress() */
 string CallbackAddress::toString()
 {
-   return getAddress();
+   return getRawAddress();
 }
 
 /**

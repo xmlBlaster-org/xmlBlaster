@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.16 2004/04/27 08:27:27 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.17 2004/05/12 19:38:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -170,7 +170,7 @@ void AddressFactory::endElement(const string &name)
    if (name.compare(address_->rootTag_) == 0) { // callback
       StringTrim::trim(character_);
       if (!character_.empty()) address_->setAddress(character_);
-      else if (address_->getAddress() == "")
+      else if (address_->getRawAddress() == "")
          log_.error(ME, address_->rootTag_ + string(" QoS contains no address data"));
 
    }

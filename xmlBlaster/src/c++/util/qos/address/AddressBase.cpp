@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.19 2004/02/09 10:08:03 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.20 2004/05/12 19:38:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -99,8 +99,8 @@ string AddressBase::getName()
  */
 bool AddressBase::isSameAddress(AddressBase& other)
 {
-   string oa = other.getAddress();
-   if ( (oa!="") && (oa == getAddress()) ) return true;
+   string oa = other.getRawAddress();
+   if ( (oa!="") && (oa == getRawAddress()) ) return true;
    string oh = other.getHostname();
    int op = other.getPort();
    if ( (op>0) && (op==getPort()) && (oh!="") && (oh==getHostname()))
@@ -191,21 +191,19 @@ int AddressBase::getPort() const
 /**
  * Set the callback address, it should fit to the protocol-type.
  *
- * @param address The callback address, e.g. "et@mars.univers"
+ * @param address The callback address, e.g. "socket://192.168.1.1:7607"
  */
 void AddressBase::setAddress(const string& address)
 {
    address_ = address;
 }
 
-/**
- * Returns the address.
- * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
- */
-string AddressBase::getAddress() const
+// TODO: Protocol abstraction from plugin
+string AddressBase::getRawAddress() const
 {
    if (address_ == "") {
-      address_ = "http://" + getHostname();
+      string schema = (getType() == Constants::SOCKET) ? "socket" : "http";
+      address_ = schema + "://" + getHostname();  // socket://192.168.1.1:7607
       if (getPort() > 0)
          address_ += ":" + lexical_cast<std::string>(getPort());
    }
@@ -463,6 +461,7 @@ string AddressBase::toXml(const string& extraOffset) const
    string offset = Constants::OFFSET + extraOffset;
    string offset2 = offset + Constants::INDENT;
 
+   // <address type='SOCKET' bootstrapHostname='127.0.0.1' dispatchPlugin='undef'> ...
    ret += offset + string("<") + rootTag_  + string(" type='") + getType() + string("'");
    if ( (getVersion()!="") && (getVersion()!=DEFAULT_version))
       ret += string(" version='") + getVersion() + string("'");
@@ -491,8 +490,8 @@ string AddressBase::toXml(const string& extraOffset) const
    if (DEFAULT_dispatchPlugin != dispatchPlugin_)
        ret += string(" dispatchPlugin='") + dispatchPlugin_ + string("'");
    ret += string(">");
-   if (getAddress() != "")
-      ret += offset + string("   ") + getAddress();
+   if (getRawAddress() != "")
+      ret += offset + string("   ") + getRawAddress();
    if (getCollectTime() != DEFAULT_collectTime) {
       ret += offset2 + string("<burstMode");
       if (getCollectTime() != DEFAULT_collectTime)

@@ -67,7 +67,7 @@ private:
    bool        duplicateUpdates_;
    bool        persistent_;
 
-   std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
+   //std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
    //std::vector<org::xmlBlaster::util::qos::address::CallbackAddress> cbAddresses_;
    std::vector<org::xmlBlaster::util::qos::storage::ClientQueueProperty>   clientQueueProperties_;
    org::xmlBlaster::util::qos::storage::CbQueueProperty         sessionCbQueueProperty_;
@@ -75,6 +75,11 @@ private:
 
 
    friend class ConnectQosFactory;
+
+   /**
+    * Used by xml parser only, the ServerRef is returned by xmlBlaster in ConnectReturnQos
+    */
+   void addServerRef(const org::xmlBlaster::util::ServerRef& serverRef);
 
    void copy(const ConnectQosData& data)
    {
@@ -84,7 +89,7 @@ private:
       clusterNode_            = data.clusterNode_;
       duplicateUpdates_       = data.duplicateUpdates_;
       serverReferences_       = data.serverReferences_;
-      addresses_              = data.addresses_;
+      //addresses_              = data.addresses_;
       //cbAddresses_            = data.cbAddresses_;
       clientQueueProperties_  = data.clientQueueProperties_;
       sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
@@ -113,8 +118,10 @@ public:
    bool isClusterNode() const;
    void setDuplicateUpdates(bool duplicateUpdates);
    bool isDuplicateUpdates() const;
-   void addServerRef(const org::xmlBlaster::util::ServerRef& serverRef);
-   std::vector<ServerRef> getServerReferences() const;
+   /**
+    * Returned in ConnectReturnQos from xmlBlaster showing all access addresses. 
+    */
+   const std::vector<ServerRef> getServerReferences() const;
    bool isPersistent() const;
    void setPersistent(bool persistent);
    
@@ -149,6 +156,12 @@ public:
     *             the setting in ConnectQos
     */
    void addClientQueueProperty(const org::xmlBlaster::util::qos::storage::ClientQueueProperty& prop);
+
+   /**
+    * Access the configuration settings of the client side queue and server address. 
+    * @return If no instance exists it will be created on the fly and initialized
+    * with the current environment settings and command line arguments
+    */
    org::xmlBlaster::util::qos::storage::ClientQueueProperty& getClientQueueProperty();
 
    /**
@@ -157,6 +170,12 @@ public:
     *             the setting in ConnectQos
     */
    void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
+
+   /**
+    * Access the configuration settings of the server side callback queue and callback address. 
+    * @return If no instance exists it will be created on the fly and initialized
+    * with the current environment settings and command line arguments
+    */
    org::xmlBlaster::util::qos::storage::CbQueueProperty& getSessionCbQueueProperty();
 
    std::string dumpClientProperties(const std::string& extraOffset) const;

@@ -87,7 +87,7 @@ string NodeInfo::getId() const
     */
    void NodeInfo::addAddress(Address& address)
    {
-      addressMap_.insert(AddressMap::value_type(address.getAddress(), address));
+      addressMap_.insert(AddressMap::value_type(address.getRawAddress(), address));
    }
 
    /**
@@ -104,7 +104,7 @@ string NodeInfo::getId() const
    bool NodeInfo::contains(Address& other)
    {
       if (addressMap_.empty()) return false;
-      return (addressMap_.find(other.getAddress()) != addressMap_.end());
+      return (addressMap_.find(other.getRawAddress()) != addressMap_.end());
    }
 
    /**
@@ -133,7 +133,7 @@ string NodeInfo::getId() const
     */
    void NodeInfo::addCbAddress(CallbackAddress& cbAddress)
    {
-      cbAddressMap_.insert(CbAddressMap::value_type(cbAddress.getAddress(),cbAddress));
+      cbAddressMap_.insert(CbAddressMap::value_type(cbAddress.getRawAddress(),cbAddress));
    }
 
    /**

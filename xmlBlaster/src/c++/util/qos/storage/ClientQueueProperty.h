@@ -56,7 +56,7 @@ public:
    /**
     * @return null if none available
     */
-   org::xmlBlaster::util::qos::address::AddressBase getCurrentAddress();
+   org::xmlBlaster::util::qos::address::Address& getCurrentAddress();
 
    /**
     * Get a usage std::string for the connection parameters
