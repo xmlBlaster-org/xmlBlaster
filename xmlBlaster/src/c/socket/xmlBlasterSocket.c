@@ -71,7 +71,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
  */
 Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 {
-   size_t qosLen=0, keyLen=0;
+   size_t qosLen=0, keyLen=0, contentLenStrLen=0;
    char contentLenStr[126];
    size_t currpos = 0;
    BlobHolder blob;
@@ -84,6 +84,7 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
    if (msgUnit->content == 0)
       msgUnit->contentLen = 0;
    sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+   contentLenStrLen = strlen(contentLenStr);
 
    if (msgUnit->qos != 0)
       qosLen = strlen(msgUnit->qos);
@@ -91,7 +92,7 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
    if (msgUnit->key != 0)
       keyLen = strlen(msgUnit->key);
    
-   blob.dataLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
+   blob.dataLen = qosLen + 1 + keyLen + 1 + contentLenStrLen + 1 + msgUnit->contentLen;
 
    blob.data = (char *)malloc(blob.dataLen);
 
@@ -107,8 +108,8 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
       *(blob.data+currpos) = 0;
    currpos += keyLen+1;
 
-   memcpy(blob.data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
-   currpos += strlen(contentLenStr)+1;
+   memcpy(blob.data+currpos, contentLenStr, contentLenStrLen+1); /* inclusive '\0' */
+   currpos += contentLenStrLen+1;
 
    if (msgUnit->content != 0)
       memcpy(blob.data+currpos, msgUnit->content, msgUnit->contentLen);
@@ -160,12 +161,13 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
    /* Now dump the message ... */
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit* msgUnit = &msgUnitArr->msgUnitArr[i];
-      size_t qosLen=0, keyLen=0;
+      size_t qosLen=0, keyLen=0, contentLenStrLen=0;
       char contentLenStr[126];
 
       if (msgUnit->content == 0)
          msgUnit->contentLen = 0;
       sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+      contentLenStrLen = strlen(contentLenStr);
 
       if (msgUnit->qos != 0) {
          qosLen = strlen(msgUnit->qos);
@@ -183,8 +185,8 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
          *(blob.data+currpos) = 0;
       currpos += keyLen+1;
 
-      memcpy(blob.data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
-      currpos += strlen(contentLenStr)+1;
+      memcpy(blob.data+currpos, contentLenStr, contentLenStrLen+1); /* inclusive '\0' */
+      currpos += contentLenStrLen+1;
 
       if (msgUnit->content != 0)
          memcpy(blob.data+currpos, msgUnit->content, msgUnit->contentLen);
