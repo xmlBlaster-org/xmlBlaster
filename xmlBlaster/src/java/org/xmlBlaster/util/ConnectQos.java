@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.24 2002/06/11 14:23:35 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.25 2002/06/13 01:00:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -81,7 +81,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected long sessionTimeout = Constants.DAY_IN_MILLIS;
 
    /** Maximum of ten parallel logins for the same client "session.maxSessions 10" */
-   protected int maxSessions = 10;
+   public static final int DEFAULT_maxSessions = 10;
+   protected int maxSessions = DEFAULT_maxSessions;
 
    /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
    protected boolean clearSessions = false;
@@ -238,7 +239,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       this.glob = glob;
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
-      setMaxSessions(glob.getProperty().get("session.maxSessions", 10));
+      setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
       if (nodeId != null) {
          setSessionTimeout(glob.getProperty().get("session.timeout["+nodeId+"]", getSessionTimeout()));
@@ -1056,7 +1057,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       String text = "\n";
       text += "Control my session and security settings\n";
       text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
-      text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + 10 + "].\n";
+      text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
       text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
       text += "   -security.plugin.type    The security plugin to use [simple]\n";
       text += "   -security.plugin.version The version of the plugin [1.0]\n";
