@@ -388,7 +388,7 @@ namespace org { namespace xmlBlaster {
       }
 
       try {
-         xmlBlaster_->publishArr(msgUnitArr);
+         xmlBlaster_->publishOneway(msgUnitArr);
       }
       catch (const exception& e) {
          log_.error(me(), string("Exception caught in publishOneway, it is not transferred to client: ") + e.what());
