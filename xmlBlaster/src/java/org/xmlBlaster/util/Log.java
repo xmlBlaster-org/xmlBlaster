@@ -3,12 +3,13 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.57 2001/01/30 13:02:38 ruff Exp $
+Version:   $Id: Log.java,v 1.58 2001/02/08 07:46:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 
+import java.io.*;
 import org.jutils.log.LogChannel;
 import org.jutils.log.LogDeviceConsole;
 import org.jutils.log.LogDeviceFile;
@@ -246,9 +247,94 @@ public class Log
     * delegate log error to LogChannel object.
     */
    public static final void error(String source, String text) {
+      /* Old code:
       numErrorInvocations++;
       if (lc == null) return;
       lc.error(source, text);
+      */
+      numErrorInvocations++;
+      String location = getLocation();
+      String tmp = source;
+      if (location != null && tmp != null && tmp.length() > 0)
+         tmp = location + "-" + source;
+      else if (location != null)
+         tmp = location;
+      lc.error(tmp, text);
+      if (text != null) {
+         try {
+            if (text.indexOf("java.lang.NullPointerException") >= 0 ||
+                text.indexOf("java.lang.ArrayIndexOutOfBoundsException") >= 0
+               )
+            {
+               Exception e = new Exception();
+               e.printStackTrace();
+            }
+         } catch (Throwable e) {}
+      }
+   }
+
+
+   /**
+    * You need to customize this method,
+    * We return true if the stackTrace line contains
+    * our own position. We will use the following line to
+    * calculate the position of the code where the exception is thrown.
+    */
+   private static boolean stopStackPos(String line)
+   {
+      System.out.println("Checking: " + line);
+      if (line.indexOf("org.xmlBlaster.util.Log.error") >= 0)
+         return true;
+      return false;
+   }
+
+
+   /**
+    * Show file name and line number (a minimal stack trace).
+    * @return A nice string or null on error
+    */
+   private static String getLocation()
+   {
+      String location = null;
+      try {
+         StringWriter stringWriter = new StringWriter();
+         PrintWriter printWriter = new PrintWriter(stringWriter);
+         (new Exception()).printStackTrace(printWriter);
+         String trace = stringWriter.getBuffer().toString();
+         StringReader stringReader = new StringReader(trace);
+         BufferedReader bufferedReader = new BufferedReader(stringReader);
+         for (int ii=0; ii<20; ii++) {  // ignore first lines of stack trace (not important)
+            String line = bufferedReader.readLine();
+            if (line == null) return null;
+            if (stopStackPos(line) == true)
+               break;
+         }
+         String stackEntry = bufferedReader.readLine().trim();
+         if (stackEntry == null) return null;
+         System.out.println("Exception scanning:" + stackEntry);
+         int space = stackEntry.indexOf(" ");
+         int paren = stackEntry.indexOf("(");
+         int colon = stackEntry.indexOf(":");
+         if (space < 0 || paren < 0 || colon < 0) return "";
+         String method = stackEntry.substring(space + 1, paren);
+         String sourceName = stackEntry.substring(paren + 1, colon);
+         int line = 0;
+         try {
+            paren = stackEntry.indexOf(")");
+            if (paren >= 0) {
+               String ln = stackEntry.substring(colon+1, paren);
+               line = Integer.parseInt(ln);
+            }
+         }
+         catch (NumberFormatException e) { System.out.println("NumberFormatException in Log.java"); }
+         //location = sourceName + ":" + method + ":" + line;
+         //location = method + ":" + line;
+         location = sourceName + ":" + line;
+         System.out.println("Exception found location=" + location);
+      }
+      catch (IOException e) {}
+
+      return location;
    }
 
 
