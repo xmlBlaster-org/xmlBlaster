@@ -4,6 +4,12 @@
 Changes for 0.72 [Feb. 2000]
 ==============================
 
+   - Added logging redirection to file, use on command line "-?" to query possible parameters.
+
+   - Bug fixed for multiple login (without logout) and PtP messages.
+
+   - Added missing FileDriver.erase().
+
    - Two bug fixes with unSubscribe() calls for previous XPATH subscriptions.
 
 

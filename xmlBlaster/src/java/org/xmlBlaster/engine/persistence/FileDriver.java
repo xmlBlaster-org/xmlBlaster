@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.3 2000/01/24 09:02:54 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.4 2000/01/30 20:19:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
@@ -156,6 +156,21 @@ public class FileDriver implements I_PersistenceDriver
       requestBroker.publish(clientInfo, messageUnit, publishQos);
 
       if (Log.TRACE) Log.trace(ME, "Successfully recovered message " + oid);
+   }
+
+
+   /**
+    * Allows a stored message to be deleted.
+    * <p />
+    * The protocol for storing is implemented in the derived class
+    * @param xmlKey  To identify the message
+    */
+   public void erase(XmlKey xmlKey) throws XmlBlasterException
+   {
+      String oid = xmlKey.getKeyOid(); // The file name
+      FileUtil.deleteFile(path, oid + XMLKEY_TOKEN);
+      FileUtil.deleteFile(path, oid);
+      FileUtil.deleteFile(path, oid + XMLQOS_TOKEN);
    }
 
 

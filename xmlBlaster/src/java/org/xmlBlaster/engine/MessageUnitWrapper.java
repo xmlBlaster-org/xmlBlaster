@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.10 2000/01/21 19:34:01 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.11 2000/01/30 20:19:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -72,7 +72,9 @@ public class MessageUnitWrapper
       if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
          persistenceDriver.store(this);
 
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
+      publishQoS.setFromPersistenceStore(false);
+
+      if (Log.TRACE) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
    }
 
 
@@ -88,42 +90,51 @@ public class MessageUnitWrapper
    /**
     * Setting update of a changed content.
     * <p />
-    * @param content The new data blob
+    * @param newContent The new data blob
     * @param publisherName The source of the data (unique login name)
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public final boolean setContent(byte[] content, String publisherName) throws XmlBlasterException
+   public final boolean setContent(byte[] newContent, String publisherName) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
+      // if (Log.TRACE) Log.trace(ME, "Updating xmlKey " + uniqueKey + " from " + publisherName + ", new newContent=" + new String(newContent));
 
-      if (content == null)
-         content = new byte[0];
+      if (newContent == null)
+         newContent = new byte[0];
 
       if (publisherName != null)
          this.publisherName = publisherName;
 
       boolean changed = false;
-      if (this.messageUnit.content.length != content.length) {
+      if (this.messageUnit.content.length != newContent.length) {
          changed = true;
       }
       else {
-         for (int ii=0; ii<content.length; ii++)
-            if (this.messageUnit.content[ii] != content[ii]) {
+         for (int ii=0; ii<newContent.length; ii++)
+            if (this.messageUnit.content[ii] != newContent[ii]) {
                changed = true;
                break;
             }
       }
 
       if (changed) {  // new content is not the same as old one
-         this.messageUnit.content = content;
-         if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
-            persistenceDriver.store(xmlKey, content);
+         this.messageUnit.content = newContent;
+         if (persistenceDriver != null && publishQoS.isDurable()) // && !publishQoS.fromPersistenceStore())
+            persistenceDriver.store(xmlKey, newContent);
          return true;
       }
       else {
          return false;
       }
+   }
+
+   /**
+    * If the message was durable, erase it from the persistent store. 
+    */
+   final void erase() throws XmlBlasterException
+   {
+      if (persistenceDriver != null && publishQoS.isDurable())
+         persistenceDriver.erase(xmlKey);
    }
 
 

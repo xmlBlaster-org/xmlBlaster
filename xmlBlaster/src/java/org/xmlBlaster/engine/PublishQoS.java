@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.10 2000/01/21 08:19:04 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.11 2000/01/30 20:19:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -132,9 +132,19 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
     * Internal use only, is this message sent from the persistence layer?
     * @return true/false
     */
-   public boolean fromPersistenceStore()
+   final boolean fromPersistenceStore()
    {
       return fromPersistenceStore;
+   }
+
+
+   /**
+    * Internal use only, set if this message sent from the persistence layer
+    * @param true/false
+    */
+   final void setFromPersistenceStore(boolean fromPersistenceStore)
+   {
+      this.fromPersistenceStore = fromPersistenceStore;
    }
 
 

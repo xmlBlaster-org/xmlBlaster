@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.23 2000/01/21 08:19:04 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.24 2000/01/30 20:19:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -173,6 +173,13 @@ public class MessageUnitHandler
       subscriberMap.clear();
       // subscriberMap = null;    is final, can't assign null
 
+      try {
+         getMessageUnitWrapper().erase();
+      }
+      catch (XmlBlasterException e) {
+         Log.error(ME, "Problems erasing message: " + e.reason);
+      }
+
       messageUnitWrapper = null;
       uniqueKey = null;
    }
@@ -191,7 +198,7 @@ public class MessageUnitHandler
     */
    public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
+      if (Log.TRACE) Log.trace(ME, "Setting content of xmlKey " + uniqueKey);
 
       if (messageUnitWrapper == null) {  // storing the key from the first publish() invocation
          messageUnitWrapper = new MessageUnitWrapper(requestBroker, xmlKey, messageUnit, publishQoS, publisherName);

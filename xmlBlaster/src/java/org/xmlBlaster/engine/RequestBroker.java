@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.49 2000/01/24 11:13:30 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.50 2000/01/30 20:19:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -31,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.49 $
+ * @version $Revision: 1.50 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -668,7 +668,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             }
             else {
                try {
-                  xmlKey.mergeRootNode(bigXmlKeyDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
+                  xmlKey.mergeRootNode(bigXmlKeyDOM);                   // merge the message DOM tree into the big xmlBlaster DOM tree
                } catch (XmlBlasterException e) {
                   synchronized(messageContainerMap) {
                      messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up

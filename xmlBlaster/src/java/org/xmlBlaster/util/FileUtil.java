@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.8 2000/01/21 08:19:05 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.9 2000/01/30 20:19:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -201,6 +201,19 @@ public class FileUtil
          if (Log.TRACE) Log.trace(ME, "Successfully read file " + fileName + " with size=" + fileBlob.length);
       }
       return fileBlob;
+   }
+
+
+   /**
+    * Delete a file. 
+    * @param parent Path to the file
+    * @param fileName name of file
+    */
+   public static final void deleteFile(String parent, String fileName)
+   {
+      File f = new File(parent, fileName);
+      if (f.exists())
+         f.delete();
    }
 
 

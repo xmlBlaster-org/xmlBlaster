@@ -3,7 +3,7 @@ Name:      I_PersistenceDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_PersistenceDriver.java,v 1.2 2000/01/21 08:19:05 ruff Exp $
+Version:   $Id: I_PersistenceDriver.java,v 1.3 2000/01/30 20:19:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
@@ -27,7 +27,7 @@ import org.xmlBlaster.engine.ClientInfo;
  * <br />
  * TODO: Extend interface to support caching!<br />
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public interface I_PersistenceDriver
@@ -57,7 +57,7 @@ public interface I_PersistenceDriver
 
 
    /**
-    * Gets all messages from the store. 
+    * Gets all messages from the store.
     * <p />
     * The protocol for recovery is implemented in the derived class
     * @param clientInfo    Needed to publish
@@ -75,5 +75,14 @@ public interface I_PersistenceDriver
     * @param requestBroker Needed to publish
     */
    public void recover(String oid, ClientInfo clientInfo, RequestBroker requestBroker) throws XmlBlasterException;
+
+
+   /**
+    * Allows a stored message to be deleted.
+    * <p />
+    * The protocol for storing is implemented in the derived class
+    * @param xmlKey  To identify the message
+    */
+   public void erase(XmlKey xmlKey) throws XmlBlasterException;
 }
 
