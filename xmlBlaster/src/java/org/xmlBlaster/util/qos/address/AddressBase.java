@@ -44,7 +44,7 @@ public abstract class AddressBase
    private String hostname;
    protected boolean isHardcodedHostname = false; // set to true if setHostname() was explicitly called by user
 
-   public static final int DEFAULT_port = 3412;
+   public static final int DEFAULT_port = Constants.XMLBLASTER_PORT; // 3412
    private PropInt port = new PropInt(DEFAULT_port);
 
    /** The unique protocol type, e.g. "IOR" */
