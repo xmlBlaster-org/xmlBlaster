@@ -128,23 +128,26 @@ public class PtPTest extends TestCase {
          assertTrue(assertInUpdateBilbo, assertInUpdateBilbo == null);
          assertInUpdateBilbo = null;
 
-         PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
-         PublishQos pq = new PublishQos(glob);
-         SessionName sessionName = heronCon.getConnectReturnQos().getSessionName(); // destination client
-         Destination destination = new Destination(sessionName);
-         destination.forceQueuing(true);
-         pq.addDestination(destination);
-         log.info(ME, "Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
-         MsgUnit msgUnit = new MsgUnit(pk, contentStr.getBytes(), pq);
-         PublishReturnQos prq = bilboCon.publish(msgUnit);
-         log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
-                                    "' content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
-                                    ", the returned QoS is: " + prq.getKeyOid());
+         int num = 5;
+         for (int i=0; i<num; i++) {
+            PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
+            PublishQos pq = new PublishQos(glob);
+            SessionName sessionName = heronCon.getConnectReturnQos().getSessionName(); // destination client
+            Destination destination = new Destination(sessionName);
+            destination.forceQueuing(true);
+            pq.addDestination(destination);
+            log.info(ME, "Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
+            MsgUnit msgUnit = new MsgUnit(pk, (contentStr+"-"+i).getBytes(), pq);
+            PublishReturnQos prq = bilboCon.publish(msgUnit);
+            log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
+                                       "' content='" + (contentStr+"-"+i) +
+                                       "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
+                                       ", the returned QoS is: " + prq.getKeyOid());
+         }
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdateHeron, assertInUpdateHeron == null);
-         assertEquals("Heron client did not receive PtP message", 1, updateCounterHeron);
+         assertEquals("Heron client did not receive PtP message", num, updateCounterHeron);
       }
       catch (XmlBlasterException e) {
          e.printStackTrace();
