@@ -145,6 +145,7 @@ static const char * test_methods()
 
    {  /* publish ... */
       MsgUnit msgUnit;
+      memset(&msgUnit, 0, sizeof(MsgUnit));
       printf("[client] Publishing message 'HelloWorld' ...\n");
       msgUnit.key = strcpyAlloc("<key oid='HelloWorld'/>");
       msgUnit.content = strcpyAlloc(CONTENT);

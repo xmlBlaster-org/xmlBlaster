@@ -123,8 +123,9 @@ static const char * test_stress()
 
    printf("[client] Publishing %d messages 'TestStress' ...\n", numPublish);
    for (iPub=0; iPub<numPublish; iPub++) {
-      MsgUnit msgUnit;
       char tmp[200];
+      MsgUnit msgUnit;
+      memset(&msgUnit, 0, sizeof(MsgUnit));
       msgUnit.key = strcpyAlloc("<key oid='TestStress'/>");
       sprintf(tmp, "#%d %s", (iPub+1), CONTENT);
       msgUnit.content = strcpyAlloc(tmp);
