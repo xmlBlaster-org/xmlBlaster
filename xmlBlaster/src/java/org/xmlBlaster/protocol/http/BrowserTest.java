@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.1 2000/02/21 09:44:07 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.2 2000/02/21 11:30:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -97,7 +97,7 @@ public class BrowserTest extends HttpServlet
                                  throws ServletException, IOException
    {
       // set to true to selecting the push method you want to use:
-      boolean multipart = false;
+      boolean multipart = true;
       boolean polling = false;
 
       if (multipart) {

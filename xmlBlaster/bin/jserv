@@ -7,7 +7,6 @@
 properties=/etc/httpd/conf/jserv/jserv.properties
 log=${XMLBLASTER_HOME}/jserv_manual.log
 
-CLASSPATH=$CLASSPATH:/home/httpd/classes/servlet-2.0.jar
 CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
 
 jaco -Djava.compiler= org.apache.jserv.JServ $properties $1

@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.1 2000/02/21 10:00:52 ruff Exp $
+Version:   $Id: callback.js,v 1.2 2000/02/21 11:30:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -19,7 +19,7 @@ function login(login, passwd)
 {
    loginName = login;
    top.target = "callbackFrame";
-   top.location.href = "/servlet/CallbackServletDriver?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
+   top.location.href = "/servlet/Callback?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
    log.info("Leaving login...");
    return true;
 }

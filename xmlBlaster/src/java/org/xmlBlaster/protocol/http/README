@@ -13,3 +13,113 @@ and to the browser using a persistent http connection
 The messages are directly transferred to the browser, which has a
 XML parser and notifies the interested browser frames about the callback.
 For Javascript examples see the javascript directory.
+
+
+IMPORTANT NOTE FOR SERVLET INSTALLATION:
+========================================
+We need to run the JVM with the jacorb.jar file first in the bootclasspath
+otherwise the JDK-internal CORBA is used.
+
+
+Installing and configuring JServ for Apache:
+============================================
+
+As i used JServ and Apache to develop this framework here how
+i installed and configured it.
+
+
+
+http://www.apache.org The Servlet engine
+
+rpm -iv ApacheJServ-1.1-2_RH6x.i386.rpm
+
+Read
+   /usr/doc/ApacheJServ-1.1/index.html
+
+Read !!! the good Apache Jserv configuring overview at
+   http://www.magiccookie.com/computers/apache-jserv/
+
+1) Edit /etc/httpd/httpd.conf
+      LoadModule jserv_module       /usr/lib/apache/mod_jserv.so
+      AddModule mod_jserv.c
+      <IfModule mod_jserv.c>
+      Include /etc/httpd/conf/jserv/jserv.conf
+      </IfModule>
+
+2) Watch log output:
+      tail -f  /var/log/httpd/jserv.log
+      tail -f  /var/log/httpd/mod_jserv.log
+
+3) As root
+      /sbin/init.d/apache stop
+      /sbin/init.d/apache start
+
+4) Test it:
+      http://localhost/servlets/IsItWorking
+      http://localhost/jserv/
+
+Config files setup:
+===================
+
+    httpd.conf -> jserv.conf -> jserv.properties -> example.properties
+
+5) Where are the xmlBlaster servlets lying around: 
+   Edit /etc/httpd/conf/jserv/zone.properties
+
+      repositories=/home/ruff/xmlBlaster/classes
+      servlet.BrowserTest.code=org.xmlBlaster.protocol.http.BrowserTest
+      servlet.Callback.code=org.xmlBlaster.protocol.http.CallbackServletDriver
+
+6) We need to run the JVM with the jacorb.jar file first in the bootclasspath
+   otherwise the JDK-internal CORBA is used.
+   There are two variants with Apache/Jserv
+
+   Start the serlvet runtime manually on your xterm (command prompt):
+
+      - switch off the automatic starting in jserv.conf:
+         ApJServManual on
+
+      - use this script to start jserv (it is provided in the xmlBlaster/bin directory):
+            #!/bin/sh
+            properties=/etc/httpd/conf/jserv/jserv.properties
+            log=${XMLBLASTER_HOME}/jserv_manual.log
+
+            #The jsdk jar file is included already in .bashrc:
+            #CLASSPATH=$CLASSPATH:/home/httpd/classes/servlet-2.0.jar
+
+            CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
+
+            jaco -Djava.compiler= org.apache.jserv.JServ $properties $1
+            #jaco org.apache.jserv.JServ $properties $1 2>> $log
+
+7) Test it
+   Invoke browser test servlet:
+
+      http://localhost/servlets/BrowserTest
+
+   Start xmlBlaster:
+
+      jaco org.xmlBlaster.Main +trace
+
+   Start the Apache and then the servlet engine:
+
+      jserv
+
+   Watch log output (if there are problems):
+ 
+      tail -f  /var/log/httpd/jserv.log
+
+	Start the callback servlet:
+
+      http://localhost/servlet/Callback?ActionType=login&loginName=martin&passwd=secret
+
+   Have a look at the integrate servlet:
+
+	   Make a link to you web server document root:
+   	   
+			ln -s ~/xmlBlaster/src/java/org/xmlBlaster/protocol/http/javascript cb
+
+	   And look at it in your browser (netscape 4+ or MSIE 4+):
+
+         http://localhost/cb
+		   

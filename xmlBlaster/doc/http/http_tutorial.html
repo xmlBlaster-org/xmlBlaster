@@ -1,0 +1,90 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Description" content="The XmlBlaster browser callback, using servlets and a persistent http connection.">
+   <meta name="Abstract" content="The XmlBlaster browser callback, using servlets and a persistent http connection.">
+   <meta name="Keywords" content="xmlBlaster, HTTP, persistent, callback, push, XML, MOM, CORBA, Java, Client/Server, Messaging, Publish/Subscribe, free, GNU, LGPL, JMS, C++, Perl, TCL, Messaging, Integration, Application integration, Systems integration, Enterprise application integration, Message oriented middleware, Middleware, Middle-tier, Interface, Interfacing, Adapter, Meta data, Metadata, Metadata Repository, Message parsing, Message Transformation, Data Interoperability, Integration, Systems Integration, Internet integration, HTTP, Business-to-business, Business process integration, Gateway, Process flow control, Data transformation, Message broker, Distribution, Data access, Transaction processing, TP, TIBCO, TopTier, Legacy systems integration, Data Objects, CORBA data objects, Global connectivity, Message Standards">
+   <meta name="Classification" content="xmlBlaster HomePage">
+   <meta name="page-topic" content="XML Middleware">
+   <meta name="page-type" content="Homepage">
+   <meta name="Audience" content="Software">
+   <meta name="Date" content="2000.02.21">
+   <meta name="revisit-after" content="14 days">
+   <meta name="Content-Language" content="en">
+   <meta name="Author" content="Marcel Ruff">
+   <title>xmlBlaster - The Revolution</title>
+   <link REL="stylesheet" type="text/css" href="/xmlBlaster.css">
+</head>
+
+<body>
+
+   <p class=sideend>
+      Last updated $Date: 2000/02/21 11:30:25 $ $Author: ruff $
+   </p>
+   <p class=sitetitel>The HTTP callback framework for xmlBlaster</p>
+
+
+   <table cellspacing=12>
+      <tr>
+         <td>
+            NOTE: This framework is work in progress, but not much is missing for a production release.
+         </td>
+      </tr>
+      <tr>
+         <td>
+         <p class=celltitel><a NAME="need"></a>What is this?</p>
+            <p>
+            When distributing dynamic content over the internet, you usually choose an applet.
+            The applet connects to the server over CORBA (or any other protocol) and may
+            receive instant notification from the server.<br />
+            But applets produce some well known problems like download time, 
+            firewalls which won't allow TCP/IP connections etc.
+            </p>
+            <p>
+            This framework addresses these issues.
+            It establishes a persistent http connection to allow instant callbacks
+            of xmlBlaster messages to the browser.
+            </p>
+         </td>
+      </tr>
+      <tr>
+         <td>
+            <img SRC="CallbackServletDriver.gif">
+         </td>
+      </tr>
+      <tr>
+         <td>
+         <p class=celltitel><a NAME="need"></a>How does it work?</p>
+            <p>
+            The servlets connects to xmlBlaster using CORBA
+            and to the browser using a persistent http connection
+            (using a hidden frame to communicate).
+            </p>
+            <p>
+            The messages are directly transferred to the browser, which has a
+            Javascript based XML parser and notifies the interested browser frames about the callback.
+            </p>
+            <p>
+            For Servlet and Javascript examples have a look into the following directory
+            of the xmlBlaster distribution:<br/>
+            <pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
+            You need to access xmlBlaster with cvs or through cvsweb for these enhancements.
+            The 0.73 release doesn't contain this code yet.
+            </p>
+         </td>
+      </tr>
+      <tr>
+         <td>
+         </td>
+      </tr>
+   </table>
+
+
+   <p class=sideend>
+      <a href="news.html" target="Content">HOME</a><br />
+   </p>
+
+   <script LANGUAGE="JavaScript" src="/cgi-bin/counter.pl?FAQ-homepage"></script>
+</body>
+</html>
