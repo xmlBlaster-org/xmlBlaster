@@ -158,8 +158,36 @@ Catch e As SystemException
  UpdateEvent Javadoc</a>.
  </p>
 
+   <h2>Workaround for ActiveX bridge bug for byte[]</h2>
+   <p>
+   The ActiveX bridge has problems to convert Java byte[] as described in
+   <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4887461" target="others">bug_id=4887461</a>.
+   </p>
+   <p>
+   Therefor we offer in the callback a method <tt>msg.getContentBase64()</tt> if you need
+   to transfer binary data. If your content contains only strings (for example a xml string)
+   you can use the convenience method <tt>msg.getContentStr()</tt>.
+   </p>
+   <p>
+   Here is an example for the callback method <tt>update()</tt>,
+   <tt>str</tt> and <tt>decoded</tt> contain the same result:
+   </p>
+   <pre><![CDATA[
+Private Sub XmlScriptAccess_update(ByVal msg As Object) _
+               Handles xmlBlaster.XmlScriptAccessSource_Event_update
+   Try
+      Dim str As String
+      Dim len As Int32
+      Dim encoded As String
+      Dim decoded As Byte()
 
+      str = msg.getContentStr()
+      len = msg.getContentLength()
+      encoded = msg.getContentBase64()
+      decoded = Convert.FromBase64String(encoded)
 
+      ...
+   ]]></pre>
 
    </description>
 
