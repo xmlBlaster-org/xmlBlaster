@@ -1,0 +1,26 @@
+The contents of the directories:
+--------------------------------
+
+bin              -- scripts and programms to start and build the xmlBlaster
+
+classes          -- all java-class are generated here
+
+config           -- the configuration the xmlBlaster and ORB's
+
+demo             -- some examples.
+
+doc              -- the xmlBlaster documentation.
+
+lib              -- all lib, which are used by the xmlBlaster.
+
+src              -- the core source of the xmlBlaster.
+
+src/perl         -- the perl-modules for the xmlBlaster client         
+
+src/c++          -- the c++-classes for the xmlBlaster client
+
+src/java         -- the core written in pure Java C-MOM-S
+
+src/dtd          -- definitions of the MessageUnit/QoS/Key
+
+testsuite        -- some test cases to check the xmlBlaster features
