@@ -45,6 +45,10 @@ public final class MapPlugin implements I_Map, I_Plugin
       return this.totalReferenceCount;
    }
 
+   /**
+    * Is called after the instance is created.
+    * @see org.xmlBlaster.engine.msgstore.I_Map#initialize(StorageId, Object)
+    */
    public void initialize(StorageId uniqueMapId, Object userData) throws XmlBlasterException {
       setProperties(userData); // sets this.property
       this.glob = this.property.getGlobal();

@@ -16,7 +16,6 @@ import org.xmlBlaster.util.enum.MethodName;
 
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queue.StorageId;
 
 
 /**
@@ -320,7 +319,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
    /**
     * Notification if this entry is added to queue
-    * @see I_Entry#added(StorageId)
+    * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) throws XmlBlasterException {
       log.info(ME, getLogId() + " is added to queue: REFERENCE COUNTER IMPL MISSING");
@@ -328,7 +327,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
    /**
     * Notification if this entry is removed from queue
-    * @see I_Entry#removed(StorageId)
+    * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) throws XmlBlasterException {
       log.info(ME, getLogId() + " is removed from queue: REFERENCE COUNTER IMPL MISSING");

@@ -269,7 +269,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 
    /**
     * Notification if this entry is added to storage
-    * @see I_Entry#added(StorageId)
+    * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "added("+storageId.getId()+") invocation not expected");
@@ -277,7 +277,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 
    /**
     * Notification if this entry is removed from storage
-    * @see I_Entry#removed(StorageId)
+    * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "removed("+storageId.getId()+") invocation not expected");

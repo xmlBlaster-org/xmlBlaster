@@ -93,7 +93,7 @@ public class ReferenceEntry extends MsgQueueEntry
 
    /**
     * Notification if this entry is added to queue
-    * @see I_QueueEntry#added(StorageId)
+    * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) throws XmlBlasterException {
       if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
@@ -108,7 +108,7 @@ public class ReferenceEntry extends MsgQueueEntry
 
    /**
     * Notification if this entry is removed from queue
-    * @see I_QueueEntry#removed(Storage)
+    * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) throws XmlBlasterException {
       if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");

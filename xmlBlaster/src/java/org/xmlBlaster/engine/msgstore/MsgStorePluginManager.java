@@ -52,7 +52,7 @@ public class MsgStorePluginManager extends PluginManagerBase
    }
 
    /**
-    * @see #getPlugin(String, String, String, QueuePropertyBase)
+    * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
    public I_Map getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
       return getPlugin(new PluginInfo(glob, this, typeVersion), uniqueQueueId, props);

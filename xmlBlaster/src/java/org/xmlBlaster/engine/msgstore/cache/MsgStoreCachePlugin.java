@@ -105,7 +105,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
    /**
     * Is called after the instance is created.
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
-    * @see I_Map#initialize(Global, String, Object)
+    * @see org.xmlBlaster.engine.msgstore.I_Map#initialize(StorageId, Object)
     */
    public void initialize(StorageId uniqueQueueId, Object userData)
       throws XmlBlasterException

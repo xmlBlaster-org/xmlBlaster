@@ -62,8 +62,6 @@ public interface I_Map
     * @throws XmlBlasterException in case an error occurs. Possible causes of
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
     * @return Number of new entries added: 0 if entry existed, 1 if new entry added
-    * @see I_MapPutListener#put(I_MapEntry)
-    * 
     */
    int put(I_MapEntry mapEntry) throws XmlBlasterException;
 
