@@ -10,6 +10,16 @@ import org.xmlBlaster.authentication.plugins.demo.InitQos;
 
 /**
  * Helper only for Java clients. 
+ * <p />
+ * This class does nothing else than:
+ * <p />
+ * 1. Generate the xml string
+ *    which is passed as the init() or login() qos string
+ *    with the help of InitQos.java
+ * <p />
+ * 2. The messages are not crypted or modified, so
+ *    the importMessage() and exportMessage() methods do nothing.
+ * @see org.xmlBlaster.authentication.plugins.demo.InitQos
  */
 public class ClientHelper implements I_ClientHelper {
    public static final String ME = "ClientHelper";

@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
  */
 
 public class PluginManager {
-   private static final String                ME = "PluginManager";
+   private static final String                ME = "SecurityPluginManager";
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.Manager";
    private static       PluginManager          me = null;
    private              Authenticate        auth = null;

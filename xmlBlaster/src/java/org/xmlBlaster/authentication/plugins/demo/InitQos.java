@@ -2,6 +2,21 @@ package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.authentication.plugins.I_InitQos;
 
+/**
+ * Helper class for Java clients. 
+ * <p />
+ * This class only generates a login() or init() qos xml string
+ * typically of the form:
+ * <p />
+ * <pre>
+ *    &lt;securityService type='gui' version='1.0'>
+ *       &lt;![CDATA[
+ *          &lt;user>KingKong&lt;/user>
+ *          &lt;passwd>secret&lt;/passwd>
+ *       ]]>
+ *    &lt;/securityService>
+ * </pre>
+ */
 public class InitQos implements I_InitQos {
    private String mechanism = "gui";
    private String version = "1.0";
