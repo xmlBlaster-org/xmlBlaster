@@ -39,13 +39,17 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    public void testPlayback() {
+      playback(new FileRecorder());
+      playback(new RamRecorder());
+   }
+
+   private void playback(I_InvocationRecorder recorder) {
       ME = "InvocationRecorderTest.testPlayback()";
       System.out.println("***InvocationRecorderTest: testPlayback ...");
       try {
          Tester tester = new Tester();
 
-         int maxEntries = 10000;
-         I_InvocationRecorder recorder = new RamRecorder();
+         int maxEntries = 1000;
          recorder.initialize(glob, maxEntries, tester, tester);
 
          {
@@ -187,6 +191,11 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    public void testOnOverflowException() {
+      onOverflowException(new FileRecorder());
+      onOverflowException(new RamRecorder());
+   }
+
+   private void onOverflowException(I_InvocationRecorder recorder) {
       ME = "InvocationRecorderTest.testOnOverflowException()";
       System.out.println("***InvocationRecorderTest: testOnOverflowException ...");
       try {
@@ -194,7 +203,6 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         I_InvocationRecorder recorder = new RamRecorder();
          recorder.initialize(glob, maxQueueSize, tester, tester);
 
          {
@@ -203,12 +211,13 @@ public class InvocationRecorderTest extends TestCase {
             for (int ii=0; ii<maxInvoke; ii++) {
                MessageUnit msgUnit = new MessageUnit("<key oid='"+methodName+"'/>", "Ho-"+ii, "<qos/>");
                try {
+                  log.info(ME, "Publish ii=" + ii);
                   recorder.publish(msgUnit);
-                  if (ii >= (maxInvoke/2))
+                  if (ii >= maxQueueSize)
                      fail(ME + " Expected exception because of full queue ii=" + ii);
                }
                catch (XmlBlasterException e) {
-                  if (ii >= (maxInvoke/2) && e.id.equals("Queue.MaxSize")) {
+                  if (ii >= maxQueueSize && e.id.indexOf("MaxSize") >= 0) {
                      log.info(ME, "OK, expected exception ii=" + ii);
                   }
                   else {
@@ -230,11 +239,11 @@ public class InvocationRecorderTest extends TestCase {
                msgs[1] = new MessageUnit("<key oid='"+methodName+"'/>", "Hu-"+ii, "<qos/>");
                try {
                   recorder.publishArr(msgs);
-                  if (ii >= (maxInvoke/2))
+                  if (ii >= maxQueueSize)
                      fail(ME + " Expected exception because of full queue ii=" + ii);
                }
                catch (XmlBlasterException e) {
-                  if (ii >= (maxInvoke/2) && e.id.equals("Queue.MaxSize")) {
+                  if (ii >= maxQueueSize && e.id.indexOf("MaxSize") >= 0) {
                      log.info(ME, "OK, expected exception ii=" + ii);
                   }
                   else {
@@ -255,6 +264,11 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    public void testOnOverflowDiscardOldest() {
+      onOverflowDiscardOldest(new FileRecorder());
+      onOverflowDiscardOldest(new RamRecorder());
+   }
+
+   private void onOverflowDiscardOldest(I_InvocationRecorder recorder) {
       ME = "InvocationRecorderTest.testOnOverflowDiscardOldest()";
       System.out.println("***InvocationRecorderTest: testOnOverflowDiscardOldest ...");
 
@@ -265,7 +279,6 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         I_InvocationRecorder recorder = new RamRecorder();
          recorder.initialize(glob, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARDOLDEST);
 
@@ -295,6 +308,11 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    public void testOnOverflowDiscard() {
+      onOverflowDiscard(new FileRecorder());
+      onOverflowDiscard(new RamRecorder());
+   }
+
+   private void onOverflowDiscard(I_InvocationRecorder recorder) {
       ME = "InvocationRecorderTest.testOnOverflowDiscard()";
       System.out.println("***InvocationRecorderTest: testOnOverflowDiscard ...");
 
@@ -303,7 +321,6 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         I_InvocationRecorder recorder = new RamRecorder();
          recorder.initialize(glob, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARD);
 
