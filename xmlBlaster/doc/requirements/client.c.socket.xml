@@ -119,21 +119,30 @@
      </p>
      <pre>
 cd xmlBlaster
-build c-lib  (UNIX or Windows)
+build              c-lib     (UNIX gcc)
+build -Duse-icc=1  c-lib     (UNIX Intel icc compiler)
+build -Duse-CC=1   c-lib     (Solaris CC)
+build -Duse-msvc=1 c-lib     (Windows Visual C++)
      </pre>
      <p>
      This creates a shared C library <i>xmlBlaster/lib/libxmlBlasterClientC.so</i> on
      Linux or <i>xmlBlaster/lib/xmlBlasterClientC.dll</i> on Windows.
      You can link your C or C++ client code with this library.
+     </p>
+     <p>You can set your preferred compiler in the file <i>xmlBlaster/build.properties</i>
+     to avoid setting it on command line always again:
+     </p>
+     <pre>
+use-msvc = 1
+     </pre>
      <p>
      To compile the C client library and the demos in xmlBlaster/demo/c/socket
-     invoke:
+     invoke (please use the above compiler names if necessary):
      </p>
      <pre>
 cd xmlBlaster
 build c
      </pre>
-     </p>
      <p>
      Currently debugging support in the executable is switched on as default, to switch it off
      try (the -verbose option is to dump the compilation command line only):
@@ -1089,7 +1098,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.42 $</revision>
+   <revision>$Revision: 1.43 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
