@@ -270,7 +270,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
  */
 static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueueProperties *queueProperties, XmlBlasterException *exception)
 {
-#ifdef XMLBLASTER_PERSISTENT_QUEUE
+#ifdef XMLBLASTER_PERSISTENT_QUEUE_TEST
    if (checkArgs(xb, "initQueue", false, exception) == false ) return false;
    if (xb->queueP) {
       char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
@@ -306,8 +306,11 @@ static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueuePropertie
       if (queueProperties->maxNumOfBytes == 0) {
          queueProperties->maxNumOfBytes = xb->props->getInt64(xb->props, "queue/connection/maxBytes", 10000000LL);
       }
+      if (queueProperties->logFp == 0) queueProperties->logFp = xb->log;
+      if (queueProperties->logLevel == 0) queueProperties->logLevel = xb->logLevel;
+      if (queueProperties->userObject == 0) queueProperties->userObject = xb->userObject;
 
-      xb->queueP = createQueue(queueProperties, xb->log, xb->logLevel, exception);
+      xb->queueP = createQueue(queueProperties, exception);
       if (*exception->errorCode != 0) {
          xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__, "Queue initializeation failed: [%s] %s\n", exception->errorCode, exception->message);
          return false;
@@ -319,10 +322,10 @@ static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueuePropertie
    if (queueProperties) {} /* To suppress compiler warning that not used */
    strncpy0(exception->errorCode, "user.illegalArgument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
    SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-            "[%.100s:%d] Queue support is not compiled into the library, please recompile with '-DXMLBLASTER_PERSISTENT_QUEUE=1", __FILE__, __LINE__);
+            "[%.100s:%d] Queue support is not compiled into the library, please recompile with '-DXMLBLASTER_PERSISTENT_QUEUE=1 and -DXMLBLASTER_PERSISTENT_QUEUE_TEST=1", __FILE__, __LINE__);
    xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
    return false;
-#endif /* XMLBLASTER_PERSISTENT_QUEUE */
+#endif /* XMLBLASTER_PERSISTENT_QUEUE_TEST */
 }
 
 static bool isConnected(XmlBlasterConnectionUnparsed *xb)
@@ -358,7 +361,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
  * Send a message over the socket to xmlBlaster. 
  * @param methodName The name of the remote method to invoke e.g. "connect"
  * @param msgType The type of message: INVOKE, RESPONSE, EXCEPTION
- * @param data The message payload to send
+ * @param data The message payload to send, we take a clone so you can do with it what you want
  * @param responseSocketDataHolder The returned data, you need to free it with free(response->data) if we returned true.
  *        Supply NULL for oneway messages.
  * @param exception The exception struct, exception->errorCode is filled on exception.
@@ -392,7 +395,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    initializeXmlBlasterException(exception);
 
    if (!xb->isConnected(xb)) {
-      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
@@ -436,11 +439,11 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       }
       if (blob.data != requestInfoP->blob.data) {
          /* The callback function has changed/manipulated the user data */
-         freeXmlBlasterBlobContent(&blob);
+         freeBlobHolderContent(&blob);
       }
       rawMsg = encodeSocketMessage(msgType, requestIdStr, methodName, xb->secretSessionId,
                              requestInfoP->blob.data, requestInfoP->blob.dataLen, xb->logLevel >= LOG_DUMP, &rawMsgLen);
-      freeXmlBlasterBlobContent(&requestInfoP->blob);
+      freeBlobHolderContent(&requestInfoP->blob);
    }
    else {
       rawMsg = encodeSocketMessage(msgType, requestIdStr, methodName, xb->secretSessionId,
@@ -454,7 +457,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
                                    "Lost connection to xmlBlaster server");
       xmlBlasterConnectionShutdown(xb);
-      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
       free(rawMsg);
       return false;
@@ -504,7 +507,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 
          if (requestInfoP->responseType == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException thrown from remote */
             convertToXmlBlasterException(&requestInfoP->blob, exception, xb->logLevel >= LOG_DUMP);
-            freeXmlBlasterBlobContent(&requestInfoP->blob);
+            freeBlobHolderContent(&requestInfoP->blob);
             return false;
          }
          else {
@@ -519,13 +522,13 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          if (getResponse(xb, responseSocketDataHolder, exception) == false) {  /* false on EOF */
             xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, "Lost connection to xmlBlaster server");
             xmlBlasterConnectionShutdown(xb);
-            strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
             return false;
          }
          if (responseSocketDataHolder->type == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException */
             convertToXmlBlasterException(&responseSocketDataHolder->blob, exception, xb->logLevel >= LOG_DUMP);
-            freeXmlBlasterBlobContent(&responseSocketDataHolder->blob);
+            freeBlobHolderContent(&responseSocketDataHolder->blob);
             if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
                "Re-throw exception from response errorCode=%s message=%s", exception->errorCode, exception->message);
             return false;
@@ -537,7 +540,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Received response msgLen=%u type=%c version=%c requestId=%s methodName=%s dateLen=%u data='%.100s ...'",
                   responseSocketDataHolder->msgLen, responseSocketDataHolder->type, responseSocketDataHolder->version, responseSocketDataHolder->requestId,
                   responseSocketDataHolder->methodName, responseSocketDataHolder->blob.dataLen, rawMsgStr);
-         free(rawMsgStr);
+         freeBlobDump(rawMsgStr);
       }
    }
 
@@ -594,7 +597,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    }
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    /* Extract secret session ID from ConnectReturnQos */
    *xb->secretSessionId = 0;
@@ -646,7 +649,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 }
 
 
-#if XMLBLASTER_PERSISTENT_QUEUE==1
+#if XMLBLASTER_PERSISTENT_QUEUE_TEST==1
 /**
  * Extracts the priority from the given QoS. 
  * @return NORM=5 on error
@@ -677,7 +680,6 @@ static int parsePriority(const char *qos) {
    sscanf(prioStr, "%d", &prio); /* on error prio remains 5, white spaces are stripped by sscanf */
    return prio;
 }
-#endif /*XMLBLASTER_PERSISTENT_QUEUE==1*/
 
 /**
  * Puts an entry into the client side queue.
@@ -692,6 +694,7 @@ static char *xmlBlasterQueuePut(XmlBlasterConnectionUnparsed *xb, int priority, 
    QueueProperties *queuePropertiesP = 0; /* 0: read configuration from environment */
    /*
    QueueProperties queueProperties;
+   memset(&queueProperties, 0, sizeof(QueueProperties));
    queuePropertiesP = &queueProperties;
    strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
@@ -699,7 +702,10 @@ static char *xmlBlasterQueuePut(XmlBlasterConnectionUnparsed *xb, int priority, 
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
-   queueP = createQueue(&queueProperties, xb->log, xb->logLevel, &queueException);
+   queueProperties.logFp = xb->log;
+   queueProperties.logLevel = xb->logLevel;
+   queueProperties.userObject = xb->userObject;
+   queueP = createQueue(&queueProperties, &queueException);
    */
 
    if (xb->queueP == 0) {
@@ -723,6 +729,7 @@ static char *xmlBlasterQueuePut(XmlBlasterConnectionUnparsed *xb, int priority, 
    *exception->errorCode = 0; /* Successfully queued: no error */
    return strcpyAlloc("<qos><state id='OK' info='QUEUED'/></qos>");
 }
+#endif /*XMLBLASTER_PERSISTENT_QUEUE_TEST==1*/
 
 /**
  * Publish a message to the server. 
@@ -745,8 +752,9 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception) == false) {
 
-#     if XMLBLASTER_PERSISTENT_QUEUE==1 /* TEST CODE */
-         if (strstr(exception->errorCode, "user.notConnected") != 0) { /* On communication problem queue messages */
+#     if XMLBLASTER_PERSISTENT_QUEUE_TEST==1 /* TEST CODE */
+         if (strstr(exception->errorCode, "user.notConnected") != 0 ||
+             strstr(exception->errorCode, "communication.noConnection") != 0) { /* On communication problem queue messages */
             int priority = parsePriority(msgUnit->qos);
             response = xmlBlasterQueuePut(xb, priority, &blob, exception);
             /* NO: msgUnit->responseQos = response; otherwise a free(msgUnit) will free the response as well */
@@ -759,7 +767,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    free(blob.data);
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    return response;
 }
@@ -792,7 +800,7 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
    free(blob.data);
 
    response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    return response;
 }
@@ -820,7 +828,7 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
       return;
    }
    free(blob.data);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 }
 
 /**
@@ -871,7 +879,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    free(data);
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Got response for subscribe(): %s", response);
@@ -927,7 +935,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    free(data);
 
    response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) {
       size_t ii;
@@ -989,7 +997,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    free(data);
 
    response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) {
       size_t ii;
@@ -1024,7 +1032,7 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
    }
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Got response for ping '%s'", response);
    return response;
@@ -1076,7 +1084,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    /* Now process the returned messages */
 
    msgUnitArr = parseMsgUnitArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
-   freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Returned %u messages for get()", msgUnitArr->len);
@@ -1112,7 +1120,7 @@ static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, 
    if (checkIsConnected) {
       if (!xb->isConnected(xb)) {
          char *stack = getStackTrace(10);
-         strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
                    __FILE__, __LINE__, methodName, stack);

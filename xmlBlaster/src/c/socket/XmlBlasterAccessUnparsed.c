@@ -548,7 +548,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    response = xa->connectionP->connect(xa->connectionP, qos_, exception);
 
    free(qos_);
-   freeXmlBlasterBlobContent(&xa->responseBlob);
+   freeBlobHolderContent(&xa->responseBlob);
 
    if (*exception->errorCode != 0) mutexUnlock(xa, exception);
 
@@ -710,7 +710,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
                   __FILE__, __LINE__, methodName, stack);
       }
       else {
-         strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         strncpy0(exception->errorCode, "user.illegalArgument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to %.16s() %s",
                    __FILE__, __LINE__, methodName, stack);
@@ -730,7 +730,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
 
    if (checkIsConnected && !xa->isConnected(xa)) {
       char *stack = getStackTrace(10);
-      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
                 __FILE__, __LINE__, methodName, stack);

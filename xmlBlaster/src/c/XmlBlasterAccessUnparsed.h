@@ -81,7 +81,7 @@ typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUn
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
- * All function pointers return exception.errorCode="user.notConnected" if connection
+ * All function pointers return exception.errorCode="communication.noConnection" if connection
  * to xmlBlaster is lost.
  */
 typedef struct Dll_Export XmlBlasterAccessUnparsed {

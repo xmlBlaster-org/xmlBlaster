@@ -219,7 +219,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             /* This is a response for a request (no callback for us) */
             ResponseListener *r = removeResponseListener(cb, socketDataHolder.requestId);
             listener->responseEventFp(r->userP, &socketDataHolder);
-            freeXmlBlasterBlobContent(&socketDataHolder.blob);
+            freeBlobHolderContent(&socketDataHolder.blob);
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                "Forwarded message with requestId '%s' to response listener", socketDataHolder.requestId);
             continue;
@@ -282,7 +282,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          }
       }
 
-      freeXmlBlasterBlobContent(&socketDataHolder.blob);
+      freeBlobHolderContent(&socketDataHolder.blob);
       freeMsgUnitArr(msgUnitArr);
    }
 
