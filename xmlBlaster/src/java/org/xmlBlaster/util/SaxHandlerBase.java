@@ -3,11 +3,11 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.16 2002/05/16 15:40:30 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.17 2002/08/30 07:50:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import java.io.*;
 import org.xml.sax.Attributes;
@@ -31,6 +31,9 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 {
    private String ME = "SaxHandlerBase";
 
+   private final Global glob;
+   private final LogChannel log;
+
    // The current location
    protected Locator locator = null;
 
@@ -49,11 +52,16 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     * Constructs an new object.
     * You need to call the init() method to parse the XML string.
     */
-   public SaxHandlerBase()
-   {
-      if (Log.CALL) Log.trace(ME, "Creating new SaxHandlerBase");
+   public SaxHandlerBase() {
+       // TODO: use specific glob and not Global - set to deprecated
+      this(Global.instance());
    }
 
+   public SaxHandlerBase(Global glob) {
+      this.glob = glob;
+      this.log = Global.instance().getLog(null);
+      if (log.CALL) log.trace(ME, "Creating new SaxHandlerBase");
+   }
 
    /*
     * This method parses the XML string using the SAX parser.
@@ -71,19 +79,16 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
       }
    }
 
-
    /**
     * Does the actual parsing
     * @param xmlData Quality of service in XML notation
     */
-   private void parse(String xmlData) throws XmlBlasterException
-   {
+   private void parse(String xmlData) throws XmlBlasterException {
       try {
          SAXParserFactory spf = SAXParserFactory.newInstance();
-         // TODO: use glob and not Global
-         boolean validate = Global.instance().getProperty().get("javax.xml.parsers.validation", false);
+         boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
-         //if (Log.TRACE) Log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
+         //if (log.TRACE) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
 
          SAXParser sp = spf.newSAXParser();
          XMLReader parser = sp.getXMLReader();
@@ -93,7 +98,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
          parser.parse(new InputSource(new StringReader(xmlData)));
       }
       catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
-         if (Log.TRACE) Log.trace(ME, "StopParseException: Parsing execution stopped half the way");
+         if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
          return;
       }
       catch (Throwable e) {
@@ -102,30 +107,29 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
             location = getLocationString((SAXParseException)e);
 
          if (e.getMessage() != null && e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
-            if (Log.TRACE) Log.trace(ME, location + ": Parsing execution stopped half the way");
+            if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way");
             return;
          }
-         Log.error(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
+         log.error(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
          e.printStackTrace();
          throw new XmlBlasterException(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
       }
+      finally {
+         locator = null;
+      }
    }
-
 
    /**
     * @return returns the literal xml string
     */
-   public String toString()
-   {
+   public String toString() {
       return xmlLiteral;
    }
 
-
    /**
     * @return returns the literal xml string
     */
-   public String toXml()
-   {
+   public String toXml() {
       return xmlLiteral;
    }
 
@@ -138,26 +142,22 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     * The text between two tags, in the following example 'Hello':
     * <key>Hello</key>
     */
-   public void characters(char ch[], int start, int length)
-   {
+   public void characters(char ch[], int start, int length) {
       //character.append(new String(ch, start, length));
       character.append(ch, start, length);
    }
 
    /** End document. */
-   public void endDocument()
-   {
-      //Log.warn(ME, "Entering endDocument() ...");
+   public void endDocument() {
+      //log.warn(ME, "Entering endDocument() ...");
    }
 
-   public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName)
-   {
-      Log.warn(ME, "Please provide your endElement() implementation");
+   public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName) {
+      log.warn(ME, "Please provide your endElement() implementation");
    }
 
-   public void endPrefixMapping(java.lang.String prefix)
-   {
-      Log.warn(ME, "Entering endPrefixMapping() ...");
+   public void endPrefixMapping(java.lang.String prefix) {
+      log.warn(ME, "Entering endPrefixMapping() ...");
    }
 
    /** Ignorable whitespace. */
@@ -170,14 +170,13 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    {
    }
 
-   public void setDocumentLocator(Locator locator)
-   {
+   public void setDocumentLocator(Locator locator) {
       this.locator = locator;
    }
 
    public void skippedEntity(java.lang.String name)
    {
-      Log.warn(ME, "Entering skippedEntity() ...");
+      log.warn(ME, "Entering skippedEntity() ...");
    }
 
    /** Start document. */
@@ -193,12 +192,12 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     */
    public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
    {
-      Log.warn(ME, "Please provide your startElement() implementation");
+      log.warn(ME, "Please provide your startElement() implementation");
    }
 
    public void startPrefixMapping(java.lang.String prefix, java.lang.String uri)
    {
-      Log.warn(ME, "Entering startPrefixMapping() ...");
+      log.warn(ME, "Entering startPrefixMapping() ...");
    }
 
 
@@ -210,14 +209,14 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    /** Warning. */
    public void warning(SAXParseException ex)
    {
-      Log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+      log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
    }
 
 
    /** Error. */
    public void error(SAXParseException ex)
    {
-      Log.warn(ME, "error: " + getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      log.warn(ME, "error: " + getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
    }
 
 
@@ -226,11 +225,11 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    {
       if (ex.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
          // using Picolo SAX2 parser we end up here
-         if (Log.TRACE) Log.trace(ME+".fatalError", "Parsing execution stopped half the way");
+         if (log.TRACE) log.trace(ME+".fatalError", "Parsing execution stopped half the way");
          return;
       }
 
-      Log.error(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      log.error(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
       throw ex;
    }
 
@@ -238,14 +237,14 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    /** Fatal error. */
    public void notationDecl(String name, String publicId, String systemId)
    {
-      if (Log.TRACE) Log.trace(ME, "notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
+      if (log.TRACE) log.trace(ME, "notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
    }
 
 
    /** Fatal error. */
    public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName)
    {
-      if (Log.TRACE) Log.trace(ME, "unparsedEntityDecl(name="+name+
+      if (log.TRACE) log.trace(ME, "unparsedEntityDecl(name="+name+
                                           ", publicId="+publicId+
                                           ", systemId="+systemId+
                                           ", notationName="+notationName+")");
