@@ -3,26 +3,19 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.24 2003/05/23 09:04:25 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.25 2003/08/28 12:13:35 laghi Exp $
 Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 
 package javaclients.xmlrpc;
 
-import java.io.*;
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.util.MsgUnit;
 
 /**
@@ -79,10 +72,9 @@ public class XmlRpcHttpClient
          
          log.info(ME, "Going to invoke xmlBlaster using XmlRpc-I_XmlBlasterAccess");
          String sessionId = "Session1";
-         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
-
-         client.login("LunaMia", "silence", loginQos, null);
-         log.info(ME, "Login successful");
+         ConnectQos connectQos = new ConnectQos(glob, "LunaMia", "silence");
+         client.connect(connectQos, null);
+         log.info(ME, "Connection successful");
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
@@ -134,7 +126,6 @@ public class XmlRpcHttpClient
       System.out.println("----------------------------------------------------------");
       System.out.println("java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
       System.out.println("----------------------------------------------------------");
-      System.out.println(glob.usage());
       System.out.println(Global.instance().usage());
       System.out.println("----------------------------------------------------------");
       System.out.println("");
