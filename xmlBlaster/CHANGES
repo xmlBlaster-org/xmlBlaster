@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 2002]
 ===============================
+  - Fixed memory leak for volatile messages, happened when a volatile
+    message is in a callback queue and the client disappears silently
+    Reported by David Kerry
+  
   - Bugfix in SOCKET protocol to ignore InterruptedException
     from other code
 
