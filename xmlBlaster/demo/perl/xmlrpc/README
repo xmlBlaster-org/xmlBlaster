@@ -6,15 +6,7 @@ Howto start the Perl/XmlRpc demo:
       java -jar lib/xmlBlaster.jar
 
 
- - Run first Perl demo client : hello.pl
-
-   (Pass as argument the url where xmlBlaster listens,
-    xmlBlaster logs this url on your console)
-
-      cd xmlBlaster/demo/perl/xmlrpc
-      perl  hello.pl  http://myhost:8080
-
- - Run a second Perl demo client : xmlBlasterClient.pl
+ - Run a Perl demo client : xmlBlasterClient.pl
 
       1/ cd xmlBlaster/demo/perl/xmlrpc
 
@@ -34,6 +26,27 @@ Howto start the Perl/XmlRpc demo:
       It will try to get all messages actually in xmlBlaster server.
 
 Thats it!
+
+
+
+-------------------------------------------------------------------
+Required libraries :
+
+      this demo use xml-rpc protocol to connect to xmlBlaster server.
+      the xml-rpc implementation used in this demo is Frontier.
+
+      - XML Expat
+      install expat (expat-1.95.2 at http://sourceforge.net/projects/expat/)
+      on my linux redhat 7.2 it was already installed.
+      
+      - perl XML Parser :
+      perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)
+
+      - perl XMLRPC :
+      xml-rpc implemeted by Frontier (Frontier-RPC-x.xx).
+      Look at CPAN for this package.
+-------------------------------------------------------------------
+
 
 
 -------------------------------------------------------------------
