@@ -84,6 +84,35 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
       freeResources(deleteConnection, deleteCallback);                \
       throw ex;                                                       \
    }                                                                  \
+   catch(const exception &ex) {                                       \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "",                          \
+                       string("type='exception', msg='")              \
+                        + ex.what() + "'");                           \
+   }                                                                  \
+   catch(const string &ex) {                                          \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "",                          \
+                       string("type='string', msg='") + ex + "'");    \
+   }                                                                  \
+   catch(const char *ex) {                                            \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "",                          \
+                       string("type='char*', msg='") + ex + "'");     \
+   }                                                                  \
+   catch(int ex) {                                                    \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
+                       "unknown node", ME + string(methodName), "en", \
+                       "client-c++", "", "",                          \
+       string("type='int', msg='") + lexical_cast<string>(ex) + "'"); \
+   }                                                                  \
    catch (...) {                                                      \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
