@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.3 2000/01/20 19:41:41 ruff Exp $
+Version:   $Id: Property.java,v 1.4 2000/02/23 15:05:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,7 +13,7 @@ import java.util.Enumeration;
 
 
 /**
- * Properties for xmlBlaster, see $HOME/xmlBlaster.properties. 
+ * Properties for xmlBlaster, see $HOME/xmlBlaster.properties.
  * <p />
  * The variables following variables may be used and are replaced on occurrence:
  * <ul>
@@ -146,11 +146,11 @@ public class Property
             String key = (String)e.nextElement();
             String value = (String)xmlBlasterProperties.get(key);
             if (value.indexOf("$user.dir") != -1) {
-               xmlBlasterProperties.put(key, replace(value, "$user.dir", currentPath)); 
+               xmlBlasterProperties.put(key, replace(value, "$user.dir", currentPath));
                continue;
             }
             if (value.indexOf("$user.home") != -1) {
-               xmlBlasterProperties.put(key, replace(value, "$user.home", userHome)); 
+               xmlBlasterProperties.put(key, replace(value, "$user.home", userHome));
                continue;
             }
             if (value.indexOf("$XMLBLASTER_HOME") != -1) {
@@ -159,7 +159,7 @@ public class Property
                                 "Set it as environment 'java -DXMLBLASTER_HOME=/home/joe ...' or at the beginning of the file.");
                   continue;
                }
-               xmlBlasterProperties.put(key, replace(value, "$XMLBLASTER_HOME", xmlBlasterPath)); 
+               xmlBlasterProperties.put(key, replace(value, "$XMLBLASTER_HOME", xmlBlasterPath));
                continue;
             }
          }
@@ -197,7 +197,8 @@ public class Property
     * <p />
     * @param token for example "false"
     * @return true for one of "true", "yes", "1", "ok"<br />
-    *         else false
+    *         false for "false", "0", "no"
+    * @exception if none of the above strings
     */
    public static final boolean toBool(String token) throws Exception
    {

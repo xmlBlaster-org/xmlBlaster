@@ -3,7 +3,7 @@ Name:      Args.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Evaluate parameters at process startup
-Version:   $Id: Args.java,v 1.3 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: Args.java,v 1.4 2000/02/23 15:05:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -93,7 +93,40 @@ public class Args
 
 
    /**
-    * Try to find the given arg.
+    * Try to find the given key in the args list.
+    * <p />
+    * true for one of "true", "yes", "1", "ok" <br />
+    * false for "false", "0", "no" <br />
+    * else the defaultVal
+    * @param the argument array
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
+    * @return The boolean value for the given key
+    */
+   public final static boolean getArg(String[] args, String key, boolean defaultVal)
+   {
+      if (args == null)
+         return defaultVal;
+
+      for (int ii=0; ii<args.length; ii++) {
+         if (args[ii].equals(key)) {
+            if (ii >= args.length-1) Log.panic(ME, "Please specify a value for parameter " + key );
+            String str = args[++ii];
+            if (str == null)
+               return defaultVal;
+            try {
+               return Property.toBool(str);
+            } catch (Exception e) {
+               return defaultVal;
+            }
+         }
+      }
+      return defaultVal;
+   }
+
+
+   /**
+    * Try to find the given arg without a value (flag parameter).
     *
     * @param the argument array
     * @param arg The argument to find (without a value)
@@ -112,6 +145,20 @@ public class Args
       return false;
    }
 
+
+   /**
+    * For testing only
+    * <p />
+    * java org.xmlBlaster.util.Args
+    */
+   public static void main(String args[])
+   {
+      String ME = "Property";
+      String[] arr = new String[2];
+      arr[0] = "-hello";
+      arr[1] = "1";
+      Log.info(ME, "-hello=" + Args.getArg(arr, arr[0], false));
+   }
 }
 
 
