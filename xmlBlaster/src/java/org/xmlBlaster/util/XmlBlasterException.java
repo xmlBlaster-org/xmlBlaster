@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.16 2003/02/11 15:01:11 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.17 2003/03/05 11:33:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -528,6 +528,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     * @return An exception of type XmlBlasterException
     */
    public static XmlBlasterException convert(Global glob, String location, String message, Throwable throwable) {
+      return convert(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
+   }
+
+   /**
+    * @param errorCodeEnum is the fallback error code
+    */
+   public static XmlBlasterException convert(Global glob, ErrorCode errorCodeEnum, String location, String message, Throwable throwable) {
       if (throwable instanceof XmlBlasterException) {
          return (XmlBlasterException)throwable;
       }
@@ -541,7 +548,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OUTOFMEMORY, location, message, throwable);
       }
       else {
-         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
+         return new XmlBlasterException(glob, errorCodeEnum, location, message, throwable);
       }
    }
 
