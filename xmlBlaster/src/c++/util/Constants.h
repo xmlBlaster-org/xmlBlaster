@@ -173,6 +173,7 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * D_O_M_A_I_N;
    extern Dll_Export const char * REGEX;
 
+   extern Dll_Export const char * SOCKET;
    extern Dll_Export const char * IOR;
    extern Dll_Export const char * EMAIL;
    extern Dll_Export const char * XML_RPC;
@@ -200,6 +201,12 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char* INTERNAL_OID_PREFIX_FOR_CORE;
    extern Dll_Export const char* INTERNAL_OID_PREFIX;
    extern Dll_Export const char* INTERNAL_OID_CLUSTER_PREFIX;
+
+   /**
+    * Object keys for lifetime manager, needed for registration
+    */
+   extern Dll_Export const char* XB_GLOBAL_KEY;
+   extern Dll_Export const char* XB_XMLPARSERFACTORY_KEY;
 
 //};
 

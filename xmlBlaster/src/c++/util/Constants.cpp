@@ -65,12 +65,13 @@ const char * EXACT = "EXACT";
 const char * D_O_M_A_I_N = "DOMAIN"; // doesn't compile with g++ 3.1.1
 const char * REGEX       = "REGEX";
 
+const char * SOCKET  = "SOCKET";
 const char * IOR     = "IOR";
 const char * EMAIL   = "EMAIL";
 const char * XML_RPC = "XMLRPC";
 
-const char * OFFSET  = "   ";
-const char * INDENT  = "   ";
+const char * INDENT  = " ";
+const char * OFFSET  = "\n ";
 
 const Timestamp THOUSAND = 1000;
 const Timestamp MILLION  = 1000 * THOUSAND;
@@ -80,6 +81,10 @@ const Timestamp BILLION  = 1000 * MILLION;
 const char* SESSIONID_PREFIX = "sessionId:";
 const char* SUBSCRIPTIONID_PREFIX = "__subId:";
 const char* const SUBSCRIPTIONID_PtP = "__subId:PtP";
+
+
+const char* XB_GLOBAL_KEY = "XB_Global"; // For registration with lifetime manager
+const char* XB_XMLPARSERFACTORY_KEY = "XB_XmlParserFactory"; // For registration with lifetime manager
 
 /*
 const int getPriority(string prio, int defaultPriority)
