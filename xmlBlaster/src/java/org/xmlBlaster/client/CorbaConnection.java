@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.48 2000/05/18 17:21:02 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.49 2000/05/19 15:13:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.48 $
+ * @version $Revision: 1.49 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -62,6 +62,7 @@ public class CorbaConnection implements ServerOperations
    private static final String ME = "CorbaConnection";
    protected String[] args = null;
    protected org.omg.CORBA.ORB orb = null;
+   protected org.omg.PortableServer.POA rootPOA;
    protected NamingContext nameService = null;
    protected AuthServer authServer = null;
    protected Server xmlBlaster = null;
@@ -539,8 +540,13 @@ public class CorbaConnection implements ServerOperations
     */
    private synchronized void handleConnectionException(Exception e) throws XmlBlasterException
    {
-      if (noConnect) // LoginThread tried already and gave up
+      if (noConnect) {// LoginThread tried already and gave up
+         if (isInFailSaveMode())
+            Log.error(ME, "Can't establish connection to xmlBlaster, pinging retries = " + retries + " exceeded.");
+         else
+            Log.error(ME, "Can't establish connection to xmlBlaster, no fail save mode.");
          throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
+      }
 
       if (isInFailSaveMode()) {
          if (xmlBlaster != null) {
@@ -613,7 +619,8 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Logout from the server.
+    * Logout from the server. 
+    * The callback server is removed as well, releasing all CORBA threads.
     * @return true successfully logged out
     *         false failure on logout
     */
@@ -626,11 +633,13 @@ public class CorbaConnection implements ServerOperations
             Log.warning(ME, "No logout, you are not logged in");
          else
             Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
+         shutdownCallbackServer();
          return false;
       }
 
       try {
          authServer.logout(xmlBlaster);
+         shutdownCallbackServer();
          xmlBlaster = null;
          return true;
       } catch(XmlBlasterException e) {
@@ -640,6 +649,7 @@ public class CorbaConnection implements ServerOperations
          e.printStackTrace();
       }
 
+      shutdownCallbackServer();
       xmlBlaster = null;
       return false;
    }
@@ -662,7 +672,6 @@ public class CorbaConnection implements ServerOperations
     */
    public BlasterCallback createCallbackServer(BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
-      org.omg.PortableServer.POA rootPOA;
       BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
 
       // Getting the default POA implementation "RootPOA"
@@ -683,6 +692,24 @@ public class CorbaConnection implements ServerOperations
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
       }
+   }
+
+
+   /**
+    * Shutdown the callback server. 
+    */
+   public void shutdownCallbackServer()
+   {
+      if (callback == null) {
+         if (Log.TRACE) Log.trace(ME, "No callback server to shutdown.");
+         return;
+      }
+
+      try { rootPOA.the_POAManager().deactivate(false, true); } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+      orb.shutdown(true);
+      rootPOA = null;
+      callback = null;
+      Log.info(ME, "The callback server is shutdown.");
    }
 
 
@@ -722,7 +749,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "subscribe() ...");
       try {
-         return xmlBlaster.subscribe(xmlKey, qos);
+         return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
@@ -741,7 +768,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
       try {
-         xmlBlaster.unSubscribe(xmlKey, qos);
+         getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
@@ -765,7 +792,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
-         return xmlBlaster.publish(msgUnit, qos);
+         return getXmlBlaster().publish(msgUnit, qos);
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -786,7 +813,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       try {
-         return xmlBlaster.publishArr(msgUnitArr, qosArr);
+         return getXmlBlaster().publishArr(msgUnitArr, qosArr);
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -806,7 +833,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "erase() ...");
       try {
-         return xmlBlaster.erase(xmlKey, qos);
+         return getXmlBlaster().erase(xmlKey, qos);
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
@@ -831,21 +858,20 @@ public class CorbaConnection implements ServerOperations
             units = cache.get( xmlKey, qos );
             //not found in cache
             if( units == null ) {
-               units = xmlBlaster.get(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
-               String subId = xmlBlaster.subscribe(xmlKey, qos); //subscribe to this messages (asynchronous)
+               units = getXmlBlaster().get(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
+               String subId = getXmlBlaster().subscribe(xmlKey, qos); //subscribe to this messages (asynchronous)
                cache.newEntry(subId, xmlKey, units);             //fill messages to cache
                Log.info(ME,"New Entry in Cache created (subId="+subId+")");
             }
          }
          else
-            units = xmlBlaster.get(xmlKey, qos);
-
-                return units;
-
+            units = getXmlBlaster().get(xmlKey, qos);
+         return units;
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
          if (recorder != null) recorder.get(xmlKey, qos);
+         e.printStackTrace();
          handleConnectionException(e);
       }
       return dummyMArr;
@@ -860,7 +886,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
       try {
-         xmlBlaster.setClientAttributes(clientName, xmlAttr, qos);
+         getXmlBlaster().setClientAttributes(clientName, xmlAttr, qos);
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
@@ -879,7 +905,7 @@ public class CorbaConnection implements ServerOperations
       if (isReconnectPolling)
          return;
       try {
-         xmlBlaster.ping();
+         getXmlBlaster().ping();
          if (Log.TRACE) Log.trace(ME, "ping success() ...");
          return;
       } catch(Exception e) {
