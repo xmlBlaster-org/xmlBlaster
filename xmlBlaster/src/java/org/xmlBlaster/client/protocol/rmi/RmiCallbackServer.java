@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.4 2000/10/22 16:40:35 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.5 2000/10/22 19:21:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -40,7 +40,9 @@ import java.rmi.Naming;
  * </pre>
  * <p />
  * Note: The security manager must be initialized properly before you use an instance of this class.<br />
- * RmiConnection does it in its constructor if you use this class, or you could use RmiConnection.createSecurityManager() to do this.
+ * RmiConnection does it in its constructor if you use this class, or you could use<br />
+ *     XmlBlasterSecurityManager.createSecurityManager();<br />
+ * to do so yourself.
  * <p />
  * Invoke options: <br />
  * <pre>

@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.11 2000/10/22 13:50:02 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.12 2000/10/22 19:21:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
@@ -116,7 +117,7 @@ public class RmiDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      createSecurityManager();
+      XmlBlasterSecurityManager.createSecurityManager();
 
       try {
          authRmiServer = new AuthServerImpl(authenticate, xmlBlasterImpl);
@@ -134,45 +135,6 @@ public class RmiDriver implements I_Driver
 
 
    /**
-    * Create and install a security manager, using xmlBlaster.policy
-    * <p />
-    * Note the similar method in org.xmlBlaster.client.protocol.rmi.RmiConnection;
-    */
-   private void createSecurityManager() throws XmlBlasterException
-   {
-      if (System.getSecurityManager() == null) {
-         if (System.getProperty("java.security.policy") != null) {
-            // use the given policy file (java -Djava.security.policy=...)
-            Log.info(ME, "Setting security policy from file " + System.getProperty("java.security.policy"));
-         }
-         else {
-            // try to find the policy file in the CLASSPATH
-            ClassLoader loader = RmiDriver.class.getClassLoader();
-            if (loader != null) {
-               java.net.URL serverPolicyURL = loader.getResource("xmlBlaster.policy");
-               if (serverPolicyURL != null ) {
-                  String serverPolicy = serverPolicyURL.getFile();
-                  System.setProperty("java.security.policy", serverPolicy);
-                  Log.info(ME, "Setting security policy " + serverPolicy + ", found it in your CLASSPATH.");
-               }
-            }
-         }
-
-         // Check if there was any policy file found
-         if (System.getProperty("java.security.policy") == null) {
-            String text = "java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...";
-            throw new XmlBlasterException("RmiDriverFailed", text);
-         }
-
-         System.setSecurityManager(new RMISecurityManager());
-         if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
-      }
-      else
-         Log.warn(ME, "Another security manager is running already, no config/xmlBlaster.policy bound");
-   }
-
-
-   /**
     *  Instructs RMI to shut down.
     */
    public void shutdown()
@@ -185,6 +147,7 @@ public class RmiDriver implements I_Driver
       } catch (Exception e) {
          ;
       }
+      XmlBlasterSecurityManager.cleanup();
    }
 
 
@@ -209,7 +172,7 @@ public class RmiDriver implements I_Driver
          hostname = "localhost";
       }
       hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
-      
+
       try {
          if (registryPort > 0) {
             // Start a 'rmiregistry' if desired
