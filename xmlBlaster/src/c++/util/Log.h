@@ -3,7 +3,7 @@ Name:      Log.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
+Version:   $Id: Log.h,v 1.5 2001/12/03 16:32:23 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #define _TERM_WITH_COLORS_
@@ -141,7 +141,7 @@ namespace util {
       static bool CALL, TIME, TRACE, DUMP;
       
       
-      Log(int args=0, char *argc[]=0);
+      Log(int args=0, const char * const argc[]=0);
 
 
       ~Log();
@@ -165,7 +165,7 @@ namespace util {
        * <pre>jaco org.xmlBlaster.Main -trace true -dump true -call true -dump true</pre>
        *
        */
-      void setLogLevel(int argc, char *args[]);
+      void setLogLevel(int argc, const char * const args[]);
 
 
       /**

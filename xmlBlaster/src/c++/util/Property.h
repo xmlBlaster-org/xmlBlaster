@@ -3,7 +3,7 @@ Name:      Property.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
-Version:   $Id: Property.h,v 1.5 2001/11/30 08:04:16 ruff Exp $
+Version:   $Id: Property.h,v 1.6 2001/12/03 16:32:23 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_PROPERTY_H
@@ -82,7 +82,7 @@ namespace util {
        * The default constructor does nothing else than allocate the storage
        * map for the properties.
        */
-      Property(int args=0, char *argc[]=0) : properties_() {
+      Property(int args=0, const char * const argc[]=0) : properties_() {
 	 if (args && argc) {
 //	    loadProps(args, argc); // java-style properties
 	    loadProps(args, argc, "-", false); // xmlBlaster-style properties
@@ -240,7 +240,7 @@ namespace util {
        * equality sign between name and value).
        * Errors in syntax are silenty ignored (the property just isn't load).
        */
-      int loadProps(int args, char *argc[], const string &sep="-D", 
+      int loadProps(int args, const char * const argc[], const string &sep="-D", 
 		    bool javaStyle=true) {
 
 	 int    count = 1, ret=0, nmax = args;
@@ -270,7 +270,7 @@ namespace util {
        * specified by name. If nothing is found it returns -1, otherwise it
        * returns the index of argc corresponding to what specified in name.
        */
-      int findArgument(int args, char *argc[], const string &name) {
+      int findArgument(int args, const char * const argc[], const string &name) {
 	 for (int i=1; i < args; i++) {
 	    if (string(argc[i]) == name) return i;
 	 }

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.h,v 1.4 2001/11/27 15:44:31 ruff Exp $
+Version:   $Id: CorbaConnection.h,v 1.5 2001/12/03 16:31:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -30,7 +30,7 @@ namespace org { namespace xmlBlaster {
    private:
       
       string me() {
-	 return "CorbaConnection";
+         return "CorbaConnection";
       }
       
       static CORBA::ORB_ptr           orb_;
@@ -54,15 +54,15 @@ namespace org { namespace xmlBlaster {
        * CORBA client access to xmlBlaster (default behavior).
        */
 /*        CorbaConnection(bool orbOwner = false) : log_(),  */
-/*  	 loginQos_() , implObj_() { */
-/*  	 int  args = 0; */
-/*  	 char *argc[0]; */
-/*  	 orb_ = CORBA::ORB_init(args, argc); */
-/*  	 nameServerControl_ = 0; */
-/*  	 numLogins_         = 0; */
-/*  	 authServer_        = getAuthenticationService(); */
-/*  	 callback_          = createCallbackServer(); */
-/*  	 orbOwner_          = orbOwner; */
+/*      loginQos_() , implObj_() { */
+/*      int  args = 0; */
+/*      char *argc[0]; */
+/*      orb_ = CORBA::ORB_init(args, argc); */
+/*      nameServerControl_ = 0; */
+/*      numLogins_         = 0; */
+/*      authServer_        = getAuthenticationService(); */
+/*      callback_          = createCallbackServer(); */
+/*      orbOwner_          = orbOwner; */
 /*        } */
 
       /**
@@ -80,7 +80,7 @@ namespace org { namespace xmlBlaster {
        *    <li>-ns true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(int args=0, char *argc[]=0, bool orbOwner = false);
+      CorbaConnection(int args=0, const char * const argc[]=0, bool orbOwner = false);
 
       ~CorbaConnection();
 
@@ -89,7 +89,7 @@ namespace org { namespace xmlBlaster {
        * @return org.omg.CORBA.ORB
        */
       CORBA::ORB_ptr getOrb() {
-	 return CORBA::ORB::_duplicate(orb_);
+         return CORBA::ORB::_duplicate(orb_);
       }
 
       
@@ -97,11 +97,24 @@ namespace org { namespace xmlBlaster {
        * Is used to perform work on the orb (if necessary).
        */
       bool orbPerformWork() {
-	 bool ret = orb_->work_pending();
-	 if (ret) orb_->perform_work();
-	 return ret;
+         if (orb_ != NULL) {
+            bool ret = orb_->work_pending();
+            if (ret) orb_->perform_work();
+            return ret;
+         }
+         else
+            return false;
       }
-	 
+
+
+      /**
+       * Run forever
+       */
+      void run() {
+         if (orb_ != NULL)
+            orb_->run();
+      }
+    
 
       /**
        * Accessing the xmlBlaster handle.
@@ -171,9 +184,8 @@ namespace org { namespace xmlBlaster {
        *                  don't want any.
        * @exception       XmlBlasterException if login fails
        */
-      serverIdl::Server_ptr
-      login(const string &loginName, const string &passwd, 
-	    const LoginQosWrapper &qos, I_Callback *client=0);
+      serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
+                   const LoginQosWrapper &qos, I_Callback *client=0);
 
 
       /**
@@ -199,7 +211,7 @@ namespace org { namespace xmlBlaster {
        * @return your login name or null if you are not logged in
        */
       string getLoginName() {
-	 return loginName_;
+         return loginName_;
       }
       
       
@@ -215,8 +227,8 @@ namespace org { namespace xmlBlaster {
        * @return true if you are logged in
        */
       bool isLoggedIn() {
-	 if (CORBA::is_nil(authServer_)) getAuthenticationService();
-      	 return (!CORBA::is_nil(xmlBlaster_ /*.in()*/ ));
+         if (CORBA::is_nil(authServer_)) getAuthenticationService();
+         return (!CORBA::is_nil(xmlBlaster_ /*.in()*/ ));
       }
       
       

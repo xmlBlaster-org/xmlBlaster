@@ -3,7 +3,7 @@ Name:      Log.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cc,v 1.4 2001/11/26 09:20:59 ruff Exp $
+Version:   $Id: Log.cc,v 1.5 2001/12/03 16:32:23 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -11,7 +11,7 @@ Version:   $Id: Log.cc,v 1.4 2001/11/26 09:20:59 ruff Exp $
 namespace org { namespace xmlBlaster {
 namespace util {
 
-   Log::Log(int args, char *argc[]) {
+   Log::Log(int args, const char * const argc[]) {
       bool isNewProperty = false;
       if (numOfImplementations_ == 0) {
          properties_ = new Property(args, argc);
@@ -89,7 +89,7 @@ namespace util {
       setPreLogLevelCheck();
    }
 
-   void Log::setLogLevel(int argc, char *args[]) {
+   void Log::setLogLevel(int argc, const char * const args[]) {
       if ((properties_->findArgument(argc, args, "-?") > 0) ||
           (properties_->findArgument(argc, args, "-h") > 0)) {
          usage();
