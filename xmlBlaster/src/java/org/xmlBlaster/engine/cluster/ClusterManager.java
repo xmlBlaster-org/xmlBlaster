@@ -67,6 +67,7 @@ public final class ClusterManager
    public ClusterManager(Global glob) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("cluster");
+      this.ME = this.ME + "-" + this.glob.getId();
 
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");

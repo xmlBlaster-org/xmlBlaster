@@ -40,7 +40,7 @@ import java.util.Vector;
 public final class NodeDomainInfo implements Comparable
 {
    /** Unique name for logging */
-   private final static String ME = "NodeDomainInfo";
+   private String ME = "NodeDomainInfo";
    private final Global glob;
    private final LogChannel log;
    private final ClusterNode clusterNode;
@@ -82,6 +82,8 @@ public final class NodeDomainInfo implements Comparable
       this.glob = glob;
       this.log = this.glob.getLog("cluster");
       this.clusterNode = clusterNode;
+      this.ME = this.ME + "-" + this.glob.getId();
+
       synchronized (NodeDomainInfo.class) {
          count = counter++;
       }

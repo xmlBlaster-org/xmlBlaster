@@ -36,7 +36,7 @@ import java.util.Iterator;
  * @since 0.79e
  */
 final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
-   private final String ME = "DomainToMaster";
+   private String ME = "DomainToMaster";
    private Global glob;
    private Log log;
    private ClusterManager clusterManager;
@@ -49,6 +49,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       this.glob = glob;
       this.log = glob.getLog();
       this.clusterManager = clusterManager;
+      this.ME = this.ME + "-" + this.glob.getId();
       log.info(ME, "The simple domain based master mapper plugin is initialized");
    }
 
@@ -211,7 +212,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
 
       // Check for user supplied filters <master><filter>... These are the filter based queries
       AccessFilterQos[] filterQos = nodeDomainInfo.getFilterQos();
-      if (filterQos != null) {
+      if (filterQos != null && filterQos.length > 0) {
          log.info(ME, "Found " + filterQos.length + " filter rules ...");
          for (int jj=0; jj<filterQos.length; jj++) {
             I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
