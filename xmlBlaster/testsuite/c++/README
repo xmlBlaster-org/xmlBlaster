@@ -96,6 +96,14 @@ You might want to try using -ORBIIOPAddr inet::9000 instead; Mico
 will then listen on INADDR_ANY.
 
 
+run forever:
+------------
+
+ while (!finished) {
+    orb->perform_work ();
+ }
+
+
 mico name service with JacORB:
 ------------------------------
 
