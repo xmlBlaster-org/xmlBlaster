@@ -1,0 +1,10 @@
+/*------------------------------------------------------------------------------
+Name:      xmlBlaster/demo/python/xmlrpc/README
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   xmlBlaster access with Python clients using XmlRpc
+Date:      2004-01-23
+See:       http://www.xmlBlaster.org/xmlBlaster/src/python/README
+See:       http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.python.xmlrpc.html
+------------------------------------------------------------------------------*/
+
