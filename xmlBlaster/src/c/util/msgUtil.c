@@ -42,9 +42,9 @@ Dll_Export const char *getXmlBlasterVersion(void)
    /* Is replaced by xmlBlaster/build.xml ant task */
    static const char *p1 = "@version@";
    static const char *p2 = "@version@ #@revision.number@";
-	if (strstr(p2, "@") == 0 && strstr(p2, "${") == 0) { /* Verify that subversion replacement worked fine */
-		return p2;
-	}
+        if (strstr(p2, "@") == 0 && strstr(p2, "${") == 0) { /* Verify that subversion replacement worked fine */
+                return p2;
+        }
    return p1;
 }
 
@@ -226,11 +226,11 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
 /* duh? ERANGE value copied from web... */
 #define ERANGE 34
 int gethostbyname_r (const char *name,
-		     struct hostent *ret,
-		     char *buf,
-		     size_t buflen,
-		     struct hostent **result,
-		     int *h_errnop) {
+                     struct hostent *ret,
+                     char *buf,
+                     size_t buflen,
+                     struct hostent **result,
+                     int *h_errnop) {
 
   int hsave;
   struct hostent *ph;
