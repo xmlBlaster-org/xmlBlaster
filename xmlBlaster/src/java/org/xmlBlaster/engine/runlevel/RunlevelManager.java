@@ -320,7 +320,12 @@ public final class RunlevelManager
             }
          }
          catch (XmlBlasterException e) {
-            log.warn(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.toString());
+            if (e.isInternal()) {
+               log.error(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
+            }
+            else {
+               log.warn(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
+            }
             numErrors++;
          }
       }
