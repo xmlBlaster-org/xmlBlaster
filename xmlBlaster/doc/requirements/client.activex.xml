@@ -7,7 +7,7 @@
       XmlBlaster provides access from C# and VisualBasic with ActiveX.
    </topic>
    <description>
-   <h3>Overview</h3>
+   <h2>Overview</h2>
      <p>
      With the free ActiveX bridge from SUN (JDK 1..4.2 and 1.5) we can export
      the Java client library into an ActiveX control (Windows only). With this
@@ -33,7 +33,7 @@
      You can lookup all supported methods in the Javadoc API of <code>XmlScriptAccess</code> bean.
      </p>
 
-     <h3>Limitations</h3>
+     <h2>Limitations</h2>
      <p>
       It seems to work only with the ActiveX bridge from JDK 1.5 or higher.
       JDK 1.4.2 failed on my Windows XP.
@@ -47,7 +47,7 @@
       In the runtime environment you don't need VC++.
      </p>
      
-     <h3>Installation</h3>
+     <h2>Installation</h2>
      <p>
       First you need to create a dll and register it, theses steps are described
       in the above mentioned howto. We have added these steps into a new <code>ant</code> task
@@ -75,7 +75,7 @@
            -> XmlScriptAccess Bean Control
 </pre>
 
-     <h3>Demonstration clients</h3>
+     <h2>Demonstration clients</h2>
 
   <p>
   A functional C# demo client and a VisualBasic .net client you find
@@ -104,7 +104,7 @@ xmlBlaster\demo\activex
     java -jar lib\xmlBlaster.jar
 </pre>
 
-   <h3>API usage</h3>
+   <h2>API usage</h2>
    <p>
    The Java bean <a href="http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/client/activex/XmlScriptAccess.html" target="others">XmlScriptAccess</a> exports
    all needed functionality to activeX aware languages.
@@ -142,7 +142,7 @@ Catch e As SystemException
    methods as you would do in Java
    </p>
 
-   <h3>Callback usage</h3>
+   <h2>Callback usage</h2>
    <p>As events into ActiveX can't have a return value and can't throw
      an exception back to us we handle it here as a callback, for example
      Visual Basic needs to call <code>sendUpdateReturn()</code> or <code>sendUpdateException()</code> after
@@ -151,6 +151,15 @@ Catch e As SystemException
      the blocking times out after 10 minutes which is adjustable with
      the property <code>client/activex/responseWaitTime</code> given in milli seconds.
  </p>
+ <p>
+ The 'msg' received in the callback method is of type <code>UpdateEvent</code>, the usage
+ is described in the 
+ <a href="http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/client/activex/UpdateEvent.html" target="API">
+ UpdateEvent Javadoc</a>.
+ </p>
+
+
+
 
    </description>
 
@@ -361,6 +370,8 @@ Catch e As SystemException
 <span class="NOTHING">   </span><span class="COMMENT">' or</span>
 <span class="NOTHING">   </span><span class="COMMENT">'    setUpdateException()     -&gt; throws an XmlBlasterException</span>
 <span class="NOTHING">   </span><span class="COMMENT">' If you forget this the update thread of the java bean will block forever</span>
+<span class="NOTHING">   </span><span class="COMMENT">' @param msg See</span>
+<span class="NOTHING">   </span><span class="COMMENT">' http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/client/activex/UpdateEvent.html</span>
 <span class="NOTHING">   </span><span class="COMMENT">'---------------------------------------------------------------------------</span>
 <span class="NOTHING">   </span><span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> XmlScriptAccess_update(</span><span class="KEYWORD">ByVal</span><span class="NOTHING"> msg </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span><span class="NOTHING">) _</span>
 <span class="NOTHING">               Handles xmlBlaster.XmlScriptAccessSource_Event_update</span>
