@@ -304,7 +304,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          if (!transientSpaceLeft) {
             I_MapEntry oldest = this.transientStore.removeOldest();
             if (oldest == null) {
-               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".put", "The RAM queue is full, entry '" + entry.getUniqueId() + "' rejected");
+               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".put", "The RAM queue is full, entry '" + mapEntry.getUniqueId() + "' rejected");
             }
             try {
                if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
