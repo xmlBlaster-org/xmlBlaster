@@ -34,7 +34,7 @@ will then listen on INADDR_ANY.
 To run the clients:
 
 
-Using BOA (clientBOA.cpp):
+Using POA:
 
 3) Start the xmlBlaster server
 
