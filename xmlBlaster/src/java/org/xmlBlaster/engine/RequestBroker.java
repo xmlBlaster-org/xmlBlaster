@@ -173,7 +173,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    public String[] deadLetter(MsgQueueEntry[] entries)
    {
-      if (Log.CALL) Log.call(ME, "Publishing " + entries.length + " dead letters, some may be filtered away");
+      if (Log.CALL) Log.call(ME, "Publishing " + entries.length + " dead letters.");
       if (entries == null) {
          Log.error(ME, "deadLetter() with null argument");
          return new String[0];
@@ -422,7 +422,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   subsQuery.addSubscription(subs);
                subscribeToOid(subs);                // fires event for subscription
 
-               if (returnOid[ii].equals("")) returnOid[ii] = xmlKeyExact.getUniqueKey();
+               if (returnOid[ii].equals("")) returnOid[ii] = subs.getUniqueKey();
             }
          }
 
