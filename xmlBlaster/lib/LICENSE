@@ -129,7 +129,7 @@ only the SNMP subagent module jax.jar is GPL only!
   those class files in your classpath as well.
 
 
-10) xmlrpc.jar 1.0
+10) xmlrpc.jar 1.1
 ==================
    XML-RPC Library for Java
    Copyright (c) 1999 Hannes Wallnoefer, hannes@helma.at
@@ -137,6 +137,11 @@ only the SNMP subagent module jax.jar is GPL only!
 
    The org.xml.sax stuff is stripped from xmlrpc.jar
    to avoid XML parser conflict.
+
+   The WebServer.shutdown():382 is patched with:
+     g.destroy();
+   to release the ThreadGroup thread (which
+   only helps if no connection was established)
 
 
 11) ant.jar 1.5alpha from 2002-03-30
