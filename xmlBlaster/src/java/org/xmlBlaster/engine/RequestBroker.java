@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.89 2001/03/26 13:46:44 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.90 2001/03/27 19:29:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.89 $
+ * @version $Revision: 1.90 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -352,7 +352,20 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
          if (msgUnitHandler.isPublishedWithData()) {
             MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
-            mm.qos = "<qos></qos>"; // !!! GetReturnQos is still missing
+
+            StringBuffer buf = new StringBuffer();
+            buf.append("\n<qos>\n");
+
+            buf.append("   <state>\n");  // !!! not yet supported
+            buf.append("      OK\n");    // OK | EXPIRED | ERASED
+            buf.append("   </state>\n");
+
+            buf.append("   <sender>\n");
+            buf.append("      ").append(msgUnitHandler.getMessageUnitWrapper().getPublisherName());
+            buf.append("\n   </sender>\n");
+
+            buf.append("</qos>");
+            mm.qos = buf.toString(); // !!! GetReturnQos should be an object
             msgUnitVec.addElement(mm);
          }
       }
