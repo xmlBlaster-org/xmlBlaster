@@ -9,6 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/lexical_cast.h>
 #include <util/Timestamp.h>
 #include <util/dispatch/DispatchManager.h>
+#include <util/parser/ParserFactory.h>
 
 namespace org { namespace xmlBlaster { namespace client {
 
@@ -42,6 +43,9 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    dispatchManager_    = NULL;
    connectionProblems_ = NULL;
    instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
+
+	// Hack for Windows: Initialize it from main thread, using the callback thread fails undeterminable (with xerces)
+   org::xmlBlaster::util::parser::ParserFactory::getFactory().initialize(global);
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
