@@ -50,6 +50,7 @@ public class AuthenticateImpl
     * Do login to xmlBlaster.
     * @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQos,String)
     * @deprecated Use connect() instead
+    * @return The secret sessionId as a raw string
     */
    public String login(String loginName, String passwd,
                        String qos_literal, String sessionId)
