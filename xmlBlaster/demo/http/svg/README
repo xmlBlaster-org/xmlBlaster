@@ -1,0 +1,20 @@
+# Some useful code fragments:
+
+
+svgobj = svgdoc.getElementById('text_line_1');
+svgobj = svgobj.getFirstChild();
+svgobj.setData ("Hello world");
+
+
+Check for Mozilla native SVG support:
+if (typeof SVGDocument != 'undefined')
+
+
+
+
+Global vars:
+document.svg0.getWindow().varName should work in both browsers.
+
+
+Access Javascript from HTML in SVG:
+window.document.embeds.embedName.getWindow().functionName()
