@@ -1,0 +1,262 @@
+/*------------------------------------------------------------------------------
+Name:      ConnectQosServer.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.engine.qos;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.property.PropEntry;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+
+
+/**
+ * This class encapsulates the qos of a connect() invocation. 
+ * <p />
+ * @see org.xmlBlaster.util.qos.ConnectQosServerSaxFactory
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html">connect interface</a>
+ */
+public final class ConnectQosServer
+{
+   private String ME = "ConnectQosServer";
+   private final Global glob;
+   private final ConnectQosData connectQosData;
+
+   public ConnectQosServer(Global glob, ConnectQosData connectQosData) throws XmlBlasterException {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.connectQosData = connectQosData;
+   }
+
+   public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
+   }
+
+   public ConnectQosData getData() {
+      return this.connectQosData;
+   }
+
+   /**
+    * @return The session QoS which contains all session specific configuration, never null
+    */
+   public SessionQos getSessionQos() {
+      return this.connectQosData.getSessionQos();
+   }
+
+   public int getMaxSessions() {
+      return this.connectQosData.getSessionQos().getMaxSessions();
+   }
+
+   /**
+    * If clearSessions is true, all old sessions of this user are discarded. 
+    */
+   public boolean clearSessions() {
+      return this.connectQosData.getSessionQos().clearSessions();
+   }
+
+   /**
+    * Timeout until session expires if no communication happens
+    */
+   public long getSessionTimeout() {
+      return this.connectQosData.getSessionQos().getSessionTimeout();
+   }
+
+   public boolean hasPublicSessionId() {
+      if (getSessionName() != null) {
+         return getSessionName().isSession();
+      }
+      return false;
+   }
+
+   /**
+    * Set the login session name. 
+    */
+   public void setSessionName(SessionName sessionName) {
+      getSessionQos().setSessionName(sessionName);
+   }
+
+   /**
+    */
+   public SessionName getSessionName() {
+      return getSessionQos().getSessionName();
+   }
+
+   /**
+    * Allows to set or overwrite the login name for I_SecurityQos. 
+    * <p>
+    * This will call setSessionName() as well if sessionName is not set yet.
+    * </p>
+    * @param loginName The unique user id
+    */
+   public void setUserId(String loginName) throws XmlBlasterException {
+      this.connectQosData.setUserId(loginName);
+   }
+
+   /**
+    * @return The user ID or "NoLoginName" if not known
+    */
+   public String getUserId() {
+      return this.connectQosData.getUserId();
+   }
+
+   /**
+    * Allows to set or overwrite the parsed security plugin. 
+    * <p />
+    * &lt;securityService type='simple' version='1.0'>...&lt;/securityService>
+    * @param mechanism The client side security plugin to use
+    * @param passwd If null the environment -passwd is checked
+    */
+   public void setSecurityPluginData(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
+      this.connectQosData.setSecurityPluginData(mechanism, version, loginName, passwd);
+   }
+
+   /**
+    * Allows to specify how you want to identify yourself. 
+    * <p />
+    * Usage to login to xmlBlaster with a password approach:
+    * <pre>
+    *    import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
+    *    ...
+    *    ConnectQosServer qos = new ConnectQosServer(null);
+    *    qos.setSecurityQos(new SecurityQos("joe", "secret"));
+    *    xmlBlasterConnection.connect(qos);
+    * </pre>
+    * NOTE: Usually setSecurityPluginData() is easier to use.
+    */
+   public void setSecurityQos(I_SecurityQos securityQos) {
+      this.connectQosData.setSecurityQos(securityQos);
+   }
+
+   /**
+    * @return Access the login credentials or null if not set
+    */
+   public I_SecurityQos getSecurityQos() {
+      return this.connectQosData.getSecurityQos();
+   }
+
+   /**
+    * Return the type of the referenced SecurityPlugin.
+    * <p/>
+    * @return The type or null if not known
+    */
+   public String getSecurityPluginType() {
+      return this.connectQosData.getSecurityPluginType();
+   }
+
+   /**
+    * Return the version of the referenced SecurityPlugin.
+    * <p/>
+    * @return The version or null if not known
+    */
+   public String getSecurityPluginVersion() {
+      return this.connectQosData.getSecurityPluginVersion();
+   }
+
+   /**
+    * @param Set if we accept point to point messages
+    */
+   public void setPtpAllowed(boolean ptpAllowed) {
+      this.connectQosData.setPtpAllowed(ptpAllowed);
+   }
+
+   /**
+    * @return true if we are accepting PtP messages
+    */
+   public boolean isPtpAllowed() {
+      return this.connectQosData.isPtpAllowed();
+   }
+
+   /**
+    * @param Set if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    */
+   public void setDuplicateUpdates(boolean duplicateUpdates) {
+      this.connectQosData.setDuplicateUpdates(duplicateUpdates);
+   }
+
+   /**
+    * @return true if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    */
+   public boolean duplicateUpdates() {
+      return this.connectQosData.duplicateUpdates();
+   }
+
+   /**
+    * Set the address to which we want to connect, with all the configured parameters. 
+    * <p />
+    * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
+    */
+   public void setAddress(Address address) {
+      this.connectQosData.setAddress(address);
+   }
+
+   /**
+    * Add a callback address where to send the message (for PtP or subscribes). 
+    * <p />
+    * Creates a default CbQueueProperty object to hold the callback address argument.<br />
+    * Note you can invoke this multiple times to allow multiple callbacks.
+    * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
+    */
+   public void addCallbackAddress(CallbackAddress callback) {
+      this.connectQosData.addCallbackAddress(callback);
+   }
+
+   /**
+    * Adds a queue description. 
+    * This allows to set all supported attributes of a callback queue and a callback address
+    * @param prop The property object of the callback queue which shall be established in the server for calling us back.
+    * @see org.xmlBlaster.util.qos.address.CallbackAddress
+    */
+   public void addCbQueueProperty(CbQueueProperty prop) {
+      this.connectQosData.addCbQueueProperty(prop);
+   }
+
+   /**
+    * Returns never null
+    */
+   public CbQueueProperty getSessionCbQueueProperty() {
+      return this.connectQosData.getSessionCbQueueProperty();
+   }
+
+   /**
+    * Returns never null. 
+    * The subjectQueue has never callback addresses, the addresses of the sessions are used
+    * if configured.
+    */
+   public CbQueueProperty getSubjectCbQueueProperty() {
+      return this.connectQosData.getSubjectCbQueueProperty();
+   }
+
+   /**
+    * @return Is the client a cluster?
+    */
+   public boolean isClusterNode() {
+      return this.connectQosData.isClusterNode();
+   }
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toString() {
+      return toXml();
+   }
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toXml() {
+      return this.connectQosData.toXml();
+   }
+}
+
