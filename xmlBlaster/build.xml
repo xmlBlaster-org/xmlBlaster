@@ -195,8 +195,20 @@ Else add it manually.
    <target name="xmlBlaster" depends="prepare-src">
       <!-- convert idl -->
       <echo message="Converting idl..."/>
-      <java classname="${idl.class}"
-            args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
+      <property name="idlBuild.required" value="true" />
+      <uptodate property="idlBuild.required" targetfile="${idl.dir}/serverIdl/Server.java" value="false">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+      <if><equals arg1="${idlBuild.required}" arg2="false" />
+         <then>
+            <echo message="CORBA stubs and skeletons are up to date" />
+         </then>
+         <else>
+            <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
+            <java classname="${idl.class}"
+                  args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
+         </else>
+      </if>
 
       <copy todir="${build.src}/xmlBlaster">
          <fileset dir="${src.dir}">
