@@ -106,10 +106,10 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
-        "-DispatchPlugin.defaultPlugin", "Priority,1.0",
-        "-cb.DispatchPlugin.defaultPlugin", "Priority,1.0", 
-        "-PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin",
-        "-PriorizedDeliveryPlugin.config", 
+        "-DispatchPlugin/defaultPlugin", "Priority,1.0",
+        "-dispatch/callback/DispatchPlugin/defaultPlugin", "Priority,1.0", 
+        "-PriorizedDeliveryPlugin/user", "_PriorizedDeliveryPlugin",
+        "-PriorizedDeliveryPlugin/config", 
             "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'>\n"+
             "  <onStatus oid='" + statusOid + "' content='" + NORMAL_LINE + "' defaultAction='send'>\n" +
             //"    <action do='send'  ifPriority='0-9'/>\n" +

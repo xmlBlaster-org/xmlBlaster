@@ -62,9 +62,9 @@ public class CallbackAddress extends AddressBase
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>
     *   the command line argument (or xmlBlaster.property entry)
-    *    <code>-cb.retries[heron] 20</code>
+    *    <code>-/node/heron/dispatch/callback/retries 20</code>
     *   is precedence over
-    *    <code>-cb.retries 10</code>
+    *    <code>-dispatch/callback/retries 10</code>
     */
    public CallbackAddress(Global glob, String type, String nodeId) {
       super(glob, "callback");
@@ -130,13 +130,13 @@ public class CallbackAddress extends AddressBase
             String nodeId = "heron";
             
             java.util.Vector vec = new java.util.Vector();
-            vec.addElement("-cb.sessionId["+nodeId+"]");
+            vec.addElement("-/node/" + nodeId + "/dispatch/callback/sessionId");
             vec.addElement("OK");
-            vec.addElement("-cb.sessionId");
+            vec.addElement("-dispatch/callback/sessionId");
             vec.addElement("ERROR");
-            vec.addElement("-cb.pingInterval");
+            vec.addElement("-dispatch/callback/pingInterval");
             vec.addElement("8888");
-            vec.addElement("-cb.delay["+nodeId+"]");
+            vec.addElement("-/node/" + nodeId + " /dispatch/callback/delay");
             vec.addElement("8888");
             String[] args = (String[])vec.toArray(new String[0]);
 

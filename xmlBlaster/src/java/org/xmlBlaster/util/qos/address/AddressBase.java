@@ -188,7 +188,7 @@ public abstract class AddressBase
     */
    public String getSettings() {
       StringBuffer buf = new StringBuffer(126);
-      buf.append("type=").append(type).append(" oneway=").append(oneway).append(" burstMode.collectTime=").append(getCollectTime());
+      buf.append("type=").append(getType()).append(" oneway=").append(oneway()).append(" burstMode.collectTime=").append(getCollectTime());
       return buf.toString();
    }
 
@@ -792,7 +792,7 @@ public abstract class AddressBase
       text += "   -dispatch/callback/ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
       text += "   -dispatch/callback/protocol        You can choose another protocol for the callback server\n";
       text += "                                      [defaults to -dispatch/clientSide/protocol]\n";
-      //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+      //text += "   -dispatch/callback/DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
       return text;
    }
 

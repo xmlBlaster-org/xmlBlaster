@@ -210,62 +210,62 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
             <th>Implemented</th>
          </tr>
          <tr>
-            <td>cb.collectTime</td>
+            <td>dispatch/callback/collectTime</td>
             <td>0</td>
             <td>BurstMode: The time to collect messages for update</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.pingInterval</td>
+            <td>dispatch/callback/pingInterval</td>
             <td>60000 (one minute)</td>
             <td>Ping interval: pinging every given milliseconds</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.retries</td>
+            <td>dispatch/callback/retries</td>
             <td>0</td>
             <td>How often to retry if callback fails: defaults to 0 == don't retry, on failure we give up.
                 Set to -1 to try forever</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.delay</td>
+            <td>dispatch/callback/delay</td>
             <td>60000 (one minute)</td>
             <td>Delay between callback retires in milliseconds</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.useForSubjectQueue</td>
+            <td>dispatch/callback/useForSubjectQueue</td>
             <td>true</td>
             <td>Shall this session callback be used for subjectQueue messages as well?</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.compress.type</td>
+            <td>dispatch/callback/compress/type</td>
             <td>""</td>
             <td>Compress messages if set to "gzip" or "zip"</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>cb.compress.minSize</td>
+            <td>dispatch/callback/compress/minSize</td>
             <td>0</td>
             <td>Messages bigger this size in bytes are compressed</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>cb.ptpAllowed</td>
+            <td>dispatch/callback/ptpAllowed</td>
             <td>true</td>
             <td>PtP messages wanted? Defaults to true, false prevents spamming</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.receiveTimestampHumanReadable</td>
+            <td>dispatch/callback/receiveTimestampHumanReadable</td>
             <td>false</td>
             <td>You can force a human readable timestamp in the QoS of received messages on update(), see API of UpdateQos below</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.sessionId</td>
+            <td>dispatch/callback/sessionId</td>
             <td>unknown</td>
             <td>The identifier sent to the callback client, the client can decide if he trusts this invocation</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -286,7 +286,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.27 $</revision>
+   <revision>$Revision: 1.28 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

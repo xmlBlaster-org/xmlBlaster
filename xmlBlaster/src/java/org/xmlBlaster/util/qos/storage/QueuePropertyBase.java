@@ -187,7 +187,7 @@ public abstract class QueuePropertyBase implements Cloneable
       this.onFailure.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onFailure");
 
       // The old way:
-      // prefix is e.g. "cb.queue." or "msgUnitStore."
+      // prefix is e.g. "queue/callback" or "msgUnitStore."
       setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache.getValue())));
       setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache.getValue())));
       setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache.getValue())));

@@ -118,11 +118,11 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       String[] args = {
         "-ProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver",
         "-CbProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver",
-        "-client.protocol", "XML-RPC",
+        "-dispatch/clientSide/protocol", "XML-RPC",
         "-xmlrpc.portCB", ""+(serverPort+1),
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
-        "-DispatchPlugin.defaultPlugin", "Priority,1.0",
-        "-cb.DispatchPlugin.defaultPlugin", "Priority,1.0", 
+        "-DispatchPlugin/defaultPlugin", "Priority,1.0",
+        "-cb.DispatchPlugin/defaultPlugin", "Priority,1.0", 
         "-PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin",
         "-PriorizedDeliveryPlugin.config", "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'/>\n"
          };

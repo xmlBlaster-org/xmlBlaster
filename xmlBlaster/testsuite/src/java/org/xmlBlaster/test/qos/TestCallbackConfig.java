@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.11 2003/03/25 22:09:37 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.12 2003/03/26 13:31:31 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -77,7 +77,7 @@ public class TestCallbackConfig extends TestCase
          // We configure detailed how our callback is handled by xmlBlaster
          // In connect() a default callback server is created and its address is added to cbProps
          CallbackAddress cbProps = new CallbackAddress(new Global());
-         cbProps.setCollectTime(0L); // cb.burstMode.collectTime"
+         cbProps.setCollectTime(0L); // dispatch/callback/burstMode/collectTime"
          cbProps.setSecretSessionId(cbSessionId);
          cbProps.setPingInterval(10000);
          cbProps.setRetries(1);

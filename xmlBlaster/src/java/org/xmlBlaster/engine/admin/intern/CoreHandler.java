@@ -136,7 +136,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid session attribute in '" + cmd.getCommand() + "'.");
 
          if (sessionAttr.startsWith("?")) {
-            // for example "client/joe/ses17/?cb.queue.maxEntries"
+            // for example "client/joe/ses17/?queue/callback/maxEntries"
             SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
             if (sessionInfo == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
@@ -216,7 +216,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid session attribute in '" + cmd.getCommand() + "'.");
 
       if (sessionAttr.startsWith("?")) {
-         // for example "client/joe/ses17/?cb.queue.maxEntries"
+         // for example "client/joe/ses17/?queue/callback/maxEntries"
          SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
