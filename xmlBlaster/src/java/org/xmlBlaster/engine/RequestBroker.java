@@ -906,10 +906,10 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       subs.incrSubscribeCounter();
 
-      // Now the MessageUnit exists, subscribe to it -> fires update to client
-      msgUnitHandler.addSubscriber(subs);
-
       fireSubscribeEvent(subs);  // inform all listeners about this new subscription
+
+      // Now the MessageUnit exists and all subcription handling is done, subscribe to it -> fires update to client
+      msgUnitHandler.addSubscriber(subs);
    }
 
 

@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.27 2002/09/24 21:31:16 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.28 2002/10/24 22:44:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -376,7 +376,6 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       for (int jj=0; jj<size; jj++) {
          try {
             MsgQueueEntry entry = (MsgQueueEntry)super.take();
-            entry.getMessageUnitWrapper().addEnqueueCounter(-1);
             if (entry.isExpired() == true) {
                log.warn(ME, "Removed expired message " + entries[ii].getUniqueKey());
             }

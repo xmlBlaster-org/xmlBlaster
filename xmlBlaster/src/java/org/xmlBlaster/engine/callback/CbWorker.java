@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.12 2002/09/12 11:59:24 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.13 2002/10/24 22:44:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -57,6 +57,10 @@ public class CbWorker implements Runnable
             this.msgQueue.resetErrorCounter(); // callback is fine
             this.msgQueue.incrNumUpdate(returnVals.length);
 
+            for (int i=0; i<entries.length; i++) {
+               entries[i].getMessageUnitWrapper().addEnqueueCounter(-1);
+            }
+
             // Delete volatile messages ...
             this.msgQueue.checkForVolatileErase(entries);
          }
@@ -84,6 +88,9 @@ public class CbWorker implements Runnable
             catch (Throwable e2) {
                e2.printStackTrace();
                log.error(ME, "Disaster: Can't recover " + entries.length + " messages - the messages are lost: " + e2.toString());
+               for (int i=0; i<entries.length; i++) {
+                  entries[i].getMessageUnitWrapper().addEnqueueCounter(-1);
+               }
             }
          }
          msgQueue.connectionLost();  // TODO: We should distinguish which address in CbInfo failed
