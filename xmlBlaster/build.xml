@@ -141,6 +141,7 @@ Else add it manually.
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library/dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
       <echo message="   cpp-test    --> generates C++ test clients"/>
+      <echo message="   cpp-clean   --> cleans up C++ generated files (object files etc)"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
@@ -752,15 +753,21 @@ Else add it manually.
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
-    <target name="clean" depends="prepare">
-       <delete dir="${build.dir}"/>
+    <target name="cpp-clean" depends="prepare">
+       <delete dir="${build.dir}/obj"/>
        <delete dir=".c_dependency_cache"/>
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-          <!-- fileset dir="${req.dir}" includes="*.class"/ -->
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${testsuite.dir}/c++" includes="*.o"/>
           <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
+       </delete>
+    </target>
+ 
+    <target name="clean" depends="cpp-clean">
+       <delete dir="${build.dir}"/>
+       <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
+          <!-- fileset dir="${req.dir}" includes="*.class"/ -->
        </delete>
     </target>
  
