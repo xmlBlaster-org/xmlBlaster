@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.publish.PubSub' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Published messages without a qos &lt;destination> tag are published in Publish/Subscribe mode</topic>
+   <description>
+      If you publish a message using the publish() message, it is sent to xmlBlaster only.
+      Interested client may access this message using the synchronous get() or the asynchronous subscribe() method.
+      This is called the Publish/Subscribe pattern, which allows a maximum decoupling of distributed
+      components.
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      <qos>   <!-- no <destination> specified! -->
+      </qos>
+      ]]>
+   </example>
+   <see>engine.qos.destination.PtP</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 01 02</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPtDQueue</test>
+   </testcase>
+</requirement>
+
