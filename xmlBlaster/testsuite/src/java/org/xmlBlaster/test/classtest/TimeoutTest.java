@@ -39,7 +39,22 @@ public class TimeoutTest extends TestCase {
          Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   event = true;
-                  log.info(ME, "Timeout happened");
+                  log.info(ME, "Timeout happened after 0 millisec");
+               }
+            },
+            0L, null);
+
+         try { Thread.currentThread().sleep(100L); } catch (InterruptedException e) {}
+         assertEquals("Timeout not occurred after 0 msec.", true, event);
+      }
+      
+      {
+         event = false;
+         Timeout timeout = new Timeout(ME);
+         Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+               public void timeout(Object userData) {
+                  event = true;
+                  log.info(ME, "Timeout happened after 500 millisec");
                }
             },
             500L, null);
@@ -54,7 +69,7 @@ public class TimeoutTest extends TestCase {
          Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   event = true;
-                  log.error(ME, "Timeout happened");
+                  log.error(ME, "Timeout happened after 1 sec");
                }
             },
             1000L, null);
