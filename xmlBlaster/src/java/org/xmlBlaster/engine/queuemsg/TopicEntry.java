@@ -229,16 +229,16 @@ public final class TopicEntry implements I_MapEntry
     * Notification if this entry is added to storage
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
-   public void added(StorageId storageId) throws XmlBlasterException {
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "added("+storageId.getId()+") invocation not expected");
+   public void added(StorageId storageId) {
+      this.glob.getLog("core").error(ME, "added("+storageId.getId()+") invocation not expected (internal illegal argument)");
    }
 
    /**
     * Notification if this entry is removed from storage
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
-   public void removed(StorageId storageId) throws XmlBlasterException {
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "removed("+storageId.getId()+") invocation not expected");
+   public void removed(StorageId storageId) {
+      this.glob.getLog("core").error(ME, "removed("+storageId.getId()+") invocation not expected (internal illegal argument)");
    }
 
    /**

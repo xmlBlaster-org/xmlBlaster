@@ -57,12 +57,12 @@ public interface I_Entry extends java.io.Serializable
    /**
     * Notification if this entry is added to storage
     */
-   void added(StorageId storageId) throws XmlBlasterException;
+   void added(StorageId storageId);
 
    /**
     * Notification if this entry is removed from storage
     */
-   void removed(StorageId storageId) throws XmlBlasterException;
+   void removed(StorageId storageId);
 
    /**
     * to be invoked with 'true' when the entry is put in a storage and with 'false' when the entry is

@@ -623,6 +623,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+
    /**
     *
     * Adds a row to the specified queue table
@@ -634,16 +635,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @throws SQLException if an error occured while adding the row
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
-   public boolean addEntry(String queueName, String nodeId, I_Entry entry)
+   private final boolean addSingleEntry(String queueName, String nodeId, I_Entry entry, Connection conn)
       throws SQLException, XmlBlasterException {
-
-      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addEntry"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addSingleEntry"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
-// return false;
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addSingleEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
+
+      PreparedStatement preStatement = null;
+//      PreparedStatement exStatement = null;
+      Statement exStatement = null;
+      boolean ret = false;
 
       long dataId = entry.getUniqueId();
       int prio = entry.getPriority();
@@ -651,16 +655,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       String typeName = entry.getEmbeddedType();
       boolean persistent = entry.isPersistent();
       long sizeInBytes = entry.getSizeInBytes();
-
+      
       if (this.log.DUMP)
          this.log.dump(ME, "addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
 
-      PreparedStatement preStatement = null;
-      PreparedStatement exStatement = null;
-      boolean ret = false;
-      Connection conn = null;
       try {
-         conn = this.pool.getConnection();
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), req);
 
@@ -683,21 +682,30 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ret = true;
       }
       catch (SQLException ex) {
+         
+         if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the sql state: '" + ex.getSQLState() );
+         if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the error code: '" + ex.getErrorCode() );
+         preStatement.close();
+         conn.clearWarnings();
+//         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
          this.log.warn(getLogId(queueName, nodeId, "addEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex)) 
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
+         }
          // check if the exception was due to an existing entry. If yes, no exception will be thrown
          try {
             String req = "SELECT count(*) from " + this.entriesTableName + " where (dataId='" + dataId + "' AND nodeId='" + nodeId + "')";
-            exStatement = conn.prepareStatement(req);
-            exStatement.setQueryTimeout(this.pool.getQueryTimeout());
+            if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: request='" + req + "'");
+            exStatement = conn.createStatement();
+//            exStatement.setQueryTimeout(this.pool.getQueryTimeout());
             ResultSet rs = exStatement.executeQuery(req);
             rs.next();         
             int size = rs.getInt(1);
             if (size < 1) throw ex;
          }
          catch (SQLException ex1) {
+            if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
             if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex1))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex1); 
             else throw ex1;
@@ -712,10 +720,32 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          catch (Throwable ex) {
             this.log.warn(ME, "addEntry: throwable when closing the connection: " + ex.toString());
          }
-         if (conn != null) this.pool.releaseConnection(conn);
       }
       return ret;
    }
+
+
+   /**
+    * Adds a row to the specified queue table
+    * @param queueName The name of the queue on which to perform the operation
+    * @param entry the object to be stored.
+    *
+    * @return true on success
+    *
+    * @throws SQLException if an error occured while adding the row
+    * @throws XmlBlasterException if an error occured when trying to get a connection
+    */
+   public final boolean addEntry(String queueName, String nodeId, I_Entry entry)
+      throws SQLException, XmlBlasterException {
+      Connection conn = this.pool.getConnection();
+      try {
+         return addSingleEntry(queueName, nodeId, entry, conn);
+      }
+      finally {
+         if (conn != null) this.pool.releaseConnection(conn);
+      }
+   }
+
 
    /**
     *
@@ -736,14 +766,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (!this.isConnected) {
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEnties"), " for '" + entries.length + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", " the connection to the DB is unavailable already before trying to add entries"); 
-// return false;
       }
 
       PreparedStatement preStatement = null;
-      boolean ret = false;
       Connection conn = null;
       try {
          conn = this.pool.getConnection();
+         conn.setAutoCommit(false);
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), req);
 
@@ -770,19 +799,61 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             preStatement.setBytes(8, blob);
             if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), preStatement.toString());
             preStatement.addBatch();
- 	 }
-         return preStatement.executeBatch();
+         }
+         int[] ret = preStatement.executeBatch();
+         if (!conn.getAutoCommit()) conn.commit();
+         return ret;
       }
       catch (SQLException ex) {
-         this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " +
-                  ex.toString());
+         int i = 0;
+         if (!conn.getAutoCommit()) conn.rollback(); // rollback the original request ...
+         conn.setAutoCommit(true); // since if an exeption occurs it infects future queries within the same transaction
+         this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " + ex.toString());
          if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
-         else throw ex;
+         else { // check if the exception was due to an already existing entry by re
+
+            int[] ret = new int[entries.length];
+            try {
+               if (this.log.TRACE) this.log.trace(ME, "addEntries adding each entry in single mode since an exception occured when using 'batch mode'");
+               for (i=0; i < entries.length; i++) {
+                  if (addSingleEntry(queueName, nodeId, entries[i], conn)) ret[i] = 1; 
+                  else ret[i] = 0;
+                  if (this.log.TRACE) this.log.trace(ME, "addEntries adding entry '" + i + "' in single mode succeeded");
+               }
+               if (!conn.getAutoCommit()) conn.commit();
+               return ret;
+            }
+            catch (SQLException ex1) {
+               // conn.rollback();
+               try {
+  	          for (int ii=0; ii < i; ii++) {
+                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
+                  }
+               }
+               catch (Exception ex2) {
+                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+               }
+               throw ex1;
+            }
+            catch (XmlBlasterException ex1) {
+               // conn.rollback();
+               try {
+  	          for (int ii=0; ii < i; ii++) {
+                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
+                  }
+               }
+               catch (Exception ex2) {
+                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+               }
+               throw ex1;
+            }
+         }
       }
       finally {
          try {
             if (preStatement != null) preStatement.close();
+            if (conn != null) conn.setAutoCommit(true);
          }
          catch (Throwable ex) {
             this.log.warn(ME, "addEntries: throwable when closing the connection: " + ex.toString());
@@ -886,22 +957,27 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped. Reason " + ex.toString());
             }
          }
+         conn.commit();
       }
       catch (Exception ex) {
+         try {
+            if (conn != null) conn.rollback();
+         }
+         catch (SQLException ex1) {
+            this.log.error(ME, "wipeOutDB: exception occurred when rolling back: " + ex1.toString());
+         }
          if (ex instanceof XmlBlasterException) throw (XmlBlasterException)ex;
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception ", ex);
       }
       finally {
          try {
-            if (conn != null) {
-               conn.setAutoCommit(true);
-            }
+            if (conn != null) conn.setAutoCommit(true);
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
          }
          finally {
-            this.pool.releaseConnection(conn);
+            if (conn != null) this.pool.releaseConnection(conn);
          }
       }
 

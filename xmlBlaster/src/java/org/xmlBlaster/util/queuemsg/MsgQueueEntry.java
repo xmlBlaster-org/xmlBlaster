@@ -328,7 +328,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Notification if this entry is added to queue
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
-   public void added(StorageId storageId) throws XmlBlasterException {
+   public void added(StorageId storageId) {
       log.info(ME, getLogId() + " is added to queue: REFERENCE COUNTER IMPL MISSING");
    }
 
@@ -336,7 +336,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Notification if this entry is removed from queue
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
-   public void removed(StorageId storageId) throws XmlBlasterException {
+   public void removed(StorageId storageId) {
       log.info(ME, getLogId() + " is removed from queue: REFERENCE COUNTER IMPL MISSING");
    }
 

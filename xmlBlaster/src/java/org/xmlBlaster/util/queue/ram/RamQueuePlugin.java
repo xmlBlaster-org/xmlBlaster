@@ -204,12 +204,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          for (int ii=0; ii<entries.length; ii++) {
             entries[ii].setStored(false);
             if (this.notifiedAboutAddOrRemove) {
-               try {
                   entries[ii].removed(this.storageId);
-               }
-               catch (XmlBlasterException e) {
-                  log.error(ME, "Unexpected exception: " + e.getMessage());
-               }
             }
          }
 

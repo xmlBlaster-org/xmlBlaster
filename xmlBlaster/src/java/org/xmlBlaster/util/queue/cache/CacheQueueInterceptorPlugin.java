@@ -520,6 +520,19 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
 
+   private final boolean hasTransientsSwapped() {
+      return this.persistentQueue.getNumOfPersistentEntries() != this.persistentQueue.getNumOfEntries();
+   }
+
+   private final boolean isPersistenceAvailable() {
+      return this.persistentQueue != null && this.isConnected;
+   }
+      
+   private final boolean hasUncachedEntries() {
+      return hasTransientsSwapped() || 
+             this.persistentQueue.getNumOfPersistentEntries() != this.transientQueue.getNumOfPersistentEntries();
+   }
+
    /**
     * Aware: takeLowest for more than one entry is not implemented!!
     * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
@@ -528,23 +541,34 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       throws XmlBlasterException {
       ArrayList list = null;
       synchronized (this.swappingPutMonitor) {
-         if (this.persistentQueue != null && this.persistentQueue.getNumOfPersistentEntries() != this.persistentQueue.getNumOfEntries()) {
+         boolean handlePersistents = isPersistenceAvailable() && hasUncachedEntries();
+         if ( handlePersistents ) { 
             // swapping
-            list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
-            if (this.notifiedAboutAddOrRemove) {
-               for(int i=0; i<list.size(); i++)
-                  ((I_Entry)list.get(i)).removed(this.queueId);
+            try {
+               list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
             }
-            if (list.size() > 1) {
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
-                        "takeLowest for more than one entry is not implemented");
+            catch (Throwable ex) {
+               handlePersistents = false;
+               this.log.error(ME, "takeLowest: exception occured when taking the lowest entry from the persitent queue: " + ex.toString());
             }
-            long num = this.transientQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
-            if (num > 0L) {
-               log.error(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store");
+
+            if (handlePersistents) {
+               if (this.notifiedAboutAddOrRemove) {
+                  for(int i=0; i<list.size(); i++)
+                     ((I_Entry)list.get(i)).removed(this.queueId);
+               }
+               if (list.size() > 1) {
+                  throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+                           "takeLowest for more than one entry is not implemented");
+               }
+               long num = this.transientQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+               if (num > 0L) {
+                  log.error(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store");
+               }
             }
          }
-         else {
+//         'else' is no good here since it could have changed due to the exception ...
+         if ( !handlePersistents) {
             list = this.transientQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
             if (this.notifiedAboutAddOrRemove) {
                for(int i=0; i<list.size(); i++)

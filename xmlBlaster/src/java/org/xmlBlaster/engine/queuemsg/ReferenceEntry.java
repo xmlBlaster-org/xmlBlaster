@@ -99,14 +99,19 @@ public class ReferenceEntry extends MsgQueueEntry
     * Notification if this entry is added to queue
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
-   public void added(StorageId storageId) throws XmlBlasterException {
-      //if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
-      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-      if (msgUnitWrapper != null) {
-         msgUnitWrapper.incrementReferenceCounter(1, storageId);
+   public void added(StorageId storageId) {
+      try {
+         //if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+         if (msgUnitWrapper != null) {
+            msgUnitWrapper.incrementReferenceCounter(1, storageId);
+         }
+         else {
+            log.error(ME, " Entry '" + getLogId() + "' added to queue but no meat found");
+         }
       }
-      else {
-         log.error(ME, " Entry '" + getLogId() + "' added to queue but no meat found");
+      catch (Throwable ex) {
+         log.error(ME, " added '" + storageId + "' raised an exception: " + ex.toString());
       }
    }
 
@@ -114,28 +119,33 @@ public class ReferenceEntry extends MsgQueueEntry
     * Notification if this entry is removed from queue
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
-   public void removed(StorageId storageId) throws XmlBlasterException {
-      //if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
-      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-      /* I couldn't force garbage collect of messageUnitWrapper here, why?
-      {  // TEST ONLY
-         if (msgUnitWrapper != null) {
-            msgUnitWrapper = null;
-            System.gc();
-            System.gc();
-            System.gc();
-            System.gc();
+   public void removed(StorageId storageId) {
+      try {
+         //if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+         /* I couldn't force garbage collect of messageUnitWrapper here, why?
+         {  // TEST ONLY
+            if (msgUnitWrapper != null) {
+               msgUnitWrapper = null;
+               System.gc();
+               System.gc();
+               System.gc();
+               System.gc();
+            }
+            msgUnitWrapper = getMsgUnitWrapper();
+            log.error(ME, "REMOVE WEAK REF TEST AGAIN msgUnitWrapper=" + msgUnitWrapper);
          }
-         msgUnitWrapper = getMsgUnitWrapper();
-         log.error(ME, "REMOVE WEAK REF TEST AGAIN msgUnitWrapper=" + msgUnitWrapper);
+         */
+         if (msgUnitWrapper != null) {
+            msgUnitWrapper.incrementReferenceCounter(-1, storageId);
+            msgUnitWrapper = null;
+         }
+         else {
+            if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
+         }
       }
-      */
-      if (msgUnitWrapper != null) {
-         msgUnitWrapper.incrementReferenceCounter(-1, storageId);
-         msgUnitWrapper = null;
-      }
-      else {
-         if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
+      catch (Throwable ex) {
+         log.error(ME, " removed '" + storageId + "' raised an exception: " + ex.toString());
       }
    }
 
