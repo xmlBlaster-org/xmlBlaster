@@ -50,16 +50,11 @@ public interface I_XmlBlasterConnection extends I_Plugin
    public void connectLowlevel(Address address) throws XmlBlasterException;
 
    /**
-    * connect() is a login or authentication as well, the authentication schema
-    * is transported in the qos.
-    * It is more general then the login() method, since it allows
-    * to transport any authentication info in the xml based qos.
-    *
-    * You can still use login() for simple name/password based authentication.
-    *
-    * @param qos The authentication and other informations (ConnectQos encrypted)
-    * @param client A handle to your callback if desired or null
-    * @return ConnectReturnQos string
+    * Login and authenticate, the authentication schema is transported in the qos. 
+    * You are allowed to call connect multiple times, for example if the physical connection
+    * is still OK or again OK and you need to re-configure.
+    * @param connectQos The authentication and other informations (ConnectQos encrypted)
+    * @return ConnectReturnQos XML string
     */
    public String connect(String connectQos) throws XmlBlasterException;
 
@@ -87,7 +82,9 @@ public interface I_XmlBlasterConnection extends I_Plugin
 
    /** 
     * Reset the driver on problems. 
-    * This method is called by the dispatcher framework on transition to POLLING
+    * This method is called by the dispatcher framework on transition to POLLING,
+    * the protocol plugin must be able to establish a new connection after this call
+    * with a call to connectLowLevel().
     */
    public void resetConnection();
 
