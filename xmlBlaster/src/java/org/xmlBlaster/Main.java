@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.21 2000/02/11 22:51:23 ruff Exp $
+Version:   $Id: Main.java,v 1.22 2000/02/18 14:54:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -270,7 +270,7 @@ public class Main
       Log.plain(ME, "   -?                  Print this message.");
       Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
       Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
-      Log.plain(ME, "                       the port -1 switches this feature off.");
+      Log.plain(ME, "                       Default is port 7609, the port -1 switches this feature off.");
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
