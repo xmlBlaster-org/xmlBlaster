@@ -68,9 +68,6 @@ TODO
 
    <taskdef resource="net/sf/antcontrib/antcontrib.properties" />  <!-- if foreach osfamily switch if -->
 
-   <property name="xmlblaster_home" value="."/>
-   <property name="xmlblaster_absolute_home" value="${user.dir}"/>
-
    <!-- Allow any user specific values to override the defaults -->
    <property file="${user.home}/build.properties" />
 
@@ -87,6 +84,7 @@ TODO
    <property name="optimize" value="off" />
    <property name="deprecation" value="off" />
 
+   <property name="xmlblaster_absolute_home" value="${user.dir}"/>
    <property name="xmlBlaster.home" value="${basedir}"/>
    <property name="src.java.dir" value="./src/java"/>
    <property name="dtd.dir" value="./src/dtd"/>
@@ -575,6 +573,12 @@ TODO
    </target>
 
    <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster, Java/C/C++ clients (does a delete before)  -->
+   <!-- =================================================================== -->
+   <target name="total" depends="delete,all,c,cpp" description="Compile xmlBlaster server, all Java, C and C++ clients">
+   </target>
+
+   <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster testsuite source directory                  -->
    <!-- =================================================================== -->
    <target name="testsuite" depends="xmlBlaster,testsuite-only" description="Compile Java testsuite into testsuite.jar (based on junit) and xmlBlaster before">
@@ -766,8 +770,25 @@ TODO
          <classpath>
             <pathelement path="lib/xmlBlaster.jar:${cp}"/>
          </classpath>
+
+         <test name="org.xmlBlaster.test.C.AllTests" fork="yes" todir="${report.dir}"/>
+
+         <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.qos.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.client.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.topic.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.authentication" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.mime.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.dispatch.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.jdbc.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.snmp.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.persistence.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.cluster.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.stress.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.jmx.AllTests" fork="yes" todir="${report.dir}"/>
+
          <!-- build.sh -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
-         <test name="${test.class}" fork="yes" todir="${report.dir}"/>
+         <!-- test name="${test.class}" fork="yes" todir="${report.dir}"/ -->
       </junit>
       <echo message="See ${report.dir} for results"/>
       <echo message="Invoke target 'report' for HTML report generation"/>
@@ -782,20 +803,15 @@ TODO
          <sequential>
             <sleep seconds="5"/>                    <!-- wait 5 sec for xmlBlaster startup -->
             <antcall target="runJunit"/>            <!-- run Junit tests -->
+            <echo message="Tests are done, we shutown xmlBlaster now ..."/>
+            <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                  dir="${xmlblaster_absolute_home}"
+                  fork="true"
+                  classpath="lib/xmlBlaster.jar:${cp}" />
          </sequential>
       </parallel>
    </target>
 
-   <!-- =================================================================== -->
-   <!-- starts xmlBlaster JMX GUI                                           -->
-   <!-- =================================================================== -->
-   <target name="runJmxGUI" description="Run GUI that connects to jmx Server">
-        <echo message="Starting the Controller GUI"/>
-        <java classname="org.xmlBlaster.jmxgui.Main" classpath="lib/xmlBlaster.jar" dir="." failonerror="true" fork="true">
-                <sysproperty key="java.compiler" value="NONE"/>
-        </java>
-   </target>
-         
    <!-- =================================================================== -->
    <!-- Creates a test report with junit                                    -->
    <!-- =================================================================== -->
@@ -831,6 +847,16 @@ TODO
    <!-- =================================================================== -->
    <target name="runTestsAndReport" depends="runTests,report" description="Does runTests and report in one step"/>
 
+   <!-- =================================================================== -->
+   <!-- starts xmlBlaster JMX GUI                                           -->
+   <!-- =================================================================== -->
+   <target name="runJmxGUI" description="Run GUI that connects to jmx Server">
+        <echo message="Starting the Controller GUI"/>
+        <java classname="org.xmlBlaster.jmxgui.Main" classpath="lib/xmlBlaster.jar" dir="." failonerror="true" fork="true">
+                <sysproperty key="java.compiler" value="NONE"/>
+        </java>
+   </target>
+         
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
