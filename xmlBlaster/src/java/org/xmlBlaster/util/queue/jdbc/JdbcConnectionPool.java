@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.DatabaseMetaData;
@@ -679,6 +680,26 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public void releaseConnection(Connection conn)
       throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "releaseConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
+      try {
+         SQLWarning warns = conn.getWarnings();
+         /*
+            while (warns != null) {
+               log.warn(ME, "errorCode=" + warns.getErrorCode() + " state=" + warns.getSQLState() + ": " + warns.toString().trim());
+               Thread.currentThread().dumpStack();
+               warns = warns.getNextWarning();
+            }
+         */
+         if (log.TRACE) {
+            while (warns != null) {
+               log.trace(ME, "errorCode=" + warns.getErrorCode() + " state=" + warns.getSQLState() + ": " + warns.toString().trim());
+               warns = warns.getNextWarning();
+            }
+         }
+         conn.clearWarnings(); // free memory
+      }
+      catch (SQLException e) {
+         log.warn(ME, "clearWarnings() failed: " + e.toString());
+      }
       boolean isOk = put(conn);
       if (!isOk) {
          this.log.error(ME, "the connection pool is already full");
