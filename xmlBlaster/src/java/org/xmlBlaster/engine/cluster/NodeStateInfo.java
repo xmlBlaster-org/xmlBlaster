@@ -3,11 +3,12 @@ Name:      NodeStateInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Mapping from domain informations to master id
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -138,18 +139,17 @@ public class NodeStateInfo {
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<state>");
       Iterator it = cpuMap.values().iterator();
       while (it.hasNext()) {
          Cpu cpu = (Cpu)it.next();
-         sb.append(offset).append("   <cpu id='").append(cpu.id).append("' idle='").append(cpu.idle).append("'/>");
+         sb.append(offset).append(" <cpu id='").append(cpu.id).append("' idle='").append(cpu.idle).append("'/>");
       }
       if (getFreeRam() >= 0)
-         sb.append(offset).append("   <ram free='").append(getFreeRam()).append("'/>");
+         sb.append(offset).append(" <ram free='").append(getFreeRam()).append("'/>");
       sb.append(offset).append("</state>");
       return sb.toString();
    }

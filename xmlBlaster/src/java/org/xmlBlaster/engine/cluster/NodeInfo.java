@@ -3,7 +3,7 @@ Name:      NodeInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding information about the current node.
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -269,16 +270,15 @@ public final class NodeInfo
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(512);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<info>");
       if (getAddressMap() != null && getAddressMap().size() > 0) {
          Iterator it = getAddressMap().values().iterator();
          while (it.hasNext()) {
             Address info = (Address)it.next();
-            sb.append(info.toXml(extraOffset + "   "));
+            sb.append(info.toXml(extraOffset + Constants.INDENT));
          }
       }
  
@@ -286,7 +286,7 @@ public final class NodeInfo
          Iterator it = getCbAddressMap().values().iterator();
          while (it.hasNext()) {
             CallbackAddress info = (CallbackAddress)it.next();
-            sb.append(info.toXml(extraOffset + "   "));
+            sb.append(info.toXml(extraOffset + Constants.INDENT));
          }
       }
 

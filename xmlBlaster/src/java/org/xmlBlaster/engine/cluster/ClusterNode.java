@@ -3,7 +3,7 @@ Name:      ClusterNode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding all information about the current node.
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -436,23 +436,22 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer(512);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<clusternode id='").append(getId()).append("'>");
 
-      sb.append(getNodeInfo().toXml(extraOffset + "   "));
+      sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT));
 
       if (getDomainInfoMap() != null) {
          Iterator it = getDomainInfoMap().values().iterator();
          while (it.hasNext()) {
             NodeDomainInfo info = (NodeDomainInfo)it.next();
-            sb.append(info.toXml(extraOffset + "   "));
+            sb.append(info.toXml(extraOffset + Constants.INDENT));
          }
       }
       
-      sb.append(getNodeStateInfo().toXml(extraOffset + "   "));
+      sb.append(getNodeStateInfo().toXml(extraOffset + Constants.INDENT));
       
       sb.append(offset).append("</clusternode>");
 
