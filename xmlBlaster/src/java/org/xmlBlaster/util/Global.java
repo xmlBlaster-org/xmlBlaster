@@ -1318,7 +1318,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The factory creating queue or msgstore entries from persistent store. 
+    * The factory creating queue or msgUnitStore entries from persistent store. 
     * Is overwritten in engine.Global
     * @param name A name identifying this plugin.
     */
