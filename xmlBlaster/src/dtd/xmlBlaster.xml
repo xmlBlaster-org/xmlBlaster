@@ -4,7 +4,7 @@
       application/xml
    </mime>
 
-   <key id="12">
+   <key oid="12">
       <param id="product">PR</param>
       <param id="group">SW</param>
    </key>
@@ -84,7 +84,7 @@
          <param id="product">
             PR
          </param>
-         
+
       </modify> <--! return key -->
    </message>
 
@@ -99,7 +99,7 @@
          <content>
             XML-data
          </content>
-         
+
       </modify>
    </message>
 
