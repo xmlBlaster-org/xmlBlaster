@@ -1,0 +1,32 @@
+<!--
+# Name:      xmlBlasterPlugins.xml
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+-->
+<xmlBlaster>
+
+   <!-- 
+      NOTE: For this cluster example we have switched off
+      all unnecessary plugins to avoid to much logging output
+   -->
+
+
+   <!--
+   <plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+   </plugin>
+   -->
+
+   <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
+   <plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
+   </plugin>
+
+</xmlBlaster>
+
