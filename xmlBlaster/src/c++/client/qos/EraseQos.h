@@ -47,7 +47,7 @@ public:
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
             const T_VALUE& value) {
-      data_.addClientProperty(key, value);
+      data_.addClientProperty(name, value);
    }
 
    /**
