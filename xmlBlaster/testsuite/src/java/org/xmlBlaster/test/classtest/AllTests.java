@@ -32,6 +32,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TestPoolManager.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.CommandWrapperTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlBlasterExceptionTest.class));
+      suite.addTest(org.xmlBlaster.test.classtest.test.classtest.MicroEditionTest.class));
       suite.addTest(org.xmlBlaster.test.classtest.key.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.qos.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.queue.AllTests.suite());
