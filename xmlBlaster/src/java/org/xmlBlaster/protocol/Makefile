@@ -8,7 +8,7 @@
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
 CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/protocol
-SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster.protocol
+SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol
 #------------------------------------------------------------------------------
 
 
@@ -22,7 +22,7 @@ LOCAL_FILES = \
 $(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
 	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
 
-all: 	all_SUB_DIRS precond java
+all: 	precond java all_SUB_DIRS
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
