@@ -23,7 +23,6 @@ Comment:   Default handling of Sax callbacks
 #include <util/StringTrim.h>
 
 using namespace std;
-using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -255,7 +254,7 @@ namespace util {
             if (index != -1) systemId = systemId.substr(index + 1);
             str += systemId;
          }
-         return str + ":" + lexical_cast<string>(ex.getLineNumber()) + ":" + lexical_cast<string>(ex.getColumnNumber());
+         return str + ":" + boost::lexical_cast<string>(ex.getLineNumber()) + ":" + boost::lexical_cast<string>(ex.getColumnNumber());
       }
 
       /**

@@ -10,9 +10,9 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #ifndef _UTIL_STRINGSTRIPPER2_H
 #define _UTIL_STRINGSTRIPPER2_H
 
-#ifdef _WIN32
-#  include <_pair.h>
-#endif
+// #ifdef _WIN32
+// #  include <_pair.h>
+// #endif
 #include <util/StringStripper.h>
 
 

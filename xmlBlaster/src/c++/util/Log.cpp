@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.5 2002/01/31 21:44:48 ruff Exp $
+Version:   $Id: Log.cpp,v 1.6 2002/02/01 17:54:47 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -11,7 +11,7 @@ Version:   $Id: Log.cpp,v 1.5 2002/01/31 21:44:48 ruff Exp $
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -297,8 +297,7 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
       }
 #else
       if (numErrorInvocations>0 || numWarnInvocations>0) {
-         info(ME, "There were " + lexical_cast<string>(numErrorInvocations) + " ERRORS and " +
-                   lexical_cast<string>(numWarnInvocations) + " WARNINGS");
+         info(ME, string("There were ") + lexical_cast<string>(numErrorInvocations) + " ERRORS and " + (lexical_cast<string>(numWarnInvocations)) + " WARNINGS");
       }
       else
          info(ME, "No errors/warnings were reported");

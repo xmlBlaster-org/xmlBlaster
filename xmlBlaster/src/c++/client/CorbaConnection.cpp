@@ -9,11 +9,15 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #include <client/CorbaConnection.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>   // inet_addr()
-#include <unistd.h>      // gethostname()
+#ifdef _WINDOWS
+#  include <winsock2.h>
+#else
+#  include <sys/socket.h>
+#  include <netinet/in.h>
+#  include <netdb.h>
+#  include <arpa/inet.h>   // inet_addr()
+#  include <unistd.h>      // gethostname()
+#endif
 
 namespace org { namespace xmlBlaster {
 

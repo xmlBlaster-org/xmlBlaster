@@ -8,6 +8,11 @@ Comment:   Handling the Client data
 #ifndef _UTIL_LOG_H
 #define _UTIL_LOG_H
 
+#ifdef _WINDOWS
+// suppresses winzigweich warnings
+#pragma warning(disable:4786)
+#endif
+
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>

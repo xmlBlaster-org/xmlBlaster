@@ -20,7 +20,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <generated/xmlBlaster.h>
 
 using namespace std;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster {
    
