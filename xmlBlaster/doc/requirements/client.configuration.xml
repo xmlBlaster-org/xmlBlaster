@@ -85,11 +85,6 @@ java HelloWorld2 -help
      </p>
 
 
-
-
-
-
-
      <p><b>Failsafe Connection to XmlBlaster Server</b><br/>
 
      The following parameters control the client side dispatch configuration
@@ -114,6 +109,18 @@ java HelloWorld2 -help
          <td>Delay between connection retries in milliseconds [5000] A delay value > 0 
             switches fails save mode on, 0 switches it off</td>
       </tr>
+
+       <tr>
+         <td>-dispatch/clientSide/protocol</td>
+         <td>You can choose another protocol for the communication to xmlBlaster [defaults to -protocol]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/clientSide/port</td>
+         <td>You can choose another port for the communication to xmlBlaster [defaults to -port]</td>
+      </tr>
+
+
+
     </table>
     </center>
     </p>
@@ -166,6 +173,10 @@ java HelloWorld2 -help
        <tr>
          <td>-dispatch/callback/protocol</td>
          <td>You can choose another protocol for the callback server [defaults to -protocol]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/port</td>
+         <td>You can choose another port for the callback server [defaults to -port]</td>
       </tr>
     </table>
     </center>
@@ -372,6 +383,6 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
 </requirement>
 
