@@ -239,10 +239,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    /**
     * Invoked by ReferenceEntry.java to support reference counting
+    * @param count The number of ref-counts to add/subtract
     * @param storageId
-    * @return false if the entry is not predistroied, true if it is
-    *         predestroyied. NOTE1: the caller must ensure to invoke toDestroyed() in cases
-    *         'true' is returned. NOTE2: The invocation toDestroye() must be done
+    * @return false if the entry is not pre destroyed, true if it is
+    *         pre destroyed. NOTE1: the caller must ensure to invoke toDestroyed() in cases
+    *         'true' is returned. NOTE2: The invocation toDestroyed() must be done
     *         outside from any sync on the cache.
     */
    public boolean incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
@@ -500,7 +501,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
-            this.glob.getLog("core").error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
+            log.error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
          }
 
          long lifeTime = getMsgQosData().getLifeTime();
@@ -524,7 +525,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    }
 
    private void toExpired() throws XmlBlasterException {
-      //this.glob.getLog("core").info(ME, "Entering toExpired(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -534,10 +534,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             return;
          }
          this.state = EXPIRED;
-         if (this.referenceCounter <= 0L) {
-            toDestroyed();
-            return;
-         }
+      }
+
+      if (this.referenceCounter <= 0L) {
+         toDestroyed();
+         return;
       }
 
       TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
@@ -551,8 +552,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       return this.state == DESTROYED || this.state == PRE_DESTROYED;
    }
 
+   /**
+    * Called by TopicHandler.java or ReferenceEntry.java
+    */
    public void toDestroyed() {
-      //this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -573,22 +576,23 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * This timeout occurs after a configured expiration delay
     */
    public final void timeout(Object userData) {
-      //this.glob.getLog("core").info(ME, "Expiration timeout occurred after " + getMsgQosData().getLifeTime() + " millis");
+      /*
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
-         if (getMsgQosData().isForceDestroy()) {
-            toDestroyed();
+      }
+      */
+      if (getMsgQosData().isForceDestroy()) {
+         toDestroyed();
+      }
+      else {
+         try {
+            toExpired();
          }
-         else {
-            try {
-               toExpired();
-            }
-            catch (XmlBlasterException e) {
-               this.glob.getLog("core").error(ME + getLogId(), "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
-            }
+         catch (XmlBlasterException e) {
+            this.glob.getLog("core").error(ME + getLogId(), "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
          }
       }
    }
