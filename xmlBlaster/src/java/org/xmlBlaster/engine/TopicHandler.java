@@ -583,19 +583,24 @@ public final class TopicHandler implements I_Timeout
          Destination destination = destinationArr[ii];
          if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destination.getDestination() + "]");
 
+         SessionInfo receiverSessionInfo = null;
          if (destination.getDestination().isSession()) {
-            SessionInfo receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
-            if (receiverSessionInfo == null) {
-               String tmp = "Sending PtP message to unknown session '" + destination.getDestination() + "' failed, message is lost.";
-               log.warn(ME, tmp);
-               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNSESSION, ME, tmp);
-            }
+            receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
+         }
+
+         //if (destination.getDestination().isSession() && receiverSessionInfo == null) {
+         //   String tmp = "Sending PtP message to unknown session '" + destination.getDestination() + "' failed, message is lost.";
+         //   log.warn(ME, tmp);
+         //   throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNSESSION, ME, tmp);
+         //}
+
+         if (receiverSessionInfo != null) { // PtP to session which is logged in.
             MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                              receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
                              Constants.SUBSCRIPTIONID_PtP);
             receiverSessionInfo.queueMessage(msgEntry);
          }
-         else {
+         else {  // PtP sent to subject or PtP sent to unknown session:
             if (destination.forceQueuing()) {
                SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
