@@ -325,6 +325,21 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    /**
+    * Check if this message is at its master cluster location
+    */
+   public final boolean isAtMaster() {
+      if (routeNodeList == null)
+         return true;
+      for (int ii=routeNodeList.size()-1; ii>=0; ii--) {
+         RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
+         if (ri.getStratum() == 0 && !ri.getDirtyRead() && ri.getNodeId().equals(glob.getNodeId()))
+            return true;
+      }
+      return false;
+   }
+
+
+   /**
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
