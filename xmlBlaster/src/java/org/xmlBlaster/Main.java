@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.87 2002/05/16 15:39:25 ruff Exp $
+Version:   $Id: Main.java,v 1.88 2002/05/16 19:58:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -533,15 +533,16 @@ public class Main
       Log.plain(ME, "java org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "   -h                  Show the complete usage.");
+      Log.plain(ME, "");
       Vector protocols = glob.getProtocolDrivers();
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          Log.plain(ME, driver.usage());
       }
-      Log.plain(ME, "Cluster support:");
-      Log.plain(ME, "   -cluster.node.id    A unique name for this xmlBlaster instance, e.g. 'com.myCompany.myHost'");
-      Log.plain(ME, "                       If not specified a unique name is choosen and displayed on command line");
-      Log.usage();
+      Log.plain(ME, org.xmlBlaster.engine.cluster.ClusterManager.usage());
+      Log.plain(ME, "");
+      Log.plain(ME, org.xmlBlaster.util.Global.usage());
+      Log.plain(ME, "");
       Log.plain(ME, "Other stuff:");
       Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
@@ -552,8 +553,10 @@ public class Main
       Log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
       Log.plain(ME, "   java org.xmlBlaster.Main -ior.file /tmp/XmlBlaster_Ref");
       Log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
+      Log.plain(ME, "   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
       Log.plain(ME, "   java org.xmlBlaster.Main -xmlrpc.hostname 102.24.64.60 -xmlrpc.port 8081");
       Log.plain(ME, "   java org.xmlBlaster.Main -?");
+      Log.plain(ME, "See xmlBlaster.properties for more options");
       Log.plain(ME, "");
    }
 
