@@ -3,6 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
+
+ o Fixed rare possible dead lock for PtP messages auto-creating subjectInfo
+   and simultaneous login of this subject
+
+ o Changed xmlBlaster dump to contain only legal tag names conforming
+   to xml 1.0 spec (changed Property in jutils.jar).
  
  o changed ant to 1.6.1
  
