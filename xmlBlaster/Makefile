@@ -54,7 +54,7 @@ javadoc:
  
 
 jar: all
-	( cd ${CLASS_TOP_DIR}; jar cvf ${JAR_DIR}/xmlBlaster.jar ./org )
+	( cd ${CLASS_TOP_DIR}; jar cvf ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./demo)
 
 
 test: all
