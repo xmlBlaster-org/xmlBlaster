@@ -30,6 +30,8 @@ protected:
    }
 
 public:
+   virtual ~I_Parser() {}
+
    /**
     * Does the actual parsing
     * @param xmlData Quality of service in XML notation

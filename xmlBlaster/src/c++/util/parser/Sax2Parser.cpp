@@ -16,6 +16,7 @@ Comment:   Default handling of Sax callbacks
 #include <sax/SAXException.hpp>
 #include <sax2/SAX2XMLReader.hpp>
 #include <sax2/XMLReaderFactory.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
 #include <framework/MemBufInputSource.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
@@ -28,9 +29,39 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
 using namespace std;
 
 Sax2Parser::Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler) : 
-    I_Parser(handler), ME("Sax2Parser"), global_(global), log_(global.getLog("org.xmlBlaster.util.xml"))
+    I_Parser(handler), ME("Sax2Parser"), global_(global), log_(global.getLog("org.xmlBlaster.util.xml")),
+    xmlBlasterTranscoder_(0), encoderBufferSize_(16*1024)
 {
    if (log_.call()) log_.trace(ME, "Creating new Sax2Parser");
+
+   encoding_ = global_.getProperty().getStringProperty("xmlBlaster/encoding", "UTF-8"); //iso-8859-1");
+
+   XMLTransService::Codes resCode;
+   xmlBlasterTranscoder_ = XMLPlatformUtils::fgTransService->makeNewTranscoderFor(encoding_.c_str(), resCode, encoderBufferSize_);
+   if (resCode != 0/*XMLTransService::Codes::Ok*/) {
+      log_.error(ME, "Creation of XMLTranscoder with encoding='" + encoding_ + "' failed with error code " + lexical_cast<string>((int)resCode) +
+                     ". Please check your SAX parser setting '-xmlBlaster/encoding'");
+      throw XmlBlasterException(USER_CONFIGURATION, ME, "Creation of XMLTranscoder with encoding='" + encoding_ + "' failed with " + lexical_cast<string>((int)resCode));
+   }
+   else {
+      if (log_.trace()) log_.trace(ME, "Created XMLTranscoder res=" + lexical_cast<string>((int)resCode) + " with encoding=" + encoding_);
+   }
+}
+
+Sax2Parser::~Sax2Parser()
+{
+   delete xmlBlasterTranscoder_;
+}
+
+std::string Sax2Parser::usage() 
+{
+   std::string text = string("");
+   //text += string("\n");
+   text += string("\nThe xerces SAX XML parser plugin configuration:");
+   text += string("\n   -xmlBlaster/encoding [UTF-8]");
+   text += string("\n                       The parser encoding to use like iso-8859-1");
+   text += string("\n");
+   return text;
 }
 
 void Sax2Parser::init(const string &xmlLiteral) 
@@ -50,12 +81,27 @@ void Sax2Parser::parse(const string &xmlData)
    //if (log_.trace()) log_.trace(ME, string("parse content:'") + xmlData + string("'"));
  
    SAX2XMLReader *parser = NULL;
+   //XMLCh* encodingHelper = NULL;
    try {
       parser = XMLReaderFactory::createXMLReader();
       parser->setContentHandler(this);
       parser->setErrorHandler(this);
       parser->setLexicalHandler(this);
-      MemBufInputSource inSource((const XMLByte*)xmlData.c_str(), xmlData.size(), "xmlBlaster", false);
+
+      // "UTF-8"  "iso-8859-1"
+      //string xmlData1 = string("<?xml version=\"1.0\" encoding=\""+encoding_+"\"?>\n") + xmlData;
+      const string &xmlData1 = xmlData;
+      //log_.info(ME, "Parsing now: " + xmlData1);
+      
+      MemBufInputSource inSource((const XMLByte*)xmlData1.c_str(), xmlData1.size(), "xmlBlaster", false);
+      
+      XMLCh tempStr[100];
+      XMLString::transcode(encoding_.c_str(), tempStr, 99);
+      inSource.setEncoding(tempStr);
+      //encodingHelper = XMLString::transcode(encoding.c_str());
+      //inSource.setEncoding(encodingHelper);
+      //Sax2Parser::releaseXMLCh(&encodingHelper);
+
       parser->parse(inSource);
       delete parser;
    }
@@ -69,6 +115,9 @@ void Sax2Parser::parse(const string &xmlData)
       }
       delete parser; // just in case it did not 
       return;
+   }
+   catch (XmlBlasterException& ex) {
+      throw ex;
    }
    catch (SAXParseException &err) {
       string loc = getLocationString(err) + string(": ") + getStringValue(err.getMessage());
@@ -210,8 +259,9 @@ string Sax2Parser::getLocationString(const SAXParseException &ex)
     if (index != -1) systemId = systemId.substr(index + 1);
     str = systemId + ":";
   }
-  return str +lexical_cast<std::string>(ex.getLineNumber()) 
-      + ":" + lexical_cast<std::string>(ex.getColumnNumber());
+  string message = Sax2Parser::getStringValue(ex.getMessage(), true);
+  return str + "line=" + lexical_cast<std::string>(ex.getLineNumber()) 
+      + "/col=" + lexical_cast<std::string>(ex.getColumnNumber()) + " " + message;
 }
 
 
@@ -240,15 +290,15 @@ bool Sax2Parser::caseCompare(const XMLCh *name1, const char *name2)
  */
 string Sax2Parser::getStringValue(const XMLCh* const value, bool doTrim) const
 {
+   /* Works only with US-ASCII:
    char* help = 0;
    try {
+      string ret;
       help = XMLString::transcode(value);
       if (help != 0) {
-         string ret;
          if (doTrim) ret = StringTrim::trim(help);
          else ret = string(help);
          Sax2Parser::releaseXMLCh(&help);
-         return ret;
       }
    }
    catch (...) {
@@ -257,8 +307,23 @@ string Sax2Parser::getStringValue(const XMLCh* const value, bool doTrim) const
       cerr << "Caught exception in getStringValue(XMLCh=" << value << ")" << endl;
       // throw;
    }
+   */
+   if (value == NULL) {
+      return "";
+   }
 
-   return string();
+   unsigned int charsEaten;
+   char resultXMLString_Encoded[encoderBufferSize_+4];
+   xmlBlasterTranscoder_->transcodeTo(value,
+                                 XMLString::stringLen(value),
+                                 (XMLByte*) resultXMLString_Encoded,
+                                 encoderBufferSize_,
+                                 charsEaten,
+                                 XMLTranscoder::UnRep_Throw );
+
+   string result = string(resultXMLString_Encoded, charsEaten);
+   //log_.info(ME,"TRANSCODE: expected '" + ret + "' but was '" + result + "' charsEaten=" + lexical_cast<string>(charsEaten));
+   return result;
 }
 
 

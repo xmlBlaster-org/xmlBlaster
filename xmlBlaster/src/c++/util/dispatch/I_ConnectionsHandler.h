@@ -31,6 +31,7 @@ enum States {START, ALIVE, POLLING, DEAD, END};
 class Dll_Export I_ConnectionsHandler : public org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 {
 public:
+   virtual ~I_ConnectionsHandler() {}
 
    /**
     * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.

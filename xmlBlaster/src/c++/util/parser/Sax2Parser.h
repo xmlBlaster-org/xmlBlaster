@@ -12,6 +12,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/parser/I_Parser.h>
 #include <util/plugin/I_Plugin.h>
 #include <string>
+#include <xercesc/util/TransService.hpp>
 #include <sax2/DefaultHandler.hpp>
 #include <util/XMLString.hpp>
 #include <util/StopParseException.h>
@@ -35,6 +36,13 @@ private:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log&    log_;
+   XMLTranscoder* xmlBlasterTranscoder_;
+   int encoderBufferSize_;
+   std::string encoding_;
+
+   // Private copy ctor and assignement
+   Sax2Parser(const Sax2Parser& data);
+   Sax2Parser& operator=(const Sax2Parser& data);
 
 public:
    /**
@@ -43,6 +51,7 @@ public:
     */
    Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler);
 
+   ~Sax2Parser();
    
    /*
     * This method parses the XML std::string using the SAX parser.
@@ -214,6 +223,14 @@ protected:
     * @enforcedBy I_Plugin
     */
    std::string getVersion() { static std::string version = "1.0"; return version; }
+
+   /**
+    * Command line usage.
+    * <p />
+    * These variables may be set in xmlBlaster.properties as well.
+    * Don't use the "-" prefix there.
+    */
+   static std::string usage();
 };
 }}}} // namespace
 

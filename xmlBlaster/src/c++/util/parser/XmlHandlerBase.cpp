@@ -58,7 +58,7 @@ void XmlHandlerBase::parse(const string &xmlData)
    I_Parser *parser = NULL;
    try {
       parser = ParserFactory::getFactory().createParser(global_, this);
-	}
+   }
    catch (XmlBlasterException& ex) {
       throw ex;
    }
@@ -83,25 +83,25 @@ void XmlHandlerBase::parse(const string &xmlData)
       return;
    }
    catch (XmlBlasterException& ex) {
-      log_.error(ME, ex.getMessage() + ": " + xmlData);	// Remove logging here
+      if (log_.trace()) log_.trace(ME, ex.getMessage() + ": " + xmlData); // Remove logging here
       delete parser;
       throw ex;
    }
    catch (const exception& err) {
      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err.what() + ": " + xmlData);
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: std::exception. message:") + err.what() + ": " + xmlData);
    }
    catch (const string& err) {
      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err + ": " + xmlData);
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception-string. message:") + err + ": " + xmlData);
    }
    catch (const char* err) {
      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + err + ": " + xmlData);
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception-char*. message:") + err + ": " + xmlData);
    }
    catch (...) {
      delete parser;
-     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: unknown exception: ") + xmlData);
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: unknown exception ...: ") + xmlData);
    }
    if (log_.trace()) log_.trace(ME, "Time used for parsing: " + stopWatch.nice());
 }
@@ -162,7 +162,7 @@ void XmlHandlerBase::endElement(const string &/*name*/)
 void XmlHandlerBase::warning(const string &exTxt) 
 {
    string txt = exTxt + xmlLiteral_;
-   log_.warn(ME, txt);
+   log_.warn(ME+".warning()", txt);
 }
       
       
@@ -170,7 +170,7 @@ void XmlHandlerBase::warning(const string &exTxt)
 void XmlHandlerBase::error(const string &exTxt) 
 {
    string txt = exTxt + xmlLiteral_;
-   log_.warn(ME, txt);
+   log_.warn(ME+".error()", txt);
 }
 
 
@@ -178,8 +178,8 @@ void XmlHandlerBase::error(const string &exTxt)
 void XmlHandlerBase::fatalError(const string &exTxt) 
 {
    string txt = exTxt + xmlLiteral_;
-   log_.warn(ME, txt);
-   throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: exception. message:") + exTxt);
+   log_.warn(ME+".fatalError()", txt);
+   throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("parse: fatalError exception. message:") + exTxt);
 }
 
 /**
