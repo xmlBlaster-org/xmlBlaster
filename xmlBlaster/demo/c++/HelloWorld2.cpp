@@ -46,7 +46,7 @@ public:
    {                       // log channel called 'HelloWorld2'. To see the traces of this
                            // channel invoke -trace[HelloWorld2] true on the command line,
                            // then it will only switch on the traces for the demo channel
-      log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getVersion() +
+      log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getReleaseId() +
                     " from " + Global::getBuildTimestamp());
    }
 
@@ -184,7 +184,7 @@ int main(int args, char ** argv)
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
       
-      string intro = "XmlBlaster C++ client " + glob.getVersion() +
+      string intro = "XmlBlaster C++ client " + glob.getReleaseId() +
                      ", try option '-help' if you need usage informations.";
       glob.getLog().info("HelloWorld2", intro);
 
