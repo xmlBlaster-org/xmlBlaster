@@ -227,6 +227,6 @@ Persistence.Path=${user.home}${file.separator}tmp
 #------------------------------------------------------------------------------
 # Any other custom properties can be added here. 
 # These are available through the API e.g.
-# String str = XmlBlasterProperty.get("MyApp.mykey", "defaultValue");
+# String str = Global.instance().getProperty().get("MyApp.mykey", "defaultValue");
 #------------------------------------------------------------------------------
 

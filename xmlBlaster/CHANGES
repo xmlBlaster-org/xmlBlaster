@@ -15,11 +15,18 @@ TODO:
 * Change to Sun coding convention: http://checkstyle.sourceforge.net/
 * Handle QueueProperty.java similar to CbQueueProprty.java in ConnectQos.java
 * Implement cb.burstMode.collectTimeOneway
+* Use XMLunit http://xmlunit.sourceforge.net/ in testsuite.
 
 BUGS:
 
 
 DONE:
+  - XmlBlasterProperty is deprecated to use directly, use Global instead:
+      glob.getProperty().get("myProp", "defaultVal");
+    Added Global argument to many classes, but you can access
+    the first Global instance with:
+      Global glob = Global.instance();
+
   - Added support to access xmlBlaster with telnet.
     This is based on remotecons.jar 1.0
     See http://wttools.sourceforge.net/ and
@@ -68,7 +75,6 @@ DONE:
    
   - Server internal changes:
     Tuned performance for internal messages
-    Added Global argument to many classes
     Changed subscriptionId to contain a prefix
  
   - Changed (bugfix?) message erase behavior: When a message
