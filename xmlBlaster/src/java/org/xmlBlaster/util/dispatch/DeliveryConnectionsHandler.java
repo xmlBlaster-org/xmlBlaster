@@ -154,11 +154,12 @@ abstract public class DeliveryConnectionsHandler
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                  //log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                  throw e;
                }
                catch (Throwable e) {
                   log.error(ME, "Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
-                  e.printStackTrace();
+                  throw XmlBlasterException.convert(glob, ME, "", e);
                }
                // TODO: cleanup if exception is thrown by createDeliveryConnection()
             }
