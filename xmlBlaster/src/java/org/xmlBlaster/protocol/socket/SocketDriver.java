@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.14 2002/04/08 17:09:28 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.15 2002/04/19 10:59:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -78,6 +78,7 @@ public class SocketDriver extends Thread implements I_Driver
    /** State of server */
    private boolean running = true;
    int SOCKET_DEBUG=0;
+   private boolean listenerReady = false;
 
 
    /**
@@ -125,7 +126,8 @@ public class SocketDriver extends Thread implements I_Driver
    /**
     * Start xmlBlaster SOCKET access.
     * <p />
-    * Enforced by interface I_Driver.
+    * Enforced by interface I_Driver.<br />
+    * This method returns as soon as the listener socket is alive and ready or on error.
     * @param glob Global handle to access logging, property and commandline args
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
@@ -162,6 +164,10 @@ public class SocketDriver extends Thread implements I_Driver
       }
 
       start(); // Start the listen thread
+
+      while (!listenerReady) {
+         try { Thread.currentThread().sleep(10); } catch( InterruptedException i) {}
+      }
    }
 
    final Global getGlobal()
@@ -179,6 +185,7 @@ public class SocketDriver extends Thread implements I_Driver
          listen = new ServerSocket(socketPort, backlog, inetAddr);
          Log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
          serverUrl = hostname + ":" + socketPort;
+         listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
             //Log.trace(ME, "New incoming request on port=" + socketPort + " ...");
@@ -202,6 +209,7 @@ public class SocketDriver extends Thread implements I_Driver
          Log.error(ME, "Socket server problem on " + hostname + ":" + socketPort + ": " + e.toString());
       }
       finally {
+         listenerReady = true;
          if (listen != null) {
             try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
             listen = null;
