@@ -4,6 +4,8 @@ Changes for 0.79b [???, ?? 2000]
 ================================
 
  - Integrated JacORB CORBA release 1.3.11
+   Please copy the new xmlBlaster/config/jacorb.properties.template
+   to $HOME/jacorb.properties (replacing the old one).
 
  - Added _release() calls to avoid JacORB memory leak on shutdown()
 
