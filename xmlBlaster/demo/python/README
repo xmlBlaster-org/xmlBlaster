@@ -1,0 +1,32 @@
+/*------------------------------------------------------------------------------
+Name:      xmlBlaster/demo/python/README
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   xmlBlaster access with Python clients
+Date:      2004-01-23
+See:       http://www.xmlBlaster.org/xmlBlaster/demo/python/README
+------------------------------------------------------------------------------*/
+
+We have three Python client variants available:
+
+1. pyBlaster from Peter Arwanitis (spex66 @ gmx . net)
+   This is a fairly complete python client to xmlBlaster
+   using XmlRpc as access protocol.
+   It is simple and brilliant.
+   See: xmlBlaster/src/python/README
+
+2. CORBA access with omniORBpy by Oleg Orlov (orlov@diasoft.ru)
+   This is a smart example how to access xmlBlaster from Python
+   with CORBA.
+   It is a powerful example.
+   See: xmlBlaster/demo/python/corba/README
+
+3. A simple XmlRpc based access client from Marcel Ruff
+   This is outdated and was a first step for access verification.
+   See: xmlBlaster/demo/python/deprecated/README
+
+
+TODO:
+  We need to cleanup all above approaches and layer the protocol
+  (like CORBA or XmlRpc) below some general python classes
+  to simplify xmlBlaster access from Python
