@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.1 2000/10/18 20:45:42 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.2 2000/10/18 22:09:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
+import org.xmlBlaster.client.protocol.rmi.RmiConnection;
 import org.xmlBlaster.client.BlasterCache;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
@@ -67,12 +68,12 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
 {
-   private String ME = "CorbaConnection";
+   private String ME = "XmlBlasterConnection";
    protected String[] args = null;
 
    /** The driver, e.g. Corba/Rmi/XmlRpc */
@@ -181,8 +182,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       if (driverType == null) driverType = XmlBlasterProperty.get("Client.protocol", "IOR");
 
-      if (driverType.equals("IOR") || driverType.equals("IIOP"))
+      if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          driver = new CorbaConnection(this.args);
+      else if (driverType.equalsIgnoreCase("RMI"))
+         driver = new RmiConnection(this.args);
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI etc.";
          Log.error(ME, text);
@@ -219,8 +222,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection(Applet ap, String driverType) throws XmlBlasterException
    {
-      if (driverType.equals("IOR") || driverType.equals("IIOP"))
+      if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          driver = new CorbaConnection(ap);
+      else if (driverType.equalsIgnoreCase("RMI"))
+         driver = new RmiConnection(ap);
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI etc.";
          Log.error(ME, text);
@@ -789,8 +794,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public static void usage()
    {
       String driverType = XmlBlasterProperty.get("Client.protocol", "IOR");
-      if (driverType.equals("IOR") || driverType.equals("IIOP"))
+      if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          CorbaConnection.usage();
+      else if (driverType.equalsIgnoreCase("RMI"))
+         RmiConnection.usage();
    }
 
 } // class XmlBlasterConnection
