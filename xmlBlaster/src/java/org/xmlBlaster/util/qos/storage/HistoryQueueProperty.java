@@ -29,7 +29,7 @@ public class HistoryQueueProperty extends QueuePropertyBase
       super(glob, nodeId);
       this.log = glob.getLog("core");
       setRelating(Constants.RELATING_HISTORY);
-      initialize();
+      super.initialize(Constants.RELATING_HISTORY); //related='history'--> -history.queue.maxMsg
    }
 
    /**
@@ -39,13 +39,6 @@ public class HistoryQueueProperty extends QueuePropertyBase
       StringBuffer buf = new StringBuffer(256);
       buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
       return buf.toString();
-   }
-
-   /**
-    * Configure property settings
-    */
-   protected void initialize() {
-      super.initialize("history"); //related='history'--> -history.queue.maxMsg
    }
 
    public final boolean onOverflowDeadMessage() {
