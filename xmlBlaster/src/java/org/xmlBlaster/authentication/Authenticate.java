@@ -23,6 +23,8 @@ import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.RunlevelManager;
+import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.*;
 
@@ -33,7 +35,7 @@ import java.util.*;
  * <p>
  * The login method serves as a factory for a xmlBlaster.Server Reference
  */
-final public class Authenticate implements I_Authenticate
+final public class Authenticate implements I_Authenticate, I_RunlevelListener
 {
    final private String ME;
 
@@ -81,6 +83,8 @@ final public class Authenticate implements I_Authenticate
 
       if (log.CALL) log.call(ME, "Entering constructor");
       this.glob.setAuthenticate(this);
+      glob.getRunlevelManager().addRunlevelListener(this);
+
       plgnLdr = new PluginManager(global);
       plgnLdr.init(this);
       xmlBlasterImpl = new XmlBlasterImpl(this);
@@ -561,6 +565,50 @@ final public class Authenticate implements I_Authenticate
          sb.append(subjectInfo.getLoginName());
       }
       return sb.toString();
+   }
+
+   /**
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return this.ME;
+   }
+
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
+         }
+      }
+
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            if (log.TRACE) log.trace(ME, "Killing " + sessionInfoMap.size() + " login sessions");
+            Object[] objs = null;
+            synchronized(sessionInfoMap) {
+               objs = sessionInfoMap.values().toArray();
+            }
+            for (int ii=0; objs!=null && ii<objs.length; ii++) {
+               try {
+                  boolean clearQueue = true;
+                  SessionInfo sessionInfo = (SessionInfo)objs[ii];
+                  resetSessionInfo(sessionInfo.getSessionId(), clearQueue);
+                  objs[ii] = null;
+               }
+               catch (Throwable e) {
+                  log.error(ME, "Problem on session shutdown, we ignore it: " + e.toString());
+               }
+            }
+         }
+      }
    }
 
    /**
