@@ -158,7 +158,7 @@ public class PluginLoader {
          }
       }
       */
-      Log.info(ME, "Plugin '"+param[0]+"' successfully initialized");
+      if (Log.TRACE) Log.trace(ME, "Plugin '"+param[0]+"' successfully initialized");
 
       return clntPlugin;
    }

@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.48 2002/02/16 13:27:46 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.49 2002/02/16 16:32:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -458,6 +458,7 @@ final public class Authenticate implements I_Authenticate
     */
    private ClientInfo resetClientInfo(String sessionId, boolean clearQueue) throws XmlBlasterException
    {
+      if (Log.CALL) Log.call(ME, "resetClientInfo");
       /* !!!!!!!!!!!
       !!! Callback to protocolDriver into AuthServerImpl !!!!
       try {
@@ -476,6 +477,9 @@ final public class Authenticate implements I_Authenticate
       if (obj == null) {
          Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
          throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
+      }
+      else {
+         if (Log.TRACE) Log.trace(ME, "sessionId=" + sessionId + " removed");
       }
 
       ClientInfo clientInfo = (ClientInfo)obj;

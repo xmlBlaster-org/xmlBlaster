@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.8 2002/02/16 11:51:31 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.9 2002/02/16 16:33:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -51,6 +51,8 @@ public class SocketCallbackImpl extends Executor implements Runnable
       this.sockCon = sockCon;
       this.callback = callback;
       this.callbackAddressStr = sockCon.getLocalAddress();
+      this.SOCKET_DEBUG = sockCon.SOCKET_DEBUG;
+
       Thread t = new Thread(this);
       t.start();
    }
@@ -78,10 +80,6 @@ public class SocketCallbackImpl extends Executor implements Runnable
             sockCon.shutdown();
             throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
          }
-         finally {
-            // We remove the listener here, so the SocketConnect does not need to take care of this
-            removeResponseListener(receiver.getRequestId());
-         }
       }
    }
 
@@ -101,7 +99,8 @@ public class SocketCallbackImpl extends Executor implements Runnable
    public void shutdown() {
       running = false;
       try { iStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
-      Log.info(ME, "There are " + responseListenerMap.size() + " messages pending (no response arrived yet");
+      if (responseListenerMap.size() > 0)
+         Log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
    }
 } // class SocketCallbackImpl
 

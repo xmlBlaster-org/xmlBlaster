@@ -18,7 +18,7 @@ import java.util.Hashtable;
  */
 
 public class Manager implements I_Manager{
-   private static final String ME = "Manager";
+   private static final String ME = "LdapManager";
    private static final String TYPE = "ldap";
    private static final String VERSION = "1.0";
 
@@ -28,15 +28,14 @@ public class Manager implements I_Manager{
 
 
    public Manager() {
-      if (Log.TRACE) Log.trace(ME+"."+ME+"()", "Constructor");
+      if (Log.CALL) Log.call(ME, "Constructor");
    }
 
    public void init(String[] options) throws org.xmlBlaster.util.XmlBlasterException {
-      if (Log.TRACE) Log.trace(ME+".init()", "Entering init");
+      if (Log.CALL) Log.call(ME, "init()");
       if (options.length>0) {
          Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
       }
-      if (Log.TRACE) Log.trace(ME+".init()", "Leaving init");
    }
 
    public String getType() {
@@ -49,12 +48,11 @@ public class Manager implements I_Manager{
 
 
    public I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      if (Log.TRACE) Log.trace(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------");
+      if (Log.CALL) Log.call(ME, "reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
       }
-      if (Log.TRACE) Log.trace(ME+".reserveSession(...))", "-------END--------");
 
       return session;
    }

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.9 2002/02/16 11:40:30 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.10 2002/02/16 16:33:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -73,12 +73,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected String sessionId = null;
    /** The client login name */
    protected String loginName = "";
+   boolean SOCKET_DEBUG=false;
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
     */
    public SocketConnection(String[] args) throws XmlBlasterException
    {
+      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", false);
    }
 
    /**
@@ -86,6 +88,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public SocketConnection(java.applet.Applet ap) throws XmlBlasterException
    {
+      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", false);
    }
 
    /**
@@ -147,9 +150,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          } catch(java.net.UnknownHostException e) {
             throw new XmlBlasterException("InitSocketFailed", "The host [" + localHostname + "] is invalid, try '-socket.localHostname=<ip>': " + e.toString());
          }
-
-         //if (XmlBlasterProperty.get("socket.debug", false) == true)
-         //   setDebug(true);
 
          if (localPort > -1) {
             this.sock = new Socket(inetAddr, port, localInetAddr, localPort);
@@ -278,7 +278,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          }
 
          if (passwd == null) { // connect() the new schema
-            if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via Socket with security plugin" + loginQos.toXml());
             Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
             String resp = (String)cbReceiver.execute(parser, WAIT_ON_RESPONSE);
@@ -388,7 +387,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got subscribe response " + response.toString());
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
@@ -413,7 +411,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got unSubscribe response " + response.toString());
          // return (String)response; // return the QoS TODO
          return;
       }
@@ -439,7 +436,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          parser.addMessage(msgUnit);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          String[] arr = (String[])response; // return the QoS
-         Log.info(ME, "Got publish response " + arr[0]);
          return arr[0]; // return the QoS
       }
       catch (IOException e1) {
@@ -468,7 +464,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got publishArr response " + response.toString());
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
@@ -515,7 +510,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got erase response " + response.toString());
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
@@ -553,7 +547,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got get response " + response.toString());
          return (MessageUnit[])response;
       }
       catch (IOException e1) {
@@ -573,7 +566,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PING, null); // sessionId not necessary
          parser.addQos("<qos><state>OK</state></qos>");
          Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
-         Log.info(ME, "Got ping response " + response.toString());
          // return (String)response; // return the QoS TODO
          return;
       }
@@ -640,7 +632,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "                       Defaults to our hostname.\n";
       text += "   -socket.responseTimeout  How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
-      //text += "   -socket.debug       true switches on detailed SOCKET debugging [false].\n";
+      text += "   -socket.debug       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
    }
