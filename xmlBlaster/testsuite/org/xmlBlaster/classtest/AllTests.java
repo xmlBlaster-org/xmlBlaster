@@ -25,6 +25,7 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.EraseRetQosTest.class));
       suite.addTest(new TestSuite(classtest.SubscribeRetQosTest.class));
       suite.addTest(new TestSuite(classtest.PublishQosTest.class));
+      suite.addTest(new TestSuite(classtest.ConnectQosTest.class));
       suite.addTest(new TestSuite(classtest.DisconnectQosTest.class));
       return suite;
    }
