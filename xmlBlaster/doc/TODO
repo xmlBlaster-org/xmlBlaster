@@ -10,7 +10,10 @@
 - Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
   this is important if the client didn't logout
 
-- dtd support
+- dtd support 
+  Necessary to use XPATH DTD-ID:
+  An element node may have a unique identifier (ID).
+  This is the value of the attribute that is declared in the DTD as type ID
 
 - Add an AuthenticateException type
 
@@ -34,9 +37,15 @@
 Clients
 -------
 - Perl (ORB for Perl www.lunatech.com/research/corba/cope)
-- C++ (mico)  OK
+  Multihtreaded support still missing
+
+- C++ (mico)
+  OK runs fine
+
 - Tcl/Tk
+
 - Java
+
 - Phyton
 
 (all free CORBA implementation .......)
