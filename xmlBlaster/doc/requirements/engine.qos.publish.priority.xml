@@ -5,7 +5,7 @@
    <topic>XmlBlaster supports message priorities</topic>
    <description>
       <p>
-      Using the QOS flag &lt;priority&gt; allows to set the priority of a message.
+      Using the publish-QoS flag &lt;priority&gt; allows to set the priority of a message.
       A message with priority 9 has highest priority, 0 is lowest, default is 5.
       </p>
       <p>
@@ -45,7 +45,7 @@ con.publish(msgUnit);
    <see type="API">org.xmlBlaster.engine.helper.Constants</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 15</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Missing</comment>
