@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.43 2004/02/22 17:28:34 ruff Exp $
+Version:   $Id: Parser.java,v 1.44 2004/05/09 21:25:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -12,6 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -743,7 +744,7 @@ public class Parser
       catch(IOException e) {
          String text = "Creation of message failed.";
          log.warn(ME, text + " " + e.toString());
-         throw new XmlBlasterException(ME, text);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, text, e);
       }
    }
 
