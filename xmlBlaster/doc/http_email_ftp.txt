@@ -1,0 +1,127 @@
+Proposal for messaging over connectionless protocols.
+
+(email, http(s), ftp, wap etc.)
+
+For messaging in the internet somtimes CORBA may be
+too rigid (firewalls and other reasons).
+
+It should be possible, for example to tunnel firewalls
+with http, send messages with emails or using ftp.
+
+So this proposal specifies a xmlBlaster message format
+to be used with those protocols.
+
+Here is an example, how it could be typed into an email
+body and send to xmlBlaster. I will discuss this with
+xml directly, since DTD (xmlBlaster.dtd) is not expressive enough
+and XML Shemas (xmlBlaster.xsd) are not yet supported.
+
+
+<?xml version="1.0"?>
+<xmlBlaster method="publish" sessionId="12aa3z45X" xmlns="http://www.xmlBlaster.org">
+
+   <key oid="myMessageId" contentType="text/plain">
+      <!-- Some user specified meta information for this content -->
+   </key>
+
+   <content link="" xmlns="">
+      <!<CDATA[ Hello world ]]>
+   </content>
+
+   <qos>
+      <!-- Some quality of service tags, to control xmlBlaster -->
+   </qos>
+</xmlBlaster>
+
+
+
+Here a discussion about this approach
+
+1. The 'xmlBlaster' root element encapsulates the xmlBlaster message.
+
+   The attribute 'method' tells xmlBlaster which method to invoke:
+   one of the CORBA IDL specified methods like 'publish' 'subscribe' etc.
+
+   The attribute 'sessionId' is the identifier of the sender,
+   it was retrieved by a login with a password message (see below)
+   Another variant could always send the 'loginName' and 'passwd' attibutes
+   with each message.
+
+   The 'xmlns' specifies the xmlBlaster.org namespace as default, so we
+   don't need to prefix each tag explicitly.
+
+2. The 'key' element you know already from the xmlBlaster CORBA invocations.
+   It may contain some arbitrary user defined meta data about the
+   content (not shown here).
+
+   Here it specifies the unique message identifier with the 'oid' attribute.
+
+   The 'contentMime' attribute sets the MIME format of the message content.
+
+3. The 'content' element supplies the message content in the MIME
+   format as specified in the attribute 'contentMime' of the key tag.
+   Here it is plain text "text/plain", which is protected by a CDATA section.
+   Not that the token "]]>" in the plain text would make the message unparseable.
+
+   The xmlns="" attribute resets the namespace to nothing,
+   it may be replaced by a message specific namespace if there is one.
+
+   The link="" attribute allows to specify a location where the content
+   is delivered. For example a binary content could be in the attachment
+   of an email.
+
+   Note that for example a 'subscribe' method invocation does not need
+   to specifiy the content.
+
+4. The 'qos' element you know already from the xmlBlaster CORBA invocations.
+   It allows a fine grained control of the xmlBlaster MOM behaviour.
+
+
+Open questions with this apporach:
+
+a. How can we specifiy to send BLOB (binary data) contents with
+   http (how to set the link attribute)?
+
+b. Is it possible to express this approach exactly with the coming
+   XML Schema language?
+
+c. How to do a login?
+   What about this approach (only interesting tags shown):
+
+   <xmlBlaster method="login" loginName="ben" passwd="sunshine"
+               callbackProtocol="EMAIL" callback="ruff@swand.lake.de">
+      <qos>
+      </qos>
+   </mlBlaster>
+
+   This message could respond with the sessionId for a synchronous http
+   invocation, but it would not be very smart with asynchronous emails.
+   With emails sending loginName and passwd with each invocation
+   may be more convenient.
+
+   The 'callback' attribute allows to specify where xmlBlaster shall
+   send its asynchronous callback messages (updates).
+   It may be an email address, an URL to a HttpServlet, a CORBA IOR
+   or whatever protocol xmlBlaster will support in future.
+
+
+More informations on RPC and XML you find on our homepage under
+'Internet Resources'.
+
+Please comment on this, since there are many out there who know
+more about the different technologies.
+
+
+If i find time at the end of the week,
+i will implement a little demo with http,
+allowing xmlBlaster messages to be tunneled through firewalls.
+
+I believe SUN's XmlRpcServlet may be a nice foundation to
+implement it very quickly, see
+    http://developer.sun.java.com/developer/products/xml/examples/rpc
+
+
+cu,
+
+Marcel
+ruff@swand.lake.de
