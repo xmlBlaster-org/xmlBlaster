@@ -730,14 +730,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       int ret = 0;
       synchronized(this.modificationMonitor) {
          ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
-         this.numOfEntries--;
          if (ret > 0) { // then we need to retrieve the values
+            this.numOfEntries--;
             this.numOfBytes -= currentAmount;
             this.numOfPersistentBytes -= currentPersistentSize;
             this.numOfPersistentEntries -= currentPersistentEntries;
          }
       }
-      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      if (this.queueSizeListener != null && ret > 0) invokeQueueSizeListener();
       return ret;
    }
 
