@@ -237,15 +237,24 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
          sb.append(" domain='").append(queryKeyData.getDomain()).append("'");
       if (queryKeyData.getQueryType() != null && !Constants.EXACT.equals(queryKeyData.getQueryType()))
          sb.append(" queryType='").append(queryKeyData.getQueryType()).append("'");
-      sb.append(">");
+
+      boolean isClosed = false;
       if (queryKeyData.getQueryString() != null) {
+         if (!isClosed) { sb.append(">"); isClosed=true; }
          sb.append(offset).append(Constants.INDENT).append(queryKeyData.getQueryString());
       }
       AccessFilterQos[] list = queryKeyData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {
+         if (!isClosed) { sb.append(">"); isClosed=true; }
          sb.append(list[ii].toXml(extraOffset+Constants.INDENT));
       }
-      sb.append(offset).append("</key>");
+
+      if (!isClosed) {
+         sb.append("/>");
+      }
+      else {
+         sb.append(offset).append("</key>");
+      }
       return sb.toString();
    }
 
