@@ -41,7 +41,7 @@ IP=192.168.1.2
 cluster.node[heron.mycomp.com]=\
    <clusternode id='heron.mycomp.com'>\
       <info>\
-         <address type='SOCKET'>${IP}:7607</address>\
+         <address type='SOCKET'>${IP}:7600</address>\
       </info>\
       <master type='DomainToMaster'>\
          <![CDATA[<key domain='RUGBY_NEWS'/>]]>\
