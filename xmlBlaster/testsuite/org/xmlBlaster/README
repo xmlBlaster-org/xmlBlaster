@@ -27,11 +27,11 @@ Start the test suite manually:
 
    Start the test suite with GUI support:
 
-      jaco -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+      jaco -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
    For command line output invoke:
 
-      jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
+      jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
 
 
 

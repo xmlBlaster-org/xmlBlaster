@@ -18,6 +18,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/Util.class \
 			$(CLASS_DIR)/BlasterCallbackImpl.class \
 			$(CLASS_DIR)/TestSub.class \
+			$(CLASS_DIR)/TestAll.class \
 			$(CLASS_DIR)/ClientOid.class \
 			$(CLASS_DIR)/ClientGet.class \
 			$(CLASS_DIR)/ClientXml.class \
@@ -57,7 +58,7 @@ xmlBlaster: all
 
 testsuite:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
-	jaco  -Djava.compiler= $(BlasterSystemProperties) test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+	jaco  -Djava.compiler= $(BlasterSystemProperties) test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
 test: xmlBlaster sleep4 testsuite
 
