@@ -1411,7 +1411,7 @@ TODO
             <property name="idl.cmd" value="${CORBACPP_HOME}/${CORBACPP_VER}/bin/idl" />
          </case>
          <default>
-            <echo message="ERROR: Orbix IDL compilation support is missing for ${os.family}, please add it to build.xml" />
+            <property name="idl.cmd" value="${CORBACPP_HOME}/asp/5.1/bin/idl.exe" />
          </default>
       </switch>
 
@@ -1482,7 +1482,8 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX" />          
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />          
+         <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
          <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->                  
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
@@ -1530,6 +1531,9 @@ TODO
             <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
             <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
             <syslibset libs="ws2_32" if="MICO,windows" />
+
+            <!-- ORBIX -->
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
@@ -1610,7 +1614,8 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
 
          <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
@@ -1630,6 +1635,7 @@ TODO
 
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
 
@@ -1671,6 +1677,9 @@ TODO
             <!-- MICO -->
             <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
             <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+
+            <!-- ORBIX -->
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
