@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.11 2002/03/13 16:41:21 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.12 2002/04/19 11:01:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -163,7 +163,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
    public static void main(String[] args)
    {
       int count = 1000;
-      int runs = 0;
+      int runs = 5;
       long startTime;
       long elapsed;
       String testName;
@@ -179,7 +179,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
          key = new XmlKey("<key   oid='' queryType='EXACT'/>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
 
-         key = new XmlKey("<key oid=''><Hacker /></key>");
+         key = new XmlKey("<key oid='' contentMime='application/dummy' contentMimeExtended='1.0' domain='RUGBY'><Hacker /></key>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
 
          for (int kk=0; kk<runs; kk++) {
@@ -189,16 +189,17 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
                key = new XmlKey("<key oid='Hello'><Hacker /></key>");
                key.getQueryType(); // Force DOM parse
                String oid = key.getKeyOid();
+               String query = key.getQueryString(); // Force a DOM parse
                //System.out.println(key.toXml());
             }
             elapsed = System.currentTimeMillis() - startTime;
             System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
             /*
-               DomParseGivenOid: For 1000 runs 2053 millisec -> 2053.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 1107 millisec -> 1107.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 686 millisec -> 686.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 684 millisec -> 684.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 687 millisec -> 687.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 1518 millisec -> 1518.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 1087 millisec -> 1087.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 731 millisec -> 731.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 711 millisec -> 711.0 mycrosec/inout
+               DomParseGivenOid: For 1000 runs 730 millisec -> 730.0 mycrosec/inout
             */
          }
 
@@ -213,11 +214,11 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
             elapsed = System.currentTimeMillis() - startTime;
             System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
             /*
-               DomParseGeneratedOid: For 1000 runs 882 millisec -> 882.0 mycrosec/inout
-               DomParseGeneratedOid: For 1000 runs 841 millisec -> 841.0 mycrosec/inout
-               DomParseGeneratedOid: For 1000 runs 757 millisec -> 757.0 mycrosec/inout
-               DomParseGeneratedOid: For 1000 runs 752 millisec -> 752.0 mycrosec/inout
-               DomParseGeneratedOid: For 1000 runs 764 millisec -> 764.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 808 millisec -> 808.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 807 millisec -> 807.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 781 millisec -> 781.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 773 millisec -> 773.0 mycrosec/inout
+               DomParseGeneratedOid: For 1000 runs 784 millisec -> 784.0 mycrosec/inout
             */
          }
  
@@ -227,16 +228,20 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
             for (int ii=0; ii<count; ii++) {
                key = new XmlKey("<key oid='Hello'><Hacker /></key>");
                String oid = key.getKeyOid();
+               String domain = key.getDomain();  // the key attributes we parse ourself (without DOM)
+               String contentMime = key.getContentMime();
+               String contentMimeExtended = key.getContentMimeExtended();
+               int queryType = key.getQueryType();
                //System.out.println(key.toXml());
             }
             elapsed = System.currentTimeMillis() - startTime;
             System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
             /*
-               DomParseGivenOid: For 1000 runs 2053 millisec -> 2053.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 1107 millisec -> 1107.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 686 millisec -> 686.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 684 millisec -> 684.0 mycrosec/inout
-               DomParseGivenOid: For 1000 runs 687 millisec -> 687.0 mycrosec/inout
+               SimpleParseGivenOid: For 1000 runs 5 millisec -> 5.0 mycrosec/inout
+               SimpleParseGivenOid: For 1000 runs 16 millisec -> 16.0 mycrosec/inout
+               SimpleParseGivenOid: For 1000 runs 6 millisec -> 6.0 mycrosec/inout
+               SimpleParseGivenOid: For 1000 runs 7 millisec -> 7.0 mycrosec/inout
+               SimpleParseGivenOid: For 1000 runs 6 millisec -> 6.0 mycrosec/inout
             */
          }
 

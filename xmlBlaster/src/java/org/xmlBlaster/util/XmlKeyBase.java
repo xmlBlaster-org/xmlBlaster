@@ -108,6 +108,10 @@ public class XmlKeyBase
    public static final String DEFAULT_contentMimeExtended = "";
    protected String contentMimeExtended = null;
 
+   /** The domain attribute, can be used to classify the message for simple clustering */
+   public static final String DEFAULT_domain = "";
+   protected String domain = null;
+
    /** IP address to generate unique oid */
    private static String ip_addr = null; // jacorb.util.Environment.getProperty("OAIAddr");
 
@@ -272,7 +276,6 @@ public class XmlKeyBase
       return contentMime;
    }
 
-
    /**
     * Some further specifying information of the content.
     * <p />
@@ -294,6 +297,24 @@ public class XmlKeyBase
       return contentMimeExtended;
    }
 
+   /**
+    * Access the domain for this message, can be used for a simple grouping of
+    * messages to their master node with xmlBlaster clusters. 
+    * @return The domain, any choosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    *         defaults to "" where the local xmlBlaster instance is the master of the message.
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
+    */
+   public String getDomain() throws XmlBlasterException
+   {
+      if (domain == null) {
+         parseRaw();
+      }
+      if (domain != null) {
+         return domain;
+      }
+      loadDomTree();
+      return domain;
+   }
 
    /**
     * Accessing the unique oid of <key oid="...">.
@@ -357,6 +378,15 @@ public class XmlKeyBase
          }
          else {
             contentMimeExtended = DEFAULT_contentMimeExtended;
+         }
+
+         tmp = parseRaw(keyToken, "domain=");
+         if (tmp != null && tmp.length() > 0) {
+            domain = tmp;
+            //Log.info(ME, "domain='" + tmp + "'");
+         }
+         else {
+            domain = DEFAULT_domain;
          }
       }
    }
@@ -555,12 +585,17 @@ public class XmlKeyBase
 
             if (isPublish && attribute.getNodeName().equalsIgnoreCase("contentMime")) {
                contentMime = attribute.getNodeValue();
-               if (contentMime == null || contentMime.length()<1) contentMime = "text/plain";
+               if (contentMime == null || contentMime.length()<1) contentMime = DEFAULT_contentMime;
             }
 
             if (isPublish && attribute.getNodeName().equalsIgnoreCase("contentMimeExtended")) {
                contentMimeExtended = attribute.getNodeValue();
-               if (contentMimeExtended == null) contentMimeExtended = "";
+               if (contentMimeExtended == null) contentMimeExtended = DEFAULT_contentMimeExtended;
+            }
+
+            if (attribute.getNodeName().equalsIgnoreCase("domain")) {
+               domain = attribute.getNodeValue();
+               if (domain == null || domain.length()<1) domain = DEFAULT_domain;
             }
 
             if (!isPublish && attribute.getNodeName().equalsIgnoreCase("queryType")) {
@@ -694,6 +729,8 @@ public class XmlKeyBase
             sb.append(" contentMime='").append(contentMime).append("'");
          if (!DEFAULT_contentMimeExtended.equals(getContentMimeExtended()))
             sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
+         if (!DEFAULT_domain.equals(getDomain()))
+            sb.append(" domain='").append(domain).append("'");
          if (queryType != PUBLISH)
             sb.append(" queryType='").append(getQueryTypeStr()).append("'");
          sb.append(">\n");
