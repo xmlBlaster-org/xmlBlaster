@@ -2545,7 +2545,12 @@ TODO
 
       <switch value="${os.family}" caseinsensitive="false">
          <case value="windows">
-            <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll and pthreadVC.dll"/>
+            <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll, pthreadVC.dll and sqlite.dll (if persistent queues are used)"/>
+            <switch value="${XMLBLASTER_PERSISTENT_QUEUE}">
+               <case value="1">
+                  <copy file="${sqlite.lib.dir}/sqlite.dll" tofile="${lib.dir}/sqlite.dll"/>
+               </case>
+            </switch>
          </case>
          <default>
          </default>
