@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.9 2002/05/16 11:55:58 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.10 2002/05/16 15:36:23 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -33,8 +33,6 @@ public class AccessPluginManager extends PluginManagerBase {
 
    private final Global glob;
    private final Log log;
-
-   private boolean isLoaded = false;
 
    public AccessPluginManager(Global glob)
    {
@@ -128,9 +126,16 @@ public class AccessPluginManager extends PluginManagerBase {
 
    /**
     * Get access filter object from cache, based on MIME type. 
+    * @return null if not applicable
     */
    public final I_AccessFilter getAccessFilter(String type, String version, String mime, String mimeExtended)
    {
+      if (mimeExtended == null || mimeExtended.length() < 1) {
+         mimeExtended = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
+         if (Log.TRACE) Log.trace(ME, "Needed to set empty mimeExtended to default=" + mimeExtended);
+      }
+
+      if (Log.CALL) Log.call(ME, "Trying to find plugin for type=" + type + " version=" + version + " mime=" + mime + " mimeExtended=" + mimeExtended);
       try {
          // Try to find it in the cache...
          StringBuffer key = new StringBuffer(80);
@@ -140,34 +145,45 @@ public class AccessPluginManager extends PluginManagerBase {
             if (Log.TRACE) Log.trace(ME, "Found filter for key=" + key.toString());
             return (I_AccessFilter)obj;
          }
+         if (Log.TRACE) Log.trace(ME, "No filter for key=" + key.toString());
 
          // Check if the plugin is for all mime types
          key.setLength(0);
-         key.append(type).append(version).append("*");
+         key.append(type).append(version);
          obj = accessFilterMap.get(key.toString());
          if (obj != null) {
             return (I_AccessFilter)obj;
          }
+         if (Log.TRACE) Log.trace(ME, "No filter for key=" + key.toString());
 
-         if (!isLoaded) {
-         addAccessFilterPlugin(type, version); // try to load it
-         isLoaded = true;
-
+         // Check if the plugin is loaded already
          key.setLength(0);
-         key.append(type).append(version).append(mime).append(mimeExtended);
+         key.append(type).append(version);
          obj = accessFilterMap.get(key.toString());
          if (obj != null) {
-            if (Log.TRACE) Log.trace(ME, "Found filter for key=" + key.toString());
-            return (I_AccessFilter)obj;
+            Log.info(ME, "Filter plugin for type=" + type + " version=" + version + " mime=" + mime + " mimeExtended=" + mimeExtended + " is loaded but does not match");
+            return null; // Plugin is loaded but does not support the mime types
          }
 
-         // Check if the plugin is for all mime types
-         key.setLength(0);
-         key.append(type).append(version).append("*");
-         obj = accessFilterMap.get(key.toString());
-         if (obj != null) {
-            return (I_AccessFilter)obj;
-         }
+         Log.info(ME, "Going to load filter plugin for type=" + type + " version=" + version + " mime=" + mime + " mimeExtended=" + mimeExtended);
+
+         if (addAccessFilterPlugin(type, version)) { // try to load it
+            // try again if our mime type matches:
+            key.setLength(0);
+            key.append(type).append(version).append(mime).append(mimeExtended);
+            obj = accessFilterMap.get(key.toString());
+            if (obj != null) {
+               if (Log.TRACE) Log.trace(ME, "Found filter for key=" + key.toString());
+               return (I_AccessFilter)obj;
+            }
+
+            // Check if the plugin is for all mime types
+            key.setLength(0);
+            key.append(type).append(version);
+            obj = accessFilterMap.get(key.toString());
+            if (obj != null) {
+               return (I_AccessFilter)obj;
+            }
          }
          return null;
 
@@ -180,51 +196,55 @@ public class AccessPluginManager extends PluginManagerBase {
 
    /**
     * Invoked on new subscription or get() invocation, loads plugin. 
-    * @return null if not found
+    * You have to check yourself if it is loaded already
+    * @return true if loaded
     */
-   public final I_AccessFilter addAccessFilterPlugin(String type, String version)
+   public final boolean addAccessFilterPlugin(String type, String version)
    {
       StringBuffer key = new StringBuffer(80);
       key.append(type).append(version);
       Object obj = accessFilterMap.get(key.toString());
       if (obj != null) {
-         Log.info(ME, "Access filter '" + key.toString() + "' is loaded already");
-         return (I_AccessFilter)obj;
+         Log.warn(ME, "Access filter '" + key.toString() + "' is loaded already");
+         return false;
       }
 
       try {
-         I_AccessFilter filter = getPlugin(type, version);
-         if (filter == null) {
+         I_AccessFilter filterPlugin = getPlugin(type, version);
+         if (filterPlugin == null) {
             Log.error(ME, "Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return null;
+            return false;
          }
 
-         accessFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
+         accessFilterMap.put(key.toString(), filterPlugin); // Add a dummy instance without mime, so we can check above if loaded already
          key.setLength(0);
 
-         String[] mime = filter.getMimeTypes();
-         String[] mimeExtended = filter.getMimeExtended();
+         String[] mime = filterPlugin.getMimeTypes();
+         String[] mimeExtended = filterPlugin.getMimeExtended();
          // check plugin code:
          if (mimeExtended == null || mimeExtended.length != mime.length) {
             if (mimeExtended.length != mime.length)
-               Log.error(ME, "Subscribe plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
+               Log.error(ME, "Access plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
                mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
          }
 
          for (int ii = 0; ii < mime.length; ii++) {
-            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
-            accessFilterMap.put(key.toString(), filter);
-            Log.info(ME, "Loaded subscribe filter '" + key.toString() + "'");
+            if (mime[ii] == null || mime[ii].length() < 1 || mime[ii].equals("*"))
+               key.append(type).append(version);
+            else
+               key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
+            accessFilterMap.put(key.toString(), filterPlugin);
+            Log.info(ME, "Loaded access filter for mime types '" + key.toString() + "'");
             key.setLength(0);
          }
 
-         return filter;
+         return true;
       } catch (Throwable e) {
          Log.error(ME, "Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
          e.printStackTrace();
       }
-      return null;
+      return false;
    }
 }
