@@ -13,6 +13,7 @@ import org.xmlBlaster.engine.helper.Constants;
 
 
 import java.util.Vector;
+import java.io.File;
 
 import junit.framework.*;
 
@@ -56,28 +57,43 @@ public class PublishTest extends TestCase {
       this.glob = new Global();
    }
 
+   /**
+    * Find the property files, we look in the current directory
+    * and in ./clustertest
+    */
+   private String findPropertyFile(String fn) {
+      File f = new File(fn);
+      if (f.canRead())
+         return fn;
+      f = new File("clustertest" + File.separatorChar + fn);
+      if (f.canRead())
+         return f.getPath();
+      fail("Can't locate property file " + fn + ". Please check your current directory or clustertest directory");
+      return null;
+   }
+
    private void initHeron() {
-      String[] args = { "-propertyFile", "heron.properties", "-info[heron]", "true", "-call[heron]", "true" };
+      String[] args = { "-propertyFile", findPropertyFile("heron.properties"), "-info[heron]", "true", "-call[heron]", "true" };
       heronGlob = glob.getClone(args);
    }
 
    private void initAvalon() {
-      String[] args = { "-propertyFile", "avalon.properties" };
+      String[] args = { "-propertyFile", findPropertyFile("avalon.properties") };
       avalonGlob = glob.getClone(args);
    }
 
    private void initGolan() {
-      String[] args = { "-propertyFile", "golan.properties" };
+      String[] args = { "-propertyFile", findPropertyFile("golan.properties") };
       golanGlob = glob.getClone(args);
    }
 
    private void initFrodo() {
-      String[] args = { "-propertyFile", "frodo.properties" };
+      String[] args = { "-propertyFile", findPropertyFile("frodo.properties") };
       frodoGlob = glob.getClone(args);
    }
 
    private void initBilbo() {
-      String[] args = { "-propertyFile", "bilbo.properties", "-call[bilbo]", "false" };
+      String[] args = { "-propertyFile", findPropertyFile("bilbo.properties"), "-call[bilbo]", "false" };
       bilboGlob = glob.getClone(args);
       assertEquals("Invalid cluster node id, check biblo.properties or" +
                    " change to the directory where the property files are!",
@@ -241,6 +257,7 @@ public class PublishTest extends TestCase {
          MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
+         assertTrue("Invalid message oid returned", msgs[0].getXmlKey().indexOf(oid) > 0);
          log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
 
          System.err.println("->Check if the message is available at the slave node bilbo ...");
@@ -288,7 +305,7 @@ public class PublishTest extends TestCase {
 
          stopFrodo();
 
-         System.err.println("->Check: heron is not available ...");
+         System.err.println("->Check: heron hasn't got the message ...");
          gk = new GetKeyWrapper(oid);
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
@@ -306,9 +323,11 @@ public class PublishTest extends TestCase {
 
 
          assertEquals("heron is not reachable, publish should not have come through", 0, updateCounterHeron);
-         updateCounterHeron = 0;
 
          startFrodo();
+
+         assertEquals("heron has not received message", 1, updateCounterHeron);
+         updateCounterHeron = 0;
 
          System.err.println("->Connect to frodo ...");
          frodoCon = connect(frodoGlob, new I_Callback() {
@@ -357,6 +376,8 @@ public class PublishTest extends TestCase {
          log.info(ME+":"+frodoGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + frodoGlob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos.getOid());
+
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo is unSubscribed and should not receive message", 0, updateCounterFrodo);
          assertEquals("heron has not received message", 1, updateCounterHeron);
 
