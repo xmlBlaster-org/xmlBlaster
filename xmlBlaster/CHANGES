@@ -1,7 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xx, May 2003]
+Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o BUGFIX Perl: Outdated sessionId markup in ConnectQos,
+   fixed by Dominique.Petitpierre@adm.unige.ch 
+
+ o BUGFIX C-XmlRpc: Added missing ping(), reported by
+   Dominique.Petitpierre@adm.unige.ch 
 
  o Added basic support to connect to xmlBlaster from
    simple C with SOCKET protocol, see
