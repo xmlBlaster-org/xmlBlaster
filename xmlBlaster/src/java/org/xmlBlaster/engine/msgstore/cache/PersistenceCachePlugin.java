@@ -106,10 +106,12 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
     * @see org.xmlBlaster.engine.msgstore.I_Map#initialize(StorageId, Object)
     */
-   public void initialize(StorageId uniqueQueueId, Object userData)
-      throws XmlBlasterException
-   {
+   public void initialize(StorageId uniqueQueueId, Object userData) throws XmlBlasterException {
       if (this.isDown) {
+
+         if (this.pluginProperties == null) {
+            this.pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
+         }
 
          this.property = null;
          this.glob = (org.xmlBlaster.engine.Global)((QueuePropertyBase)userData).getGlobal();
