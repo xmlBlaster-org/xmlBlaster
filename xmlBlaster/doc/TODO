@@ -2,6 +2,8 @@ FEATURES
 --------
 o Subscribe can have a timeout
 
+o Erase variant which respects existing subscriptions
+
 o Client request can inhibit the session refresh
 
 o Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
