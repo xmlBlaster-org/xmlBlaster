@@ -84,14 +84,14 @@
 
       ////////////////////////////////////////////////////
       // If you like raw Corba, see
-      // demo/javaclients/ClientRaw.java
+      // demo/javaclients/corba/ClientRaw.java
       // testsuite/c++/clientPOA.cc
       ]]>
    </example>
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
