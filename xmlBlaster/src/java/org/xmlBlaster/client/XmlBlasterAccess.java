@@ -1017,8 +1017,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * 
-    * @see I_XmlBlasterAccess#erase(EraseKey, EraseQos)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#leaveServer(Map)
     */
    public void leaveServer(Map map) {
       if (!this.isValid) return;

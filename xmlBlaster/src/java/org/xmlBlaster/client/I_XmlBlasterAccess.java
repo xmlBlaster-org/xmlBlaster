@@ -184,10 +184,16 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * This way the client side persistent messages are kept in queue while 
     * transient ones are lost. If you want to delete also the
     * persistent messages you have to do it manually.
-    * 
+    * <p>
+    * As the login session on server side stays alive, all subscriptions stay valid
+    * and callback messages are queued by the server.
+    * If you connect at a later time the server sends us all queued messages.
+    * </p>
+    * <p>
     * Once you have called this method the I_XmlBlasterAccess
     * becomes invalid and any further invocation results in 
     * an XmlBlasterException to be thrown.
+    * </p>
     *  
     * @param map The properties to pass while leaving server.
     *        Currently this argument has no effect. You can
