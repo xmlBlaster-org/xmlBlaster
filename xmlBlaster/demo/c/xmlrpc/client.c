@@ -76,6 +76,8 @@ int main (int argc, char** argv)
       serverUrl = tmp;
    }
 
+   printf("\n\n-------------------------------------------\n"
+              "Hello as C XmlRpc client for xmlBlaster ...\n\n");
 
    /* Start up our XML-RPC client library. */
    xmlrpc_client_init(XMLRPC_CLIENT_NO_FLAGS, NAME, VERSION);
@@ -122,6 +124,8 @@ int main (int argc, char** argv)
       xmlrpc_DECREF(result);
    }
 
+   printf("\nPlease hit a key to logout ...\n");
+   getc(stdin);
 
    /* Logout from xmlBlaster XML-RPC server. */
    {
@@ -144,6 +148,10 @@ int main (int argc, char** argv)
    xmlrpc_client_cleanup();
 
    free(data);
+
+   printf("\nSuccessful communicated with xmlBlaster.\n"
+              "-------------------------------------------\n");
+
    return 0;
 }
 

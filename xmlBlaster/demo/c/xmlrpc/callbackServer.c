@@ -59,10 +59,11 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
    xmlrpc_value *retVal = NULL;
    char *retData = NULL;
 
+   printf("\n\n-------------------------------------------\n");
    if (env->fault_occurred)
       printf("callbackServer: Entering update(), ERROR message arrives ...\n");
    else
-      printf("callbackServer: Entering update(), message arrives ...\n");
+      printf("callbackServer: Entering update(), message arrives ...\n\n");
 
    xmlrpc_parse_value(env, param_array, "(ss6s*)", &loginName, &key, &content, &len, &qos);
    if (env->fault_occurred) {
@@ -72,13 +73,13 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
       return xmlrpc_build_value(env, "s", "<qos><state>ERROR</state></qos>");
    }
 
-   printf("callbackServer: Got message\nloginName=%s\nkey=%s\ncontent=%s\nqos=%s",
+   printf("loginName=%s\nkey=%s\ncontent=%s\nqos=%s\n",
                     loginName, key, content, qos);
+   printf("\n-------------------------------------------\n");
 
    /* Return our result. */
    retData = "<qos><state>OK</state></qos>";
    retVal = xmlrpc_build_value(env, "s#", retData, strlen(retData));
-   printf("callbackServer: Return created\n");
    return retVal;
 }
 
