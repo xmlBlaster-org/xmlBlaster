@@ -84,7 +84,6 @@ TODO
 
    <!-- property name="build.compiler" value="classic"/ -->
    <property name="debug" value="on"/>
-   <property name="JVM.target" value="1.1" />
    <property name="optimize" value="off" />
    <property name="deprecation" value="off" />
 
@@ -418,6 +417,16 @@ TODO
       <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
 
       <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
+
+      <switch value="${java.specification.version}">
+         <case value="1.5"> <!-- for JDK 1.5 choose 1.4, otherwise it won't compile -->
+            <property name="JVM.target" value="1.4" />
+         </case>
+         <default>
+            <property name="JVM.target" value="1.1" />
+         </default>
+      </switch>
+      <echo message="JVM.target=${JVM.target}"/>
 
    </target>
 
