@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.13 1999/11/22 18:07:38 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.14 1999/11/22 18:17:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -334,8 +334,6 @@ public class MessageUnitHandler
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      Iterator iterator = subscriberMap.values().iterator();
-
       sb.append(offset + "<MessageUnitHandler>");
       sb.append(offset + "   <uniqueKey>" + getUniqueKey() + "</uniqueKey>");
       if (xmlKey==null)
@@ -343,9 +341,14 @@ public class MessageUnitHandler
       else
          sb.append(xmlKey.printOn(extraOffset + "   ").toString());
       sb.append(offset + "   <content>" + (messageUnit.content==null ? "null" : messageUnit.content.toString()) + "</content>");
-      while (iterator.hasNext()) {
-         SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-         sb.append(subs.printOn(extraOffset + "   ").toString());
+      if (subscriberMap.size() == 0)
+         sb.append(offset + "   <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
+      else {
+         Iterator iterator = subscriberMap.values().iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
+            sb.append(subs.printOn(extraOffset + "   ").toString());
+         }
       }
       sb.append(offset + "   <handlerIsNewCreated>" + handlerIsNewCreated + "</handlerIsNewCreated>");
       sb.append(offset + "</MessageUnitHandler>\n");

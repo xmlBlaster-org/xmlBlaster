@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.20 1999/11/22 18:07:38 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.21 1999/11/22 18:17:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -443,7 +443,7 @@ public class RequestBroker implements ClientListener
       // this gap is not 100% thread save
 
       //----- 2. check all known query subscriptions if the new message fits as well
-      if (!messageHandler.isNewCreated()) {
+      if (messageHandler.isNewCreated()) {
          messageHandler.setNewCreatedFalse();
          Log.warning(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
          Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
