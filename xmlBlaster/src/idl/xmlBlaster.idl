@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.2 1999/11/08 13:00:56 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.3 1999/11/08 22:37:38 ruff Exp $
 Comment:   PRE RELEASE
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 ================================================================================
@@ -22,7 +22,7 @@ module org { module xmlBlaster
 {
    typedef string XmlType;
    typedef sequence<octet> ContentType;
-   typedef long ExceptionIdType;
+   typedef string ExceptionIdType;
 
 
    /**
@@ -108,8 +108,8 @@ module org { module xmlBlaster
        * Initially tell your BlasterCallback interface IOR
        * the client must provide this callback interface
        * if he wants to use the subscribe/publish pattern
-       */
       void initCallback(in Object iorCallback);
+       */
 
 
       /**
@@ -140,8 +140,10 @@ module org { module xmlBlaster
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        *                See xmlKey.dtd for a description
+       *                HACK: Send a (none XML) String key in this alfa release!!!
        * @param qos     Quality of Service, flags to control subscritpion<br>
        *                See qosSubscribe.dtd for a description
+       *                HACK: Specify the ClientCallback String IOR here!!!
        */
       //oneway
       void subscribe(in XmlType xmlKey, in XmlType qos)
