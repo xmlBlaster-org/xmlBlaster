@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.11 2000/11/05 23:31:05 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.12 2001/11/19 15:21:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -27,7 +27,7 @@ import java.io.*;
  * to choose another port or to choose a server IP address on
  * multi homed hosts.
  *
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -78,13 +78,13 @@ public class HttpIORServer extends Thread
          Log.error(ME, "HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         Log.error(ME, "HTTP server problem: " + e.toString());
+         Log.error(ME, "HTTP server problem, port " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
-         Log.info(ME, "Socket closed successfully: " + e.toString());
+         Log.info(ME, "Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());
       }
       catch (IOException e) {
-         Log.error(ME, "HTTP server problem: " + e.toString());
+         Log.error(ME, "HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
       }
 
       if (listen != null) {
