@@ -60,7 +60,9 @@ namespace client { namespace protocol { namespace corba {
       }
 
       catch(const CORBA::ORB::InvalidName ex) {
+#        ifndef XMLBLASTER_OMNIORB
          cerr << "Thrown invalid name exception: " << ex << endl;
+#        endif
          string txt = me() + ".NameServerControl()";
          string msg = "can't resolve the NameService";
          throw XmlBlasterException("communication.noConnection", "client", txt, "en", msg);

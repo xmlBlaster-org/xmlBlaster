@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.7 2003/02/25 15:22:55 ruff Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.8 2003/05/30 17:15:32 ruff Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #ifdef _WINDOWS
@@ -20,6 +20,22 @@ using namespace std;
  * Further implementor specific macros which must be called after having
  * included the CORBA header files 
  */
+
+/******************************************************************
+ *                      OMNIORB (4.1.1)
+ ******************************************************************/
+#ifdef  XMLBLASTER_OMNIORB
+
+string to_string(const CORBA::Exception &ex) {
+   string name(ex._name());
+   string repId(ex._rep_id());
+
+   string ret = "CORBA::Exception name=" + name
+          + " repId=" + repId;
+   return ret;
+}
+
+#endif  // XMLBLASTER_OMNIORB
 
 /******************************************************************
  *                      ORBACUS (OB-4.03)

@@ -40,8 +40,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTIME                   <not_implemented.h>
 #define COSGRAPHEXTENTSION        <not_implemented.h>
 #define COSTRADING                <not_implemented.h>
-#define COSNAMING                 <omniORB4/naming.hh>
-//#define COSNAMING                 <omniORB3/naming.hh>
+#define COSNAMING                 <omniORB4/Naming.hh>
+//#define COSNAMING                 <omniORB3/Naming.hh>
 #define COSPROPERTY               <not_implemented.h>
 #define COSTRADINGREPOS           <not_implemented.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
