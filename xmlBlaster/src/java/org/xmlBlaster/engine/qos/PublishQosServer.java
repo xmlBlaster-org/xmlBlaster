@@ -15,8 +15,8 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.SessionName;
 
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
 
 import java.util.ArrayList;
 

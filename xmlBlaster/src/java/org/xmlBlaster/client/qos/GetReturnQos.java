@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 
