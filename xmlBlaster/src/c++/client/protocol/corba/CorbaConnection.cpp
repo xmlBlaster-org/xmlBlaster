@@ -282,7 +282,8 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
             relativeContext.getNamingService()->list(0, bl, bi);
 
             // process the remaining bindings if an iterator exists:
-            if (CORBA::is_nil(authServer_) && !CORBA::is_nil(bi)) {
+            if (CORBA::is_nil(authServer_) &&
+               !CORBA::is_nil(static_cast<CosNaming::BindingIterator*&>(bi)) ) {
                int i = 0;
                CORBA::Boolean more;
                do {
@@ -317,7 +318,7 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
                      }
                   }
 
-                  if (CORBA::is_nil(authServerFirst)) {
+                  if (CORBA::is_nil( static_cast<authenticateIdl::AuthServer*&>(authServerFirst))) {
                      if (log_.trace()) log_.trace(me(), "Remember the first server");
                      try {
                         firstServerName = tmpServerName;
@@ -334,7 +335,7 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
          }
 
          if (CORBA::is_nil(authServer_)) {
-            if (! CORBA::is_nil(authServerFirst)) {
+            if (! CORBA::is_nil(static_cast<authenticateIdl::AuthServer*&>(authServerFirst))) {
                if (countServerFound > 1) {
                   string str = string("Can't choose one of ") + lexical_cast<string>(countServerFound) +
                                  " avalailable server in CORBA NameService: " + serverNameList +
@@ -343,8 +344,8 @@ authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService()
                   throw XmlBlasterException("communication.noConnection", "client", me(), "en", str);
                }
                log_.info(me(), "Choosing only available server '" + firstServerName + "' in CORBA NameService");
-               this->authServer_ = authenticateIdl::AuthServer::_duplicate(authServerFirst);
-               return authenticateIdl::AuthServer::_duplicate(authServerFirst);
+               this->authServer_ = authenticateIdl::AuthServer::_duplicate( static_cast<authenticateIdl::AuthServer*&>(authServerFirst));
+               return authenticateIdl::AuthServer::_duplicate( static_cast<authenticateIdl::AuthServer*&>(authServerFirst));
             }
             else {
                log_.trace(me(), "No usable xmlBlaster server found in NameService: " + serverNameList);
