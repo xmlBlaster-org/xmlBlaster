@@ -18,7 +18,7 @@ using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-CacheQueuePlugin::CacheQueuePlugin(Global& global, const ClientQueueProperty& property)
+CacheQueuePlugin::CacheQueuePlugin(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property)
    : ME("CacheQueuePlugin"), 
      global_(global), 
      log_(global.getLog("org.xmlBlaster.util.queue")), 

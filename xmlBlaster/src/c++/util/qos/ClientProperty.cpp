@@ -29,7 +29,15 @@ ClientProperty::ClientProperty(const std::string& name,
      type_(type)
 {
    if (needsEncoding()) {
+#     if defined(__sun)
+      std::vector<unsigned char> vec; // TODO: Better workaround for SunOS CC Sun C++ 5.5 2003/03/12
+      int len = strlen(value);
+      for (int i=0; i<len; i++) {
+         vec.push_back(value[i]);
+      }
+#     else
       std::vector<unsigned char> vec(value, value+strlen(value));
+#     endif
       encoding_ = Constants::ENCODING_BASE64;
       value_ = Base64::Encode(vec);
    }
