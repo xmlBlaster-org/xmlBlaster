@@ -20,6 +20,25 @@ QueryKeyData::QueryKeyData(Global& global) : KeyData(global), accessFilterVector
 {
 }
 
+QueryKeyData::QueryKeyData(Global& global, const string& query, const string& queryType) : KeyData(global), accessFilterVector_()
+{
+   this->queryType_ = checkQueryType(queryType);
+   if (isExact()) {
+      setOid(query);
+   }
+   else if (isXPath()) {
+      this->queryString_ = query;
+   }
+   else if (isDomain()) {
+      setDomain(query);
+   }
+   else {
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setQueryType",
+                                "Your queryType=" + queryType_ + " is invalid, use one of '" + 
+                                Constants::EXACT + "' , '" + Constants::XPATH + "' , '" + Constants::D_O_M_A_I_N + "'");
+   }
+}
+
 QueryKeyData::QueryKeyData(const QueryKeyData& key) : KeyData(key), accessFilterVector_(key.accessFilterVector_)
 {
 }
@@ -30,16 +49,20 @@ QueryKeyData& QueryKeyData::operator =(const QueryKeyData& key)
    return *this;
 }
 
-void QueryKeyData::setQueryType(const string& queryType)
+string QueryKeyData::checkQueryType(const string& queryType)
 {
    string tmp = queryType;
    transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
- 
    if (Constants::EXACT != tmp && Constants::XPATH !=tmp && Constants::D_O_M_A_I_N !=tmp)
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setQueryType",
-                                "Your queryType=" + queryType_ + " is invalid, use one of '" + 
+                                "Your queryType=" + queryType + " is invalid, use one of '" + 
                                 Constants::EXACT + "' , '" + Constants::XPATH + "' , '" + Constants::D_O_M_A_I_N + "'");
-   queryType_ = tmp;
+   return tmp;
+}
+
+void QueryKeyData::setQueryType(const string& queryType)
+{
+   queryType_ = checkQueryType(queryType);
 }
 
 /**
@@ -49,15 +72,14 @@ void QueryKeyData::setQueryType(const string& queryType)
  */
 void QueryKeyData::setQueryString(const string& tags)
 {
-   if ( queryType_ == Constants::EXACT ) {
-      oid_ = tags;
-   }
-   else if ( queryType_ == Constants::XPATH ) {
-      queryString_ = tags;
-   }
-   else if ( queryType_ == Constants::D_O_M_A_I_N ) {
-      domain_ = tags;
-   }
+   this->queryType_ = Constants::XPATH;
+   this->queryString_ = tags;
+}
+
+void QueryKeyData::setOid(const string& oid)
+{
+   this->queryType_ = Constants::EXACT;
+   oid_ = oid;
 }
 
 string QueryKeyData::getQueryString() const

@@ -50,9 +50,15 @@ public:
     */
    QueryKeyData(Global& global);
    
+   QueryKeyData(Global& global, const string& query, const string& queryType);
+
    QueryKeyData(const QueryKeyData& key);
 
+   string checkQueryType(const string& queryType);
+
    QueryKeyData& operator =(const QueryKeyData& key);
+
+   void setOid(const string& oid);
 
    void setQueryType(const string& queryType);
 
