@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.5 2003/02/18 21:24:24 laghi Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.6 2003/02/25 13:42:45 johnson Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #ifdef _WINDOWS
@@ -54,7 +54,7 @@ const char* to_string(const CORBA::Exception &ex ) {
 
 #endif //ORBIX
 
-#ifdef  TAO
+#ifdef  USE_TAO
 
 const char* to_string(const CORBA::Exception &ex) {
    string name(ex._name());

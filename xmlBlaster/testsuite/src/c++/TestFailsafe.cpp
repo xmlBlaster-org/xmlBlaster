@@ -150,7 +150,7 @@ public:
       try {
          ConnectReturnQos retQos = connection_.connect(connQos, this);
          string name = retQos.getSessionQos().getRelativeName();
-         assertEquals(log_, ME, "client/Fritz/7", name, "checking that return qos has the correct sessionId");
+         assertEquals(log_, ME, string("client/Fritz/7"), name, "checking that return qos has the correct sessionId");
       }
       catch (XmlBlasterException &/*ex*/) {
          wentInException = true;

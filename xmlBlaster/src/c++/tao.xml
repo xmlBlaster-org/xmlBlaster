@@ -148,10 +148,10 @@ Success: ACE-5.3+TAO-1.3.zip + xerces-c2_2_0-win32.zip + WindowsXp + VC++7.1.229
       <includepath location="${src.cpp.dir}/generated" />
       
       <linker name="msvc" if="is-debug" >        
-      <fileset dir="${ace.home}/ace" includes="ACEd.lib" if="is-debug" />      
-      <fileset dir="${corba.home}/tao" includes="TAOd.lib" if="is-debug"/>       
-      <fileset dir="${corba.home}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="is-debug"/>
-      <fileset dir="${corba.home}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="is-debug"/>
+      <fileset dir="${ace.home}/ace" includes="ACE${tao.lib.type}.lib" if="is-debug" />      
+      <fileset dir="${corba.home}/tao" includes="TAO{tao.lib.type}.lib" if="is-debug"/>       
+      <fileset dir="${corba.home}/tao/PortableServer" includes="TAO_PortableServer{tao.lib.type}.lib" if="is-debug"/>
+      <fileset dir="${corba.home}/orbsvcs/orbsvcs" includes="TAO_CosNaming{tao.lib.type}.lib" if="is-debug"/>
       <!-- fileset dir="${xerces.home}/Build/Win32/Vc6/Debug" includes="xerces-c_1D.lib" if="is-debug"/ -->
       <!-- Marcel -->
       <fileset dir="${xerces.home}/lib" includes="xerces-c_2D.lib" if="is-debug"/>

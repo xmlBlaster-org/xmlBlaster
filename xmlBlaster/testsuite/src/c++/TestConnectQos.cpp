@@ -112,7 +112,7 @@ public:
 
       data1 = SessionQosData(global_);
       data1.setAbsoluteName("/node/frodo/client/whoMore/3");
-      assertEquals(log_, me, "/node/frodo/client/whoMore/3", data1.getAbsoluteName(), "checking when 'session.name' is weaker");
+      assertEquals(log_, me, string("/node/frodo/client/whoMore/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
       log_.info(me, "testing creation, parsing and output of SessionQos: end");
    }
 

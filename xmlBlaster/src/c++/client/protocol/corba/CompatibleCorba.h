@@ -111,7 +111,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 /*****************************************************************
  *                     TAO (ver. 2.3.1)
  *****************************************************************/
-#ifdef  TAO
+#ifdef  USE_TAO
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlasterS.h>
