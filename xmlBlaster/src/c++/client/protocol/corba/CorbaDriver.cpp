@@ -157,7 +157,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, const string instanceName
 CorbaDriver::~CorbaDriver()
 {
    try {
-      // delete defaultCallback_; Is a memory leak, but we need to track down the valgrind issue first
+//      delete defaultCallback_; // Is a memory leak, but we need to track down the valgrind issue first
       delete connection_;
    }
    catch (...) {
@@ -168,7 +168,7 @@ void CorbaDriver::initialize(const string& name, I_Callback &client)
 {
    Lock lock(mutex_, orbIsThreadSafe_);
    _COMM_TRY
-      //if (defaultCallback_ != NULL) delete defaultCallback_;
+//      if (defaultCallback_ != NULL) delete defaultCallback_;
       defaultCallback_ = NULL;
       defaultCallback_ =  new DefaultCallback(global_, name, &client, 0);
 //      if (connection_ != NULL) delete connection_;

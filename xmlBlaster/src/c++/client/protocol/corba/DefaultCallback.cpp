@@ -43,7 +43,7 @@ DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback 
 serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
                        const serverIdl::MessageUnitArr& msgUnitArr) UPDATE_THROW_SPECIFIER
 {
-   serverIdl::XmlTypeArr_var res = new serverIdl::XmlTypeArr(msgUnitArr.length());
+   serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(msgUnitArr.length());
    res->length(msgUnitArr.length());
 
    if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
@@ -93,13 +93,13 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
             else log_.warn(me(), "can not update: no callback defined");
          }
          CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
-         res[i] = str;
+         (*res)[i] = str;
       } 
       catch (serverIdl::XmlBlasterException &e) {
          log_.error(me(), string(e.message) + " message is on error state: " + updateKey->toXml());
          string oneRes = "<qos><state id='ERROR'/></qos>";
          CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
-         res[i] = str;
+         (*res)[i] = str;
       }
       catch(...) {
          string tmp = "Exception caught in update() " + lexical_cast<string>(msgUnitArr.length()) + " messages are handled as not delivered";
@@ -113,8 +113,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
       delete updateKey;
       delete updateQos;
    } // for every message
-
-   return res._retn();
+   return res;
 }
 
       /**
