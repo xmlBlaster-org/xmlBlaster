@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.20 2003/05/28 11:45:01 johnson Exp $
+Version:   $Id: Global.h,v 1.21 2003/05/31 20:10:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -26,8 +26,6 @@ Version:   $Id: Global.h,v 1.20 2003/05/28 11:45:01 johnson Exp $
 
 //----------------
 // Global.h modification
-
-class Object_Lifetime_Manager;
 
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;
