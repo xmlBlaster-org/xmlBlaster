@@ -2,7 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Current cvs
 ===========
-
+ o C client: Added PTHREAD_CREATE_DETACHED to cleanup resources
+ 
  o C client: 
      Fixed publishOneway() to be a real 'oneway'
      Fixed reusingConnectionSocket check on shutdown of callback server
