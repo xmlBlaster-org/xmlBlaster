@@ -36,7 +36,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       clientProperties_()
 {
    clusterNode_      = false;
-   duplicateUpdates_ = false;
+   duplicateUpdates_ = true;
    persistent_       = false;
    if (user=="") { // Copy env setting to SecurityQos
       securityQos_.setUserId(sessionQos_->getSessionName()->getSubjectId());
