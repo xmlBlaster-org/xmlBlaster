@@ -43,6 +43,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 #     ifdef _WIN32
          withXtermColor_ = false;
 #     endif
+      withXtermColor_ = properties.getBoolProperty("xmlBlaster.withXtermColor", withXtermColor_, true);
       call_  = true;
       time_  = true;
       trace_ = true;
