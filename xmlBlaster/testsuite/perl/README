@@ -17,12 +17,12 @@ This is an example to access xmlBlaster from a Perl client
 
 3) Start the xmlBlaster server
 
-    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/ior.txt
 
 
 4) And connect with the Perl client
 
-    ./client `cat /tmp/NS_Ref`
+    ./client `cat /tmp/ior.txt`
 
 
 NOTE: Callbacks are not possible in the current COPE Perl library.

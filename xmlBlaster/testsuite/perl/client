@@ -32,8 +32,9 @@ print $callback_ref, "\n\n";
 
 
 #-------------- login() to AuthServer_obj ---------
+my $loginQos = "<qos><callback type='IOR'>" . $callback_ref . "</callback></qos>";
 my $loginName = "Perl-Heidi";
-my $xmlBlaster = $authServer->login($loginName, "secret", $callback, "");
+my $xmlBlaster = $authServer->login($loginName, "secret", $loginQos);
 print "login($loginName) successful\n\n";
 
 
