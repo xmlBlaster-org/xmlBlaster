@@ -70,13 +70,17 @@ public:
    long getNumEntries() const;
  
    /**
-    * @param newestFirst The number of history entries
+    * The sorting order in which the history entries are delivered. 
+    * The higher priority messages are always delivered first.
+    * In one priority the newest message is delivered first with 'true', setting 'false'
+    * reverts the delivery sequence in this priority.
+    * @param newestFirst defaults to true. 
     */
    void setNewestFirst(bool newestFirst);
  
    /**
-    * Returns the number of history entries.
-    * @return e.g. 1
+    * @return defaults to true
+    * @see #setNewestFirst(boolean)
     */
    bool getNewestFirst() const;
  
