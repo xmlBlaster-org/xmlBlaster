@@ -312,15 +312,20 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return toXml((String)null);
    }
 
+   /**
+    * Dumps the message. 
+    * NOTE: max 80 bytes of the content are displayed
+    */
    public String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
+      int maxContentDumpSize = 80;
       sb.append(offset).append("<MsgUnitWrapper id='").append(getLogId());
       sb.append("' referenceCount='").append(getReferenceCounter());
       sb.append("' state='").append(getStateStr()).append("'>");
-      sb.append(this.msgUnit.toXml(Constants.INDENT + extraOffset));
+      sb.append(this.msgUnit.toXml(Constants.INDENT + extraOffset, maxContentDumpSize));
       sb.append(offset).append("</MsgUnitWrapper>");
       return sb.toString();
    }
