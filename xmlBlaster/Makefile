@@ -76,6 +76,8 @@ test: all
 test-console: all
 	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test-console )
 
+install: all
+	( tar cvzf xmlBlasterInstall.tar.gz bin config lib )
 
 
 
