@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.testament' type='NEW' prio='LOW' status="OPEN">
+   <topic>XmlBlaster supports client testaments</topic>
+   <description>
+    <p>
+      You can configure xmlBlaster to handle client life cycle like client restart on failure.
+    </p>
+   </description>
+
+   <example lang="any" type="HTML">
+   </example>
+
+   <todo type='HTML'>
+   </todo>
+   
+   <see type="API">org.xmlBlaster.engine.admin.extern.MomClientGateway</see>
+   <see type="REQ">admin</see>
+   <see type="REQ">admin.commands</see>
+   
+   <author>Heinrich.Goetzger@exploding-systems.de</author>
+   
+   <date>2002 06 23</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Currently not available</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
