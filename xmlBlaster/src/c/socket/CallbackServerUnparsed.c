@@ -552,7 +552,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
 
    free(rawMsg);
 
-   if (allocated) free(msgUnit.qos);
+   if (allocated) free((char *)msgUnit.qos);
 }
 
 static void voidSendXmlBlasterException(CallbackServerUnparsed *cb, void *socketDataHolder, XmlBlasterException *exception)
