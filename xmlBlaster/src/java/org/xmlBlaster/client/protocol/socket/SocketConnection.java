@@ -207,8 +207,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          if (this.cbReceiver != null) { // only the first time, not on reconnect
             // NOTE: This address should come from the client !!!
             org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
-            if (this.pluginInfo != null)
-               cba.setPluginInfoParameters(this.pluginInfo.getParameters());
             this.cbReceiver.initialize(glob, getLoginName(), cba, this.cbClient);
          }
       }
@@ -302,8 +300,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
          // NOTE: This address should come from the client !!!
          org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
-         if (this.pluginInfo != null)
-            cba.setPluginInfoParameters(this.pluginInfo.getParameters());
          server.initialize(this.glob, getLoginName(), cba, this.cbClient);
          // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
       }
