@@ -1018,7 +1018,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          ArrayList strippedList = new ArrayList();
          for(int i=0; i<topics.length; i++) {
             TopicHandler topicHandler = topics[i];
-            if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
+            if (topicHandler.getMsgKeyData() != null &&
+                domain.equals(topicHandler.getMsgKeyData().getDomain()))
                strippedList.add(topicHandler.getMsgKeyData());
          }
          return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
