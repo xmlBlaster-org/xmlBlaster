@@ -259,6 +259,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_CONFIGURATION_MAXSESSION = new ErrorCode("user.configuration.maxSession",
+         "Login to xmlBlaster failed due to maximum sessions of a subject reached.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+         }
+      );
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED = new ErrorCode("user.security.authentication.accessDenied",
          "Login to xmlBlaster failed due to missing privileges.",
          new ResourceInfo[] {
