@@ -9,6 +9,7 @@
       ->  So Michele and Marcel are fucking frustrated giving up
           for the moment!
           But we'll come back soon :-)
+      ->  Reported to bugzilla # 115528
       */
       var ii=20;
       var addit=true;
