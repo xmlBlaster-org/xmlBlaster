@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.10 2002/03/13 16:41:12 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.11 2002/03/18 00:28:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -184,6 +184,21 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    }
 
    /**
+    * Publish messages. 
+    * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public final void publishOneway(String sessionId, MessageUnit[] msgUnitArr)
+   {
+      try {
+         publishArr(sessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.toString());
+      }
+   }
+
+   /**
     * Delete messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
@@ -306,6 +321,17 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       }
       
       return msgUnit;
+   }
+
+   /**
+    * ping xmlBlaster if everything is OK. 
+    * <p />
+    * @param qos ""
+    * @return ""
+    */
+   public final String ping(String qos)
+   {
+      return "";
    }
 }
 
