@@ -4,10 +4,12 @@
 #  jserv
 # To stop the servlet engine:
 #  jserv -s
-properties=/etc/httpd/conf/jserv/jserv.properties
+properties=/etc/httpd/jserv/jserv.properties
 log=${XMLBLASTER_HOME}/jserv_manual.log
 
 CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
 
-jaco -Djava.compiler= org.apache.jserv.JServ $properties $1
+#jaco -Xms1M -Xmx64M -Djava.compiler= -Xrunhprof:heap=all,file=heap.txt,monitor=y org.apache.jserv.JServ $properties $1
+jaco -Xms6M -Xmx32M org.apache.jserv.JServ $properties $1
+#jaco -Xms12M -Xmx32M -Djava.compiler= org.apache.jserv.JServ $properties $1
 #jaco org.apache.jserv.JServ $properties $1 2>> $log
