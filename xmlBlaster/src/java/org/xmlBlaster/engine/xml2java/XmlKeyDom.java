@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.13 2002/03/13 16:41:21 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.14 2002/05/09 11:49:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -30,7 +30,18 @@ import org.w3c.dom.Element;
 /**
  * Building a DOM tree for XmlKeys.
  * <p />
- * This DOM tree contains the meta data from XmlKey.<br />
+ * This DOM tree contains the meta data from XmlKey:<br />
+ * <pre>
+ *  <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *  <xmlBlaster>
+ *    <key oid='abc' contentMime='text/plain'>
+ *      <Hello/>
+ *    </key>
+ *    <key oid='xyz' contentMime='text/xml'>
+ *      <World/>
+ *    </key>
+ *  </xmlBlaster>
+ * </pre>
  */
 public class XmlKeyDom implements I_MergeDomNode
 {

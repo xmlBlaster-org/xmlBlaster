@@ -3,18 +3,20 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.17 2002/05/06 07:27:36 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.18 2002/05/09 11:49:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
 import org.jutils.text.StringHelper;
+
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -23,6 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 
 import java.util.Enumeration;
+import java.util.Vector;
 
 
 /**
@@ -144,6 +147,13 @@ public final class XmlKey
     *  We need this query manager to allow checking if an existing XPath subscription matches this new message type.
     */
    private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
+
+   /**
+    * subscribe(), get() and cluster configuration keys may contain a filter rule
+    */
+   protected Vector filterVec = null;                      // To collect the <filter> when sax parsing
+   protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
+
 
    /**
     * Parses given xml string
@@ -566,9 +576,17 @@ public final class XmlKey
       }
    }
 
+   /*
+    * Access the query string, for example the XPath string "/xmlBlaster/key[@contentMime='text/plain']"
+    */
    public final String getQueryString() throws XmlBlasterException {
       loadDomTree();
       return queryString;
+   }
+
+   private final void setQueryString(String queryString) {
+      if (queryString == null) return;
+      this.queryString = queryString;
    }
 
    /**
@@ -852,6 +870,38 @@ public final class XmlKey
       xmlKeyDoc = null;
    }
 
+   /**
+    * Do a sax parse, currently only needed for filter rules
+    */
+   private void saxParse() throws XmlBlasterException {
+      filterVec = new Vector(5);
+      XmlKeySax sax = new XmlKeySax(glob, this);
+      sax.init(xmlKey_literal);
+   }
+
+   /**
+    * Return the filters or array with size==0 if none is specified. 
+    * <p />
+    * For subscribe() and get() and cluster messages.
+    * @return never null
+    */
+   public final AccessFilterQos[] getFilterQos() throws XmlBlasterException {
+      if (filterVec == null)
+         saxParse(); // initialize
+
+      if (filterArr != null)
+         return filterArr;
+
+      filterArr = new AccessFilterQos[filterVec.size()];
+      filterVec.toArray(filterArr);
+      return filterArr;
+   }
+
+   final void addFilter(AccessFilterQos qos) {
+      if (filterVec == null) filterVec = new Vector();
+      filterVec.addElement(qos);
+   }
+
    /** For testing: java org.xmlBlaster.engine.xml2java.XmlKey */
    public static void main(String[] args)
    {
@@ -939,6 +989,25 @@ public final class XmlKey
             */
          }
 
+         for (int kk=0; kk<runs; kk++) {
+            testName = "SAX2ParseOfFilter";
+            key = new XmlKey(glob, "<key oid='Hello'><filter type='ContentLength'>8000</filter></key>");
+            String oid = key.getKeyOid();
+            startTime = System.currentTimeMillis();
+            for (int ii=0; ii<count; ii++) {
+               AccessFilterQos[] qosArr = key.getFilterQos();
+               key.filterVec = null; // force new parsing
+            }
+            elapsed = System.currentTimeMillis() - startTime;
+            System.out.println(testName + ": For " + count + " runs " + elapsed + " millisec -> " + ((double)elapsed*1000.)/((double)count) + " mycrosec/inout");
+            /* SAX2 Sun-Crimson
+               SAX2ParseOfFilter: For 1000 runs 941 millisec -> 941.0 mycrosec/inout
+               SAX2ParseOfFilter: For 1000 runs 946 millisec -> 946.0 mycrosec/inout
+               SAX2ParseOfFilter: For 1000 runs 782 millisec -> 782.0 mycrosec/inout
+               SAX2ParseOfFilter: For 1000 runs 577 millisec -> 577.0 mycrosec/inout
+               SAX2ParseOfFilter: For 1000 runs 603 millisec -> 603.0 mycrosec/inout
+            */
+         }
       }
       catch (XmlBlasterException e) {
          System.out.println(e.toString());
