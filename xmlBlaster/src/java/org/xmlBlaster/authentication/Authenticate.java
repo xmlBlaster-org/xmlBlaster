@@ -377,14 +377,7 @@ final public class Authenticate implements I_Authenticate
    private String createSessionId(String loginName) throws XmlBlasterException
    {
       try {
-         String ip;
-         try  {
-            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-            ip = addr.getHostAddress();
-         } catch (Exception e) {
-            Log.warn(ME, "Can't determin your IP address");
-            ip = "localhost";
-         }
+         String ip = glob.getLocalIP();
 
          // This is a real random, but probably not necessary here:
          // Random random = new java.security.SecureRandom();
@@ -455,7 +448,7 @@ final public class Authenticate implements I_Authenticate
 
       if (obj == null) {
          Log.warn(ME+".AccessDenied", "SessionId '" + sessionId + "' is invalid, no access to xmlBlaster.");
-         throw new XmlBlasterException("AccessDenied", "Your sessionId is invalid, no access to xmlBlaster.");
+         throw new XmlBlasterException("AccessDenied", "Your sessionId is invalid, no access to " + glob.getId() + ".");
       }
       SessionInfo sessionInfo = (SessionInfo)obj;
 
