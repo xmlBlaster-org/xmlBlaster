@@ -87,7 +87,16 @@ import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 
 /**
  * XmlScriptInterpreter
+ * <p>
+ * Example for usage:
+ * </p>
+ * <p>
+ * <tt>
+ * java javaclients.XmlScript -requestFile inFile.xml -responseFile outFile.xml -updateFile updFile.xml
+ * </tt>
+ * </p>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  */
 public class XmlScriptInterpreter extends SaxHandlerBase {
    
@@ -156,6 +165,10 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       this.out = out;
       this.connectQosFactory = new ConnectQosSaxFactory(this.glob);
       this.disconnectQosFactory = new DisconnectQosSaxFactory(this.glob);
+
+      if (this.access != null) {
+         this.isConnected = this.access.isConnected();
+      }
    }
 
    /**
