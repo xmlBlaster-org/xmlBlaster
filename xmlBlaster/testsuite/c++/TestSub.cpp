@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.10 2002/06/03 10:19:59 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.11 2002/06/27 19:42:41 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -228,7 +228,7 @@ private:
                void *content, long contentSize,
                UpdateQos &updateQos) {
       log_.info(me(), string("Receiving update of message oid=") +
-                updateKey.getUniqueKey() + "...");
+                updateKey.getUniqueKey() + " state=" + updateQos.getState() + " ...");
       numReceived_ ++;
 
       if (senderName_ != updateQos.getSender()) {
