@@ -209,7 +209,7 @@ abstract public class PluginManagerBase implements I_PluginManager{
          }
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "instantiatePlugin for '" + pluginName + "' failed: " + e.toString());
+         if (log.TRACE) log.trace(ME, "instantiatePlugin for() '" + pluginName + "' failed: " + e.getMessage());
          throw e;
       }
       catch (IllegalAccessException e) {
