@@ -32,6 +32,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 //import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.engine.MsgErrorHandler;
@@ -139,7 +140,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
          this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
-                                this.securityCtx, this.sessionQueue,
+                                this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
       }
       else { // No callback configured
