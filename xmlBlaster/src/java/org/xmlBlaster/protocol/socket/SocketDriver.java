@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.43 2004/09/17 10:42:37 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.44 2004/09/27 13:04:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -545,7 +545,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          log.error(ME, e.toString());
       }
 
-      log.info(ME, "Socket driver stopped, all resources released.");
+      log.info(ME, "Socket driver '" + getType() + "' stopped, all resources released.");
    }
 
    /**
@@ -584,9 +584,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "                       The priority 1=min - 10=max of the listener thread [5].\n";
       text += "   -"+getEnvPrefix()+"SSL\n";
       text += "                       True enables SSL support on server socket [false].\n";
-      text += "   -"+getEnvPrefix()+"keystore\n";
+      text += "   -"+getEnvPrefix()+"keyStore\n";
       text += "                       The path of your keystore file. Use the java utility keytool.\n";
-      text += "   -"+getEnvPrefix()+"keystorepass\n";
+      text += "   -"+getEnvPrefix()+"keyStorePassword\n";
       text += "                       The password of your keystore file.\n";
       text += "   -"+getEnvPrefix()+"compress/type\n";
       text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";

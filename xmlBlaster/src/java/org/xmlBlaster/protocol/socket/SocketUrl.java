@@ -31,6 +31,7 @@ public class SocketUrl
    /** The port */
    private int port = ExecutorBase.DEFAULT_SERVER_PORT;
    private boolean isLocal = false;
+   private static boolean first = true;
 
    /**
     * @param hostname if null or empty the local IP will be used
@@ -190,19 +191,52 @@ public class SocketUrl
     * <pre>
 keytool -genkey -keystore testStore -keyalg RSA   (using password 'testtest')
 
-java org.xmlBlaster.Main -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest  
+java org.xmlBlaster.Main -plugin/socket/SSL true -plugin/socket/keyStore testStore -plugin/socket/keyStorePassword testtest  
 
-java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keyStore testStore -plugin/socket/keyStorePassword testtest
     * </pre>
     * @param backlog Socket parameter
     * @param address The configuration environment
     */
    public java.net.ServerSocket createServerSocketSSL(int backlog, AddressBase address) throws XmlBlasterException {
-      String keystore = address.getEnv("keystore", "keystore").getValue();
-      String pass = address.getEnv("keystorepass", "").getValue();
-      log.info(ME, "SSL server socket enabled, keystore="+keystore);
-      System.setProperty("javax.net.ssl.keyStore", keystore);
-      System.setProperty("javax.net.ssl.keyStorePassword", pass);
+
+      /*
+       TODO: Make trustStore,keyStore etc. static as they never change after startup, to avoid
+             reparsing environment 
+      */
+      String trustStore = address.getEnv("trustStore", (String)System.getProperty("javax.net.ssl.trustStore", "")).getValue();
+      if (trustStore != "") {
+         log.info(ME, "SSL server socket enabled, trustStore="+trustStore);
+         System.setProperty("javax.net.ssl.trustStore", trustStore);
+      }
+      else {
+         log.warn(ME, "SSL server socket is configured but no trustStore is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+      }
+
+      String trustStorePassword = address.getEnv("trustStorePassword", (String)System.getProperty("javax.net.ssl.trustStorePassword", "")).getValue();
+      if (trustStorePassword != "") {
+      }
+      else {
+         log.trace(ME, "SSL client socket is configured but no trustStorePassword is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+      }
+      
+      String keyStore = address.getEnv("keyStore", System.getProperty("javax.net.ssl.keyStore", "")).getValue();
+      if (keyStore != "") {
+         log.info(ME, "SSL server socket enabled, keyStore="+keyStore);
+         System.setProperty("javax.net.ssl.keyStore", keyStore);
+      }
+      else {
+         log.warn(ME, "SSL server socket is enabled but no keyStore is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+      }
+
+      String keyStorePassword = address.getEnv("keyStorePassword", System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
+      if (keyStorePassword != "") {
+         System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+      }
+      else {
+         log.warn(ME, "SSL server socket is enabled but no keyStorePassword is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+      }
 
       java.net.ServerSocket returnSock = null;
 
@@ -249,7 +283,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keysto
       catch (Exception e) {
          log.trace(ME, "Can't switch on SSL socket: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_SSLSOCKET, ME, 
-                        "Can't switch on SSL socket, check your keystore and keystorepass or socket configuration", e);
+                        "Can't switch on SSL socket, check your keyStore and keyStorePassword or socket configuration", e);
       }
       finally {
          System.setProperty("javax.net.ssl.keyStore", "");
@@ -265,11 +299,41 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keysto
     * @param address The configuration environment
     */
    public java.net.Socket createSocketSSL(SocketUrl localSocketUrl, AddressBase address) throws XmlBlasterException {
-      String keystore = address.getEnv("keystore", "keystore").getValue();
-      String pass = address.getEnv("keystorepass", "").getValue();
-      log.info(ME, "SSL connection enabled, keystore="+keystore);
-      System.setProperty("javax.net.ssl.trustStore", keystore);
-      System.setProperty("javax.net.ssl.trustStorePassword", pass);
+
+      /*
+       NOTE: In a cluster environment you may have established a SSL server socket before.
+       These settings are still valid when we later are a SSL client to a remote cluster node
+       in which case no additional settings are needed here (they are actually ignored by the JDK ssl implementation)
+      */
+
+      // The trustStore file can be identical to the server side keyStore file:
+      String trustStore = address.getEnv("trustStore", (String)System.getProperty("javax.net.ssl.trustStore", "")).getValue();
+      String pass = address.getEnv("trustStorePassword", (String)System.getProperty("javax.net.ssl.trustStorePassword", "")).getValue();
+      if (trustStore != "") {
+         if (first) {
+            log.info(ME, "SSL client socket enabled, trustStore="+trustStore);
+            first = false;
+         }
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "SSL client socket is configured but no trustStore is specified we now check your keyStore setting ..., see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+         // Reuse a server store if one is found
+         trustStore = address.getEnv("keyStore", (String)System.getProperty("javax.net.ssl.keyStore", "")).getValue();
+      }
+      if (pass != "") {
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "SSL client socket is configured but no trustStorePassword is specified we now check your keyStorePassword setting ..., see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+         // Reuse a server store if one is found
+         pass = address.getEnv("keyStorePassword", (String)System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
+      }
+
+      if (trustStore != "") {
+         System.setProperty("javax.net.ssl.trustStore", trustStore);
+      }
+      if (pass != "") {
+         System.setProperty("javax.net.ssl.trustStorePassword", pass);
+      }
 
       java.net.Socket retSock = null;
 
@@ -323,8 +387,8 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keysto
                         "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
       }
       finally {
-         System.setProperty("javax.net.ssl.trustStore", keystore);
-         System.setProperty("javax.net.ssl.trustStorePassword", pass);
+         System.setProperty("javax.net.ssl.trustStore", "");
+         System.setProperty("javax.net.ssl.trustStorePassword", "");
       }
       return retSock;
    }
