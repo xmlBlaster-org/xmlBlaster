@@ -3,9 +3,9 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.6 2000/10/22 16:45:41 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.17 2000/10/22 16:55:14 ruff Exp $
 ------------------------------------------------------------------------------*/
-package javaclients.corba;
+package javaclients;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
@@ -36,14 +36,14 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientSub
+ *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientSub -name "Jeff"
+ *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub -name "Jeff"
  * </pre>
  */
 public class ClientSub implements I_Callback
 {
-   private XmlBlasterConnection corbaConnection = null;
+   private XmlBlasterConnection blasterConnection = null;
    private static String ME = "ClientSub";
    private int numReceived = 0;         // error checking
 
@@ -63,7 +63,7 @@ public class ClientSub implements I_Callback
          Log.plain("   -name               The login name [ClientSub].");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.exit(ME, "Example: jaco javaclients.corba.ClientSub -name Jeff\n");
+         Log.exit(ME, "Example: jaco javaclients.ClientSub -name Jeff\n");
       }
 
       try {
@@ -72,8 +72,8 @@ public class ClientSub implements I_Callback
          String passwd = Args.getArg(args, "-passwd", "secret");
          LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
 
-         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args);
-         corbaConnection.login(loginName, passwd, loginQos, this);
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
+         blasterConnection.login(loginName, passwd, loginQos, this);
          // Now we are connected to xmlBlaster MOM server.
 
 
@@ -91,7 +91,7 @@ public class ClientSub implements I_Callback
             SubscribeQosWrapper qos = new SubscribeQosWrapper();
 
             try {
-               corbaConnection.subscribe(key.toXml(), qos.toXml());
+               blasterConnection.subscribe(key.toXml(), qos.toXml());
                Log.info(ME, "Subscribe done, there should be no Callback");
             } catch(XmlBlasterException e) {
                Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -123,7 +123,7 @@ public class ClientSub implements I_Callback
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
             Log.info(ME, "Publishing ...");
             try {
-               publishOid = corbaConnection.publish(msgUnit);
+               publishOid = blasterConnection.publish(msgUnit);
                Log.info(ME, "Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -146,14 +146,14 @@ public class ClientSub implements I_Callback
                             "</key>";
             String[] strArr = null;
             try {
-               strArr = corbaConnection.erase(xmlKey, "<qos></qos>");
+               strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
             if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
          }
 
-         corbaConnection.logout();
+         blasterConnection.logout();
 
-         // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
+         // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }
       catch (Exception e) {
           e.printStackTrace();

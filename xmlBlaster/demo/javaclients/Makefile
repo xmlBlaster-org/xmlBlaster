@@ -17,7 +17,7 @@ SUB_DIRS = corba chat jdbc HelloWorldApplet rmi xmlrpc
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = 
+LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 

@@ -3,9 +3,9 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.4 2000/10/18 20:45:41 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.16 2000/10/22 16:55:14 ruff Exp $
 ------------------------------------------------------------------------------*/
-package javaclients.corba;
+package javaclients;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
@@ -31,9 +31,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientXml
+ *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientXml -name "Jeff"
+ *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml -name "Jeff"
  * </pre>
  */
 public class ClientXml implements I_Callback
@@ -47,11 +47,11 @@ public class ClientXml implements I_Callback
          XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
          Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientSub].");
+         Log.plain("   -name               The login name [" + ME + "].");
          Log.plain("   -passwd             The password [secret].");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.corba.ClientXml -name Jeff\n");
+         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
       }
 
@@ -62,11 +62,11 @@ public class ClientXml implements I_Callback
          String loginName = ME;
 
          //----------- Find orb ----------------------------------
-         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args);
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
 
          //----------- Login to xmlBlaster -----------------------
          String passwd = Args.getArg(args, "-passwd", "secret");
-         corbaConnection.login(loginName, passwd, null, this); // installs the Callback server as well!
+         blasterConnection.login(loginName, passwd, null, this); // installs the Callback server as well!
 
 
          String publishOid = "";
@@ -85,7 +85,7 @@ public class ClientXml implements I_Callback
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = corbaConnection.publish(msgUnit);
+               publishOid = blasterConnection.publish(msgUnit);
                Log.info(ME, "   Returned oid=" + publishOid);
                Log.trace(ME, "Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
@@ -101,7 +101,7 @@ public class ClientXml implements I_Callback
                   "</key>";
          stop.restart();
          try {
-            publishOid = corbaConnection.subscribe(xmlKey, "<qos></qos>");
+            publishOid = blasterConnection.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
             Log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
@@ -114,7 +114,7 @@ public class ClientXml implements I_Callback
          Log.trace(ME, "Unsubscribe ...");
          stop.restart();
          try {
-            corbaConnection.unSubscribe(xmlKey, "<qos></qos>");
+            blasterConnection.unSubscribe(xmlKey, "<qos></qos>");
             Log.info(ME, "Unsubscribe done" + stop.nice());
          } catch(XmlBlasterException e) {
             Log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.reason);
@@ -129,7 +129,7 @@ public class ClientXml implements I_Callback
                   "</key>";
          stop.restart();
          try {
-            corbaConnection.subscribe(xmlKey, "<qos></qos>");
+            blasterConnection.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribe done, there should be a Callback");
          } catch(XmlBlasterException e) {
             Log.error(ME, "subscribe failed, XmlBlasterException: " + e.reason);
@@ -147,7 +147,7 @@ public class ClientXml implements I_Callback
                Log.trace(ME, "Publishing ...");
                stop.restart();
                try {
-                  String str = corbaConnection.publish(msgUnit);
+                  String str = blasterConnection.publish(msgUnit);
                   Log.trace(ME, "Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
                   Log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);
@@ -156,13 +156,13 @@ public class ClientXml implements I_Callback
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
-         corbaConnection.logout();
+         blasterConnection.logout();
       }
       catch (Exception e) {
           e.printStackTrace();
       }
 
-      // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
+      // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
    }
 
 

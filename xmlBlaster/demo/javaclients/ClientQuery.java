@@ -3,9 +3,9 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.4 2000/10/18 20:45:41 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.15 2000/10/22 16:55:14 ruff Exp $
 ------------------------------------------------------------------------------*/
-package javaclients.corba;
+package javaclients;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
@@ -25,7 +25,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke example:<br />
  * <pre>
- *    jaco javaclients.corba.ClientQuery -queryXpath "//key"
+ *    jaco javaclients.ClientQuery -queryXpath "//key"
  * </pre>
  */
 public class ClientQuery
@@ -53,8 +53,8 @@ public class ClientQuery
          else
             usage("Please enter a query string");
 
-         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args, "IOR");
-         corbaConnection.login(loginName, passwd, null);
+         XmlBlasterConnection con = new XmlBlasterConnection(args, "IOR");
+         con.login(loginName, passwd, null);
 
 
          String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -62,7 +62,7 @@ public class ClientQuery
                          "</key>";
          MessageUnit[] msgArr = null;
          try {
-            msgArr = corbaConnection.get(xmlKey, "<qos></qos>");
+            msgArr = con.get(xmlKey, "<qos></qos>");
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
                UpdateKey updateKey = new UpdateKey();
@@ -74,7 +74,7 @@ public class ClientQuery
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
-         corbaConnection.logout();
+         con.logout();
       }
       catch (org.jutils.JUtilsException e) {
           Log.error(ME, "Error occurred: " + e.toString());
@@ -94,7 +94,7 @@ public class ClientQuery
       Log.plain("   -queryXpath         \"//key\"");
       XmlBlasterConnection.usage();
       Log.usage();
-      Log.plain("Example: jaco javaclients.corba.ClientQuery -queryXpath //key\n");
+      Log.plain("Example: jaco javaclients.ClientQuery -queryXpath //key\n");
       Log.panic(ME, text);
    }
 
